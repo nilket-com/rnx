@@ -79,6 +79,14 @@ not restore is not a local, so that expression would not compile, and the
 expression is itself proportional to the session, so narrowing the prelude
 alone would move the cost rather than remove it.
 
+The session holds its bindings on the host side rather than inside a Rune
+object, and hands each input only the bindings it restores. That is what
+makes publication atomic: building the object an input receives and reading
+the delta it returns are both fallible and both happen before anything is
+committed, and the commit is an insert into a map on this side, which cannot
+fail. A partly published delta is therefore not a state the session can
+reach.
+
 The unit returns only the bindings this input could have changed: the ones
 it restored, which it may have reassigned, and the ones it declared. The
 session merges that delta into the state it holds, entry by entry, rather
@@ -105,6 +113,15 @@ contents of every string literal and takes the leading identifier of each
 `{...}` group. This over-approximates deliberately: a name inside a string
 that is not a format argument costs one restoring line, which is correct and
 cheap.
+
+Reading the raw literal is not enough either, because the formatter reads
+the decoded string: `format!("\\u{7b}x}")` decodes to `{x}` and captures
+`x`, which a raw scan misses. So the literal is decoded first. Rune's own
+decoder is crate-private, so this one mirrors the escape table in its lexer
+and recognises nothing beyond it; an escape it does not know means the
+string's contents are unknown, and an unknown string could name anything, so
+that input restores every published name. Widening is always available and
+is the only honest answer to a string this scan cannot read.
 
 This is not completion's scan. Completion suppresses strings, comments, and
 template interpolations on purpose, and every one of those suppressions
@@ -161,6 +178,14 @@ are both empty; it is affected only in that it shares the code.
    the mechanism does.
 4. If narrowing changes any diagnostic position, the mapping is wrong and
    the gate is red.
+5. This scan depends on two things Rune could change under an upgrade: its
+   escape table and its format-string syntax. On any change to the pinned
+   Rune version, re-run the escape and capture cases before trusting the
+   scan, and keep the widening fallback: an escape or a group this code
+   cannot read must restore every published name rather than guess. A new
+   escape that the decoder does not know already widens, which is the
+   failure this leans on, but a new capture syntax would not, and that is
+   the case to check by hand.
 
 ## Risks
 
