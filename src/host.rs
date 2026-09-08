@@ -81,6 +81,74 @@ fn stdin_read() -> Result<String, String> {
 	String::from_utf8(bytes).map_err(|e| format!("cannot read standard input: {e}"))
 }
 
+/// Whether rnx is running one thing and then exiting, rather than holding a
+/// prompt. Set by the two entry points that have a status to give.
+static RUNNING_A_SCRIPT: AtomicBool = AtomicBool::new(false);
+
+/// Called by `run` and by `eval`, the two entry points whose whole job is to
+/// run one thing and exit. The session never calls it, so `host::exit` is
+/// refused there rather than ending a person's session.
+pub fn running_a_script() {
+	RUNNING_A_SCRIPT.store(true, Ordering::Relaxed);
+}
+
+/// End the process with `code`, having first made sure the script's output
+/// actually reached somewhere. Never returns.
+///
+/// Standard output is flushed here because output with no trailing newline is
+/// still buffered and nothing unwinds from this point. A flush that fails
+/// means the output was lost, and losing a script's report must never be
+/// reported as success: the failure is named on standard error, and a status
+/// of 0 becomes 1. A script that had already decided it was failing keeps the
+/// status it chose, because that status is still true.
+fn leave(code: i32) -> ! {
+	let code = match std::io::stdout().flush() {
+		Ok(()) => code,
+		Err(e) => {
+			eprintln!("error: cannot write standard output: {e}");
+			if code == 0 { 1 } else { code }
+		}
+	};
+	std::process::exit(code);
+}
+
+/// End the script with `code`.
+///
+/// A status is one byte by the time a shell reads it, so 256 would arrive as
+/// 0 and turn a failure into a success. Anything outside 0 to 255 ends the
+/// script with 1 instead, which is the one moment it can be refused rather
+/// than truncated.
+///
+/// In a script this does not return, including when the status is refused. An
+/// ordinary error would be a value the script could discard, and discarding
+/// it would let a script that asked for an impossible status carry on and
+/// exit 0, which is exactly the outcome the refusal exists to prevent. At a
+/// session prompt there is nothing to end, so the refusal there is an
+/// ordinary error the session reports and recovers from.
+fn exit(code: i64) -> Result<(), String> {
+	if !RUNNING_A_SCRIPT.load(Ordering::Relaxed) {
+		return Err("cannot exit: this is a session, not a script; use :quit".to_owned());
+	}
+	if !(0..=255).contains(&code) {
+		eprintln!(
+			"error: cannot exit with {code}: a status is 0 to 255, and {code} would reach the shell as {}",
+			(code as u8) as i64
+		);
+		leave(1);
+	}
+	leave(code as i32);
+}
+
+/// Write to standard error, adding nothing. A function that appended a
+/// newline could not be asked not to; this one can be asked to.
+fn eprint(text: &str) -> Result<(), String> {
+	let mut stderr = std::io::stderr().lock();
+	stderr
+		.write_all(text.as_bytes())
+		.and_then(|()| stderr.flush())
+		.map_err(|e| format!("cannot write to standard error: {e}"))
+}
+
 fn file_write(path: &str, text: &str) -> Result<(), String> {
 	std::fs::OpenOptions::new()
 		.write(true)
@@ -223,6 +291,16 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		"stdin",
 		stdin_read,
 		"stdin() -> Result<String>: the whole of standard input as UTF-8, up to 8 MiB; Err on a terminal or a second read"
+	);
+	register!(
+		"exit",
+		exit,
+		"exit(code) -> Result<()>: end the script with this status, which must be 0 to 255; a status outside that ends the script with 1 rather than being truncated; in a script it never returns, and at a session prompt it is refused with Err"
+	);
+	register!(
+		"eprint",
+		eprint,
+		"eprint(text) -> Result<()>: write text to standard error, adding nothing"
 	);
 	register!(
 		"write_new",

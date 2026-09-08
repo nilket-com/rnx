@@ -128,6 +128,7 @@ fn show_error(value: &Value) {
 /// has to say itself: diagnostics to standard error, script output to
 /// standard output.
 pub fn run(context: &Context, path: &str, arguments: Value, debug_source: bool) -> i32 {
+	crate::host::running_a_script();
 	let text = match std::fs::read_to_string(path) {
 		Ok(text) => text,
 		Err(error) => {

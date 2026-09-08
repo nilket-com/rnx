@@ -305,7 +305,7 @@ mod host_source_tests {
 			.into_iter()
 			.map(|f| f.path)
 			.collect();
-		assert_eq!(registered.len(), 8);
+		assert_eq!(registered.len(), 10);
 		let names = super::Names {
 			host: registered.clone(),
 			..Default::default()
