@@ -130,28 +130,62 @@ fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, St
 		.to_string(),
 	)
 }
-/// Install the host module and return the full path of every function it
-/// registered, recorded at the registration itself so completion has no
-/// second list to keep in step.
-pub fn install(context: &mut Context) -> super::Result<Vec<String>> {
+/// A host function as registered: its path and the one-line description
+/// carried beside it, so a function cannot exist without its help.
+pub struct HostFunction {
+	pub path: String,
+	pub doc: &'static str,
+}
+
+/// Install the host module and return every function it registered, path and
+/// description recorded at the registration itself so completion and `:help`
+/// have no second list to keep in step.
+pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	unsafe {
 		libc::signal(libc::SIGINT, interrupt as *const () as libc::sighandler_t);
 	}
 	let mut module = Module::with_crate("host")?;
 	let mut registered = Vec::new();
 	macro_rules! register {
-		($name:literal, $function:expr) => {
+		($name:literal, $function:expr, $doc:literal) => {
 			module.function($name, $function).build()?;
-			registered.push(format!("host::{}", $name));
+			registered.push(HostFunction {
+				path: format!("host::{}", $name),
+				doc: $doc,
+			});
 		};
 	}
-	register!("json_parse", json_parse);
-	register!("json_stringify", json_stringify);
-	register!("read", file_read);
-	register!("write_new", file_write);
-	register!("mkdir", mkdir);
-	register!("absolute", absolute);
-	register!("process", process);
+	register!(
+		"json_parse",
+		json_parse,
+		"json_parse(text) -> value: parse JSON text into a Rune value, or Err"
+	);
+	register!(
+		"json_stringify",
+		json_stringify,
+		"json_stringify(value) -> String: render a value as JSON text, or Err"
+	);
+	register!(
+		"read",
+		file_read,
+		"read(path) -> String: the whole file as UTF-8, up to 8 MiB, or Err"
+	);
+	register!(
+		"write_new",
+		file_write,
+		"write_new(path, text): write a new file, refusing to overwrite, or Err"
+	);
+	register!("mkdir", mkdir, "mkdir(path): create one directory, or Err");
+	register!(
+		"absolute",
+		absolute,
+		"absolute(path) -> String: canonicalize an existing path, or Err"
+	);
+	register!(
+		"process",
+		process,
+		"process(program, args, timeout_ms) -> #{code, stdout, stderr, timed_out, cancelled, truncated}: run a child with a deadline, bounded capture, and cancellation on Ctrl-C"
+	);
 	context.install(module)?;
 	Ok(registered)
 }

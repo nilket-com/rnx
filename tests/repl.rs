@@ -442,3 +442,77 @@ fn gate_0003_completion_in_the_terminal() {
 	t.send(":quit\r");
 	t.wait_exit();
 }
+
+// :vars and :help (record 0004) at the terminal.
+#[test]
+fn gate_0004_vars_and_help_in_the_terminal() {
+	let history = history_file("inspect");
+	let mut t = Terminal::spawn(&history);
+	t.prompt();
+	t.send("let count = 7; let label = \"tag\"; struct P { x } let point = P { x: 1 };\r");
+	t.prompt();
+	t.send("fn twice(n) {\r");
+	t.send("  n * 2\r");
+	t.send("}\r");
+	t.prompt();
+	// :vars lists bindings in name order with type and value.
+	t.send(":vars\r");
+	t.expect("count: i64 = 7");
+	t.expect("label: String = \"tag\"");
+	t.expect("point: P = P {x: 1}");
+	t.prompt();
+	// :help on each kind.
+	t.send(":help count\r");
+	t.expect("count: binding");
+	t.expect("type: i64");
+	t.prompt();
+	t.send(":help twice\r");
+	t.expect("twice: function");
+	t.expect("n * 2");
+	t.prompt();
+	t.send(":help host::write_new\r");
+	t.expect("host function");
+	t.expect("refusing to overwrite");
+	t.prompt();
+	t.send(":help :vars\r");
+	t.expect("session command");
+	t.prompt();
+	t.send(":help nosuchname\r");
+	t.expect("no binding, declaration, host function, or command");
+	t.prompt();
+	t.send(":help\r");
+	t.expect("session commands:");
+	t.expect(":vars");
+	t.prompt();
+	// The command names complete, and a name after :help completes too.
+	t.send(":va\t\r");
+	t.expect("count: i64 = 7");
+	t.prompt();
+	t.send(":help cou\t\r");
+	t.expect("count: binding");
+	t.prompt();
+	// After a failed input the surviving mutation shows and the new name does not.
+	t.send("let shared = [1];\r");
+	t.prompt();
+	t.send("shared.push(2); let fresh = 9; panic!(\"stop\");\r");
+	t.expect("runtime error");
+	t.prompt();
+	t.send(":vars\r");
+	t.expect("shared: Vec = [1, 2]");
+	t.prompt();
+	t.send(":help fresh\r");
+	t.expect("no binding, declaration");
+	t.prompt();
+	// After :reset there are no bindings, but commands and host help remain.
+	t.send(":reset\r");
+	t.expect("session reset");
+	t.prompt();
+	t.send(":vars\r");
+	t.expect("no bindings");
+	t.prompt();
+	t.send(":help host::read\r");
+	t.expect("host function");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}

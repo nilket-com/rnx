@@ -29,9 +29,12 @@ within bounds, diagnostics at the line and column typed, Ctrl-C to clear an
 input or stop a running one, Tab to complete a binding, a declaration, a
 `host::` function path, or a command, Ctrl-D or `:quit` to leave. `:reset` empties
 the session, `:memory` reports what it retains, `:debug` shows the source
-generated for the last input. History is text only, kept in `$RNX_HISTORY`,
+generated for the last input, and `:help` lists them all. History is text only, kept in `$RNX_HISTORY`,
 else `$XDG_STATE_HOME/rnx/history`, else `~/.local/state/rnx/history`, and
-nothing in it runs on restore. The session supports a deliberately limited
+nothing in it runs on restore. `:vars` lists the bindings with their types
+and values, and `:help <name>` describes one binding, declaration, host
+function, or command; both are bounded reads that run no Rune code, so they
+answer even when the session is over its memory bound. The session supports a deliberately limited
 set of persistent declarations and bindings; unsupported declarations refuse
 rather than pretending to survive. Successful inputs publish bindings and
 declarations; failed inputs can still mutate shared values and perform
