@@ -47,8 +47,9 @@ fn main() -> Result<()> {
 	let host_functions = host::install(&mut context)?;
 	let args: Vec<String> = std::env::args().skip(1).collect();
 	if args.first().is_some_and(|s| s == "eval") {
-		let mut session = session::Session::new();
-		match session.eval(&context, args.get(1).ok_or("eval needs source")?) {
+		let source = args.get(1).ok_or("eval needs source")?.clone();
+		let mut session = session::Session::new(context)?;
+		match session.eval(&source) {
 			Ok(value) => println!(
 				"{}",
 				format::render(&value, Some(&session), &format::Limits::default())
@@ -61,7 +62,7 @@ fn main() -> Result<()> {
 		return Ok(());
 	}
 	if args.first().is_some_and(|s| s == "repl") {
-		return repl::run(&context, host_functions);
+		return repl::run(context, host_functions);
 	}
 	if args.first().is_some_and(|s| s == "run") {
 		let source = std::fs::read_to_string(args.get(1).ok_or("run needs a file")?)?;
@@ -150,6 +151,6 @@ fn main() -> Result<()> {
 		}
 	}
 	host::process_checks(&context)?;
-	session::checks(&context)?;
+	session::checks()?;
 	Ok(())
 }

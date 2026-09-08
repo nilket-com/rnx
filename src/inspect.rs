@@ -278,13 +278,11 @@ mod tests {
 
 	#[test]
 	fn vars_lists_bindings_in_name_order_with_type_and_value() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		let empty = vars(&session, &InspectLimits::default());
 		assert!(empty.starts_with("no bindings"), "{empty}");
 		session
 			.eval(
-				&context,
 				"struct P { x } let zed = 1; let alpha = \"s\"; let mid = [1, 2]; let point = P { x: 3 };",
 			)
 			.unwrap();
@@ -299,14 +297,10 @@ mod tests {
 
 	#[test]
 	fn help_answers_for_each_kind_and_states_the_precedence() {
-		let context = context();
 		let host = host();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		session
-			.eval(
-				&context,
-				"fn total(xs) {\n  xs.len()\n} struct P { x } let v = 7;",
-			)
+			.eval("fn total(xs) {\n  xs.len()\n} struct P { x } let v = 7;")
 			.unwrap();
 		let limits = InspectLimits::default();
 		let out = help(&session, &host, &COMMANDS, Some("v"), &limits);
@@ -348,12 +342,9 @@ mod tests {
 
 	#[test]
 	fn a_name_that_is_both_reports_the_binding_and_says_the_declaration_exists() {
-		let context = context();
 		let host = host();
-		let mut session = Session::new();
-		session
-			.eval(&context, "fn same(x) { x } let same = 5;")
-			.unwrap();
+		let mut session = Session::new(context()).unwrap();
+		session.eval("fn same(x) { x } let same = 5;").unwrap();
 		let out = help(
 			&session,
 			&host,
@@ -370,16 +361,15 @@ mod tests {
 
 	#[test]
 	fn the_invocation_budget_bounds_every_command() {
-		let context = context();
 		let host = host();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		session.set_budget(usize::MAX);
 		// Many small bindings: cut by the binding count, then by bytes.
 		let mut input = String::new();
 		for i in 0..200 {
 			input.push_str(&format!("let name_{i:03} = {i}; "));
 		}
-		session.eval(&context, &input).unwrap();
+		session.eval(&input).unwrap();
 		let out = vars(&session, &InspectLimits::default());
 		assert!(
 			out.ends_with("…(136 more bindings not shown; 64 listed per invocation)\n"),
@@ -397,7 +387,7 @@ mod tests {
 		assert!(out.len() < 200 + 96, "{}", out.len());
 		// One binding whose rendering alone exceeds the budget.
 		session
-			.eval(&context, "let big = []; for i in 0..500 { big.push(i) }")
+			.eval("let big = []; for i in 0..500 { big.push(i) }")
 			.unwrap();
 		let out = vars(&session, &tight);
 		assert!(out.len() < 200 + 96, "{}", out.len());
@@ -407,7 +397,7 @@ mod tests {
 			long.push_str(&format!("  let a_{i} = {i};\n"));
 		}
 		long.push('}');
-		session.eval(&context, &long).unwrap();
+		session.eval(&long).unwrap();
 		let out = help(&session, &host, &COMMANDS, Some("long"), &tight);
 		assert!(
 			out.contains("this declaration") && out.contains("byte budget reached"),
@@ -431,20 +421,13 @@ mod tests {
 	#[test]
 	fn declaration_source_is_escaped_for_the_terminal() {
 		// The declarations are never called; only their source is displayed.
-		let context = context();
 		let host = host();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		session
-			.eval(
-				&context,
-				"fn in_string() {\n  let clear = \"\u{1b}[2J\";\n  clear\n}",
-			)
+			.eval("fn in_string() {\n  let clear = \"\u{1b}[2J\";\n  clear\n}")
 			.unwrap();
 		session
-			.eval(
-				&context,
-				"fn in_comment() {\n  // \u{1b}[2J wipes the screen\n  1\n}",
-			)
+			.eval("fn in_comment() {\n  // \u{1b}[2J wipes the screen\n  1\n}")
 			.unwrap();
 		let limits = InspectLimits::default();
 		for name in ["in_string", "in_comment"] {
@@ -462,13 +445,12 @@ mod tests {
 
 	#[test]
 	fn a_failed_input_leaves_its_mutation_visible_and_its_binding_absent() {
-		let context = context();
 		let host = host();
-		let mut session = Session::new();
-		session.eval(&context, "let shared = [1];").unwrap();
+		let mut session = Session::new(context()).unwrap();
+		session.eval("let shared = [1];").unwrap();
 		assert!(
 			session
-				.eval(&context, "shared.push(2); let fresh = 9; panic!(\"stop\");")
+				.eval("shared.push(2); let fresh = 9; panic!(\"stop\");")
 				.is_err()
 		);
 		let limits = InspectLimits::default();
@@ -484,15 +466,14 @@ mod tests {
 
 	#[test]
 	fn both_commands_answer_when_the_session_is_over_its_ceiling() {
-		let context = context();
 		let host = host();
 		// A ceiling of one byte: any sample is at or above it, so the latch
 		// trips without depending on what the process has allocated.
-		let mut session = Session::with_ceiling(1);
-		session.eval(&context, "let kept = 1;").unwrap();
+		let mut session = Session::with_ceiling(context(), 1).unwrap();
+		session.eval("let kept = 1;").unwrap();
 		session.sample();
 		assert!(
-			session.eval(&context, "kept").is_err(),
+			session.eval("kept").is_err(),
 			"expected the ceiling to refuse evaluation"
 		);
 		let limits = InspectLimits::default();
@@ -523,17 +504,15 @@ mod tests {
 
 	#[test]
 	fn inspection_runs_no_code() {
-		let context = context();
 		let host = host();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		let effect = std::env::temp_dir().join(format!("rnx-inspect-{}", std::process::id()));
 		let _ = std::fs::remove_file(&effect);
 		let quoted = serde_json::to_string(&effect.to_string_lossy()).unwrap();
 		session
-			.eval(
-				&context,
-				&format!("let boom = || host::write_new({quoted}, \"ran\");"),
-			)
+			.eval(&format!(
+				"let boom = || host::write_new({quoted}, \"ran\");"
+			))
 			.unwrap();
 		let limits = InspectLimits::default();
 		let out = vars(&session, &limits);
@@ -562,9 +541,8 @@ mod budget_tests {
 
 	#[test]
 	fn an_oversized_unknown_name_is_bounded_and_escaped() {
-		let context = context();
 		let host = host();
-		let session = Session::new();
+		let session = Session::new(context()).unwrap();
 		let limits = InspectLimits::default();
 		// A 20,000-character unknown name, with an escape byte in it.
 		let name = format!("{}\u{1b}[2J{}", "n".repeat(10_000), "m".repeat(10_000));
@@ -588,14 +566,13 @@ mod budget_tests {
 
 	#[test]
 	fn vars_visits_only_the_bindings_it_may_list() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		session.set_budget(usize::MAX);
 		let mut input = String::new();
 		for i in 0..200 {
 			input.push_str(&format!("let name_{i:03} = {i}; "));
 		}
-		session.eval(&context, &input).unwrap();
+		session.eval(&input).unwrap();
 		// The total costs nothing: it is the published-name count.
 		assert_eq!(session.binding_count(), 200);
 		// The listing visits one binding past the last it shows, which is the
@@ -631,9 +608,8 @@ mod budget_tests {
 
 	#[test]
 	fn declaration_help_escapes_only_what_fits() {
-		let context = context();
 		let host = host();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		session.set_budget(usize::MAX);
 		let mut long = String::from("fn long() {\n");
 		for i in 0..1000 {
@@ -641,7 +617,7 @@ mod budget_tests {
 		}
 		long.push('}');
 		let source_len = long.len();
-		session.eval(&context, &long).unwrap();
+		session.eval(&long).unwrap();
 		let tight = InspectLimits {
 			total_bytes: 300,
 			..InspectLimits::default()
@@ -681,13 +657,10 @@ mod short_circuit_tests {
 	fn binding_help_does_not_render_a_value_it_cannot_print() {
 		let mut context = Context::with_default_modules().unwrap();
 		let host = crate::host::install(&mut context).unwrap();
-		let mut session = Session::new();
+		let mut session = Session::new(context).unwrap();
 		session.set_budget(usize::MAX);
 		session
-			.eval(
-				&context,
-				"let wide = []; for i in 0..100000 { wide.push(i) }",
-			)
+			.eval("let wide = []; for i in 0..100000 { wide.push(i) }")
 			.unwrap();
 		// A budget too small for even the header: the value is never rendered,
 		// which a huge per-value limit would otherwise make expensive.

@@ -28,7 +28,7 @@ pub const COMMANDS: [(&str, &str); 6] = [
 	),
 	(
 		":memory",
-		"report source and map storage against the session's bound",
+		"report tracked live allocation request bytes against the ceiling",
 	),
 	(":debug", "show the source generated for the last input"),
 	(":vars", "list the bindings with their types and values"),
@@ -142,7 +142,7 @@ fn ceiling() -> usize {
 /// than reporting a figure of zero or a ceiling it does not enforce.
 fn memory_report(session: &Session) -> String {
 	let source = format!(
-		"source and map storage: {} bytes (inputs, declarations, and {} units with their source maps)",
+		"source and map storage: {} bytes (inputs, declarations, and the source maps of {} entries; the units themselves are held weakly and are not counted)",
 		session.retained_bytes(),
 		session.retained_units()
 	);
@@ -173,7 +173,6 @@ fn memory_report(session: &Session) -> String {
 /// returns, which is what lets the loop sample afterwards.
 fn handle(
 	session: &mut Session,
-	context: &Context,
 	host: &[HostFunction],
 	input: &str,
 	limits: &Limits,
@@ -192,7 +191,7 @@ fn handle(
 	match command {
 		":quit" => return Outcome::Quit,
 		":reset" => {
-			*session = Session::with_ceiling(session.ceiling());
+			session.reset();
 			println!("session reset");
 			return Outcome::Reset;
 		}
@@ -219,7 +218,7 @@ fn handle(
 		}
 		_ => {}
 	}
-	match session.eval(context, input) {
+	match session.eval(input) {
 		Ok(value) => {
 			let text = render(&value, Some(session), limits);
 			if text != "()" {
@@ -231,13 +230,13 @@ fn handle(
 	Outcome::Continue
 }
 
-pub fn run(context: &Context, host: Vec<HostFunction>) -> crate::Result<()> {
+pub fn run(context: Context, host: Vec<HostFunction>) -> crate::Result<()> {
 	let config = Config::builder()
 		.auto_add_history(false)
 		.completion_type(CompletionType::List)
 		.build();
 	let mut editor: Editor<RnxHelper, FileHistory> = Editor::with_config(config)?;
-	let mut session = Session::with_ceiling(ceiling());
+	let mut session = Session::with_ceiling(context, ceiling())?;
 	let names = Rc::new(RefCell::new(snapshot(&session, &host)));
 	editor.set_helper(Some(RnxHelper {
 		names: names.clone(),
@@ -271,14 +270,7 @@ pub fn run(context: &Context, host: Vec<HostFunction>) -> crate::Result<()> {
 		if let Some(path) = &history {
 			let _ = editor.append_history(path);
 		}
-		let outcome = handle(
-			&mut session,
-			context,
-			&host,
-			&input,
-			&limits,
-			&inspect_limits,
-		);
+		let outcome = handle(&mut session, &host, &input, &limits, &inspect_limits);
 		// The input buffer is disposable too, and the record excludes it from
 		// the sample, so it goes before the sample rather than at the end of
 		// the iteration.

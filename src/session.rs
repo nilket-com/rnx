@@ -9,7 +9,7 @@ use rune::ast::Spanned;
 use rune::runtime::{GeneratorState, Unit, VmError, budget};
 use rune::{Context, Source, SourceId, Sources, Vm, ast, runtime::Value};
 use std::collections::{BTreeMap, BTreeSet};
-use std::sync::Arc;
+use std::sync::{Arc, Weak};
 
 /// Instructions per slice between interrupt checks.
 pub const SLICE: usize = 10_000;
@@ -210,13 +210,22 @@ impl Generated {
 	}
 }
 
+/// One input's bookkeeping. The unit is held weakly, so it lives exactly as
+/// long as something can still call into it; the map is small and goes when
+/// the entry is pruned, because a map whose unit nothing can call can never
+/// be consulted.
 struct Retained {
-	unit: Arc<Unit>,
-	generated: String,
+	unit: Weak<Unit>,
 	map: SourceMap,
 }
 
 pub struct Session {
+	/// The compile-time context, owned, so an input cannot be compiled
+	/// against one context and run against another, and so no caller can
+	/// modify it between inputs. The runtime is built from it per input:
+	/// sharing one is refused by Rune 0.14.1, for the reason recorded in
+	/// `plans/0006_what_a_retained_value_pins.md`.
+	context: Context,
 	declarations: BTreeMap<String, Declaration>,
 	names: BTreeSet<String>,
 	state: Value,
@@ -231,11 +240,12 @@ pub struct Session {
 	budget: usize,
 }
 impl Session {
-	pub fn new() -> Self {
-		Self::with_ceiling(DEFAULT_CEILING)
+	pub fn new(context: Context) -> Result<Self> {
+		Self::with_ceiling(context, DEFAULT_CEILING)
 	}
-	pub fn with_ceiling(ceiling: usize) -> Self {
-		Self {
+	pub fn with_ceiling(context: Context, ceiling: usize) -> Result<Self> {
+		Ok(Self {
+			context,
 			declarations: BTreeMap::new(),
 			names: BTreeSet::new(),
 			state: serde_json::from_str("{}").unwrap(),
@@ -245,15 +255,17 @@ impl Session {
 			ceiling,
 			over_ceiling: false,
 			budget: BUDGET,
-		}
+		})
 	}
 	/// The generated source of the most recent input, for `:debug`.
 	pub fn last_generated(&self) -> &str {
 		&self.last_generated
 	}
-	/// Bytes the session retains: inputs, declaration sources, generated
-	/// sources of retained units, and their source maps. Values held by
-	/// bindings are not measured; see the first release record.
+	/// Bytes of the text and maps the session retains: the inputs, the
+	/// declaration sources, and the source map of each entry. The units
+	/// themselves are held weakly and are not counted here; the values a
+	/// binding holds are not counted either. Record 0005's figure is the
+	/// measured one, and this is a named component of it.
 	pub fn retained_bytes(&self) -> usize {
 		self.inputs.iter().map(String::len).sum::<usize>()
 			+ self
@@ -261,15 +273,23 @@ impl Session {
 				.values()
 				.map(|d| d.source.len())
 				.sum::<usize>()
-			+ self
-				.units
-				.iter()
-				.map(|u| u.generated.len() + u.map.bytes())
-				.sum::<usize>()
+			+ self.units.iter().map(|u| u.map.bytes()).sum::<usize>()
 	}
 	/// Instructions one input may spend before it is halted.
 	pub fn set_budget(&mut self, budget: usize) {
 		self.budget = budget;
+	}
+	/// Empty the session, keeping the compile-time context: a reset clears
+	/// what the session holds, not the interpreter it runs on. The startup
+	/// reference point is the process's, never re-recorded.
+	pub fn reset(&mut self) {
+		self.declarations.clear();
+		self.names.clear();
+		self.state = serde_json::from_str("{}").unwrap();
+		self.inputs.clear();
+		self.units.clear();
+		self.last_generated.clear();
+		self.over_ceiling = false;
 	}
 	pub fn ceiling(&self) -> usize {
 		self.ceiling
@@ -289,8 +309,19 @@ impl Session {
 		}
 		Some(live)
 	}
+	/// How many entries the session keeps. After pruning this is the number
+	/// of units something can still call, plus the one just registered.
 	pub fn retained_units(&self) -> usize {
 		self.units.len()
+	}
+	/// How many of those entries still have a live unit, for the gate that
+	/// units are released rather than merely held weakly.
+	#[cfg(test)]
+	pub fn live_units(&self) -> usize {
+		self.units
+			.iter()
+			.filter(|entry| entry.unit.strong_count() > 0)
+			.count()
 	}
 	/// How many bindings are published. The count of published names, which
 	/// the session already keeps, so asking costs nothing.
@@ -355,7 +386,7 @@ impl Session {
 			.map(|d| d.fields.as_slice())
 	}
 
-	pub fn eval(&mut self, context: &Context, input: &str) -> std::result::Result<Value, Failure> {
+	pub fn eval(&mut self, input: &str) -> std::result::Result<Value, Failure> {
 		if self.over_ceiling {
 			return Err(Failure::OverCeiling {
 				live: super::memory::live().unwrap_or(0),
@@ -368,7 +399,7 @@ impl Session {
 		super::host::clear_interrupt();
 		self.inputs.push(input.to_owned());
 		let number = self.inputs.len();
-		let result = self.eval_inner(context, input, number);
+		let result = self.eval_inner(input, number);
 		if result.is_err() {
 			// A failed input publishes nothing, but its text stays so an origin
 			// recorded against it (there is none) could never dangle.
@@ -376,12 +407,7 @@ impl Session {
 		result
 	}
 
-	fn eval_inner(
-		&mut self,
-		context: &Context,
-		input: &str,
-		number: usize,
-	) -> std::result::Result<Value, Failure> {
+	fn eval_inner(&mut self, input: &str, number: usize) -> std::result::Result<Value, Failure> {
 		// The wrapper is one byte of `{` before the input; wrapped offsets map
 		// to input offsets by subtracting it.
 		let wrapped = format!("{{{input}\n}}");
@@ -508,17 +534,19 @@ impl Session {
 		generated.raw("}, __rnx_result)\n}");
 		self.last_generated = generated.text.clone();
 
-		let unit = self.compile(context, &generated)?;
-		let unit = Arc::new(unit);
-		// The unit and its map are retained before it runs: a failed or
-		// interrupted input can still leave closures over this unit reachable
-		// through shared handles, and their errors must map to this input.
+		let unit = Arc::new(self.compile(&generated)?);
+		// Entries whose unit nothing can call any more go before this input's
+		// entry is registered, so the bookkeeping stays proportional to the
+		// units still reachable rather than to the number of inputs.
+		self.units.retain(|entry| entry.unit.strong_count() > 0);
+		// The entry is registered before the unit runs: a failed or interrupted
+		// input can still leave a closure over this unit reachable through a
+		// shared handle, and an error inside it must map to this input.
 		self.units.push(Retained {
-			unit: unit.clone(),
-			generated: generated.text,
+			unit: Arc::downgrade(&unit),
 			map: generated.map,
 		});
-		let output = self.execute(context, &unit)?;
+		let output = self.execute(&unit)?;
 		let (state, value): (Value, Value) =
 			rune::from_value(output).map_err(|e| Failure::Runtime {
 				message: e.to_string(),
@@ -532,18 +560,14 @@ impl Session {
 		Ok(value)
 	}
 
-	fn compile(
-		&self,
-		context: &Context,
-		generated: &Generated,
-	) -> std::result::Result<Unit, Failure> {
+	fn compile(&self, generated: &Generated) -> std::result::Result<Unit, Failure> {
 		let mut sources = Sources::new();
 		sources
 			.insert(Source::memory(&generated.text).map_err(|e| Failure::Refused(e.to_string()))?)
 			.map_err(|e| Failure::Refused(e.to_string()))?;
 		let mut diagnostics = rune::Diagnostics::new();
 		let built = rune::prepare(&mut sources)
-			.with_context(context)
+			.with_context(&self.context)
 			.with_diagnostics(&mut diagnostics)
 			.build();
 		match built {
@@ -575,9 +599,11 @@ impl Session {
 		}
 	}
 
-	fn execute(&self, context: &Context, unit: &Arc<Unit>) -> std::result::Result<Value, Failure> {
+	fn execute(&self, unit: &Arc<Unit>) -> std::result::Result<Value, Failure> {
+		// A runtime per input. Sharing one across units is what this cut set
+		// out to do and cannot: see the record.
 		let runtime = Arc::new(
-			context
+			self.context
 				.runtime()
 				.map_err(|e| Failure::Refused(e.to_string()))?,
 		);
@@ -629,10 +655,17 @@ impl Session {
 	fn runtime_failure(&self, error: VmError) -> Failure {
 		let message = error.to_string();
 		let origin = error.first_location().and_then(|location| {
+			// The unit that raised the error is alive, because the error holds
+			// it; an entry whose weak reference no longer upgrades belongs to a
+			// unit nothing can call and so cannot be this one.
 			let map = self
 				.units
 				.iter()
-				.find(|r| Arc::ptr_eq(&r.unit, &location.unit))
+				.find(|r| {
+					r.unit
+						.upgrade()
+						.is_some_and(|unit| Arc::ptr_eq(&unit, &location.unit))
+				})
 				.map(|r| &r.map)?;
 			let inst = location.unit.debug_info()?.instruction_at(location.ip)?;
 			let (input, offset) = map.locate(inst.span.range().start)?;
@@ -726,9 +759,11 @@ fn bindings(
 
 /// The spike's session checks, kept as the regression floor for the
 /// session rules. `render` is the session formatter.
-pub fn checks(context: &Context) -> Result<()> {
+pub fn checks() -> Result<()> {
 	let render = |v: &Value| super::format::render(v, None, &super::format::Limits::default());
-	let mut session = Session::new();
+	let mut context = Context::with_default_modules()?;
+	super::host::install(&mut context)?;
+	let mut session = Session::new(context)?;
 	for (input, expected) in [
 		(
 			"let (x, y) = (2, 3); let shared = [1]; let effects = []; fn f() { 10 } struct Boxed { value } let old = f; let c = || f() + shared[0]; let b = Boxed { value: 7 }; x + y",
@@ -743,35 +778,28 @@ pub fn checks(context: &Context) -> Result<()> {
 			"(7, 3, 8, 9, 4, 1)",
 		),
 	] {
-		let value = session.eval(context, input)?;
+		let value = session.eval(input)?;
 		let actual = render(&value);
 		assert_eq!(actual, expected);
 		println!("session: {actual}");
 	}
+	assert!(session.eval("fn f() { 99 } let broken = ;").is_err());
 	assert!(
 		session
-			.eval(context, "fn f() { 99 } let broken = ;")
+			.eval("shared.push(2); let x = 99; let new_name = 1; panic!(\"partial\");")
 			.is_err()
 	);
-	assert!(
-		session
-			.eval(
-				context,
-				"shared.push(2); let x = 99; let new_name = 1; panic!(\"partial\");"
-			)
-			.is_err()
-	);
-	assert!(session.eval(context, "new_name").is_err());
-	let value = session.eval(context, "(x, shared, f(), effects.len())")?;
+	assert!(session.eval("new_name").is_err());
+	let value = session.eval("(x, shared, f(), effects.len())")?;
 	assert_eq!(render(&value), "(7, [1, 2], 20, 1)");
 	println!("after compile/runtime failures: {}", render(&value));
-	assert!(session.eval(context, "struct Boxed { other }").is_err());
+	assert!(session.eval("struct Boxed { other }").is_err());
 	println!("changed type declaration: refused until reset");
 	session.set_budget(2_000_000);
-	let error = session.eval(context, "while true {} ").unwrap_err();
+	let error = session.eval("while true {} ").unwrap_err();
 	assert!(matches!(error, Failure::Budget(_)));
 	println!("infinite loop: {error}");
-	assert_eq!(render(&session.eval(context, "x")?), "7");
+	assert_eq!(render(&session.eval("x")?), "7");
 	let effect_path = std::env::temp_dir().join(format!(
 		"rnx-effect-{}-{}",
 		std::process::id(),
@@ -782,24 +810,25 @@ pub fn checks(context: &Context) -> Result<()> {
 	let quoted = serde_json::to_string(&effect_path.to_string_lossy())?;
 	assert!(
 		session
-			.eval(
-				context,
-				&format!("host::write_new({quoted}, \"once\")?; panic!(\"after external write\");")
-			)
+			.eval(&format!(
+				"host::write_new({quoted}, \"once\")?; panic!(\"after external write\");"
+			))
 			.is_err()
 	);
 	assert_eq!(std::fs::read_to_string(&effect_path)?, "once");
-	assert_eq!(render(&session.eval(context, "x")?), "7");
+	assert_eq!(render(&session.eval("x")?), "7");
 	assert_eq!(std::fs::read_to_string(&effect_path)?, "once");
 	std::fs::remove_file(effect_path)?;
 	println!("external write before runtime failure survives; later input does not replay it");
-	let mut reset = Session::new();
-	assert!(reset.eval(context, "x").is_err());
+	let mut context = Context::with_default_modules()?;
+	super::host::install(&mut context)?;
+	let mut reset = Session::new(context)?;
+	assert!(reset.eval("x").is_err());
 	let start = std::time::Instant::now();
 	for _ in 0..100 {
-		session.eval(context, "let x = x + 1; x")?;
+		session.eval("let x = x + 1; x")?;
 	}
-	assert_eq!(render(&session.eval(context, "x")?), "107");
+	assert_eq!(render(&session.eval("x")?), "107");
 	println!(
 		"100 incremental inputs (compile + execute): {:?}",
 		start.elapsed()
@@ -857,10 +886,9 @@ mod tests {
 
 	#[test]
 	fn compile_error_maps_to_the_typed_line_and_column() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		let failure = session
-			.eval(&context, "let a = 1;\nlet b = +* 2;\nlet c = 3;")
+			.eval("let a = 1;\nlet b = +* 2;\nlet c = 3;")
 			.unwrap_err();
 		match failure {
 			Failure::Compile {
@@ -875,13 +903,12 @@ mod tests {
 
 	#[test]
 	fn runtime_error_in_an_older_definition_reports_that_input() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		session
-			.eval(&context, "fn boom(x) {\n  panic!(\"bad {}\", x)\n}")
+			.eval("fn boom(x) {\n  panic!(\"bad {}\", x)\n}")
 			.unwrap();
-		session.eval(&context, "let y = 2;").unwrap();
-		let failure = session.eval(&context, "boom(y)").unwrap_err();
+		session.eval("let y = 2;").unwrap();
+		let failure = session.eval("boom(y)").unwrap_err();
 		match failure {
 			Failure::Runtime {
 				message,
@@ -897,13 +924,10 @@ mod tests {
 
 	#[test]
 	fn runtime_error_through_a_retained_closure_reports_the_closure_input() {
-		let context = context();
-		let mut session = Session::new();
-		session
-			.eval(&context, "let c = |v| v.missing_method();")
-			.unwrap();
-		session.eval(&context, "let z = 1;").unwrap();
-		let failure = session.eval(&context, "c(z)").unwrap_err();
+		let mut session = Session::new(context()).unwrap();
+		session.eval("let c = |v| v.missing_method();").unwrap();
+		session.eval("let z = 1;").unwrap();
+		let failure = session.eval("c(z)").unwrap_err();
 		match failure {
 			Failure::Runtime {
 				origin: Some(o), ..
@@ -914,9 +938,8 @@ mod tests {
 
 	#[test]
 	fn every_refusal_and_failure_reports_user_text_never_generated_text() {
-		let context = context();
-		let mut session = Session::new();
-		session.eval(&context, "let keep = 1;").unwrap();
+		let mut session = Session::new(context()).unwrap();
+		session.eval("let keep = 1;").unwrap();
 		for input in [
 			"let x = ;",
 			"use std::fmt;",
@@ -929,7 +952,7 @@ mod tests {
 			"let v = [1]; v[9]",
 			"panic!(\"p\")",
 		] {
-			let failure = session.eval(&context, input).unwrap_err();
+			let failure = session.eval(input).unwrap_err();
 			let text = failure.to_string();
 			assert!(!text.contains("__rnx_state"), "{input}: {text}");
 			assert!(!text.contains("not in your input"), "{input}: {text}");
@@ -938,25 +961,21 @@ mod tests {
 			}
 		}
 		assert_eq!(
-			rune::from_value::<i64>(session.eval(&context, "keep").unwrap()).unwrap(),
+			rune::from_value::<i64>(session.eval("keep").unwrap()).unwrap(),
 			1
 		);
 	}
 
 	#[test]
 	fn a_closure_retained_by_a_failed_input_still_maps_to_that_input() {
-		let context = context();
-		let mut session = Session::new();
-		session.eval(&context, "let saved = [];").unwrap();
+		let mut session = Session::new(context()).unwrap();
+		session.eval("let saved = [];").unwrap();
 		assert!(
 			session
-				.eval(
-					&context,
-					"saved.push(|| panic!(\"retained failure\")); panic!(\"outer\");"
-				)
+				.eval("saved.push(|| panic!(\"retained failure\")); panic!(\"outer\");")
 				.is_err()
 		);
-		let failure = session.eval(&context, "let f = saved[0]; f()").unwrap_err();
+		let failure = session.eval("let f = saved[0]; f()").unwrap_err();
 		match failure {
 			Failure::Runtime {
 				message,
@@ -971,24 +990,158 @@ mod tests {
 
 	#[test]
 	fn over_the_ceiling_refuses_evaluation_but_not_inspection() {
-		let context = context();
 		// A ceiling of one byte: any sample is at or above it, so the latch
 		// trips without depending on what the rest of the process allocated.
-		let mut session = Session::with_ceiling(1);
-		session.eval(&context, "let a = 1;").unwrap();
+		let mut session = Session::with_ceiling(context(), 1).unwrap();
+		session.eval("let a = 1;").unwrap();
 		// Unlatched until a sample says so: the ceiling is not checked during
 		// an input, only after one.
 		assert!(!session.over_ceiling());
 		assert!(session.sample().is_some());
 		assert!(session.over_ceiling());
-		let failure = session.eval(&context, "a").unwrap_err();
+		let failure = session.eval("a").unwrap_err();
 		assert!(
 			matches!(failure, Failure::OverCeiling { .. }),
 			"{failure:?}"
 		);
 		// The latch holds without re-testing, and inspection still answers.
-		assert!(session.eval(&context, "a").is_err());
+		assert!(session.eval("a").is_err());
 		assert!(session.retained_bytes() > 0);
 		assert!(!session.last_generated().is_empty());
+	}
+}
+
+#[cfg(test)]
+mod retention_tests {
+	use super::*;
+
+	fn session() -> Session {
+		let mut context = Context::with_default_modules().unwrap();
+		crate::host::install(&mut context).unwrap();
+		let mut session = Session::new(context).unwrap();
+		session.set_budget(usize::MAX);
+		session
+	}
+
+	#[test]
+	fn a_unit_nothing_can_call_is_released_and_its_entry_pruned() {
+		let mut session = session();
+		for i in 0..100 {
+			session.eval(&format!("let x = {i};")).unwrap();
+		}
+		// Every unit has been released, the last one included: the session
+		// holds only weak references, so a unit dies with the evaluation that
+		// made it unless a value keeps it alive. One entry remains, the one
+		// the last input registered, and the next input prunes it.
+		assert_eq!(session.live_units(), 0, "live units");
+		assert_eq!(session.retained_units(), 1, "entries");
+	}
+
+	#[test]
+	fn a_unit_something_can_still_call_is_kept() {
+		let mut session = session();
+		for i in 0..20 {
+			session.eval(&format!("let c{i} = || {i};")).unwrap();
+		}
+		// Each closure keeps its own unit reachable, so nothing is pruned.
+		assert_eq!(session.live_units(), 20, "live units");
+		assert_eq!(session.retained_units(), 20, "entries");
+		// Dropping the closures by rebinding releases them again.
+		for i in 0..20 {
+			session.eval(&format!("let c{i} = 0;")).unwrap();
+		}
+		assert_eq!(
+			session.live_units(),
+			0,
+			"live units after the closures went"
+		);
+	}
+
+	#[test]
+	fn a_closure_kept_by_a_failed_input_keeps_its_unit_and_its_position() {
+		let mut session = session();
+		session.eval("let saved = [];").unwrap();
+		// The input registers its entry, stores a closure through a shared
+		// handle, and then fails. The closure is still callable.
+		assert!(
+			session
+				.eval("saved.push(|| panic!(\"from the failed input\")); panic!(\"outer\");")
+				.is_err()
+		);
+		assert_eq!(
+			session.live_units(),
+			1,
+			"the stored closure should keep the failed input's unit alive"
+		);
+		let failure = session.eval("let f = saved[0]; f()").unwrap_err();
+		match failure {
+			Failure::Runtime {
+				message,
+				origin: Some(origin),
+			} => {
+				assert!(message.contains("from the failed input"), "{message}");
+				assert_eq!(origin.input, 2, "the closure's defining input");
+			}
+			other => panic!("{other:?}"),
+		}
+	}
+
+	#[test]
+	fn every_ordinary_runtime_error_finds_its_position() {
+		let mut session = session();
+		session
+			.eval("fn thrower() {\n  panic!(\"deep\")\n}")
+			.unwrap();
+		session.eval("let held = || thrower();").unwrap();
+		for input in [
+			"panic!(\"here\")",
+			"thrower()",
+			"held()",
+			"let v = []; v[3]",
+		] {
+			let failure = session.eval(input).unwrap_err();
+			match failure {
+				Failure::Runtime {
+					origin: Some(_), ..
+				} => {}
+				other => panic!("{input}: no position: {other:?}"),
+			}
+		}
+	}
+
+	#[test]
+	fn a_missing_entry_reports_the_position_as_unavailable() {
+		let mut session = session();
+		session.eval("fn thrower() { panic!(\"x\") }").unwrap();
+		session.eval("let held = || thrower();").unwrap();
+		// The defensive path: the entry is gone although the unit lives. This
+		// cannot happen in ordinary execution, which the test above covers.
+		session.units.clear();
+		let failure = session.eval("held()").unwrap_err();
+		match failure {
+			Failure::Runtime { origin: None, .. } => {}
+			other => panic!("expected an unavailable position, got {other:?}"),
+		}
+		assert!(failure_text(&failure).contains("position not in your input"));
+	}
+
+	fn failure_text(failure: &Failure) -> String {
+		failure.to_string()
+	}
+
+	#[test]
+	fn a_reset_keeps_the_context_and_empties_the_session() {
+		let mut session = session();
+		session.eval("let c = || 1;").unwrap();
+		session.eval("let d = || 2;").unwrap();
+		assert_eq!(session.binding_count(), 2);
+		session.reset();
+		assert_eq!(session.binding_count(), 0);
+		assert_eq!(session.retained_units(), 0);
+		// The context survives, so the session still evaluates afterwards.
+		assert_eq!(
+			rune::from_value::<i64>(session.eval("1 + 1").unwrap()).unwrap(),
+			2
+		);
 	}
 }
