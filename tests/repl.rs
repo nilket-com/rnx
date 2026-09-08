@@ -778,3 +778,47 @@ fn gate_0005_a_failed_input_that_grew_shared_state_still_charges() {
 	t.send(":quit\r");
 	t.wait_exit();
 }
+
+// The text helpers are discoverable the way the host functions are
+// (record 0010), because a helper a person cannot find at the prompt is
+// not finished.
+#[test]
+fn gate_0010_the_text_helpers_can_be_found_at_the_prompt() {
+	let history = history_file("text");
+	let mut t = Terminal::spawn(&history);
+	t.prompt();
+	// The module completes from its registered paths, like `host::`.
+	t.send("tex\t");
+	std::thread::sleep(Duration::from_millis(200));
+	assert!(t.pending().contains("text::"), "{}", t.pending());
+	t.send("\x03");
+	t.prompt();
+	// Every registered function is listed, and only those.
+	t.send("text::\t\t");
+	std::thread::sleep(Duration::from_millis(300));
+	let listed = t.pending();
+	for path in ["text::find", "text::split_max", "text::group_digits"] {
+		assert!(listed.contains(path), "{path} missing from {listed:?}");
+	}
+	// And nothing that is not registered.
+	assert!(!listed.contains("text::trim"), "{listed:?}");
+	t.send("\x03");
+	t.prompt();
+	// Each one describes itself, from the same registration.
+	t.send(":help text::find\r");
+	t.expect("host function");
+	t.expect("byte index of the first occurrence");
+	t.prompt();
+	t.send(":help text::group_digits\r");
+	t.expect("comma every three digits");
+	t.prompt();
+	// And they work from the session, not only from a file.
+	t.send("text::group_digits(1234567)\r");
+	t.expect("\"1,234,567\"");
+	t.prompt();
+	t.send("text::find(\"abcdef\", \"cd\")\r");
+	t.expect("Some(2)");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}

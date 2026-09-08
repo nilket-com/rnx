@@ -58,8 +58,16 @@ pub fn complete(buffer: &str, cursor: usize, names: &Names) -> Option<Completion
 				push_unique(&mut candidates, name);
 			}
 		}
-		if "host::".starts_with(prefix) && !prefix.is_empty() {
-			push_unique(&mut candidates, "host::");
+		// Module prefixes come from the registered paths, so a module added
+		// later is completable without touching this.
+		for path in &names.host {
+			let Some(at) = path.find("::") else {
+				continue;
+			};
+			let module = &path[..at + 2];
+			if module.starts_with(prefix) && !prefix.is_empty() {
+				push_unique(&mut candidates, module);
+			}
 		}
 	}
 	Some(Completion {

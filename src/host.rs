@@ -173,33 +173,37 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	register!(
 		"json_parse",
 		json_parse,
-		"json_parse(text) -> value: parse JSON text into a Rune value, or Err"
+		"json_parse(text) -> Result<value>: parse JSON text into a Rune value"
 	);
 	register!(
 		"json_stringify",
 		json_stringify,
-		"json_stringify(value) -> String: render a value as JSON text, or Err"
+		"json_stringify(value) -> Result<String>: render a value as JSON text"
 	);
 	register!(
 		"read",
 		file_read,
-		"read(path) -> String: the whole file as UTF-8, up to 8 MiB, or Err"
+		"read(path) -> Result<String>: the whole file as UTF-8, up to 8 MiB"
 	);
 	register!(
 		"write_new",
 		file_write,
-		"write_new(path, text): write a new file, refusing to overwrite, or Err"
+		"write_new(path, text) -> Result<()>: write a new file, refusing to overwrite an existing one"
 	);
-	register!("mkdir", mkdir, "mkdir(path): create one directory, or Err");
+	register!(
+		"mkdir",
+		mkdir,
+		"mkdir(path) -> Result<()>: create one directory"
+	);
 	register!(
 		"absolute",
 		absolute,
-		"absolute(path) -> String: canonicalize an existing path, or Err"
+		"absolute(path) -> Result<String>: canonicalize an existing path"
 	);
 	register!(
 		"process",
 		process,
-		"process(program, args, timeout_ms) -> #{code, stdout, stderr, timed_out, cancelled, truncated}: run a child with a deadline, bounded capture, and cancellation on Ctrl-C"
+		"process(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated}>: run a child with a deadline, bounded capture, and cancellation on Ctrl-C"
 	);
 	context.install(module)?;
 	Ok(registered)
