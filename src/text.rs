@@ -228,6 +228,7 @@ mod description_tests {
 			"host::json_parse",
 			"host::json_stringify",
 			"host::read",
+			"host::stdin",
 			"host::write_new",
 			"host::mkdir",
 			"host::absolute",

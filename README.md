@@ -29,6 +29,11 @@ goes to standard error and the script's own output to standard output.
 `--debug-source`, before the path, also prints the compiled source; anything
 after the path is the script's argument.
 
+A script given no path can read `host::stdin()`, so it can sit in a pipeline
+like any other filter. It reads the stream once, under the same eight
+mebibyte limit as `host::read`, and refuses a terminal rather than waiting
+for an end-of-file nobody is going to send.
+
 Besides `host::`, scripts and sessions have `text::`: `find`, `split_max`,
 and `group_digits`, each added because one real script needed it. Both
 modules complete and describe themselves at the prompt.

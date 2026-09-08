@@ -822,3 +822,33 @@ fn gate_0010_the_text_helpers_can_be_found_at_the_prompt() {
 	t.send(":quit\r");
 	t.wait_exit();
 }
+
+#[test]
+fn gate_0012_standard_input_is_refused_at_the_prompt_and_the_prompt_survives() {
+	// In a session the line editor owns the terminal. Reading standard input
+	// would take the characters the person is typing, so it is refused, and
+	// the refusal must not cost the session its prompt.
+	let history = history_file("stdin");
+	let mut t = Terminal::spawn(&history);
+	t.prompt();
+	t.send("host::stdin()\r");
+	t.expect("it is a terminal");
+	t.prompt();
+	// The next thing typed is still the person's own.
+	t.send("1 + 1\r");
+	t.expect("2");
+	t.prompt();
+	// It is discoverable, and its description names the result it returns.
+	t.send(":help host::stdin\r");
+	t.expect("host function");
+	t.expect("-> Result<String>");
+	t.expect("whole of standard input");
+	t.prompt();
+	// A refusal is not a consumed stream: it can be asked again and refused
+	// again, rather than reporting that it was already read.
+	t.send("host::stdin()\r");
+	t.expect("it is a terminal");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}

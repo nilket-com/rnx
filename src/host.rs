@@ -47,6 +47,40 @@ fn file_read(path: &str) -> Result<String, String> {
 	}
 	String::from_utf8(bytes).map_err(|e| about("read", path, e))
 }
+/// Whether standard input has already been consumed. The stream can only be
+/// read to its end once, and a second attempt is a mistake worth naming
+/// rather than an empty string indistinguishable from an empty stream.
+static STDIN_READ: AtomicBool = AtomicBool::new(false);
+
+/// The whole of standard input as UTF-8, under the same limit as a file.
+///
+/// A terminal is refused instead of read. In the session the line editor owns
+/// the terminal, and under `run` with no redirection reading one blocks until
+/// somebody types an end-of-file, which is indistinguishable from a hung
+/// script. A pipe, a redirected file, and a closed stream are all read.
+fn stdin_read() -> Result<String, String> {
+	// SAFETY: isatty only inspects the descriptor.
+	if unsafe { libc::isatty(libc::STDIN_FILENO) } == 1 {
+		return Err(
+			"cannot read standard input: it is a terminal; redirect a file or pipe into it"
+				.to_owned(),
+		);
+	}
+	if STDIN_READ.swap(true, Ordering::Relaxed) {
+		return Err("cannot read standard input: it has already been read".to_owned());
+	}
+	let mut bytes = Vec::new();
+	std::io::stdin()
+		.lock()
+		.take(8 * 1024 * 1024 + 1)
+		.read_to_end(&mut bytes)
+		.map_err(|e| format!("cannot read standard input: {e}"))?;
+	if bytes.len() > 8 * 1024 * 1024 {
+		return Err("cannot read standard input: it exceeds the 8 MiB limit".to_owned());
+	}
+	String::from_utf8(bytes).map_err(|e| format!("cannot read standard input: {e}"))
+}
+
 fn file_write(path: &str, text: &str) -> Result<(), String> {
 	std::fs::OpenOptions::new()
 		.write(true)
@@ -184,6 +218,11 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		"read",
 		file_read,
 		"read(path) -> Result<String>: the whole file as UTF-8, up to 8 MiB"
+	);
+	register!(
+		"stdin",
+		stdin_read,
+		"stdin() -> Result<String>: the whole of standard input as UTF-8, up to 8 MiB; Err on a terminal or a second read"
 	);
 	register!(
 		"write_new",
