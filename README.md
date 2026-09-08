@@ -1,4 +1,4 @@
-# Rune scripting and REPL feasibility spike
+# rnx: Rune scripting and REPL feasibility spike
 
 Status: spike executed 2026-09-08. This is a decision checkpoint, not a product
 commitment or a new public project's API. No compiler fork is assumed.
@@ -15,9 +15,9 @@ Baryon, Polariton or Toron and does not yet wrap upstream `rune::cli::Entry`.
 The host process implementation is Linux/Unix only.
 
 ```sh
-cargo run --locked --manifest-path plans/spikes/rune-scripting/Cargo.toml
-cargo run --locked --manifest-path plans/spikes/rune-scripting/Cargo.toml -- eval 'let x = 4; x + 3'
-cargo run --locked --manifest-path plans/spikes/rune-scripting/Cargo.toml -- repl
+cargo run --locked
+cargo run --locked -- eval 'let x = 4; x + 3'
+cargo run --locked -- repl
 ```
 
 The default command runs assertions and prints observations. The REPL accepts
@@ -31,8 +31,8 @@ For the real-window exercise, start one fresh `polariton --agents`, take its id
 from `polariton windows`, and provide a new output directory whose parent exists:
 
 ```sh
-cargo run --locked --manifest-path plans/spikes/rune-scripting/Cargo.toml -- \
-  run plans/spikes/rune-scripting/journey.rn \
+cargo run --locked -- \
+  run journey.rn \
   /absolute/path/to/polariton WINDOW_ID /absolute/path/to/data.parquet \
   /tmp/new-rune-journey first-data first-plot
 ```
