@@ -267,6 +267,14 @@ impl Session {
 	pub fn retained_units(&self) -> usize {
 		self.units.len()
 	}
+	/// Published binding names, for completion.
+	pub fn binding_names(&self) -> Vec<String> {
+		self.names.iter().cloned().collect()
+	}
+	/// Retained declaration names, for completion.
+	pub fn declaration_names(&self) -> Vec<String> {
+		self.declarations.keys().cloned().collect()
+	}
 	/// Field names of a struct the session declared, in declaration order.
 	pub fn struct_fields(&self, name: &str) -> Option<&[String]> {
 		self.declarations

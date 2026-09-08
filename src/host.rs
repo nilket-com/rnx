@@ -130,20 +130,30 @@ fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, St
 		.to_string(),
 	)
 }
-pub fn install(context: &mut Context) -> super::Result<()> {
+/// Install the host module and return the full path of every function it
+/// registered, recorded at the registration itself so completion has no
+/// second list to keep in step.
+pub fn install(context: &mut Context) -> super::Result<Vec<String>> {
 	unsafe {
 		libc::signal(libc::SIGINT, interrupt as *const () as libc::sighandler_t);
 	}
 	let mut module = Module::with_crate("host")?;
-	module.function("json_parse", json_parse).build()?;
-	module.function("json_stringify", json_stringify).build()?;
-	module.function("read", file_read).build()?;
-	module.function("write_new", file_write).build()?;
-	module.function("mkdir", mkdir).build()?;
-	module.function("absolute", absolute).build()?;
-	module.function("process", process).build()?;
+	let mut registered = Vec::new();
+	macro_rules! register {
+		($name:literal, $function:expr) => {
+			module.function($name, $function).build()?;
+			registered.push(format!("host::{}", $name));
+		};
+	}
+	register!("json_parse", json_parse);
+	register!("json_stringify", json_stringify);
+	register!("read", file_read);
+	register!("write_new", file_write);
+	register!("mkdir", mkdir);
+	register!("absolute", absolute);
+	register!("process", process);
 	context.install(module)?;
-	Ok(())
+	Ok(registered)
 }
 
 pub fn process_checks(context: &Context) -> super::Result<()> {

@@ -1,17 +1,27 @@
 //! The interactive session: a line editor over the persistent session.
+use crate::complete::{Completion, Names, complete};
 use crate::format::{Limits, render};
 use crate::session::{Completeness, Session, completeness};
 use rune::Context;
+use rustyline::completion::{Completer, Pair};
 use rustyline::error::ReadlineError;
 use rustyline::history::FileHistory;
+use rustyline::line_buffer::LineBuffer;
 use rustyline::validate::{ValidationContext, ValidationResult, Validator};
-use rustyline::{Completer, Config, Editor, Helper, Highlighter, Hinter};
+use rustyline::{Changeset, CompletionType, Config, Editor, Helper, Highlighter, Hinter};
+use std::cell::RefCell;
 use std::path::PathBuf;
+use std::rc::Rc;
 
 const PROMPT: &str = "rnx> ";
+const COMMANDS: [&str; 4] = [":quit", ":reset", ":memory", ":debug"];
 
-#[derive(Completer, Helper, Highlighter, Hinter)]
-struct RnxHelper;
+#[derive(Helper, Highlighter, Hinter)]
+struct RnxHelper {
+	/// Names the completer draws on, refreshed by the loop after every
+	/// input that can change them. Reading them runs nothing.
+	names: Rc<RefCell<Names>>,
+}
 impl Validator for RnxHelper {
 	/// Enter accepts an input when it is complete, or when the person has
 	/// abandoned it with two blank lines; otherwise Enter inserts a newline
@@ -25,6 +35,41 @@ impl Validator for RnxHelper {
 			Completeness::Complete => ValidationResult::Valid(None),
 			Completeness::Incomplete => ValidationResult::Incomplete,
 		})
+	}
+}
+impl Completer for RnxHelper {
+	type Candidate = Pair;
+	fn complete(
+		&self,
+		line: &str,
+		pos: usize,
+		_ctx: &rustyline::Context<'_>,
+	) -> rustyline::Result<(usize, Vec<Pair>)> {
+		let names = self.names.borrow();
+		Ok(match complete(line, pos, &names) {
+			Some(Completion {
+				start, candidates, ..
+			}) => (
+				start,
+				candidates
+					.into_iter()
+					.map(|c| Pair {
+						display: c.clone(),
+						replacement: c,
+					})
+					.collect(),
+			),
+			None => (pos, Vec::new()),
+		})
+	}
+	/// Replace the whole token containing the cursor, not only the part
+	/// before it, and leave the cursor after the replacement.
+	fn update(&self, line: &mut LineBuffer, start: usize, elected: &str, cl: &mut Changeset) {
+		let end = complete(line.as_str(), line.pos(), &self.names.borrow())
+			.map(|c| c.end)
+			.unwrap_or(line.pos());
+		line.replace(start..end, elected, cl);
+		line.set_pos(start + elected.len());
 	}
 }
 /// An open input ended by two blank lines in a row.
@@ -46,10 +91,26 @@ pub fn history_path() -> Option<PathBuf> {
 	Some(base.join("rnx").join("history"))
 }
 
-pub fn run(context: &Context) -> crate::Result<()> {
-	let config = Config::builder().auto_add_history(false).build();
+fn snapshot(session: &Session, host: &[String]) -> Names {
+	Names {
+		bindings: session.binding_names(),
+		declarations: session.declaration_names(),
+		host: host.to_vec(),
+		commands: COMMANDS.iter().map(|c| c.to_string()).collect(),
+	}
+}
+
+pub fn run(context: &Context, host: Vec<String>) -> crate::Result<()> {
+	let config = Config::builder()
+		.auto_add_history(false)
+		.completion_type(CompletionType::List)
+		.build();
 	let mut editor: Editor<RnxHelper, FileHistory> = Editor::with_config(config)?;
-	editor.set_helper(Some(RnxHelper));
+	let mut session = Session::new();
+	let names = Rc::new(RefCell::new(snapshot(&session, &host)));
+	editor.set_helper(Some(RnxHelper {
+		names: names.clone(),
+	}));
 	let history = history_path();
 	if let Some(path) = &history {
 		if let Some(dir) = path.parent() {
@@ -58,7 +119,6 @@ pub fn run(context: &Context) -> crate::Result<()> {
 		// Restoring history loads text only; nothing here evaluates it.
 		let _ = editor.load_history(path);
 	}
-	let mut session = Session::new();
 	let limits = Limits::default();
 	println!("rnx: a Rune session. :quit ends it, :reset clears it, :memory reports it.");
 	loop {
@@ -83,6 +143,7 @@ pub fn run(context: &Context) -> crate::Result<()> {
 			":quit" => break,
 			":reset" => {
 				session = Session::new();
+				*names.borrow_mut() = snapshot(&session, &host);
 				println!("session reset");
 				continue;
 			}
@@ -110,6 +171,8 @@ pub fn run(context: &Context) -> crate::Result<()> {
 			}
 			Err(failure) => eprintln!("{failure}"),
 		}
+		// A failed input published nothing; the snapshot is the same either way.
+		*names.borrow_mut() = snapshot(&session, &host);
 	}
 	Ok(())
 }

@@ -354,3 +354,91 @@ fn gate_5_interrupt_semantics_in_a_process_of_their_own() {
 	t.send(":quit\r");
 	t.wait_exit();
 }
+
+// Completion (record 0003). List mode: the first Tab inserts the common
+// prefix of the candidates, a second Tab lists them.
+#[test]
+fn gate_0003_completion_in_the_terminal() {
+	let history = history_file("completion");
+	let effect = history.parent().unwrap().join("effect");
+	let quoted = serde_json::to_string(&effect.to_string_lossy()).unwrap();
+	let mut t = Terminal::spawn(&history);
+	t.prompt();
+	t.send(&format!(
+		"let alpha = 1; let alphabet = 2; let boom = || host::write_new({quoted}, \"ran\");\r"
+	));
+	t.prompt();
+	// Ambiguous prefix: common prefix, then the list; then a unique one.
+	t.send("alp\t");
+	std::thread::sleep(Duration::from_millis(200));
+	t.send("\t");
+	t.expect("alphabet");
+	t.send("b\t");
+	std::thread::sleep(Duration::from_millis(200));
+	t.send("\r");
+	t.expect("2\n");
+	t.prompt();
+	// A declaration, a qualified host path, the host module listing, a command.
+	t.send("fn total(xs) { xs.len() }\r");
+	t.prompt();
+	t.send("to\t([1, 2])\r");
+	t.expect("2\n");
+	t.prompt();
+	t.send("host::wr\t");
+	std::thread::sleep(Duration::from_millis(200));
+	assert!(t.pending().contains("host::write_new"), "{}", t.pending());
+	t.send("\x03");
+	t.prompt();
+	t.send("host::\t\t");
+	t.expect("host::json_parse");
+	t.expect("host::process");
+	t.send("\x03");
+	t.prompt();
+	t.send(":me\t\r");
+	t.expect("source and map storage");
+	t.prompt();
+	// The standard library is not completed; the buffer is unchanged.
+	t.send("std::\t\t");
+	std::thread::sleep(Duration::from_millis(200));
+	assert!(!t.pending().contains("String"), "{}", t.pending());
+	t.send("\x03");
+	t.prompt();
+	// Mid-token: the whole token is replaced, the rest of the line kept.
+	t.send("alpx + 40");
+	t.send("\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D");
+	t.send("\t\r");
+	t.expect("41\n");
+	t.prompt();
+	// No execution: completing the side-effecting closure ran nothing.
+	t.send("bo\t");
+	std::thread::sleep(Duration::from_millis(200));
+	assert!(t.pending().contains("boom"), "{}", t.pending());
+	t.send("\x03");
+	t.prompt();
+	assert!(!effect.exists(), "completion executed a closure");
+	// After a failed input the name is absent; after reset only host and
+	// commands remain.
+	t.send("let gone = 1; panic!(\"x\");\r");
+	t.expect("runtime error");
+	t.prompt();
+	t.send("go\t\t");
+	std::thread::sleep(Duration::from_millis(200));
+	assert!(!t.pending().contains("gone"), "{}", t.pending());
+	t.send("\x03");
+	t.prompt();
+	t.send(":reset\r");
+	t.expect("session reset");
+	t.prompt();
+	t.send("alp\t\t");
+	std::thread::sleep(Duration::from_millis(200));
+	assert!(!t.pending().contains("alphabet"), "{}", t.pending());
+	t.send("\x03");
+	t.prompt();
+	t.send("hos\t");
+	std::thread::sleep(Duration::from_millis(200));
+	assert!(t.pending().contains("host::"), "{}", t.pending());
+	t.send("\x03");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}
