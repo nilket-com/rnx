@@ -1,11 +1,11 @@
-# rnx: Rune scripting and REPL feasibility spike
+# rnx: a scripting environment for Rune
 
-Status: spike executed 2026-09-08. This is a decision checkpoint, not a product
-commitment or a new public project's API. No compiler fork is assumed.
-
-Outcome and limitations: [evidence.md](evidence.md). The prototype executes the
-real 19-action journey from Rune and demonstrates a constrained persistent REPL
-without a compiler fork. It is not a production scripting environment.
+A runner for `.rn` files, an expression evaluator, and an interactive
+session, on upstream Rune with no compiler fork. Records: the first release
+([plans/0001](plans/0001_the_first_release.md)) and the interactive session
+([plans/0002](plans/0002_the_interactive_session.md)); evidence for each
+sits beside it. The original feasibility spike and its outcome are in
+[evidence.md](evidence.md). This is not yet a release.
 
 ## Reproduce
 
@@ -20,12 +20,22 @@ cargo run --locked -- eval 'let x = 4; x + 3'
 cargo run --locked -- repl
 ```
 
-The default command runs assertions and prints observations. The REPL accepts
-single-line inputs, `:begin`/`:end` multiline input, `:reset` and `:quit`.
-It has no line editor or completion. It supports a deliberately limited set of
-persistent declarations and bindings; unsupported declarations refuse rather
-than pretending to survive. Successful inputs publish bindings/declarations;
-failed inputs can still mutate shared values and perform external effects.
+The default command runs the spike's assertions and prints observations.
+
+`rnx repl` is a line-edited session: history with the arrow keys and
+incremental search, an input that continues on the next line while Rune's
+parser says it is unfinished (two blank lines abandon it), values rendered
+within bounds, diagnostics at the line and column typed, Ctrl-C to clear an
+input or stop a running one, Ctrl-D or `:quit` to leave. `:reset` empties
+the session, `:memory` reports what it retains, `:debug` shows the source
+generated for the last input. History is text only, kept in `$RNX_HISTORY`,
+else `$XDG_STATE_HOME/rnx/history`, else `~/.local/state/rnx/history`, and
+nothing in it runs on restore. The session supports a deliberately limited
+set of persistent declarations and bindings; unsupported declarations refuse
+rather than pretending to survive. Successful inputs publish bindings and
+declarations; failed inputs can still mutate shared values and perform
+external effects. Tests: `cargo test --locked` (the session gates run through
+a pseudo-terminal on Linux).
 
 For the real-window exercise, start one fresh `polariton --agents`, take its id
 from `polariton windows`, and provide a new output directory whose parent exists:

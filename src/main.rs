@@ -1,7 +1,9 @@
 use rune::runtime::Value;
 use rune::{Context, Source, Sources, Vm};
 use std::sync::Arc;
+mod format;
 mod host;
+mod repl;
 mod session;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -36,53 +38,21 @@ fn main() -> Result<()> {
 	host::install(&mut context)?;
 	let args: Vec<String> = std::env::args().skip(1).collect();
 	if args.first().is_some_and(|s| s == "eval") {
-		let value =
-			session::Session::new().eval(&context, args.get(1).ok_or("eval needs source")?)?;
-		println!("{}", display(&value));
+		let mut session = session::Session::new();
+		match session.eval(&context, args.get(1).ok_or("eval needs source")?) {
+			Ok(value) => println!(
+				"{}",
+				format::render(&value, Some(&session), &format::Limits::default())
+			),
+			Err(failure) => {
+				eprintln!("{failure}");
+				std::process::exit(1);
+			}
+		}
 		return Ok(());
 	}
 	if args.first().is_some_and(|s| s == "repl") {
-		use std::io::{BufRead, IsTerminal, Write};
-		let mut session = session::Session::new();
-		let terminal = std::io::stdin().is_terminal();
-		let mut pending = None::<String>;
-		if terminal {
-			print!("Rune scripting spike (:begin/:end, :reset, :quit)\n> ");
-			std::io::stdout().flush()?;
-		}
-		for line in std::io::stdin().lock().lines() {
-			let line = line?;
-			let input = match line.as_str() {
-				":quit" => break,
-				":reset" => {
-					session = session::Session::new();
-					pending = None;
-					continue;
-				}
-				":begin" => {
-					pending = Some(String::new());
-					continue;
-				}
-				":end" => pending.take().ok_or(":end without :begin")?,
-				_ => {
-					if let Some(input) = &mut pending {
-						input.push_str(&line);
-						input.push('\n');
-						continue;
-					}
-					line
-				}
-			};
-			match session.eval(&context, &input) {
-				Ok(value) => println!("{}", display(&value)),
-				Err(e) => eprintln!("{e}"),
-			}
-			if terminal {
-				print!("> ");
-				std::io::stdout().flush()?;
-			}
-		}
-		return Ok(());
+		return repl::run(&context);
 	}
 	if args.first().is_some_and(|s| s == "run") {
 		let source = std::fs::read_to_string(args.get(1).ok_or("run needs a file")?)?;

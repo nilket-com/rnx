@@ -9,6 +9,15 @@ static INTERRUPTED: AtomicBool = AtomicBool::new(false);
 extern "C" fn interrupt(_: libc::c_int) {
 	INTERRUPTED.store(true, Ordering::Relaxed);
 }
+/// Whether Ctrl-C arrived since the flag was last cleared.
+pub fn interrupted() -> bool {
+	INTERRUPTED.load(Ordering::Relaxed)
+}
+/// Cleared by the session before each evaluation, so an interrupt that
+/// arrived at the prompt never cancels the next input.
+pub fn clear_interrupt() {
+	INTERRUPTED.store(false, Ordering::Relaxed);
+}
 
 fn error(e: impl std::fmt::Display) -> String {
 	e.to_string()
@@ -76,7 +85,6 @@ fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, St
 	if timeout_ms == 0 || timeout_ms > 90_000 {
 		return Err("deadline must be 1..90000 ms".into());
 	}
-	INTERRUPTED.store(false, Ordering::Relaxed);
 	let mut child = Command::new(program)
 		.args(args)
 		.stdin(Stdio::null())
