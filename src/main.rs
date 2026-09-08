@@ -6,6 +6,7 @@ mod format;
 mod host;
 mod inspect;
 mod memory;
+mod method;
 mod repl;
 mod runner;
 mod session;

@@ -165,7 +165,11 @@ pub fn run(context: &Context, path: &str, arguments: Value, debug_source: bool) 
 	let value = match outcome {
 		Ok(value) => value,
 		Err(error) => {
+			// Rune reports a missing method by hash. Record 0014 recovers
+			// the name when it can be proved, and leaves the message alone
+			// when it cannot.
 			let message = error.to_string();
+			let message = crate::method::named(&message, &text).unwrap_or(message);
 			match fault_offset(&error, &unit) {
 				Some(offset) => located("runtime error", path, &text, offset, &message),
 				// A halt for want of budget carries no location, and saying so

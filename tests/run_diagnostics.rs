@@ -236,3 +236,124 @@ fn a_fault_with_no_resolvable_place_says_so() {
 		"{stderr}"
 	);
 }
+
+#[test]
+fn a_missing_method_is_named_rather_than_hashed() {
+	// The second port's own case. Rune reports a hash; record 0014 recovers
+	// the name by proving it, and the hash does not reach the reader.
+	let ran = run("pub fn main(args) {\n\tlet parts = [\"a\", \"b\"];\n\tparts.join(\"-\")\n}\n");
+	assert_eq!(ran.code, 1);
+	assert!(
+		ran.stderr.contains("no method `join` on `::std::vec::Vec`"),
+		"{}",
+		ran.stderr
+	);
+	assert!(!ran.stderr.contains("0x"), "{}", ran.stderr);
+	assert!(
+		!ran.stderr.contains("Missing instance function"),
+		"{}",
+		ran.stderr
+	);
+	// Record 0009's place is untouched: the file, the line, the column, the
+	// source line, and the caret.
+	let expected = format!("runtime error at {}, line 3, column 2:", ran.path);
+	assert!(ran.stderr.contains(&expected), "{}", ran.stderr);
+	assert!(ran.stderr.contains("parts.join(\"-\")"), "{}", ran.stderr);
+	assert!(ran.stderr.contains('^'), "{}", ran.stderr);
+}
+
+#[test]
+fn a_chain_names_the_method_that_failed_not_the_first_one() {
+	// The fault position points at the receiver, so the first method name in
+	// the line is `to_uppercase`, which exists. The one that is missing is
+	// `frobnicate`, and only hashing the candidates tells them apart.
+	let ran = run("pub fn main(args) {\n\t\"abc\".to_uppercase().frobnicate()\n}\n");
+	assert_eq!(ran.code, 1);
+	assert!(
+		ran.stderr
+			.contains("no method `frobnicate` on `::std::string::String`"),
+		"{}",
+		ran.stderr
+	);
+	assert!(
+		!ran.stderr.contains("to_uppercase`"),
+		"the first name in the line was named: {}",
+		ran.stderr
+	);
+}
+
+#[test]
+fn a_type_outside_the_map_keeps_the_message_rune_produced() {
+	// `::std::object::Values` is an iterator type rnx has no entry for, so
+	// there is nothing to hash against and the message is left alone. This
+	// also pins the upstream shape that the rewrite parses: if Rune stops
+	// rendering a missing method this way, this test fails rather than the
+	// rewrite silently falling back for ever.
+	let ran = run("pub fn main(args) {\n\tlet counts = #{};\n\tcounts.values().frobnicate()\n}\n");
+	assert_eq!(ran.code, 1);
+	assert!(
+		ran.stderr.contains("Missing instance function `0x"),
+		"the upstream message shape changed: {}",
+		ran.stderr
+	);
+	assert!(ran.stderr.contains("` for `"), "{}", ran.stderr);
+	assert!(!ran.stderr.contains("no method"), "{}", ran.stderr);
+	// The place is still given, so the fallback loses the sentence and
+	// nothing else.
+	assert!(ran.stderr.contains(", line 3, "), "{}", ran.stderr);
+	assert!(ran.stderr.contains('^'), "{}", ran.stderr);
+}
+
+#[test]
+fn a_panic_that_quotes_the_diagnostic_is_still_a_panic() {
+	// The rewrite recognises the fault by the whole message, not by finding
+	// the pattern inside one. The candidate here is a real call in real code,
+	// not a name in a comment, so its hash does match: what stops the rewrite
+	// is that a panic is not a missing method.
+	let ran = run(
+		"pub fn main(_) {\n\tlet parts = [\"a\"];\n\tif parts.len() == 1 {\n\t\tpanic!(\"Missing instance function `0xf77d93259f11131a` for `::std::vec::Vec`\");\n\t}\n\tparts.join(\"-\")\n}\n",
+	);
+	assert_eq!(ran.code, 1);
+	assert!(ran.stderr.contains("Panicked:"), "{}", ran.stderr);
+	assert!(
+		!ran.stderr.contains("no method"),
+		"a panic was rewritten as a missing method: {}",
+		ran.stderr
+	);
+	// The same script reaches a real missing method when it does not panic,
+	// which is what makes the case above a discriminating one rather than a
+	// script with nothing to find.
+	let ran = run("pub fn main(_) {\n\tlet parts = [\"a\"];\n\tparts.join(\"-\")\n}\n");
+	assert!(
+		ran.stderr.contains("no method `join` on `::std::vec::Vec`"),
+		"{}",
+		ran.stderr
+	);
+}
+
+#[test]
+fn a_comment_between_the_dot_and_the_name_does_not_hide_the_method() {
+	// The candidates come from Rune's tokens, so whatever the compiler
+	// ignores between the dot and the name is ignored here as well.
+	for source in [
+		"pub fn main(_) {\n\tlet parts = [];\n\tparts . /* ordinary comment */ join(\"-\")\n}\n",
+		"pub fn main(_) {\n\tlet parts = [];\n\tparts\n\t\t// a line comment\n\t\t.join(\"-\")\n}\n",
+	] {
+		let ran = run(source);
+		assert_eq!(ran.code, 1);
+		assert!(
+			ran.stderr.contains("no method `join` on `::std::vec::Vec`"),
+			"{}",
+			ran.stderr
+		);
+		assert!(!ran.stderr.contains("0x"), "{}", ran.stderr);
+	}
+	// An identifier beyond ASCII is an identifier.
+	let ran = run("pub fn main(_) {\n\tlet café = [];\n\tcafé.método(\"x\")\n}\n");
+	assert!(
+		ran.stderr
+			.contains("no method `método` on `::std::vec::Vec`"),
+		"{}",
+		ran.stderr
+	);
+}

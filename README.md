@@ -24,7 +24,8 @@ The default command runs the spike's assertions and prints observations.
 
 `rnx run <file.rn> [args]` executes a file's `main`. A compile or runtime
 error names the file, the line, the column, the source line, and marks the
-column, including for an error inside a called function; every diagnostic
+column, including for an error inside a called function; a call to a method
+that does not exist names the method rather than the hash Rune reports; every diagnostic
 goes to standard error and the script's own output to standard output.
 `--debug-source`, before the path, also prints the compiled source; anything
 after the path is the script's argument.
