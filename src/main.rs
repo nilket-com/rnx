@@ -1,6 +1,7 @@
 use rune::runtime::Value;
 use rune::{Context, Source, Sources, Vm};
 use std::sync::Arc;
+mod complete;
 mod format;
 mod host;
 mod repl;
@@ -35,7 +36,7 @@ fn display(value: &Value) -> String {
 
 fn main() -> Result<()> {
 	let mut context = Context::with_default_modules()?;
-	host::install(&mut context)?;
+	let host_functions = host::install(&mut context)?;
 	let args: Vec<String> = std::env::args().skip(1).collect();
 	if args.first().is_some_and(|s| s == "eval") {
 		let mut session = session::Session::new();
@@ -52,7 +53,7 @@ fn main() -> Result<()> {
 		return Ok(());
 	}
 	if args.first().is_some_and(|s| s == "repl") {
-		return repl::run(&context);
+		return repl::run(&context, host_functions);
 	}
 	if args.first().is_some_and(|s| s == "run") {
 		let source = std::fs::read_to_string(args.get(1).ok_or("run needs a file")?)?;

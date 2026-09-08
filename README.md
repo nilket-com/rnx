@@ -26,7 +26,8 @@ The default command runs the spike's assertions and prints observations.
 incremental search, an input that continues on the next line while Rune's
 parser says it is unfinished (two blank lines abandon it), values rendered
 within bounds, diagnostics at the line and column typed, Ctrl-C to clear an
-input or stop a running one, Ctrl-D or `:quit` to leave. `:reset` empties
+input or stop a running one, Tab to complete a binding, a declaration, a
+`host::` function path, or a command, Ctrl-D or `:quit` to leave. `:reset` empties
 the session, `:memory` reports what it retains, `:debug` shows the source
 generated for the last input. History is text only, kept in `$RNX_HISTORY`,
 else `$XDG_STATE_HOME/rnx/history`, else `~/.local/state/rnx/history`, and
