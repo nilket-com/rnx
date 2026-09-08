@@ -68,12 +68,23 @@ fn main() -> Result<()> {
 		let source = std::fs::read_to_string(args.get(1).ok_or("run needs a file")?)?;
 		let arguments = serde_json::from_str(&serde_json::to_string(&args[2..])?)?;
 		let value = call(&context, &source, arguments)?;
+		// A script that returns unit prints nothing, as an input that produces
+		// unit prints nothing in the session.
+		let show = |value: &Value| {
+			// Unit is recognised by the value's own type, not by what it
+			// serialises to: `None` serialises to null as well, and it is not
+			// unit and still prints.
+			if matches!(value.as_type_value(), Ok(rune::runtime::TypeValue::Unit)) {
+				return;
+			}
+			println!("{}", display(value));
+		};
 		match rune::from_value::<std::result::Result<Value, Value>>(value.clone()) {
-			Ok(Ok(value)) => println!("{}", display(&value)),
+			Ok(Ok(value)) => show(&value),
 			Ok(Err(error)) => {
 				return Err(format!("script returned Err: {}", display(&error)).into());
 			}
-			Err(_) => println!("{}", display(&value)),
+			Err(_) => show(&value),
 		}
 		return Ok(());
 	}
