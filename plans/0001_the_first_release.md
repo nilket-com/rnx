@@ -103,20 +103,25 @@ promised to run unchanged as a sequence of session inputs.
 ### 3. Retained memory has a limit and a measured reset
 
 A session accounts for the units and values it retains. It reports its
-retained size on request, refuses to retain past a configured bound with a
-message that names `:reset`, and `:reset` is measured: the release's
-evidence shows retained memory after reset returning to the empty session's
-baseline for the cases the session supports, or states exactly which cases
-do not reclaim and why. The bound is enforced as follows. What is charged
-is the size of every retained unit and every value reachable from a
-published binding, measured after each successful input. An input that
-grows an already-retained object before failing has already grown it;
-refusing its bindings cannot undo that growth, so the session also checks
-the charge after a failed input. When the charge exceeds the bound, the
-session stops retaining: it refuses every further input that would publish
-a binding or a declaration, with a message that names `:reset`, until
-`:reset` runs. Inputs that publish nothing still run. A retained-memory
-number is acceptance work in this release, not polish.
+retained size on the `:memory` command, refuses to retain past a configured
+bound with a message that names `:reset`, and `:reset` is measured: the
+release's evidence shows retained memory after reset returning to the empty
+session's baseline for the cases the session supports, or states exactly
+which cases do not reclaim and why. The bound is enforced as follows. What
+is charged is the size of every retained unit and every value reachable
+from a published binding, measured after each successful input. An input
+that grows an already-retained object before failing has already grown
+it; refusing its bindings cannot undo that growth, so the session also
+checks the charge after a failed input. The bound is a post-evaluation
+threshold: once the charge exceeds it, the session refuses every further
+Rune evaluation, whether or not the input would publish anything, with
+a message that names `:reset`, until `:reset` runs. Host-side commands
+that inspect the session and `:reset` itself still work. An input that
+publishes nothing can still grow retained memory through a shared handle,
+which is why evaluation stops rather than publication alone. This is not
+a hard allocation limit: the input that crosses the threshold completes
+before the check runs. A retained-memory number is acceptance work in this
+release, not polish.
 
 ### 4. Processes are cancelled on three platforms
 
@@ -191,9 +196,9 @@ second release.
    closures reports its retained size, is refused past the bound with the
    message, and measures reset against the empty baseline; an input that
    grows a retained vector past the bound and then fails leaves the session
-   over the bound, refusing bindings until `:reset`, while an input that
-   publishes nothing still runs; the cases that do not reclaim are listed
-   with the reason.
+   over the bound, refusing every further evaluation until `:reset`, while
+   `:memory` and `:reset` still work; the cases that do not reclaim are
+   listed with the reason.
 4. **Cancellation on three platforms.** A child that exits nonzero, one
    that outlives its deadline with a sleeping descendant, one whose output
    exceeds the capture, one interrupted while waited on, and one whose
