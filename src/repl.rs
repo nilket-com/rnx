@@ -122,13 +122,122 @@ fn snapshot(session: &Session, host: &[HostFunction]) -> Names {
 	}
 }
 
+/// What handling one input asks the loop to do next.
+enum Outcome {
+	Continue,
+	Reset,
+	Quit,
+}
+
+/// The ceiling on tracked live allocation request bytes: `RNX_MEMORY_CEILING`
+/// if it parses, else the session's default.
+fn ceiling() -> usize {
+	std::env::var("RNX_MEMORY_CEILING")
+		.ok()
+		.and_then(|value| value.trim().parse().ok())
+		.unwrap_or(crate::session::DEFAULT_CEILING)
+}
+
+/// What `:memory` prints. A build with accounting compiled out says so rather
+/// than reporting a figure of zero or a ceiling it does not enforce.
+fn memory_report(session: &Session) -> String {
+	let source = format!(
+		"source and map storage: {} bytes (inputs, declarations, and {} units with their source maps)",
+		session.retained_bytes(),
+		session.retained_units()
+	);
+	let Some(live) = crate::memory::live() else {
+		return format!(
+			"allocation accounting is disabled in this build: no figure is tracked and no ceiling is enforced.\n{source}\n"
+		);
+	};
+	let baseline = crate::memory::baseline();
+	let net = baseline.map(|b| live as i128 - b as i128);
+	format!(
+		"tracked live allocation request bytes: {live} of a ceiling of {}{}.\n{}{}\n{source}\nThe figure counts requests through Rust's global allocator only. It excludes native allocations outside it, memory mappings, thread stacks, and child processes, it is not resident memory, and it is not the session's share of anything.\n",
+		session.ceiling(),
+		if session.over_ceiling() {
+			"; evaluation is refused until :reset samples below it"
+		} else {
+			""
+		},
+		baseline
+			.map(|b| format!("startup reference point: {b} bytes"))
+			.unwrap_or_else(|| "startup reference point: not recorded".to_owned()),
+		net.map(|n| format!("; net change since: {n:+} bytes"))
+			.unwrap_or_default(),
+	)
+}
+
+/// Handle one input. Every disposable thing it makes is dropped when it
+/// returns, which is what lets the loop sample afterwards.
+fn handle(
+	session: &mut Session,
+	context: &Context,
+	host: &[HostFunction],
+	input: &str,
+	limits: &Limits,
+	inspect_limits: &InspectLimits,
+) -> Outcome {
+	if abandoned(input) {
+		println!("(input abandoned; it is in history)");
+		return Outcome::Continue;
+	}
+	// A command is the first word; `:help` takes the rest as its argument.
+	let trimmed = input.trim();
+	let (command, argument) = match trimmed.split_once(char::is_whitespace) {
+		Some((command, argument)) => (command, Some(argument)),
+		None => (trimmed, None),
+	};
+	match command {
+		":quit" => return Outcome::Quit,
+		":reset" => {
+			*session = Session::with_ceiling(session.ceiling());
+			println!("session reset");
+			return Outcome::Reset;
+		}
+		":memory" => {
+			print!("{}", memory_report(session));
+			return Outcome::Continue;
+		}
+		":debug" => {
+			println!("{}", session.last_generated());
+			return Outcome::Continue;
+		}
+		// Both read the session and run nothing, so both answer even when the
+		// ceiling has been reached and evaluation is refused.
+		":vars" => {
+			print!("{}", inspect::vars(session, inspect_limits));
+			return Outcome::Continue;
+		}
+		":help" => {
+			print!(
+				"{}",
+				inspect::help(session, host, &COMMANDS, argument, inspect_limits)
+			);
+			return Outcome::Continue;
+		}
+		_ => {}
+	}
+	match session.eval(context, input) {
+		Ok(value) => {
+			let text = render(&value, Some(session), limits);
+			if text != "()" {
+				println!("{text}");
+			}
+		}
+		Err(failure) => eprintln!("{failure}"),
+	}
+	Outcome::Continue
+}
+
 pub fn run(context: &Context, host: Vec<HostFunction>) -> crate::Result<()> {
 	let config = Config::builder()
 		.auto_add_history(false)
 		.completion_type(CompletionType::List)
 		.build();
 	let mut editor: Editor<RnxHelper, FileHistory> = Editor::with_config(config)?;
-	let mut session = Session::new();
+	let mut session = Session::with_ceiling(ceiling());
 	let names = Rc::new(RefCell::new(snapshot(&session, &host)));
 	editor.set_helper(Some(RnxHelper {
 		names: names.clone(),
@@ -144,6 +253,10 @@ pub fn run(context: &Context, host: Vec<HostFunction>) -> crate::Result<()> {
 	let limits = Limits::default();
 	let inspect_limits = InspectLimits::default();
 	println!("rnx: a Rune session. :help lists the commands, :quit ends it.");
+	// The reference point, and the first sample, after initialization and
+	// history loading and before the first evaluation is admitted.
+	crate::memory::record_baseline();
+	session.sample();
 	loop {
 		let input = match editor.readline(PROMPT) {
 			Ok(line) => line,
@@ -158,63 +271,33 @@ pub fn run(context: &Context, host: Vec<HostFunction>) -> crate::Result<()> {
 		if let Some(path) = &history {
 			let _ = editor.append_history(path);
 		}
-		if abandoned(&input) {
-			println!("(input abandoned; it is in history)");
-			continue;
-		}
-		// A command is the first word; `:help` takes the rest as its argument.
-		let trimmed = input.trim();
-		let (command, argument) = match trimmed.split_once(char::is_whitespace) {
-			Some((command, argument)) => (command, Some(argument)),
-			None => (trimmed, None),
-		};
-		match command {
-			":quit" => break,
-			":reset" => {
-				session = Session::new();
-				*names.borrow_mut() = snapshot(&session, &host);
-				println!("session reset");
-				continue;
-			}
-			":memory" => {
-				println!(
-					"source and map storage: {} bytes of {} (inputs, declarations, {} units and their source maps). Values held by bindings and compiled unit storage are not measured; the first release record's memory gate is still open.",
-					session.retained_bytes(),
-					session.bound(),
-					session.retained_units()
-				);
-				continue;
-			}
-			":debug" => {
-				println!("{}", session.last_generated());
-				continue;
-			}
-			// Both read the session and run nothing, so both answer even when
-			// the session is over its bound and evaluation is refused.
-			":vars" => {
-				print!("{}", inspect::vars(&session, &inspect_limits));
-				continue;
-			}
-			":help" => {
-				print!(
-					"{}",
-					inspect::help(&session, &host, &COMMANDS, argument, &inspect_limits)
-				);
-				continue;
-			}
+		let outcome = handle(
+			&mut session,
+			context,
+			&host,
+			&input,
+			&limits,
+			&inspect_limits,
+		);
+		// The input buffer is disposable too, and the record excludes it from
+		// the sample, so it goes before the sample rather than at the end of
+		// the iteration.
+		drop(input);
+		// Everything else disposable the input made is gone by here. The completion
+		// snapshot is refreshed first, because it is state the session keeps,
+		// and then one sample covers this command, whichever kind it was: an
+		// evaluation, an inspection command, a reset, or an abandoned input.
+		// A failed input published nothing, so the snapshot is the same either
+		// way.
+		*names.borrow_mut() = snapshot(&session, &host);
+		session.sample();
+		match outcome {
+			Outcome::Quit => break,
+			Outcome::Reset if session.over_ceiling() => println!(
+				"still at or above the ceiling after the reset; evaluation stays refused and restarting rnx may be necessary"
+			),
 			_ => {}
 		}
-		match session.eval(context, &input) {
-			Ok(value) => {
-				let text = render(&value, Some(&session), &limits);
-				if text != "()" {
-					println!("{text}");
-				}
-			}
-			Err(failure) => eprintln!("{failure}"),
-		}
-		// A failed input published nothing; the snapshot is the same either way.
-		*names.borrow_mut() = snapshot(&session, &host);
 	}
 	Ok(())
 }

@@ -17,6 +17,10 @@ pub const SLICE: usize = 10_000;
 /// ten seconds of pure Rune execution, not the way to stop an input; Ctrl-C
 /// is, at every slice boundary.
 pub const BUDGET: usize = 2_000_000_000;
+/// The ceiling on tracked live allocation request bytes, unless configured
+/// otherwise. Generous enough that ordinary work never meets it, small
+/// enough that a runaway session stops before the machine notices.
+pub const DEFAULT_CEILING: usize = 512 * 1024 * 1024;
 /// Longest accepted input.
 const INPUT_CAP: usize = 32 * 1024;
 
@@ -50,8 +54,9 @@ pub enum Failure {
 	Interrupted,
 	/// The instruction budget for one input ran out.
 	Budget(usize),
-	/// Retained memory is over the bound; only `:reset` and inspection work.
-	OverBound { retained: usize, bound: usize },
+	/// Tracked live allocation request bytes are at or above the ceiling;
+	/// only `:reset` and inspection work until a reset samples below it.
+	OverCeiling { live: usize, ceiling: usize },
 }
 impl std::fmt::Display for Failure {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -61,9 +66,9 @@ impl std::fmt::Display for Failure {
 			Failure::Runtime { message, origin } => located(f, "runtime error", message, origin),
 			Failure::Interrupted => write!(f, "interrupted"),
 			Failure::Budget(n) => write!(f, "halted: {n} instructions exceeded"),
-			Failure::OverBound { retained, bound } => write!(
+			Failure::OverCeiling { live, ceiling } => write!(
 				f,
-				"retained memory {retained} bytes exceeds the bound of {bound}; :reset to continue"
+				"tracked live allocation request bytes {live} are at or above the ceiling of {ceiling}; :reset to continue"
 			),
 		}
 	}
@@ -218,14 +223,18 @@ pub struct Session {
 	inputs: Vec<String>,
 	units: Vec<Retained>,
 	last_generated: String,
-	bound: usize,
+	ceiling: usize,
+	/// Latched once a sample finds the figure at or above the ceiling. Only a
+	/// fresh session, from `:reset`, can start unlatched, and its first sample
+	/// latches it again if the figure is still there.
+	over_ceiling: bool,
 	budget: usize,
 }
 impl Session {
 	pub fn new() -> Self {
-		Self::with_bound(64 * 1024 * 1024)
+		Self::with_ceiling(DEFAULT_CEILING)
 	}
-	pub fn with_bound(bound: usize) -> Self {
+	pub fn with_ceiling(ceiling: usize) -> Self {
 		Self {
 			declarations: BTreeMap::new(),
 			names: BTreeSet::new(),
@@ -233,7 +242,8 @@ impl Session {
 			inputs: Vec::new(),
 			units: Vec::new(),
 			last_generated: String::new(),
-			bound,
+			ceiling,
+			over_ceiling: false,
 			budget: BUDGET,
 		}
 	}
@@ -261,8 +271,23 @@ impl Session {
 	pub fn set_budget(&mut self, budget: usize) {
 		self.budget = budget;
 	}
-	pub fn bound(&self) -> usize {
-		self.bound
+	pub fn ceiling(&self) -> usize {
+		self.ceiling
+	}
+	/// Whether evaluation is refused because a sample found the figure at or
+	/// above the ceiling.
+	pub fn over_ceiling(&self) -> bool {
+		self.over_ceiling
+	}
+	/// Take one sample of tracked live allocation request bytes and latch the
+	/// refusal if it is at or above the ceiling. Returns the figure, or `None`
+	/// in a build with accounting compiled out, where no ceiling is enforced.
+	pub fn sample(&mut self) -> Option<usize> {
+		let live = super::memory::live()?;
+		if live >= self.ceiling {
+			self.over_ceiling = true;
+		}
+		Some(live)
 	}
 	pub fn retained_units(&self) -> usize {
 		self.units.len()
@@ -331,10 +356,10 @@ impl Session {
 	}
 
 	pub fn eval(&mut self, context: &Context, input: &str) -> std::result::Result<Value, Failure> {
-		if self.retained_bytes() > self.bound {
-			return Err(Failure::OverBound {
-				retained: self.retained_bytes(),
-				bound: self.bound,
+		if self.over_ceiling {
+			return Err(Failure::OverCeiling {
+				live: super::memory::live().unwrap_or(0),
+				ceiling: self.ceiling,
 			});
 		}
 		if input.len() > INPUT_CAP {
@@ -945,19 +970,25 @@ mod tests {
 	}
 
 	#[test]
-	fn over_bound_refuses_evaluation_but_not_inspection() {
+	fn over_the_ceiling_refuses_evaluation_but_not_inspection() {
 		let context = context();
-		let mut session = Session::with_bound(200);
+		// A ceiling of one byte: any sample is at or above it, so the latch
+		// trips without depending on what the rest of the process allocated.
+		let mut session = Session::with_ceiling(1);
 		session.eval(&context, "let a = 1;").unwrap();
-		session
-			.eval(
-				&context,
-				"let b = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];",
-			)
-			.unwrap();
+		// Unlatched until a sample says so: the ceiling is not checked during
+		// an input, only after one.
+		assert!(!session.over_ceiling());
+		assert!(session.sample().is_some());
+		assert!(session.over_ceiling());
 		let failure = session.eval(&context, "a").unwrap_err();
-		assert!(matches!(failure, Failure::OverBound { .. }), "{failure:?}");
-		assert!(session.retained_bytes() > 200);
+		assert!(
+			matches!(failure, Failure::OverCeiling { .. }),
+			"{failure:?}"
+		);
+		// The latch holds without re-testing, and inspection still answers.
+		assert!(session.eval(&context, "a").is_err());
+		assert!(session.retained_bytes() > 0);
 		assert!(!session.last_generated().is_empty());
 	}
 }

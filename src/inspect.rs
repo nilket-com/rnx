@@ -483,20 +483,17 @@ mod tests {
 	}
 
 	#[test]
-	fn both_commands_answer_when_the_session_is_over_its_bound() {
+	fn both_commands_answer_when_the_session_is_over_its_ceiling() {
 		let context = context();
 		let host = host();
-		let mut session = Session::with_bound(200);
+		// A ceiling of one byte: any sample is at or above it, so the latch
+		// trips without depending on what the process has allocated.
+		let mut session = Session::with_ceiling(1);
 		session.eval(&context, "let kept = 1;").unwrap();
-		session
-			.eval(
-				&context,
-				"let filler = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];",
-			)
-			.unwrap();
+		session.sample();
 		assert!(
 			session.eval(&context, "kept").is_err(),
-			"expected the bound to refuse evaluation"
+			"expected the ceiling to refuse evaluation"
 		);
 		let limits = InspectLimits::default();
 		assert!(vars(&session, &limits).contains("kept: i64 = 1"));

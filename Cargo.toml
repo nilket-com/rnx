@@ -7,6 +7,12 @@ publish = false
 # Deliberately independent of the product workspace and its editor/GUI hosts.
 [workspace]
 
+[features]
+default = ["count-allocations"]
+# Allocation accounting. Without it no ceiling is enforced and no figure is
+# reported; the build says so rather than reporting zero.
+count-allocations = []
+
 [dependencies]
 rune = { version = "=0.14.1", default-features = false, features = ["std"] }
 serde_json = "1.0.149"
