@@ -267,6 +267,53 @@ impl Session {
 	pub fn retained_units(&self) -> usize {
 		self.units.len()
 	}
+	/// How many bindings are published. The count of published names, which
+	/// the session already keeps, so asking costs nothing.
+	pub fn binding_count(&self) -> usize {
+		self.names.len()
+	}
+	/// Visit published bindings in name order until `visit` returns false,
+	/// and report how many were visited. Nothing is cloned and no binding
+	/// past the caller's stopping point is looked up, so a caller that shows
+	/// a few does work for a few. Reading a value is structural: nothing is
+	/// evaluated.
+	pub fn visit_bindings(&self, mut visit: impl FnMut(&str, &Value) -> bool) -> usize {
+		let Ok(object) = self.state.borrow_ref::<rune::runtime::Object>() else {
+			return 0;
+		};
+		let mut visited = 0;
+		for name in &self.names {
+			let Some(value) = object.get(name.as_str()) else {
+				continue;
+			};
+			visited += 1;
+			if !visit(name, value) {
+				break;
+			}
+		}
+		visited
+	}
+	/// One published binding's value, or `None` if the session has no such
+	/// binding.
+	pub fn binding(&self, name: &str) -> Option<Value> {
+		if !self.names.contains(name) {
+			return None;
+		}
+		let object = self.state.borrow_ref::<rune::runtime::Object>().ok()?;
+		object.get(name).cloned()
+	}
+	/// One retained declaration: its kind and the source last entered for it.
+	pub fn declaration(&self, name: &str) -> Option<(&'static str, &str)> {
+		let declaration = self.declarations.get(name)?;
+		let kind = if !declaration.is_type {
+			"function"
+		} else if declaration.source.starts_with("struct") {
+			"struct"
+		} else {
+			"enum"
+		};
+		Some((kind, declaration.source.as_str()))
+	}
 	/// Published binding names, for completion.
 	pub fn binding_names(&self) -> Vec<String> {
 		self.names.iter().cloned().collect()

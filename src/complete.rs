@@ -292,7 +292,11 @@ mod host_source_tests {
 	#[test]
 	fn host_candidates_are_the_registered_functions() {
 		let mut context = rune::Context::with_default_modules().unwrap();
-		let registered = crate::host::install(&mut context).unwrap();
+		let registered: Vec<String> = crate::host::install(&mut context)
+			.unwrap()
+			.into_iter()
+			.map(|f| f.path)
+			.collect();
 		assert_eq!(registered.len(), 7);
 		let names = super::Names {
 			host: registered.clone(),

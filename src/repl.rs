@@ -1,6 +1,8 @@
 //! The interactive session: a line editor over the persistent session.
 use crate::complete::{Completion, Names, complete};
 use crate::format::{Limits, render};
+use crate::host::HostFunction;
+use crate::inspect::{self, InspectLimits};
 use crate::session::{Completeness, Session, completeness};
 use rune::Context;
 use rustyline::completion::{Completer, Pair};
@@ -14,7 +16,27 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 const PROMPT: &str = "rnx> ";
-const COMMANDS: [&str; 4] = [":quit", ":reset", ":memory", ":debug"];
+
+/// The session's commands and their one-line descriptions, which are what
+/// `:help` shows: the description lives with the command, not in a second
+/// catalogue.
+pub const COMMANDS: [(&str, &str); 6] = [
+	(":quit", "end the session"),
+	(
+		":reset",
+		"empty the session: bindings, declarations, and retained units",
+	),
+	(
+		":memory",
+		"report source and map storage against the session's bound",
+	),
+	(":debug", "show the source generated for the last input"),
+	(":vars", "list the bindings with their types and values"),
+	(
+		":help",
+		"describe one name, or with no argument list these commands",
+	),
+];
 
 #[derive(Helper, Highlighter, Hinter)]
 struct RnxHelper {
@@ -91,16 +113,16 @@ pub fn history_path() -> Option<PathBuf> {
 	Some(base.join("rnx").join("history"))
 }
 
-fn snapshot(session: &Session, host: &[String]) -> Names {
+fn snapshot(session: &Session, host: &[HostFunction]) -> Names {
 	Names {
 		bindings: session.binding_names(),
 		declarations: session.declaration_names(),
-		host: host.to_vec(),
-		commands: COMMANDS.iter().map(|c| c.to_string()).collect(),
+		host: host.iter().map(|f| f.path.clone()).collect(),
+		commands: COMMANDS.iter().map(|(c, _)| c.to_string()).collect(),
 	}
 }
 
-pub fn run(context: &Context, host: Vec<String>) -> crate::Result<()> {
+pub fn run(context: &Context, host: Vec<HostFunction>) -> crate::Result<()> {
 	let config = Config::builder()
 		.auto_add_history(false)
 		.completion_type(CompletionType::List)
@@ -120,7 +142,8 @@ pub fn run(context: &Context, host: Vec<String>) -> crate::Result<()> {
 		let _ = editor.load_history(path);
 	}
 	let limits = Limits::default();
-	println!("rnx: a Rune session. :quit ends it, :reset clears it, :memory reports it.");
+	let inspect_limits = InspectLimits::default();
+	println!("rnx: a Rune session. :help lists the commands, :quit ends it.");
 	loop {
 		let input = match editor.readline(PROMPT) {
 			Ok(line) => line,
@@ -139,7 +162,13 @@ pub fn run(context: &Context, host: Vec<String>) -> crate::Result<()> {
 			println!("(input abandoned; it is in history)");
 			continue;
 		}
-		match input.trim() {
+		// A command is the first word; `:help` takes the rest as its argument.
+		let trimmed = input.trim();
+		let (command, argument) = match trimmed.split_once(char::is_whitespace) {
+			Some((command, argument)) => (command, Some(argument)),
+			None => (trimmed, None),
+		};
+		match command {
 			":quit" => break,
 			":reset" => {
 				session = Session::new();
@@ -158,6 +187,19 @@ pub fn run(context: &Context, host: Vec<String>) -> crate::Result<()> {
 			}
 			":debug" => {
 				println!("{}", session.last_generated());
+				continue;
+			}
+			// Both read the session and run nothing, so both answer even when
+			// the session is over its bound and evaluation is refused.
+			":vars" => {
+				print!("{}", inspect::vars(&session, &inspect_limits));
+				continue;
+			}
+			":help" => {
+				print!(
+					"{}",
+					inspect::help(&session, &host, &COMMANDS, argument, &inspect_limits)
+				);
 				continue;
 			}
 			_ => {}

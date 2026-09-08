@@ -357,8 +357,45 @@ impl Renderer<'_> {
 		self.push("}");
 	}
 }
-/// The last path component of an item, `Boxed` for `::Boxed`.
-fn type_name(item: String) -> String {
+/// Text made safe to print on a terminal: control characters are escaped,
+/// escape included, while newlines and tabs are kept so source stays
+/// readable. Stored text a command prints goes through here; values go
+/// through the renderer, which quotes and escapes them.
+///
+/// Escape into `out`, stopping once `budget` bytes have been written, and
+/// return how many bytes of `text` were consumed. Nothing beyond the budget
+/// is examined or copied, so escaping a huge source for a small budget is
+/// work proportional to the budget, not to the source.
+pub fn terminal_safe_into(text: &str, budget: usize, out: &mut String) -> usize {
+	let mut consumed = 0;
+	let mut written = 0;
+	let mut buffer = [0u8; 4];
+	let mut escape = String::new();
+	for c in text.chars() {
+		let piece: &str = match c {
+			'\n' | '\t' => c.encode_utf8(&mut buffer),
+			c if c.is_control() => {
+				escape.clear();
+				use std::fmt::Write;
+				let _ = write!(escape, "\\u{{{:x}}}", c as u32);
+				escape.as_str()
+			}
+			c => c.encode_utf8(&mut buffer),
+		};
+		if written + piece.len() > budget {
+			break;
+		}
+		out.push_str(piece);
+		written += piece.len();
+		consumed += c.len_utf8();
+	}
+	consumed
+}
+
+/// The last path component of an item, `Boxed` for `::Boxed`, and `Vec` for
+/// `::std::vec::Vec`. Shared with the inspection commands so a type reads
+/// the same wherever it is shown.
+pub fn type_name(item: String) -> String {
 	item.rsplit("::").next().unwrap_or(&item).to_owned()
 }
 

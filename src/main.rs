@@ -4,6 +4,7 @@ use std::sync::Arc;
 mod complete;
 mod format;
 mod host;
+mod inspect;
 mod repl;
 mod session;
 
