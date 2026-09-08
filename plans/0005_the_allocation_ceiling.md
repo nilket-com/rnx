@@ -2,13 +2,13 @@
 
 Status: proposed 2026-09-08. The fifth record of rnx, and the one that
 settles what the first release record's memory threshold measures. Today
-`:memory` reports the source text and source maps the session holds and says
-so; the values a binding holds and the compiled units behind them are
-unmeasured. This record replaces that with a measured figure, and is
-deliberate about what the figure is: a ceiling on the process's live heap
-allocations, not an accounting of what the session owns. It amends the first
-release record, because that record's decision 3 describes a charge this
-cut does not compute.
+`:memory` reports the source text and source maps the session holds and
+says so; the values a binding holds and the compiled units behind them
+are unmeasured. This record replaces that with a measured figure, and is
+deliberate about what the figure is: a ceiling on the process's tracked
+live allocation request bytes, not an accounting of what the session
+owns. It amends the first release record, because that record's decision
+3 describes a charge this cut does not compute.
 
 ## Context
 
@@ -45,8 +45,9 @@ So this cut does not claim attribution. It enforces a ceiling.
 It sees allocation requests routed through Rust's global allocator, and only
 those. Outside it: allocations made directly by native code that does not
 route through that allocator, memory mappings, thread stacks, and everything
-belonging to child processes. The figure is therefore a lower bound on the
-process's true memory use, and the record says so wherever it is reported.
+belonging to child processes. It is therefore tracked live allocation
+request bytes and nothing wider, which the record says wherever the figure
+is reported.
 
 ## Decision
 
@@ -63,32 +64,48 @@ neither is used as the gate or described as the session's share.
 
 ### 2. The figure is named for what it is
 
-`:memory` reports live heap bytes against the ceiling, the startup baseline,
-the net change, and the source and map storage it reports today as a named
-component. It states that the figure counts Rust global-allocator requests
-only, excludes native allocations outside that allocator, mappings, thread
-stacks, and child processes, and is request sizes rather than resident set
-size. It is a lower bound on the process's memory, not an upper bound on the
-session's.
+The figure is **tracked live allocation request bytes**: the sizes that
+live allocations asked for, as seen by Rust's global allocator. `:memory`
+reports it against the ceiling, with the startup reference point, the net
+change since it, and the source and map storage it reports today as a named
+component. It states what the figure excludes: allocations made by native
+code that does not route through that allocator, memory mappings, thread
+stacks, and everything belonging to child processes. It is not resident
+memory, and not a bound on it in either direction: allocated pages need not
+be resident, and resident pages need not be tracked here. It is not the
+session's share of anything.
 
-### 3. The hooks are correct and cheap
+### 3. One counter, and hooks that are correct
 
-The allocator accounts for allocation, zeroed allocation, deallocation, and
-both outcomes of reallocation: a successful reallocation adjusts by the
-difference, a failed one leaves the original block and the count unchanged.
-The hooks allocate nothing themselves and cannot unwind; they update two
-relaxed atomics and delegate to the system allocator.
+Live bytes are a single counter, adjusted by each event, so a sample is one
+load of one value rather than an arithmetic combination of separately loaded
+totals that allocations elsewhere could move between the loads. The
+allocator accounts for allocation, zeroed allocation, deallocation, and both
+outcomes of reallocation: a growing reallocation adds the difference, a
+shrinking one subtracts it, and a failed one leaves the original block and
+the counter unchanged. An allocation that returns null changes nothing. The
+hooks allocate nothing themselves and cannot unwind; they adjust one relaxed
+atomic and delegate to the system allocator.
 
-### 4. The sample has one lifecycle point
+### 4. Sampling: at startup, and after every command
 
-A sample is taken once per input, after the input's disposable state is
-gone: the input text, the value the input returned, the rendered text of
-that value, and any diagnostic text are all dropped before the sample. The
-completion snapshot is refreshed before the sample, because it is state the
-session keeps. History and the editor's own storage are counted, because
-they are memory the process holds; they are part of the ceiling by design,
-not an error in it. No sample is taken while a host child process is
-running.
+The first sample is taken after initialization and after history is loaded,
+before the first evaluation is admitted, and it is the startup reference
+point. After that, a sample is taken after every command the loop handles,
+which for this record means every input: an evaluation, an inspection
+command, a reset, and an abandoned input alike. Inspection commands and
+abandoned inputs allocate into history and the editor's own storage, which
+the process keeps, so exempting them would let allocation escape the
+ceiling. The sample happens after the input's disposable state is gone, the
+input text, the value returned, its rendered text, and any diagnostic text
+all dropped, and after the completion snapshot is refreshed, because that
+snapshot is state the session keeps. No sample is taken while a host child
+process is running.
+
+Once a sample finds the figure at or above the ceiling, the refusal is
+latched: every later evaluation is refused without re-testing, until a
+reset takes a fresh sample that finds the figure below the ceiling. A reset
+that does not is described in decision 5.
 
 ### 5. `:reset` keeps the original reference point
 
@@ -105,6 +122,11 @@ The release states the counting allocator's cost by running one workload on
 one revision twice, once with counting compiled in and once with it compiled
 out behind a feature, and reporting both. A comparison against a timing from
 an earlier revision would not isolate the allocator.
+
+A build with counting compiled out reports that accounting is disabled. It
+does not report a figure of zero, and it does not report a ceiling, because
+in that build no ceiling is enforced and saying otherwise would describe a
+protection that is not there.
 
 ### 7. What this record does not decide
 
@@ -133,15 +155,31 @@ Every accounting gate runs in its own process, because the counter is
 process-global and a parallel test would contaminate it.
 
 1. **A thousand retaining inputs.** A session of one thousand inputs that
-   each retain a closure raises live bytes; with a ceiling set below that
-   growth, evaluation is refused with the message naming `:reset`; after
-   `:reset` the report is against the same original baseline, and what was
-   and was not reclaimed is listed.
-2. **The figure moves with the payload.** A binding holding a large string
-   raises live bytes by at least that string's length. The input text and
-   source maps grow too, since the input that created the binding is
-   retained; the gate asserts that their growth is small relative to the
-   payload rather than zero.
+   each retain a closure raises the figure; with a ceiling set below that
+   growth, evaluation is refused with the message naming `:reset`, and stays
+   refused without re-testing until a reset samples below the ceiling; after
+   `:reset` the report is against the same startup reference point, and what
+   was and was not reclaimed is listed.
+1b. **Every command is sampled.** Inspection commands, an abandoned input,
+   and a reset each take a sample, so allocation into history and the
+   editor's storage cannot escape the ceiling; a session driven past the
+   ceiling by inspection commands alone refuses the next evaluation.
+2. **The figure moves with the payload, under control.** In a session that
+   does nothing else, a binding holding a large string raises the figure by
+   about that string's length. The comparison is controlled: the same
+   session runs the same input shape without the payload first, so the
+   claim is the difference between two arms and not an arbitrary before and
+   after, which as decision's own reasoning shows need not move by the
+   payload when unrelated allocations are freed in between. The input text
+   and source maps grow too, since the input that created the binding is
+   retained; the gate asserts their growth is small relative to the payload
+   rather than zero.
+2b. **The hooks account correctly.** Focused tests over the counter:
+   an allocation that returns null changes nothing; a zeroed allocation is
+   counted like an allocation; a reallocation that grows adds the
+   difference; one that shrinks subtracts it; one that fails leaves the
+   counter unchanged. These test the counter's arithmetic directly, so they
+   do not depend on what the rest of the process is allocating.
 3. **A failed input still charges.** An input that grows an already retained
    vector past the ceiling and then fails leaves the session refusing
    evaluation on the measured figure, while `:memory`, `:vars`, `:help`, and
@@ -153,8 +191,10 @@ process-global and a parallel test would contaminate it.
 5. **A reset that cannot recover says so.** With the ceiling still exceeded
    after `:reset`, evaluation stays refused, `:vars` and `:help` still
    answer, and the message says restarting may be necessary.
-6. **The cost is on the record.** One workload, one revision, counting
-   compiled in and compiled out, both timings reported.
+6. **The cost is on the record, and a disabled build says so.** One
+   workload, one revision, counting compiled in and compiled out, both
+   timings reported; the build with counting compiled out reports that
+   accounting is disabled rather than a figure of zero or a ceiling.
 7. **Not a hard limit.** An input that allocates far past the ceiling and
    returns is not interrupted; the refusal arrives at the next input.
 8. **Nothing regresses.** The 0002, 0003, and 0004 gates pass unchanged, and
@@ -176,7 +216,8 @@ process-global and a parallel test would contaminate it.
 - **The counter misses memory the process really holds.** Native
   allocations outside Rust's allocator, mappings, and stacks are invisible
   to it, so the ceiling can be satisfied by a process that is larger than
-  the figure suggests. Named wherever the figure appears.
+  the figure suggests. Named wherever the figure appears, and never called
+  a bound on resident memory.
 - **A process-wide ceiling can be reached by something other than the
   session.** That is intended for a ceiling, and it is why the figure is
   never called the session's share.

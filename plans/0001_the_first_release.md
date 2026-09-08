@@ -100,28 +100,38 @@ promised to run unchanged as a sequence of session inputs.
 - **Reserved names.** The adapter's own identifiers are reserved and
   refused.
 
-### 3. Retained memory has a limit and a measured reset
+### 3. Memory has a ceiling and a measured reset
 
-A session accounts for the units and values it retains. It reports its
-retained size on the `:memory` command, refuses to retain past a configured
-bound with a message that names `:reset`, and `:reset` is measured: the
-release's evidence shows retained memory after reset returning to the empty
-session's baseline for the cases the session supports, or states exactly
-which cases do not reclaim and why. The bound is enforced as follows. What
-is charged is the size of every retained unit and every value reachable
-from a published binding, measured after each successful input. An input
-that grows an already-retained object before failing has already grown
-it; refusing its bindings cannot undo that growth, so the session also
-checks the charge after a failed input. The bound is a post-evaluation
-threshold: once the charge exceeds it, the session refuses every further
-Rune evaluation, whether or not the input would publish anything, with
-a message that names `:reset`, until `:reset` runs. Host-side commands
-that inspect the session and `:reset` itself still work. An input that
-publishes nothing can still grow retained memory through a shared handle,
-which is why evaluation stops rather than publication alone. This is not
-a hard allocation limit: the input that crosses the threshold completes
-before the check runs. A retained-memory number is acceptance work in this
-release, not polish.
+A session reports a memory figure on the `:memory` command, refuses to
+continue past a configured ceiling with a message that names `:reset`, and
+`:reset` is measured: the release's evidence shows the figure after a reset
+against the reference point recorded when the process started, and states
+exactly which cases do not reclaim and why.
+
+What is charged is the process's live heap bytes, counted by a global
+allocator as allocations minus deallocations, checked against an absolute
+ceiling after every input, successful or failed. It is not an accounting of
+what the session owns. Rune 0.14.1 exposes no size on a value and only a
+partial size on a unit, so a per-session charge could only be an estimate,
+and the difference between the current figure and a starting one measures
+net process growth rather than session retention: freed startup buffers can
+mask a session that is growing. The figure counts requests through
+Rust's global allocator only. It is tracked live allocation request
+bytes: not resident memory, and not a bound on it in either direction.
+`plans/0005_the_allocation_ceiling.md` decides the mechanism, its limits,
+and where it is sampled.
+
+The ceiling is a post-evaluation threshold: once a sample finds live bytes
+at or above it, the session refuses every further Rune evaluation, whether
+or not the input would publish anything, with a message that names
+`:reset`, until a reset brings the figure back under. Host-side commands
+that inspect the session and `:reset` itself still work; if a reset cannot
+bring the figure under the ceiling, evaluation stays refused and the
+message says restarting may be necessary. An input that publishes nothing
+can still allocate, which is why evaluation stops rather than publication
+alone. This is not a hard allocation limit: the input that crosses the
+threshold completes before the check runs. A measured memory number is
+acceptance work in this release, not polish.
 
 ### 4. Processes are cancelled on three platforms
 
@@ -192,13 +202,15 @@ second release.
    published, and a shared-handle mutation before it survives; a `println!`
    call is accepted and a macro declaration is refused with a message that
    names the restriction.
-3. **Retained memory.** A session of one thousand inputs that retain
-   closures reports its retained size, is refused past the bound with the
-   message, and measures reset against the empty baseline; an input that
-   grows a retained vector past the bound and then fails leaves the session
-   over the bound, refusing every further evaluation until `:reset`, while
-   `:memory` and `:reset` still work; the cases that do not reclaim are
-   listed with the reason.
+3. **The memory ceiling.** A session of one thousand inputs that retain
+   closures raises the measured figure, is refused past a ceiling set below
+   that growth with the message, and reports after `:reset` against the
+   reference point recorded at startup, never a fresh one; an input that
+   grows a retained vector past the ceiling and then fails leaves the
+   session refusing every further evaluation until `:reset`, while
+   `:memory`, `:vars`, `:help`, and `:reset` still answer; a reset that
+   cannot bring the figure under the ceiling says restarting may be
+   necessary; the cases that do not reclaim are listed with the reason.
 4. **Cancellation on three platforms.** A child that exits nonzero, one
    that outlives its deadline with a sleeping descendant, one whose output
    exceeds the capture, one interrupted while waited on, and one whose
@@ -223,8 +235,9 @@ second release.
 2. If any session behaviour depends on replaying an earlier input, stop.
 3. If a needed behaviour requires a change to the compiler or the VM, stop
    and take it upstream; do not fork.
-4. If the retained-memory measurement cannot be made, the bound is not
-   real and the gate is red.
+4. If the memory measurement cannot be made, the ceiling is not real and
+   the gate is red. No estimate stands in for it, and no figure is
+   described as the session's share of memory.
 5. The license is not set by any commit in this repository; a record sets
    it when the operator has decided.
 
@@ -233,8 +246,9 @@ second release.
 - **Snapshot semantics surprise people who expect late binding.** Stated
   on first use, in the documentation, and in gate 2; the alternative,
   rebinding retained closures, is the fork this record refuses.
-- **Retained memory grows.** The bound and the reset measurement are the
-  mitigation; a long session that must not reset is the second release's
+- **Memory grows and a reset may not reclaim it.** The ceiling and the
+  reset measurement are the mitigation, and a reset that cannot recover
+  says so; a long session that must not reset is the second release's
   problem.
 - **Windows job objects and macOS process groups differ from Linux in
   ways the spike did not see.** That is why gate 4 is a release gate.
