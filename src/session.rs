@@ -228,7 +228,11 @@ pub struct Session {
 	context: Context,
 	declarations: BTreeMap<String, Declaration>,
 	names: BTreeSet<String>,
-	state: Value,
+	/// The published bindings, name to value, held on this side rather than
+	/// inside a Rune object. Publishing a delta into a `BTreeMap` cannot
+	/// fail, so an input either publishes all of its delta or none of it;
+	/// every fallible step happens before anything is committed.
+	state: BTreeMap<String, Value>,
 	inputs: Vec<String>,
 	units: Vec<Retained>,
 	last_generated: String,
@@ -248,7 +252,7 @@ impl Session {
 			context,
 			declarations: BTreeMap::new(),
 			names: BTreeSet::new(),
-			state: serde_json::from_str("{}").unwrap(),
+			state: BTreeMap::new(),
 			inputs: Vec::new(),
 			units: Vec::new(),
 			last_generated: String::new(),
@@ -285,7 +289,7 @@ impl Session {
 	pub fn reset(&mut self) {
 		self.declarations.clear();
 		self.names.clear();
-		self.state = serde_json::from_str("{}").unwrap();
+		self.state.clear();
 		self.inputs.clear();
 		self.units.clear();
 		self.last_generated.clear();
@@ -334,14 +338,8 @@ impl Session {
 	/// a few does work for a few. Reading a value is structural: nothing is
 	/// evaluated.
 	pub fn visit_bindings(&self, mut visit: impl FnMut(&str, &Value) -> bool) -> usize {
-		let Ok(object) = self.state.borrow_ref::<rune::runtime::Object>() else {
-			return 0;
-		};
 		let mut visited = 0;
-		for name in &self.names {
-			let Some(value) = object.get(name.as_str()) else {
-				continue;
-			};
+		for (name, value) in &self.state {
 			visited += 1;
 			if !visit(name, value) {
 				break;
@@ -352,11 +350,7 @@ impl Session {
 	/// One published binding's value, or `None` if the session has no such
 	/// binding.
 	pub fn binding(&self, name: &str) -> Option<Value> {
-		if !self.names.contains(name) {
-			return None;
-		}
-		let object = self.state.borrow_ref::<rune::runtime::Object>().ok()?;
-		object.get(name).cloned()
+		self.state.get(name).cloned()
 	}
 	/// One retained declaration: its kind and the source last entered for it.
 	pub fn declaration(&self, name: &str) -> Option<(&'static str, &str)> {
@@ -516,9 +510,13 @@ impl Session {
 			generated.raw("\n");
 		}
 		generated.raw("pub fn main(__rnx_state) {\n");
-		for name in &self.names {
+		// Restore only what this input may reference, so the prelude follows
+		// the input rather than the session.
+		let referenced = mentioned(input, &self.names);
+		for name in &referenced {
 			generated.raw(&format!("let {name} = __rnx_state[\"{name}\"];\n"));
 		}
+		let restored = self.restored(&referenced)?;
 		for (text, offset) in &statements {
 			generated.user(text, number, *offset);
 			generated.raw("\n");
@@ -529,8 +527,17 @@ impl Session {
 		} else {
 			generated.raw(&result.0);
 		}
+		// Publish a delta: the names this input restored, which it may have
+		// reassigned, and the names it declared. A name it never mentioned is
+		// absent, and the session leaves its entry, and its identity, alone.
+		let declared: Vec<&str> = names
+			.iter()
+			.filter(|name| !self.names.contains(*name))
+			.map(String::as_str)
+			.collect();
+		let delta: BTreeSet<&str> = referenced.into_iter().chain(declared).collect();
 		generated.raw(");\n(#{");
-		generated.raw(&names.iter().cloned().collect::<Vec<_>>().join(","));
+		generated.raw(&delta.into_iter().collect::<Vec<_>>().join(","));
 		generated.raw("}, __rnx_result)\n}");
 		self.last_generated = generated.text.clone();
 
@@ -546,20 +553,46 @@ impl Session {
 			unit: Arc::downgrade(&unit),
 			map: generated.map,
 		});
-		let output = self.execute(&unit)?;
-		let (state, value): (Value, Value) =
+		let output = self.execute(&unit, restored)?;
+		let (delta, value): (Value, Value) =
 			rune::from_value(output).map_err(|e| Failure::Runtime {
 				message: e.to_string(),
 				origin: None,
 			})?;
 		// Publish bindings and declarations only after a successful run. Values
 		// are shared handles: mutations on a failed input remain visible.
+		// The delta is merged entry by entry, so a binding this input never
+		// mentioned keeps its value and its identity untouched.
+		self.merge(delta)?;
 		self.declarations = declarations;
 		self.names = names;
-		self.state = state;
 		Ok(value)
 	}
 
+	/// Merge one input's published delta into the session's state. Entries the
+	/// delta does not name are left exactly as they were, handle included.
+	/// The reading half is fallible and happens first; the writing half is a
+	/// `BTreeMap` insert, which cannot fail, so the delta is published whole
+	/// or not at all.
+	fn merge(&mut self, delta: Value) -> std::result::Result<(), Failure> {
+		let entries: Vec<(String, Value)> = {
+			let object =
+				delta
+					.borrow_ref::<rune::runtime::Object>()
+					.map_err(|e| Failure::Runtime {
+						message: e.to_string(),
+						origin: None,
+					})?;
+			object
+				.iter()
+				.map(|(name, value)| (name.to_string(), value.clone()))
+				.collect()
+		};
+		for (name, value) in entries {
+			self.state.insert(name, value);
+		}
+		Ok(())
+	}
 	fn compile(&self, generated: &Generated) -> std::result::Result<Unit, Failure> {
 		let mut sources = Sources::new();
 		sources
@@ -599,7 +632,24 @@ impl Session {
 		}
 	}
 
-	fn execute(&self, unit: &Arc<Unit>) -> std::result::Result<Value, Failure> {
+	/// The object an input receives: only the bindings it may reference,
+	/// built before anything runs, so a failure here publishes nothing.
+	fn restored(&self, referenced: &BTreeSet<&str>) -> std::result::Result<Value, Failure> {
+		let fault = |message: String| Failure::Refused(message);
+		let mut object = rune::runtime::Object::with_capacity(referenced.len())
+			.map_err(|e| fault(e.to_string()))?;
+		for name in referenced {
+			let Some(value) = self.state.get(*name) else {
+				continue;
+			};
+			let key = rune::alloc::String::try_from(*name).map_err(|e| fault(e.to_string()))?;
+			object
+				.insert(key, value.clone())
+				.map_err(|e| fault(e.to_string()))?;
+		}
+		rune::to_value(object).map_err(|e| fault(e.to_string()))
+	}
+	fn execute(&self, unit: &Arc<Unit>, state: Value) -> std::result::Result<Value, Failure> {
 		// A runtime per input. Sharing one across units is what this cut set
 		// out to do and cannot: see the record.
 		let runtime = Arc::new(
@@ -609,7 +659,7 @@ impl Session {
 		);
 		let mut vm = Vm::new(runtime, unit.clone());
 		let mut execution = vm
-			.execute(["main"], (self.state.clone(),))
+			.execute(["main"], (state,))
 			.map_err(|e| self.runtime_failure(e))?;
 		let mut spent = 0usize;
 		loop {
@@ -1143,5 +1193,426 @@ mod retention_tests {
 			rune::from_value::<i64>(session.eval("1 + 1").unwrap()).unwrap(),
 			2
 		);
+	}
+}
+
+/// Every published name an input may reference. Sound over-approximation:
+/// identifier tokens wherever they appear, plus the leading identifier of
+/// each `{...}` group inside a string literal, because `format!("{x}")`
+/// reads `x` without `x` ever being an identifier token. Deliberately not
+/// completion's scan, which suppresses strings, comments, and template
+/// interpolations; every one of those suppressions would be a defect here.
+fn mentioned<'a>(input: &str, published: &'a BTreeSet<String>) -> BTreeSet<&'a str> {
+	let mut found = BTreeSet::new();
+	if published.is_empty() {
+		return found;
+	}
+	let everything = || {
+		published
+			.iter()
+			.map(String::as_str)
+			.collect::<BTreeSet<_>>()
+	};
+	let mut parser = rune::parse::Parser::new(input, SourceId::empty(), false);
+	loop {
+		match parser.parse::<ast::Token>() {
+			Ok(token) if matches!(token.kind, ast::Kind::Eof) => break,
+			Ok(token) => {
+				let text = &input[token.span.range()];
+				match token.kind {
+					ast::Kind::Ident(_) => {
+						if let Some(name) = published.get(text) {
+							found.insert(name.as_str());
+						}
+					}
+					// A string literal's own text, braces and all. Templates
+					// arrive as identifier tokens instead, already covered.
+					ast::Kind::Str(_) => {
+						// The formatter reads the decoded string, so the scan must
+						// too. An escape this decoder does not recognise means the
+						// contents are unknown, and an unknown string could name
+						// anything: restore everything rather than miss a capture.
+						let Some(decoded) = decode(text) else {
+							return everything();
+						};
+						for group in format_captures(&decoded) {
+							if let Some(name) = published.get(group) {
+								found.insert(name.as_str());
+							}
+						}
+					}
+					_ => {}
+				}
+			}
+			// A partial lex still yields what it read; the caller compiles
+			// next and reports any real error with a position.
+			Err(_) => break,
+		}
+	}
+	found
+}
+/// A string literal decoded far enough to find its format captures, or
+/// `None` when an escape appears that this decoder does not recognise. Rune
+/// decodes the literal before the formatter reads it, so `"\\u{7b}x}"` is
+/// `{x}` and captures `x`; scanning the raw text would miss it. Rune's own
+/// decoder is crate-private, so this one mirrors the escapes its lexer
+/// accepts and refuses to guess at anything else.
+fn decode(text: &str) -> Option<String> {
+	let mut out = String::with_capacity(text.len());
+	let mut chars = text.chars();
+	while let Some(c) = chars.next() {
+		if c != '\\' {
+			out.push(c);
+			continue;
+		}
+		match chars.next()? {
+			'n' => out.push('\n'),
+			'r' => out.push('\r'),
+			't' => out.push('\t'),
+			'0' => out.push('\0'),
+			'\\' => out.push('\\'),
+			'\'' => out.push('\''),
+			'"' => out.push('"'),
+			// Two hex digits, at most 0x7f, as the lexer requires.
+			'x' => {
+				let mut value = 0u32;
+				for _ in 0..2 {
+					value = value * 16 + chars.next()?.to_digit(16)?;
+				}
+				out.push(char::from_u32(value)?);
+			}
+			// `u{HEX}`, the form that can hide an opening brace.
+			'u' => {
+				if chars.next()? != '{' {
+					return None;
+				}
+				let mut value = 0u32;
+				loop {
+					match chars.next()? {
+						'}' => break,
+						digit => value = value.checked_mul(16)?.checked_add(digit.to_digit(16)?)?,
+					}
+				}
+				out.push(char::from_u32(value)?);
+			}
+			// An escape this decoder does not know. The caller restores
+			// everything rather than miss a capture.
+			_ => return None,
+		}
+	}
+	Some(out)
+}
+/// The name part of each `{...}` group in decoded text: everything from the
+/// brace to the first `}` or `:`, which are what end a format argument's
+/// name. The caller looks the result up among the published names, so this
+/// needs no view on what characters an identifier may contain, and a name
+/// like `café` is found without knowing Rune's identifier rules.
+fn format_captures(text: &str) -> Vec<&str> {
+	let mut names = Vec::new();
+	let mut rest = text;
+	while let Some(open) = rest.find('{') {
+		let after = &rest[open + 1..];
+		// `{{` is a literal brace and captures nothing; skipping both is what
+		// lets `{{{name}}}`, a literal brace beside a capture, still be seen.
+		if after.starts_with('{') {
+			rest = &after[1..];
+			continue;
+		}
+		let end = after.find(|c| c == '}' || c == ':').unwrap_or(after.len());
+		if end > 0 {
+			names.push(&after[..end]);
+		}
+		rest = &after[end.min(after.len())..];
+		if rest.is_empty() {
+			break;
+		}
+		rest = &rest[rest.char_indices().nth(1).map_or(rest.len(), |(i, _)| i)..];
+	}
+	names
+}
+
+#[cfg(test)]
+mod prelude_tests {
+	use super::*;
+
+	fn session() -> Session {
+		let mut context = Context::with_default_modules().unwrap();
+		crate::host::install(&mut context).unwrap();
+		let mut session = Session::new(context).unwrap();
+		session.set_budget(usize::MAX);
+		session
+	}
+	fn shown(session: &mut Session, input: &str) -> String {
+		let value = session.eval(input).unwrap();
+		crate::format::render(&value, Some(session), &crate::format::Limits::default())
+	}
+
+	#[test]
+	fn the_generated_source_follows_the_input_not_the_session() {
+		let mut wide = session();
+		for i in 0..100 {
+			wide.eval(&format!("let n{i:03} = {i};")).unwrap();
+		}
+		wide.eval("n000 + n099").unwrap();
+		let with_hundred = wide.last_generated().len();
+
+		let mut narrow = session();
+		narrow.eval("let n000 = 0;").unwrap();
+		narrow.eval("let n099 = 99;").unwrap();
+		narrow.eval("n000 + n099").unwrap();
+		let with_two = narrow.last_generated().len();
+
+		assert_eq!(
+			with_hundred, with_two,
+			"the same input generated {with_hundred} bytes against a hundred names \
+			 and {with_two} against two"
+		);
+		// Two restoring lines and a delta of two, whatever the session holds.
+		assert_eq!(wide.last_generated().matches("__rnx_state[").count(), 2);
+	}
+
+	#[test]
+	fn assignment_shadowing_and_destructuring_publish_correctly() {
+		let mut session = session();
+		session.eval("let a = 1; let b = 2; let c = 3;").unwrap();
+		// Assignment to a restored name.
+		session.eval("a = 10;").unwrap();
+		assert_eq!(shown(&mut session, "a"), "10");
+		// Shadowing a restored name.
+		session.eval("let b = b + 40;").unwrap();
+		assert_eq!(shown(&mut session, "b"), "42");
+		// Destructuring, publishing new names.
+		session.eval("let [d, e] = [4, 5];").unwrap();
+		assert_eq!(shown(&mut session, "(c, d, e)"), "(3, 4, 5)");
+		// A name no input has mentioned for many inputs is untouched.
+		for _ in 0..20 {
+			session.eval("let filler = 0;").unwrap();
+		}
+		assert_eq!(shown(&mut session, "(a, b, c, d, e)"), "(10, 42, 3, 4, 5)");
+	}
+
+	#[test]
+	fn aliases_keep_one_shared_handle_across_a_narrowed_prelude() {
+		let mut session = session();
+		session.eval("let original = [1];").unwrap();
+		session.eval("let alias = original;").unwrap();
+		// Many inputs that mention neither, so neither is restored.
+		for _ in 0..10 {
+			session.eval("let other = 0;").unwrap();
+		}
+		// Mutate through one name, read through the other.
+		session.eval("alias.push(2);").unwrap();
+		assert_eq!(shown(&mut session, "original"), "[1, 2]");
+		session.eval("original.push(3);").unwrap();
+		assert_eq!(shown(&mut session, "alias"), "[1, 2, 3]");
+	}
+
+	#[test]
+	fn a_closure_captures_a_restored_binding_and_keeps_seeing_it() {
+		let mut session = session();
+		session.eval("let counter = [0];").unwrap();
+		session.eval("let bump = || counter.push(1);").unwrap();
+		for _ in 0..10 {
+			session.eval("let unrelated = 0;").unwrap();
+		}
+		session.eval("bump(); bump();").unwrap();
+		assert_eq!(shown(&mut session, "counter"), "[0, 1, 1]");
+	}
+
+	#[test]
+	fn a_failed_input_publishes_no_rebinding_and_keeps_its_mutation() {
+		let mut session = session();
+		session.eval("let shared = [1]; let scalar = 1;").unwrap();
+		assert!(
+			session
+				.eval("shared.push(2); scalar = 99; let fresh = 5; panic!(\"stop\");")
+				.is_err()
+		);
+		// The mutation through the shared handle stands; the rebinding does not.
+		assert_eq!(shown(&mut session, "shared"), "[1, 2]");
+		assert_eq!(shown(&mut session, "scalar"), "1");
+		assert!(session.eval("fresh").is_err());
+	}
+
+	#[test]
+	fn a_format_capture_restores_the_binding_it_names() {
+		let mut session = session();
+		session.eval("let captured = 7;").unwrap();
+		for _ in 0..10 {
+			session.eval("let noise = 0;").unwrap();
+		}
+		// `captured` appears only inside a string literal, never as an
+		// identifier token, and must still be restored.
+		assert_eq!(shown(&mut session, "format!(\"{captured}\")"), "\"7\"");
+		assert_eq!(
+			shown(&mut session, "format!(\"{captured:?} and {captured}\")"),
+			"\"7 and 7\""
+		);
+		session.eval("println!(\"{captured}\");").unwrap();
+	}
+
+	#[test]
+	fn a_template_interpolation_restores_the_binding_it_names() {
+		let mut session = session();
+		session.eval("let inside = 3;").unwrap();
+		for _ in 0..5 {
+			session.eval("let noise = 0;").unwrap();
+		}
+		assert_eq!(shown(&mut session, "`v ${inside}`"), "\"v 3\"");
+	}
+
+	#[test]
+	fn the_scan_over_approximates_rather_than_missing_a_name() {
+		let published: BTreeSet<String> =
+			["a", "b", "unused"].iter().map(|s| s.to_string()).collect();
+		// Identifier tokens.
+		assert_eq!(mentioned("a + 1", &published), ["a"].into_iter().collect());
+		// A format capture inside a string.
+		assert_eq!(
+			mentioned("format!(\"{b}\")", &published),
+			["b"].into_iter().collect()
+		);
+		// A plain string that merely looks like one: over-approximated, which
+		// costs a restoring line and nothing else.
+		assert_eq!(
+			mentioned("\"{a}\"", &published),
+			["a"].into_iter().collect()
+		);
+		// A comment mentions nothing, because it is not a token.
+		assert!(mentioned("// a b unused\n1", &published).is_empty());
+		// Nothing published, nothing scanned.
+		assert!(mentioned("a + b", &BTreeSet::new()).is_empty());
+	}
+}
+
+#[cfg(test)]
+mod escape_tests {
+	use super::*;
+
+	fn published() -> BTreeSet<String> {
+		["x", "y"].iter().map(|s| s.to_string()).collect()
+	}
+
+	#[test]
+	fn a_capture_hidden_behind_an_escape_is_still_found() {
+		let published = published();
+		// `\u{7b}` decodes to `{`, so the formatter reads `{x}`. Scanning the
+		// raw text would see `{7b}` and miss `x`.
+		assert_eq!(
+			mentioned("format!(\"\\u{7b}x}\")", &published),
+			["x"].into_iter().collect()
+		);
+		// The same through a hex escape.
+		assert_eq!(
+			mentioned("format!(\"\\x7bx}\")", &published),
+			["x"].into_iter().collect()
+		);
+		// `{{x}}` is a literal `{x}`, not a capture, so nothing is restored.
+		assert!(mentioned("format!(\"{{x}}\")", &published).is_empty());
+		// `{{{x}}}` is a literal brace beside a real capture of `x`, which the
+		// scan must still see.
+		assert_eq!(
+			mentioned("format!(\"{{{x}}}\")", &published),
+			["x"].into_iter().collect()
+		);
+	}
+
+	#[test]
+	fn an_unrecognised_escape_restores_everything() {
+		let published = published();
+		// `\q` is not an escape Rune's lexer accepts, so what the string holds
+		// is unknown; the scan restores every published name rather than risk
+		// missing a capture.
+		assert_eq!(
+			mentioned("format!(\"\\q\")", &published),
+			["x", "y"].into_iter().collect()
+		);
+	}
+
+	#[test]
+	fn ordinary_escapes_decode_without_widening() {
+		let published = published();
+		// A newline escape decodes and names nothing.
+		assert!(mentioned("format!(\"a\\nb\")", &published).is_empty());
+		// And still finds a real capture beside it.
+		assert_eq!(
+			mentioned("format!(\"a\\nb {y}\")", &published),
+			["y"].into_iter().collect()
+		);
+	}
+
+	#[test]
+	fn the_decoder_matches_the_escapes_the_lexer_accepts() {
+		assert_eq!(decode("a\\nb").as_deref(), Some("a\nb"));
+		assert_eq!(decode("\\t\\r\\0").as_deref(), Some("\t\r\0"));
+		assert_eq!(decode("\\\\").as_deref(), Some("\\"));
+		assert_eq!(decode("\\\"").as_deref(), Some("\""));
+		assert_eq!(decode("\\x7b").as_deref(), Some("{"));
+		assert_eq!(decode("\\u{7b}").as_deref(), Some("{"));
+		assert_eq!(decode("\\u{1F4AF}").as_deref(), Some("\u{1F4AF}"));
+		// Unknown or malformed: the caller widens rather than guesses.
+		assert_eq!(decode("\\q"), None);
+		assert_eq!(decode("\\u7b"), None);
+		assert_eq!(decode("\\x7"), None);
+		assert_eq!(decode("trailing\\"), None);
+	}
+}
+
+#[cfg(test)]
+mod unicode_capture_tests {
+	use super::*;
+
+	fn published() -> BTreeSet<String> {
+		["café", "a", "ab", "ünïcødé"]
+			.iter()
+			.map(|s| s.to_string())
+			.collect()
+	}
+
+	#[test]
+	fn a_capture_naming_a_unicode_binding_is_found() {
+		let published = published();
+		// Written literally.
+		assert_eq!(
+			mentioned("format!(\"{café}\")", &published),
+			["café"].into_iter().collect()
+		);
+		// Written as an escape, which decodes to the same name.
+		assert_eq!(
+			mentioned("format!(\"{caf\\u{e9}}\")", &published),
+			["café"].into_iter().collect()
+		);
+		// With a format spec after the name.
+		assert_eq!(
+			mentioned("format!(\"{café:?}\")", &published),
+			["café"].into_iter().collect()
+		);
+		// A name of nothing but non-ASCII letters.
+		assert_eq!(
+			mentioned("format!(\"{ünïcødé}\")", &published),
+			["ünïcødé"].into_iter().collect()
+		);
+	}
+
+	#[test]
+	fn a_longer_name_is_not_shadowed_by_its_own_prefix() {
+		let published = published();
+		// `a` is published and is a prefix of `ab`; the capture is `ab`.
+		assert_eq!(
+			mentioned("format!(\"{ab}\")", &published),
+			["ab"].into_iter().collect()
+		);
+		assert_eq!(
+			mentioned("format!(\"{a}\")", &published),
+			["a"].into_iter().collect()
+		);
+	}
+
+	#[test]
+	fn a_group_naming_nothing_published_restores_nothing() {
+		let published = published();
+		assert!(mentioned("format!(\"{0}\")", &published).is_empty());
+		assert!(mentioned("format!(\"{}\", 1)", &published).is_empty());
+		assert!(mentioned("format!(\"{unknown}\")", &published).is_empty());
 	}
 }
