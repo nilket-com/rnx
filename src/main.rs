@@ -7,6 +7,7 @@ mod host;
 mod inspect;
 mod memory;
 mod repl;
+mod runner;
 mod session;
 
 // Installed for the whole process: the ceiling is enforced against what this
@@ -38,7 +39,7 @@ fn call(context: &Context, source: &str, state: Value) -> Result<Value> {
 		.call()
 		.map_err(|e| e.to_string().into())
 }
-fn display(value: &Value) -> String {
+pub fn display(value: &Value) -> String {
 	serde_json::to_string(value).unwrap_or_else(|e| format!("<serialization error: {e}>"))
 }
 
@@ -65,28 +66,19 @@ fn main() -> Result<()> {
 		return repl::run(context, host_functions);
 	}
 	if args.first().is_some_and(|s| s == "run") {
-		let source = std::fs::read_to_string(args.get(1).ok_or("run needs a file")?)?;
-		let arguments = serde_json::from_str(&serde_json::to_string(&args[2..])?)?;
-		let value = call(&context, &source, arguments)?;
-		// A script that returns unit prints nothing, as an input that produces
-		// unit prints nothing in the session.
-		let show = |value: &Value| {
-			// Unit is recognised by the value's own type, not by what it
-			// serialises to: `None` serialises to null as well, and it is not
-			// unit and still prints.
-			if matches!(value.as_type_value(), Ok(rune::runtime::TypeValue::Unit)) {
-				return;
-			}
-			println!("{}", display(value));
-		};
-		match rune::from_value::<std::result::Result<Value, Value>>(value.clone()) {
-			Ok(Ok(value)) => show(&value),
-			Ok(Err(error)) => {
-				return Err(format!("script returned Err: {}", display(&error)).into());
-			}
-			Err(_) => show(&value),
+		// Flags are read only before the script path. Everything after the
+		// path is the script's, verbatim, so an argument that happens to read
+		// like a flag reaches the script instead of changing rnx's behaviour.
+		let mut rest = &args[1..];
+		let mut debug_source = false;
+		while rest.first().is_some_and(|a| a == runner::DEBUG_SOURCE) {
+			debug_source = true;
+			rest = &rest[1..];
 		}
-		return Ok(());
+		let path = rest.first().ok_or("run needs a file")?;
+		let arguments = serde_json::from_str(&serde_json::to_string(&rest[1..])?)?;
+		let code = runner::run(&context, path, arguments, debug_source);
+		std::process::exit(code);
 	}
 	let state = call(
 		&context,

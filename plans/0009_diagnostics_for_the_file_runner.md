@@ -84,7 +84,16 @@ the script's, verbatim, so a script argument that happens to read
 `--debug-source` reaches the script and does not turn the dump on. That
 boundary is the rule for every flag `run` ever gains.
 
-### 6. What this record does not decide
+### 6. The instruction budget is preserved
+
+`run` has always executed under a two million instruction budget, and
+nothing here changes it. Unlike a session input, a file cannot be
+interrupted from the keyboard, so the budget is the only thing that stops a
+script that loops for ever. A halt for want of budget carries no location,
+and says it ran out of budget rather than that it has no position. Changing
+the limit is a decision for its own record.
+
+### 7. What this record does not decide
 
 Any change to what the session reports, to exit codes, or to the host
 library's error text, which the first port also faulted and which is its own
@@ -127,7 +136,13 @@ language defines them.
 9. **A failure with no span says so.** Running a path that does not exist
    reports the path and the reason without a line, a column, or a caret, and
    exits 1.
-10. **Nothing regresses.** The session's gates from records 0002 through 0007
+10. **The budget still stops a runaway script.** A file containing an
+    endless loop is halted, says how many instructions it exceeded, and
+    exits 1, while a loop that ends inside the budget is untouched.
+11. **A fault with no resolvable place says so.** A file with no `main`
+    reports that no source position is available, while a returned error and
+    an unreadable file, which never had one, do not.
+12. **Nothing regresses.** The session's gates from records 0002 through 0007
     pass unchanged, and the run-output gates of the first port pass.
 
 ## Guardrails and stop conditions

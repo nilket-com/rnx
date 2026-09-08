@@ -740,11 +740,7 @@ impl Session {
 	/// Line and column of a byte offset in a retained input.
 	fn origin(&self, input: usize, offset: usize) -> Option<Origin> {
 		let text = self.inputs.get(input.checked_sub(1)?)?;
-		let offset = offset.min(text.len());
-		let line_start = text[..offset].rfind('\n').map(|i| i + 1).unwrap_or(0);
-		let line = text[..line_start].matches('\n').count() + 1;
-		let column = text[line_start..offset].chars().count() + 1;
-		let line_text = text[line_start..].lines().next().unwrap_or("").to_owned();
+		let (line, column, line_text) = position(text, offset);
 		Some(Origin {
 			input,
 			line,
@@ -1196,6 +1192,20 @@ mod retention_tests {
 	}
 }
 
+/// The line and column of a byte offset in `text`, both counted from one,
+/// with that line's text. The column counts characters, not bytes, so a
+/// line with characters outside ASCII before the offset still reports the
+/// column a person would count. Shared with the file runner so the session
+/// and `run` report the same place for the same source.
+pub fn position(text: &str, offset: usize) -> (usize, usize, String) {
+	let offset = offset.min(text.len());
+	let line_start = text[..offset].rfind('\n').map(|i| i + 1).unwrap_or(0);
+	let line = text[..line_start].matches('\n').count() + 1;
+	let column = text[line_start..offset].chars().count() + 1;
+	let line_text = text[line_start..].lines().next().unwrap_or("").to_owned();
+	(line, column, line_text)
+}
+
 /// Every published name an input may reference. Sound over-approximation:
 /// identifier tokens wherever they appear, plus the leading identifier of
 /// each `{...}` group inside a string literal, because `format!("{x}")`
@@ -1614,5 +1624,33 @@ mod unicode_capture_tests {
 		assert!(mentioned("format!(\"{0}\")", &published).is_empty());
 		assert!(mentioned("format!(\"{}\", 1)", &published).is_empty());
 		assert!(mentioned("format!(\"{unknown}\")", &published).is_empty());
+	}
+}
+
+#[cfg(test)]
+mod position_tests {
+	use super::position;
+
+	#[test]
+	fn a_column_counts_characters_not_bytes() {
+		// A tab is one character.
+		let text = "fn main() {\n\t\tlet x = ;\n}";
+		let offset = text.find(';').unwrap();
+		assert_eq!(position(text, offset), (2, 11, "\t\tlet x = ;".to_owned()));
+		// Characters outside ASCII count as one each, not as their bytes.
+		let text = "fn main() {\n\tlet café = ;\n}";
+		let offset = text.find(';').unwrap();
+		assert_eq!(position(text, offset), (2, 13, "\tlet café = ;".to_owned()));
+	}
+
+	#[test]
+	fn an_offset_past_the_end_lands_on_the_last_line() {
+		let text = "one\ntwo";
+		assert_eq!(position(text, 9999), (2, 4, "two".to_owned()));
+	}
+
+	#[test]
+	fn the_first_character_is_line_one_column_one() {
+		assert_eq!(position("abc", 0), (1, 1, "abc".to_owned()));
 	}
 }

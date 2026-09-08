@@ -22,6 +22,13 @@ cargo run --locked -- repl
 
 The default command runs the spike's assertions and prints observations.
 
+`rnx run <file.rn> [args]` executes a file's `main`. A compile or runtime
+error names the file, the line, the column, the source line, and marks the
+column, including for an error inside a called function; every diagnostic
+goes to standard error and the script's own output to standard output.
+`--debug-source`, before the path, also prints the compiled source; anything
+after the path is the script's argument.
+
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's
 parser says it is unfinished (two blank lines abandon it), values rendered
