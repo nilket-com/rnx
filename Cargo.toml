@@ -11,6 +11,7 @@ publish = false
 rune = { version = "=0.14.1", default-features = false, features = ["std"] }
 serde_json = "1.0.149"
 libc = "0.2.177"
+rustyline = { version = "18.0.1", features = ["derive"] }
 
 [profile.dev]
 debug = false

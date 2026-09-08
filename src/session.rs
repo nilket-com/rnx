@@ -1,36 +1,339 @@
-//! Experimental AST-based input adapter. Its restrictions are intentional.
-use super::{Result, call};
-use rune::{
-	Context, SourceId,
-	ast::{self, Spanned},
-	runtime::Value,
-};
+//! The persistent session: an AST-based adapter over upstream Rune.
+//!
+//! Each input is compiled into a fresh unit that receives the published
+//! bindings, runs once, and returns the new bindings. Declarations are
+//! retained as source and recompiled into every later unit. The session owns
+//! a source map per unit so diagnostics point at the input a person typed.
+use super::Result;
+use rune::ast::Spanned;
+use rune::runtime::{GeneratorState, Unit, VmError, budget};
+use rune::{Context, Source, SourceId, Sources, Vm, ast, runtime::Value};
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
+
+/// Instructions per slice between interrupt checks.
+pub const SLICE: usize = 10_000;
+/// Instructions per input before the session halts it: a safety net of about
+/// ten seconds of pure Rune execution, not the way to stop an input; Ctrl-C
+/// is, at every slice boundary.
+pub const BUDGET: usize = 2_000_000_000;
+/// Longest accepted input.
+const INPUT_CAP: usize = 32 * 1024;
+
+/// A position in an input a person typed: input number (1-based), line and
+/// column (1-based, in characters).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Origin {
+	pub input: usize,
+	pub line: usize,
+	pub column: usize,
+	/// The text of that line, for the diagnostic.
+	pub text: String,
+}
+
+#[derive(Debug)]
+pub enum Failure {
+	/// The input was refused by the adapter before compilation.
+	Refused(String),
+	/// A compile error. The origin is `None` only when the position could not
+	/// be mapped to user text; the message says so.
+	Compile {
+		message: String,
+		origin: Option<Origin>,
+	},
+	/// A runtime error, positioned at the instruction that raised it.
+	Runtime {
+		message: String,
+		origin: Option<Origin>,
+	},
+	/// Ctrl-C was observed at a slice boundary.
+	Interrupted,
+	/// The instruction budget for one input ran out.
+	Budget(usize),
+	/// Retained memory is over the bound; only `:reset` and inspection work.
+	OverBound { retained: usize, bound: usize },
+}
+impl std::fmt::Display for Failure {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Failure::Refused(m) => write!(f, "refused: {m}"),
+			Failure::Compile { message, origin } => located(f, "error", message, origin),
+			Failure::Runtime { message, origin } => located(f, "runtime error", message, origin),
+			Failure::Interrupted => write!(f, "interrupted"),
+			Failure::Budget(n) => write!(f, "halted: {n} instructions exceeded"),
+			Failure::OverBound { retained, bound } => write!(
+				f,
+				"retained memory {retained} bytes exceeds the bound of {bound}; :reset to continue"
+			),
+		}
+	}
+}
+impl std::error::Error for Failure {}
+fn located(
+	f: &mut std::fmt::Formatter<'_>,
+	kind: &str,
+	message: &str,
+	origin: &Option<Origin>,
+) -> std::fmt::Result {
+	match origin {
+		Some(o) => {
+			writeln!(
+				f,
+				"{kind} at input {}, line {}, column {}: {message}",
+				o.input, o.line, o.column
+			)?;
+			writeln!(f, "  {}", o.text)?;
+			write!(f, "  {}^", " ".repeat(o.column.saturating_sub(1)))
+		}
+		None => write!(
+			f,
+			"{kind} (position not in your input; :debug shows the generated source): {message}"
+		),
+	}
+}
+
+/// Whether an input is finished. Decided on the original text: parsing
+/// stops at the input's end for an incomplete input, whatever the error's
+/// span starts at (an unterminated string spans from its opening quote).
+#[derive(Debug, PartialEq, Eq)]
+pub enum Completeness {
+	Complete,
+	Incomplete,
+}
+/// The closed list of incomplete inputs, each recognised by the shape of the
+/// first parse error on the original text, never by its message:
+/// - an expected-token error whose actual token is end of input, and a bare
+///   unexpected end of input: a zero-width span at the input's end;
+/// - an unterminated string, template, or block comment: a span that reaches
+///   the input's end and keeps reaching it when the input grows, because the
+///   lexer consumes to the end of whatever it is given;
+/// - an open bracket, brace, or parenthesis: the same expected-token error at
+///   the end, since the original text has no wrapper to supply a closer.
+/// A real token at the end, such as the `;` of `let x = ;`, keeps its span
+/// when the input grows, so it is a diagnostic.
+pub fn completeness(input: &str) -> Completeness {
+	let Some(span) = first_error_span(input) else {
+		return Completeness::Complete;
+	};
+	let end = span.range().end;
+	if end < input.len() {
+		return Completeness::Complete;
+	}
+	if span.range().is_empty() {
+		return Completeness::Incomplete;
+	}
+	let grown = format!("{input}\n");
+	match first_error_span(&grown) {
+		Some(s) if s.range().start == span.range().start && s.range().end >= grown.len() => {
+			Completeness::Incomplete
+		}
+		_ => Completeness::Complete,
+	}
+}
+fn first_error_span(input: &str) -> Option<ast::Span> {
+	let mut parser = rune::parse::Parser::new(input, SourceId::empty(), false);
+	loop {
+		match parser.is_eof() {
+			Ok(true) => return None,
+			Ok(false) => {}
+			Err(e) => return Some(e.span()),
+		}
+		if let Err(e) = parser.parse::<ast::Stmt>() {
+			return Some(e.span());
+		}
+	}
+}
+
+struct Declaration {
+	is_type: bool,
+	source: String,
+	/// Input number the declaration was last entered in, and its offset there.
+	input: usize,
+	offset: usize,
+	/// Field names for a struct, in declaration order; used by the formatter.
+	fields: Vec<String>,
+}
+
+/// One contiguous piece of generated source with a known origin.
+#[derive(Clone, Debug)]
+struct Segment {
+	start: usize,
+	end: usize,
+	input: usize,
+	offset: usize,
+}
+#[derive(Clone, Debug, Default)]
+pub struct SourceMap {
+	segments: Vec<Segment>,
+}
+impl SourceMap {
+	fn locate(&self, generated: usize) -> Option<(usize, usize)> {
+		self.segments
+			.iter()
+			.find(|s| s.start <= generated && generated < s.end)
+			.map(|s| (s.input, s.offset + (generated - s.start)))
+	}
+	fn bytes(&self) -> usize {
+		self.segments.len() * std::mem::size_of::<Segment>()
+	}
+}
+
+/// A generated source under construction, recording origins as it grows.
+struct Generated {
+	text: String,
+	map: SourceMap,
+}
+impl Generated {
+	fn new() -> Self {
+		Self {
+			text: String::new(),
+			map: SourceMap::default(),
+		}
+	}
+	fn raw(&mut self, s: &str) {
+		self.text.push_str(s);
+	}
+	fn user(&mut self, s: &str, input: usize, offset: usize) {
+		let start = self.text.len();
+		self.text.push_str(s);
+		self.map.segments.push(Segment {
+			start,
+			end: self.text.len(),
+			input,
+			offset,
+		});
+	}
+}
+
+struct Retained {
+	unit: Arc<Unit>,
+	generated: String,
+	map: SourceMap,
+}
 
 pub struct Session {
-	declarations: BTreeMap<String, (bool, String)>,
+	declarations: BTreeMap<String, Declaration>,
 	names: BTreeSet<String>,
 	state: Value,
+	inputs: Vec<String>,
+	units: Vec<Retained>,
+	last_generated: String,
+	bound: usize,
+	budget: usize,
 }
 impl Session {
 	pub fn new() -> Self {
+		Self::with_bound(64 * 1024 * 1024)
+	}
+	pub fn with_bound(bound: usize) -> Self {
 		Self {
 			declarations: BTreeMap::new(),
 			names: BTreeSet::new(),
 			state: serde_json::from_str("{}").unwrap(),
+			inputs: Vec::new(),
+			units: Vec::new(),
+			last_generated: String::new(),
+			bound,
+			budget: BUDGET,
 		}
 	}
-	pub fn eval(&mut self, context: &Context, input: &str) -> Result<Value> {
-		if input.len() > 32 * 1024 {
-			return Err("spike input cap is 32 KiB".into());
+	/// The generated source of the most recent input, for `:debug`.
+	pub fn last_generated(&self) -> &str {
+		&self.last_generated
+	}
+	/// Bytes the session retains: inputs, declaration sources, generated
+	/// sources of retained units, and their source maps. Values held by
+	/// bindings are not measured; see the first release record.
+	pub fn retained_bytes(&self) -> usize {
+		self.inputs.iter().map(String::len).sum::<usize>()
+			+ self
+				.declarations
+				.values()
+				.map(|d| d.source.len())
+				.sum::<usize>()
+			+ self
+				.units
+				.iter()
+				.map(|u| u.generated.len() + u.map.bytes())
+				.sum::<usize>()
+	}
+	/// Instructions one input may spend before it is halted.
+	pub fn set_budget(&mut self, budget: usize) {
+		self.budget = budget;
+	}
+	pub fn bound(&self) -> usize {
+		self.bound
+	}
+	pub fn retained_units(&self) -> usize {
+		self.units.len()
+	}
+	/// Field names of a struct the session declared, in declaration order.
+	pub fn struct_fields(&self, name: &str) -> Option<&[String]> {
+		self.declarations
+			.get(name)
+			.filter(|d| d.is_type)
+			.map(|d| d.fields.as_slice())
+	}
+
+	pub fn eval(&mut self, context: &Context, input: &str) -> std::result::Result<Value, Failure> {
+		if self.retained_bytes() > self.bound {
+			return Err(Failure::OverBound {
+				retained: self.retained_bytes(),
+				bound: self.bound,
+			});
 		}
+		if input.len() > INPUT_CAP {
+			return Err(Failure::Refused(format!("input exceeds {INPUT_CAP} bytes")));
+		}
+		super::host::clear_interrupt();
+		self.inputs.push(input.to_owned());
+		let number = self.inputs.len();
+		let result = self.eval_inner(context, input, number);
+		if result.is_err() {
+			// A failed input publishes nothing, but its text stays so an origin
+			// recorded against it (there is none) could never dangle.
+		}
+		result
+	}
+
+	fn eval_inner(
+		&mut self,
+		context: &Context,
+		input: &str,
+		number: usize,
+	) -> std::result::Result<Value, Failure> {
+		// The wrapper is one byte of `{` before the input; wrapped offsets map
+		// to input offsets by subtracting it.
 		let wrapped = format!("{{{input}\n}}");
-		let block: ast::Block = rune::parse::parse_all(&wrapped, SourceId::empty(), false)?;
-		let slice = |span: rune::ast::Span| &wrapped[span.range()];
-		let mut declarations = self.declarations.clone();
+		let block: ast::Block = rune::parse::parse_all(&wrapped, SourceId::empty(), false)
+			.map_err(|e| {
+				self.compile_failure(
+					e.to_string(),
+					Some((number, e.span().range().start.saturating_sub(1))),
+				)
+			})?;
+		let slice = |span: ast::Span| &wrapped[span.range()];
+		let mut declarations: BTreeMap<String, Declaration> = self
+			.declarations
+			.iter()
+			.map(|(k, d)| {
+				(
+					k.clone(),
+					Declaration {
+						is_type: d.is_type,
+						source: d.source.clone(),
+						input: d.input,
+						offset: d.offset,
+						fields: d.fields.clone(),
+					},
+				)
+			})
+			.collect();
 		let mut names = self.names.clone();
-		let mut statements = String::new();
-		let mut result = "()".to_owned();
+		// Statements: (text, offset in input).
+		let mut statements: Vec<(String, usize)> = Vec::new();
+		let mut result: (String, usize) = ("()".to_owned(), 0);
+		let mut result_is_user = false;
 		for (index, statement) in block.statements.iter().enumerate() {
 			// ItemStruct's derived span omits its closing delimiter in 0.14.1.
 			// Use parsed statement boundaries, never a textual brace scanner.
@@ -43,69 +346,270 @@ impl Session {
 			let statement_source = &wrapped[start..end];
 			match statement {
 				ast::Stmt::Item(item, _) => {
-					let (name, is_type) = match item {
-						ast::Item::Fn(f) => (slice(f.name.span()), false),
-						ast::Item::Struct(s) => (slice(s.ident.span()), true),
-						ast::Item::Enum(e) => (slice(e.name.span()), true),
-						_ => return Err("spike persists only fn/struct/enum declarations".into()),
+					let (name, is_type, fields) = match item {
+						ast::Item::Fn(f) => (slice(f.name.span()), false, Vec::new()),
+						ast::Item::Struct(s) => {
+							(slice(s.ident.span()), true, struct_fields(s, &wrapped))
+						}
+						ast::Item::Enum(e) => (slice(e.name.span()), true, Vec::new()),
+						_ => {
+							return Err(self.refused_at(
+								"a session accepts fn, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files",
+								number,
+								start - 1,
+							));
+						}
 					};
-					valid_name(name)?;
-					let source = statement_source.trim().to_owned();
-					if let Some((old_type, old)) = declarations.get(name) {
-						if (*old_type || is_type) && old != &source {
-							return Err("type redefinition requires :reset in this spike".into());
+					valid_name(name).map_err(Failure::Refused)?;
+					let trimmed = statement_source.trim_end();
+					let leading = statement_source.len() - statement_source.trim_start().len();
+					let source = trimmed.trim_start().to_owned();
+					if let Some(old) = declarations.get(name) {
+						if (old.is_type || is_type) && old.source != source {
+							return Err(self.refused_at(
+								&format!(
+									"`{name}` is a type whose shape changed; :reset before redeclaring it"
+								),
+								number,
+								start - 1,
+							));
 						}
 					}
-					declarations.insert(name.to_owned(), (is_type, source));
+					declarations.insert(
+						name.to_owned(),
+						Declaration {
+							is_type,
+							source,
+							input: number,
+							offset: start + leading - 1,
+							fields,
+						},
+					);
 				}
 				ast::Stmt::Local(local) => {
-					bindings(&local.pat, &wrapped, &mut names)?;
-					statements.push_str(statement_source);
-					statements.push('\n');
+					bindings(&local.pat, &wrapped, &mut names).map_err(Failure::Refused)?;
+					statements.push((statement_source.to_owned(), start - 1));
 				}
 				ast::Stmt::Expr(expr) if index + 1 == block.statements.len() => {
-					result = slice(expr.span()).to_owned()
+					result = (slice(expr.span()).to_owned(), expr.span().range().start - 1);
+					result_is_user = true;
 				}
 				ast::Stmt::Semi(_) | ast::Stmt::Expr(_) => {
-					statements.push_str(statement_source);
+					let mut text = statement_source.to_owned();
 					if matches!(statement, ast::Stmt::Expr(_)) {
-						statements.push(';');
+						text.push(';');
 					}
-					statements.push('\n');
+					statements.push((text, start - 1));
 				}
-				_ => return Err("unsupported statement in spike".into()),
+				_ => return Err(self.refused_at("unsupported statement", number, start - 1)),
 			}
 		}
-		let mut source = declarations
-			.values()
-			.map(|(_, s)| s.as_str())
-			.collect::<Vec<_>>()
-			.join("\n");
-		source.push_str("\npub fn main(__spike_state) {\n");
-		for name in &self.names {
-			source.push_str(&format!("let {name} = __spike_state[\"{name}\"];\n"));
+		let mut generated = Generated::new();
+		for declaration in declarations.values() {
+			generated.user(&declaration.source, declaration.input, declaration.offset);
+			generated.raw("\n");
 		}
-		source.push_str(&statements);
-		source.push_str(&format!("\nlet __spike_result = ({result});\n(#{{"));
-		source.push_str(&names.iter().cloned().collect::<Vec<_>>().join(","));
-		source.push_str("}, __spike_result)\n}");
-		let output = call(context, &source, self.state.clone())?;
-		let (state, result): (Value, Value) = rune::from_value(output)?;
-		// Publish bindings/declarations only after successful evaluation. Values
-		// are shallow shared handles: mutations on a failed input remain visible.
+		generated.raw("pub fn main(__rnx_state) {\n");
+		for name in &self.names {
+			generated.raw(&format!("let {name} = __rnx_state[\"{name}\"];\n"));
+		}
+		for (text, offset) in &statements {
+			generated.user(text, number, *offset);
+			generated.raw("\n");
+		}
+		generated.raw("let __rnx_result = (");
+		if result_is_user {
+			generated.user(&result.0, number, result.1);
+		} else {
+			generated.raw(&result.0);
+		}
+		generated.raw(");\n(#{");
+		generated.raw(&names.iter().cloned().collect::<Vec<_>>().join(","));
+		generated.raw("}, __rnx_result)\n}");
+		self.last_generated = generated.text.clone();
+
+		let unit = self.compile(context, &generated)?;
+		let unit = Arc::new(unit);
+		// The unit and its map are retained before it runs: a failed or
+		// interrupted input can still leave closures over this unit reachable
+		// through shared handles, and their errors must map to this input.
+		self.units.push(Retained {
+			unit: unit.clone(),
+			generated: generated.text,
+			map: generated.map,
+		});
+		let output = self.execute(context, &unit)?;
+		let (state, value): (Value, Value) =
+			rune::from_value(output).map_err(|e| Failure::Runtime {
+				message: e.to_string(),
+				origin: None,
+			})?;
+		// Publish bindings and declarations only after a successful run. Values
+		// are shared handles: mutations on a failed input remain visible.
 		self.declarations = declarations;
 		self.names = names;
 		self.state = state;
-		Ok(result)
+		Ok(value)
+	}
+
+	fn compile(
+		&self,
+		context: &Context,
+		generated: &Generated,
+	) -> std::result::Result<Unit, Failure> {
+		let mut sources = Sources::new();
+		sources
+			.insert(Source::memory(&generated.text).map_err(|e| Failure::Refused(e.to_string()))?)
+			.map_err(|e| Failure::Refused(e.to_string()))?;
+		let mut diagnostics = rune::Diagnostics::new();
+		let built = rune::prepare(&mut sources)
+			.with_context(context)
+			.with_diagnostics(&mut diagnostics)
+			.build();
+		match built {
+			Ok(unit) => Ok(unit),
+			Err(error) => {
+				let first = diagnostics.diagnostics().iter().find_map(|d| match d {
+					rune::diagnostics::Diagnostic::Fatal(fatal) => match fatal.kind() {
+						rune::diagnostics::FatalDiagnosticKind::CompileError(e) => {
+							Some((e.to_string(), e.span().range().start))
+						}
+						_ => None,
+					},
+					_ => None,
+				});
+				match first {
+					Some((message, offset)) => {
+						let origin = generated
+							.map
+							.locate(offset)
+							.and_then(|(i, o)| self.origin(i, o));
+						Err(Failure::Compile { message, origin })
+					}
+					None => Err(Failure::Compile {
+						message: error.to_string(),
+						origin: None,
+					}),
+				}
+			}
+		}
+	}
+
+	fn execute(&self, context: &Context, unit: &Arc<Unit>) -> std::result::Result<Value, Failure> {
+		let runtime = Arc::new(
+			context
+				.runtime()
+				.map_err(|e| Failure::Refused(e.to_string()))?,
+		);
+		let mut vm = Vm::new(runtime, unit.clone());
+		let mut execution = vm
+			.execute(["main"], (self.state.clone(),))
+			.map_err(|e| self.runtime_failure(e))?;
+		let mut spent = 0usize;
+		loop {
+			// A slice: resume under a budget. A budget halt leaves the frozen
+			// instruction pointer in place and the execution resumable; it is
+			// recognised by two structural facts, no location on the error and
+			// an exhausted budget guard, never by the error's text.
+			let (outcome, exhausted) = budget::with(SLICE, || {
+				let outcome = execution.resume().into_result();
+				let exhausted = !budget::acquire().take();
+				(outcome, exhausted)
+			})
+			.call();
+			match outcome {
+				// Completion is a slice boundary too: an interrupt that arrived during
+				// a host call the input was waiting on is observed here.
+				Ok(GeneratorState::Complete(_)) if super::host::interrupted() => {
+					return Err(Failure::Interrupted);
+				}
+				Ok(GeneratorState::Complete(value)) => return Ok(value),
+				Ok(GeneratorState::Yielded(_)) => {
+					return Err(Failure::Runtime {
+						message: "unexpected yield".into(),
+						origin: None,
+					});
+				}
+				Err(error) if error.first_location().is_none() && exhausted => {
+					spent += SLICE;
+					if super::host::interrupted() {
+						return Err(Failure::Interrupted);
+					}
+					if spent >= self.budget {
+						return Err(Failure::Budget(self.budget));
+					}
+				}
+				Err(error) => return Err(self.runtime_failure(error)),
+			}
+		}
+	}
+
+	/// Every unit that ever ran is retained with its map, so the unit an
+	/// error names is found by identity whichever input produced it.
+	fn runtime_failure(&self, error: VmError) -> Failure {
+		let message = error.to_string();
+		let origin = error.first_location().and_then(|location| {
+			let map = self
+				.units
+				.iter()
+				.find(|r| Arc::ptr_eq(&r.unit, &location.unit))
+				.map(|r| &r.map)?;
+			let inst = location.unit.debug_info()?.instruction_at(location.ip)?;
+			let (input, offset) = map.locate(inst.span.range().start)?;
+			self.origin(input, offset)
+		});
+		Failure::Runtime { message, origin }
+	}
+
+	fn compile_failure(&self, message: String, at: Option<(usize, usize)>) -> Failure {
+		let origin = at.and_then(|(i, o)| self.origin(i, o));
+		Failure::Compile { message, origin }
+	}
+	fn refused_at(&self, message: &str, input: usize, offset: usize) -> Failure {
+		match self.origin(input, offset) {
+			Some(o) => Failure::Refused(format!(
+				"{message} (input {}, line {}, column {})",
+				o.input, o.line, o.column
+			)),
+			None => Failure::Refused(message.to_owned()),
+		}
+	}
+	/// Line and column of a byte offset in a retained input.
+	fn origin(&self, input: usize, offset: usize) -> Option<Origin> {
+		let text = self.inputs.get(input.checked_sub(1)?)?;
+		let offset = offset.min(text.len());
+		let line_start = text[..offset].rfind('\n').map(|i| i + 1).unwrap_or(0);
+		let line = text[..line_start].matches('\n').count() + 1;
+		let column = text[line_start..offset].chars().count() + 1;
+		let line_text = text[line_start..].lines().next().unwrap_or("").to_owned();
+		Some(Origin {
+			input,
+			line,
+			column,
+			text: line_text,
+		})
 	}
 }
-fn valid_name(name: &str) -> Result<()> {
-	if name == "main" || name.starts_with("__spike_") {
-		return Err("reserved spike identifier".into());
+fn struct_fields(item: &ast::ItemStruct, source: &str) -> Vec<String> {
+	match &item.body {
+		ast::Fields::Named(braced) => braced
+			.iter()
+			.map(|(field, _)| source[field.name.span().range()].to_owned())
+			.collect(),
+		_ => Vec::new(),
+	}
+}
+fn valid_name(name: &str) -> std::result::Result<(), String> {
+	if name == "main" || name.starts_with("__rnx_") {
+		return Err(format!("`{name}` is reserved by the session"));
 	}
 	Ok(())
 }
-fn bindings(pat: &ast::Pat, source: &str, names: &mut BTreeSet<String>) -> Result<()> {
+fn bindings(
+	pat: &ast::Pat,
+	source: &str,
+	names: &mut BTreeSet<String>,
+) -> std::result::Result<(), String> {
 	match pat {
 		ast::Pat::Path(p)
 			if p.path.global.is_none() && p.path.rest.is_empty() && p.path.trailing.is_none() =>
@@ -140,7 +644,10 @@ fn bindings(pat: &ast::Pat, source: &str, names: &mut BTreeSet<String>) -> Resul
 	Ok(())
 }
 
+/// The spike's session checks, kept as the regression floor for the
+/// session rules. `render` is the session formatter.
 pub fn checks(context: &Context) -> Result<()> {
+	let render = |v: &Value| super::format::render(v, None, &super::format::Limits::default());
 	let mut session = Session::new();
 	for (input, expected) in [
 		(
@@ -149,15 +656,15 @@ pub fn checks(context: &Context) -> Result<()> {
 		),
 		(
 			"effects.push(1); fn f() { 20 } (old(), f(), c(), b.value, b is Boxed)",
-			"[10,20,11,7,true]",
+			"(10, 20, 11, 7, true)",
 		),
 		(
 			"let x = x + 5; let [left, right] = [8,9]; let #{a: renamed} = #{a: 4}; (x,y,left,right,renamed,effects.len())",
-			"[7,3,8,9,4,1]",
+			"(7, 3, 8, 9, 4, 1)",
 		),
 	] {
 		let value = session.eval(context, input)?;
-		let actual = super::display(&value);
+		let actual = render(&value);
 		assert_eq!(actual, expected);
 		println!("session: {actual}");
 	}
@@ -176,15 +683,17 @@ pub fn checks(context: &Context) -> Result<()> {
 	);
 	assert!(session.eval(context, "new_name").is_err());
 	let value = session.eval(context, "(x, shared, f(), effects.len())")?;
-	assert_eq!(super::display(&value), "[7,[1,2],20,1]");
-	println!("after compile/runtime failures: {}", super::display(&value));
+	assert_eq!(render(&value), "(7, [1, 2], 20, 1)");
+	println!("after compile/runtime failures: {}", render(&value));
 	assert!(session.eval(context, "struct Boxed { other }").is_err());
 	println!("changed type declaration: refused until reset");
+	session.set_budget(2_000_000);
 	let error = session.eval(context, "while true {} ").unwrap_err();
+	assert!(matches!(error, Failure::Budget(_)));
 	println!("infinite loop: {error}");
-	assert_eq!(super::display(&session.eval(context, "x")?), "7");
+	assert_eq!(render(&session.eval(context, "x")?), "7");
 	let effect_path = std::env::temp_dir().join(format!(
-		"rune-spike-effect-{}-{}",
+		"rnx-effect-{}-{}",
 		std::process::id(),
 		std::time::SystemTime::now()
 			.duration_since(std::time::UNIX_EPOCH)?
@@ -200,7 +709,7 @@ pub fn checks(context: &Context) -> Result<()> {
 			.is_err()
 	);
 	assert_eq!(std::fs::read_to_string(&effect_path)?, "once");
-	assert_eq!(super::display(&session.eval(context, "x")?), "7");
+	assert_eq!(render(&session.eval(context, "x")?), "7");
 	assert_eq!(std::fs::read_to_string(&effect_path)?, "once");
 	std::fs::remove_file(effect_path)?;
 	println!("external write before runtime failure survives; later input does not replay it");
@@ -210,10 +719,190 @@ pub fn checks(context: &Context) -> Result<()> {
 	for _ in 0..100 {
 		session.eval(context, "let x = x + 1; x")?;
 	}
-	assert_eq!(super::display(&session.eval(context, "x")?), "107");
+	assert_eq!(render(&session.eval(context, "x")?), "107");
 	println!(
 		"100 incremental inputs (compile + execute): {:?}",
 		start.elapsed()
 	);
 	Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	fn context() -> Context {
+		let mut context = Context::with_default_modules().unwrap();
+		crate::host::install(&mut context).unwrap();
+		context
+	}
+
+	#[test]
+	fn incomplete_inputs_are_the_closed_list() {
+		for input in [
+			"fn f() {",
+			"fn f() {\n  let a = 1;",
+			"let xs = [",
+			"let x =",
+			"let x = \"unterminated",
+			"let x = 1; /* open comment",
+			"foo(",
+			"if x {",
+			"let t = (1,",
+			"let o = #{a: 1,",
+			// A `let` needs its `;` in Rune; without it the parser wants more.
+			"let s = \"closed\"",
+		] {
+			assert_eq!(completeness(input), Completeness::Incomplete, "{input:?}");
+		}
+	}
+
+	#[test]
+	fn complete_inputs_include_invalid_ones() {
+		for input in [
+			"let x = ;",
+			"foo())",
+			"foo \"abc\"",
+			"let a = 1; let b = 2;",
+			"fn f() { 1 }",
+			"x + 1",
+			"struct S { a }",
+			"[1, 2, 3]",
+			"let = 5;",
+			"1 +* 2;",
+		] {
+			assert_eq!(completeness(input), Completeness::Complete, "{input:?}");
+		}
+	}
+
+	#[test]
+	fn compile_error_maps_to_the_typed_line_and_column() {
+		let context = context();
+		let mut session = Session::new();
+		let failure = session
+			.eval(&context, "let a = 1;\nlet b = +* 2;\nlet c = 3;")
+			.unwrap_err();
+		match failure {
+			Failure::Compile {
+				origin: Some(o), ..
+			} => {
+				assert_eq!((o.input, o.line, o.column), (1, 2, 9));
+				assert_eq!(o.text, "let b = +* 2;");
+			}
+			other => panic!("{other:?}"),
+		}
+	}
+
+	#[test]
+	fn runtime_error_in_an_older_definition_reports_that_input() {
+		let context = context();
+		let mut session = Session::new();
+		session
+			.eval(&context, "fn boom(x) {\n  panic!(\"bad {}\", x)\n}")
+			.unwrap();
+		session.eval(&context, "let y = 2;").unwrap();
+		let failure = session.eval(&context, "boom(y)").unwrap_err();
+		match failure {
+			Failure::Runtime {
+				message,
+				origin: Some(o),
+			} => {
+				assert!(message.contains("bad 2"), "{message}");
+				assert_eq!((o.input, o.line, o.column), (1, 2, 3));
+				assert_eq!(o.text, "  panic!(\"bad {}\", x)");
+			}
+			other => panic!("{other:?}"),
+		}
+	}
+
+	#[test]
+	fn runtime_error_through_a_retained_closure_reports_the_closure_input() {
+		let context = context();
+		let mut session = Session::new();
+		session
+			.eval(&context, "let c = |v| v.missing_method();")
+			.unwrap();
+		session.eval(&context, "let z = 1;").unwrap();
+		let failure = session.eval(&context, "c(z)").unwrap_err();
+		match failure {
+			Failure::Runtime {
+				origin: Some(o), ..
+			} => assert_eq!((o.input, o.line), (1, 1)),
+			other => panic!("{other:?}"),
+		}
+	}
+
+	#[test]
+	fn every_refusal_and_failure_reports_user_text_never_generated_text() {
+		let context = context();
+		let mut session = Session::new();
+		session.eval(&context, "let keep = 1;").unwrap();
+		for input in [
+			"let x = ;",
+			"use std::fmt;",
+			"impl Foo { fn f() {} }",
+			"macro_rules! m { () => {} }",
+			"fn main() { 1 }",
+			"let __rnx_x = 1;",
+			"let q = 1 / 0;",
+			"nonexistent_fn()",
+			"let v = [1]; v[9]",
+			"panic!(\"p\")",
+		] {
+			let failure = session.eval(&context, input).unwrap_err();
+			let text = failure.to_string();
+			assert!(!text.contains("__rnx_state"), "{input}: {text}");
+			assert!(!text.contains("not in your input"), "{input}: {text}");
+			if let Failure::Compile { origin, .. } | Failure::Runtime { origin, .. } = &failure {
+				assert!(origin.is_some(), "{input}: {text}");
+			}
+		}
+		assert_eq!(
+			rune::from_value::<i64>(session.eval(&context, "keep").unwrap()).unwrap(),
+			1
+		);
+	}
+
+	#[test]
+	fn a_closure_retained_by_a_failed_input_still_maps_to_that_input() {
+		let context = context();
+		let mut session = Session::new();
+		session.eval(&context, "let saved = [];").unwrap();
+		assert!(
+			session
+				.eval(
+					&context,
+					"saved.push(|| panic!(\"retained failure\")); panic!(\"outer\");"
+				)
+				.is_err()
+		);
+		let failure = session.eval(&context, "let f = saved[0]; f()").unwrap_err();
+		match failure {
+			Failure::Runtime {
+				message,
+				origin: Some(o),
+			} => {
+				assert!(message.contains("retained failure"), "{message}");
+				assert_eq!((o.input, o.line), (2, 1));
+			}
+			other => panic!("{other:?}"),
+		}
+	}
+
+	#[test]
+	fn over_bound_refuses_evaluation_but_not_inspection() {
+		let context = context();
+		let mut session = Session::with_bound(200);
+		session.eval(&context, "let a = 1;").unwrap();
+		session
+			.eval(
+				&context,
+				"let b = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];",
+			)
+			.unwrap();
+		let failure = session.eval(&context, "a").unwrap_err();
+		assert!(matches!(failure, Failure::OverBound { .. }), "{failure:?}");
+		assert!(session.retained_bytes() > 200);
+		assert!(!session.last_generated().is_empty());
+	}
 }
