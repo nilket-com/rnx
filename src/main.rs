@@ -9,6 +9,7 @@ mod memory;
 mod repl;
 mod runner;
 mod session;
+mod text;
 
 // Installed for the whole process: the ceiling is enforced against what this
 // counts. A build without the feature enforces no ceiling and says so.
@@ -45,7 +46,8 @@ pub fn display(value: &Value) -> String {
 
 fn main() -> Result<()> {
 	let mut context = Context::with_default_modules()?;
-	let host_functions = host::install(&mut context)?;
+	let mut host_functions = host::install(&mut context)?;
+	host_functions.extend(text::install(&mut context)?);
 	let args: Vec<String> = std::env::args().skip(1).collect();
 	if args.first().is_some_and(|s| s == "eval") {
 		let source = args.get(1).ok_or("eval needs source")?.clone();

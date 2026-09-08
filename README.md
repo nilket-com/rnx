@@ -29,6 +29,10 @@ goes to standard error and the script's own output to standard output.
 `--debug-source`, before the path, also prints the compiled source; anything
 after the path is the script's argument.
 
+Besides `host::`, scripts and sessions have `text::`: `find`, `split_max`,
+and `group_digits`, each added because one real script needed it. Both
+modules complete and describe themselves at the prompt.
+
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's
 parser says it is unfinished (two blank lines abandon it), values rendered
