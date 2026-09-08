@@ -484,7 +484,7 @@ mod tests {
 	#[test]
 	fn every_registered_host_function_has_a_description() {
 		let host = host();
-		assert_eq!(host.len(), 7);
+		assert_eq!(host.len(), 8);
 		for function in &host {
 			assert!(
 				!function.doc.trim().is_empty(),
