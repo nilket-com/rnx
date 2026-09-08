@@ -39,13 +39,36 @@ real perf output.
 
 ## What the language cost
 
-Each of these was found by the port failing, not by reading documentation.
+Each of these was found by the port failing, not by reading documentation,
+which is also how one of them came to be overstated and how a second
+correction went wrong.
+
+Rune's `split` accepts a character predicate, so
+`split(char::is_whitespace)` filtered of empties does the ordinary job and
+the hand-written splitter was mostly unnecessary. That correction stands.
+
+Rune also has `char::is_numeric`, and swapping the port's digit test for it
+was a mistake: `is_numeric` accepts `½`, which Python's `isdigit` rejects
+and which the original's `\d` never matched, so the port could collect
+`12½` and fail to parse it. The fixture could not catch that, because it
+contained no such character. The alphabet is now written out as ASCII `0` to
+`9`, which is what perf emits, the fixture carries samples with `½` in a
+period field and in a source line, and the port is discriminating: it fails
+that fixture under `is_numeric`.
+
+The lesson is its own finding twice over. A language's surface is not
+discoverable from the prompt alone, and `:help` does not cover the standard
+library because record 0003 measured that it cannot. And a predicate that
+looks equivalent is not equivalent until a case that separates them is in
+the fixture.
 
 1. **No regular expressions.** The original's single use, a file marker
    followed by a line number, became a hand-written index-of and digit scan.
 2. **No `String::find`.** The port carries its own index-of.
-3. **No `split_whitespace`.** The port carries its own, including Python's
-   split-with-a-maximum semantics, where the last field keeps its spaces.
+3. **No `split_whitespace` by that name, but `split` takes a character
+   predicate**, so `split(char::is_whitespace)` filtered of empties does the
+   ordinary job. Only Python's split-with-a-maximum, where the last field
+   keeps its internal spaces, still has to be written by hand.
 4. **No `min` or `max` over an iterator of numbers, and no `str::repeat`.**
    Folded by hand.
 5. **No thousands separator in formatting.** Hand-written.
@@ -76,7 +99,9 @@ These are rnx's own defects, found by using it.
 3. **`host::read` does not name the file it failed to open.** Its error is
    `No such file or directory (os error 2)`, where Python's names the path.
    A script reading several files cannot say which one was missing without
-   wrapping every call.
+   wrapping every call. Fixed after this record: every host function that
+   takes a path or a program now names it, and the same error reads
+   `cannot read /tmp/absent.json: No such file or directory (os error 2)`.
 4. **A script's own error is presented wrapped and double-escaped**, as
    `Error: "script returned Err: \"...\""`, where the original prints the
    message plainly.
@@ -111,6 +136,7 @@ through 8 were found so quickly.
    list are the difference between a usable runner and a frustrating one,
    and the mapping already exists.
 2. **Name the path in every host error that touches a path.** Finding 3.
+   Done.
 3. **Present a script's error plainly.** Finding 4.
 4. **Leave Rune's alignment alone and document it.** Matching Rust is what
    Rune does and changing it would be rnx overriding the language it hosts.
