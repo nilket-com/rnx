@@ -410,19 +410,17 @@ mod tests {
 		crate::host::install(&mut context).unwrap();
 		context
 	}
-	fn eval(session: &mut Session, context: &Context, input: &str) -> String {
+	fn eval(session: &mut Session, input: &str) -> String {
 		session.set_budget(usize::MAX);
-		let value = session.eval(context, input).unwrap();
+		let value = session.eval(input).unwrap();
 		render(&value, Some(session), &Limits::default())
 	}
 
 	#[test]
 	fn long_vector_is_cut_with_the_omitted_count() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		let out = eval(
 			&mut session,
-			&context,
 			"let v = []; for i in 0..10000 { v.push(i) } v",
 		);
 		assert!(out.starts_with("[0, 1, 2, "), "{out}");
@@ -431,11 +429,9 @@ mod tests {
 
 	#[test]
 	fn deep_object_is_cut_at_the_depth_with_the_field_count() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		let out = eval(
 			&mut session,
-			&context,
 			"let o = #{leaf: 1, other: 2}; for i in 0..20 { o = #{inner: o} } o",
 		);
 		assert_eq!(out.matches("\"inner\": ").count(), 8, "{out}");
@@ -444,11 +440,9 @@ mod tests {
 
 	#[test]
 	fn huge_string_is_cut_by_bytes() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		let out = eval(
 			&mut session,
-			&context,
 			"let s = String::new(); let chunk = \"0123456789abcdef\"; for i in 0..655360 { s.push_str(chunk) } s",
 		);
 		assert!(
@@ -461,14 +455,12 @@ mod tests {
 
 	#[test]
 	fn total_budget_truncates_the_whole_rendering_honestly() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		// 60 strings of 1000 bytes: each within the string limit, together over
 		// the total budget. The count of what was not rendered is not known
 		// without rendering it, so the marker names the budget, not a count.
 		let out = eval(
 			&mut session,
-			&context,
 			"let s = String::new(); for i in 0..1000 { s.push('x') } let v = []; for i in 0..60 { v.push(s) } v",
 		);
 		assert!(
@@ -481,23 +473,16 @@ mod tests {
 
 	#[test]
 	fn a_value_containing_itself_prints_a_cycle_marker() {
-		let context = context();
-		let mut session = Session::new();
-		let out = eval(
-			&mut session,
-			&context,
-			"let v = [1]; v.push(v); v.push([v]); v",
-		);
+		let mut session = Session::new(context()).unwrap();
+		let out = eval(&mut session, "let v = [1]; v.push(v); v.push([v]); v");
 		assert_eq!(out, "[1, <cycle>, [<cycle>]]");
 	}
 
 	#[test]
 	fn unsupported_types_print_opaque_markers_with_the_type_name() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		let out = eval(
 			&mut session,
-			&context,
 			"(0..3, |a| a, 'c', 2.5, -7, true, None, Some(\"s\"), (), b\"ab\")",
 		);
 		assert_eq!(
@@ -508,18 +493,16 @@ mod tests {
 
 	#[test]
 	fn structs_print_by_declared_fields_and_enums_by_variant() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		// Rune 0.14.1 assigns struct literal values by position, not by name:
 		// `struct P { y, x }` with `P { x: 1, y: 2 }` gives `p.x == 2`, and Rune's
 		// own debug output agrees. The formatter reads slots by declared name,
 		// which matches field access; the literal here keeps declaration order.
 		session
-			.eval(&context, "struct P { y, x } enum E { A, B(v), C { w } }")
+			.eval("struct P { y, x } enum E { A, B(v), C { w } }")
 			.unwrap();
 		let out = eval(
 			&mut session,
-			&context,
 			"(P { y: [2], x: 1 }, E::A, E::B(3), E::C { w: 4 })",
 		);
 		assert_eq!(out, "(P {y: [2], x: 1}, A, B(3), C {0: 4})");
@@ -583,11 +566,8 @@ mod boundary_tests {
 
 	#[test]
 	fn object_keys_are_quoted_and_escaped() {
-		let context = context();
-		let mut session = Session::new();
-		let value = session
-			.eval(&context, "#{\"\\u{1b}[2J\": 1, \"plain\": 2}")
-			.unwrap();
+		let mut session = Session::new(context()).unwrap();
+		let value = session.eval("#{\"\\u{1b}[2J\": 1, \"plain\": 2}").unwrap();
 		let out = render(&value, Some(&session), &Limits::default());
 		assert_eq!(out, "{\"\\u{1b}[2J\": 1, \"plain\": 2}");
 		assert!(!out.contains('\x1b'));
@@ -595,13 +575,9 @@ mod boundary_tests {
 
 	#[test]
 	fn wrapper_chains_stop_at_the_depth() {
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		let value = session
-			.eval(
-				&context,
-				"let v = Some(1); for i in 0..100 { v = Some(v) } v",
-			)
+			.eval("let v = Some(1); for i in 0..100 { v = Some(v) } v")
 			.unwrap();
 		let out = render(&value, Some(&session), &Limits::default());
 		assert_eq!(out.matches("Some(").count(), 9, "{out}");
@@ -611,21 +587,17 @@ mod boundary_tests {
 	#[test]
 	fn limits_bound_the_work_not_only_the_output() {
 		// A million-element vector: only 64 items are copied.
-		let context = context();
-		let mut session = Session::new();
+		let mut session = Session::new(context()).unwrap();
 		session.set_budget(usize::MAX);
 		let value = session
-			.eval(&context, "let v = []; for i in 0..1000000 { v.push(i) } v")
+			.eval("let v = []; for i in 0..1000000 { v.push(i) } v")
 			.unwrap();
 		let (out, work) = render_with_work(&value, Some(&session), &Limits::default());
 		assert!(out.ends_with("63, …(+999936 more)]"), "{out}");
 		assert_eq!(work.items_copied, 64);
 		// A hundred-thousand-entry object: 64 entries examined, no more.
 		let value = session
-			.eval(
-				&context,
-				"let o = #{}; for i in 0..100000 { o[`k${i}`] = i } o",
-			)
+			.eval("let o = #{}; for i in 0..100000 { o[`k${i}`] = i } o")
 			.unwrap();
 		let (out, work) = render_with_work(&value, Some(&session), &Limits::default());
 		assert!(out.ends_with(", …(+99936 more)}"), "{out}");
@@ -634,7 +606,6 @@ mod boundary_tests {
 		// count comes from the key's byte length, not from the copy.
 		let value = session
 			.eval(
-				&context,
 				"let k = String::new(); for i in 0..655360 { k.push_str(\"0123456789abcdef\") } let o = #{}; o[k] = 1; o",
 			)
 			.unwrap();
@@ -648,7 +619,6 @@ mod boundary_tests {
 		// short of the limit, and still reports its 2 omitted bytes.
 		let value = session
 			.eval(
-				&context,
 				"let a = String::new(); for i in 0..4096 { a.push('x') } let b = String::new(); for i in 0..4095 { b.push('x') } let o = #{}; o[a + \"\u{1F600}tail\"] = 1; o[b + \"\u{e9}\"] = 2; o",
 			)
 			.unwrap();

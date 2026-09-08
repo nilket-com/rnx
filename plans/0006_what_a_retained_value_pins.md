@@ -117,8 +117,9 @@ here rather than assumed.
 
 The figure stays what the fifth record decided: tracked live allocation
 request bytes against a ceiling. The source and map component drops the
-generated source it was counting, since a retained unit's generated text is
-no longer held; the component's description changes with it.
+generated source it was counting, since a unit's generated text is no longer
+held, and counts the maps of the entries that remain; the component's
+description changes with it.
 
 ### 6. What this record does not decide
 
