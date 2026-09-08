@@ -5,8 +5,15 @@ mod complete;
 mod format;
 mod host;
 mod inspect;
+mod memory;
 mod repl;
 mod session;
+
+// Installed for the whole process: the ceiling is enforced against what this
+// counts. A build without the feature enforces no ceiling and says so.
+#[cfg(feature = "count-allocations")]
+#[global_allocator]
+static ALLOCATOR: memory::Counting = memory::Counting;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 

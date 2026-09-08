@@ -28,8 +28,13 @@ parser says it is unfinished (two blank lines abandon it), values rendered
 within bounds, diagnostics at the line and column typed, Ctrl-C to clear an
 input or stop a running one, Tab to complete a binding, a declaration, a
 `host::` function path, or a command, Ctrl-D or `:quit` to leave. `:reset` empties
-the session, `:memory` reports what it retains, `:debug` shows the source
-generated for the last input, and `:help` lists them all. History is text only, kept in `$RNX_HISTORY`,
+the session, `:memory` reports tracked live allocation request bytes against
+a ceiling, `:debug` shows the source generated for the last input, and
+`:help` lists them all. The ceiling is `RNX_MEMORY_CEILING` bytes if set,
+else 512 MiB; once a sample between inputs finds the figure at or above it,
+evaluation is refused until a reset samples below it, while inspection keeps
+answering. Building with `--no-default-features` compiles the accounting out,
+and the build says so rather than reporting a figure. History is text only, kept in `$RNX_HISTORY`,
 else `$XDG_STATE_HOME/rnx/history`, else `~/.local/state/rnx/history`, and
 nothing in it runs on restore. `:vars` lists the bindings with their types
 and values, and `:help <name>` describes one binding, declaration, host

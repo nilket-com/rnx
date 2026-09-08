@@ -16,6 +16,11 @@ struct Terminal {
 }
 impl Terminal {
 	fn spawn(history: &std::path::Path) -> Self {
+		Self::spawn_with(history, &[])
+	}
+	/// Spawn with extra environment, for the accounting gates, which need a
+	/// ceiling of their own and a process of their own.
+	fn spawn_with(history: &std::path::Path, environment: &[(&str, &str)]) -> Self {
 		let mut master = 0;
 		let mut slave = 0;
 		let mut size = libc::winsize {
@@ -46,6 +51,9 @@ impl Terminal {
 			.stdin(stdin)
 			.stdout(stdout)
 			.stderr(stderr);
+		for (name, value) in environment {
+			command.env(name, value);
+		}
 		unsafe {
 			command.pre_exec(move || {
 				libc::setsid();
@@ -512,6 +520,260 @@ fn gate_0004_vars_and_help_in_the_terminal() {
 	t.prompt();
 	t.send(":help host::read\r");
 	t.expect("host function");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}
+
+// The allocation ceiling (record 0005). Each of these runs in its own
+// process, because the counter is process-global.
+
+/// Run `:memory` and read the figure it reports.
+fn live_bytes(t: &mut Terminal) -> usize {
+	t.send(":memory\r");
+	t.expect("tracked live allocation request bytes: ");
+	let deadline = Instant::now() + Duration::from_secs(10);
+	loop {
+		let text = t.pending();
+		let digits: String = text.chars().take_while(|c| c.is_ascii_digit()).collect();
+		if !digits.is_empty() && text.len() > digits.len() {
+			t.prompt();
+			return digits.parse().expect("a figure");
+		}
+		assert!(Instant::now() < deadline, "no figure in {text:?}");
+		std::thread::sleep(Duration::from_millis(10));
+	}
+}
+/// Read the source and map component of the same report.
+fn source_bytes(t: &mut Terminal) -> usize {
+	t.send(":memory\r");
+	t.expect("source and map storage: ");
+	let deadline = Instant::now() + Duration::from_secs(10);
+	loop {
+		let text = t.pending();
+		let digits: String = text.chars().take_while(|c| c.is_ascii_digit()).collect();
+		if !digits.is_empty() && text.len() > digits.len() {
+			t.prompt();
+			return digits.parse().expect("a figure");
+		}
+		assert!(Instant::now() < deadline, "no figure in {text:?}");
+		std::thread::sleep(Duration::from_millis(10));
+	}
+}
+
+#[test]
+fn gate_0005_the_ceiling_latches_and_a_reset_that_cannot_recover_says_so() {
+	// A ceiling of one byte: every sample is at or above it, so the behaviour
+	// under the ceiling is deterministic and owes nothing to what the process
+	// happens to have allocated.
+	let history = history_file("ceiling");
+	let mut t = Terminal::spawn_with(&history, &[("RNX_MEMORY_CEILING", "1")]);
+	t.prompt();
+	// The startup sample was taken before the first evaluation was admitted.
+	t.send("1 + 1\r");
+	t.expect("at or above the ceiling");
+	t.expect(":reset to continue");
+	t.prompt();
+	// Inspection still answers, which is the point of a host-side command.
+	t.send(":vars\r");
+	t.expect("no bindings");
+	t.prompt();
+	t.send(":help :memory\r");
+	t.expect("session command");
+	t.prompt();
+	t.send(":memory\r");
+	t.expect("evaluation is refused until :reset");
+	t.prompt();
+	// A reset cannot bring a one-byte ceiling back under, and says so.
+	t.send(":reset\r");
+	t.expect("session reset");
+	t.expect("restarting rnx may be necessary");
+	t.prompt();
+	// The refusal is latched again by the new session's own sample.
+	t.send("1 + 1\r");
+	t.expect("at or above the ceiling");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}
+
+#[test]
+fn gate_0005_memory_names_what_the_figure_is_and_is_not() {
+	let history = history_file("report");
+	let mut t = Terminal::spawn(&history);
+	t.prompt();
+	t.send(":memory\r");
+	t.expect("tracked live allocation request bytes:");
+	t.expect("startup reference point:");
+	t.expect("net change since:");
+	t.expect("source and map storage:");
+	t.expect("Rust's global allocator only");
+	t.expect("not resident memory");
+	t.expect("not the session's share");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}
+
+#[test]
+fn gate_0005_the_figure_moves_with_the_payload_against_a_control() {
+	// Two arms in one session: the same input shape without the payload, then
+	// with it. An arbitrary before and after would prove nothing, since
+	// unrelated allocations can be freed in between.
+	let history = history_file("payload");
+	let mut t = Terminal::spawn(&history);
+	t.prompt();
+	let start = live_bytes(&mut t);
+	let source_start = source_bytes(&mut t);
+	// Control arm: the same shape, no payload.
+	t.send("let control = String::new(); for i in 0..1 { control.push_str(\"x\") }\r");
+	t.prompt();
+	let after_control = live_bytes(&mut t);
+	// Payload arm: eight megabytes of string.
+	t.send(
+		"let payload = String::new(); for i in 0..524288 { payload.push_str(\"0123456789abcdef\") }\r",
+	);
+	t.prompt();
+	let after_payload = live_bytes(&mut t);
+	let source_end = source_bytes(&mut t);
+	let payload = 8 * 1024 * 1024;
+	let control_delta = after_control.saturating_sub(start);
+	let payload_delta = after_payload.saturating_sub(after_control);
+	assert!(
+		payload_delta >= payload,
+		"payload arm moved {payload_delta}, control arm {control_delta}"
+	);
+	assert!(
+		control_delta < payload / 8,
+		"control arm moved {control_delta}, which is not small against {payload}"
+	);
+	// The inputs and their source maps are retained too, so they grow; the
+	// claim is that their growth is small relative to the payload, not zero.
+	let source_growth = source_end.saturating_sub(source_start);
+	assert!(source_growth > 0, "the retained source did not grow at all");
+	assert!(
+		source_growth < payload / 100,
+		"the source component grew {source_growth} against a payload of {payload}"
+	);
+	t.send(":quit\r");
+	t.wait_exit();
+}
+
+#[test]
+fn gate_0005_an_input_past_the_ceiling_is_not_interrupted() {
+	// Not a hard limit: the input that crosses the ceiling completes, and the
+	// refusal arrives at the next one.
+	let history = history_file("nothard");
+	let mut t = Terminal::spawn(&history);
+	t.prompt();
+	let start = live_bytes(&mut t);
+	// A ceiling just above the current figure, reached by the next input.
+	let mut t2 = Terminal::spawn_with(
+		&history_file("nothard2"),
+		&[("RNX_MEMORY_CEILING", &(start + 4 * 1024 * 1024).to_string())],
+	);
+	t.send(":quit\r");
+	t.wait_exit();
+	t2.prompt();
+	// This input allocates far past the ceiling and still returns its value.
+	t2.send(
+		"let big = String::new(); for i in 0..1048576 { big.push_str(\"0123456789abcdef\") } big.len()\r",
+	);
+	t2.expect("16777216");
+	t2.prompt();
+	// The refusal arrives at the next input, not during that one.
+	t2.send("1 + 1\r");
+	t2.expect("at or above the ceiling");
+	t2.prompt();
+	// Inspection still answers over the ceiling.
+	t2.send(":vars\r");
+	t2.expect("big: String");
+	t2.prompt();
+	t2.send(":quit\r");
+	t2.wait_exit();
+}
+
+#[test]
+fn gate_0005_a_self_referential_value_is_not_reclaimed_by_a_reset() {
+	// Rune's values are reference counted with no cycle collector, so a value
+	// that holds itself keeps its payload alive past `:reset`. The gate
+	// measures that rather than assuming it either way.
+	let history = history_file("cycle");
+	let mut t = Terminal::spawn(&history);
+	t.prompt();
+	let start = live_bytes(&mut t);
+	t.send(
+		"let payload = String::new(); for i in 0..524288 { payload.push_str(\"0123456789abcdef\") }\r",
+	);
+	t.prompt();
+	let with_payload = live_bytes(&mut t);
+	let payload = 8 * 1024 * 1024;
+	assert!(with_payload - start >= payload, "the payload did not land");
+	t.send("let cycle = [payload]; cycle.push(cycle);\r");
+	t.prompt();
+	t.send(":reset\r");
+	t.expect("session reset");
+	t.prompt();
+	let after_reset = live_bytes(&mut t);
+	// The payload survives the reset, because the cycle still holds it.
+	assert!(
+		after_reset - start >= payload,
+		"the cycle was reclaimed after all: {after_reset} against {start}"
+	);
+	t.send(":quit\r");
+	t.wait_exit();
+
+	// The control: the same payload without the cycle is reclaimed.
+	let mut t = Terminal::spawn(&history_file("cycle_control"));
+	t.prompt();
+	let start = live_bytes(&mut t);
+	t.send(
+		"let payload = String::new(); for i in 0..524288 { payload.push_str(\"0123456789abcdef\") }\r",
+	);
+	t.prompt();
+	t.send(":reset\r");
+	t.expect("session reset");
+	t.prompt();
+	let after_reset = live_bytes(&mut t);
+	assert!(
+		after_reset - start < payload / 8,
+		"the payload was not reclaimed without a cycle: {after_reset} against {start}"
+	);
+	t.send(":quit\r");
+	t.wait_exit();
+}
+
+#[test]
+fn gate_0005_a_failed_input_that_grew_shared_state_still_charges() {
+	// The first release record's rule, on the measured figure: an input that
+	// grows an already retained value and then fails has still grown it, and
+	// the sample after the failure charges it.
+	let probe = Terminal::spawn(&history_file("charge_probe"));
+	let mut probe = probe;
+	probe.prompt();
+	let start = live_bytes(&mut probe);
+	probe.send(":quit\r");
+	probe.wait_exit();
+
+	let mut t = Terminal::spawn_with(
+		&history_file("charge"),
+		&[("RNX_MEMORY_CEILING", &(start + 4 * 1024 * 1024).to_string())],
+	);
+	t.prompt();
+	t.send("let shared = [];\r");
+	t.prompt();
+	// Grows the retained vector far past the ceiling, then fails.
+	t.send("for i in 0..1048576 { shared.push(i) } panic!(\"stop\")\r");
+	t.expect("runtime error");
+	t.prompt();
+	// The growth stands, so the sample after the failed input charges it and
+	// the next evaluation is refused.
+	t.send("1 + 1\r");
+	t.expect("at or above the ceiling");
+	t.prompt();
+	// The mutation the failed input made is still visible to inspection.
+	t.send(":vars\r");
+	t.expect("shared: Vec");
 	t.prompt();
 	t.send(":quit\r");
 	t.wait_exit();
