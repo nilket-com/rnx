@@ -29,6 +29,12 @@ goes to standard error and the script's own output to standard output.
 `--debug-source`, before the path, also prints the compiled source; anything
 after the path is the script's argument.
 
+A script chooses its own exit status with `host::exit(code)`, and can say
+something on the way out with `host::eprint(text)`, so it can fail quietly
+with its report on standard output or exit 2 for a usage error the way a
+command-line tool is expected to. A status outside 0 to 255 is refused rather
+than truncated, because 256 would reach the shell as 0.
+
 A script given no path can read `host::stdin()`, so it can sit in a pipeline
 like any other filter. It reads the stream once, under the same eight
 mebibyte limit as `host::read`, and refuses a terminal rather than waiting

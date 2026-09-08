@@ -51,6 +51,7 @@ fn main() -> Result<()> {
 	let args: Vec<String> = std::env::args().skip(1).collect();
 	if args.first().is_some_and(|s| s == "eval") {
 		let source = args.get(1).ok_or("eval needs source")?.clone();
+		host::running_a_script();
 		let mut session = session::Session::new(context)?;
 		match session.eval(&source) {
 			Ok(value) => println!(

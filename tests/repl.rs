@@ -852,3 +852,39 @@ fn gate_0012_standard_input_is_refused_at_the_prompt_and_the_prompt_survives() {
 	t.send(":quit\r");
 	t.wait_exit();
 }
+
+#[test]
+fn gate_0013_the_exit_status_is_refused_at_the_prompt_and_the_prompt_survives() {
+	// `host::exit` at a prompt would end the person's session, and `:quit`
+	// already does that deliberately.
+	let history = history_file("exit");
+	let mut t = Terminal::spawn(&history);
+	t.prompt();
+	t.send("host::exit(0)\r");
+	t.expect("this is a session, not a script");
+	t.expect(":quit");
+	t.prompt();
+	// A status that could never be valid is refused the same way here: the
+	// prompt is the reason, and nothing about it ends the session.
+	t.send("host::exit(256)\r");
+	t.expect("this is a session, not a script");
+	t.prompt();
+	// The session is still here and still the person's.
+	t.send("1 + 1\r");
+	t.expect("2");
+	t.prompt();
+	// Writing to standard error is harmless at a prompt, so it is allowed.
+	t.send("host::eprint(\"a warning\\n\")\r");
+	t.expect("a warning");
+	t.prompt();
+	// Both describe themselves from their registration.
+	t.send(":help host::exit\r");
+	t.expect("host function");
+	t.expect("end the script with this status");
+	t.prompt();
+	t.send(":help host::eprint\r");
+	t.expect("adding nothing");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}

@@ -229,6 +229,8 @@ mod description_tests {
 			"host::json_stringify",
 			"host::read",
 			"host::stdin",
+			"host::exit",
+			"host::eprint",
 			"host::write_new",
 			"host::mkdir",
 			"host::absolute",
