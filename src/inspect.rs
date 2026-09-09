@@ -137,7 +137,7 @@ pub fn vars_with_work(session: &Session, limits: &InspectLimits) -> (String, Wor
 		let line = format!(
 			"{name}: {} = {}",
 			type_of(value),
-			render(value, Some(session), &limits.values)
+			render(value, Some(&session.fields()), &limits.values)
 		);
 		if !budget.line(&line) {
 			return false;
@@ -196,7 +196,7 @@ pub fn help_with_work(
 			budget.work.values_rendered += 1;
 			budget.line(&format!(
 				"  value: {}",
-				render(&value, Some(session), &limits.values)
+				render(&value, Some(&session.fields()), &limits.values)
 			));
 			if session.declaration(name).is_some() {
 				budget.line("  a declaration of this name also exists");

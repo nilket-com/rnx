@@ -3,8 +3,27 @@
 //! VM, so rendering a value runs no script code. Every limit is applied
 //! before anything is copied or descended into, so the work done is bounded
 //! by the output allowed, not by the size of the value.
-use crate::session::Session;
+use crate::declared::Fields;
 use rune::runtime::{Function, Object, OwnedTuple, TypeValue, Value, Vec as RuneVec};
+
+/// The deepest a value is opened where the output is the product rather than
+/// a preview. Measured: the renderer recurses, and with the limits lifted a
+/// debug build renders a value nested 2048 deep and dies by 3072, so this
+/// leaves an eightfold margin under what works and is twice serde_json's own
+/// default parse limit. A value that reaches it is pathological, not large.
+/// The JSON walk shares this number rather than having one of its own.
+pub const MAX_DEPTH: usize = 256;
+
+/// What to do about a value too deep to open.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OnExcess {
+	/// Show a marker and carry on. A prompt is a preview, and a marked
+	/// preview is honest about itself.
+	Elide,
+	/// Report a failure. At a shell entry point the value is the output, and
+	/// a caller reading 64 of 4000 items has been told nothing true.
+	Refuse,
+}
 
 #[derive(Clone, Debug)]
 pub struct Limits {
@@ -12,35 +31,107 @@ pub struct Limits {
 	pub length: usize,
 	pub string_bytes: usize,
 	pub total_bytes: usize,
+	pub on_excess: OnExcess,
 }
-impl Default for Limits {
-	fn default() -> Self {
+impl Limits {
+	/// What a person reading a prompt gets: bounded, and marked where it was
+	/// cut. Record 0005's ceiling is what this protects.
+	pub fn preview() -> Self {
 		Self {
 			depth: 8,
 			length: 64,
 			string_bytes: 4096,
 			total_bytes: 16 * 1024,
+			on_excess: OnExcess::Elide,
+		}
+	}
+	/// What a shell entry point gets: the whole value, or a failure. No
+	/// volume cap at all, and the depth bound is the recursion bound rather
+	/// than a display choice, so the only way to exceed it is to be
+	/// pathological.
+	pub fn complete() -> Self {
+		Self {
+			depth: MAX_DEPTH,
+			length: usize::MAX,
+			string_bytes: usize::MAX,
+			total_bytes: usize::MAX,
+			on_excess: OnExcess::Refuse,
 		}
 	}
 }
-
-/// Render a value. `session` supplies field names for structs it declared.
-pub fn render(value: &Value, session: Option<&Session>, limits: &Limits) -> String {
-	render_with_work(value, session, limits).0
+impl Default for Limits {
+	fn default() -> Self {
+		Self::preview()
+	}
 }
-/// Render, and report the work done, for tests that bound it.
-pub fn render_with_work(
-	value: &Value,
-	session: Option<&Session>,
-	limits: &Limits,
-) -> (String, Work) {
+
+/// What a returned error looks like, from either entry point.
+///
+/// One policy in one place. A string prints bare — without quotes and without
+/// a wrapper, as record 0018 decided — and anything else goes through the
+/// bounded renderer. Both get the same budget, the preview's string budget,
+/// because an error is a report of a failure and a report that fills a
+/// terminal is not one: record 0019 decision 4. Escaping stops at the budget,
+/// so the work is bounded by what is printed rather than by the size of what
+/// was returned.
+pub fn error_text(value: &Value, fields: Option<&Fields>) -> String {
+	let limits = Limits::preview();
+	match value.borrow_string_ref() {
+		Ok(text) => {
+			let mut out = String::new();
+			let consumed = terminal_safe_into(&text, limits.string_bytes, &mut out);
+			if consumed < text.len() {
+				out.push_str(&format!("…(+{} bytes)", text.len() - consumed));
+			}
+			out
+		}
+		Err(_) => render(value, fields, &limits),
+	}
+}
+
+/// Render a value whole, or say why it could not be.
+///
+/// The text is built before anything is printed, so a caller can put a
+/// failure on standard error without having written half a value to standard
+/// output. This is a claim about rendering, not about the stream: a write
+/// that fails part-way is the caller's to report.
+///
+/// A cycle and an opaque value are **not** failures. `<cycle>`, `<function>`
+/// and the like are what those values look like, and a value containing one
+/// is rendered whole.
+pub fn render_complete(value: &Value, fields: Option<&Fields>) -> Result<String, String> {
+	let limits = Limits::complete();
 	let mut r = Renderer {
 		out: String::new(),
-		session,
+		fields,
+		limits: &limits,
+		path: Vec::new(),
+		truncated: false,
+		work: Work::default(),
+		failure: None,
+	};
+	r.value(value, 0);
+	match r.failure {
+		Some(reason) => Err(reason),
+		None => Ok(r.out),
+	}
+}
+
+/// Render a value. `fields` supplies candidate field names for structs whose
+/// declarations rnx compiled; each is verified against the value before use.
+pub fn render(value: &Value, fields: Option<&Fields>, limits: &Limits) -> String {
+	render_with_work(value, fields, limits).0
+}
+/// Render, and report the work done, for tests that bound it.
+pub fn render_with_work(value: &Value, fields: Option<&Fields>, limits: &Limits) -> (String, Work) {
+	let mut r = Renderer {
+		out: String::new(),
+		fields,
 		limits,
 		path: Vec::new(),
 		truncated: false,
 		work: Work::default(),
+		failure: None,
 	};
 	r.value(value, 0);
 	if r.truncated {
@@ -54,12 +145,15 @@ pub fn render_with_work(
 
 struct Renderer<'a> {
 	out: String,
-	session: Option<&'a Session>,
+	fields: Option<&'a Fields>,
 	limits: &'a Limits,
 	/// Addresses of shared allocations on the current render path.
 	path: Vec<usize>,
 	truncated: bool,
 	work: Work,
+	/// Why the value could not be rendered whole, in `Refuse` mode. The first
+	/// reason is kept: it names the shallowest place the value outran the bound.
+	failure: Option<String>,
 }
 /// What a rendering examined and copied; tests bound it structurally.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -87,7 +181,7 @@ impl Renderer<'_> {
 	/// budget; once anything has been refused, everything after it is too, so
 	/// the output never shows a later piece as if nothing were missing.
 	fn push(&mut self, s: &str) {
-		if self.truncated || self.out.len() + s.len() > self.limits.total_bytes {
+		if self.truncated || self.out.len().saturating_add(s.len()) > self.limits.total_bytes {
 			self.truncated = true;
 			return;
 		}
@@ -102,11 +196,28 @@ impl Renderer<'_> {
 			return false;
 		}
 		if depth >= self.limits.depth {
-			self.push(cut);
+			self.excess(cut);
 			return false;
 		}
 		self.path.push(address);
 		true
+	}
+	/// A value too deep to open: a marked preview where that is what the
+	/// output is for, and a failure where the output is the product. The
+	/// first reason is kept, because it names the shallowest place the value
+	/// outran the bound.
+	fn excess(&mut self, cut: &str) {
+		match self.limits.on_excess {
+			OnExcess::Elide => self.push(cut),
+			OnExcess::Refuse => {
+				if self.failure.is_none() {
+					self.failure = Some(format!(
+						"the value is nested deeper than {} levels",
+						self.limits.depth
+					));
+				}
+			}
+		}
 	}
 	fn leave(&mut self) {
 		self.path.pop();
@@ -117,7 +228,7 @@ impl Renderer<'_> {
 		}
 		// Wrapper types descend too; past the depth nothing is opened.
 		if depth > self.limits.depth {
-			self.push("…");
+			self.excess("…");
 			return;
 		}
 		if let Ok(s) = value.borrow_string_ref() {
@@ -144,7 +255,9 @@ impl Renderer<'_> {
 			return;
 		}
 		if let Ok(b) = value.borrow_ref::<rune::runtime::Bytes>() {
-			self.push(&format!("b\"{} bytes\"", b.len()));
+			let bytes = b.as_slice().to_vec();
+			drop(b);
+			self.bytes(&bytes);
 			return;
 		}
 		if let Ok(o) = value.borrow_ref::<Option<Value>>() {
@@ -235,25 +348,34 @@ impl Renderer<'_> {
 				if !self.enter(address, depth, &format!("{{…({total} fields)}}")) {
 					return;
 				}
-				let fields = self
-					.session
-					.and_then(|session| session.struct_fields(&name).map(|f| f.to_vec()));
-				let entries: Vec<(String, usize, Value)> = match fields {
-					Some(fields) => fields
-						.iter()
-						.take(self.limits.length)
-						.filter_map(|f| s.get(f.as_str()).map(|v| (f.clone(), f.len(), v.clone())))
-						.collect(),
-					None => s
-						.data()
-						.iter()
-						.take(self.limits.length)
-						.enumerate()
-						.map(|(i, v)| (i.to_string(), i.to_string().len(), v.clone()))
-						.collect(),
-				};
-				drop(s);
-				self.object(&entries, total, depth, false);
+				// A candidate is used only once the value has answered to
+				// every name in it and holds exactly that many fields, so the
+				// names describe this shape whichever unit built it. Where
+				// nothing fits, the names are unknown and say so: positions
+				// printed in their place read as field names and are not.
+				let fitting = self
+					.fields
+					.and_then(|known| known.fitting(&name, total, |field| s.get(field).is_some()))
+					.map(|fields| fields.to_vec());
+				match fitting {
+					Some(fields) => {
+						let entries: Vec<(String, usize, Value)> = fields
+							.iter()
+							.take(self.limits.length)
+							.filter_map(|f| {
+								s.get(f.as_str()).map(|v| (f.clone(), f.len(), v.clone()))
+							})
+							.collect();
+						drop(s);
+						self.object(&entries, total, depth, false);
+					}
+					None => {
+						let values: Vec<Value> =
+							s.data().iter().take(self.limits.length).cloned().collect();
+						drop(s);
+						self.items("{<names unknown> ", "}", &values, total, depth, false);
+					}
+				}
 				self.leave();
 			}
 			Ok(TypeValue::NotTypedInline(_)) => self.inline(value),
@@ -299,6 +421,33 @@ impl Renderer<'_> {
 			self.push(&format!("{s:?}"));
 		}
 	}
+	/// A byte string, as its contents. Bytes are data a script means to look
+	/// at — `b"abc"` and `b"xyz"` are two different values, and printing both
+	/// as their length told a reader nothing. A byte that reads as itself
+	/// does; every other is `\xNN`, so the text is unambiguous and safe to
+	/// print whatever the bytes are, valid UTF-8 or not.
+	///
+	/// Cut at the string budget like any other string, with the number of
+	/// bytes left out, so a prompt previews and a shell entry point does not.
+	fn bytes(&mut self, bytes: &[u8]) {
+		let shown = bytes.len().min(self.limits.string_bytes);
+		let mut out = String::with_capacity(shown + 3);
+		out.push_str("b\"");
+		for byte in &bytes[..shown] {
+			match byte {
+				b'"' => out.push_str("\\\""),
+				b'\\' => out.push_str("\\\\"),
+				0x20..=0x7e => out.push(*byte as char),
+				_ => out.push_str(&format!("\\x{byte:02x}")),
+			}
+		}
+		out.push('"');
+		if shown < bytes.len() {
+			out.push_str(&format!("…(+{} bytes)", bytes.len() - shown));
+		}
+		self.push(&out);
+	}
+
 	/// `items` holds at most `length` values of a container of `total`.
 	fn items(
 		&mut self,
@@ -373,7 +522,11 @@ pub fn terminal_safe_into(text: &str, budget: usize, out: &mut String) -> usize 
 	let mut escape = String::new();
 	for c in text.chars() {
 		let piece: &str = match c {
-			'\n' | '\t' => c.encode_utf8(&mut buffer),
+			// A newline is kept: it cannot put the cursor anywhere a reader
+			// does not expect, and stored text reads better with it. A tab is
+			// not, because a caret is placed under what was printed and a tab
+			// would make that a question about the terminal's tab stops.
+			'\n' => c.encode_utf8(&mut buffer),
 			c if c.is_control() => {
 				escape.clear();
 				use std::fmt::Write;
@@ -390,6 +543,23 @@ pub fn terminal_safe_into(text: &str, budget: usize, out: &mut String) -> usize 
 		consumed += c.len_utf8();
 	}
 	consumed
+}
+
+/// Text made safe to print, whole. Everything rnx writes on its own behalf
+/// goes through here: a diagnostic message, a file path, a source excerpt.
+/// Values go through the renderer, which quotes and escapes them.
+pub fn terminal_safe(text: &str) -> String {
+	let mut out = String::new();
+	terminal_safe_into(text, usize::MAX, &mut out);
+	out
+}
+
+/// How many terminal columns a piece of already-escaped text occupies. A
+/// caret is placed with this rather than by counting characters, because an
+/// East Asian wide character occupies two columns and a combining mark none.
+/// The one place the crate answers this question.
+pub fn display_width(text: &str) -> usize {
+	unicode_width::UnicodeWidthStr::width(text)
 }
 
 /// The last path component of an item, `Boxed` for `::Boxed`, and `Vec` for
@@ -413,9 +583,209 @@ mod tests {
 	fn eval(session: &mut Session, input: &str) -> String {
 		session.set_budget(usize::MAX);
 		let value = session.eval(input).unwrap();
-		render(&value, Some(session), &Limits::default())
+		render(&value, Some(&session.fields()), &Limits::default())
 	}
 
+	#[test]
+	fn a_candidate_that_does_not_fit_the_value_is_not_used() {
+		// The heart of decision 5: a name is verified, never assumed. A table
+		// holding the wrong field list for this short name must not be
+		// believed, and the fields say they are unknown rather than printing
+		// positions that read as names.
+		let mut session = Session::new(context()).unwrap();
+		session.eval("struct P { code }").unwrap();
+		let value = session.eval("P { code: 7 }").unwrap();
+
+		let mut wrong = Fields::default();
+		wrong.add("P", vec!["elsewhere".to_owned()]);
+		assert_eq!(
+			render(&value, Some(&wrong), &Limits::preview()),
+			"P {<names unknown> 7}",
+			"a candidate with the wrong name was used"
+		);
+
+		let mut short = Fields::default();
+		short.add("P", vec!["code".to_owned(), "extra".to_owned()]);
+		assert_eq!(
+			render(&value, Some(&short), &Limits::preview()),
+			"P {<names unknown> 7}",
+			"a candidate of the wrong arity was used"
+		);
+
+		// And with nothing known at all, which is what `run` had before this
+		// cut and what any host value has now.
+		assert_eq!(
+			render(&value, None, &Limits::preview()),
+			"P {<names unknown> 7}"
+		);
+
+		// The right candidate is used, so the test above is not passing for
+		// want of a working path.
+		assert_eq!(
+			render(&value, Some(&session.fields()), &Limits::preview()),
+			"P {code: 7}"
+		);
+	}
+
+	#[test]
+	fn a_retained_value_keeps_its_field_names_across_later_inputs() {
+		// A value made by an earlier input renders by the declaration it was
+		// made with, after other inputs have come and gone. Records 0006 and
+		// 0007 keep that unit alive weakly; what this asserts is that the
+		// names still resolve.
+		let mut session = Session::new(context()).unwrap();
+		session.eval("struct P { code }").unwrap();
+		let value = session.eval("P { code: 7 }").unwrap();
+		session.eval("let unrelated = 1;").unwrap();
+		session.eval("fn helper() { 2 }").unwrap();
+		session.eval("struct Other { a, b }").unwrap();
+		assert_eq!(
+			render(&value, Some(&session.fields()), &Limits::preview()),
+			"P {code: 7}",
+			"a retained value lost its field names"
+		);
+	}
+
+	#[test]
+	fn byte_strings_show_their_contents() {
+		// `b"abc"` and `b"xyz"` are two different values. Printing both as
+		// their length said nothing about either, and exited 0 while doing it.
+		let mut session = Session::new(context()).unwrap();
+		let abc = session.eval("b\"abc\"").unwrap();
+		let xyz = session.eval("b\"xyz\"").unwrap();
+		let complete = |v: &Value| render_complete(v, None).unwrap();
+		assert_eq!(complete(&abc), "b\"abc\"");
+		assert_eq!(complete(&xyz), "b\"xyz\"");
+		assert_ne!(
+			complete(&abc),
+			complete(&xyz),
+			"two byte strings of one length are not one value"
+		);
+
+		// Bytes that are not text at all, and the two delimiters that would
+		// otherwise end the literal.
+		let raw = session.eval("b\"\\xff\\xfe\\x00ok\"").unwrap();
+		assert_eq!(complete(&raw), "b\"\\xff\\xfe\\x00ok\"");
+		let quoted = session.eval("b\"a\\\"b\\\\c\"").unwrap();
+		assert_eq!(complete(&quoted), "b\"a\\\"b\\\\c\"");
+	}
+
+	#[test]
+	fn a_large_byte_string_is_complete_at_an_entry_point_and_previewed_at_a_prompt() {
+		let mut session = Session::new(context()).unwrap();
+		session.set_budget(usize::MAX);
+		let value = session
+			.eval("let v = []; for i in 0..9000 { v.push(65) } Bytes::from_vec(v)")
+			.unwrap();
+		let complete = render_complete(&value, None).unwrap();
+		assert_eq!(complete.matches('A').count(), 9_000, "bytes went missing");
+		assert!(!complete.contains('…'), "a complete rendering elided");
+
+		let preview = render(&value, None, &Limits::preview());
+		assert!(
+			preview.contains("…(+4904 bytes)"),
+			"a preview should say what it left out: {}",
+			&preview[preview.len().saturating_sub(40)..]
+		);
+		assert!(preview.len() < 4_200, "preview is {} bytes", preview.len());
+	}
+
+	#[test]
+	fn an_error_is_bounded_by_the_same_budget_whatever_its_shape() {
+		// A string error used to skip the budget entirely: 20,000 characters
+		// printed 20,008 bytes while the same text inside an object printed
+		// 4,130. One policy now, and the budget is the preview's string
+		// budget, so the two cannot diverge again.
+		let mut session = Session::new(context()).unwrap();
+		session.set_budget(usize::MAX);
+		session
+			.eval("let s = \"\"; for i in 0..2000 { s += \"0123456789\" } s")
+			.unwrap();
+		let bare = session.eval("Err(s)").unwrap();
+		let wrapped = session.eval("Err(#{message: s})").unwrap();
+		let budget = Limits::preview().string_bytes;
+
+		let bare = error_text(&bare, None);
+		let wrapped = error_text(&wrapped, None);
+		assert!(
+			bare.len() < budget + 64,
+			"a string error is {} bytes",
+			bare.len()
+		);
+		assert!(
+			bare.contains("…(+15904 bytes)"),
+			"the omitted count is missing"
+		);
+		assert!(
+			wrapped.len() < budget + 64,
+			"a wrapped error is {} bytes",
+			wrapped.len()
+		);
+
+		// Bounded work, not merely bounded output: escaping stops at the
+		// budget, so nothing past it is examined or copied. Every character
+		// here escapes to six bytes, which a length check alone would miss.
+		let mut out = String::new();
+		let escapes = "\u{1b}".repeat(200_000);
+		let consumed = terminal_safe_into(&escapes, budget, &mut out);
+		assert!(consumed <= budget, "{consumed} bytes of input were read");
+		assert!(out.len() <= budget, "{} bytes were written", out.len());
+	}
+
+	#[test]
+	fn a_preview_elides_and_a_complete_rendering_does_not() {
+		// The split decision 1 of record 0019 makes, asserted where both limit
+		// sets are defined so the two halves cannot drift apart: the same value
+		// previews short for a person at a prompt and renders whole where the
+		// output is the product a caller reads.
+		let mut session = Session::new(context()).unwrap();
+		session.set_budget(usize::MAX);
+		let value = session
+			.eval("let v = []; for i in 0..4000 { v.push(1) } v")
+			.unwrap();
+		let preview = render(&value, Some(&session.fields()), &Limits::preview());
+		assert!(preview.contains("…(+3936 more)"), "{preview}");
+		assert!(
+			preview.len() < 1_000,
+			"a preview should stay short, got {} bytes",
+			preview.len()
+		);
+		let complete = render_complete(&value, Some(&session.fields())).unwrap();
+		assert_eq!(complete.matches('1').count(), 4_000, "items are missing");
+		assert!(!complete.contains('…'), "a complete rendering elided");
+	}
+
+	#[test]
+	fn a_cycle_and_an_opaque_value_are_complete_renderings() {
+		// Not failures: `<cycle>` and `<function>` are what those values look
+		// like, so a value containing one renders whole and reports nothing.
+		let mut session = Session::new(context()).unwrap();
+		session.set_budget(usize::MAX);
+		let value = session.eval("let v = [1]; v.push(v); v").unwrap();
+		assert_eq!(
+			render_complete(&value, Some(&session.fields())).unwrap(),
+			"[1, <cycle>]"
+		);
+		let value = session.eval("[|| 1]").unwrap();
+		assert_eq!(
+			render_complete(&value, Some(&session.fields())).unwrap(),
+			"[<function>]"
+		);
+	}
+
+	#[test]
+	fn repeated_shared_data_is_not_a_cycle() {
+		// One allocation referenced twice is repeated data, and a renderer
+		// that tracked values seen rather than the active path would call it a
+		// cycle. The guard pushes on descent and pops on return.
+		let mut session = Session::new(context()).unwrap();
+		session.set_budget(usize::MAX);
+		let value = session.eval("let a = [1]; [a, a]").unwrap();
+		assert_eq!(
+			render_complete(&value, Some(&session.fields())).unwrap(),
+			"[[1], [1]]"
+		);
+	}
 	#[test]
 	fn long_vector_is_cut_with_the_omitted_count() {
 		let mut session = Session::new(context()).unwrap();
@@ -487,7 +857,10 @@ mod tests {
 		);
 		assert_eq!(
 			out,
-			"(<::std::ops::Range>, <function>, 'c', 2.5, -7, true, None, Some(\"s\"), (), b\"2 bytes\")"
+			// Bytes are not in this company any more: they are data a script
+			// means to look at, and record 0019 renders their contents. A
+			// range and a function have no contents to show.
+			"(<::std::ops::Range>, <function>, 'c', 2.5, -7, true, None, Some(\"s\"), (), b\"ab\")"
 		);
 	}
 
@@ -505,7 +878,10 @@ mod tests {
 			&mut session,
 			"(P { y: [2], x: 1 }, E::A, E::B(3), E::C { w: 4 })",
 		);
-		assert_eq!(out, "(P {y: [2], x: 1}, A, B(3), C {0: 4})");
+		// Record 0019 decision 5: a struct variant's field names come from its
+		// declaration like any other, verified against the value. This used to
+		// print `C {0: 4}`, a position dressed as a field name.
+		assert_eq!(out, "(P {y: [2], x: 1}, A, B(3), C {w: 4})");
 	}
 
 	/// A host type whose debug protocol records that it ran.
@@ -568,7 +944,7 @@ mod boundary_tests {
 	fn object_keys_are_quoted_and_escaped() {
 		let mut session = Session::new(context()).unwrap();
 		let value = session.eval("#{\"\\u{1b}[2J\": 1, \"plain\": 2}").unwrap();
-		let out = render(&value, Some(&session), &Limits::default());
+		let out = render(&value, Some(&session.fields()), &Limits::default());
 		assert_eq!(out, "{\"\\u{1b}[2J\": 1, \"plain\": 2}");
 		assert!(!out.contains('\x1b'));
 	}
@@ -579,7 +955,7 @@ mod boundary_tests {
 		let value = session
 			.eval("let v = Some(1); for i in 0..100 { v = Some(v) } v")
 			.unwrap();
-		let out = render(&value, Some(&session), &Limits::default());
+		let out = render(&value, Some(&session.fields()), &Limits::default());
 		assert_eq!(out.matches("Some(").count(), 9, "{out}");
 		assert!(out.contains("…"), "{out}");
 	}
@@ -592,14 +968,14 @@ mod boundary_tests {
 		let value = session
 			.eval("let v = []; for i in 0..1000000 { v.push(i) } v")
 			.unwrap();
-		let (out, work) = render_with_work(&value, Some(&session), &Limits::default());
+		let (out, work) = render_with_work(&value, Some(&session.fields()), &Limits::default());
 		assert!(out.ends_with("63, …(+999936 more)]"), "{out}");
 		assert_eq!(work.items_copied, 64);
 		// A hundred-thousand-entry object: 64 entries examined, no more.
 		let value = session
 			.eval("let o = #{}; for i in 0..100000 { o[`k${i}`] = i } o")
 			.unwrap();
-		let (out, work) = render_with_work(&value, Some(&session), &Limits::default());
+		let (out, work) = render_with_work(&value, Some(&session.fields()), &Limits::default());
 		assert!(out.ends_with(", …(+99936 more)}"), "{out}");
 		assert_eq!(work.entries_examined, 64);
 		// A ten-megabyte key: at most the string limit is copied; the omitted
@@ -609,7 +985,7 @@ mod boundary_tests {
 				"let k = String::new(); for i in 0..655360 { k.push_str(\"0123456789abcdef\") } let o = #{}; o[k] = 1; o",
 			)
 			.unwrap();
-		let (out, work) = render_with_work(&value, Some(&session), &Limits::default());
+		let (out, work) = render_with_work(&value, Some(&session.fields()), &Limits::default());
 		assert!(out.ends_with("\"…(+10481664 bytes): 1}"), "{}", out.len());
 		assert_eq!(work.key_bytes_copied, 4096);
 		assert!(out.len() < 4200, "{}", out.len());
@@ -622,7 +998,7 @@ mod boundary_tests {
 				"let a = String::new(); for i in 0..4096 { a.push('x') } let b = String::new(); for i in 0..4095 { b.push('x') } let o = #{}; o[a + \"\u{1F600}tail\"] = 1; o[b + \"\u{e9}\"] = 2; o",
 			)
 			.unwrap();
-		let (out, work) = render_with_work(&value, Some(&session), &Limits::default());
+		let (out, work) = render_with_work(&value, Some(&session.fields()), &Limits::default());
 		assert!(
 			out.contains("\"…(+8 bytes): 1"),
 			"{}",

@@ -2,9 +2,11 @@ use rune::runtime::Value;
 use rune::{Context, Source, Sources, Vm};
 use std::sync::Arc;
 mod complete;
+mod declared;
 mod format;
 mod host;
 mod inspect;
+mod json;
 mod memory;
 mod method;
 mod repl;
@@ -41,13 +43,6 @@ fn call(context: &Context, source: &str, state: Value) -> Result<Value> {
 		.call()
 		.map_err(|e| e.to_string().into())
 }
-/// The text `run` shows for a value a script returned, or why it cannot be
-/// shown. `run` renders with JSON and Rune has shapes JSON has no form for,
-/// so this can fail; it says so rather than returning text that reads like a
-/// value, because a rendering that failed and a value must not look alike.
-pub fn display(value: &Value) -> std::result::Result<String, String> {
-	serde_json::to_string(value).map_err(|e| e.to_string())
-}
 
 fn main() -> Result<()> {
 	let mut context = Context::with_default_modules()?;
@@ -58,7 +53,6 @@ fn main() -> Result<()> {
 		let source = args.get(1).ok_or("eval needs source")?.clone();
 		host::running_a_script();
 		let mut session = session::Session::new(context)?;
-		let limits = format::Limits::default();
 		match session.eval(&source) {
 			// What a returned value means is decided in one place, so `eval`
 			// and `run` cannot disagree about what a failure is. The renderer
@@ -66,18 +60,22 @@ fn main() -> Result<()> {
 			Ok(value) => match runner::returned(&value) {
 				Ok(value) => {
 					if !runner::is_unit(&value) {
-						println!("{}", format::render(&value, Some(&session), &limits));
+						// A shell entry point renders the whole value or reports
+						// why it could not, in the same words `run` uses.
+						match format::render_complete(&value, Some(&session.fields())) {
+							Ok(text) => println!("{text}"),
+							Err(reason) => {
+								eprintln!("error: {}", runner::cannot_show(&reason));
+								std::process::exit(1);
+							}
+						}
 					}
 				}
 				Err(error) => {
-					// A string error prints as it was written, as it does
-					// from `run`.
-					match error.borrow_string_ref() {
-						Ok(text) => eprintln!("error: {}", &*text),
-						Err(_) => {
-							eprintln!("error: {}", format::render(&error, Some(&session), &limits))
-						}
-					}
+					// The same reporter `run` uses. Bare means without quotes and
+					// without a wrapper; it does not mean unescaped, and it does
+					// not mean unbounded.
+					runner::report_error(&error, Some(&session.fields()));
 					std::process::exit(1);
 				}
 			},
@@ -133,10 +131,10 @@ fn main() -> Result<()> {
     "#,
 		state.clone(),
 	)?;
-	assert_eq!(display(&result)?, "[11,10,20,7,true,7]");
+	assert_eq!(json::stringify(&result)?, "[11,10,20,7,true,7]");
 	println!(
 		"retained closure/function, new function, old struct field/type/method: {}",
-		display(&result)?
+		json::stringify(&result)?
 	);
 	assert!(compile(&context, "pub fn main(s) { let x = ; }").is_err());
 	let result = call(
@@ -144,7 +142,7 @@ fn main() -> Result<()> {
 		"pub fn main(s) { let c = s.closure; c() }",
 		state.clone(),
 	)?;
-	assert_eq!(display(&result)?, "11");
+	assert_eq!(json::stringify(&result)?, "11");
 	println!("after compile failure: {result:?}");
 	let failure = call(
 		&context,
@@ -154,7 +152,7 @@ fn main() -> Result<()> {
 	println!("runtime failure: {}", failure.unwrap_err());
 	println!(
 		"shared object after failed input: {}",
-		display(&call(
+		json::stringify(&call(
 			&context,
 			"pub fn main(s) { s.shared }",
 			state.clone()
@@ -175,7 +173,7 @@ fn main() -> Result<()> {
 		),
 	] {
 		match call(&context, source, state.clone()) {
-			Ok(value) => println!("{name}: {}", display(&value)?),
+			Ok(value) => println!("{name}: {}", json::stringify(&value)?),
 			Err(e) => println!("{name}: {e}"),
 		}
 	}
