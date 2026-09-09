@@ -149,7 +149,7 @@ fn the_claims_hold(manifest: &str, whose: &str) {
 	);
 	assert_eq!(
 		rune_pin(manifest).as_deref(),
-		Some("0.14.1"),
+		Some("0.14.2"),
 		"{whose}: the rune pin"
 	);
 }

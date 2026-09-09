@@ -20,7 +20,7 @@ they work from either copy.
 
 ## Reproduce
 
-This is an independent, unpublished Cargo package pinned to Rune 0.14.1, with
+This is an independent, unpublished Cargo package pinned to Rune 0.14.2, with
 its own lockfile. It uses the compiler/VM APIs directly and does not yet wrap
 upstream `rune::cli::Entry`. `rnx version` reports this build and the Rune it
 is pinned to. It is built and tested with Rust 1.95; 1.88 is measured not to

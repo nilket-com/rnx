@@ -1,7 +1,8 @@
 //! Naming the method in a missing-instance-function diagnostic.
 //!
 //! Rune's error carries a hash and the instance type and no name, and
-//! `VmErrorKind` is crate-private in 0.14.1, so the two are read out of the
+//! `VmErrorKind` is crate-private in 0.14.1 — still `pub(crate)` in 0.14.2,
+//! from a byte-identical `vm_error.rs` — so the two are read out of the
 //! rendered message. The name is then recovered by proof rather than by
 //! reading: every identifier the script uses in method position is hashed
 //! against the instance type, and one is printed only when its hash is the

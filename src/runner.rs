@@ -34,7 +34,8 @@ pub const BUDGET_FLAG: &str = "--budget";
 ///
 /// `usize::MAX` is Rune's sentinel for having no budget at all:
 /// `BudgetGuard::take` returns true without decrementing when the value
-/// equals it (`rune-0.14.1/src/runtime/budget.rs`). Accepting it would remove
+/// equals it (`rune-0.14.1/src/runtime/budget.rs`, byte-identical in 0.14.2).
+/// Accepting it would remove
 /// the bound record 0021 decision 2 keeps, quietly and by way of an arbitrary
 /// number, so it is refused. The boundary is derived from the platform's
 /// `usize` rather than written as a 64-bit literal, because the sentinel is

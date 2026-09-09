@@ -1,4 +1,5 @@
-//! A standalone reproducer for an isolation defect in Rune 0.14.1, kept as a
+//! A standalone reproducer for an isolation defect in Rune 0.14.1 — still
+//! present in 0.14.2, whose `runtime/function.rs` is byte-identical — kept as a
 //! test so that it also tells us when upstream fixes it.
 //!
 //! Calling a function value made by one unit from a second unit corrupts the
