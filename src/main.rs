@@ -95,13 +95,42 @@ fn main() -> Result<()> {
 		// like a flag reaches the script instead of changing rnx's behaviour.
 		let mut rest = &args[1..];
 		let mut debug_source = false;
-		while rest.first().is_some_and(|a| a == runner::DEBUG_SOURCE) {
-			debug_source = true;
-			rest = &rest[1..];
+		let mut budget = runner::BUDGET;
+		loop {
+			if rest.first().is_some_and(|a| a == runner::DEBUG_SOURCE) {
+				debug_source = true;
+				rest = &rest[1..];
+				continue;
+			}
+			if rest.first().is_some_and(|a| a == runner::BUDGET_FLAG) {
+				// Refused here, before the file is read or compiled, so a bad
+				// value cannot be mistaken for something the script did.
+				let value = rest.get(1).ok_or_else(|| {
+					format!("{} needs a count of instructions", runner::BUDGET_FLAG)
+				})?;
+				// A number too large for `usize` fails to parse, and
+				// `usize::MAX` is outside the range on purpose: it is Rune's
+				// sentinel for no budget at all, so accepting it would remove
+				// the bound rather than raise it.
+				budget = value
+					.parse::<usize>()
+					.ok()
+					.filter(|n| (1..=runner::LARGEST_BUDGET).contains(n))
+					.ok_or_else(|| {
+						format!(
+							"{} takes a whole number of instructions from 1 to {}, not `{value}`",
+							runner::BUDGET_FLAG,
+							runner::LARGEST_BUDGET
+						)
+					})?;
+				rest = &rest[2..];
+				continue;
+			}
+			break;
 		}
 		let path = rest.first().ok_or("run needs a file")?;
 		let arguments = serde_json::from_str(&serde_json::to_string(&rest[1..])?)?;
-		let code = runner::run(&context, path, arguments, debug_source);
+		let code = runner::run(&context, path, arguments, debug_source, budget);
 		std::process::exit(code);
 	}
 	let state = call(

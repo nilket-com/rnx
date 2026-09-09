@@ -15,10 +15,31 @@ use rune::runtime::{Unit, Value, VmError, budget};
 use rune::{Context, Diagnostics, Source, Sources, Vm};
 use std::sync::Arc;
 
-/// Instructions one script may spend. This is the limit `run` has always
-/// had; the session's is far larger because Ctrl-C can stop an input there
-/// and nothing can stop one here.
+/// Instructions one script may spend unless the command line says otherwise.
+/// This is the limit `run` has always had; the session's is far larger
+/// because Ctrl-C can stop an input there and nothing can stop one here.
+///
+/// Record 0021 made it choosable because a real script needed more: the graft
+/// verifier port completes 110 commits of a 1,346-commit job and halts at
+/// 115. What it did not do is let a script choose — a script that could lift
+/// its own ceiling would not have one — or allow the bound to be removed,
+/// which waits on a file run being reliably interruptible.
 pub const BUDGET: usize = 2_000_000;
+
+/// The flag that sets the budget, taking the count as the argument after it.
+/// Read only before the script path, like `--debug-source`.
+pub const BUDGET_FLAG: &str = "--budget";
+
+/// The largest number that is still a budget.
+///
+/// `usize::MAX` is Rune's sentinel for having no budget at all:
+/// `BudgetGuard::take` returns true without decrementing when the value
+/// equals it (`rune-0.14.1/src/runtime/budget.rs`). Accepting it would remove
+/// the bound record 0021 decision 2 keeps, quietly and by way of an arbitrary
+/// number, so it is refused. The boundary is derived from the platform's
+/// `usize` rather than written as a 64-bit literal, because the sentinel is
+/// whatever `usize::MAX` is here.
+pub const LARGEST_BUDGET: usize = usize::MAX - 1;
 
 /// The flag that asks for the compiled source. It is read only before the
 /// script path; everything after the path belongs to the script.
@@ -170,7 +191,13 @@ pub fn report_error(value: &Value, fields: Option<&Fields>) {
 /// Run one file. Returns the process exit code, and prints everything it
 /// has to say itself: diagnostics to standard error, script output to
 /// standard output.
-pub fn run(context: &Context, path: &str, arguments: Value, debug_source: bool) -> i32 {
+pub fn run(
+	context: &Context,
+	path: &str,
+	arguments: Value,
+	debug_source: bool,
+	budget: usize,
+) -> i32 {
 	crate::host::running_a_script();
 	let text = match std::fs::read_to_string(path) {
 		Ok(text) => text,
@@ -197,9 +224,9 @@ pub fn run(context: &Context, path: &str, arguments: Value, debug_source: bool) 
 		}
 	};
 	let mut vm = Vm::new(runtime, unit.clone());
-	// The budget `run` has always had. Without it a script that loops for
-	// ever runs until something outside kills it.
-	let (outcome, exhausted) = budget::with(BUDGET, || {
+	// The budget, from the command line or the default. Without one a script
+	// that loops for ever runs until something outside kills it.
+	let (outcome, exhausted) = budget::with(budget, || {
 		let outcome = vm.call(["main"], (arguments,));
 		let exhausted = !budget::acquire().take();
 		(outcome, exhausted)
@@ -218,7 +245,13 @@ pub fn run(context: &Context, path: &str, arguments: Value, debug_source: bool) 
 				// A halt for want of budget carries no location, and saying so
 				// is less useful than saying the script ran out of budget.
 				None if exhausted => {
-					unplaced("halted", &format!("{BUDGET} instructions exceeded"));
+					// The reader of this line is the person who can raise it, so
+					// it names the flag. It does not offer to remove the bound,
+					// because the bound cannot be removed.
+					unplaced(
+						"halted",
+						&format!("{budget} instructions exceeded; {BUDGET_FLAG} N raises it"),
+					);
 				}
 				None => unlocated("runtime error", &message),
 			}

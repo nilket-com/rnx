@@ -70,6 +70,13 @@ file path, an error a script returned — so nothing can move the cursor of
 whoever ran it, and a caret is placed by the columns the escaped line actually
 occupies.
 
+`rnx run --budget N file.rn`, with the flag before the path, sets how many
+instructions the script may spend; without it the limit is two million, as it
+has always been. `N` runs from 1 to one less than the largest `usize`, that
+last value being Rune's way of saying "no budget" and so refused. The count
+comes from the command line and nowhere else: no host function, environment
+variable or file directive sets it, and there is no way to remove the bound.
+
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's
 parser says it is unfinished (two blank lines abandon it), values rendered
