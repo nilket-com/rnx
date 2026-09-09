@@ -92,6 +92,12 @@ last value being Rune's way of saying "no budget" and so refused. The count
 comes from the command line and nowhere else: no host function, environment
 variable or file directive sets it, and there is no way to remove the bound.
 
+`rnx` on its own is a session, which is `rnx repl` — the thing most often
+wanted needs no word after it. `rnx help` lists the commands, and a word that
+is not one of them is refused rather than doing something else. `rnx
+selfcheck` asserts this build's own invariants and reports what it saw; it is
+what the bare command did before record 0024.
+
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's
 parser says it is unfinished (two blank lines abandon it), values rendered
