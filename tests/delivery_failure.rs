@@ -67,3 +67,102 @@ fn a_failure_after_cleanup_begins_still_reaches_the_script() {
 		ended.out
 	);
 }
+
+#[test]
+fn an_unreadable_stream_is_reported_and_excuses_nothing() {
+	// Record 0023 gate 5's third case, injected because a read error on a
+	// pipe cannot be provoked from a script. What it must show is both halves:
+	// the flag reaches the caller, and being unreadable overrides the
+	// exemption a truncated capture would have earned — a stream that could
+	// not be read is not known to have stopped at a character boundary.
+	let dir = harness::scratch("capture-unreadable");
+	let path = dir.join("script.rn");
+	std::fs::write(
+		&path,
+		"pub fn main(_) {\n\tlet r = host::process(\"sh\", [\"-c\", \"echo hello\"], 20000)?;\n\tprintln!(\"unreadable={} truncated={} cut_short={} out={}\", r.unreadable, r.truncated, r.cut_short, r.stdout.len());\n\tOk(())\n}\n",
+	)
+	.unwrap();
+	let child = Command::new(env!("CARGO_BIN_EXE_rnx"))
+		.arg("run")
+		.arg(&path)
+		.env("RNX_TEST_CAPTURE_FAILS", "1")
+		.stdin(Stdio::piped())
+		.stdout(Stdio::piped())
+		.stderr(Stdio::piped())
+		.spawn()
+		.unwrap();
+	let ended = harness::teardown(child, &dir);
+	assert!(ended.trouble.is_empty(), "{:?}", ended.trouble);
+	assert_eq!(ended.code, Some(0), "{}", ended.err);
+	assert!(ended.out.contains("unreadable=true"), "{}", ended.out);
+	// Nothing was read, so nothing was truncated: the flags are independent
+	// and this one stands on its own.
+	assert!(ended.out.contains("truncated=false"), "{}", ended.out);
+	assert!(ended.out.contains("out=0"), "{}", ended.out);
+}
+
+/// How many threads a process has, from the kernel.
+fn threads(pid: u32) -> usize {
+	let status = std::fs::read_to_string(format!("/proc/{pid}/status")).unwrap_or_default();
+	status
+		.lines()
+		.find_map(|l| l.strip_prefix("Threads:"))
+		.and_then(|n| n.trim().parse().ok())
+		.unwrap_or(0)
+}
+
+#[test]
+fn a_reader_that_panics_does_not_strand_the_other() {
+	// The contract is that both readers are always collected. A `?` on the
+	// first join returns before the second is joined, which strands a thread
+	// — the same defect record 0022 fixed for the writer.
+	//
+	// Observing the call fail is not enough to tell the two apart: it fails
+	// either way. What distinguishes them is whether the **other** reader is
+	// still running afterwards, so the script keeps the error instead of
+	// propagating it, stays alive with nothing of its own, and the thread
+	// count is read from outside while a descendant still holds the pipe that
+	// reader was on.
+	let dir = harness::scratch("reader-panic");
+	let path = dir.join("script.rn");
+	std::fs::write(
+		&path,
+		"pub fn main(args) {\n\t// Kept rather than propagated, so this process is still here to be\n\t// counted.\n\tlet outcome = host::process(\"sh\", [\"-c\", args[0]], 30000);\n\tprintln!(\"returned {}\", outcome is Result);\n\thost::stdin()?;\n\tOk(())\n}\n",
+	)
+	.unwrap();
+	let mut child = Command::new(env!("CARGO_BIN_EXE_rnx"))
+		.arg("run")
+		.arg(&path)
+		// The child leaves at once; its descendant keeps **standard error**,
+		// which is the reader that must still be collected when the standard
+		// output reader panics.
+		.arg(harness::holds_stderr_until_released(&dir))
+		.env("RNX_TEST_READER_PANICS", "stdout")
+		.stdin(Stdio::piped())
+		.stdout(Stdio::piped())
+		.stderr(Stdio::piped())
+		.spawn()
+		.unwrap();
+	let pid = child.id();
+
+	let held = harness::appeared(&dir.join("ready"), Duration::from_secs(5));
+	let announced = child
+		.stdout
+		.take()
+		.map(|out| harness::line_within(out, Duration::from_secs(5)));
+	let counted = threads(pid);
+	let ended = harness::teardown(child, &dir);
+
+	assert!(ended.trouble.is_empty(), "{:?}", ended.trouble);
+	assert!(held, "the descendant never took the descriptor");
+	assert!(
+		announced.expect("no reader").is_ok(),
+		"the call did not return: {}",
+		ended.err
+	);
+	assert_eq!(
+		counted, 1,
+		"{counted} threads while the descendant still held standard error: \
+		 the panicking reader took the other one's collection with it"
+	);
+}

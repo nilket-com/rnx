@@ -35,6 +35,13 @@ stream rather than handing back a plausible string with the evidence
 replaced. `host::process_bytes` runs the same child and returns its streams as
 byte strings, for a script whose child speaks bytes.
 
+`host::process` and its two byte-returning forms report three things about a
+capture, independently: `truncated` if the size cap was reached, `cut_short`
+if rnx stopped reading before the stream ended, and `unreadable` if a read
+failed. A caller that needs everything the child produced checks all three,
+and checks `timed_out` and `cancelled` first, because both of those leave a
+capture cut short and each says more about why.
+
 `host::process_bytes_input` also tells the child what to do: the byte string
 it is given is written to the child's standard input, which is then closed,
 because a child like `git cat-file --batch` needs the end of its input to
