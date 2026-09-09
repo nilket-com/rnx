@@ -34,7 +34,7 @@ impl Terminal {
 				&mut master,
 				&mut slave,
 				std::ptr::null_mut(),
-				std::ptr::null(),
+				std::ptr::null_mut(),
 				&mut size,
 			)
 		};

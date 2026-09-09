@@ -1,9 +1,15 @@
 //! What `host::stdin` reads, and what it refuses.
 //!
+//! A terminal is a pseudo-terminal here, which is a Unix fixture: Windows
+//! asks whether standard input is a console rather than whether it is a tty,
+//! and record 0025's gate 8 is where that is answered on the machine.
+//!
 //! Record 0012 decides that the stream is read once, that a terminal is
 //! refused rather than read, and that the limit and the refusals are the ones
 //! `host::read` already has. Each of those is a behaviour, so each has a test
 //! that fails if it stops holding.
+#![cfg(unix)]
+
 use std::io::Write;
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::path::{Path, PathBuf};
@@ -89,8 +95,8 @@ fn on_a_terminal(source: &str) -> Ran {
 			&mut leader,
 			&mut follower,
 			std::ptr::null_mut(),
-			std::ptr::null(),
-			std::ptr::null(),
+			std::ptr::null_mut(),
+			std::ptr::null_mut(),
 		)
 	};
 	assert_eq!(opened, 0, "openpty failed");

@@ -10,6 +10,16 @@ use std::time::{Duration, Instant};
 
 /// Run a script that reports every capture flag, bounded by the harness.
 fn reported(child: &str, deadline_ms: u32, allowance_ms: Option<u32>) -> (String, Duration) {
+	reported_with(child, deadline_ms, allowance_ms, None)
+}
+
+/// The same, with the readers held back before their first attempt.
+fn reported_with(
+	child: &str,
+	deadline_ms: u32,
+	allowance_ms: Option<u32>,
+	late_ms: Option<u32>,
+) -> (String, Duration) {
 	let dir = harness::scratch("capture");
 	let path = dir.join("script.rn");
 	std::fs::write(
@@ -29,6 +39,9 @@ fn reported(child: &str, deadline_ms: u32, allowance_ms: Option<u32>) -> (String
 		.stderr(Stdio::piped());
 	if let Some(ms) = allowance_ms {
 		command.env("RNX_TEST_CLEANUP_ALLOWANCE_MS", ms.to_string());
+	}
+	if let Some(ms) = late_ms {
+		command.env("RNX_TEST_READER_STARTS_LATE_MS", ms.to_string());
 	}
 	let mut spawned = command.spawn().unwrap();
 	let started = Instant::now();
@@ -233,5 +246,31 @@ fn an_interrupt_during_the_cleanup_is_still_an_interrupt() {
 	assert!(
 		took < Duration::from_millis(600),
 		"the call took {took:?} of the second of allowance it was told to abandon"
+	);
+}
+
+/// Record 0025's correction: the readers are given the cleanup allowance
+/// before any of them is reached.
+///
+/// Held back by a known amount, with an allowance longer than it, the two
+/// orderings answer differently. Draining first: the reader wakes, finds the
+/// six bytes the child left in the pipe, and reads to the end. Reaching the
+/// readers as soon as the wait ends: the reader wakes already stopped, and
+/// reports a capture cut short that lost output nothing was going to reclaim.
+///
+/// The delay needs an injected hook because a child cannot arrange one: its
+/// output is ordinarily read while it is still running, which is why the
+/// defect was invisible to every other gate here.
+#[cfg(feature = "test-support")]
+#[test]
+fn the_readers_are_drained_before_any_of_them_is_reached() {
+	let (line, took) = reported_with("echo hello", 30000, Some(3000), Some(300));
+	assert!(line.contains("out=6"), "output was lost: {line}");
+	assert!(line.contains("cut_short=false"), "{line}");
+	assert!(line.contains("truncated=false"), "{line}");
+	assert!(line.contains("unreadable=false"), "{line}");
+	assert!(
+		took < Duration::from_millis(2000),
+		"the call took {took:?}: it spent allowance it did not need"
 	);
 }

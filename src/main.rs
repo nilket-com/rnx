@@ -9,6 +9,7 @@ mod inspect;
 mod json;
 mod memory;
 mod method;
+mod platform;
 mod repl;
 mod runner;
 mod session;

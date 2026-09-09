@@ -426,6 +426,7 @@ dependencies = [
  "rustyline",
  "serde_json",
  "unicode-width",
+ "windows-sys",
 ]
 
 [[package]]
