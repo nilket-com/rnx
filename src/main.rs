@@ -44,6 +44,19 @@ fn call(context: &Context, source: &str, state: Value) -> Result<Value> {
 		.map_err(|e| e.to_string().into())
 }
 
+/// What rnx does, for someone who asked or who mistyped.
+const USAGE: &str = "\
+rnx — a Rune scripting environment
+
+  rnx                       a session, the same as `rnx repl`
+  rnx repl                  a session: line editing, history, `:help`
+  rnx run [flags] FILE ...  run a file's `main`; arguments after FILE are its
+  rnx eval SOURCE           evaluate one expression and exit
+  rnx selfcheck             assert this build's own invariants and report
+  rnx help                  this
+
+Flags for `run`, before the file: --budget N, --debug-source.";
+
 fn main() -> Result<()> {
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = host::install(&mut context)?;
@@ -86,8 +99,18 @@ fn main() -> Result<()> {
 		}
 		return Ok(());
 	}
-	if args.first().is_some_and(|s| s == "repl") {
+	// A session is what someone typing `rnx` almost always wants, and it works
+	// whether standard input is a terminal or a pipe.
+	if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
 		return repl::run(context, host_functions);
+	}
+	if args
+		.first()
+		.is_some_and(|s| s == "help" || s == "--help" || s == "-h")
+	{
+		// An explicit question deserves an answer rather than an error.
+		println!("{USAGE}");
+		return Ok(());
 	}
 	if args.first().is_some_and(|s| s == "run") {
 		// Flags are read only before the script path. Everything after the
@@ -133,6 +156,23 @@ fn main() -> Result<()> {
 		let code = runner::run(&context, path, arguments, debug_source, budget);
 		std::process::exit(code);
 	}
+	// Anything that is not a command says so. Falling through to the
+	// self-check is how a typo used to print a page of diagnostics and exit 0.
+	if args.first().is_none_or(|s| s != "selfcheck") {
+		// Escaped, because it is text from outside: record 0019's rule is that
+		// everything rnx prints on its own behalf goes through here, and a
+		// mistyped command is no exception — `rnx $'bad\033[2J'` cleared the
+		// terminal before this did.
+		eprintln!(
+			"rnx: `{}` is not a command\n\n{USAGE}",
+			format::terminal_safe(&args[0])
+		);
+		std::process::exit(2);
+	}
+	// The self-check: it asserts what it prints, and calls the process and
+	// session checks, so a broken invariant fails here rather than being
+	// reported. Record 0024 gave it a name; before that it was what `rnx`
+	// did when it was given nothing to do.
 	let state = call(
 		&context,
 		r#"
