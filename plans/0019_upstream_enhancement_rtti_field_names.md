@@ -1,21 +1,25 @@
 # Upstream enhancement draft: no public way to ask a value its field names
 
-Ready to file against `rune-rs/rune`. Not submitted; filing it is the
-operator's call. This is an **enhancement request**, not a defect: nothing
-misbehaves, and the information simply is not reachable. The companion draft,
-`0019_upstream_defect_recursive_drop.md`, is a defect and is deliberately
-separate.
+Ready to file against `rune-rs/rune`; the report is everything below the rule.
+This is an **enhancement request**, not a defect: nothing misbehaves, and the
+information simply is not reachable.
+
+Checked before filing, on 2026-09-09: no open or closed issue asks for this —
+a search for `Rtti` returns three unrelated ones (#90, #424, #877) — and the
+accessor is absent in 0.14.1, in 0.14.2, and on `main`. The companion draft,
+`0019_upstream_defect_recursive_drop.md`, is **not** to be filed: that defect
+is already fixed on `main`, which the same search found.
 
 ---
 
 **Title:** Expose `Rtti`'s field names, so a host can render a struct value it
 did not declare
 
-**Version:** 0.14.1
+**Version:** 0.14.1 and 0.14.2; also absent on `main` (0.15.0 at `bb8e6937`).
 
 The reproducer below was built and run as its own crate, with `rune` as its
-only dependency, on 2026-09-09: the four lines it prints and the compile error
-are that run's output, copied.
+only dependency: the four lines it prints and the compile error are that run's
+output, copied, from 0.14.2.
 
 ### What is missing
 
@@ -94,6 +98,17 @@ error[E0599]: no method named `fields` found for reference `&Arc<Rtti>` in the c
 27 |         for name in s.rtti().fields() {
    |                              ^^^^^^ private field, not a method
 ```
+
+On `main` the same call fails the same way, with Rune's own `Arc`:
+
+```
+error[E0599]: no method named `fields` found for reference `&rune::sync::Arc<Rtti>` in the current scope
+   |                              ^^^^^^ private field, not a method
+```
+
+(The reproducer as written needs one unrelated change to build against `main`,
+where `Vm::new` takes `rune::sync::Arc` rather than `std::sync::Arc`. The
+error above is emitted either way.)
 
 ### What a host has to do instead
 

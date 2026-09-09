@@ -1,10 +1,38 @@
 # Upstream defect draft: dropping a deeply nested value aborts the process
 
-Ready to file against `rune-rs/rune`. Not submitted; filing it is the
-operator's call. This is a **defect**: a safe-API program aborts with no way
-to prevent or catch it. The companion draft,
-`0019_upstream_enhancement_rtti_field_names.md`, is an enhancement request and
-is deliberately separate.
+**Not to be filed. It is already fixed upstream, on `main`.** The duplicate
+search that preceded filing found the fix, and the measurements below are the
+evidence:
+
+| Version | 200,000 deep | 24,576 deep | 5,000,000 deep |
+| --- | --- | --- | --- |
+| 0.14.1 (rnx's pin) | aborts, 134 | aborts, 134 | — |
+| 0.14.2 (latest release) | aborts, 134 | aborts, 134 | — |
+| `main`, 0.15.0 at `bb8e6937` | **drops, exit 0** | drops, exit 0 | **drops, exit 0** |
+
+Depth-independent on `main` at five million, so it is an iterative drop rather
+than a larger budget. That is consistent with issue #1044, "Ban recursion" —
+opened and closed 21–22 August 2026, three months **after** 0.14.2 was
+published — which rewrote Rune so "predictable compiler and runtime paths
+always operate with fixed stack sizes".
+
+So there is nothing here for a maintainer to investigate, and filing it would
+be noise. What remains is not a defect report:
+
+- **For rnx**, the limitation record 0019 documents is real and stays real,
+  because rnx pins 0.14.1 and every published release aborts. It ends when
+  rnx moves to a release that contains #1044's work, and record 0001's
+  compatibility note is where that belongs.
+- Related, and **not the same defect**: issue #1040 is a stack overflow at
+  **compile time** from deeply nested source expressions — the parser
+  recursing, not drop glue. It is open, and the maintainer's reply there says
+  the same v2 work addresses it.
+
+The report below is kept as written, because it is still an accurate
+description of every released version, and because the thresholds are the
+measurement rnx's own limitation rests on. The companion draft,
+`0019_upstream_enhancement_rtti_field_names.md`, **is** to be filed: that gap
+is still present on `main`.
 
 ---
 
@@ -12,9 +40,10 @@ is deliberately separate.
 
 **Version:** 0.14.1
 
+**Version:** reproduces in 0.14.1 and 0.14.2; fixed on `main`.
+
 The reproducer below was built and run as its own crate, with `rune` as its
-only dependency, on 2026-09-09: it aborts as described, and the two debug
-thresholds in the table were re-measured on the same build.
+only dependency, on 2026-09-09, against each of those three.
 
 ### What happens
 
