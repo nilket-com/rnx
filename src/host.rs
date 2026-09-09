@@ -5,18 +5,16 @@ use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
-static INTERRUPTED: AtomicBool = AtomicBool::new(false);
-extern "C" fn interrupt(_: libc::c_int) {
-	INTERRUPTED.store(true, Ordering::Relaxed);
-}
-/// Whether Ctrl-C arrived since the flag was last cleared.
+/// Whether Ctrl-C arrived since the flag was last cleared. The flag and the
+/// handler that sets it belong to the platform, because a signal and a
+/// console control handler are not the same mechanism; what they mean is.
 pub fn interrupted() -> bool {
-	INTERRUPTED.load(Ordering::Relaxed)
+	crate::platform::interrupted()
 }
 /// Cleared by the session before each evaluation, so an interrupt that
 /// arrived at the prompt never cancels the next input.
 pub fn clear_interrupt() {
-	INTERRUPTED.store(false, Ordering::Relaxed);
+	crate::platform::clear_interrupt();
 }
 
 fn error(e: impl std::fmt::Display) -> String {
@@ -63,7 +61,7 @@ static STDIN_READ: AtomicBool = AtomicBool::new(false);
 /// script. A pipe, a redirected file, and a closed stream are all read.
 fn stdin_read() -> Result<String, String> {
 	// SAFETY: isatty only inspects the descriptor.
-	if unsafe { libc::isatty(libc::STDIN_FILENO) } == 1 {
+	if crate::platform::stdin_is_a_terminal() {
 		return Err(
 			"cannot read standard input: it is a terminal; redirect a file or pipe into it"
 				.to_owned(),
@@ -197,6 +195,26 @@ fn injected_reader_panic(_stream: &str) -> bool {
 	false
 }
 
+/// How long to hold a reader back before its first attempt. Nothing a script
+/// can do delays a reader by a known amount, and without one the gate for
+/// "the readers are drained before any of them is reached" is a race: an
+/// ordinary child's output is usually read before the call even ends. Held
+/// back by a known amount, with an allowance longer than it, the two
+/// orderings give different answers — everything, or nothing.
+#[cfg(feature = "test-support")]
+fn injected_reader_delay() -> Duration {
+	std::env::var("RNX_TEST_READER_STARTS_LATE_MS")
+		.ok()
+		.and_then(|ms| ms.parse().ok())
+		.map(Duration::from_millis)
+		.unwrap_or_default()
+}
+
+#[cfg(not(feature = "test-support"))]
+fn injected_reader_delay() -> Duration {
+	Duration::ZERO
+}
+
 /// Whether to fail a read deliberately. A read error on a pipe cannot be
 /// provoked from a script — a non-blocking pipe offers a full buffer, an
 /// interruption, or the end of the stream — so the gate that proves an
@@ -259,7 +277,8 @@ const CAPTURE_CAP: usize = 2 * 1024 * 1024;
 /// `until` is a set-once cell holding the instant the call published when its
 /// wait ended. While it is empty the stream is drained as before.
 fn capture(
-	input: impl Read + std::os::fd::AsRawFd,
+	input: impl Read + crate::platform::Stream,
+	pipe: crate::platform::Pipe,
 	until: std::sync::Arc<std::sync::OnceLock<Instant>>,
 	stream: &'static str,
 ) -> Captured {
@@ -273,24 +292,22 @@ fn capture(
 		cut_short: false,
 		unreadable: false,
 	};
-	let fd = input.as_raw_fd();
-	unsafe {
-		let flags = libc::fcntl(fd, libc::F_GETFL);
-		if flags < 0 || libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK) < 0 {
-			got.unreadable = true;
-			return got;
-		}
+	if crate::platform::prepare_stream(&input).is_err() {
+		got.unreadable = true;
+		return got;
 	}
 	let mut input = input;
 	let mut chunk = [0; 8192];
+	std::thread::sleep(injected_reader_delay());
 	let started = Instant::now();
 	loop {
 		// Before every attempt, so a stream that always has more to give
 		// cannot outlast the call that wanted it.
 		// An interrupt stops a reader wherever it is, including in the middle
 		// of the cleanup allowance: by then the wait loop has stopped watching
-		// for one, so this is the only thing looking.
-		if INTERRUPTED.load(Ordering::Relaxed) {
+		// for one, so this is the only thing looking. So does the call itself,
+		// through the pipe, when the allowance has run out.
+		if crate::platform::interrupted() || pipe.stopped() {
 			got.cut_short = true;
 			return got;
 		}
@@ -304,7 +321,30 @@ fn capture(
 			got.unreadable = true;
 			return got;
 		}
-		match input.read(&mut chunk) {
+		// Whether a read may be attempted at all. A non-blocking descriptor
+		// answers by returning `WouldBlock`; a Windows pipe has to be asked
+		// first, because a read of it would block where no flag reaches.
+		if !crate::platform::readable(&input) {
+			std::thread::sleep(next_wait(
+				started.elapsed(),
+				until
+					.get()
+					.map(|d| d.saturating_duration_since(Instant::now()))
+					.unwrap_or(LONGEST_WAIT),
+			));
+			continue;
+		}
+		// Declaring the read and checking whether the call still wants it are
+		// one step, so an operation cannot be declared behind a stop. The
+		// declaration lasts as long as the guard, and a panic inside the read
+		// withdraws it on the way out.
+		let Some(reading) = pipe.begin(&input) else {
+			got.cut_short = true;
+			return got;
+		};
+		let read = input.read(&mut chunk);
+		drop(reading);
+		match read {
 			Ok(0) => return got,
 			Ok(n) => {
 				let keep = n.min(CAPTURE_CAP.saturating_sub(got.bytes.len()));
@@ -321,6 +361,13 @@ fn capture(
 				));
 			}
 			Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+			// A read cancelled from outside — which is how Windows reaches one
+			// blocked in the kernel — is this call's own doing, so the stream
+			// was cut short rather than unreadable.
+			Err(e) if aborted(&e) => {
+				got.cut_short = true;
+				return got;
+			}
 			Err(_) => {
 				got.unreadable = true;
 				return got;
@@ -341,7 +388,6 @@ fn run_child(
 	timeout_ms: u64,
 	input: Option<Vec<u8>>,
 ) -> Result<Ran, String> {
-	use std::os::unix::process::CommandExt;
 	let values = arguments
 		.borrow_ref::<rune::runtime::Vec>()
 		.map_err(|e| about("run", program, e))?;
@@ -360,7 +406,8 @@ fn run_child(
 			"the deadline must be between 1 and 90000 ms",
 		));
 	}
-	let mut child = Command::new(program)
+	let mut command = Command::new(program);
+	command
 		.args(args)
 		.stdin(if input.is_some() {
 			Stdio::piped()
@@ -368,24 +415,33 @@ fn run_child(
 			Stdio::null()
 		})
 		.stdout(Stdio::piped())
-		.stderr(Stdio::piped())
-		.process_group(0)
-		.spawn()
-		.map_err(|e| about("run", program, e))?;
-	let pid = child.id() as i32;
+		.stderr(Stdio::piped());
+	// The child goes into a group of its own — a process group, or a job
+	// object on Windows — so its descendants can be ended with it. On Windows
+	// the assignment happens while the child is still suspended, because
+	// assigning a running child races whatever it spawns first.
+	let (mut child, group) =
+		crate::platform::spawn_in_group(&mut command).map_err(|e| about("run", program, e))?;
 	let deadline = Instant::now() + Duration::from_millis(timeout_ms);
 	let stdout = child.stdout.take().unwrap();
 	let stderr = child.stderr.take().unwrap();
 	// One instant, set once when the wait ends, read by both readers: two of
 	// them cannot spend the allowance twice.
 	let until = std::sync::Arc::new(std::sync::OnceLock::<Instant>::new());
+	// Each pipe is owned by an object both the reader and this call hold, so
+	// neither can close it under the other, and a reader inside a read can be
+	// reached rather than only one between two.
+	// Each reader keeps its own stream and publishes it to the protocol only
+	// while it is inside a read, so this call can reach an operation without
+	// ever holding a handle its owner may have let go of.
+	let reading = [crate::platform::Pipe::new(), crate::platform::Pipe::new()];
 	let out = {
-		let until = until.clone();
-		std::thread::spawn(move || capture(stdout, until, "stdout"))
+		let (until, pipe) = (until.clone(), reading[0].clone());
+		std::thread::spawn(move || capture(stdout, pipe, until, "stdout"))
 	};
 	let err = {
-		let until = until.clone();
-		std::thread::spawn(move || capture(stderr, until, "stderr"))
+		let (until, pipe) = (until.clone(), reading[1].clone());
+		std::thread::spawn(move || capture(stderr, pipe, until, "stderr"))
 	};
 	// The input moves on a third thread, so requests are delivered while
 	// replies and complaints are drained: what that removes is mutual pipe
@@ -396,10 +452,14 @@ fn run_child(
 	// finished with you", which is what has to be said when the child exits
 	// with input still undelivered.
 	let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+	let writing = crate::platform::Pipe::new();
 	let delivery = input.map(|bytes| {
-		let pipe = child.stdin.take().expect("stdin was piped for an input");
-		let stop = stop.clone();
-		std::thread::spawn(move || deliver(pipe, bytes, deadline, stop))
+		let stream = child.stdin.take().expect("stdin was piped for an input");
+		let (pipe, stop) = (writing.clone(), stop.clone());
+		// The writer owns the stream, so it closes when the writer is done —
+		// which is the end of input the child is waiting for. A call that held
+		// the write end open would leave `cat` waiting for ever.
+		std::thread::spawn(move || deliver(stream, pipe, bytes, deadline, stop))
 	});
 	let mut timed_out = false;
 	let mut cancelled = false;
@@ -419,12 +479,10 @@ fn run_child(
 			Ok(None) => {}
 			Err(e) => break Err(about("run", program, e)),
 		}
-		cancelled = INTERRUPTED.load(Ordering::Relaxed);
+		cancelled = crate::platform::interrupted();
 		timed_out = Instant::now() >= deadline;
 		if timed_out || cancelled {
-			unsafe {
-				libc::kill(-pid, libc::SIGKILL);
-			}
+			group.end();
 			break child.wait().map_err(|e| about("run", program, e));
 		}
 		// No sleep outlives the deadline: overshooting it by a whole interval
@@ -444,15 +502,25 @@ fn run_child(
 	} else {
 		cleanup_allowance()
 	};
-	let _ = until.set(Instant::now() + allowance);
+	let cleanup_ends = Instant::now() + allowance;
+	let _ = until.set(cleanup_ends);
+	// The readers are **not** told to stop yet. An ordinary exit leaves bytes
+	// in the pipes and record 0023 promised to drain them; cancelling a read
+	// now would discard them and call the capture cut short, which is the
+	// promise and not the mechanism. So they are given until the instant, and
+	// only what is still reading when it passes is reached — below, after the
+	// rest of the cleanup, so the waiting costs nothing that was not going to
+	// be waited for anyway.
+	//
+	// A cancellation is the exception, and it is already expressed: its
+	// allowance is zero, so the instant has passed and the loop below reaches
+	// both readers immediately.
 	// Children remaining in this process group may otherwise keep pipes open.
 	// A descendant that left the group — `setsid` — is not killed here and
 	// cannot be, but it can no longer extend this call: it holds a pipe rnx
 	// has stopped reading. Record 0020 named that limitation, record 0022
 	// closed it for the input, and record 0023 closes it for the replies.
-	unsafe {
-		libc::kill(-pid, libc::SIGKILL);
-	}
+	group.end();
 	// The wait is over, however it ended — including badly — so the delivery is
 	// told to stop and is then **always** collected. It cannot outlast this
 	// call: the pipe is non-blocking and the flag is read before every
@@ -460,6 +528,11 @@ fn run_child(
 	// instead — which an earlier draft did — would discard whatever it had to
 	// say, including a failure this promises to report.
 	stop.store(true, Ordering::Relaxed);
+	// The writer has nothing left to deliver that anyone wants, so it is told
+	// to stop now rather than at the instant. `Pipe::stop` decides whether a
+	// flag or a cancellation reaches it, under the lock that keeps the worker
+	// from submitting an operation in between.
+	writing.stop();
 	let mut delivery_failed = None;
 	if let Some(delivery) = delivery {
 		match delivery.join() {
@@ -468,6 +541,18 @@ fn run_child(
 			Ok(DeliveryOutcome::Failed(e)) => delivery_failed = Some(about("run", program, e)),
 			Err(_) => delivery_failed = Some(about("run", program, "the writer panicked")),
 			_ => {}
+		}
+	}
+	// Now the readers: each is given until the instant to reach the end of its
+	// stream on its own, and is reached only if it is still going when the
+	// instant has passed. Each is decided separately — one reader still
+	// draining is no reason to cut the other short.
+	while Instant::now() < cleanup_ends && !(out.is_finished() && err.is_finished()) {
+		std::thread::sleep(SHORTEST_WAIT);
+	}
+	for (worker, pipe) in [(&out, &reading[0]), (&err, &reading[1])] {
+		if !worker.is_finished() {
+			pipe.stop();
 		}
 	}
 	// Both, before either failure is propagated: a `?` on the first join would
@@ -486,7 +571,7 @@ fn run_child(
 	// interrupt. The wait loop stopped watching for one when it ended, so it
 	// is read again here: the readers stop on it themselves, and without this
 	// the call would report a capture cut short for no reason it could name.
-	let cancelled = cancelled || INTERRUPTED.load(Ordering::Relaxed);
+	let cancelled = cancelled || crate::platform::interrupted();
 	Ok(Ran {
 		code: status.code(),
 		timed_out,
@@ -540,20 +625,16 @@ fn next_wait(elapsed: Duration, left: Duration) -> Duration {
 /// outlive the `Value` the bytes came from, which the virtual machine may
 /// collect while this is still writing.
 fn deliver(
-	pipe: std::process::ChildStdin,
+	stream: std::process::ChildStdin,
+	pipe: crate::platform::Pipe,
 	bytes: Vec<u8>,
 	deadline: Instant,
 	stop: std::sync::Arc<std::sync::atomic::AtomicBool>,
 ) -> DeliveryOutcome {
-	use std::os::fd::AsRawFd;
-	let fd = pipe.as_raw_fd();
-	unsafe {
-		let flags = libc::fcntl(fd, libc::F_GETFL);
-		if flags < 0 || libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK) < 0 {
-			return DeliveryOutcome::Failed(std::io::Error::last_os_error().to_string());
-		}
+	if let Err(e) = crate::platform::prepare_stream(&stream) {
+		return DeliveryOutcome::Failed(e.to_string());
 	}
-	let mut pipe = pipe;
+	let mut stream = stream;
 	let mut written = 0;
 	let started = Instant::now();
 	while written < bytes.len() {
@@ -562,7 +643,7 @@ fn deliver(
 		// this delivery, or the flag would only be honoured while blocked.
 		if stop.load(Ordering::Relaxed)
 			|| Instant::now() >= deadline
-			|| INTERRUPTED.load(Ordering::Relaxed)
+			|| crate::platform::interrupted()
 		{
 			// The one place a failure can be injected, and it is here because
 			// here is the moment that matters: the call has begun its cleanup
@@ -572,7 +653,16 @@ fn deliver(
 			}
 			return DeliveryOutcome::Abandoned;
 		}
-		match pipe.write(&bytes[written..]) {
+		// One step again: the call cannot decide to stop between this check
+		// and the write it declares. A cancellation that lands before the
+		// write is submitted cancels nothing, which is why the call keeps
+		// asking while this declaration stands.
+		let Some(writing) = pipe.begin(&stream) else {
+			return DeliveryOutcome::Abandoned;
+		};
+		let wrote = stream.write(&bytes[written..]);
+		drop(writing);
+		match wrote {
 			Ok(0) => break,
 			Ok(n) => written += n,
 			Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
@@ -588,6 +678,9 @@ fn deliver(
 				return DeliveryOutcome::ChildStoppedReading;
 			}
 			Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+			// A write cancelled from outside is this call's own doing too:
+			// abandoned, not failed.
+			Err(e) if aborted(&e) => return DeliveryOutcome::Abandoned,
 			Err(e) => return DeliveryOutcome::Failed(e.to_string()),
 		}
 	}
@@ -616,6 +709,23 @@ fn injected_delivery_failure() -> Option<String> {
 #[cfg(not(feature = "test-support"))]
 fn injected_delivery_failure() -> Option<String> {
 	None
+}
+
+/// Whether a failed write was cancelled rather than broken. Windows reaches a
+/// write blocked in the kernel by cancelling it from outside, and reports
+/// `ERROR_OPERATION_ABORTED`; on Unix nothing cancels a write, so nothing is
+/// aborted.
+fn aborted(e: &std::io::Error) -> bool {
+	#[cfg(windows)]
+	{
+		// 995, ERROR_OPERATION_ABORTED.
+		return e.raw_os_error() == Some(995);
+	}
+	#[cfg(not(windows))]
+	{
+		let _ = e;
+		false
+	}
 }
 
 /// What became of a child's input. A success reports that every byte was
@@ -782,9 +892,7 @@ pub struct HostFunction {
 /// description recorded at the registration itself so completion and `:help`
 /// have no second list to keep in step.
 pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
-	unsafe {
-		libc::signal(libc::SIGINT, interrupt as *const () as libc::sighandler_t);
-	}
+	crate::platform::watch_for_interrupt();
 	let mut module = Module::with_crate("host")?;
 	let mut registered = Vec::new();
 	macro_rules! register {
