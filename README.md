@@ -50,6 +50,17 @@ Besides `host::`, scripts and sessions have `text::`: `find`, `split_max`,
 and `group_digits`, each added because one real script needed it. Both
 modules complete and describe themselves at the prompt.
 
+`rnx eval <source>` evaluates one expression and exits. It reads what the
+expression returned the way `run` reads what a script returned, so an
+expression that fails exits nonzero and says so on standard error rather than
+printing an error and reporting success.
+
+The two render a value differently: `run` prints JSON, which has no form for
+an option, a tuple, a character, or a struct, and `eval` uses the renderer the
+session uses. A value `run` cannot render at all is reported on standard error
+with a nonzero status, because a rendering that failed printed on standard
+output would be indistinguishable from the value itself.
+
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's
 parser says it is unfinished (two blank lines abandon it), values rendered

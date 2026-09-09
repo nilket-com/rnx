@@ -41,8 +41,12 @@ fn call(context: &Context, source: &str, state: Value) -> Result<Value> {
 		.call()
 		.map_err(|e| e.to_string().into())
 }
-pub fn display(value: &Value) -> String {
-	serde_json::to_string(value).unwrap_or_else(|e| format!("<serialization error: {e}>"))
+/// The text `run` shows for a value a script returned, or why it cannot be
+/// shown. `run` renders with JSON and Rune has shapes JSON has no form for,
+/// so this can fail; it says so rather than returning text that reads like a
+/// value, because a rendering that failed and a value must not look alike.
+pub fn display(value: &Value) -> std::result::Result<String, String> {
+	serde_json::to_string(value).map_err(|e| e.to_string())
 }
 
 fn main() -> Result<()> {
@@ -54,11 +58,29 @@ fn main() -> Result<()> {
 		let source = args.get(1).ok_or("eval needs source")?.clone();
 		host::running_a_script();
 		let mut session = session::Session::new(context)?;
+		let limits = format::Limits::default();
 		match session.eval(&source) {
-			Ok(value) => println!(
-				"{}",
-				format::render(&value, Some(&session), &format::Limits::default())
-			),
+			// What a returned value means is decided in one place, so `eval`
+			// and `run` cannot disagree about what a failure is. The renderer
+			// stays each entry point's own; record 0018 decision 4 says why.
+			Ok(value) => match runner::returned(&value) {
+				Ok(value) => {
+					if !runner::is_unit(&value) {
+						println!("{}", format::render(&value, Some(&session), &limits));
+					}
+				}
+				Err(error) => {
+					// A string error prints as it was written, as it does
+					// from `run`.
+					match error.borrow_string_ref() {
+						Ok(text) => eprintln!("error: {}", &*text),
+						Err(_) => {
+							eprintln!("error: {}", format::render(&error, Some(&session), &limits))
+						}
+					}
+					std::process::exit(1);
+				}
+			},
 			Err(failure) => {
 				eprintln!("{failure}");
 				std::process::exit(1);
@@ -111,10 +133,10 @@ fn main() -> Result<()> {
     "#,
 		state.clone(),
 	)?;
-	assert_eq!(display(&result), "[11,10,20,7,true,7]");
+	assert_eq!(display(&result)?, "[11,10,20,7,true,7]");
 	println!(
 		"retained closure/function, new function, old struct field/type/method: {}",
-		display(&result)
+		display(&result)?
 	);
 	assert!(compile(&context, "pub fn main(s) { let x = ; }").is_err());
 	let result = call(
@@ -122,7 +144,7 @@ fn main() -> Result<()> {
 		"pub fn main(s) { let c = s.closure; c() }",
 		state.clone(),
 	)?;
-	assert_eq!(display(&result), "11");
+	assert_eq!(display(&result)?, "11");
 	println!("after compile failure: {result:?}");
 	let failure = call(
 		&context,
@@ -136,7 +158,7 @@ fn main() -> Result<()> {
 			&context,
 			"pub fn main(s) { s.shared }",
 			state.clone()
-		)?)
+		)?)?
 	);
 	for (name, source) in [
 		(
@@ -153,7 +175,7 @@ fn main() -> Result<()> {
 		),
 	] {
 		match call(&context, source, state.clone()) {
-			Ok(value) => println!("{name}: {}", display(&value)),
+			Ok(value) => println!("{name}: {}", display(&value)?),
 			Err(e) => println!("{name}: {e}"),
 		}
 	}
