@@ -460,7 +460,7 @@ pub fn process_checks(context: &Context) -> super::Result<()> {
 			}
 			_ => unreachable!(),
 		}
-		println!("{label}: {}", super::display(&result));
+		println!("{label}: {}", super::display(&result)?);
 	}
 	Ok(())
 }

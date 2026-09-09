@@ -103,14 +103,40 @@ fn fault_offset(error: &VmError, unit: &Arc<Unit>) -> Option<usize> {
 	Some(instruction.span.range().start)
 }
 
-/// Print the value a script returned. Unit is recognised by its own type,
-/// not by what it serialises to, because `None` serialises the same way and
-/// is not unit.
-fn show(value: &Value) {
-	if matches!(value.as_type_value(), Ok(rune::runtime::TypeValue::Unit)) {
-		return;
+/// Print the value a script returned, and report whether it could be shown.
+/// Unit is recognised by its own type, not by what it serialises to, because
+/// `None` serialises the same way and is not unit.
+///
+/// A value this cannot render is a failure of the run rather than a value:
+/// the reason goes to standard error and the status is 1. Printed on standard
+/// output it would be indistinguishable from the value the script meant to
+/// return, which is the shape of defect this record exists to remove. Which
+/// shapes those are, and how they ought to render, is the renderer question
+/// decision 4 defers.
+fn show(value: &Value) -> i32 {
+	if is_unit(value) {
+		return 0;
 	}
-	println!("{}", crate::display(value));
+	match crate::display(value) {
+		Ok(text) => {
+			println!("{text}");
+			0
+		}
+		Err(reason) => {
+			unplaced(
+				"error",
+				&format!("the value the script returned cannot be shown: {reason}"),
+			);
+			1
+		}
+	}
+}
+
+/// Whether a returned value is nothing at all. A script or an expression that
+/// produced no value should print no value, and both entry points ask here so
+/// that one of them cannot start printing `()` while the other does not.
+pub fn is_unit(value: &Value) -> bool {
+	matches!(value.as_type_value(), Ok(rune::runtime::TypeValue::Unit))
 }
 
 /// Print an error a script returned. A string prints as it was written;
@@ -182,19 +208,24 @@ pub fn run(context: &Context, path: &str, arguments: Value, debug_source: bool) 
 			return 1;
 		}
 	};
-	// A script may return its value directly or wrapped in a result.
-	match rune::from_value::<std::result::Result<Value, Value>>(value.clone()) {
-		Ok(Ok(value)) => {
-			show(&value);
-			0
-		}
-		Ok(Err(error)) => {
+	match returned(&value) {
+		Ok(value) => show(&value),
+		Err(error) => {
 			show_error(&error);
 			1
 		}
-		Err(_) => {
-			show(&value);
-			0
-		}
+	}
+}
+
+/// What a returned value means: something to show, or a failure to report.
+///
+/// A script may return its value directly or wrapped in a result, and both
+/// entry points read that the same way, so a failure is a failure whichever
+/// one produced it. The shape of the value is what decides; nothing inside it
+/// is inspected, so a child that ran and failed is still a call that worked.
+pub fn returned(value: &Value) -> std::result::Result<Value, Value> {
+	match rune::from_value::<std::result::Result<Value, Value>>(value.clone()) {
+		Ok(inner) => inner,
+		Err(_) => Ok(value.clone()),
 	}
 }
