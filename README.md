@@ -30,6 +30,11 @@ goes to standard error and the script's own output to standard output.
 `--debug-source`, before the path, also prints the compiled source; anything
 after the path is the script's argument.
 
+`host::process` runs a child and refuses output that is not UTF-8, naming the
+stream rather than handing back a plausible string with the evidence
+replaced. `host::process_bytes` runs the same child and returns its streams as
+byte strings, for a script whose child speaks bytes.
+
 A script chooses its own exit status with `host::exit(code)`, and can say
 something on the way out with `host::eprint(text)`, so it can fail quietly
 with its report on standard output or exit 2 for a usage error the way a

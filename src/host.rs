@@ -182,7 +182,7 @@ fn capture(mut input: impl Read) -> (Vec<u8>, bool) {
 	}
 	(captured, truncated)
 }
-fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, String> {
+fn run_child(program: &str, arguments: Value, timeout_ms: u64) -> Result<Ran, String> {
 	use std::os::unix::process::CommandExt;
 	let values = arguments
 		.borrow_ref::<rune::runtime::Vec>()
@@ -238,14 +238,109 @@ fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, St
 	}
 	let (out, out_truncated) = out.join().map_err(|_| "stdout reader panicked")?;
 	let (err, err_truncated) = err.join().map_err(|_| "stderr reader panicked")?;
+	Ok(Ran {
+		code: status.code(),
+		timed_out,
+		cancelled,
+		out,
+		out_truncated,
+		err,
+		err_truncated,
+	})
+}
+
+/// What a child left behind, before anything decides whether it is text.
+///
+/// The two streams are captured separately and fall short separately, so each
+/// carries its own flag. Only a stream's own flag can excuse that stream's
+/// last character, and combining them before decoding would let a truncated
+/// standard output excuse a standard error the child ended mid-character.
+struct Ran {
+	code: Option<i32>,
+	timed_out: bool,
+	cancelled: bool,
+	out: Vec<u8>,
+	out_truncated: bool,
+	err: Vec<u8>,
+	err_truncated: bool,
+}
+
+impl Ran {
+	/// What the record reports: either stream falling short means the capture
+	/// as a whole is not everything the child produced.
+	fn truncated(&self) -> bool {
+		self.out_truncated || self.err_truncated
+	}
+}
+
+/// A captured stream as text, or the reason it is not.
+///
+/// A capture stops at a fixed size, which can fall inside a character, so an
+/// incomplete sequence at the very end of a truncated capture is the
+/// capture's doing rather than the child's: the partial character is dropped
+/// and the truncation is reported, which the caller already has to check.
+/// Anything else is the child's, including an incomplete sequence at the end
+/// of a capture that was not truncated.
+fn decode(program: &str, stream: &str, bytes: &[u8], truncated: bool) -> Result<String, String> {
+	match std::str::from_utf8(bytes) {
+		Ok(text) => Ok(text.to_owned()),
+		Err(error) if truncated && error.error_len().is_none() => {
+			let whole = &bytes[..error.valid_up_to()];
+			Ok(std::str::from_utf8(whole)
+				.expect("valid_up_to marks a valid prefix")
+				.to_owned())
+		}
+		Err(error) => Err(format!(
+			"cannot run {program}: its {stream} is not UTF-8 at byte {}; use host::process_bytes to read it",
+			error.valid_up_to()
+		)),
+	}
+}
+
+fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, String> {
+	let ran = run_child(program, arguments, timeout_ms)?;
+	// Each stream is decoded against its own flag. The record reports both
+	// together, because a caller checking `truncated` wants to know that
+	// something fell short, not which half did.
+	let stdout = decode(program, "standard output", &ran.out, ran.out_truncated)?;
+	let stderr = decode(program, "standard error", &ran.err, ran.err_truncated)?;
 	json_parse(
 		&serde_json::json!({
-			"code": status.code(), "timed_out": timed_out, "cancelled": cancelled,
-			"stdout": String::from_utf8_lossy(&out), "stderr": String::from_utf8_lossy(&err),
-			"truncated": out_truncated || err_truncated,
+			"code": ran.code, "timed_out": ran.timed_out, "cancelled": ran.cancelled,
+			"stdout": stdout, "stderr": stderr, "truncated": ran.truncated(),
 		})
 		.to_string(),
 	)
+}
+
+/// The same child, with its streams exactly as they came.
+fn process_bytes(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, String> {
+	let ran = run_child(program, arguments, timeout_ms)?;
+	let mut object = rune::runtime::Object::new();
+	let mut put = |name: &str, value: Value| -> Result<(), String> {
+		let key = rune::alloc::String::try_from(name).map_err(error)?;
+		object.insert(key, value).map_err(error)?;
+		Ok(())
+	};
+	// `process` reports the code through JSON, where a child that was killed
+	// has none and arrives as unit. The two must agree field for field, so
+	// this spells the same thing rather than an option.
+	let code = match ran.code {
+		Some(code) => rune::to_value(i64::from(code)).map_err(error)?,
+		None => rune::to_value(()).map_err(error)?,
+	};
+	put("code", code)?;
+	put("timed_out", rune::to_value(ran.timed_out).map_err(error)?)?;
+	put("cancelled", rune::to_value(ran.cancelled).map_err(error)?)?;
+	put("truncated", rune::to_value(ran.truncated()).map_err(error)?)?;
+	let bytes = |raw: Vec<u8>| -> Result<Value, String> {
+		let held = rune::alloc::Vec::try_from(raw).map_err(error)?;
+		rune::to_value(rune::runtime::Bytes::from_vec(held)).map_err(error)
+	};
+	put("stdout", bytes(ran.out)?)?;
+	put("stderr", bytes(ran.err)?)?;
+	drop(put);
+	rune::to_value(object).map_err(error)
 }
 /// A host function as registered: its path and the one-line description
 /// carried beside it, so a function cannot exist without its help.
@@ -301,6 +396,11 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		"eprint",
 		eprint,
 		"eprint(text) -> Result<()>: write text to standard error, adding nothing"
+	);
+	register!(
+		"process_bytes",
+		process_bytes,
+		"process_bytes(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated}>: as process, with the streams as byte strings and no decoding"
 	);
 	register!(
 		"write_new",

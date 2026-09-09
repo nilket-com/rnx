@@ -37,6 +37,7 @@ pub fn known_types() -> Vec<(String, Hash)> {
 		entry!(rune::runtime::Object),
 		entry!(rune::alloc::String),
 		entry!(rune::runtime::Tuple),
+		entry!(rune::runtime::Bytes),
 		entry!(rune::runtime::Range),
 		entry!(i64),
 		entry!(f64),
