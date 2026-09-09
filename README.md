@@ -35,6 +35,14 @@ stream rather than handing back a plausible string with the evidence
 replaced. `host::process_bytes` runs the same child and returns its streams as
 byte strings, for a script whose child speaks bytes.
 
+`host::process_bytes_input` also tells the child what to do: the byte string
+it is given is written to the child's standard input, which is then closed,
+because a child like `git cat-file --batch` needs the end of its input to
+finish. All three streams move at once, so a large input cannot wedge against
+a large reply, and delivery gives up at the same deadline the call has. A
+success means the child answered, not that it read everything: a child may
+stop reading, and that is its prerogative.
+
 A script chooses its own exit status with `host::exit(code)`, and can say
 something on the way out with `host::eprint(text)`, so it can fail quietly
 with its report on standard output or exit 2 for a usage error the way a

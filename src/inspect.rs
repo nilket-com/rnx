@@ -484,7 +484,8 @@ mod tests {
 	#[test]
 	fn every_registered_host_function_has_a_description() {
 		let host = host();
-		assert_eq!(host.len(), 11);
+		// Twelve since record 0022 added `process_bytes_input`.
+		assert_eq!(host.len(), 12);
 		for function in &host {
 			assert!(
 				!function.doc.trim().is_empty(),

@@ -12,6 +12,10 @@ default = ["count-allocations"]
 # Allocation accounting. Without it no ceiling is enforced and no figure is
 # reported; the build says so rather than reporting zero.
 count-allocations = []
+# Only for gates that must inject what cannot be provoked. Off by default, and
+# nothing in an ordinary build reads it: record 0022 explains why the
+# delivery's failure path needs one.
+test-support = []
 
 [dependencies]
 rune = { version = "=0.14.1", default-features = false, features = ["std"] }
