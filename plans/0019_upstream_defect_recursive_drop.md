@@ -12,6 +12,10 @@ is deliberately separate.
 
 **Version:** 0.14.1
 
+The reproducer below was built and run as its own crate, with `rune` as its
+only dependency, on 2026-09-09: it aborts as described, and the two debug
+thresholds in the table were re-measured on the same build.
+
 ### What happens
 
 A `Value` holding a chain of nested containers is dropped recursively, one
@@ -54,11 +58,12 @@ Output:
 ```
 built 200000 deep
 
-thread 'main' has overflowed its stack
-fatal runtime error: stack overflow, aborting     # exit 134
+thread 'main' (3316987) has overflowed its stack
+fatal runtime error: stack overflow, aborting
 ```
 
-`built` prints, `dropped` does not.
+`built` prints, `dropped` does not, and the exit status is 134 — `SIGABRT`,
+not a Rust panic anything can catch.
 
 ### The thresholds are specific to this build
 
