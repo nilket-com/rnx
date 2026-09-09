@@ -45,6 +45,15 @@ fn call(context: &Context, source: &str, state: Value) -> Result<Value> {
 		.map_err(|e| e.to_string().into())
 }
 
+/// This build. `0.0.0` means no release has happened, which is record 0026's
+/// decision rather than an unset field.
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// The Rune this build is compiled against. It is written here rather than
+/// read from the crate, which exposes no such constant — so a gate parses the
+/// manifest's `=` pin and refuses to let the two drift apart.
+const RUNE_VERSION: &str = "0.14.1";
+
 /// What rnx does, for someone who asked or who mistyped.
 const USAGE: &str = "\
 rnx — a Rune scripting environment
@@ -54,6 +63,7 @@ rnx — a Rune scripting environment
   rnx run [flags] FILE ...  run a file's `main`; arguments after FILE are its
   rnx eval SOURCE           evaluate one expression and exit
   rnx selfcheck             assert this build's own invariants and report
+  rnx version               this build, and the Rune it is pinned to
   rnx help                  this
 
 Flags for `run`, before the file: --budget N, --debug-source.";
@@ -104,6 +114,18 @@ fn main() -> Result<()> {
 	// whether standard input is a terminal or a pipe.
 	if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
 		return repl::run(context, host_functions);
+	}
+	if args
+		.first()
+		.is_some_and(|s| s == "version" || s == "--version" || s == "-V")
+	{
+		// Both halves, because either alone leaves a question open: which rnx
+		// this is, and which Rune it embeds. Record 0001 pins an exact upstream
+		// version and asks each release to say which one; this is where a
+		// person or a script reads it without unpacking the binary.
+		println!("rnx {VERSION}");
+		println!("rune {RUNE_VERSION}");
+		return Ok(());
 	}
 	if args
 		.first()
