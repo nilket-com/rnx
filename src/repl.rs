@@ -220,7 +220,7 @@ fn handle(
 	}
 	match session.eval(input) {
 		Ok(value) => {
-			let text = render(&value, Some(session), limits);
+			let text = render(&value, Some(&session.fields()), limits);
 			if text != "()" {
 				println!("{text}");
 			}

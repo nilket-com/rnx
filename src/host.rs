@@ -32,8 +32,11 @@ fn about(what: &str, subject: &str, e: impl std::fmt::Display) -> String {
 fn json_parse(text: &str) -> Result<Value, String> {
 	serde_json::from_str(text).map_err(error)
 }
+/// The one JSON serializer a script can reach. The bound and the refusal
+/// vocabulary live in `json`, so nothing else in the crate decides what JSON
+/// can represent.
 fn json_stringify(value: Value) -> Result<String, String> {
-	serde_json::to_string(&value).map_err(error)
+	super::json::stringify(&value)
 }
 fn file_read(path: &str) -> Result<String, String> {
 	let mut bytes = Vec::new();
@@ -460,7 +463,7 @@ pub fn process_checks(context: &Context) -> super::Result<()> {
 			}
 			_ => unreachable!(),
 		}
-		println!("{label}: {}", super::display(&result)?);
+		println!("{label}: {}", super::json::stringify(&result)?);
 	}
 	Ok(())
 }

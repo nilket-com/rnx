@@ -80,15 +80,24 @@ fn located(
 	message: &str,
 	origin: &Option<Origin>,
 ) -> std::fmt::Result {
+	// Everything printed here is escaped: the message, which may quote a
+	// script's own text, and the excerpt, which is the input as written.
+	let message = crate::format::terminal_safe(message);
 	match origin {
 		Some(o) => {
+			// The reported column is a position in the source, counted in
+			// characters. The caret is placed separately, by the display width
+			// of the escaped prefix actually printed, which is the same rule
+			// the file runner uses.
 			writeln!(
 				f,
 				"{kind} at input {}, line {}, column {}: {message}",
 				o.input, o.line, o.column
 			)?;
-			writeln!(f, "  {}", o.text)?;
-			write!(f, "  {}^", " ".repeat(o.column.saturating_sub(1)))
+			writeln!(f, "  {}", crate::format::terminal_safe(&o.text))?;
+			let prefix: String = o.text.chars().take(o.column.saturating_sub(1)).collect();
+			let columns = crate::format::display_width(&crate::format::terminal_safe(&prefix));
+			write!(f, "  {}^", " ".repeat(columns))
 		}
 		None => write!(
 			f,
@@ -372,12 +381,20 @@ impl Session {
 	pub fn declaration_names(&self) -> Vec<String> {
 		self.declarations.keys().cloned().collect()
 	}
-	/// Field names of a struct the session declared, in declaration order.
-	pub fn struct_fields(&self, name: &str) -> Option<&[String]> {
-		self.declarations
-			.get(name)
-			.filter(|d| d.is_type)
-			.map(|d| d.fields.as_slice())
+	/// The session's declarations as field-name candidates for the renderer.
+	/// Built fresh: a session holds few declarations, and a stale copy is a
+	/// defect waiting to happen.
+	pub fn fields(&self) -> crate::declared::Fields {
+		let mut fields = crate::declared::Fields::default();
+		for declaration in self.declarations.values() {
+			if declaration.is_type {
+				// Read from the declaration's own text by the one walker, so a
+				// struct, a struct inside it, and an enum's variants are all
+				// found the same way here as in a file.
+				crate::declared::into_fields(&declaration.source, &mut fields);
+			}
+		}
+		fields
 	}
 
 	pub fn eval(&mut self, input: &str) -> std::result::Result<Value, Failure> {
@@ -1354,7 +1371,11 @@ mod prelude_tests {
 	}
 	fn shown(session: &mut Session, input: &str) -> String {
 		let value = session.eval(input).unwrap();
-		crate::format::render(&value, Some(session), &crate::format::Limits::default())
+		crate::format::render(
+			&value,
+			Some(&session.fields()),
+			&crate::format::Limits::default(),
+		)
 	}
 
 	#[test]

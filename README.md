@@ -55,11 +55,20 @@ expression returned the way `run` reads what a script returned, so an
 expression that fails exits nonzero and says so on standard error rather than
 printing an error and reporting success.
 
-The two render a value differently: `run` prints JSON, which has no form for
-an option, a tuple, a character, or a struct, and `eval` uses the renderer the
-session uses. A value `run` cannot render at all is reported on standard error
-with a nonzero status, because a rendering that failed printed on standard
-output would be indistinguishable from the value itself.
+Both render a value the same way, and both render it whole: a script's
+returned value is what a caller reads, so nothing is elided from it. The
+prompt previews instead, marking what it cut, because a person is reading
+that. A value too deeply nested to render is reported on standard error with a
+nonzero status rather than printed in part.
+
+JSON is something a script asks for, with `host::json_stringify(value)`, which
+refuses what JSON cannot represent and names where in the value it gave up.
+There is no flag: a script that wants JSON on standard output prints it.
+
+Everything rnx prints itself is escaped — a diagnostic, a source excerpt, a
+file path, an error a script returned — so nothing can move the cursor of
+whoever ran it, and a caret is placed by the columns the escaped line actually
+occupies.
 
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's

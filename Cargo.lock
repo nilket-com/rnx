@@ -425,6 +425,7 @@ dependencies = [
  "rune",
  "rustyline",
  "serde_json",
+ "unicode-width",
 ]
 
 [[package]]

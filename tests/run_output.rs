@@ -44,11 +44,15 @@ fn a_script_returning_unit_prints_nothing() {
 
 #[test]
 fn every_other_value_still_prints() {
-	// `None` serialises to null like unit does, and is not unit: it prints.
-	assert_eq!(run("pub fn main(args) { None }"), "null\n");
+	// `None` renders as itself and is not unit: it prints. Record 0019
+	// replaced the JSON these once asserted with the readable renderer both
+	// shell entry points now share, so `null` is `None` and `[1,2]` has its
+	// space. What is being asserted is unchanged: a value that is not nothing
+	// is shown.
+	assert_eq!(run("pub fn main(args) { None }"), "None\n");
 	assert_eq!(run("pub fn main(args) { 42 }"), "42\n");
 	assert_eq!(run("pub fn main(args) { \"text\" }"), "\"text\"\n");
-	assert_eq!(run("pub fn main(args) { [1, 2] }"), "[1,2]\n");
+	assert_eq!(run("pub fn main(args) { [1, 2] }"), "[1, 2]\n");
 	assert_eq!(run("pub fn main(args) { Ok(7) }"), "7\n");
 	assert_eq!(run("pub fn main(args) { false }"), "false\n");
 }
