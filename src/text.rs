@@ -235,6 +235,7 @@ mod description_tests {
 			"host::mkdir",
 			"host::absolute",
 			"host::process",
+			"host::process_bytes",
 			"text::split_max",
 		];
 		for path in fallible {
