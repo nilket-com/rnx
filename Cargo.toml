@@ -1,7 +1,25 @@
 [package]
 name = "rnx"
+# 0.0.0 is not a placeholder: record 0026 keeps it there until record 0001's
+# release gates pass, so a number never says more than the ladder has shown.
 version = "0.0.0"
 edition = "2024"
+# The toolchain rnx is built and tested with, not a floor that has been found.
+# 1.88 is measured to fail — in `rustyline`, on the unstable `file_lock` —
+# and nothing between 1.89 and 1.94 has a toolchain here to try.
+rust-version = "1.95"
+description = "A scripting environment for Rune: a file runner, an expression evaluator, and an interactive session, on upstream Rune with no compiler fork."
+repository = "https://github.com/nilket-com/rnx"
+readme = "README.md"
+keywords = ["rune", "scripting", "repl", "interpreter", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+# What a user of the crate needs, and nothing else: the records are the
+# project's reasoning rather than its product, and `journey.rn` needs a
+# program from another repository to run at all.
+exclude = ["plans/", "evidence.md", "journey.rn"]
+# Two independent guards, and both stay until record 0001's decision 7 is
+# settled: this says no, and the absent `license` field means crates.io would
+# refuse it anyway.
 publish = false
 
 # Deliberately independent of the product workspace and its editor/GUI hosts.

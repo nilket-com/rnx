@@ -1,18 +1,30 @@
 # rnx: a scripting environment for Rune
 
 A runner for `.rn` files, an expression evaluator, and an interactive
-session, on upstream Rune with no compiler fork. Records: the first release
-([plans/0001](plans/0001_the_first_release.md)) and the interactive session
-([plans/0002](plans/0002_the_interactive_session.md)); evidence for each
-sits beside it. The original feasibility spike and its outcome are in
-[evidence.md](evidence.md). This is not yet a release.
+session, on upstream Rune with no compiler fork.
+
+**This is not a release.** The version is `0.0.0`, the package is not
+published, and it carries no license yet — record 0026 explains what each of
+those is waiting for. The behaviour below is what runs on Linux; macOS
+type-checks and Windows compiles, and neither has been run (records 0025 and
+0001's gate 4).
+
+The reasoning is in `plans/`, one numbered record per decision, with evidence
+beside the records that have it: the first release is
+[plans/0001](https://github.com/nilket-com/rnx/blob/main/plans/0001_the_first_release.md) and the interactive
+session is [plans/0002](https://github.com/nilket-com/rnx/blob/main/plans/0002_the_interactive_session.md). The
+original feasibility spike and its outcome are in
+[evidence.md](https://github.com/nilket-com/rnx/blob/main/evidence.md). Those files are in the repository and not in
+the published package — record 0026 says why — so these point there, where
+they work from either copy.
 
 ## Reproduce
 
 This is an independent, unpublished Cargo package pinned to Rune 0.14.1, with
-its own lockfile. It uses the compiler/VM APIs directly; it does not instantiate
-Baryon, Polariton or Toron and does not yet wrap upstream `rune::cli::Entry`.
-The host process implementation is Linux/Unix only.
+its own lockfile. It uses the compiler/VM APIs directly and does not yet wrap
+upstream `rune::cli::Entry`. `rnx version` reports this build and the Rune it
+is pinned to. It is built and tested with Rust 1.95; 1.88 is measured not to
+work, in a dependency.
 
 ```sh
 cargo run --locked
@@ -20,7 +32,9 @@ cargo run --locked -- eval 'let x = 4; x + 3'
 cargo run --locked -- repl
 ```
 
-The default command runs the spike's assertions and prints observations.
+`rnx` on its own opens a session. `rnx selfcheck` is what runs this build's
+own assertions and prints what it saw, which is what the bare command did
+before record 0024.
 
 `rnx run <file.rn> [args]` executes a file's `main`. A compile or runtime
 error names the file, the line, the column, the source line, and marks the
@@ -121,63 +135,3 @@ rather than pretending to survive. Successful inputs publish bindings and
 declarations; failed inputs can still mutate shared values and perform
 external effects. Tests: `cargo test --locked` (the session gates run through
 a pseudo-terminal on Linux).
-
-For the real-window exercise, start one fresh `polariton --agents`, take its id
-from `polariton windows`, and provide a new output directory whose parent exists:
-
-```sh
-cargo run --locked -- \
-  run journey.rn \
-  /absolute/path/to/polariton WINDOW_ID /absolute/path/to/data.parquet \
-  /tmp/new-rune-journey first-data first-plot
-```
-
-The `.rn` file uses only generic host modules and the public `polariton act`
-protocol. It saves commands and answers, requires a new incarnation after each
-plot run, and stops on unknown/failure without replay. Close the test window
-afterward. Bash/jq remains the product acceptance harness until a supported Rune
-runner is deliberately adopted; this spike is not a new install dependency.
-
-The immediate Python harness replacement is independent and uses Bash/jq.
-This spike asks whether a standalone Rune host can replace that orchestration,
-and what persistent interactive evaluation can truthfully guarantee.
-
-## Questions that must be executed
-
-1. Compile independent units, transferring Rune values without replaying old
-   statements. Retain a closure and a struct instance; redefine a function and
-   record which definition each call uses. Change the struct shape as a negative
-   control. Keep a closure alive after its original VM has been dropped.
-2. Introduce a compile error, then a runtime error after a mutation. Observe
-   binding publication, aliased state and external effects separately. Do not
-   promise rollback of already executed work.
-3. Use Rune's AST to separate declarations/statements and identify bindings,
-   including shadowing and destructuring. An expression wrapper alone is not a
-   persistent REPL.
-4. Expose files, JSON, argument-array subprocesses, bounded capture and deadlines
-   in a standalone host. Run the same 19-action notebook journey without Python.
-   Exercise process failure, timeout and cancellation rather than only success.
-
-The resulting report must separate demonstrated behavior, unsupported behavior,
-and production work remaining. A runner may be viable even if the proposed REPL
-state model fails. Public repository placement follows this evidence.
-
-## Python inventory
-
-All four older tracked Python files import only the standard library:
-
-| File | Workload | Host facilities needed |
-|---|---|---|
-| `plans/product/migration/verify_nilket_graft.py` | Frozen Git migration audit | Paths, binary subprocess pipes, byte parsing, maps |
-| `nilket/scripts/classify_fold_perf.py` | Perf-symbol classification | Process execution, JSON, regular expressions, counters |
-| `nilket/crates/toron/scripts/bench/summarize_runtime_filter_perft.py` | Benchmark summaries and comparisons | File/text parsing, grouping, arithmetic, formatted output |
-| `nilket/crates/wendelon/ci/seed_retention_advisory.py` | CI retention advisory | JSON, TOML, dates, environment, HTTP and URL handling |
-
-This is not a migration of those files. Standard-library-only still includes
-substantial behavior: streaming binary pipes, HTTP error handling and dates need
-proper replacements. The new notebook harness is the initial, narrower workload.
-
-Upstream baseline: the repository resolves Rune 0.14.1. Its `rune::cli::Entry`
-supports custom contexts and script/check/test/format/documentation commands;
-its CLI command enum contains no REPL. Existing Baryon job bindings are useful
-reference material, but the standalone spike must not instantiate an editor.
