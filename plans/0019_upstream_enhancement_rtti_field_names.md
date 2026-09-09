@@ -13,6 +13,10 @@ did not declare
 
 **Version:** 0.14.1
 
+The reproducer below was built and run as its own crate, with `rune` as its
+only dependency, on 2026-09-09: the four lines it prints and the compile error
+are that run's output, copied.
+
 ### What is missing
 
 `Rtti` already holds the mapping a host needs:
@@ -35,23 +39,59 @@ names exist.
 
 ### Reproducer
 
-One file, `rune` as the only dependency, compiling `struct P { code, note }`
-and inspecting a value of it:
+One file, `rune` as the only dependency:
 
 ```rust
-if let Ok(TypeValue::Struct(s)) = value.as_type_value() {
-    println!("item path : {}", s.rtti().item());      // P
-    println!("type hash : {}", s.rtti().type_hash()); // 0x467f80bed6994967
-    println!("arity     : {}", s.data().len());       // 2
-    println!("get(code) : {}", s.get("code").is_some()); // true
-    for name in s.rtti().fields() { println!("{name}"); }
+use rune::runtime::TypeValue;
+use rune::{Context, Diagnostics, Source, Sources, Vm};
+use std::sync::Arc;
+
+const SCRIPT: &str = r#"
+pub struct P { code, note }
+pub fn main() { P { code: 7, note: "seven" } }
+"#;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let context = Context::with_default_modules()?;
+    let mut sources = Sources::new();
+    sources.insert(Source::memory(SCRIPT)?)?;
+    let mut diagnostics = Diagnostics::new();
+    let unit = rune::prepare(&mut sources)
+        .with_context(&context)
+        .with_diagnostics(&mut diagnostics)
+        .build()?;
+    let mut vm = Vm::new(Arc::new(context.runtime()?), Arc::new(unit));
+    let value = vm.call(["main"], ())?;
+
+    if let Ok(TypeValue::Struct(s)) = value.as_type_value() {
+        println!("item path : {}", s.rtti().item());
+        println!("type hash : {}", s.rtti().type_hash());
+        println!("arity     : {}", s.data().len());
+        println!("get(code) : {}", s.get("code").is_some());
+        for name in s.rtti().fields() {
+            println!("{name}");
+        }
+    }
+    Ok(())
 }
 ```
 
-The last line does not compile:
+Without the `for` loop it prints what the public surface can answer:
+
+```
+item path : P
+type hash : 0x467f80bed6994967
+arity     : 2
+get(code) : true
+```
+
+With it, it does not compile:
 
 ```
 error[E0599]: no method named `fields` found for reference `&Arc<Rtti>` in the current scope
+  --> src/main.rs:27:24
+   |
+27 |         for name in s.rtti().fields() {
    |                              ^^^^^^ private field, not a method
 ```
 
