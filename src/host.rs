@@ -221,6 +221,12 @@ fn run_child(program: &str, arguments: Value, timeout_ms: u64) -> Result<Ran, St
 	let deadline = Instant::now() + Duration::from_millis(timeout_ms);
 	let mut timed_out = false;
 	let mut cancelled = false;
+	// Each pause asked for is a fraction of how long the child has already
+	// run, so the pauses are short while the child is young and grow to what
+	// this loop used for everything before. Doubling from a short start was
+	// tried first and measured worse — it reaches a millisecond just as a
+	// `git cat-file` finishes, so the last sleep overshoots by most of one.
+	let started = Instant::now();
 	let status = loop {
 		if let Some(status) = child.try_wait().map_err(|e| about("run", program, e))? {
 			break status;
@@ -233,9 +239,17 @@ fn run_child(program: &str, arguments: Value, timeout_ms: u64) -> Result<Ran, St
 			}
 			break child.wait().map_err(|e| about("run", program, e))?;
 		}
-		std::thread::sleep(Duration::from_millis(5));
+		// No sleep outlives the deadline: overshooting it by a whole interval
+		// would report a timeout later than the caller asked for.
+		let left = deadline.saturating_duration_since(Instant::now());
+		std::thread::sleep(next_wait(started.elapsed(), left));
 	};
 	// Children remaining in this process group may otherwise keep pipes open.
+	// A descendant that left the group — `setsid` — is not killed here, and if
+	// it holds a captured pipe the joins below wait for it however long it
+	// lives. Record 0020 records that limitation, with a reproducer rather
+	// than a test: bounding the joins is its own cut, and a timing assertion
+	// could not tell whether it had landed.
 	unsafe {
 		libc::kill(-pid, libc::SIGKILL);
 	}
@@ -250,6 +264,33 @@ fn run_child(program: &str, arguments: Value, timeout_ms: u64) -> Result<Ran, St
 		err,
 		err_truncated,
 	})
+}
+
+/// The floor on a pause while waiting for a child, so a child that exits at
+/// once is noticed at once rather than after a fixed sleep: record 0020
+/// measured 1,346 spawns at 7.17 s with a flat 5 ms wait.
+const SHORTEST_WAIT: Duration = Duration::from_micros(100);
+
+/// The ceiling on a pause. It is deliberately the interval this loop used for
+/// everything before record 0020, so a long-lived child is polled no harder
+/// than it ever was; making a short wait cheaper must not make a long one
+/// more expensive. A child reaches this after running for 40 ms.
+const LONGEST_WAIT: Duration = Duration::from_millis(5);
+
+/// How long to ask to sleep before looking at a child again.
+///
+/// This is the duration **requested**: an eighth of how long the child has
+/// already run, floored at `SHORTEST_WAIT` so a child that exits at once is
+/// looked at again promptly, capped at `LONGEST_WAIT` so a long-lived one is
+/// polled no harder than it was before record 0020, and never longer than the
+/// time left before the deadline.
+///
+/// It is not a bound on how quickly a child is noticed. The floor makes the
+/// pause longer than an eighth for any child younger than 800 µs, and a sleep
+/// is a request the scheduler may overrun. What the shape buys is measured in
+/// record 0020 rather than promised here.
+fn next_wait(elapsed: Duration, left: Duration) -> Duration {
+	(elapsed / 8).clamp(SHORTEST_WAIT, LONGEST_WAIT).min(left)
 }
 
 /// What a child left behind, before anything decides whether it is text.
@@ -471,6 +512,40 @@ pub fn process_checks(context: &Context) -> super::Result<()> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn a_wait_grows_with_the_child_and_never_outlives_the_deadline() {
+		let far = Duration::from_secs(60);
+		// A child that has just started is noticed at once.
+		assert_eq!(next_wait(Duration::ZERO, far), SHORTEST_WAIT);
+		// Then the pause asked for is an eighth of the child's life so far, so
+		// after a `git cat-file` has run 1.4 ms the next request is 175 us.
+		assert_eq!(
+			next_wait(Duration::from_millis(8), far),
+			Duration::from_millis(1)
+		);
+		assert_eq!(
+			next_wait(Duration::from_micros(1_400), far),
+			Duration::from_micros(175)
+		);
+		// And it stops growing at the interval this loop used for everything
+		// before record 0020, reached after 40 ms.
+		assert_eq!(next_wait(Duration::from_millis(40), far), LONGEST_WAIT);
+		assert_eq!(next_wait(Duration::from_secs(60), far), LONGEST_WAIT);
+		// The deadline wins whenever it is nearer than the wait would be.
+		assert_eq!(
+			next_wait(Duration::from_secs(60), Duration::from_micros(200)),
+			Duration::from_micros(200)
+		);
+		assert_eq!(
+			next_wait(Duration::ZERO, Duration::from_micros(10)),
+			Duration::from_micros(10)
+		);
+		assert_eq!(
+			next_wait(Duration::from_secs(60), Duration::ZERO),
+			Duration::ZERO
+		);
+	}
 
 	fn absent() -> String {
 		std::env::temp_dir()
