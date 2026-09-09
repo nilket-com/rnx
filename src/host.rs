@@ -185,7 +185,18 @@ fn capture(mut input: impl Read) -> (Vec<u8>, bool) {
 	}
 	(captured, truncated)
 }
-fn run_child(program: &str, arguments: Value, timeout_ms: u64) -> Result<Ran, String> {
+/// Run a child, optionally writing `input` to its standard input and closing
+/// it afterwards.
+///
+/// The input is copied into the writer thread rather than borrowed: record
+/// 0022 hands the bytes to a thread, which outlives the `Value` they came
+/// from even though it no longer outlives the call.
+fn run_child(
+	program: &str,
+	arguments: Value,
+	timeout_ms: u64,
+	input: Option<Vec<u8>>,
+) -> Result<Ran, String> {
 	use std::os::unix::process::CommandExt;
 	let values = arguments
 		.borrow_ref::<rune::runtime::Vec>()
@@ -207,18 +218,36 @@ fn run_child(program: &str, arguments: Value, timeout_ms: u64) -> Result<Ran, St
 	}
 	let mut child = Command::new(program)
 		.args(args)
-		.stdin(Stdio::null())
+		.stdin(if input.is_some() {
+			Stdio::piped()
+		} else {
+			Stdio::null()
+		})
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())
 		.process_group(0)
 		.spawn()
 		.map_err(|e| about("run", program, e))?;
 	let pid = child.id() as i32;
+	let deadline = Instant::now() + Duration::from_millis(timeout_ms);
 	let stdout = child.stdout.take().unwrap();
 	let stderr = child.stderr.take().unwrap();
 	let out = std::thread::spawn(move || capture(stdout));
 	let err = std::thread::spawn(move || capture(stderr));
-	let deadline = Instant::now() + Duration::from_millis(timeout_ms);
+	// The input moves on a third thread, so requests are delivered while
+	// replies and complaints are drained: what that removes is mutual pipe
+	// backpressure, not every way a child can fail to finish.
+	//
+	// The delivery gets a stop flag of its own, per call. `INTERRUPTED` is the
+	// whole process's and the deadline is a time; neither says "this call is
+	// finished with you", which is what has to be said when the child exits
+	// with input still undelivered.
+	let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+	let delivery = input.map(|bytes| {
+		let pipe = child.stdin.take().expect("stdin was piped for an input");
+		let stop = stop.clone();
+		std::thread::spawn(move || deliver(pipe, bytes, deadline, stop))
+	});
 	let mut timed_out = false;
 	let mut cancelled = false;
 	// Each pause asked for is a fraction of how long the child has already
@@ -227,9 +256,15 @@ fn run_child(program: &str, arguments: Value, timeout_ms: u64) -> Result<Ran, St
 	// tried first and measured worse — it reaches a millisecond just as a
 	// `git cat-file` finishes, so the last sleep overshoots by most of one.
 	let started = Instant::now();
-	let status = loop {
-		if let Some(status) = child.try_wait().map_err(|e| about("run", program, e))? {
-			break status;
+	// The wait's own failures are held rather than returned: there is a
+	// delivery to stop and collect, and a `?` here would leave by the front
+	// door with a thread still writing. Every way out of this function now
+	// goes through the cleanup below.
+	let waited: Result<std::process::ExitStatus, String> = loop {
+		match child.try_wait() {
+			Ok(Some(status)) => break Ok(status),
+			Ok(None) => {}
+			Err(e) => break Err(about("run", program, e)),
 		}
 		cancelled = INTERRUPTED.load(Ordering::Relaxed);
 		timed_out = Instant::now() >= deadline;
@@ -237,7 +272,7 @@ fn run_child(program: &str, arguments: Value, timeout_ms: u64) -> Result<Ran, St
 			unsafe {
 				libc::kill(-pid, libc::SIGKILL);
 			}
-			break child.wait().map_err(|e| about("run", program, e))?;
+			break child.wait().map_err(|e| about("run", program, e));
 		}
 		// No sleep outlives the deadline: overshooting it by a whole interval
 		// would report a timeout later than the caller asked for.
@@ -246,15 +281,37 @@ fn run_child(program: &str, arguments: Value, timeout_ms: u64) -> Result<Ran, St
 	};
 	// Children remaining in this process group may otherwise keep pipes open.
 	// A descendant that left the group — `setsid` — is not killed here, and if
-	// it holds a captured pipe the joins below wait for it however long it
-	// lives. Record 0020 records that limitation, with a reproducer rather
-	// than a test: bounding the joins is its own cut, and a timing assertion
-	// could not tell whether it had landed.
+	// it holds a **captured** pipe the capture joins below wait for it however
+	// long it lives: record 0020's limitation, carried with a reproducer
+	// rather than a test. Holding the read end of standard input no longer
+	// does that, which is what record 0022 added.
 	unsafe {
 		libc::kill(-pid, libc::SIGKILL);
 	}
+	// The wait is over, however it ended — including badly — so the delivery is
+	// told to stop and is then **always** collected. It cannot outlast this
+	// call: the pipe is non-blocking and the flag is read before every
+	// attempt, so the thread returns within one of its own waits. Detaching it
+	// instead — which an earlier draft did — would discard whatever it had to
+	// say, including a failure this promises to report.
+	stop.store(true, Ordering::Relaxed);
+	let mut delivery_failed = None;
+	if let Some(delivery) = delivery {
+		match delivery.join() {
+			// The child stopping is its prerogative, and being told to stop is
+			// this function's own doing; neither is a failure to report.
+			Ok(DeliveryOutcome::Failed(e)) => delivery_failed = Some(about("run", program, e)),
+			Err(_) => delivery_failed = Some(about("run", program, "the writer panicked")),
+			_ => {}
+		}
+	}
 	let (out, out_truncated) = out.join().map_err(|_| "stdout reader panicked")?;
 	let (err, err_truncated) = err.join().map_err(|_| "stderr reader panicked")?;
+	// Now that everything is stopped and collected, a failure can be reported.
+	let status = waited?;
+	if let Some(failure) = delivery_failed {
+		return Err(failure);
+	}
 	Ok(Ran {
 		code: status.code(),
 		timed_out,
@@ -291,6 +348,110 @@ const LONGEST_WAIT: Duration = Duration::from_millis(5);
 /// record 0020 rather than promised here.
 fn next_wait(elapsed: Duration, left: Duration) -> Duration {
 	(elapsed / 8).clamp(SHORTEST_WAIT, LONGEST_WAIT).min(left)
+}
+
+/// Write a child's whole input, or give up trying.
+///
+/// The pipe is made non-blocking, so a child that stops reading — or a
+/// descendant that holds the read end open without reading it — cannot pin
+/// this thread. Before every attempt it reads three things: the stop flag its
+/// call gives it, the deadline, and the process's interrupt flag. So it stops
+/// when its call is finished with it, when the time is up, or when the person
+/// running it says so, and the call can therefore always collect what it has
+/// to say rather than detaching it and hoping.
+///
+/// Between attempts the wait grows the way record 0020's does.
+///
+/// The input is owned here rather than borrowed. The thread no longer
+/// outlives its call — every exit path stops and collects it — but it does
+/// outlive the `Value` the bytes came from, which the virtual machine may
+/// collect while this is still writing.
+fn deliver(
+	pipe: std::process::ChildStdin,
+	bytes: Vec<u8>,
+	deadline: Instant,
+	stop: std::sync::Arc<std::sync::atomic::AtomicBool>,
+) -> DeliveryOutcome {
+	use std::os::fd::AsRawFd;
+	let fd = pipe.as_raw_fd();
+	unsafe {
+		let flags = libc::fcntl(fd, libc::F_GETFL);
+		if flags < 0 || libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK) < 0 {
+			return DeliveryOutcome::Failed(std::io::Error::last_os_error().to_string());
+		}
+	}
+	let mut pipe = pipe;
+	let mut written = 0;
+	let started = Instant::now();
+	while written < bytes.len() {
+		// Before every attempt, not only after one that would block: a write
+		// that can proceed must not be started once the call has finished with
+		// this delivery, or the flag would only be honoured while blocked.
+		if stop.load(Ordering::Relaxed)
+			|| Instant::now() >= deadline
+			|| INTERRUPTED.load(Ordering::Relaxed)
+		{
+			// The one place a failure can be injected, and it is here because
+			// here is the moment that matters: the call has begun its cleanup
+			// and a failure arriving now must still be collected.
+			if let Some(reason) = injected_delivery_failure() {
+				return DeliveryOutcome::Failed(reason);
+			}
+			return DeliveryOutcome::Abandoned;
+		}
+		match pipe.write(&bytes[written..]) {
+			Ok(0) => break,
+			Ok(n) => written += n,
+			Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+				// Nothing can be written yet. The checks above decide whether to
+				// keep waiting; this only decides how long.
+				std::thread::sleep(next_wait(
+					started.elapsed(),
+					deadline.saturating_duration_since(Instant::now()),
+				));
+			}
+			// The child stopped reading, which is its prerogative.
+			Err(e) if e.kind() == std::io::ErrorKind::BrokenPipe => {
+				return DeliveryOutcome::ChildStoppedReading;
+			}
+			Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+			Err(e) => return DeliveryOutcome::Failed(e.to_string()),
+		}
+	}
+	// The pipe drops here, which is the close a child needs to see the end of
+	// its input. `bytes` drops with it, releasing the copy.
+	DeliveryOutcome::Delivered
+}
+
+/// A deliberate delivery failure, for the gate that proves a failure arriving
+/// after the call has begun cleaning up is still reported.
+///
+/// It exists because that failure cannot be provoked: a non-blocking pipe
+/// offers a full buffer, an interruption, or a closed reader, and a closed
+/// reader is deliberately not a failure. `cfg(test)` would not reach an
+/// integration test, so this is a feature that is off by default — in an
+/// ordinary build the function below is the one that compiles, and nothing
+/// reads the environment.
+#[cfg(feature = "test-support")]
+fn injected_delivery_failure() -> Option<String> {
+	std::env::var("RNX_TEST_DELIVERY_FAILS")
+		.ok()
+		.filter(|value| !value.is_empty())
+		.map(|reason| format!("the input could not be delivered: {reason}"))
+}
+
+#[cfg(not(feature = "test-support"))]
+fn injected_delivery_failure() -> Option<String> {
+	None
+}
+
+/// What became of a child's input. A success reports that every byte was
+/// written, and nothing here reports that the child read them.
+enum DeliveryOutcome {
+	Delivered,
+	ChildStoppedReading,
+	Abandoned,
+	Failed(String),
 }
 
 /// What a child left behind, before anything decides whether it is text.
@@ -342,7 +503,7 @@ fn decode(program: &str, stream: &str, bytes: &[u8], truncated: bool) -> Result<
 }
 
 fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, String> {
-	let ran = run_child(program, arguments, timeout_ms)?;
+	let ran = run_child(program, arguments, timeout_ms, None)?;
 	// Each stream is decoded against its own flag. The record reports both
 	// together, because a caller checking `truncated` wants to know that
 	// something fell short, not which half did.
@@ -359,7 +520,33 @@ fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, St
 
 /// The same child, with its streams exactly as they came.
 fn process_bytes(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, String> {
-	let ran = run_child(program, arguments, timeout_ms)?;
+	bytes_reply(run_child(program, arguments, timeout_ms, None)?)
+}
+
+/// As `process_bytes`, and the child is told what to do: `input` is written to
+/// its standard input, which is then closed, because a child like
+/// `git cat-file --batch` needs the end of its input to finish.
+///
+/// A success does not certify that every byte was consumed — a child may stop
+/// reading, and that is its prerogative. What comes back is what the child
+/// said and the status it exited with.
+fn process_bytes_input(
+	program: &str,
+	arguments: Value,
+	input: Value,
+	timeout_ms: u64,
+) -> Result<Value, String> {
+	let bytes = input
+		.borrow_ref::<rune::runtime::Bytes>()
+		.map_err(|e| about("run", program, e))?
+		.as_slice()
+		.to_vec();
+	bytes_reply(run_child(program, arguments, timeout_ms, Some(bytes))?)
+}
+
+/// What both byte-returning forms report, so the two cannot describe the same
+/// child differently.
+fn bytes_reply(ran: Ran) -> Result<Value, String> {
 	let mut object = rune::runtime::Object::new();
 	let mut put = |name: &str, value: Value| -> Result<(), String> {
 		let key = rune::alloc::String::try_from(name).map_err(error)?;
@@ -445,6 +632,11 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		"process_bytes",
 		process_bytes,
 		"process_bytes(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated}>: as process, with the streams as byte strings and no decoding"
+	);
+	register!(
+		"process_bytes_input",
+		process_bytes_input,
+		"process_bytes_input(program, args, input, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated}>: as process_bytes, writing the byte string `input` to the child's standard input and closing it; a success does not mean every byte was read"
 	);
 	register!(
 		"write_new",
