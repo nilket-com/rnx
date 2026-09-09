@@ -171,20 +171,164 @@ fn absolute(path: &str) -> Result<String, String> {
 		.into_string()
 		.map_err(|_| format!("cannot resolve {path}: it is not valid UTF-8"))
 }
-fn capture(mut input: impl Read) -> (Vec<u8>, bool) {
-	let mut captured = Vec::new();
-	let mut chunk = [0; 8192];
-	let mut truncated = false;
-	while let Ok(n) = input.read(&mut chunk) {
-		if n == 0 {
-			break;
-		}
-		let keep = n.min((2 * 1024 * 1024usize).saturating_sub(captured.len()));
-		captured.extend_from_slice(&chunk[..keep]);
-		truncated |= keep < n;
-	}
-	(captured, truncated)
+/// How long the readers may go on reading once the wait is over.
+///
+/// A measured starting choice rather than a derived one: draining the whole
+/// two mebibyte cap takes a few milliseconds, so this is comfortably more
+/// than an ordinary cleanup needs. It cannot be justified by how much is
+/// left in the pipes, because a descendant outside the process group can go
+/// on writing for as long as it lives; what bounds that is reading the clock
+/// before every attempt.
+///
+/// It bounds how long rnx keeps **asking**. The pause between attempts is a
+/// sleep, which a scheduler may overrun, so it is not a wall-clock promise.
+const CLEANUP_ALLOWANCE: Duration = Duration::from_millis(100);
+
+/// Whether a reader should panic, and which one. A panicking thread cannot be
+/// arranged from a script either, and the contract being gated is that the
+/// **other** reader is still collected when one of them dies.
+#[cfg(feature = "test-support")]
+fn injected_reader_panic(stream: &str) -> bool {
+	std::env::var("RNX_TEST_READER_PANICS").is_ok_and(|which| which == stream)
 }
+
+#[cfg(not(feature = "test-support"))]
+fn injected_reader_panic(_stream: &str) -> bool {
+	false
+}
+
+/// Whether to fail a read deliberately. A read error on a pipe cannot be
+/// provoked from a script — a non-blocking pipe offers a full buffer, an
+/// interruption, or the end of the stream — so the gate that proves an
+/// unreadable stream is reported, and refuses the exemptions a truncated one
+/// gets, injects it. Off unless `test-support` is built.
+#[cfg(feature = "test-support")]
+fn injected_read_failure() -> bool {
+	std::env::var("RNX_TEST_CAPTURE_FAILS").is_ok_and(|v| !v.is_empty())
+}
+
+#[cfg(not(feature = "test-support"))]
+fn injected_read_failure() -> bool {
+	false
+}
+
+/// The allowance in force. Ordinarily the constant; under `test-support` a
+/// gate may set it, which is how "an ordinary exit spends none of it" can be
+/// measured with a clock rather than guessed from a stopwatch: make the
+/// allowance seconds long and an unnecessary wait becomes impossible to miss.
+#[cfg(feature = "test-support")]
+fn cleanup_allowance() -> Duration {
+	std::env::var("RNX_TEST_CLEANUP_ALLOWANCE_MS")
+		.ok()
+		.and_then(|ms| ms.parse().ok())
+		.map(Duration::from_millis)
+		.unwrap_or(CLEANUP_ALLOWANCE)
+}
+
+#[cfg(not(feature = "test-support"))]
+fn cleanup_allowance() -> Duration {
+	CLEANUP_ALLOWANCE
+}
+
+/// What a stream was, and what went wrong with reading it. The three
+/// shortfalls are independent: a stream can pass the cap, then be cut short
+/// when the cleanup instant arrives, and a read of it can fail.
+struct Captured {
+	bytes: Vec<u8>,
+	/// The size cap was reached and bytes past it were discarded.
+	truncated: bool,
+	/// Reading stopped before the stream ended, because the call had.
+	cut_short: bool,
+	/// A read failed. Before record 0023 this ended the capture exactly as
+	/// the end of the stream did, so a broken stream and a finished one were
+	/// the same thing to a caller.
+	unreadable: bool,
+}
+
+/// The largest a single stream's capture may grow. Unchanged by record 0023.
+const CAPTURE_CAP: usize = 2 * 1024 * 1024;
+
+/// Read a stream until it ends, the cap is reached, or the call is done with
+/// it — whichever comes first.
+///
+/// The descriptor is made non-blocking and `until` is read **before every
+/// attempt**, which is what bounds a descendant that left the process group
+/// and goes on writing: the group kill cannot stop it, and no reasoning about
+/// how much is left in the pipe covers a writer that keeps going.
+///
+/// `until` is a set-once cell holding the instant the call published when its
+/// wait ended. While it is empty the stream is drained as before.
+fn capture(
+	input: impl Read + std::os::fd::AsRawFd,
+	until: std::sync::Arc<std::sync::OnceLock<Instant>>,
+	stream: &'static str,
+) -> Captured {
+	assert!(
+		!injected_reader_panic(stream),
+		"the {stream} reader was told to panic"
+	);
+	let mut got = Captured {
+		bytes: Vec::new(),
+		truncated: false,
+		cut_short: false,
+		unreadable: false,
+	};
+	let fd = input.as_raw_fd();
+	unsafe {
+		let flags = libc::fcntl(fd, libc::F_GETFL);
+		if flags < 0 || libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK) < 0 {
+			got.unreadable = true;
+			return got;
+		}
+	}
+	let mut input = input;
+	let mut chunk = [0; 8192];
+	let started = Instant::now();
+	loop {
+		// Before every attempt, so a stream that always has more to give
+		// cannot outlast the call that wanted it.
+		// An interrupt stops a reader wherever it is, including in the middle
+		// of the cleanup allowance: by then the wait loop has stopped watching
+		// for one, so this is the only thing looking.
+		if INTERRUPTED.load(Ordering::Relaxed) {
+			got.cut_short = true;
+			return got;
+		}
+		if let Some(deadline) = until.get()
+			&& Instant::now() >= *deadline
+		{
+			got.cut_short = true;
+			return got;
+		}
+		if injected_read_failure() {
+			got.unreadable = true;
+			return got;
+		}
+		match input.read(&mut chunk) {
+			Ok(0) => return got,
+			Ok(n) => {
+				let keep = n.min(CAPTURE_CAP.saturating_sub(got.bytes.len()));
+				got.bytes.extend_from_slice(&chunk[..keep]);
+				got.truncated |= keep < n;
+			}
+			Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+				std::thread::sleep(next_wait(
+					started.elapsed(),
+					until
+						.get()
+						.map(|d| d.saturating_duration_since(Instant::now()))
+						.unwrap_or(LONGEST_WAIT),
+				));
+			}
+			Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+			Err(_) => {
+				got.unreadable = true;
+				return got;
+			}
+		}
+	}
+}
+
 /// Run a child, optionally writing `input` to its standard input and closing
 /// it afterwards.
 ///
@@ -232,8 +376,17 @@ fn run_child(
 	let deadline = Instant::now() + Duration::from_millis(timeout_ms);
 	let stdout = child.stdout.take().unwrap();
 	let stderr = child.stderr.take().unwrap();
-	let out = std::thread::spawn(move || capture(stdout));
-	let err = std::thread::spawn(move || capture(stderr));
+	// One instant, set once when the wait ends, read by both readers: two of
+	// them cannot spend the allowance twice.
+	let until = std::sync::Arc::new(std::sync::OnceLock::<Instant>::new());
+	let out = {
+		let until = until.clone();
+		std::thread::spawn(move || capture(stdout, until, "stdout"))
+	};
+	let err = {
+		let until = until.clone();
+		std::thread::spawn(move || capture(stderr, until, "stderr"))
+	};
 	// The input moves on a third thread, so requests are delivered while
 	// replies and complaints are drained: what that removes is mutual pipe
 	// backpressure, not every way a child can fail to finish.
@@ -279,12 +432,24 @@ fn run_child(
 		let left = deadline.saturating_duration_since(Instant::now());
 		std::thread::sleep(next_wait(started.elapsed(), left));
 	};
+	// First, before anything else is stopped or collected: the readers should
+	// already be winding down while the rest of the cleanup happens.
+	//
+	// A cancellation gets no allowance at all. Ctrl-C means stop, not tidy up,
+	// and record 0020 measured interruption latency in single milliseconds;
+	// spending a hundred of them collecting output nobody asked for would
+	// undo that. Anything unread is reported as `cut_short`.
+	let allowance = if cancelled {
+		Duration::ZERO
+	} else {
+		cleanup_allowance()
+	};
+	let _ = until.set(Instant::now() + allowance);
 	// Children remaining in this process group may otherwise keep pipes open.
-	// A descendant that left the group — `setsid` — is not killed here, and if
-	// it holds a **captured** pipe the capture joins below wait for it however
-	// long it lives: record 0020's limitation, carried with a reproducer
-	// rather than a test. Holding the read end of standard input no longer
-	// does that, which is what record 0022 added.
+	// A descendant that left the group — `setsid` — is not killed here and
+	// cannot be, but it can no longer extend this call: it holds a pipe rnx
+	// has stopped reading. Record 0020 named that limitation, record 0022
+	// closed it for the input, and record 0023 closes it for the replies.
 	unsafe {
 		libc::kill(-pid, libc::SIGKILL);
 	}
@@ -305,21 +470,29 @@ fn run_child(
 			_ => {}
 		}
 	}
-	let (out, out_truncated) = out.join().map_err(|_| "stdout reader panicked")?;
-	let (err, err_truncated) = err.join().map_err(|_| "stderr reader panicked")?;
+	// Both, before either failure is propagated: a `?` on the first join would
+	// leave the second reader unjoined, which is the same defect record 0022
+	// fixed for the writer and the same promise — always collected — made here.
+	let out = out.join();
+	let err = err.join();
+	let out = out.map_err(|_| "stdout reader panicked")?;
+	let err = err.map_err(|_| "stderr reader panicked")?;
 	// Now that everything is stopped and collected, a failure can be reported.
 	let status = waited?;
 	if let Some(failure) = delivery_failed {
 		return Err(failure);
 	}
+	// An interrupt that arrived while this was cleaning up is still an
+	// interrupt. The wait loop stopped watching for one when it ended, so it
+	// is read again here: the readers stop on it themselves, and without this
+	// the call would report a capture cut short for no reason it could name.
+	let cancelled = cancelled || INTERRUPTED.load(Ordering::Relaxed);
 	Ok(Ran {
 		code: status.code(),
 		timed_out,
 		cancelled,
 		out,
-		out_truncated,
 		err,
-		err_truncated,
 	})
 }
 
@@ -464,17 +637,25 @@ struct Ran {
 	code: Option<i32>,
 	timed_out: bool,
 	cancelled: bool,
-	out: Vec<u8>,
-	out_truncated: bool,
-	err: Vec<u8>,
-	err_truncated: bool,
+	out: Captured,
+	err: Captured,
 }
 
 impl Ran {
-	/// What the record reports: either stream falling short means the capture
-	/// as a whole is not everything the child produced.
+	/// What a script is told, in each case: either stream falling short means
+	/// the capture as a whole is not everything the child produced.
+	///
+	/// The three are independent — a stream can pass the cap and then be cut
+	/// short and then fail to read — so they are three answers rather than
+	/// one of four endings.
 	fn truncated(&self) -> bool {
-		self.out_truncated || self.err_truncated
+		self.out.truncated || self.err.truncated
+	}
+	fn cut_short(&self) -> bool {
+		self.out.cut_short || self.err.cut_short
+	}
+	fn unreadable(&self) -> bool {
+		self.out.unreadable || self.err.unreadable
 	}
 }
 
@@ -483,13 +664,24 @@ impl Ran {
 /// A capture stops at a fixed size, which can fall inside a character, so an
 /// incomplete sequence at the very end of a truncated capture is the
 /// capture's doing rather than the child's: the partial character is dropped
-/// and the truncation is reported, which the caller already has to check.
-/// Anything else is the child's, including an incomplete sequence at the end
-/// of a capture that was not truncated.
-fn decode(program: &str, stream: &str, bytes: &[u8], truncated: bool) -> Result<String, String> {
+/// and the shortfall is reported, which the caller already has to check. A
+/// capture cut short by the cleanup instant earns the same exemption for the
+/// same reason — the bytes stopped because rnx stopped reading.
+///
+/// **A stream whose read failed earns neither.** It is not known to have
+/// stopped at a boundary or anywhere else, so being unreadable overrides both
+/// exemptions rather than joining them. Anything else is the child's,
+/// including an incomplete sequence at the end of a capture that finished.
+///
+/// Each stream is judged on **its own** flags: a truncated standard output has
+/// never excused a standard error the child ended mid-character, and an
+/// unreadable standard error must not refuse a standard output read whole.
+fn decode(program: &str, stream: &str, got: &Captured) -> Result<String, String> {
+	let bytes = &got.bytes[..];
+	let stopped_by_rnx = (got.truncated || got.cut_short) && !got.unreadable;
 	match std::str::from_utf8(bytes) {
 		Ok(text) => Ok(text.to_owned()),
-		Err(error) if truncated && error.error_len().is_none() => {
+		Err(error) if stopped_by_rnx && error.error_len().is_none() => {
 			let whole = &bytes[..error.valid_up_to()];
 			Ok(std::str::from_utf8(whole)
 				.expect("valid_up_to marks a valid prefix")
@@ -507,12 +699,13 @@ fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, St
 	// Each stream is decoded against its own flag. The record reports both
 	// together, because a caller checking `truncated` wants to know that
 	// something fell short, not which half did.
-	let stdout = decode(program, "standard output", &ran.out, ran.out_truncated)?;
-	let stderr = decode(program, "standard error", &ran.err, ran.err_truncated)?;
+	let stdout = decode(program, "standard output", &ran.out)?;
+	let stderr = decode(program, "standard error", &ran.err)?;
 	json_parse(
 		&serde_json::json!({
 			"code": ran.code, "timed_out": ran.timed_out, "cancelled": ran.cancelled,
 			"stdout": stdout, "stderr": stderr, "truncated": ran.truncated(),
+			"cut_short": ran.cut_short(), "unreadable": ran.unreadable(),
 		})
 		.to_string(),
 	)
@@ -564,12 +757,17 @@ fn bytes_reply(ran: Ran) -> Result<Value, String> {
 	put("timed_out", rune::to_value(ran.timed_out).map_err(error)?)?;
 	put("cancelled", rune::to_value(ran.cancelled).map_err(error)?)?;
 	put("truncated", rune::to_value(ran.truncated()).map_err(error)?)?;
+	put("cut_short", rune::to_value(ran.cut_short()).map_err(error)?)?;
+	put(
+		"unreadable",
+		rune::to_value(ran.unreadable()).map_err(error)?,
+	)?;
 	let bytes = |raw: Vec<u8>| -> Result<Value, String> {
 		let held = rune::alloc::Vec::try_from(raw).map_err(error)?;
 		rune::to_value(rune::runtime::Bytes::from_vec(held)).map_err(error)
 	};
-	put("stdout", bytes(ran.out)?)?;
-	put("stderr", bytes(ran.err)?)?;
+	put("stdout", bytes(ran.out.bytes)?)?;
+	put("stderr", bytes(ran.err.bytes)?)?;
 	drop(put);
 	rune::to_value(object).map_err(error)
 }
@@ -631,12 +829,12 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	register!(
 		"process_bytes",
 		process_bytes,
-		"process_bytes(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated}>: as process, with the streams as byte strings and no decoding"
+		"process_bytes(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process, with the streams as byte strings and no decoding; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable"
 	);
 	register!(
 		"process_bytes_input",
 		process_bytes_input,
-		"process_bytes_input(program, args, input, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated}>: as process_bytes, writing the byte string `input` to the child's standard input and closing it; a success does not mean every byte was read"
+		"process_bytes_input(program, args, input, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process_bytes, writing the byte string `input` to the child's standard input and closing it; a success does not mean every byte was read; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable"
 	);
 	register!(
 		"write_new",
@@ -656,7 +854,7 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	register!(
 		"process",
 		process,
-		"process(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated}>: run a child with a deadline, bounded capture, and cancellation on Ctrl-C"
+		"process(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: run a child with a deadline, bounded capture, and cancellation on Ctrl-C; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable"
 	);
 	context.install(module)?;
 	Ok(registered)
@@ -737,6 +935,94 @@ mod tests {
 			next_wait(Duration::from_secs(60), Duration::ZERO),
 			Duration::ZERO
 		);
+	}
+
+	/// A capture with the shortfalls a test wants and nothing else.
+	fn fell_short(bytes: &[u8], truncated: bool, cut_short: bool, unreadable: bool) -> Captured {
+		Captured {
+			bytes: bytes.to_vec(),
+			truncated,
+			cut_short,
+			unreadable,
+		}
+	}
+
+	#[test]
+	fn a_shortfall_rnx_caused_excuses_a_partial_last_character() {
+		// Two bytes of a three-byte character. Where rnx knows it stopped the
+		// bytes — the size cap, or the cleanup instant — the partial
+		// character is rnx's doing and is dropped; the caller is told about
+		// the shortfall through its own flag.
+		let cut = &[b'a', 0xe2, 0x82][..];
+		assert_eq!(
+			decode("p", "standard output", &fell_short(cut, true, false, false)).unwrap(),
+			"a"
+		);
+		assert_eq!(
+			decode("p", "standard output", &fell_short(cut, false, true, false)).unwrap(),
+			"a"
+		);
+		// And a capture that simply finished mid-character is the child's
+		// doing, which is refused as it always was.
+		assert!(
+			decode(
+				"p",
+				"standard output",
+				&fell_short(cut, false, false, false)
+			)
+			.is_err()
+		);
+	}
+
+	#[test]
+	fn an_unreadable_stream_overrides_both_exemptions() {
+		// A stream whose read failed is not known to have stopped at a
+		// boundary or anywhere else, so it earns neither exemption even when
+		// it also passed the cap or was cut short.
+		let cut = &[b'a', 0xe2, 0x82][..];
+		for (truncated, cut_short) in [(true, false), (false, true), (true, true)] {
+			let got = fell_short(cut, truncated, cut_short, true);
+			assert!(
+				decode("p", "standard output", &got).is_err(),
+				"unreadable was excused by truncated={truncated} cut_short={cut_short}"
+			);
+		}
+		// Being unreadable does not refuse text that decoded cleanly: the
+		// flag says the capture is short, not that what was read is wrong.
+		let whole = &b"fine"[..];
+		assert_eq!(
+			decode(
+				"p",
+				"standard output",
+				&fell_short(whole, false, false, true)
+			)
+			.unwrap(),
+			"fine"
+		);
+	}
+
+	#[test]
+	fn each_stream_is_judged_on_its_own_flags() {
+		// Record 0016's rule, carried through record 0023's two new flags: a
+		// shortfall on one stream has never excused the other, and an
+		// unreadable standard error must not refuse a standard output that
+		// was read whole.
+		let cut = &[b'a', 0xe2, 0x82][..];
+		let out = fell_short(cut, true, false, false);
+		let err = fell_short(cut, false, false, false);
+		assert!(decode("p", "standard output", &out).is_ok());
+		assert!(
+			decode("p", "standard error", &err).is_err(),
+			"a truncated standard output excused a standard error"
+		);
+
+		let whole_out = fell_short(&b"fine"[..], false, false, false);
+		let broken_err = fell_short(cut, true, false, true);
+		assert!(
+			decode("p", "standard output", &whole_out).is_ok(),
+			"an unreadable standard error refused a standard output read whole"
+		);
+		assert!(decode("p", "standard error", &broken_err).is_err());
 	}
 
 	fn absent() -> String {

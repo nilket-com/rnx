@@ -78,6 +78,22 @@ pub fn holds_stdin_and_stays(dir: &Path) -> String {
 	)
 }
 
+/// A child whose escaped descendant keeps **standard error** and holds it
+/// until released, while the direct child leaves at once. The read end of
+/// standard input is not involved, so this is the reply side of the same
+/// trick: `>/dev/null` closes standard output so only one reader is held.
+pub fn holds_stderr_until_released(dir: &Path) -> String {
+	let ready = dir.join("ready").display().to_string();
+	let release = dir.join("release").display().to_string();
+	let closed = dir.join("closed").display().to_string();
+	format!(
+		"setsid sh -c 'touch {ready}; i=0; \
+		 while [ ! -e {release} ] && [ $i -lt 1500 ]; do sleep 0.02; i=$((i+1)); done; \
+		 exec 2<&-; touch {closed}' >/dev/null & \
+		 while [ ! -e {ready} ]; do sleep 0.02; done"
+	)
+}
+
 /// Wait for a handshake file, or give up.
 pub fn appeared(path: &Path, within: Duration) -> bool {
 	let deadline = Instant::now() + within;
