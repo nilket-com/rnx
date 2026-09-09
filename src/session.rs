@@ -232,7 +232,8 @@ pub struct Session {
 	/// The compile-time context, owned, so an input cannot be compiled
 	/// against one context and run against another, and so no caller can
 	/// modify it between inputs. The runtime is built from it per input:
-	/// sharing one is refused by Rune 0.14.1, for the reason recorded in
+	/// sharing one is refused by Rune 0.14.1 and by 0.14.2, for the reason
+	/// recorded in
 	/// `plans/0006_what_a_retained_value_pins.md`.
 	context: Context,
 	declarations: BTreeMap<String, Declaration>,
@@ -452,7 +453,8 @@ impl Session {
 		let mut result: (String, usize) = ("()".to_owned(), 0);
 		let mut result_is_user = false;
 		for (index, statement) in block.statements.iter().enumerate() {
-			// ItemStruct's derived span omits its closing delimiter in 0.14.1.
+			// ItemStruct's derived span omits its closing delimiter in 0.14.1, and
+			// in 0.14.2, whose `ast/item_struct.rs` is byte-identical.
 			// Use parsed statement boundaries, never a textual brace scanner.
 			let start = statement.span().range().start;
 			let end = block

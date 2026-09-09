@@ -104,7 +104,8 @@ fn a_refusal_is_catchable_and_the_script_carries_on() {
 
 #[test]
 fn every_arm_of_the_serializer_is_mirrored() {
-	// Read off `rune-0.14.1/src/runtime/value/serde.rs`, not assumed. Four
+	// Read off `rune-0.14.1/src/runtime/value/serde.rs`, not assumed, and that
+	// file is byte-identical in 0.14.2. Four
 	// shapes descend and the rest are leaves; a result is refused, which is
 	// the arm most easily got wrong by supposing it behaves like an option.
 	for (source, expected) in [

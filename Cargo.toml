@@ -5,8 +5,12 @@ name = "rnx"
 version = "0.0.0"
 edition = "2024"
 # The toolchain rnx is built and tested with, not a floor that has been found.
-# 1.88 is measured to fail — in `rustyline`, on the unstable `file_lock` —
-# and nothing between 1.89 and 1.94 has a toolchain here to try.
+# 1.88 is measured to fail — in `rustyline`, on the unstable `file_lock` — and
+# nothing between 1.89 and 1.94 has a toolchain here to try.
+#
+# Rune states its own minimum as 1.88 from 0.14.2 (`lib.rs`, raised from 1.87),
+# which is a floor for one dependency and not for rnx: what has to compile is
+# the whole set, and that is what fails at 1.88.
 rust-version = "1.95"
 description = "A scripting environment for Rune: a file runner, an expression evaluator, and an interactive session, on upstream Rune with no compiler fork."
 repository = "https://github.com/nilket-com/rnx"
@@ -36,7 +40,7 @@ count-allocations = []
 test-support = []
 
 [dependencies]
-rune = { version = "=0.14.1", default-features = false, features = ["std"] }
+rune = { version = "=0.14.2", default-features = false, features = ["std"] }
 serde_json = "1.0.149"
 libc = "0.2.177"
 rustyline = { version = "18.0.1", features = ["derive"] }

@@ -52,7 +52,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// The Rune this build is compiled against. It is written here rather than
 /// read from the crate, which exposes no such constant — so a gate parses the
 /// manifest's `=` pin and refuses to let the two drift apart.
-const RUNE_VERSION: &str = "0.14.1";
+const RUNE_VERSION: &str = "0.14.2";
 
 /// What rnx does, for someone who asked or who mistyped.
 const USAGE: &str = "\

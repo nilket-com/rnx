@@ -1,6 +1,7 @@
 //! Field-name candidates, read from declarations rnx itself compiled.
 //!
-//! Rune 0.14.1 will not tell a value its own field names — `Rtti` carries the
+//! Rune 0.14.1 will not tell a value its own field names, and neither will
+//! 0.14.2, whose `rtti.rs` is byte-identical — `Rtti` carries the
 //! map, but it is `pub(crate)` with no accessor — and it offers no identity
 //! that separates two compiled units, because a type's hash is the hash of
 //! its item path. So a name is never assumed from a lookup: candidates are

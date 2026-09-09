@@ -7,7 +7,9 @@
 //! reaches serde that this walk has not already accepted.
 //!
 //! The walk is not a guess at what serde does. It is read off
-//! `rune-0.14.1/src/runtime/value/serde.rs`, arm for arm: four shapes descend
+//! `rune-0.14.1/src/runtime/value/serde.rs`, arm for arm — that file is
+//! byte-identical in 0.14.2, which record 0027 re-verified when the pin
+//! moved: four shapes descend
 //! (an option, a sequence, a tuple, an object) and everything else is a leaf
 //! that is either serialized as it stands or refused. A `Result` is refused,
 //! which is easy to get wrong by assuming it behaves like an option.

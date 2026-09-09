@@ -250,7 +250,8 @@ impl Renderer<'_> {
 		}
 		if let Ok(f) = value.borrow_ref::<Function>() {
 			let _ = &*f;
-			// Rune 0.14.1 exposes no name or arity on a function value.
+			// Rune 0.14.1 exposes no name or arity on a function value, nor does
+			// 0.14.2: `runtime/function.rs` is byte-identical between them.
 			self.push("<function>");
 			return;
 		}
@@ -867,7 +868,9 @@ mod tests {
 	#[test]
 	fn structs_print_by_declared_fields_and_enums_by_variant() {
 		let mut session = Session::new(context()).unwrap();
-		// Rune 0.14.1 assigns struct literal values by position, not by name:
+		// Rune 0.14.1 assigns struct literal values by position, not by name, and
+		// 0.14.2 still does — measured by the matrix below rather than by reading
+		// the compiler, which did change in that release:
 		// `struct P { y, x }` with `P { x: 1, y: 2 }` gives `p.x == 2`, and Rune's
 		// own debug output agrees. The formatter reads slots by declared name,
 		// which matches field access; the literal here keeps declaration order.
@@ -902,7 +905,8 @@ mod tests {
 
 	#[test]
 	fn rendering_runs_no_script_code_even_when_a_debug_protocol_is_defined() {
-		// In Rune 0.14.1 a script cannot define a debug protocol on its own
+		// In Rune 0.14.1 a script cannot define a debug protocol on its own, and
+		// nor in 0.14.2, whose `runtime/protocol.rs` is byte-identical:
 		// struct (an `impl P { fn debug_fmt }` is never consulted), so the live
 		// protocol comes from a host type. Rendering must not invoke it: the
 		// formatter holds no VM and cannot call any protocol.
