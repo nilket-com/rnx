@@ -510,18 +510,23 @@ Every gate below runs on the Dell. Nothing here is claimed until it does.
     the reason the escaped-descendant gates do not apply.
 11. **Installation.** `cargo install --locked --path .` produces a working binary,
     which is record 0001's gate 6 for this third of it.
-12. **Nothing regresses — Linux handoff at `96e3b88`.** Linux reports
-    **238 tests and 243 with `test-support`**, zero failures, and clean
-    formatting. Its Windows cross-check succeeds with one unused-import
-    warning, and clippy adds a shared-fixture warning to the existing
-    baseline. This closeout gates the Unix-only import and names the fixture
-    type, removing those additions. Fresh native Linux execution belongs to
-    the review of the amended tree; Windows cross-checking is not execution.
+12. **Nothing regresses — met at `2dff588`, natively on Linux.** The ladder
+    passes **238 tests and 243 with `test-support`**, zero failures; `cargo
+    clippy` is back to the eleven pre-existing warnings, with neither the
+    unused import nor the shared-fixture warning the handoff at `96e3b88`
+    carried; `cargo fmt --check` and `git diff --check` are clean; and
+    `cargo check --locked --all-targets`, with and without `test-support`,
+    reports nothing for `x86_64-pc-windows-msvc` and both macOS targets.
 
-    Windows-only integration tests compile to zero tests on Linux; portable
-    stdin and history tests retain their Unix coverage. The evidence's
-    closeout section distinguishes fresh cross-target checks from the
-    supplied native Linux run.
+    Run twice on Linux at this revision, independently, with the same
+    figures. The distinction the handoff drew still holds and is why it was
+    rerun: a cross-check is not an execution, and the numbers above are the
+    latter.
+
+    Windows-only integration tests compile to zero tests on Linux; the
+    portable stdin and history tests keep their Unix coverage, and the
+    history gate's Unix fallback — `HOME/.local/state`, the branch a default
+    Linux install actually takes — is among them.
 13. **The protocol's orderings — met now, on Linux.** Seven unit gates on
     decision 3's protocol: an operation is never declared after a stop; a
     stop reaches the operation a worker is inside; nothing is reachable once
