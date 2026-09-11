@@ -43,7 +43,7 @@ rest — which is exactly the gap record 0001 decision 7 names when it says
 authorship alone is not enough. That gap closes with the operator's own
 knowledge of those repositories, not with a command.
 
-**No private product is named in what ships.** Of the 38 files the package
+**No private product is named in what ships.** Of the files the package
 contains, the only internal-looking string is the GitHub organisation in the
 `repository` URL. `journey.rn` — which the package excludes — does not name
 `polariton` either; it takes the program's path as an argument, which is what
@@ -171,8 +171,10 @@ quoted there rather than summarised.
 2. **No file imported without history.** Every `src/` file's adding commit is
    an rnx commit; the spike's move is recorded in ket `2edf9fb3` and in the
    pointer README, with the same author on both sides.
-3. **Nothing private in the package.** The 38 shipped files name no product
-   from the originating repository.
+3. **Nothing private in the package.** No shipped file names a product from
+   the originating repository. The count itself moves — it was 38 when this
+   record was written and is 56 now, after record 0025's Windows fixtures and
+   record 0029's notices — so the gate is the absence, not the number.
 4. **Every package's license is known, and each class is counted
    separately.** `cargo metadata` and four `cargo tree` queries per target,
    all in the evidence file with their exact flags: 91 resolved, 63 and 64

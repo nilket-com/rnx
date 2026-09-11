@@ -220,48 +220,8 @@ fn the_packaged_manifest_makes_the_same_claims() {
 		return;
 	}
 	let root = here;
-	let into = root.join("target/package-gate");
-	// Offline and unverified: what is wanted is the manifest Cargo writes,
-	// not another build of the crate, and a gate must not need the network.
-	// A target directory of its own keeps this out of the build lock the test
-	// harness is already holding.
-	let packaged = Command::new(std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()))
-		.args([
-			"package",
-			"--locked",
-			"--offline",
-			"--no-verify",
-			"--allow-dirty",
-		])
-		.arg("--target-dir")
-		.arg(&into)
-		.current_dir(root)
-		.output()
-		.expect("cargo package");
-	assert!(
-		packaged.status.success(),
-		"cargo package failed:\n{}",
-		String::from_utf8_lossy(&packaged.stderr)
-	);
 	let version = field(MANIFEST, "version").expect("a version");
-	let crate_file = into.join(format!("package/rnx-{version}.crate"));
-	assert!(crate_file.is_file(), "no archive at {crate_file:?}");
-
-	let unpacked = into.join("gate-unpacked");
-	let _ = std::fs::remove_dir_all(&unpacked);
-	std::fs::create_dir_all(&unpacked).unwrap();
-	let untarred = Command::new("tar")
-		.arg("xzf")
-		.arg(&crate_file)
-		.arg("-C")
-		.arg(&unpacked)
-		.output()
-		.expect("tar");
-	assert!(
-		untarred.status.success(),
-		"tar failed:\n{}",
-		String::from_utf8_lossy(&untarred.stderr)
-	);
+	let unpacked = unpack_the_package(root, "manifest");
 
 	let inside = unpacked.join(format!("rnx-{version}/Cargo.toml"));
 	let manifest = std::fs::read_to_string(&inside).expect("the packaged manifest");
@@ -306,4 +266,695 @@ fn the_front_page_works_from_here(root: &std::path::Path, manifest: &str) {
 		front.contains("](https://github.com/nilket-com/rnx/blob/main/plans/"),
 		"the README no longer points at the records in the repository"
 	);
+}
+
+/// The notices must describe the dependency set that exists now.
+///
+/// A file like this rots silently: a dependency arrives, or moves, and the
+/// notices keep describing the set from before. So the generator has a
+/// `--check` mode that rebuilds it and compares, and this runs it.
+///
+/// Unix only, because it runs a shell script — the same boundary the packaging
+/// gate above draws, and for the same reason.
+#[cfg(unix)]
+#[test]
+fn the_third_party_notices_describe_the_dependencies_that_exist() {
+	// Run in both copies. The packaged one can answer this too — the
+	// generator and its inputs ship, and Cargo resolves the same locked set
+	// there — and an earlier version returned early instead, which left the
+	// packaged notices checked by nothing at all.
+	let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+	let checked = Command::new("bash")
+		.arg(root.join("scripts/third-party-notices.sh"))
+		.arg("--check")
+		.current_dir(root)
+		.output()
+		.expect("the notices generator");
+	assert!(
+		checked.status.success(),
+		"{}{}",
+		String::from_utf8_lossy(&checked.stdout),
+		String::from_utf8_lossy(&checked.stderr)
+	);
+}
+
+/// The notices have to reach whoever receives a binary, so they have to be in
+/// the package a binary is built from.
+#[cfg(unix)]
+#[test]
+fn the_notices_ship_with_the_package() {
+	let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+	// Which copy this runs in decides how to ask. Inside an extracted package
+	// Cargo refuses to package again — `Cargo.toml.orig` is a reserved name —
+	// so what is asked there is that every file arrived. In the repository the
+	// package is built and unpacked, and the notices it contains are compared
+	// **byte for byte** with the ones the repository validated: a substring or
+	// two would accept a file with a heading and a single row, which is what
+	// an earlier version of this gate did.
+	let shipped = [
+		"THIRD-PARTY-NOTICES.md",
+		"third-party/licenses/SOURCES.tsv",
+		"scripts/third-party-notices.sh",
+		"scripts/fetch-missing-licenses.sh",
+	];
+	if MANIFEST.starts_with(GENERATED) {
+		for file in shipped {
+			let body = std::fs::read(root.join(file))
+				.unwrap_or_else(|e| panic!("the packaged copy is missing {file}: {e}"));
+			assert!(!body.is_empty(), "the packaged {file} is empty");
+		}
+		for fetched in fetched_licences(root) {
+			assert!(
+				fetched.is_file(),
+				"the packaged copy is missing {fetched:?}, which its notices quote"
+			);
+		}
+		return;
+	}
+	let listed = Command::new(std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()))
+		.args([
+			"package",
+			"--list",
+			"--locked",
+			"--offline",
+			"--allow-dirty",
+		])
+		.current_dir(root)
+		.output()
+		.expect("cargo package --list");
+	assert!(
+		listed.status.success(),
+		"{}",
+		String::from_utf8_lossy(&listed.stderr)
+	);
+	let files = String::from_utf8_lossy(&listed.stdout);
+	for wanted in shipped {
+		assert!(
+			files.lines().any(|f| f == wanted),
+			"the package does not ship {wanted}"
+		);
+	}
+	for fetched in fetched_licences(root) {
+		let named = fetched
+			.strip_prefix(root)
+			.expect("a path under the root")
+			.to_string_lossy()
+			.into_owned();
+		assert!(
+			files.lines().any(|f| f == named),
+			"the package does not ship {named}, which the notices quote"
+		);
+	}
+
+	// And what ships is what was validated, compared whole rather than
+	// sampled.
+	let unpacked = unpack_the_package(root, "notices");
+	let version = field(MANIFEST, "version").expect("a version");
+	let inside = unpacked.join(format!("rnx-{version}/THIRD-PARTY-NOTICES.md"));
+	let packaged = std::fs::read(&inside).expect("the packaged notices");
+	let ours = std::fs::read(root.join("THIRD-PARTY-NOTICES.md")).expect("the notices");
+	assert_eq!(
+		packaged.len(),
+		ours.len(),
+		"the packaged notices are {} bytes and the repository's are {}",
+		packaged.len(),
+		ours.len()
+	);
+	assert!(
+		packaged == ours,
+		"the packaged notices differ from the ones this repository validated"
+	);
+}
+
+/// Every licence file recorded in `SOURCES.tsv`, as paths under `root`.
+#[cfg(unix)]
+fn fetched_licences(root: &std::path::Path) -> Vec<std::path::PathBuf> {
+	let recorded = std::fs::read_to_string(root.join("third-party/licenses/SOURCES.tsv"))
+		.expect("SOURCES.tsv");
+	recorded
+		.lines()
+		.skip(1)
+		.filter_map(|line| {
+			let field: Vec<&str> = line.split('\t').collect();
+			(field.len() == 7).then(|| {
+				root.join(format!(
+					"third-party/licenses/{}-{}/{}",
+					field[0], field[1], field[4]
+				))
+			})
+		})
+		.collect()
+}
+
+/// Discovery that fails must stop the run and leave the notices alone.
+///
+/// The defect this gates: the generator suppressed Cargo's errors and ignored
+/// its exit status, so a failing dependency query produced a file describing
+/// **zero packages**, and `--check` then agreed with it. A notices file that
+/// reports nothing is not a notices file; it is a silent removal of every
+/// attribution rnx carries.
+///
+/// Both shapes are asked, because they fail differently: a `cargo tree` that
+/// fails for every target leaves nothing at all, while one that fails for a
+/// single target would leave a set that looks plausible and is short by one
+/// platform's packages.
+#[cfg(unix)]
+#[test]
+fn a_failed_dependency_query_writes_nothing() {
+	if MANIFEST.starts_with(GENERATED) {
+		return;
+	}
+	// A scratch copy: this control makes the generator misbehave, and a
+	// misbehaving generator rewrites the notices. The repository is not the
+	// place to find that out, and other tests are reading it meanwhile.
+	let root = &scratch_repository("discovery");
+	let notices = root.join("THIRD-PARTY-NOTICES.md");
+	let before = std::fs::read_to_string(&notices).expect("the notices");
+	let real = std::env::var("CARGO").unwrap_or_else(|_| "cargo".into());
+	let dir = std::env::temp_dir().join(format!("rnx-notice-stub-{}", std::process::id()));
+	std::fs::create_dir_all(&dir).unwrap();
+
+	// `$1` is the subcommand; the target, when there is one, follows `--target`.
+	for (name, refuse) in [
+		(
+			"every-target",
+			"case \" $* \" in *\" tree \"*) exit 42 ;; esac",
+		),
+		(
+			"one-target",
+			"case \" $* \" in *\"x86_64-pc-windows-msvc\"*) exit 42 ;; esac",
+		),
+	] {
+		let stub = dir.join(name);
+		std::fs::write(
+			&stub,
+			format!("#!/usr/bin/env bash\n{refuse}\nexec {real} \"$@\"\n"),
+		)
+		.unwrap();
+		std::fs::set_permissions(&stub, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+			.unwrap();
+
+		let ran = Command::new("bash")
+			.arg(root.join("scripts/third-party-notices.sh"))
+			.env("CARGO", &stub)
+			.current_dir(root)
+			.output()
+			.expect("the generator");
+		let said = String::from_utf8_lossy(&ran.stderr).into_owned();
+
+		// Collected, and the file put back, **before** anything is asserted. A
+		// generator that rewrites on failure has replaced the repository's
+		// notices with whatever it managed to produce, and an assertion that
+		// fires first leaves that wreckage behind — which this gate did on its
+		// first run, and which is the ordering the harness controls in
+		// `tests/child_input.rs` were corrected for.
+		let after = std::fs::read_to_string(&notices).expect("the notices");
+
+		assert!(
+			!ran.status.success(),
+			"{name}: a failed query was reported as success:\n{}",
+			String::from_utf8_lossy(&ran.stdout)
+		);
+		assert!(
+			said.contains("cargo tree failed"),
+			"{name}: the failure was not named: {said}"
+		);
+		assert_eq!(
+			after, before,
+			"{name}: the notices were rewritten by a run that failed"
+		);
+	}
+	std::fs::remove_dir_all(&dir).ok();
+	std::fs::remove_dir_all(root).ok();
+}
+
+/// A checked-in licence text must match what was recorded when it was fetched.
+///
+/// These copies did not come from the packages that declare them, so the only
+/// thing tying one to its origin is the revision, path and digest in
+/// `SOURCES.tsv`. A copy that no longer matches its digest is a copy nobody
+/// can vouch for, and the generator refuses it rather than quoting it.
+#[cfg(unix)]
+#[test]
+fn every_fetched_licence_matches_its_recorded_digest() {
+	let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+	let sources = root.join("third-party/licenses/SOURCES.tsv");
+	let recorded = std::fs::read_to_string(&sources).expect("SOURCES.tsv");
+	let mut checked = 0;
+	for line in recorded.lines().skip(1) {
+		let field: Vec<&str> = line.split('\t').collect();
+		assert_eq!(field.len(), 7, "malformed row: {line}");
+		let (name, version, file, digest) = (field[0], field[1], field[4], field[5]);
+		let path = root.join(format!("third-party/licenses/{name}-{version}/{file}"));
+		let body = std::fs::read(&path).unwrap_or_else(|e| panic!("{path:?}: {e}"));
+		let hashed = Command::new("sha256sum")
+			.arg(&path)
+			.output()
+			.expect("sha256sum");
+		assert!(
+			hashed.status.success(),
+			"sha256sum failed for {path:?}: {}",
+			String::from_utf8_lossy(&hashed.stderr)
+		);
+		let mut hasher = hashed.stdout;
+		assert!(
+			hasher.len() >= 64,
+			"sha256sum said {:?} for {path:?}",
+			hasher
+		);
+		hasher.truncate(64);
+		assert_eq!(
+			String::from_utf8_lossy(&hasher),
+			digest,
+			"{name} {version} {file} does not match its recorded digest"
+		);
+		assert!(!body.is_empty(), "{name} {version} {file} is empty");
+		checked += 1;
+	}
+	assert!(checked > 0, "no fetched licences are recorded");
+}
+
+/// Build the package and unpack it, answering where it landed.
+///
+/// Offline and unverified: what is wanted is what Cargo would ship, not
+/// another build of the crate, and a gate must not need the network. A target
+/// directory of its own keeps this out of the build lock the harness already
+/// holds, and `tag` keeps two gates from unpacking over each other.
+#[cfg(unix)]
+fn unpack_the_package(root: &std::path::Path, tag: &str) -> std::path::PathBuf {
+	let into = root.join(format!("target/package-gate-{tag}"));
+	let packaged = Command::new(std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()))
+		.args([
+			"package",
+			"--locked",
+			"--offline",
+			"--no-verify",
+			"--allow-dirty",
+		])
+		.arg("--target-dir")
+		.arg(&into)
+		.current_dir(root)
+		.output()
+		.expect("cargo package");
+	assert!(
+		packaged.status.success(),
+		"cargo package failed:\n{}",
+		String::from_utf8_lossy(&packaged.stderr)
+	);
+	let version = field(MANIFEST, "version").expect("a version");
+	let crate_file = into.join(format!("package/rnx-{version}.crate"));
+	assert!(crate_file.is_file(), "no archive at {crate_file:?}");
+
+	let unpacked = into.join("unpacked");
+	let _ = std::fs::remove_dir_all(&unpacked);
+	std::fs::create_dir_all(&unpacked).unwrap();
+	let untarred = Command::new("tar")
+		.arg("xzf")
+		.arg(&crate_file)
+		.arg("-C")
+		.arg(&unpacked)
+		.output()
+		.expect("tar");
+	assert!(
+		untarred.status.success(),
+		"tar failed:\n{}",
+		String::from_utf8_lossy(&untarred.stderr)
+	);
+	unpacked
+}
+
+/// A request that fails is not a file that is absent.
+///
+/// The defect this gates: the fetcher treated every non-200 the same, so a run
+/// against a server answering 503 reported "no licence found" for every
+/// package and replaced `SOURCES.tsv` with its header alone — turning an
+/// outage into the claim that no text exists anywhere. Only 404 says a
+/// candidate path is not there.
+///
+/// The stub `curl` also keeps this gate off the network, which is why it can
+/// run at all.
+#[cfg(unix)]
+#[test]
+fn a_failed_request_is_not_an_absent_licence() {
+	if MANIFEST.starts_with(GENERATED) {
+		return;
+	}
+	// A scratch copy, for the same reason as the gate above: a fetcher that
+	// mishandles this rewrites — and at one point deleted — the licences, and
+	// the repository's copy is being read by other tests at the same time.
+	let root = &scratch_repository("request");
+	let licences = root.join("third-party/licenses");
+	let sources = licences.join("SOURCES.tsv");
+	let before = listing(&licences);
+	let bin = std::env::temp_dir().join(format!("rnx-curl-stub-{}", std::process::id()));
+	std::fs::create_dir_all(&bin).unwrap();
+	let stub = bin.join("curl");
+	std::fs::write(
+		&stub,
+		"#!/usr/bin/env bash\nfor a in \"$@\"; do [ \"$prev\" = \"-o\" ] && : > \"$a\"; prev=$a; done\nprintf '503'\n",
+	)
+	.unwrap();
+	std::fs::set_permissions(&stub, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+
+	let path = format!(
+		"{}:{}",
+		bin.display(),
+		std::env::var("PATH").unwrap_or_default()
+	);
+	let mut ran = Command::new("bash")
+		.arg(root.join("scripts/fetch-missing-licenses.sh"))
+		.env("PATH", path)
+		.current_dir(root)
+		.stdin(Stdio::piped())
+		.stdout(Stdio::piped())
+		.stderr(Stdio::piped())
+		.spawn()
+		.expect("the fetcher");
+	use std::io::Write;
+	ran.stdin
+		.take()
+		.unwrap()
+		.write_all(b"rune\t0.14.2\n")
+		.unwrap();
+	let done = ran.wait_with_output().expect("the fetcher");
+	let said = String::from_utf8_lossy(&done.stderr).into_owned();
+
+	// Every file, not just the record: the fetcher republishes the whole
+	// directory, so a loss shows up as an absence beside `SOURCES.tsv` rather
+	// than as a change to it.
+	let after = listing(&licences);
+	std::fs::remove_dir_all(&bin).ok();
+
+	assert!(
+		!done.status.success(),
+		"a server that answered 503 was taken for a missing file"
+	);
+	assert!(
+		said.contains("says nothing about whether the file exists"),
+		"the failure was not named as a failed request: {said}"
+	);
+	assert_eq!(
+		after, before,
+		"a run that failed changed the licences it was meant to leave alone"
+	);
+	assert!(
+		sources.is_file(),
+		"the record is gone after a run that failed"
+	);
+	std::fs::remove_dir_all(root).ok();
+}
+
+/// Every file under a directory, with its digest, as one sorted string. What a
+/// control compares before and after, so a deletion is as visible as an edit.
+///
+/// **Every step fails loudly.** The first version ran `find | xargs sha256sum`
+/// through a shell, ignored the exit status, had no `pipefail`, and
+/// interpolated the directory unquoted — so hashing that failed produced an
+/// empty string, and a control comparing two empty strings passed while the
+/// files it was protecting had been deleted. A path with a space in it broke
+/// it too. The walk is now Rust's, the digests are one `sha256sum` invocation
+/// given the paths as arguments, and an empty directory is itself a failure:
+/// nothing here is ever legitimately empty.
+#[cfg(unix)]
+fn listing(dir: &std::path::Path) -> String {
+	fn walk(dir: &std::path::Path, into: &mut Vec<std::path::PathBuf>) {
+		let entries =
+			std::fs::read_dir(dir).unwrap_or_else(|e| panic!("cannot read {}: {e}", dir.display()));
+		for entry in entries {
+			let entry =
+				entry.unwrap_or_else(|e| panic!("cannot read an entry of {}: {e}", dir.display()));
+			let kind = entry
+				.file_type()
+				.unwrap_or_else(|e| panic!("cannot type {:?}: {e}", entry.path()));
+			if kind.is_dir() {
+				walk(&entry.path(), into);
+			} else {
+				into.push(entry.path());
+			}
+		}
+	}
+
+	let mut files = Vec::new();
+	walk(dir, &mut files);
+	files.sort();
+	assert!(
+		!files.is_empty(),
+		"{} holds no files, which no control here should ever find",
+		dir.display()
+	);
+
+	let digested = Command::new("sha256sum")
+		.args(&files)
+		.output()
+		.expect("sha256sum");
+	assert!(
+		digested.status.success(),
+		"sha256sum failed over {}: {}",
+		dir.display(),
+		String::from_utf8_lossy(&digested.stderr)
+	);
+	let said = String::from_utf8_lossy(&digested.stdout).into_owned();
+	assert_eq!(
+		said.lines().count(),
+		files.len(),
+		"sha256sum answered for {} of {} files under {}",
+		said.lines().count(),
+		files.len(),
+		dir.display()
+	);
+	said
+}
+
+/// A copy of the repository, complete enough for the generator and the
+/// fetcher to run in, and expendable.
+///
+/// The controls below deliberately break those scripts, and a broken script
+/// does destructive things: that is what they are testing. Run against the
+/// repository they damage tracked files, and — worse — they do it while other
+/// tests are reading the same directory in parallel, which was reproduced as
+/// `every_fetched_licence_matches_its_recorded_digest` failing because its
+/// input had briefly vanished. So each control gets its own copy and the
+/// repository is never written to.
+#[cfg(unix)]
+fn scratch_repository(tag: &str) -> std::path::PathBuf {
+	let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+	let into = std::env::temp_dir().join(format!(
+		"rnx-scratch-{tag}-{}-{}",
+		std::process::id(),
+		std::time::SystemTime::now()
+			.duration_since(std::time::UNIX_EPOCH)
+			.map(|d| d.subsec_nanos())
+			.unwrap_or(0)
+	));
+	let _ = std::fs::remove_dir_all(&into);
+	std::fs::create_dir_all(&into).expect("a scratch directory");
+	for item in [
+		"Cargo.toml",
+		"Cargo.lock",
+		"src",
+		"scripts",
+		"third-party",
+		"THIRD-PARTY-NOTICES.md",
+	] {
+		let copied = Command::new("cp")
+			.arg("-r")
+			.arg(root.join(item))
+			.arg(&into)
+			.status()
+			.expect("cp");
+		assert!(
+			copied.success(),
+			"could not copy {item} into the scratch copy"
+		);
+	}
+	into
+}
+
+/// A publication that fails must leave the previous licences where they are.
+///
+/// The gate a stub server cannot reach: the fetch succeeds, and the switch
+/// that puts the new set in place is what goes wrong. The first version
+/// removed the destination and copied into it, so an injected failure during
+/// that copy left **none** of the fourteen files — a fetcher that deletes the
+/// licences it exists to keep.
+///
+/// The replacement is now assembled beside the destination and switched in,
+/// with the previous set kept until the switch succeeds and put back if it
+/// does not. `RNX_TEST_PUBLICATION_FAILS` fails the switch after a successful
+/// fetch, which is exactly the window that was unsafe.
+///
+/// In a scratch copy, and with a stub `curl` that serves the texts from the
+/// repository's own copies, so this neither touches the repository nor the
+/// network.
+#[cfg(unix)]
+#[test]
+fn a_failed_publication_keeps_the_previous_licences() {
+	if MANIFEST.starts_with(GENERATED) {
+		return;
+	}
+	let root = &scratch_repository("publication");
+	let licences = root.join("third-party/licenses");
+	let before = listing(&licences);
+	assert!(
+		before.lines().count() >= 14,
+		"the scratch copy has {} licence files, so this would prove little",
+		before.lines().count()
+	);
+
+	// A `curl` that answers 200 with a body, so the fetch half succeeds and
+	// the run reaches the switch.
+	let bin = std::env::temp_dir().join(format!("rnx-curl-ok-{}", std::process::id()));
+	std::fs::create_dir_all(&bin).unwrap();
+	let stub = bin.join("curl");
+	std::fs::write(
+		&stub,
+		"#!/usr/bin/env bash\nfor a in \"$@\"; do [ \"$prev\" = \"-o\" ] && printf 'a licence text\\n' > \"$a\"; prev=$a; done\nprintf '200'\n",
+	)
+	.unwrap();
+	std::fs::set_permissions(&stub, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+
+	let mut ran = Command::new("bash")
+		.arg(root.join("scripts/fetch-missing-licenses.sh"))
+		.env(
+			"PATH",
+			format!(
+				"{}:{}",
+				bin.display(),
+				std::env::var("PATH").unwrap_or_default()
+			),
+		)
+		.env("RNX_TEST_PUBLICATION_FAILS", "1")
+		.current_dir(root)
+		.stdin(Stdio::piped())
+		.stdout(Stdio::piped())
+		.stderr(Stdio::piped())
+		.spawn()
+		.expect("the fetcher");
+	use std::io::Write;
+	ran.stdin
+		.take()
+		.unwrap()
+		.write_all(b"rune\t0.14.2\n")
+		.unwrap();
+	let done = ran.wait_with_output().expect("the fetcher");
+	let said = String::from_utf8_lossy(&done.stderr).into_owned();
+
+	let after = listing(&licences);
+	std::fs::remove_dir_all(&bin).ok();
+
+	// The loss first: it is what this gate is about, and a run that destroys
+	// the licences while printing the wrong message is worse news than one
+	// that keeps them while printing it.
+	assert_eq!(
+		after, before,
+		"a publication that failed did not leave the previous licences alone"
+	);
+	assert!(
+		!done.status.success(),
+		"a failed publication was reported as success"
+	);
+	assert!(
+		said.contains("the previous licences are unchanged"),
+		"the failure was not named as a publication failure: {said}"
+	);
+	std::fs::remove_dir_all(root).ok();
+}
+
+/// A second attempt must not delete what the first one salvaged.
+///
+/// The sequence review found: a publication fails, its rollback fails too, and
+/// the fourteen files survive in `licenses.previous` — correctly reported. Then
+/// the script is run again, its startup removes that directory
+/// unconditionally, and a second failure leaves **neither** directory while
+/// still saying the previous licences are unchanged. The salvage was the only
+/// remaining copy.
+///
+/// So a recovery directory is now put back rather than removed, and refused
+/// outright if the destination exists as well. Both attempts run here, because
+/// the defect is in the second one.
+#[cfg(unix)]
+#[test]
+fn a_retry_does_not_delete_what_the_first_attempt_salvaged() {
+	if MANIFEST.starts_with(GENERATED) {
+		return;
+	}
+	let root = &scratch_repository("retry");
+	let licences = root.join("third-party/licenses");
+	let salvage = root.join("third-party/licenses.previous");
+	let before = listing(&licences);
+
+	let bin = std::env::temp_dir().join(format!("rnx-curl-retry-{}", std::process::id()));
+	std::fs::create_dir_all(&bin).unwrap();
+	let stub = bin.join("curl");
+	std::fs::write(
+		&stub,
+		"#!/usr/bin/env bash\nfor a in \"$@\"; do [ \"$prev\" = \"-o\" ] && printf 'a licence text\\n' > \"$a\"; prev=$a; done\nprintf '200'\n",
+	)
+	.unwrap();
+	std::fs::set_permissions(&stub, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+	let path = format!(
+		"{}:{}",
+		bin.display(),
+		std::env::var("PATH").unwrap_or_default()
+	);
+
+	let attempt = |rollback_fails: bool| -> String {
+		let mut command = Command::new("bash");
+		command
+			.arg(root.join("scripts/fetch-missing-licenses.sh"))
+			.env("PATH", &path)
+			.env("RNX_TEST_PUBLICATION_FAILS", "1")
+			.current_dir(root)
+			.stdin(Stdio::piped())
+			.stdout(Stdio::piped())
+			.stderr(Stdio::piped());
+		if rollback_fails {
+			command.env("RNX_TEST_ROLLBACK_FAILS", "1");
+		}
+		let mut ran = command.spawn().expect("the fetcher");
+		use std::io::Write;
+		ran.stdin
+			.take()
+			.unwrap()
+			.write_all(b"rune\t0.14.2\n")
+			.unwrap();
+		let done = ran.wait_with_output().expect("the fetcher");
+		assert!(
+			!done.status.success(),
+			"a failed publication reported success"
+		);
+		String::from_utf8_lossy(&done.stderr).into_owned()
+	};
+
+	// One: publication and rollback both fail, so the licences end up in the
+	// recovery directory and the destination is gone.
+	let first = attempt(true);
+	assert!(
+		salvage.is_dir(),
+		"the first attempt left no recovery copy: {first}"
+	);
+	assert_eq!(
+		listing(&salvage),
+		before.replace("/licenses/", "/licenses.previous/"),
+		"the recovery copy is not the licences that were there"
+	);
+
+	// Two: the retry. It must find the salvage and put it back, not remove it.
+	let second = attempt(false);
+	std::fs::remove_dir_all(&bin).ok();
+
+	assert!(
+		licences.is_dir(),
+		"after the retry there are no licences at all: {second}"
+	);
+	assert_eq!(
+		listing(&licences),
+		before,
+		"the retry did not restore what the first attempt salvaged"
+	);
+	assert!(
+		!salvage.exists(),
+		"the recovery copy is still there after being recovered"
+	);
+	std::fs::remove_dir_all(root).ok();
 }
