@@ -8,12 +8,22 @@ expected.
 
 Nothing here completes a gate that needs a fixture which does not yet exist.
 
-**Current status.** Linux reviewed `96e3b88`: **238 default / 243 with
-test-support**, all passing, formatting clean, Windows cross-check successful
-with an unused-import warning, and one shared-fixture clippy warning beyond
-the baseline. The closeout below addresses its five remaining Windows gates
-and both warnings. Earlier sections are chronological measurements; their
-lists of missing fixtures are historical, not the current checklist.
+**Current status.** Code-review cleared at **`2dff588`**, which is the
+revision every figure below now describes; operator acceptance is separate.
+
+Native Windows: **220 / 239, zero failures**, through a script that runs each
+compiled test binary directly — the launch path gate 10's breakaway control
+needs, since Cargo's own job blocks it. Native Linux at the same revision:
+**238 default / 243 with `test-support`**, zero failures, clippy back to its
+eleven pre-existing warnings, `cargo fmt --check` and `git diff --check`
+clean, and no errors or warnings from `cargo check --locked --all-targets`,
+with and without `test-support`, for `x86_64-pc-windows-msvc` and both macOS
+targets. That Linux run was done twice, independently, with the same figures.
+
+The `96e3b88` handoff's two warnings — an unused import and a shared-fixture
+clippy lint — are gone, closed by the closeout below. Earlier sections are
+chronological measurements; their lists of missing fixtures are historical,
+not the current checklist.
 
 ## Windows closeout after review of `96e3b88`
 
@@ -87,11 +97,17 @@ Local logs are `../tmp/rnx-closeout-default.log`,
 `rnx-closeout-install.log`, `rnx-closeout-installed-selfcheck.log`, and the
 four `rnx-control-*.log` files. They are execution artifacts, not shipped files.
 
-**Linux review boundary.** The 238/243 native Linux result is the supplied
-review of `96e3b88`, not execution of this amended tree. All four target
-checks above are fresh. Native Linux rerunning remains part of the review
-handoff: WSL enumeration here fails with `Wsl/EnumerateDistros/Service/
-E_ACCESSDENIED`, so a type-check is not being reported as a Linux test run.
+**Linux review boundary.** At the time this section was written, the 238/243
+figure was the supplied review of `96e3b88` rather than execution of the
+amended tree, and WSL enumeration here fails with
+`Wsl/EnumerateDistros/Service/E_ACCESSDENIED`, so no type-check was going to
+be reported as a Linux test run.
+
+> **Since closed.** The amended tree was executed natively on Linux at
+> `2dff588`, twice and independently, giving the same 238/243 with zero
+> failures and clippy at its eleven. The boundary this paragraph drew was the
+> right one; it is recorded rather than removed because it is why the rerun
+> happened.
 
 ## Native rerun after the Linux handoff — `d7e649a`
 
