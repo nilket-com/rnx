@@ -72,7 +72,9 @@ Narrowing it is a measurement, for a machine that has those toolchains.
 ### 4. The package ships the product, and the repository keeps the reasoning
 
 `exclude = ["plans/", "evidence.md", "journey.rn"]`, measured at **79 files
-down to 38**, with no `plans/` entry left. The records are the project's
+down to 38** when this record was written, with no `plans/` entry left; the
+number moves as source and fixtures are added, and what the exclusion fixes is
+which *kinds* of file ship. The records are the project's
 reasoning rather than its product, and they are on the repository page for
 anyone who wants them; `journey.rn` needs a program from elsewhere to run.
 `src/` and `tests/` both ship, so a package that arrives can run its own
@@ -195,7 +197,7 @@ copy that would be published rather than the copy in the repository.
    `test-support`, the six new ones being the gates above — both macOS
    targets and the Windows target still check clean with and without
    `test-support`, clippy is at its eleven pre-existing warnings, and
-   `cargo fmt --check` is clean. The package list is 38 files.
+   `cargo fmt --check` is clean. The package list is 38 files at this commit.
 
 ## Guardrails and stop conditions
 
@@ -221,7 +223,8 @@ copy that would be published rather than the copy in the repository.
   ship unless it is added. `include` would invert that risk — omitting a
   needed file — and an omission is loud where an inclusion is quiet, so this
   is a considered choice rather than a default. The 38-file list is in this
-  record to compare against.
+  record to compare against — and it has since grown to 56, through source and
+  fixtures rather than through anything the denylist should have caught.
 - **Moving the brief does not unpublish it.** The repository's history keeps
   every version of the README, including the paths and product names it
   carried. That is a fact for the provenance review, not something this cut
