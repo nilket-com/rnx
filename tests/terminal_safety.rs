@@ -24,6 +24,8 @@ fn eval(source: &str) -> (String, String) {
 
 struct Ran {
 	stderr: String,
+	/// Read by surface 6, which exists only where a path can carry an escape.
+	#[cfg_attr(windows, allow(dead_code))]
 	path: String,
 }
 
@@ -99,10 +101,52 @@ fn nothing_rnx_prints_can_move_a_cursor() {
 	assert!(ran.stderr.contains("Panicked: \\u{1b}["), "{}", ran.stderr);
 
 	// 6. The file path in a diagnostic, which is text from outside too.
-	let ran = run_in("pub fn main(_) { let x = ; }", "esc\u{1b}dir");
-	scan("a file path", &ran.stderr);
-	assert!(ran.stderr.contains("\\u{1b}"), "{}", ran.stderr);
-	assert!(ran.path.contains('\u{1b}'), "the case did not set up");
+	//
+	// The surface exists only where the operating system lets a path carry an
+	// escape. Win32 does not, so on Windows the refusal IS the assertion: the
+	// guarantee is stronger there because the name cannot be made, and this
+	// gate has to fail, and go back to scanning a diagnostic, the day Windows
+	// accepts the name. Skipping the surface would say nothing either way.
+	#[cfg(unix)]
+	{
+		let ran = run_in("pub fn main(_) { let x = ; }", "esc\u{1b}dir");
+		scan("a file path", &ran.stderr);
+		assert!(ran.stderr.contains("\\u{1b}"), "{}", ran.stderr);
+		assert!(ran.path.contains('\u{1b}'), "the case did not set up");
+	}
+	#[cfg(windows)]
+	{
+		let why = refusing_a_name_that_carries_an_escape();
+		assert_eq!(
+			why.raw_os_error(),
+			Some(123),
+			"the name was refused, but not as ERROR_INVALID_NAME: {why}"
+		);
+	}
+}
+
+/// What Windows says about the directory `run_in` would have made for surface
+/// 6, with nothing left behind either way.
+///
+/// Asked here rather than through `run_in`, which unwraps: a gate that records
+/// a platform's refusal has to read it rather than die of it.
+#[cfg(windows)]
+fn refusing_a_name_that_carries_an_escape() -> std::io::Error {
+	let dir = std::env::temp_dir().join(format!(
+		"rnx-safety-{}-esc\u{1b}dir{}",
+		std::process::id(),
+		NEXT.fetch_add(1, Ordering::Relaxed)
+	));
+	match std::fs::create_dir_all(&dir) {
+		Err(why) => why,
+		Ok(()) => {
+			let _ = std::fs::remove_dir_all(&dir);
+			panic!(
+				"Windows made {}, so the sixth surface exists here and this gate must scan it rather than record a refusal",
+				dir.display()
+			)
+		}
+	}
 }
 
 /// The column the caret sits at, and the excerpt line it sits under, from a

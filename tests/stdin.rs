@@ -1,16 +1,20 @@
 //! What `host::stdin` reads, and what it refuses.
 //!
-//! A terminal is a pseudo-terminal here, which is a Unix fixture: Windows
-//! asks whether standard input is a console rather than whether it is a tty,
-//! and record 0025's gate 8 is where that is answered on the machine.
+//! Unix uses a pseudo-terminal; Windows uses a headless ConPTY console.
+//! Both must refuse input with the same message. Pipe and file cases run on
+//! both platforms, with a separate Windows NUL case for record 0025 gate 16.
 //!
 //! Record 0012 decides that the stream is read once, that a terminal is
 //! refused rather than read, and that the limit and the refusals are the ones
 //! `host::read` already has. Each of those is a behaviour, so each has a test
 //! that fails if it stops holding.
-#![cfg(unix)]
+
+#[cfg(windows)]
+#[path = "harness/console.rs"]
+mod console;
 
 use std::io::Write;
+#[cfg(unix)]
 use std::os::fd::{FromRawFd, OwnedFd};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -84,6 +88,7 @@ fn redirected(source: &str, file: &Path) -> Ran {
 }
 
 /// Run a script whose standard input is a terminal.
+#[cfg(unix)]
 fn on_a_terminal(source: &str) -> Ran {
 	let dir = scratch();
 	let path = write_script(&dir, source);
@@ -177,6 +182,7 @@ fn an_empty_stream_is_not_an_error() {
 }
 
 #[test]
+#[cfg(unix)]
 fn a_terminal_is_refused_and_does_not_block() {
 	let start = std::time::Instant::now();
 	let ran = on_a_terminal(ECHO);
@@ -315,4 +321,27 @@ fn the_read_is_bounded_and_does_not_wait_past_the_limit() {
 		ran.stderr
 	);
 	assert_eq!(ran.stdout, "");
+}
+
+#[cfg(windows)]
+#[test]
+fn a_console_is_refused_and_does_not_block() {
+	let dir = scratch();
+	let path = write_script(&dir, ECHO);
+	let mut terminal = console::Console::spawn(&["run", path.to_str().unwrap()], &[]);
+	terminal.expect("it is a terminal");
+	terminal.expect("redirect a file or pipe into it");
+	let code = terminal.finish();
+	drop(terminal);
+	std::fs::remove_dir_all(&dir).unwrap();
+	assert_eq!(code, 1);
+}
+
+#[cfg(windows)]
+#[test]
+fn nul_is_an_empty_stream_not_a_console() {
+	let ran = redirected(ECHO, Path::new("NUL"));
+	assert_eq!(ran.code, 0, "{}", ran.stderr);
+	assert_eq!(ran.stdout, "\"\"\n");
+	assert_eq!(ran.stderr, "");
 }

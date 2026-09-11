@@ -25,6 +25,16 @@ fn evaluated(source: &str) -> Ran {
 	}
 }
 
+/// A depth far past the 256 bound that the platform can still build and drop
+/// for itself; see `tests/eval_outcome.rs` for the measurements behind both
+/// numbers. This script never renders the value, so it clears its platform's
+/// ceiling by more than the figure there — the same depth is used so that one
+/// answer covers both shapes.
+#[cfg(unix)]
+const FAR_PAST_THE_BOUND: usize = 32_768;
+#[cfg(windows)]
+const FAR_PAST_THE_BOUND: usize = 2_048;
+
 /// A value nested `containers` deep: `[]` is one, and each wrap adds another.
 fn nested(containers: usize) -> String {
 	format!("let v = []; for i in 0..{} {{ v = [v] }}", containers - 1)
@@ -73,7 +83,8 @@ fn the_depth_bound_is_shared_with_the_renderer() {
 fn a_refusal_is_catchable_and_the_script_carries_on() {
 	// Cleanup is part of the bound: at a depth far past it the script catches
 	// the error, does more work, and the process exits normally with the
-	// value dropped. 32,768 is inside what Rune can itself build and drop.
+	// value dropped. The depth is `FAR_PAST_THE_BOUND`, which is what the
+	// platform can build and drop rather than anything rnx promises.
 	let dir = std::env::temp_dir().join(format!("rnx-json-catch-{}", std::process::id()));
 	std::fs::create_dir_all(&dir).unwrap();
 	let path = dir.join("catch.rn");
@@ -81,7 +92,7 @@ fn a_refusal_is_catchable_and_the_script_carries_on() {
 		&path,
 		format!(
 			"pub fn main(_) {{\n\t{}\n\tlet outcome = host::json_stringify(v);\n\tprintln!(\"refused: {{}}\", outcome.is_err());\n\tprintln!(\"still running\");\n\tOk(())\n}}\n",
-			nested(32_768)
+			nested(FAR_PAST_THE_BOUND)
 		),
 	)
 	.unwrap();

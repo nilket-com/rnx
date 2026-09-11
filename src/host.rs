@@ -195,6 +195,36 @@ fn injected_reader_panic(_stream: &str) -> bool {
 	false
 }
 
+/// Arrange the reader-collection control: stdout cannot reach its injected
+/// panic until the gate owns a handle to the held stderr worker.
+#[cfg(all(windows, feature = "test-support"))]
+fn held_for_reader_collection(stream: &str) {
+	let Some(dir) = std::env::var_os("RNX_TEST_READER_COLLECTION_CONTROL") else {
+		return;
+	};
+	let dir = std::path::PathBuf::from(dir);
+	if stream == "stderr" {
+		// SAFETY: this identifies the current worker; it borrows no handles.
+		let id = unsafe { windows_sys::Win32::System::Threading::GetCurrentThreadId() };
+		let result = std::fs::write(dir.join("stderr-id.tmp"), id.to_string())
+			.and_then(|_| std::fs::rename(dir.join("stderr-id.tmp"), dir.join("stderr-id")));
+		if let Err(error) = result {
+			eprintln!("rnx test-support: cannot identify stderr worker: {error}");
+		}
+	}
+	let release = dir.join(format!("release-{stream}"));
+	let until = Instant::now() + Duration::from_secs(20);
+	while !release.exists() && Instant::now() < until {
+		std::thread::sleep(Duration::from_millis(5));
+	}
+	if !release.exists() {
+		eprintln!("rnx test-support: {stream} worker was never released");
+	}
+}
+
+#[cfg(not(all(windows, feature = "test-support")))]
+fn held_for_reader_collection(_stream: &str) {}
+
 /// How long to hold a reader back before its first attempt. Nothing a script
 /// can do delays a reader by a known amount, and without one the gate for
 /// "the readers are drained before any of them is reached" is a race: an
@@ -214,6 +244,163 @@ fn injected_reader_delay() -> Duration {
 fn injected_reader_delay() -> Duration {
 	Duration::ZERO
 }
+
+/// Hold a reader until it is told to go, rather than for a chosen length of
+/// time.
+///
+/// A delay says a reader started late; it does not say the reader was **still
+/// unfinished** at the moment something else happened. Gate 6 needs the
+/// second: the interrupt must land while the readers are draining, and a
+/// reader that finished early because the machine was idle would let the gate
+/// pass without asking anything. So the gate releases them itself, after it
+/// has seen the interrupt raised.
+///
+/// Bounded, because a gate that failed to release them must fail rather than
+/// hang: after the wait, the reader carries on regardless and the gate's own
+/// assertions are what report it.
+#[cfg(feature = "test-support")]
+fn held_until_told() {
+	let Ok(path) = std::env::var("RNX_TEST_READER_WAITS_FOR") else {
+		return;
+	};
+	let until = Instant::now() + Duration::from_secs(20);
+	while !std::path::Path::new(&path).exists() && Instant::now() < until {
+		std::thread::sleep(Duration::from_millis(5));
+	}
+	if !std::path::Path::new(&path).exists() {
+		// Said, and asserted against. A reader that gave up waiting and read
+		// anyway is a reader that may finish before the event it was supposed
+		// to still be draining through — and if the event then lands late,
+		// the gate would pass while having asked nothing. So the timeout is
+		// reported as the failure it is, rather than being absorbed.
+		eprintln!("rnx test-support: a reader waited to be released and never was");
+	}
+}
+
+#[cfg(not(feature = "test-support"))]
+fn held_until_told() {}
+
+/// Hold a reader at the moment the cap is reached, before its next look at
+/// the stream.
+///
+/// Record 0023 says the three shortfalls are independent, and `truncated`
+/// with `cut_short` is the pair hardest to arrange here. On Unix a descendant
+/// that left the process group holds the stream open past the call, so the
+/// reader is still going when the instant passes. Windows has no such
+/// descendant — decision 5 — and everything inside the job is dead before the
+/// readers are reached, so the stream is always at its end by then.
+///
+/// The startup delay cannot arrange it either: holding a reader before it
+/// reads means the child fills the pipe and blocks instead of exiting, so the
+/// cap is never reached at all. The hold has to come **after** the cap and
+/// before the next turn of the loop, which is here — the reader has enough to
+/// have set `truncated`, has not yet observed the end of the stream, and can
+/// be released once the call has published its stop.
+///
+/// Bounded, and it says so when the bound is what released it: a reader let go
+/// by a timeout may have been reached long afterwards, and would report the
+/// same flags for the wrong reason.
+#[cfg(feature = "test-support")]
+fn held_at_the_cap(stream: &'static str) {
+	let Ok(path) = std::env::var("RNX_TEST_READER_HOLDS_AT_CAP") else {
+		return;
+	};
+	let reached = std::path::Path::new(&path);
+	// Said first, so a gate can wait for the reader to be here rather than
+	// guessing when it arrived.
+	let _ = std::fs::write(format!("{path}.{stream}.at-cap"), "at the cap");
+	let until = Instant::now() + Duration::from_secs(20);
+	while !reached.exists() && Instant::now() < until {
+		std::thread::sleep(Duration::from_millis(5));
+	}
+	if !reached.exists() {
+		eprintln!("rnx test-support: the {stream} reader waited at the cap and was never released");
+	}
+}
+
+#[cfg(not(feature = "test-support"))]
+fn held_at_the_cap(_stream: &'static str) {}
+
+/// Hold stdout after a measured number of captured bytes, before observing
+/// EOF. Unlike the cap hold, this can establish a nonempty, uncapped prefix.
+/// Crossing the threshold only once also permits reads that split the prefix.
+#[cfg(feature = "test-support")]
+fn held_after_prefix(stream: &'static str, before: usize, after: usize) {
+	let Some(count) = std::env::var("RNX_TEST_READER_PREFIX_BYTES")
+		.ok()
+		.and_then(|s| s.parse::<usize>().ok())
+	else {
+		return;
+	};
+	if stream != "stdout" || before >= count || after < count {
+		return;
+	}
+	let Ok(path) = std::env::var("RNX_TEST_READER_HOLDS_AFTER_PREFIX") else {
+		return;
+	};
+	// Publish the complete acknowledgement, so existence also means its
+	// measured byte count is ready for the controlling test to read.
+	let pending = format!("{path}.pending");
+	if std::fs::write(&pending, after.to_string()).is_ok() {
+		let _ = std::fs::rename(&pending, format!("{path}.after-prefix"));
+	}
+	let release = std::path::Path::new(&path);
+	let until = Instant::now() + Duration::from_secs(20);
+	while !release.exists() && Instant::now() < until {
+		std::thread::sleep(Duration::from_millis(5));
+	}
+	if !release.exists() {
+		eprintln!(
+			"rnx test-support: the stdout reader waited after the prefix and was never released"
+		);
+	}
+}
+
+#[cfg(not(feature = "test-support"))]
+fn held_after_prefix(_stream: &'static str, _before: usize, _after: usize) {}
+
+/// Hold the writer at the top of its loop, before it looks at its stop flag.
+///
+/// Record 0025's row for the delivery-failure gate: the injected failure is
+/// consulted only on the branch that observes the stop, and on Windows a write
+/// that is cancelled or finds a closed reader returns before that branch is
+/// ever reached. So the Unix fixture's escaped descendant is not what this
+/// needs replacing with — what it needs is the writer standing still at the
+/// one place the injection lives, while the call's cleanup runs behind it.
+///
+/// Once, and only before anything has been written: a writer held on every
+/// turn of the loop would hold the call for as many turns as it took, and a
+/// writer that had already submitted a write is the case that cannot be
+/// steered here.
+///
+/// Bounded, and it says so when the bound is what released it. A writer let go
+/// by a timeout may have looked at a stop that had not yet been set, which is
+/// the ordinary case wearing this gate's name.
+#[cfg(feature = "test-support")]
+fn held_before_the_stop_check(written: usize) {
+	if written != 0 {
+		return;
+	}
+	let Ok(path) = std::env::var("RNX_TEST_WRITER_HOLDS_BEFORE_STOP") else {
+		return;
+	};
+	// Said first, so a gate waits for the writer to be here rather than
+	// guessing when it arrived.
+	let _ = std::fs::write(format!("{path}.held"), "before the stop check");
+	let release = std::path::Path::new(&path);
+	let until = Instant::now() + Duration::from_secs(20);
+	while !release.exists() && Instant::now() < until {
+		std::thread::sleep(Duration::from_millis(5));
+	}
+	if !release.exists() {
+		eprintln!(
+			"rnx test-support: the writer waited before its stop check and was never released"
+		);
+	}
+}
+
+#[cfg(not(feature = "test-support"))]
+fn held_before_the_stop_check(_written: usize) {}
 
 /// Whether to fail a read deliberately. A read error on a pipe cannot be
 /// provoked from a script — a non-blocking pipe offers a full buffer, an
@@ -247,6 +434,61 @@ fn cleanup_allowance() -> Duration {
 fn cleanup_allowance() -> Duration {
 	CLEANUP_ALLOWANCE
 }
+
+/// Say that the cleanup has begun, for a gate that must act during it.
+///
+/// Record 0023 promises an interrupt is reported whether it arrives while a
+/// call waits or while it cleans up, and the second is the harder half to
+/// ask: the window opens when the child is already gone and closes when the
+/// readers finish. Nothing a script can do lands inside it on purpose, and a
+/// delay chosen from outside cannot know where it landed — which is the same
+/// reason `RNX_TEST_READER_STARTS_LATE_MS` exists rather than a sleep.
+#[cfg(feature = "test-support")]
+fn announce_the_cleanup() {
+	if let Ok(path) = std::env::var("RNX_TEST_SIGNAL_CLEANUP_TO") {
+		let _ = std::fs::write(&path, "the cleanup has begun");
+	}
+}
+
+#[cfg(not(feature = "test-support"))]
+fn announce_the_cleanup() {}
+
+/// Say that the stop has been published to every reader still going.
+///
+/// Distinct from `announce_the_cleanup`, and later: that one fires when the
+/// allowance is published, which may be seconds before it expires. This one
+/// fires once the allowance is spent and the readers have been reached, which
+/// is what a gate holding a reader must wait for — releasing on the earlier
+/// signal would let the reader look again while the call was still willing to
+/// wait for it.
+#[cfg(feature = "test-support")]
+fn announce_the_stop() {
+	if let Ok(path) = std::env::var("RNX_TEST_SIGNAL_STOP_TO") {
+		let _ = std::fs::write(&path, "the readers have been reached");
+	}
+}
+
+#[cfg(not(feature = "test-support"))]
+fn announce_the_stop() {}
+
+/// Say that the **writer** has been told to stop, which is earlier and a
+/// different event.
+///
+/// `announce_the_stop` fires once the readers have been reached, and that is
+/// after the delivery has been collected: a gate that waited for it before
+/// releasing a held writer would be waiting for something the held writer is
+/// what prevents. This fires between the writer being told and the call
+/// blocking on its collection, which is the only window in which a held
+/// writer can be released and still find the stop set.
+#[cfg(feature = "test-support")]
+fn announce_the_writer_stop() {
+	if let Ok(path) = std::env::var("RNX_TEST_SIGNAL_WRITER_STOP_TO") {
+		let _ = std::fs::write(&path, "the writer has been told to stop");
+	}
+}
+
+#[cfg(not(feature = "test-support"))]
+fn announce_the_writer_stop() {}
 
 /// What a stream was, and what went wrong with reading it. The three
 /// shortfalls are independent: a stream can pass the cap, then be cut short
@@ -282,6 +524,7 @@ fn capture(
 	until: std::sync::Arc<std::sync::OnceLock<Instant>>,
 	stream: &'static str,
 ) -> Captured {
+	held_for_reader_collection(stream);
 	assert!(
 		!injected_reader_panic(stream),
 		"the {stream} reader was told to panic"
@@ -299,6 +542,7 @@ fn capture(
 	let mut input = input;
 	let mut chunk = [0; 8192];
 	std::thread::sleep(injected_reader_delay());
+	held_until_told();
 	let started = Instant::now();
 	loop {
 		// Before every attempt, so a stream that always has more to give
@@ -349,7 +593,12 @@ fn capture(
 			Ok(n) => {
 				let keep = n.min(CAPTURE_CAP.saturating_sub(got.bytes.len()));
 				got.bytes.extend_from_slice(&chunk[..keep]);
-				got.truncated |= keep < n;
+				held_after_prefix(stream, got.bytes.len() - keep, got.bytes.len());
+				let capped = keep < n;
+				got.truncated |= capped;
+				if capped {
+					held_at_the_cap(stream);
+				}
 			}
 			Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
 				std::thread::sleep(next_wait(
@@ -454,12 +703,22 @@ fn run_child(
 	let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
 	let writing = crate::platform::Pipe::new();
 	let delivery = input.map(|bytes| {
+		#[cfg(all(windows, feature = "test-support"))]
+		let input_len = bytes.len();
 		let stream = child.stdin.take().expect("stdin was piped for an input");
 		let (pipe, stop) = (writing.clone(), stop.clone());
 		// The writer owns the stream, so it closes when the writer is done —
 		// which is the end of input the child is waiting for. A call that held
 		// the write end open would leave `cat` waiting for ever.
-		std::thread::spawn(move || deliver(stream, pipe, bytes, deadline, stop))
+		let worker = std::thread::spawn(move || {
+			let outcome = deliver(stream, pipe, bytes, deadline, stop);
+			#[cfg(all(windows, feature = "test-support"))]
+			crate::delivery_control::before_thread_exit();
+			outcome
+		});
+		#[cfg(all(windows, feature = "test-support"))]
+		crate::delivery_control::announce(&worker, child.id(), input_len);
+		worker
 	});
 	let mut timed_out = false;
 	let mut cancelled = false;
@@ -504,6 +763,12 @@ fn run_child(
 	};
 	let cleanup_ends = Instant::now() + allowance;
 	let _ = until.set(cleanup_ends);
+	// Exactly here, and nowhere else, is the phase record 0023 promises an
+	// interrupt still reaches: the wait is over and the child is gone, and
+	// the readers have been given until the instant but not yet told to stop.
+	// A gate that raised an interrupt on a timer could land before or after
+	// it and could not tell which; this says when.
+	announce_the_cleanup();
 	// The readers are **not** told to stop yet. An ordinary exit leaves bytes
 	// in the pipes and record 0023 promised to drain them; cancelling a read
 	// now would discard them and call the capture cut short, which is the
@@ -533,6 +798,7 @@ fn run_child(
 	// flag or a cancellation reaches it, under the lock that keeps the worker
 	// from submitting an operation in between.
 	writing.stop();
+	announce_the_writer_stop();
 	let mut delivery_failed = None;
 	if let Some(delivery) = delivery {
 		match delivery.join() {
@@ -555,6 +821,12 @@ fn run_child(
 			pipe.stop();
 		}
 	}
+	// The stop is now published, which is a later and stronger fact than the
+	// cleanup having begun: the allowance has been spent or was zero, and any
+	// reader still going has been reached. A gate that released a held reader
+	// on the earlier signal would be releasing it before the thing it is
+	// waiting to observe had happened.
+	announce_the_stop();
 	// Both, before either failure is propagated: a `?` on the first join would
 	// leave the second reader unjoined, which is the same defect record 0022
 	// fixed for the writer and the same promise — always collected — made here.
@@ -638,6 +910,7 @@ fn deliver(
 	let mut written = 0;
 	let started = Instant::now();
 	while written < bytes.len() {
+		held_before_the_stop_check(written);
 		// Before every attempt, not only after one that would block: a write
 		// that can proceed must not be started once the call has finished with
 		// this delivery, or the flag would only be honoured while blocked.
@@ -937,12 +1210,12 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	register!(
 		"process_bytes",
 		process_bytes,
-		"process_bytes(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process, with the streams as byte strings and no decoding; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable"
+		"process_bytes(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process, with the streams as byte strings and no decoding; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first"
 	);
 	register!(
 		"process_bytes_input",
 		process_bytes_input,
-		"process_bytes_input(program, args, input, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process_bytes, writing the byte string `input` to the child's standard input and closing it; a success does not mean every byte was read; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable"
+		"process_bytes_input(program, args, input, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process_bytes, writing the byte string `input` to the child's standard input and closing it; a success does not mean every byte was read; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first"
 	);
 	register!(
 		"write_new",
@@ -962,38 +1235,36 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	register!(
 		"process",
 		process,
-		"process(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: run a child with a deadline, bounded capture, and cancellation on Ctrl-C; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable"
+		"process(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: run a child with a deadline, bounded capture, and cancellation on Ctrl-C; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first"
 	);
 	context.install(module)?;
 	Ok(registered)
 }
 
 pub fn process_checks(context: &Context) -> super::Result<()> {
-	for (label, source) in [
-		(
-			"exit status",
-			r#"pub fn main(_) { host::process("/bin/sh", ["-c", "exit 7"], 1000)? }"#,
-		),
-		(
-			"deadline",
-			r#"pub fn main(_) { host::process("/bin/sh", ["-c", "sleep 10 & wait"], 40)? }"#,
-		),
-		(
-			"capture cap",
-			r#"pub fn main(_) { let r = host::process("/usr/bin/head", ["-c", "3000000", "/dev/zero"], 1000)?; (r.truncated, r.stdout.len()) }"#,
-		),
-		(
-			"interruption",
-			r#"pub fn main(_) { host::process("/bin/sh", ["-c", "kill -INT $PPID; sleep 10"], 1000)? }"#,
-		),
-	] {
-		let result = super::call(context, source, Value::empty())?;
-		let value = serde_json::to_value(&result)?;
+	// Removed by the guard's `Drop`, so a probe that fails its assertion still
+	// takes its three megabytes with it. Deleting after the loop leaves the
+	// file behind on exactly the runs someone will be re-running.
+	let bulk = Scratch::make()?;
+	for (label, source) in probes(&bulk.0) {
+		let value = probe(context, label, &source)?;
 		match label {
 			"exit status" => assert_eq!(value["code"], 7),
 			"deadline" => {
 				assert_eq!(value["timed_out"], true);
+				// What accompanies `timed_out` differs, and the difference is
+				// the platform's rather than this record's. A Unix child
+				// killed by a signal has no exit status at all, so `code` is
+				// null. Windows has no signals: `TerminateJobObject` **is**
+				// an exit status, and the 1 it reports is the one rnx passed
+				// it. Both say the same thing about the child — it did not
+				// choose how it ended — and `host::process` already tells a
+				// caller to read `timed_out` before `code` for exactly this
+				// reason.
+				#[cfg(unix)]
 				assert!(value["code"].is_null());
+				#[cfg(windows)]
+				assert_eq!(value["code"], 1);
 			}
 			"capture cap" => assert_eq!(value, serde_json::json!([true, 2097152])),
 			"interruption" => {
@@ -1002,14 +1273,197 @@ pub fn process_checks(context: &Context) -> super::Result<()> {
 			}
 			_ => unreachable!(),
 		}
-		println!("{label}: {}", super::json::stringify(&result)?);
 	}
+	interruption_note();
 	Ok(())
+}
+
+/// A file the self-check made and must not leave behind, whatever happens
+/// to the probe that reads it.
+struct Scratch(Option<std::path::PathBuf>);
+
+impl Drop for Scratch {
+	fn drop(&mut self) {
+		if let Some(path) = self.0.as_ref() {
+			let _ = std::fs::remove_file(path);
+		}
+	}
+}
+
+impl Scratch {
+	/// Something that produces more than the capture cap, for the probe that
+	/// asks whether the cap holds.
+	///
+	/// Unix reads `/dev/zero`, which needs nothing made. Windows has no such
+	/// file, so one is made and removed afterwards — a self-check may leave
+	/// nothing behind.
+	///
+	/// **Created before it is written, and owned before either.** A write of
+	/// three megabytes can fail part way through and leave a partial file, so
+	/// the file is created exclusively and this guard takes the path first;
+	/// a failure after that point still unwinds through `Drop`. Building the
+	/// guard around a path that a completed write returned would leave every
+	/// partial file unowned, which is the one case it exists for.
+	#[cfg(unix)]
+	fn make() -> super::Result<Self> {
+		Ok(Self(None))
+	}
+
+	#[cfg(windows)]
+	fn make() -> super::Result<Self> {
+		let path = std::env::temp_dir().join(format!(
+			"rnx-selfcheck-bulk-{}-{}",
+			std::process::id(),
+			std::time::SystemTime::now()
+				.duration_since(std::time::UNIX_EPOCH)?
+				.as_nanos()
+		));
+		let mut file = std::fs::OpenOptions::new()
+			.write(true)
+			.create_new(true)
+			.open(&path)?;
+		let owned = Self(Some(path));
+		file.write_all(&b"x".repeat(3_000_000))?;
+		Ok(owned)
+	}
+}
+
+/// The probes, in the words each platform has for them.
+///
+/// The **contracts are the same** and so are the assertions above; only the
+/// programs differ, which is record 0025 decision 1 applied to the self-check
+/// rather than to the suite.
+#[cfg(unix)]
+fn probes(_bulk: &Option<std::path::PathBuf>) -> Vec<(&'static str, String)> {
+	vec![
+		(
+			"exit status",
+			r#"pub fn main(_) { host::process("/bin/sh", ["-c", "exit 7"], 1000)? }"#.to_owned(),
+		),
+		(
+			"deadline",
+			r#"pub fn main(_) { host::process("/bin/sh", ["-c", "sleep 10 & wait"], 40)? }"#
+				.to_owned(),
+		),
+		(
+			"capture cap",
+			r#"pub fn main(_) { let r = host::process("/usr/bin/head", ["-c", "3000000", "/dev/zero"], 1000)?; (r.truncated, r.stdout.len()) }"#.to_owned(),
+		),
+		(
+			"interruption",
+			r#"pub fn main(_) { host::process("/bin/sh", ["-c", "kill -INT $PPID; sleep 10"], 1000)? }"#.to_owned(),
+		),
+	]
+}
+
+#[cfg(windows)]
+fn probes(bulk: &Option<std::path::PathBuf>) -> Vec<(&'static str, String)> {
+	let quoted = |s: &str| serde_json::to_string(s).expect("a string is serialisable");
+	let bulk = bulk.as_ref().expect("Windows makes a bulk source");
+	vec![
+		(
+			"exit status",
+			r#"pub fn main(_) { host::process("cmd", ["/c", "exit 7"], 1000)? }"#.to_owned(),
+		),
+		(
+			// `ping` rather than a shell: nothing here needs one, and record
+			// 0016's rule is easier to keep when no shell is involved at all.
+			"deadline",
+			r#"pub fn main(_) { host::process("ping", ["-n", "20", "127.0.0.1"], 40)? }"#
+				.to_owned(),
+		),
+		(
+			"capture cap",
+			format!(
+				"pub fn main(_) {{ let r = host::process(\"cmd\", [\"/c\", \"type\", {}], 1000)?; (r.truncated, r.stdout.len()) }}",
+				quoted(&bulk.display().to_string())
+			),
+		),
+		// No interruption probe. See `interruption_note`.
+	]
+}
+
+/// Why Windows has no interruption probe here.
+///
+/// The Unix one has a child send `SIGINT` to its parent, which reaches that
+/// process and nothing else. The Windows counterpart is
+/// `GenerateConsoleCtrlEvent`, and it reaches **every process attached to the
+/// console** — which, for someone who has just typed `rnx selfcheck`, is
+/// their own shell and whatever else is running in it. A self-check that
+/// interrupted the terminal it was invoked from would be a worse defect than
+/// any it could find.
+///
+/// So the contract is not weakened, it is asked somewhere else: record 0025's
+/// gates 19 and 6 raise the interrupt inside a console created for the
+/// purpose, where it can reach nothing that did not ask for it. This is
+/// decision 5's shape — evidence for why the question moves, rather than a
+/// check quietly dropped.
+#[cfg(windows)]
+fn interruption_note() {
+	println!(
+		"interruption: asked by record 0025's gates, not here — a console control event reaches every process sharing the console, including the shell that ran this"
+	);
+}
+
+#[cfg(unix)]
+fn interruption_note() {}
+
+/// Run one probe and answer what it produced, as JSON, having first printed
+/// it. A probe that could not run answers why it could not.
+///
+/// The order of the two steps is the whole of it. An error a script returns
+/// is a Rune value holding an external reference, so `serde_json` refuses it
+/// with "cannot serialize external references" — a complaint about the
+/// carrier rather than the cause. Reaching serde first replaces every spawn
+/// failure with that one sentence, which is what a missing `/bin/sh` looked
+/// like on Windows until the call was run by hand.
+fn probe(context: &Context, label: &str, source: &str) -> super::Result<serde_json::Value> {
+	let result = super::call(context, source, Value::empty())?;
+	if let Err(error) = super::runner::returned(&result) {
+		// `error_text` is the same rendering both entry points use, so a
+		// string error reads bare here too, as record 0019 requires.
+		return Err(format!("{label}: {}", super::format::error_text(&error, None)).into());
+	}
+	let value = serde_json::to_value(&result)?;
+	println!("{label}: {}", super::json::stringify(&result)?);
+	Ok(value)
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	/// A probe that cannot spawn reports the spawn failure, not a complaint
+	/// about the value carrying it.
+	///
+	/// This drives `probe` itself, which is the code the fix changed. A
+	/// version that hands the returned error to `serde_json` first fails
+	/// here, because what comes back then names neither the program nor the
+	/// reason — it says "cannot serialize external references" and nothing
+	/// else. Asserting on the message rather than on failure is what makes
+	/// that distinction; both versions return an error.
+	#[test]
+	fn a_probe_that_cannot_spawn_reports_the_spawn_failure() {
+		let mut context = Context::with_default_modules().unwrap();
+		install(&mut context).unwrap();
+		let missing = "rnx-no-such-program-4a7f";
+		let source = format!(r#"pub fn main(_) {{ host::process("{missing}", [], 1000)? }}"#);
+
+		let why = probe(&context, "a probe", &source)
+			.expect_err("a probe that cannot spawn reported success")
+			.to_string();
+
+		assert!(
+			why.contains(missing),
+			"the program that could not run is not named: {why}"
+		);
+		assert!(
+			!why.contains("external references"),
+			"the cause was replaced by a serialisation complaint: {why}"
+		);
+		// Bare, as record 0019 has it: a string error grows no quotes.
+		assert!(!why.contains(r#"""#), "a string error grew quotes: {why}");
+	}
 
 	#[test]
 	fn a_wait_grows_with_the_child_and_never_outlives_the_deadline() {

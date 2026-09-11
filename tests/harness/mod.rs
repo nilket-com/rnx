@@ -162,6 +162,32 @@ pub fn reaped_within(child: &mut Child, within: Duration) -> Option<Option<i32>>
 	}
 }
 
+/// Kill a child and collect it, with a bound, and say what survived.
+///
+/// `kill()` followed by a bare `wait()` is the same defect as an unbounded
+/// read, in the place it does the most damage: the cleanup of a test about
+/// hanging must not itself be able to hang, and a signal is a request rather
+/// than an event — a process wedged in the kernel outlives it.
+pub fn killed_within(child: &mut Child, within: Duration) -> Option<String> {
+	let _ = child.kill();
+	if reaped_within(child, within).is_none() {
+		return Some(format!(
+			"a child was still running {within:?} after it was killed"
+		));
+	}
+	None
+}
+
+/// What a child wrote to a file, or why it could not be read.
+///
+/// Never `unwrap_or_default`. A file that cannot be read would then satisfy an
+/// assertion about empty output, and — worse — a check that searches the text
+/// for a complaint would find none and pass. Both are the failure reporting
+/// success, which is what this returns a `Result` to prevent.
+pub fn wrote(path: &Path) -> Result<String, String> {
+	std::fs::read_to_string(path).map_err(|e| format!("{} could not be read: {e}", path.display()))
+}
+
 /// What a teardown could not take down. Empty is the good case.
 pub type Trouble = Vec<String>;
 

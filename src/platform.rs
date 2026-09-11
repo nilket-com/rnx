@@ -26,6 +26,29 @@ pub fn clear_interrupt() {
 	INTERRUPTED.store(false, Ordering::Relaxed);
 }
 
+/// The per-user, machine-local directory a program may keep state in, or
+/// `None` where the platform does not say.
+///
+/// Record 0025 decision 7. `LOCALAPPDATA` is what `XDG_STATE_HOME` names on
+/// Unix — per-user, machine-local, not roamed, set by the system rather than
+/// by a shell — so the mechanism differs here and the contract does not.
+/// Windows has no `HOME` and no XDG layout, and asking for them there is how
+/// a session came to keep no history at all.
+#[cfg(windows)]
+pub fn state_dir() -> Option<std::path::PathBuf> {
+	std::env::var_os("LOCALAPPDATA").map(std::path::PathBuf::from)
+}
+
+#[cfg(unix)]
+pub fn state_dir() -> Option<std::path::PathBuf> {
+	std::env::var_os("XDG_STATE_HOME")
+		.map(std::path::PathBuf::from)
+		.or_else(|| {
+			std::env::var_os("HOME")
+				.map(|h| std::path::PathBuf::from(h).join(".local").join("state"))
+		})
+}
+
 /// A stream this platform can be asked about: a descriptor on Unix, a handle
 /// on Windows. The bound exists so `capture` can take either without knowing
 /// which.
@@ -122,6 +145,8 @@ mod imp {
 	use super::*;
 	use std::os::windows::io::AsRawHandle;
 	use windows_sys::Win32::Foundation::{CloseHandle, FALSE, HANDLE, INVALID_HANDLE_VALUE, TRUE};
+	#[cfg(feature = "test-support")]
+	use windows_sys::Win32::System::Console::GenerateConsoleCtrlEvent;
 	use windows_sys::Win32::System::Console::{
 		CONSOLE_MODE, CTRL_BREAK_EVENT, CTRL_C_EVENT, GetConsoleMode, GetStdHandle,
 		STD_INPUT_HANDLE, SetConsoleCtrlHandler,
@@ -152,10 +177,130 @@ mod imp {
 	}
 
 	pub fn watch_for_interrupt() {
-		unsafe {
-			SetConsoleCtrlHandler(Some(interrupt), TRUE);
+		// Two steps, and the order is load-bearing.
+		//
+		// A process that ignores Ctrl-C passes that on to its children, and
+		// installing a handler does not undo it: the handler is registered
+		// and simply never runs. `SetConsoleCtrlHandler(NULL, FALSE)` is what
+		// restores delivery.
+		//
+		// But delivery must be restored **after** the handler is in place,
+		// never before. Between restoring and installing, an interrupt would
+		// find only the default handler, which Windows documents as calling
+		// `ExitProcess` — so the window between the two calls is one where a
+		// Ctrl-C kills rnx outright instead of cancelling a call. Doing it
+		// the other way round trades a contract that silently does not hold
+		// for a process that sometimes dies, which is worse.
+		pretend_a_parent_ignored_ctrl_c();
+		let installed = unsafe { SetConsoleCtrlHandler(Some(interrupt), TRUE) } != FALSE;
+		// Only if the handler is actually there. Enabling delivery after a
+		// failed registration is the same defect as enabling it first: an
+		// interrupt would find the default handler and end the process. A
+		// process that cannot be interrupted keeps running; one that takes
+		// `ExitProcess` mid-call does not, and the first is the better
+		// failure.
+		let delivered = installed && unsafe { SetConsoleCtrlHandler(None, FALSE) } != FALSE;
+		ask_for_an_interrupt_later(installed, delivered);
+	}
+
+	/// Put this process into the state a parent that ignores Ctrl-C would
+	/// have left it in, before anything else runs.
+	///
+	/// Nothing a script can do produces that state, and whether the process
+	/// that started a test run is already in it is not something a fixture
+	/// controls — so without this the gate below would establish the fix only
+	/// under whatever state it happened to inherit. Same reason
+	/// `RNX_TEST_JOB_ASSIGNMENT_FAILS` exists.
+	#[cfg(feature = "test-support")]
+	fn pretend_a_parent_ignored_ctrl_c() {
+		if std::env::var("RNX_TEST_IGNORE_CTRL_C_FIRST").is_ok_and(|v| !v.is_empty()) {
+			// SAFETY: NULL with TRUE is the documented way to ask to ignore
+			// Ctrl-C, and is what a parent that did so passed on.
+			let ignoring = unsafe { SetConsoleCtrlHandler(None, TRUE) } != FALSE;
+			// Said, because a control that silently failed to put the process
+			// into the state it is controlling for would pass while measuring
+			// the ordinary case twice.
+			eprintln!("rnx test-support: now ignoring Ctrl-C: ok={ignoring}");
 		}
 	}
+
+	#[cfg(not(feature = "test-support"))]
+	fn pretend_a_parent_ignored_ctrl_c() {}
+
+	/// Raise a Ctrl-C on this process's own console, after a delay the hook
+	/// names. Nothing a script can do provokes one, which is why this exists
+	/// at all — the same reason `RNX_TEST_JOB_ASSIGNMENT_FAILS` does.
+	///
+	/// **This is why it is gated.** `GenerateConsoleCtrlEvent(_, 0)` reaches
+	/// every process attached to the console, which in an ordinary run
+	/// includes the shell that started rnx. Record 0025's risks say an
+	/// interrupt on Windows is console-wide and must be established in a
+	/// console of its own before it goes near anything a person runs; the
+	/// gate that sets this hook gives the process one.
+	///
+	/// What it establishes is that the handler decision 4 installs is
+	/// reached and sets the flag. It is **not** gate 6, which wants an
+	/// interrupt during cleanup, with the child already gone and the readers
+	/// finishing.
+	#[cfg(feature = "test-support")]
+	fn ask_for_an_interrupt_later(installed: bool, delivered: bool) {
+		let Ok(when) = std::env::var("RNX_TEST_RAISE_INTERRUPT_WHEN") else {
+			return;
+		};
+		std::thread::spawn(move || {
+			// A handshake, not a sleep. The **child** makes this file and then
+			// stays alive, so the event is raised because a child exists and
+			// the call is waiting on it. A marker the script wrote before the
+			// call would say only that the script reached that line, and the
+			// event could then arrive before any child existed; a fixed delay
+			// says less again, since one long enough to be safe on a loaded
+			// machine is also long enough to hide a call that never started.
+			let waited_from = std::time::Instant::now();
+			while !std::path::Path::new(&when).exists() {
+				if waited_from.elapsed() > std::time::Duration::from_secs(20) {
+					eprintln!("rnx test-support: the script never signalled it was ready");
+					return;
+				}
+				std::thread::sleep(std::time::Duration::from_millis(5));
+			}
+			// SAFETY: no arguments to get wrong.
+			let asked = unsafe { GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0) };
+			// Said out loud, because a gate that only watches the flag cannot
+			// tell "the event was never raised" from "the handler never ran",
+			// and those want different answers.
+			eprintln!(
+				"rnx test-support: handler installed={installed} delivery restored={delivered}; raised a console interrupt: ok={} err={}",
+				asked != FALSE,
+				std::io::Error::last_os_error()
+			);
+			// Raising is a request, not a receipt. The handler runs on a
+			// thread of the console's choosing, so `ok=true` says only that
+			// Windows accepted the ask — and a gate that released its readers
+			// here could still have them finish before the flag was ever set.
+			// So wait for the flag the handler sets, and publish only then.
+			//
+			// A flag that never arrives leaves the file unwritten on purpose:
+			// whoever was waiting on it then fails for want of it, which is
+			// the honest outcome, rather than being released as though the
+			// interrupt had landed.
+			if let Ok(path) = std::env::var("RNX_TEST_SIGNAL_RAISED_TO") {
+				let until = std::time::Instant::now() + std::time::Duration::from_secs(20);
+				while !INTERRUPTED.load(Ordering::Relaxed) && std::time::Instant::now() < until {
+					std::thread::sleep(std::time::Duration::from_millis(2));
+				}
+				if INTERRUPTED.load(Ordering::Relaxed) {
+					let _ = std::fs::write(&path, "received");
+				} else {
+					eprintln!(
+						"rnx test-support: the interrupt was raised but never received; nothing released"
+					);
+				}
+			}
+		});
+	}
+
+	#[cfg(not(feature = "test-support"))]
+	fn ask_for_an_interrupt_later(_installed: bool, _delivered: bool) {}
 
 	/// Whether standard input is a **console**, which is the thing record 0012
 	/// refuses to read because nobody is going to send an end-of-file.
@@ -201,6 +346,10 @@ mod imp {
 			return Err(std::io::Error::last_os_error());
 		}
 		let child = command.creation_flags(CREATE_SUSPENDED).spawn()?;
+		#[cfg(feature = "test-support")]
+		if let Err(why) = observe_before_assignment(&child, job) {
+			return Err(abandon(child, why));
+		}
 		// From here the child exists and is suspended, so every failure has to
 		// end it **directly**. Ending the job would not: a child that never
 		// joined it is not in it, and would be left suspended for ever.
@@ -227,6 +376,31 @@ mod imp {
 	#[cfg(feature = "test-support")]
 	fn injected_assignment_failure() -> bool {
 		std::env::var("RNX_TEST_JOB_ASSIGNMENT_FAILS").is_ok_and(|v| !v.is_empty())
+	}
+
+	/// Let a native fixture own observation handles before assignment or its
+	/// injected failure. A suspended child cannot publish its own identity.
+	#[cfg(feature = "test-support")]
+	fn observe_before_assignment(child: &Child, job: HANDLE) -> Result<()> {
+		let Some(dir) = std::env::var_os("RNX_TEST_BEFORE_JOB_ASSIGNMENT") else {
+			return Ok(());
+		};
+		let dir = std::path::PathBuf::from(dir);
+		std::fs::write(
+			dir.join("created.tmp"),
+			format!("{} {}", child.id(), job as usize),
+		)?;
+		std::fs::rename(dir.join("created.tmp"), dir.join("created"))?;
+		let deadline = std::time::Instant::now() + std::time::Duration::from_secs(15);
+		while !dir.join("assign").exists() {
+			if std::time::Instant::now() >= deadline {
+				return Err(std::io::Error::other(
+					"the assignment observer never released the child",
+				));
+			}
+			std::thread::sleep(std::time::Duration::from_millis(5));
+		}
+		Ok(())
 	}
 
 	#[cfg(not(feature = "test-support"))]

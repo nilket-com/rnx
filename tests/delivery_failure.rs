@@ -9,13 +9,25 @@
 //! is what runs it.
 #![cfg(feature = "test-support")]
 
+#[path = "harness/commands.rs"]
+mod commands;
 mod harness;
 
 use std::process::{Command, Stdio};
+#[cfg(unix)]
 use std::time::Duration;
 
 #[test]
+#[cfg(unix)]
 fn a_failure_after_cleanup_begins_still_reaches_the_script() {
+	// The holder is a descendant that survives group termination, which record
+	// 0025 decision 5 and gate 10 rule out inside rnx's Windows job — and
+	// substituting the child alone would not do: there a cancelled write, or
+	// one that finds its reader gone, returns before the branch the injection
+	// lives on is reached at all. Windows holds the writer still at that
+	// branch instead, through
+	// `delivery_failure_windows::a_failure_after_cleanup_begins_still_reaches_the_script_windows`.
+	//
 	// The delivery is left unfinished by an escaped descendant holding the
 	// read end, so the injection lands where it matters: at the moment the
 	// call observes its own stop flag and begins collecting.
@@ -79,7 +91,10 @@ fn an_unreadable_stream_is_reported_and_excuses_nothing() {
 	let path = dir.join("script.rn");
 	std::fs::write(
 		&path,
-		"pub fn main(_) {\n\tlet r = host::process(\"sh\", [\"-c\", \"echo hello\"], 20000)?;\n\tprintln!(\"unreadable={} truncated={} cut_short={} out={}\", r.unreadable, r.truncated, r.cut_short, r.stdout.len());\n\tOk(())\n}\n",
+		format!(
+			"pub fn main(_) {{ let r = host::process({}, 20000)?; println!(\"unreadable={{}} truncated={{}} cut_short={{}} out={{}}\", r.unreadable, r.truncated, r.cut_short, r.stdout.len()); Ok(()) }}",
+			commands::echo("hello")
+		),
 	)
 	.unwrap();
 	let child = Command::new(env!("CARGO_BIN_EXE_rnx"))
@@ -102,6 +117,7 @@ fn an_unreadable_stream_is_reported_and_excuses_nothing() {
 }
 
 /// How many threads a process has, from the kernel.
+#[cfg(unix)]
 fn threads(pid: u32) -> usize {
 	let status = std::fs::read_to_string(format!("/proc/{pid}/status")).unwrap_or_default();
 	status
@@ -112,6 +128,7 @@ fn threads(pid: u32) -> usize {
 }
 
 #[test]
+#[cfg(unix)] // Decision 5: reader_panic_windows holds and observes the actual stderr worker.
 fn a_reader_that_panics_does_not_strand_the_other() {
 	// The contract is that both readers are always collected. A `?` on the
 	// first join returns before the second is joined, which strands a thread

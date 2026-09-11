@@ -3,12 +3,19 @@
 //! The bound is on how long rnx keeps asking for more, so the cases here are
 //! about a call returning while something else still holds its pipes — and
 //! about telling a caller which of three things went wrong.
+#[path = "harness/commands.rs"]
+mod commands;
 mod harness;
 
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
 /// Run a script that reports every capture flag, bounded by the harness.
+///
+/// `child` is a program and its arguments, written the way
+/// `tests/harness/commands.rs` writes them. The Rune call is built around it
+/// rather than handed a shell line through `argv`, so a fixture that needs no
+/// shell no longer gets one.
 fn reported(child: &str, deadline_ms: u32, allowance_ms: Option<u32>) -> (String, Duration) {
 	reported_with(child, deadline_ms, allowance_ms, None)
 }
@@ -25,7 +32,7 @@ fn reported_with(
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(args) {{\n\tlet r = host::process(\"sh\", [\"-c\", args[0]], {deadline_ms})?;\n\tprintln!(\"timed_out={{}} cancelled={{}} truncated={{}} cut_short={{}} unreadable={{}} out={{}} err={{}}\", r.timed_out, r.cancelled, r.truncated, r.cut_short, r.unreadable, r.stdout.len(), r.stderr.len());\n\tOk(())\n}}\n"
+			"pub fn main(_) {{\n\tlet r = host::process({child}, {deadline_ms})?;\n\tprintln!(\"timed_out={{}} cancelled={{}} truncated={{}} cut_short={{}} unreadable={{}} out={{}} err={{}}\", r.timed_out, r.cancelled, r.truncated, r.cut_short, r.unreadable, r.stdout.len(), r.stderr.len());\n\tOk(())\n}}\n"
 		),
 	)
 	.unwrap();
@@ -33,7 +40,6 @@ fn reported_with(
 	command
 		.arg("run")
 		.arg(&path)
-		.arg(child)
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped());
@@ -61,18 +67,28 @@ fn reported_with(
 
 /// A descendant outside the process group that keeps the named pipes and
 /// lives well past any deadline here.
+#[cfg(unix)]
 fn holds(what: &str) -> String {
-	match what {
-		"stdout" => "setsid sleep 6 2>/dev/null & sleep 6".to_owned(),
-		"stderr" => "setsid sleep 6 >/dev/null & sleep 6".to_owned(),
-		"both" => "setsid sleep 6 & sleep 6".to_owned(),
-		"neither" => "setsid sleep 6 >/dev/null 2>&1 <&- & sleep 6".to_owned(),
+	let script = match what {
+		"stdout" => "setsid sleep 6 2>/dev/null & sleep 6",
+		"stderr" => "setsid sleep 6 >/dev/null & sleep 6",
+		"both" => "setsid sleep 6 & sleep 6",
+		"neither" => "setsid sleep 6 >/dev/null 2>&1 <&- & sleep 6",
 		other => panic!("no such case: {other}"),
-	}
+	};
+	commands::shell(script)
 }
 
 #[test]
+#[cfg(unix)]
 fn a_held_reply_pipe_no_longer_holds_the_call() {
+	// The holder here is a descendant that survives group termination, which
+	// record 0025 decision 5 and gate 10 rule out inside rnx's Windows job.
+	// Windows runs the same four rows with an in-job grandchild, through
+	// `capture_hold_windows::a_held_reply_pipe_no_longer_holds_the_call_windows`:
+	// the escaped lifetime is the unreachable premise, not the contract that a
+	// held pipe must not hold the call.
+	//
 	// The table in record 0023's context: before this cut, every row but the
 	// first returned after the descendant's whole life — about 3,100 ms
 	// against a 200 ms deadline.
@@ -93,7 +109,7 @@ fn a_child_that_ends_its_streams_spends_none_of_the_allowance() {
 	// three seconds take effect only under `test-support`; without it this
 	// still asserts a prompt return, which is the weaker half of the same
 	// claim.
-	let (line, took) = reported("echo hello", 30000, Some(3000));
+	let (line, took) = reported(&commands::echo("hello"), 30000, Some(3000));
 	assert!(line.contains("cut_short=false"), "{line}");
 	assert!(line.contains("out=6"), "{line}");
 	assert!(
@@ -103,11 +119,22 @@ fn a_child_that_ends_its_streams_spends_none_of_the_allowance() {
 }
 
 #[test]
+#[cfg(unix)]
 fn a_child_that_exits_while_a_pipe_is_held_returns_after_the_cleanup() {
+	// The escaped holder's lifetime is inapplicable on Windows (0025,
+	// decision 5 / Gate 10). capture_hold_windows::
+	// a_normal_exit_ends_the_in_job_pipe_holder_during_cleanup observes the
+	// normal child status and termination of the in-job holder there. A
+	// reader stopping before EOF is tested separately with controlled holds;
+	// job termination alone does not establish cut_short.
 	// Thirty second deadline, child gone in milliseconds, descendant holding
 	// standard output for six seconds: the call must come back after the
 	// allowance rather than after the deadline or the descendant.
-	let (line, took) = reported("setsid sleep 6 2>/dev/null & sleep 0.1", 30000, None);
+	let (line, took) = reported(
+		&commands::shell("setsid sleep 6 2>/dev/null & sleep 0.1"),
+		30000,
+		None,
+	);
 	assert!(line.contains("timed_out=false"), "{line}");
 	assert!(line.contains("cut_short=true"), "{line}");
 	assert!(
@@ -117,11 +144,20 @@ fn a_child_that_exits_while_a_pipe_is_held_returns_after_the_cleanup() {
 }
 
 #[test]
+#[cfg(unix)]
 fn the_three_shortfalls_are_independent() {
+	// The half of this that needs no holder is
+	// `the_size_cap_alone_does_not_cut_a_capture_short`, below, and it runs
+	// everywhere. What is left here needs a descendant that survives group
+	// termination, which record 0025 decision 5 and gate 10 rule out inside
+	// rnx's Windows job. Windows asks the same pair of flags after a normal
+	// child exit through
+	// `capture_bound_windows::a_stream_past_the_cap_is_also_cut_short_when_the_call_ends`.
+	//
 	// A stream that passes the cap and is then cut short reports both, which
 	// an exclusive ending would have got wrong.
 	let (line, _) = reported(
-		"setsid sh -c 'head -c 3000000 /dev/zero; sleep 6' & sleep 0.1",
+		&commands::shell("setsid sh -c 'head -c 3000000 /dev/zero; sleep 6' & sleep 0.1"),
 		30000,
 		None,
 	);
@@ -129,21 +165,23 @@ fn the_three_shortfalls_are_independent() {
 	assert!(line.contains("cut_short=true"), "{line}");
 	assert!(line.contains("unreadable=false"), "{line}");
 	assert!(line.contains("out=2097152"), "{line}");
+}
 
-	// And the cap alone, with nothing holding anything.
-	let (line, _) = reported("head -c 3000000 /dev/zero", 30000, None);
+#[test]
+fn the_size_cap_alone_does_not_cut_a_capture_short() {
+	// This portable half must run even where the escaped-holder fixture
+	// above cannot be constructed. No late reader and no pipe holder.
+	let (line, _) = reported(&commands::zeros(3_000_000), 30000, None);
 	assert!(line.contains("truncated=true"), "{line}");
 	assert!(line.contains("cut_short=false"), "{line}");
+	assert!(line.contains("unreadable=false"), "{line}");
+	assert!(line.contains("out=2097152"), "{line}");
 }
 
 #[test]
 fn what_was_captured_is_still_captured() {
 	// The allowance must not cost bytes that were there to be read.
-	let (line, _) = reported(
-		"head -c 1048576 /dev/zero; head -c 1048576 /dev/zero >&2",
-		30000,
-		None,
-	);
+	let (line, _) = reported(&commands::zeros_on_both(1_048_576), 30000, None);
 	assert!(line.contains("out=1048576"), "{line}");
 	assert!(line.contains("err=1048576"), "{line}");
 	assert!(line.contains("truncated=false"), "{line}");
@@ -152,11 +190,22 @@ fn what_was_captured_is_still_captured() {
 }
 
 #[test]
+#[cfg(unix)]
 fn a_descendant_that_never_stops_writing_does_not_hold_the_call() {
+	// A writer that survives the group's termination and goes on producing is
+	// the stronger question, and record 0025 decision 5 / gate 10 rule it out
+	// inside rnx's Windows job. Windows asks the weaker one it can, with an
+	// in-job writer, through
+	// `capture_hold_windows::a_descendant_that_never_stops_writing_does_not_hold_the_call_windows`
+	// — where the flag comes out the other way, because a writer the job ends
+	// leaves a stream that does reach its end.
+	//
 	// The case the group kill cannot stop, and the one no reasoning about a
 	// pipeful covers: it is bounded by reading the clock before every read.
 	let (line, took) = reported(
-		"setsid sh -c 'while :; do echo xxxxxxxxxxxxxxxx; done' 2>/dev/null & sleep 6",
+		&commands::shell(
+			"setsid sh -c 'while :; do echo xxxxxxxxxxxxxxxx; done' 2>/dev/null & sleep 6",
+		),
 		200,
 		None,
 	);
@@ -168,6 +217,7 @@ fn a_descendant_that_never_stops_writing_does_not_hold_the_call() {
 }
 
 #[test]
+#[cfg(unix)] // Decision 5: capture_bound_windows asks this with a reader held after its prefix.
 fn a_completeness_check_can_see_a_prefix_that_truncation_cannot() {
 	// The state the ports could not detect before this cut: a child exits 0,
 	// a descendant keeps the pipe with bytes still in it, and the call
@@ -175,7 +225,7 @@ fn a_completeness_check_can_see_a_prefix_that_truncation_cannot() {
 	// a check written against it alone reports success from partial output,
 	// which is what the ports did and what decision 3 corrects.
 	let (line, _) = reported(
-		"printf 'partial'; setsid sleep 6 2>/dev/null & sleep 0.1",
+		&commands::shell("printf 'partial'; setsid sleep 6 2>/dev/null & sleep 0.1"),
 		30000,
 		None,
 	);
@@ -190,7 +240,14 @@ fn a_completeness_check_can_see_a_prefix_that_truncation_cannot() {
 /// ordinary hundred milliseconds the cleanup is over before a test could aim
 /// at it, and the case would pass for the wrong reason. So it runs under
 /// `test-support`, and says so rather than being quietly weaker by default.
-#[cfg(feature = "test-support")]
+///
+/// Unix-only for its mechanism, not for its contract: the holder is an escaped
+/// descendant and the interrupt is a `SIGINT` aimed at one process. Windows
+/// has neither — decision 5 and gate 10 for the first, and an event that
+/// reaches every process on a console for the second — so it asks the same
+/// question in a console of its own, through
+/// `console_interrupt::an_interrupt_during_the_cleanup_is_still_reported`.
+#[cfg(all(unix, feature = "test-support"))]
 #[test]
 fn an_interrupt_during_the_cleanup_is_still_an_interrupt() {
 	// Distinct from cancelling while the child is still being waited for.
@@ -264,7 +321,7 @@ fn an_interrupt_during_the_cleanup_is_still_an_interrupt() {
 #[cfg(feature = "test-support")]
 #[test]
 fn the_readers_are_drained_before_any_of_them_is_reached() {
-	let (line, took) = reported_with("echo hello", 30000, Some(3000), Some(300));
+	let (line, took) = reported_with(&commands::echo("hello"), 30000, Some(3000), Some(300));
 	assert!(line.contains("out=6"), "output was lost: {line}");
 	assert!(line.contains("cut_short=false"), "{line}");
 	assert!(line.contains("truncated=false"), "{line}");

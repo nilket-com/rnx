@@ -4,6 +4,8 @@
 //! Every case here runs under a harness that bounds itself, because the
 //! failures being tested are hangs: a regression must fail the suite rather
 //! than stop it.
+#[path = "harness/commands.rs"]
+mod commands;
 mod harness;
 
 use std::process::{Command, Stdio};
@@ -11,6 +13,25 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 
 static NEXT: AtomicUsize = AtomicUsize::new(0);
+
+/// A child that stays for a distinctive ninety-seven seconds: long enough that
+/// a bounded reap has to report it did not end, and distinctive enough that a
+/// check for a leaked one cannot match another test's child.
+///
+/// **Spawned directly, with no shell.** `sh -c "sleep 97"` forks rather than
+/// execs here — measured — so killing the shell leaves the sleeper behind, and
+/// a control built on one would have been asking whether a shell can be
+/// collected while an orphan accumulated on every run.
+#[cfg(unix)]
+const SLEEPER: (&str, &[&str]) = ("sleep", &["97"]);
+
+/// Windows has no `sleep`, and `timeout` refuses the redirected standard input
+/// this child is given. `ping` waits a second between echoes, so ninety-eight
+/// of them to the loopback address is the same ninety-seven second stay, and it
+/// needs no shell either — the substitution record 0025 already made for the
+/// self-check's deadline probe.
+#[cfg(windows)]
+const SLEEPER: (&str, &[&str]) = ("ping", &["-n", "98", "127.0.0.1"]);
 
 struct Ran {
 	stdout: String,
@@ -22,6 +43,7 @@ struct Ran {
 /// deadline here belongs to the test, not to the thing being tested, which is
 /// what lets "it hung" be a failure.
 fn run_bounded(source: &str, limit: Duration) -> Ran {
+	let source = commands::expand(source);
 	let dir = std::env::temp_dir().join(format!(
 		"rnx-child-input-{}-{}",
 		std::process::id(),
@@ -85,7 +107,7 @@ fn all_three_streams_under_pressure_at_once() {
 	// bytes it read, which is how delivery is confirmed rather than assumed.
 	let ran = run_bounded(
 		&format!(
-			"pub fn main(_) {{\n\t{BUILD_INPUT}\tlet child = \"head -c 200000 /dev/zero; head -c 200000 /dev/zero >&2; wc -c\";\n\tlet r = host::process_bytes_input(\"sh\", [\"-c\", child], s.as_bytes(), 30000)?;\n\tprintln!(\"code={{:?}} out={{}} err={{}} truncated={{}} read={{}}\", r.code, r.stdout.len(), r.stderr.len(), r.truncated, String::from_utf8(host::process_bytes(\"true\", [], 1000)?.stdout)?);\n\tprintln!(\"tail={{:?}}\", String::from_utf8(r.stdout[200000..r.stdout.len()])?);\n\tOk(())\n}}\n"
+			"pub fn main(_) {{\n\t{BUILD_INPUT}\tlet r = host::process_bytes_input(@PRESSURE@, s.as_bytes(), 30000)?;\n\tprintln!(\"code={{:?}} out={{}} err={{}} truncated={{}} read={{}}\", r.code, r.stdout.len(), r.stderr.len(), r.truncated, String::from_utf8(host::process_bytes(@SUCCEED@, 1000)?.stdout)?);\n\tprintln!(\"tail={{:?}}\", String::from_utf8(r.stdout[200000..r.stdout.len()])?);\n\tOk(())\n}}\n"
 		),
 		Duration::from_secs(20),
 	);
@@ -101,6 +123,7 @@ fn all_three_streams_under_pressure_at_once() {
 
 /// How many threads a process has, from the kernel rather than from anything
 /// the process says about itself.
+#[cfg(unix)]
 fn threads(pid: u32) -> usize {
 	let status = std::fs::read_to_string(format!("/proc/{pid}/status")).unwrap_or_default();
 	status
@@ -113,6 +136,7 @@ fn threads(pid: u32) -> usize {
 /// Start a run whose child holds the read end through an escaped descendant
 /// and stays until released, with the deadline the caller asks for. It
 /// announces the outcome on standard output.
+#[cfg(unix)]
 fn start_blocked_run(dir: &std::path::Path, deadline_ms: u32) -> Command {
 	let path = dir.join("script.rn");
 	std::fs::write(
@@ -135,7 +159,14 @@ fn start_blocked_run(dir: &std::path::Path, deadline_ms: u32) -> Command {
 }
 
 #[test]
+#[cfg(unix)]
 fn a_deadline_ends_the_call_while_delivery_is_blocked() {
+	// This fixture needs a descendant that survives group termination.
+	// Record 0025 decision 5 / Gate 10 establish why it cannot exist inside
+	// rnx's Windows job. The Windows contract is exercised under test-support
+	// by delivery_deadline_windows, whose holder is an in-job child that
+	// simply never reads: the escaped lifetime is the unreachable premise,
+	// not the deadline the delivery is bounded by.
 	// The descendant holds the read end through a preserved descriptor and is
 	// released only by the teardown, so the deadline has to be what ends the
 	// call: there is a mebibyte still to write and nobody reading it.
@@ -167,7 +198,13 @@ fn a_deadline_ends_the_call_while_delivery_is_blocked() {
 }
 
 #[test]
+#[cfg(unix)]
 fn a_cancellation_ends_the_call_while_delivery_is_blocked() {
+	// This fixture needs a descendant that survives group termination.
+	// Record 0025 decision 5 / Gate 10 establish why it cannot exist inside
+	// rnx's Windows job. The Windows contract is exercised under test-support
+	// by console_interrupt::cancellation_collects_a_writer_blocked_on_child_input,
+	// with the real cancellation mechanism gated by pipe_cancel_windows.
 	// The same child with a long deadline, interrupted from outside: this
 	// exercises the flag the delivery reads rather than a time it computes.
 	let dir = harness::scratch("child-cancel");
@@ -204,6 +241,7 @@ fn a_cancellation_ends_the_call_while_delivery_is_blocked() {
 /// Start a run whose child hands the read end to an escaped descendant and
 /// then leaves at once, so the call finishes with a delivery still unfinished.
 /// It announces on standard output when the call returns.
+#[cfg(unix)]
 fn start_held_run(dir: &std::path::Path) -> Command {
 	let path = dir.join("script.rn");
 	std::fs::write(
@@ -226,7 +264,13 @@ fn start_held_run(dir: &std::path::Path) -> Command {
 }
 
 #[test]
+#[cfg(unix)]
 fn the_delivery_thread_is_gone_before_the_call_returns() {
+	// Gate 10 establishes why this escaped-holder lifetime cannot be built
+	// inside rnx's Windows job. Under test-support, delivery_exit_windows::
+	// a_normal_child_exit_collects_the_unfinished_writer asks the normal-exit
+	// collection contract with retained thread/process handles and a join
+	// control. Record 0025 decision 5 maps the two fixtures explicitly.
 	// The finding this gate exists for: an unfinished delivery used to be
 	// detached, so anything it had to say — a failure this function promises
 	// to report — was discarded, and it went on holding its copy of the input.
@@ -317,7 +361,7 @@ fn a_child_that_stops_reading_is_reported_as_itself() {
 	// back is what it said and the status it exited with.
 	let ran = run_bounded(
 		&format!(
-			"pub fn main(_) {{\n\t{BUILD_INPUT}\tlet r = host::process_bytes_input(\"head\", [\"-1\"], s.as_bytes(), 20000)?;\n\tprintln!(\"code={{:?}} out={{:?}}\", r.code, String::from_utf8(r.stdout)?);\n\tOk(())\n}}\n"
+			"pub fn main(_) {{\n\t{BUILD_INPUT}\tlet r = host::process_bytes_input(@FIRST_LINE@, s.as_bytes(), 20000)?;\n\tprintln!(\"code={{:?}} out={{:?}}\", r.code, String::from_utf8(r.stdout)?);\n\tOk(())\n}}\n"
 		),
 		Duration::from_secs(20),
 	);
@@ -338,7 +382,7 @@ fn a_child_that_stops_reading_is_reported_as_itself() {
 #[test]
 fn nothing_to_say_and_nothing_to_hear_are_ordinary() {
 	let ran = run_bounded(
-		"pub fn main(_) {\n\tlet a = host::process_bytes_input(\"cat\", [], b\"\", 20000)?;\n\tlet b = host::process_bytes_input(\"true\", [], b\"ignored\", 20000)?;\n\tlet c = host::process_bytes_input(\"cat\", [], b\"echoed\", 20000)?;\n\tprintln!(\"{:?} {:?} {:?}\", a.code, b.code, String::from_utf8(c.stdout)?);\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet a = host::process_bytes_input(@COPY_STDIN@, b\"\", 20000)?;\n\tlet b = host::process_bytes_input(@SUCCEED@, b\"ignored\", 20000)?;\n\tlet c = host::process_bytes_input(@COPY_STDIN@, b\"echoed\", 20000)?;\n\tprintln!(\"{:?} {:?} {:?}\", a.code, b.code, String::from_utf8(c.stdout)?);\n\tOk(())\n}\n",
 		Duration::from_secs(10),
 	);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
@@ -352,7 +396,7 @@ fn the_guarantees_of_the_older_forms_hold_for_this_one() {
 	// `host.rs` sets, which is two mebibytes and not the eight an earlier
 	// draft of record 0022 claimed.
 	let ran = run_bounded(
-		"pub fn main(_) {\n\tlet slow = host::process_bytes_input(\"sh\", [\"-c\", \"sleep 5\"], b\"x\", 200)?;\n\tprintln!(\"timed_out={} code={:?}\", slow.timed_out, slow.code);\n\tlet big = host::process_bytes_input(\"head\", [\"-c\", \"3000000\", \"/dev/zero\"], b\"x\", 20000)?;\n\tprintln!(\"truncated={} out={}\", big.truncated, big.stdout.len());\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet slow = host::process_bytes_input(@SLEEP_5@, b\"x\", 200)?;\n\tprintln!(\"timed_out={} code={:?}\", slow.timed_out, slow.code);\n\tlet big = host::process_bytes_input(@THREE_MILLION_ZEROS@, b\"x\", 20000)?;\n\tprintln!(\"truncated={} out={}\", big.truncated, big.stdout.len());\n\tOk(())\n}\n",
 		Duration::from_secs(10),
 	);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
@@ -370,7 +414,7 @@ fn the_older_forms_are_untouched() {
 	// Three arguments still, and the same shape of answer, so the other three
 	// ports cannot notice record 0022 happened.
 	let ran = run_bounded(
-		"pub fn main(_) {\n\tlet a = host::process(\"echo\", [\"text\"], 20000)?;\n\tlet b = host::process_bytes(\"echo\", [\"bytes\"], 20000)?;\n\tprintln!(\"{:?} {:?} {:?}\", a.stdout, a.code, String::from_utf8(b.stdout)?);\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet a = host::process(@ECHO_TEXT@, 20000)?;\n\tlet b = host::process_bytes(@ECHO_BYTES@, 20000)?;\n\tprintln!(\"{:?} {:?} {:?}\", a.stdout, a.code, String::from_utf8(b.stdout)?);\n\tOk(())\n}\n",
 		Duration::from_secs(10),
 	);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
@@ -382,15 +426,17 @@ fn the_harness_reports_a_stream_it_could_not_read() {
 	// A stuck stream must not read as empty output. A gate asserting that
 	// standard error was empty would otherwise pass for the wrong reason —
 	// the pipe unread rather than the stream silent.
-	let mut child = Command::new("sh")
-		.arg("-c")
-		.arg("sleep 1")
+	let (program, args) = SLEEPER;
+	let mut child = Command::new(program)
+		.args(args)
+		.stdin(Stdio::null())
 		.stdout(Stdio::piped())
+		.stderr(Stdio::null())
 		.spawn()
-		.unwrap();
+		.unwrap_or_else(|why| panic!("`{program}` could not be started: {why}"));
 	let outcome = harness::read_within(child.stdout.take().unwrap(), Duration::from_millis(200));
-	let _ = child.kill();
-	let _ = child.wait();
+	let survived = harness::killed_within(&mut child, Duration::from_secs(5));
+	assert!(survived.is_none(), "{}", survived.unwrap_or_default());
 	assert!(
 		outcome.is_err(),
 		"a stream still held open was read as {outcome:?}"
@@ -403,8 +449,64 @@ fn the_harness_remembers_a_run_that_outstayed_its_bound() {
 	// The kill succeeding must not erase the reason it was needed: reporting
 	// the second reap's result alone would turn a hang into a clean exit.
 	// This test panicking is the pass.
+	// Killing rnx cannot clean up its Unix process group, so use a brief
+	// child here. The long SLEEPER used by the direct-child tests would leave
+	// an orphan for ninety-seven seconds when this harness kills the runner.
+	#[cfg(unix)]
+	let (program, args) = ("sleep", &["1"][..]);
+	#[cfg(windows)]
+	let (program, args) = ("ping", &["-n", "2", "127.0.0.1"][..]);
 	run_bounded(
-		"pub fn main(_) {\n\thost::process(\"sleep\", [\"1\"], 20000)?;\n\tOk(())\n}\n",
+		&format!(
+			"pub fn main(_) {{ host::process({program:?}, {}, 20000)?; Ok(()) }}",
+			serde_json::to_string(args).unwrap()
+		),
 		Duration::from_millis(200),
+	);
+}
+
+#[test]
+fn the_harness_never_reports_a_child_that_would_not_end_as_ended() {
+	// The defect in the shape it took in the Windows breakaway probe: a
+	// bounded reap times out, the kill's result is discarded, and the caller
+	// is told the child ran — so a probe that asked nothing supplied a
+	// passing control. The pair has to answer both halves separately: the
+	// reap says it did not end, and the kill says whether anything survived.
+	//
+	// Portable, so the arm that failed there is gated here. Only the child
+	// differs on Windows, and `SLEEPER` is where that difference lives — along
+	// with why neither platform's child is reached through a shell.
+	//
+	// A child that cannot be started is said so plainly. The first Windows run
+	// of this test failed on a missing `sleep`, and `unwrap` reported that as
+	// an `Os` error beside a line number rather than as the name of a program
+	// this machine does not have.
+	let (program, args) = SLEEPER;
+	let mut child = Command::new(program)
+		.args(args)
+		.stdin(Stdio::null())
+		.stdout(Stdio::null())
+		.stderr(Stdio::null())
+		.spawn()
+		.unwrap_or_else(|why| panic!("`{program}` could not be started: {why}"));
+
+	// Both collected before either is asserted. An assertion between them
+	// panics out of the test on exactly the runs where the reap misbehaves —
+	// which is when the child most needs collecting — so the failing run would
+	// leak the very process this is about.
+	let began = Instant::now();
+	let reaped = harness::reaped_within(&mut child, Duration::from_millis(200));
+	let survived = harness::killed_within(&mut child, Duration::from_secs(5));
+	let took = began.elapsed();
+
+	assert!(
+		reaped.is_none(),
+		"`{program} {}` was reaped as {reaped:?}",
+		args.join(" ")
+	);
+	assert!(survived.is_none(), "{}", survived.unwrap_or_default());
+	assert!(
+		took < Duration::from_secs(5),
+		"the bounded pair took {took:?}, so something waited without a bound"
 	);
 }
