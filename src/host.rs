@@ -973,10 +973,23 @@ fn deliver(
 /// reads the environment.
 #[cfg(feature = "test-support")]
 fn injected_delivery_failure() -> Option<String> {
-	std::env::var("RNX_TEST_DELIVERY_FAILS")
+	let reason = std::env::var("RNX_TEST_DELIVERY_FAILS")
 		.ok()
 		.filter(|value| !value.is_empty())
-		.map(|reason| format!("the input could not be delivered: {reason}"))
+		.map(|reason| format!("the input could not be delivered: {reason}"))?;
+	// Said, so a gate can wait for this rather than guess when it happened.
+	//
+	// The gate's difficulty is that this branch is reached only while the
+	// writer is still going and the call has begun to stop it, and the thing
+	// that ends the writer early — the reader's descriptor closing — is under
+	// the gate's own hand. Releasing it before this fires leaves the writer
+	// finishing through a broken pipe instead, which is not a failure and not
+	// what the gate is asking about. A file here turns that ordering from a
+	// race into a handshake.
+	if let Ok(path) = std::env::var("RNX_TEST_SIGNAL_DELIVERY_FAILURE_TO") {
+		let _ = std::fs::write(path, &reason);
+	}
+	Some(reason)
 }
 
 #[cfg(not(feature = "test-support"))]

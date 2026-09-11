@@ -44,6 +44,7 @@ fn a_failure_after_cleanup_begins_still_reaches_the_script() {
 		.arg(&path)
 		.arg(harness::holds_stdin_until_released(&dir))
 		.env("RNX_TEST_DELIVERY_FAILS", "an injected write failure")
+		.env("RNX_TEST_SIGNAL_DELIVERY_FAILURE_TO", dir.join("injected"))
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())
@@ -54,12 +55,24 @@ fn a_failure_after_cleanup_begins_still_reaches_the_script() {
 	// while the delivery is genuinely unfinished.
 	let held = harness::appeared(&dir.join("ready"), Duration::from_secs(5));
 
+	// And wait for the injection itself before letting go of the descriptor.
+	// Releasing first is a race the test loses silently: the writer finishes
+	// through a broken pipe, which is the child's prerogative rather than a
+	// failure, and the call then exits 0 with nothing to report. Bounded, and
+	// its absence is asserted below rather than being allowed to pass.
+	let injected = harness::appeared(&dir.join("injected"), Duration::from_secs(10));
+
 	// The teardown bounds everything from here: releasing the descendant and
 	// waiting for it to acknowledge, reaping the runner, and reading what it
 	// said. Nothing is judged until it has run.
 	let ended = harness::teardown(child, &dir);
 	assert!(ended.trouble.is_empty(), "{:?}", ended.trouble);
 	assert!(held, "the descendant never took the descriptor");
+	assert!(
+		injected,
+		"the delivery never reached the injected failure, so nothing was asked: {}",
+		ended.err
+	);
 	assert_eq!(
 		ended.code,
 		Some(1),
