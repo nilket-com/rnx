@@ -1,5 +1,7 @@
 //! What `rnx eval` does with what an expression returns, and whether `run`
 //! agrees with it.
+#[path = "harness/commands.rs"]
+mod commands;
 use std::process::Command;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -23,7 +25,7 @@ fn evaluated(source: &str) -> Ran {
 	finish(
 		Command::new(env!("CARGO_BIN_EXE_rnx"))
 			.arg("eval")
-			.arg(source)
+			.arg(commands::expand(source))
 			.output()
 			.unwrap(),
 	)
@@ -31,6 +33,7 @@ fn evaluated(source: &str) -> Ran {
 
 /// The same expression as a script's `main`, so the two can be compared.
 fn ran(source: &str) -> Ran {
+	let source = commands::expand(source);
 	let dir = std::env::temp_dir().join(format!(
 		"rnx-eval-{}-{}",
 		std::process::id(),
@@ -113,7 +116,7 @@ fn a_value_that_is_not_a_result_is_unchanged() {
 fn a_child_that_failed_is_still_a_success() {
 	// The call worked and the child did not. Only the shape of the returned
 	// value decides, so nothing inside it turns this into a failure.
-	let ran = evaluated("host::process(\"false\", [], 5000).map(|r| r.code)");
+	let ran = evaluated("host::process(@FAIL@, 5000).map(|r| r.code)");
 	assert_eq!(ran.code, 0, "{}", ran.stderr);
 	assert_eq!(ran.stdout, "1\n");
 	assert_eq!(ran.stderr, "");
@@ -135,7 +138,7 @@ fn the_two_entry_points_agree_on_everything_they_show() {
 		"1 + 1",
 		"\"hi\"",
 		"()",
-		"host::process(\"false\", [], 5000).map(|r| r.code)",
+		"host::process(@FAIL@, 5000).map(|r| r.code)",
 		// Differed in spacing under two renderers.
 		"[1, 2, 3]",
 		"#{a: 1}",
@@ -248,6 +251,28 @@ fn a_returned_value_is_not_elided_at_either_shell_entry_point() {
 	}
 }
 
+/// A depth far past the renderer's 256 that the platform can still build and
+/// drop for itself. What fails past it is Rune's own recursion, not a contract
+/// of rnx's, so the number is a property of the machine and belongs here rather
+/// than inline.
+///
+/// Record 0019 measured Linux's ceiling between 49,152 and 65,536, and 32,768
+/// sits inside it.
+#[cfg(unix)]
+const FAR_PAST_THE_BOUND: usize = 32_768;
+
+/// Windows' ceiling is about an order of magnitude lower — a 1 MB main thread
+/// against Linux's 8 MB is the untested but consistent candidate. Measured
+/// against the debug binary these tests run: this shape renders and drops at
+/// 4,096 and overflows by 4,608, so 2,048 is eight times the bound under test
+/// and less than half the depth that fails.
+///
+/// The entry point matters and the ceiling is `run`'s. `rnx eval` survives
+/// 32,768 on the same binary, because a value returned from a script's `main`
+/// is dropped deeper than one evaluated.
+#[cfg(windows)]
+const FAR_PAST_THE_BOUND: usize = 2_048;
+
 /// A value nested `containers` deep: `[]` is one, and each wrap adds another.
 fn nested(containers: usize) -> String {
 	format!("let v = []; for i in 0..{} {{ v = [v] }} v", containers - 1)
@@ -285,10 +310,12 @@ fn the_depth_bound_is_a_boundary() {
 #[test]
 fn a_deep_value_is_refused_with_a_status_and_never_a_signal() {
 	// Cleanup is part of the bound. A value far past it is refused, and the
-	// process still exits normally while dropping it. 32,768 is inside what
-	// Rune can itself build and drop — it aborts by 65,536, which no check on
-	// this side can prevent, and which the record raises upstream.
-	let r = ran(&nested(32_768));
+	// process still exits normally while dropping it. The depth is
+	// `FAR_PAST_THE_BOUND`, because how deep a value can be built and dropped
+	// at all is the platform's answer rather than rnx's — and past it the
+	// abort is one no check on this side can prevent, which the record raises
+	// upstream.
+	let r = ran(&nested(FAR_PAST_THE_BOUND));
 	assert_eq!(r.code, 1, "expected a refusal, got {}", r.code);
 	assert_eq!(r.stdout, "");
 	assert!(r.stderr.contains("nested deeper than 256"), "{}", r.stderr);

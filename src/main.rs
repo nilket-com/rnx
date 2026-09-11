@@ -3,6 +3,8 @@ use rune::{Context, Source, Sources, Vm};
 use std::sync::Arc;
 mod complete;
 mod declared;
+#[cfg(all(windows, feature = "test-support"))]
+mod delivery_control;
 mod format;
 mod host;
 mod inspect;
@@ -10,6 +12,11 @@ mod json;
 mod memory;
 mod method;
 mod platform;
+// Record 0025's gate 5 mechanism control. Only where the mechanism it
+// gates exists, and only under `test-support`: an ordinary build has no
+// such module and no such command.
+#[cfg(all(windows, feature = "test-support"))]
+mod pipe_control;
 mod repl;
 mod runner;
 mod session;
@@ -73,6 +80,13 @@ fn main() -> Result<()> {
 	let mut host_functions = host::install(&mut context)?;
 	host_functions.extend(text::install(&mut context)?);
 	let args: Vec<String> = std::env::args().skip(1).collect();
+	// Answered before anything else, because it is not a Rune command at
+	// all: it drives a pipe of its own and reports what a stop did to a
+	// write blocked in the kernel.
+	#[cfg(all(windows, feature = "test-support"))]
+	if args.first().is_some_and(|s| s == pipe_control::COMMAND) {
+		return pipe_control::run(args.get(1).map(String::as_str));
+	}
 	if args.first().is_some_and(|s| s == "eval") {
 		let source = args.get(1).ok_or("eval needs source")?.clone();
 		host::running_a_script();

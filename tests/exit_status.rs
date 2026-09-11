@@ -145,8 +145,8 @@ fn a_script_that_never_asks_keeps_the_status_it_always_had() {
 	assert!(ran.stderr.contains("runtime error at"), "{}", ran.stderr);
 }
 
-/// Run a script with standard output pointed at `sink`.
-fn run_writing_to(source: &str, sink: &str) -> Ran {
+/// Run a script with standard output pointing at a stream that refuses writes.
+fn run_writing_to(source: &str) -> Ran {
 	let dir = std::env::temp_dir().join(format!(
 		"rnx-exit-{}-{}",
 		std::process::id(),
@@ -155,10 +155,25 @@ fn run_writing_to(source: &str, sink: &str) -> Ran {
 	std::fs::create_dir_all(&dir).unwrap();
 	let path = dir.join("script.rn");
 	std::fs::write(&path, source).unwrap();
+	#[cfg(unix)]
 	let out = std::fs::OpenOptions::new()
 		.write(true)
-		.open(sink)
-		.unwrap_or_else(|e| panic!("this control needs a stream that refuses writes: {sink}: {e}"));
+		.open("/dev/full")
+		.expect("this control needs /dev/full to refuse writes");
+	#[cfg(windows)]
+	let out = {
+		// An open, read-only handle is valid standard output but cannot accept
+		// a write. Establish the refusal before handing the handle to rnx.
+		use std::io::Write;
+		let sink = dir.join("read-only-sink");
+		std::fs::write(&sink, b"").unwrap();
+		let mut file = std::fs::File::open(&sink).unwrap();
+		assert!(
+			file.write_all(b"control").is_err(),
+			"the sink accepted a write"
+		);
+		file
+	};
 	let output = Command::new(env!("CARGO_BIN_EXE_rnx"))
 		.arg("run")
 		.arg(&path)
@@ -214,12 +229,11 @@ fn an_invalid_status_from_eval_also_fails() {
 
 #[test]
 fn output_that_could_not_be_written_never_reports_success() {
-	// `/dev/full` accepts an open and refuses every write, so the report is
-	// lost at the flush. A status of 0 there would say the script did what it
-	// said, and it did not.
+	// `/dev/full` on Unix, or a read-only handle on Windows, refuses every
+	// write, so the report is lost at the flush. A status of 0 there would
+	// say the script did what it said, and it did not.
 	let ran = run_writing_to(
 		"pub fn main(args) {\n\tprint!(\"report\");\n\thost::exit(0)?;\n\tOk(())\n}\n",
-		"/dev/full",
 	);
 	assert_ne!(ran.code, 0, "output was lost and the status said success");
 	assert!(
@@ -235,7 +249,6 @@ fn a_status_that_was_already_failing_survives_a_failing_stream() {
 	// status it chose is kept and the lost output is named beside it.
 	let ran = run_writing_to(
 		"pub fn main(args) {\n\tprint!(\"report\");\n\thost::exit(2)?;\n\tOk(())\n}\n",
-		"/dev/full",
 	);
 	assert_eq!(ran.code, 2, "{}", ran.stderr);
 	assert!(

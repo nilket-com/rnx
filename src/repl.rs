@@ -99,18 +99,18 @@ fn abandoned(input: &str) -> bool {
 	input.ends_with("\n\n") && completeness(input) == Completeness::Incomplete
 }
 
-/// Where history lives: `RNX_HISTORY`, else `$XDG_STATE_HOME/rnx/history`,
-/// else `~/.local/state/rnx/history`.
+/// Where history lives: `RNX_HISTORY`, else `rnx/history` under the
+/// platform's per-user state directory — `$XDG_STATE_HOME` or
+/// `~/.local/state` on Unix, `%LOCALAPPDATA%` on Windows.
+///
+/// `None` still means no history file, which a service context with none of
+/// those set can still produce. Record 0025 decision 7 asks the platform for
+/// the directory rather than asking every platform for `HOME`.
 pub fn history_path() -> Option<PathBuf> {
 	if let Some(path) = std::env::var_os("RNX_HISTORY") {
 		return Some(PathBuf::from(path));
 	}
-	let base = std::env::var_os("XDG_STATE_HOME")
-		.map(PathBuf::from)
-		.or_else(|| {
-			std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".local").join("state"))
-		})?;
-	Some(base.join("rnx").join("history"))
+	Some(crate::platform::state_dir()?.join("rnx").join("history"))
 }
 
 fn snapshot(session: &Session, host: &[HostFunction]) -> Names {

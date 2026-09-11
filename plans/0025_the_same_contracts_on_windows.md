@@ -1,17 +1,22 @@
 # rnx 0025: the same contracts on Windows
 
-Status: proposed 2026-09-09. The twenty-fifth record of rnx. Record 0001's
+Status: implemented on Windows, review pending 2026-09-10. The twenty-fifth record of rnx. Record 0001's
 release gate wants a child cancelled, deadlined and cleaned up on Linux,
 macOS and Windows. On Windows the code does not compile, let alone run. This
 record decides how each contract records 0020 through 0023 established is met
 there, and says which of them Windows cannot be asked the same question.
 
+The original design and pre-port measurements below are retained as history.
+Native implementation and acceptance results are recorded in
+`0025_the_same_contracts_on_windows_evidence.md`; its closeout section
+supersedes the earlier lists of unanswered Windows gates.
+
 The seam is written and compiles; three rounds of review of it are folded
 into decisions 2, 3, 4 and 6 below, with what each defect would have cost.
 Four of the eight findings were on one mechanism — how a call reaches a
 worker inside an operation — and decision 3 is written as that sequence,
-because the wrong answers are the useful part. No Windows behaviour is
-claimed.
+because the wrong answers are the useful part. Those design-review paragraphs
+predate the native Windows evidence.
 
 ## Context
 
@@ -457,10 +462,16 @@ Every gate below runs on the Dell. Nothing here is claimed until it does.
    which is a Unix way to ask the question, and gate 8 is where Windows is
    asked it instead.
 
-2. **The ladder, on the machine.** `cargo test --locked` and
-   `cargo test --locked --features test-support` pass, with the fixtures
-   adapted: a shell that exists there, a source of thread counts that is not
-   `/proc`, and a way to make a child hold a pipe.
+2. **The ladder, on the machine.** Run both default and `test-support`
+   suites, with native fixtures. The measured Cargo launch path puts its
+   test executables in a job that forbids Gate 10's outside breakaway
+   control. On that machine, the acceptance commands are
+   `./scripts/test-windows.ps1` and
+   `./scripts/test-windows.ps1 -TestSupport`: build with `cargo test --locked
+   --no-run --message-format=json`, then directly execute **every** reported
+   test binary. No test is skipped, and any failing binary fails acceptance.
+   A direct launch whose enclosing job also forbids the outside control
+   still fails; an inner refusal alone never closes Gate 10.
 3. **A deadline ends a child, and takes its descendants.** A child that
    outlives its deadline reports `timed_out`, and a descendant it spawned is
    gone afterwards — checked by asking Windows, not by inference.
@@ -468,6 +479,11 @@ Every gate below runs on the Dell. Nothing here is claimed until it does.
    action spawns a descendant still has that descendant inside the job.
    This is the race decision 2 exists to prevent, and it is what a
    spawn-then-assign implementation fails.
+   `job_assignment_windows::assignment_precedes_the_first_descendant`
+   observes the child before assignment, checks its threads' prior suspend
+   counts, and verifies the immediate descendant's membership in the exact
+   rnx job using a duplicated job handle. Removing `CREATE_SUSPENDED` fails
+   the gate with zero prior suspend counts.
 5. **Cancellation reaches a blocked write.** A child that never reads its
    standard input, fed more than a pipe holds, is cancelled: the call returns
    `cancelled`, the writer is collected, and no thread is left behind. A
@@ -484,26 +500,28 @@ Every gate below runs on the Dell. Nothing here is claimed until it does.
    record 0023's unit gates require.
 8. **`host::stdin` refuses a console and accepts a pipe.** Both, on Windows,
    with the same message.
+   `tests/stdin.rs` runs the portable stream cases on Windows and uses a
+   headless ConPTY console for the refusal, with a bounded wait.
 9. **Nothing printed can move a cursor.** Record 0019's five surfaces, on a
    Windows console, which processes escape sequences when virtual terminal
    processing is enabled and must not be given any to process.
 10. **The unreachable case is evidenced, not skipped.** A child that attempts
     `CREATE_BREAKAWAY_FROM_JOB` fails, and the ladder records that failure as
     the reason the escaped-descendant gates do not apply.
-11. **Installation.** `cargo install --locked` produces a working binary,
+11. **Installation.** `cargo install --locked --path .` produces a working binary,
     which is record 0001's gate 6 for this third of it.
-12. **Nothing regresses — met at `0ec0606`, on Linux.** The ladder passes
-    **235 tests and 240 with `test-support`**, zero failures; `cargo clippy`
-    is at its eleven pre-existing warnings and `cargo fmt --check` is clean;
-    and `cargo check --locked --all-targets`, with and without
-    `test-support`, reports no errors and no warnings for
-    `x86_64-pc-windows-msvc` and both macOS targets.
+12. **Nothing regresses — Linux handoff at `96e3b88`.** Linux reports
+    **238 tests and 243 with `test-support`**, zero failures, and clean
+    formatting. Its Windows cross-check succeeds with one unused-import
+    warning, and clippy adds a shared-fixture warning to the existing
+    baseline. This closeout gates the Unix-only import and names the fixture
+    type, removing those additions. Fresh native Linux execution belongs to
+    the review of the amended tree; Windows cross-checking is not execution.
 
-    The baseline the Windows evidence expected was 226 and 231. The
-    difference is that port's own additions — one unit test and
-    `tests/history.rs`, which is not `cfg`-gated and so runs on both — plus
-    the fallback gate added with these repairs. The three Windows-only test
-    binaries compile to zero tests here, which is what they should do.
+    Windows-only integration tests compile to zero tests on Linux; portable
+    stdin and history tests retain their Unix coverage. The evidence's
+    closeout section distinguishes fresh cross-target checks from the
+    supplied native Linux run.
 13. **The protocol's orderings — met now, on Linux.** Seven unit gates on
     decision 3's protocol: an operation is never declared after a stop; a
     stop reaches the operation a worker is inside; nothing is reachable once
@@ -558,11 +576,18 @@ Every gate below runs on the Dell. Nothing here is claimed until it does.
     suspended child is gone — asked of Windows, since a suspended process is
     invisible to anything that watches for output. The hook exists because
     nothing a script can do makes `AssignProcessToJobObject` fail.
+    `job_assignment_windows::failed_assignment_collects_the_suspended_child`
+    opens the live child before releasing the failure hook, requires the
+    original error and failure exit, and observes termination through that
+    retained process handle. Removing kill/reap fails with `WAIT_TIMEOUT`.
 16. **Redirected empty input is read, not refused.** `rnx run` with its
     standard input redirected from `NUL` reads an empty input and reports it
     as such, where a console is still refused with record 0012's message.
     This is decision 4's correction, and a `GetFileType` implementation fails
     it.
+    `stdin::nul_is_an_empty_stream_not_a_console` passes with empty output
+    text and fails with the terminal-refusal error under a `GetFileType`
+    character-device mutation.
 17. **`rnx selfcheck` succeeds on Windows, asking three of its four probes
     here and the fourth elsewhere.** The interruption probe has a child send
     `SIGINT` to its parent, reaching that process alone. Its Windows
@@ -581,6 +606,11 @@ Every gate below runs on the Dell. Nothing here is claimed until it does.
     Unix answers unchanged. Asked by running a session, ending it, and
     starting another — not by reading the path back, which is the check that
     would have passed while the defect was there.
+    `history::a_second_windows_session_recalls_saved_history` creates two
+    separate ConPTY sessions for each path setting. The second types only
+    Up, Up, Enter, recalls past `:quit`, and evaluates the saved expression;
+    its numeric result was never typed into that session. Removing history
+    loading makes the second session fail its bounded result check.
 19. **An interrupt reaches rnx even from a parent that suppresses it.**
     Decision 4's amendment. A call waiting on a live child reports
     `cancelled` and **not** `timed_out`, well inside its deadline, in a
