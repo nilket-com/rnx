@@ -43,6 +43,7 @@ What must hold on every platform, in the words the records already use:
 | Contract | Where it came from |
 | --- | --- |
 | A child is ended at its deadline and reports `timed_out` | 0016, 0020 |
+| …and `code` says what the **child** chose, which is why a child rnx ended cannot say it — see below | 0013, 0016 |
 | Ctrl-C ends a call and reports `cancelled`, while it waits **and** while it cleans up | 0020, 0023 |
 | A child's descendants are ended with it, so nothing is left behind | 0016 |
 | The input writer stops when the call does, and is always collected | 0022 |
@@ -54,6 +55,23 @@ What must hold on every platform, in the words the records already use:
 Each is a behaviour a test can ask about. The Windows work is whatever makes
 each answer the same, and where an answer cannot be the same, this record
 says so rather than a gate quietly weakening.
+
+**One answer cannot be the same, and this is it.** A child rnx ended at its
+deadline reports no exit status on Unix — a signalled process has none, so
+`code` is empty — while on Windows `TerminateJobObject` **is** an exit status
+and `code` is the 1 rnx passed it. That 1 is indistinguishable from a child
+that chose to exit 1, where the Unix emptiness is unmistakable.
+
+The contract underneath is unchanged and is record 0013's: `code` says what
+the child chose, and a child that did not choose has nothing to say. What
+differs is only whether the platform lets that be represented. `timed_out`
+and `cancelled` are the unambiguous answer on both, which is why every
+description of the three process functions now ends by saying to read them
+first, and why the ports already do — record 0023's "cause before symptom"
+rule reached this before the platform did.
+
+The self-check asserts both forms rather than one: `process_checks` splits on
+`cfg` at that assertion, so a platform reporting the other's answer fails.
 
 ### 2. A job object, assigned before the child can spawn anything
 
@@ -206,6 +224,55 @@ a thread of the console's choosing, which suits the existing design exactly:
 it sets an atomic flag and returns, and every waiter and worker reads that
 flag. `CTRL_C_EVENT` and `CTRL_BREAK_EVENT` both set it.
 
+**Amended on the machine: installing a handler is not enough.** The first
+Windows gate written for this decision found the flag never set, with the
+handler registered and the event raised, both reporting success. A process
+that ignores Ctrl-C passes that state to its children, and adding a handler
+does not clear it — the handler is registered and simply never runs.
+`SetConsoleCtrlHandler(NULL, FALSE)` is what restores delivery. On Unix
+installing a handler is the whole of it; here it is two steps, and the missing
+one fails silently, which is why nothing had reported it.
+
+So this decision now has three parts, and the second and third are as
+load-bearing as the first:
+
+1. **Install the handler**, as above.
+2. **Restore delivery afterwards, and only if the installation succeeded.**
+   Both the other orders leave a window in which an interrupt finds only the
+   default handler, which Windows documents as calling `ExitProcess`:
+   restoring first opens it between the two calls, and restoring after a
+   *failed* registration opens it for good. A process that cannot be
+   interrupted keeps running and breaks record 0020's contract quietly; one
+   that takes `ExitProcess` in the middle of a call loses the call's work and
+   its status. The first is the better failure, so a registration that fails
+   leaves delivery alone.
+3. **rnx overrules a parent that suppressed Ctrl-C.** This is the part that is
+   a choice rather than a correction. A parent may have disabled Ctrl-C
+   deliberately, and rnx re-enables it for itself. Record 0020 says an
+   interrupt ends a call and reports `cancelled`; a program that cannot be
+   interrupted cannot keep that, and a contract that holds only when the
+   launching environment happens to permit it is not one this record can
+   claim.
+
+   **The scope, precisely.** rnx changes its own delivery. It does not change
+   the parent, or any process that already exists, or the console itself —
+   but the setting **is inherited by children rnx creates afterwards**, which
+   is the same mechanism that carried the suppression into rnx to begin with.
+   So a child rnx spawns is interruptible too, whatever the state rnx was
+   handed.
+
+What that costs, said rather than implied: a service or CI runner that
+suppressed Ctrl-C for everything it starts will find rnx, and rnx's children,
+interruptible anyway. That is the intended reading of record 0020, and if it
+is ever the wrong one, this decision is what changes.
+
+What it does **not** do is give rnx an interrupt where there was never a
+console to deliver one. Restoring delivery is not creating a console: a
+process launched without one — a service proper, rather than a runner with a
+console that suppresses Ctrl-C — has nothing to restore, and both calls fail
+harmlessly. Record 0020's contract is unreachable there for a reason no
+decision here can address.
+
 `libc::isatty(STDIN_FILENO)`, which is how `host::stdin` refuses a terminal,
 becomes a **console-specific** question. Record 0012's rule is unchanged — a
 terminal is refused because nobody is going to send an end-of-file — and only
@@ -232,6 +299,70 @@ child which tries to break away fails to, and that the job's limit says so.
 The gates that need an escaped holder are marked not applicable **with that
 evidence**, rather than skipped.
 
+**Amendment after the native fixture pass: the escaped lifetime is the
+unreachable premise, not the worker or capture contract.** A Windows job can
+end every descendant and still leave rnx with buffered output, a worker
+scheduled late, a panicking reader, or a delivery result it must collect.
+Gate 10 does not answer any of those questions. The terminal-filename gate's
+refusal pattern therefore applies to the attempt to escape, not to an entire
+test that also asserts a portable result.
+
+The remaining fixtures are separated as follows. "Existing" names code that
+already asks the native question; "to write" is acceptance work, not a pass.
+The Unix escaped-holder fixtures remain on Unix. They may become
+`cfg(unix)` only alongside the named native coverage and the recorded Gate
+10 result; no whole file is excluded to dispose of its portable assertions.
+
+| Current fixture | Windows question and disposition |
+| --- | --- |
+| `capture_bound::a_held_reply_pipe_no_longer_holds_the_call` | **Native replacement passes:** `capture_hold_windows::a_held_reply_pipe_no_longer_holds_the_call_windows` runs all four rows with an in-job grandchild that inherits the pipes it keeps. Which pipes it had is measured rather than assumed: it writes a marker to each stream it kept, and the case asserts the exact captured lengths alongside `timed_out=true`, `cancelled=false`, prompt return, and the ends of both the holder and the grandchild by owned handle while rnx is still alive. A `TerminateJobObject` mutation fails it on the first row. The escaped-holder fixture stays `cfg(unix)`. |
+| `capture_bound::a_child_that_exits_while_a_pipe_is_held_returns_after_the_cleanup` | **Native lifecycle replacement passes:** `capture_hold_windows::a_normal_exit_ends_the_in_job_pipe_holder_during_cleanup` opens both processes while alive, then releases the direct child to exit 7. It observes that chosen status, no timeout or cancellation, exact grandchild markers on both pipes, and both processes terminated while rnx remains alive. With `test-support`, a 12-second cleanup allowance makes an omitted explicit job end fail the 8-second return bound rather than be hidden by job-handle drop. The escaped-holder fixture is now `cfg(unix)`. Killing a holder does not establish `cut_short`; the existing cap-hold gate tests that flag, and the uncapped-prefix row below now passes with a hold after seven captured bytes. |
+| `capture_bound::the_three_shortfalls_are_independent` | **Split:** `the_size_cap_alone_does_not_cut_a_capture_short` now runs the portable cap-only half independently. The escaped-holder half remains Unix-specific. **Existing:** `capture_bound_windows::a_stream_past_the_cap_is_also_cut_short_when_the_call_ends` asks for `truncated=true`, `cut_short=true`, `unreadable=false` after a normal child exit using its cap handshake; its pipe-capacity prerequisite remains explicit. |
+| `capture_bound::a_descendant_that_never_stops_writing_does_not_hold_the_call` | **Native replacement passes:** `capture_hold_windows::a_descendant_that_never_stops_writing_does_not_hold_the_call_windows` gives an in-job grandchild an endless `for /l` echo loop and asserts prompt return, `timed_out=true`, `cancelled=false`, `unreadable=false`, the ends of both processes by owned handle while rnx stays alive, and more than a pipeful captured, so the reader is known to have gone round its loop rather than taken one bufferful. A `TerminateJobObject` mutation fails it on exactly its own clause: the call does not return inside the bound. **The capture flag differs from Unix and the difference is asserted, not skipped:** `cut_short=false` here, because the job ends the writer, its write end closes, and the reader drains to the end of the file inside the allowance. Unix reports `cut_short=true` because its writer survives the group and never stops. That difference is the row's own point that the job test is not evidence for surviving-writer behaviour. |
+| `capture_bound::a_completeness_check_can_see_a_prefix_that_truncation_cannot` | **Native replacement passes under test-support:** `capture_bound_windows::a_completeness_check_can_see_a_prefix_that_truncation_cannot_windows` captures exactly `partial`, acknowledges seven bytes, and holds stdout before its next read. The child waits for that acknowledgement before exiting normally. The test releases the reader only after cleanup publishes its stop, and asserts code 0, no timeout or cancellation, `truncated=false`, `cut_short=true`, `unreadable=false`, and empty stderr. A hook timeout fails. The original escaped-holder fixture is now `cfg(unix)`; the Windows replacement requires the test-support reader hook. |
+| `capture_bound::an_interrupt_during_the_cleanup_is_still_an_interrupt` (`test-support`) | **Existing:** `console_interrupt::an_interrupt_during_the_cleanup_is_still_reported` owns its console and orders cleanup, event receipt, and reader release. Its result now asserts cancellation, absence of timeout, and `cut_short=true`. The escaped-holder and SIGINT mechanism stays Unix-specific. |
+| `child_input::a_deadline_ends_the_call_while_delivery_is_blocked` | **Native replacement passes:** `delivery_deadline_windows::a_deadline_ends_a_blocked_delivery_and_the_writer_is_collected` feeds a mebibyte to an in-job `ping` that never reads, and establishes the block with `GetThreadIOPendingFlag` on the identified delivery thread rather than from the size of the input. It asserts the child still alive while the writer is blocked, `timed_out=true` with `cancelled=false`, the deadline ending the delivery promptly, and refusal to report while the writer is deliberately held before thread exit. An omitted-join mutation fails it. The escaped-holder fixture is now `cfg(unix)`. Note the cleanup order: `group.end()` precedes `writing.stop()`, so on this path the child is already gone when the delivery ends, and the unblocking is not attributable to the writer's stop — `pipe_cancel_windows` is what attributes that. |
+| `child_input::a_cancellation_ends_the_call_while_delivery_is_blocked` | **Native replacement passes:** `console_interrupt::cancellation_collects_a_writer_blocked_on_child_input` observes pending I/O on the identified delivery thread in an owned console before raising the event. It asserts `cancelled=true`, `timed_out=false`, prompt return, writer and child termination while rnx stays alive, and refusal to return while the writer is deliberately held before thread exit. An omitted-join mutation fails. The independent real-I/O control passes in `pipe_cancel_windows`; the escaped-holder fixture is now `cfg(unix)`. |
+| `child_input::the_delivery_thread_is_gone_before_the_call_returns` | **Native replacement passes:** `delivery_exit_windows::a_normal_child_exit_collects_the_unfinished_writer` observes pending I/O before allowing a non-reading child to exit 0. The worker is held after delivery ends; the call stays silent until it is released. Retained Windows handles then establish writer and child termination while rnx remains alive, and both the child's exit status and the call's `(code, timed_out, cancelled)` establish normal exit. Omitting the join fails the control. The escaped-holder fixture and its `/proc` observation are now `cfg(unix)`; Gate 10 supplies the applicability evidence. |
+| `delivery_failure::an_unreadable_stream_is_reported_and_excuses_nothing` (`test-support`) | **Implemented portable substitution:** retain `RNX_TEST_CAPTURE_FAILS` and use a native child. Assert `unreadable=true`, `truncated=false`, and zero captured bytes. The shared decoding unit gates supply the malformed-tail exemption checks; this integration test does not generate a malformed tail. |
+| `delivery_failure::a_failure_after_cleanup_begins_still_reaches_the_script` (`test-support`) | **Native replacement passes:** `delivery_failure_windows::a_failure_after_cleanup_begins_still_reaches_the_script_windows`. Two hooks were added for it: `RNX_TEST_WRITER_HOLDS_BEFORE_STOP` holds the writer once, at the top of its loop and before it looks at its stop flag, and `RNX_TEST_SIGNAL_WRITER_STOP_TO` publishes the writer's stop between `writing.stop()` and the collection — the readers' `announce_the_stop` fires after the delivery is joined, so waiting for that one would have waited on what the held writer prevents. The gate asserts exit 1, the injected words on standard error, no success line, and no hook timeout. Controlled twice: removing the injection consult makes it report success, and releasing the writer before the stop is published does the same, so the ordering is load-bearing rather than decorative. The escaped-holder fixture is now `cfg(unix)`. |
+| `delivery_failure::a_reader_that_panics_does_not_strand_the_other` (`test-support`) | **Native replacement passes:** `reader_panic_windows::a_reader_that_panics_does_not_strand_the_other_windows` opens and retains the held stderr worker's Windows handle before releasing stdout to its injected panic. It observes the panic and cleanup stop, requires silence while stderr remains alive, then releases stderr and observes its termination while rnx stays alive after catching the exact `stdout reader panicked` error. Hook timeouts fail. Propagating stdout's join error before joining stderr fails the held-worker clause. The escaped-holder fixture is now `cfg(unix)`. |
+
+**Gate 5 needs two observations.** In the current `run_child` cleanup,
+`group.end()` precedes `writing.stop()`. On Windows, closing the last reader
+when the job dies can end a blocked write without any `CancelIoEx`. The
+original gate's claim that a flag-only implementation could not pass an
+end-to-end cancellation test was therefore too strong.
+
+Keep that end-to-end test for the public result and lifecycle. Add a native
+mechanism gate around the actual `Pipe::begin` / `Pipe::stop` and synchronous
+write: a fixture owns both pipe ends, keeps the read end open without
+draining, and submits enough input to block. The stop must end the operation
+with `ERROR_OPERATION_ABORTED` while that read end remains open, and the
+worker must be joined. An announced intention to write is not proof of a
+pending operation; the aborted-I/O result supplies that distinction. A
+negative control without cancellation must stay unfinished until the
+fixture releases the pipe. Run this inside an independently bounded helper
+process so a broken cancellation cannot hang the suite. This is a controlled
+pipe fixture, not a claim that a Windows descendant escaped its job.
+
+New scheduling hooks are confined to `test-support`, with a no-op ordinary
+build. Each announces the phase it reached, has a bounded wait, reports a
+timeout as a failure, and is released during teardown before assertions.
+The collection gates must fail under the corresponding omitted-join
+regression; a worker that happens to finish quickly must not make a detached
+worker look collected. Windows process/thread handles must remain owned
+through the observation so identifier reuse cannot supply the answer.
+
+**Gate 10 keeps its outside control.** One attributable refusal establishes
+the common premise; repeating it under every Unix test name would inflate
+the native evidence without testing more contracts. Cargo's restrictive job
+still causes an explicit control failure on this machine. Record that
+failure and run the compiled gate directly as section G prescribes; a direct
+pass supplies Gate 10's result, not a claim that the Cargo suite passed.
+If the direct launch also blocks the control, the applicability evidence is
+pending. No assertions are weakened to obtain a green count.
+
 ### 6. Draining comes before reaching, on every platform
 
 Record 0023 gave a call one deadline and a bounded cleanup allowance, and
@@ -257,7 +388,37 @@ zero, so the instant has already passed and step 4 reaches both readers at
 once. Which is what makes Ctrl-C prompt and an ordinary exit complete,
 without two mechanisms.
 
-### 7. What this record does not decide
+### 7. Where a session's history lives, on a platform without `HOME`
+
+Added after the machine arrived, because the ladder's first run found it and
+no gate above would have. `repl::history_path` reads `RNX_HISTORY`, else
+`XDG_STATE_HOME`, else `HOME/.local/state`, and answers `Option`. On Windows
+none of the three is set — `USERPROFILE` and `LOCALAPPDATA` are — so it
+answers `None`, and both its consumers are `if let Some(path)`. Loading and
+appending are skipped **silently**: a session keeps no history between runs
+and nothing says why.
+
+Record 0024 makes a session the default command, so this is the default
+command's own behaviour, on the platform where the suite that covers it does
+not run.
+
+The decision, in the shape of the others here — the mechanism splits, the
+contract does not:
+
+- **`RNX_HISTORY` remains the explicit override, on every platform.** It is
+  asked first and answers alone.
+- **On Windows the base is `LOCALAPPDATA`**, so history lives at
+  `%LOCALAPPDATA%\rnx\history`. `LOCALAPPDATA` is what `XDG_STATE_HOME`
+  names on Unix: per-user, machine-local, not roamed, and set by the system
+  rather than by a shell.
+- **Unix is unchanged.** `XDG_STATE_HOME`, then `HOME/.local/state`.
+
+`None` stays possible — `LOCALAPPDATA` can be unset in a service context —
+and it keeps meaning "no history file". What this record does not decide is
+whether that silence should stay silent; it is a diagnostic question, and
+record 0019's surfaces are where it would belong.
+
+### 8. What this record does not decide
 
 macOS. Its code compiles today and its behaviour is unverified; the ladder
 there is a run on the machine, and the fixtures need adapting — `/proc` is
@@ -310,8 +471,10 @@ Every gate below runs on the Dell. Nothing here is claimed until it does.
 5. **Cancellation reaches a blocked write.** A child that never reads its
    standard input, fed more than a pipe holds, is cancelled: the call returns
    `cancelled`, the writer is collected, and no thread is left behind. A
-   `PeekNamedPipe`-only implementation cannot pass this, which is what makes
-   it the gate for decision 3.
+   separate synchronous-pipe control also returns `ERROR_OPERATION_ABORTED`
+   with its read end still held open. Decision 5's amendment separates the
+   public cancellation result from proof that `CancelIoEx` reached the
+   operation: job termination alone can otherwise unblock the write.
 6. **Cancellation reaches the cleanup, not just the wait.** Record 0023's
    case: the child is already gone and an interrupt arrives while the readers
    are finishing. The call reports `cancelled`.
@@ -329,8 +492,18 @@ Every gate below runs on the Dell. Nothing here is claimed until it does.
     the reason the escaped-descendant gates do not apply.
 11. **Installation.** `cargo install --locked` produces a working binary,
     which is record 0001's gate 6 for this third of it.
-12. **Nothing regresses.** Linux and both macOS targets still type-check, and
-    the Linux ladder still passes — 226 tests, 231 with `test-support`.
+12. **Nothing regresses — met at `0ec0606`, on Linux.** The ladder passes
+    **235 tests and 240 with `test-support`**, zero failures; `cargo clippy`
+    is at its eleven pre-existing warnings and `cargo fmt --check` is clean;
+    and `cargo check --locked --all-targets`, with and without
+    `test-support`, reports no errors and no warnings for
+    `x86_64-pc-windows-msvc` and both macOS targets.
+
+    The baseline the Windows evidence expected was 226 and 231. The
+    difference is that port's own additions — one unit test and
+    `tests/history.rs`, which is not `cfg`-gated and so runs on both — plus
+    the fallback gate added with these repairs. The three Windows-only test
+    binaries compile to zero tests here, which is what they should do.
 13. **The protocol's orderings — met now, on Linux.** Seven unit gates on
     decision 3's protocol: an operation is never declared after a stop; a
     stop reaches the operation a worker is inside; nothing is reachable once
@@ -390,6 +563,33 @@ Every gate below runs on the Dell. Nothing here is claimed until it does.
     as such, where a console is still refused with record 0012's message.
     This is decision 4's correction, and a `GetFileType` implementation fails
     it.
+17. **`rnx selfcheck` succeeds on Windows, asking three of its four probes
+    here and the fourth elsewhere.** The interruption probe has a child send
+    `SIGINT` to its parent, reaching that process alone. Its Windows
+    counterpart, `GenerateConsoleCtrlEvent`, reaches every process sharing the
+    console — for someone who has just typed `rnx selfcheck`, their own shell
+    and whatever else runs in it. A self-check that interrupted the terminal
+    it was invoked from would be a worse defect than any it could find, so the
+    probe is replaced by a line saying where the question is asked instead.
+
+    **Not decision 5's case.** An escaped descendant cannot be asked about on
+    Windows at all. An interrupt can, and gates 19 and 6 do, in a console
+    created for it. What changes is the venue, not the reachability, and this
+    gate is what records that — three probes here, one moved, none dropped.
+18. **A session's history survives a restart on Windows.** Decision 7:
+    `%LOCALAPPDATA%\rnx\history` by default, `RNX_HISTORY` when set, and the
+    Unix answers unchanged. Asked by running a session, ending it, and
+    starting another — not by reading the path back, which is the check that
+    would have passed while the defect was there.
+19. **An interrupt reaches rnx even from a parent that suppresses it.**
+    Decision 4's amendment. A call waiting on a live child reports
+    `cancelled` and **not** `timed_out`, well inside its deadline, in a
+    console of the child's own — asked twice: once inheriting whatever the
+    runner had, and once with the process put into the "ignore Ctrl-C" state
+    deliberately, because whether a runner suppresses Ctrl-C is not something
+    a fixture chooses. The second case is the gate; the first would pass
+    against the unamended code whenever the runner happened to permit
+    delivery.
 
 ## What was written before the machine arrived
 
@@ -467,6 +667,18 @@ promise on every platform, and gate 14 is what would have caught it.
   descendant does escape — a service started on the child's behalf, say,
   which is not the child spawning it — then the guarantee is narrower than
   the argument, and the record is what changes, not the gate.
+- **An interrupt on Windows is console-wide.** The Unix probes send
+  `SIGINT` to a single process; `GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0)`
+  reaches **every process attached to the console**, which includes the shell
+  that invoked the ladder. So an interruption probe is not a like-for-like
+  port of `kill -INT $PPID`: it must be established in an isolated, bounded
+  harness — its own console — before it goes anywhere near a shipped
+  self-check, or a passing gate takes the operator's shell with it.
+
+  Gate 6 is a further step again. It wants an interrupt **during cleanup**,
+  with the child already gone and the readers finishing. A probe that
+  establishes only that an interrupt arrives does not establish gate 6.
+
 - **A console's escape handling differs.** Windows terminals process escape
   sequences when virtual terminal processing is on, and record 0019's
   contract is that rnx emits none — so the risk is the fixtures, which must
