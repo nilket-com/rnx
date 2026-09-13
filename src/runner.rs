@@ -226,21 +226,27 @@ pub fn run(
 	};
 	let mut vm = Vm::new(runtime, unit.clone());
 	// The budget, from the command line or the default. Without one a script
-	// that loops for ever runs until something outside kills it. A file that
-	// never awaits takes the call `run` has always made; one that can await
-	// takes record 0032's driver, and is then interruptible while it waits.
-	let outcome = if crate::execute::file_main_is_async(&text) {
-		let driver = match crate::execute::Runtime::new() {
-			Ok(driver) => driver,
-			Err(error) => {
-				unplaced("error", &format!("cannot start the runtime: {error}"));
-				return 1;
-			}
-		};
-		crate::execute::drive_async(&driver, &mut vm, ["main"], (arguments,), budget)
-	} else {
-		crate::execute::complete_sync(&mut vm, ["main"], (arguments,), budget)
+	// that loops for ever runs until something outside kills it. Record 0032
+	// runs every file through the one driver that copes with a `main` that
+	// awaits and one that does not, because which it is cannot be read off
+	// the source: an alias can make an async function the entry point.
+	let driver = match crate::execute::Runtime::new() {
+		Ok(driver) => driver,
+		Err(error) => {
+			unplaced("error", &format!("cannot start the runtime: {error}"));
+			return 1;
+		}
 	};
+	let outcome = crate::execute::drive_async(
+		&driver,
+		&mut vm,
+		["main"],
+		(arguments,),
+		budget,
+		// A script that ran to its own end has ended, whatever arrived while
+		// it ran; record 0023 leaves a cancelled child to the script.
+		crate::execute::WhenInterrupted::Finish,
+	);
 	let value = match outcome {
 		crate::execute::Outcome::Complete(value) => value,
 		crate::execute::Outcome::Interrupted => {

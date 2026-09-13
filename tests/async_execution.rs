@@ -376,6 +376,48 @@ fn a_failure_on_the_last_permitted_instruction_keeps_its_diagnostic() {
 	assert!(stderr.contains("Panicked: boom"), "budget {budget}: {stderr}");
 }
 
+#[test]
+fn an_entry_point_reached_through_an_alias_is_executed_as_what_it_is() {
+	// `pub use ... as main` makes an async function the entry point with no
+	// `async` token anywhere near `main`, and the compiled unit keeps its
+	// calling convention private. Nothing reads the shape of a file, so this
+	// runs; a version that read it halted here for `awaited`.
+	let path = script(
+		"alias.rn",
+		"mod inner {\n    pub async fn work(_) { host::test_pending(5).await }\n}\npub use inner::work as main;\n",
+	);
+	let ran = rnx(&["run", path.to_str().unwrap()], None);
+	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
+	assert_eq!(ran.stdout, "5\n");
+
+	let path = script(
+		"alias-sync.rn",
+		"mod inner {\n    pub fn work(_) { 7 }\n}\npub use inner::work as main;\n",
+	);
+	let ran = rnx(&["run", path.to_str().unwrap()], None);
+	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
+	assert_eq!(ran.stdout, "7\n");
+}
+
+#[test]
+fn a_failure_inside_one_slice_does_not_claim_the_whole_budget() {
+	// A synchronous input is resumed a slice at a time, and a failure that
+	// lands as a slice runs out leaves that slice's guard exhausted. The
+	// input's budget is two billion instructions and is nowhere near spent,
+	// so nothing may say it was.
+	let ran = rnx(
+		&["repl"],
+		Some("let n=0; for i in 0..1664 { n += i; } let z=0; panic!(\"boom\")\n"),
+	);
+	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
+	assert!(ran.stderr.contains("Panicked: boom"), "{}", ran.stderr);
+	assert!(
+		!ran.stderr.contains("was exhausted"),
+		"a spent slice was reported as a spent budget: {}",
+		ran.stderr
+	);
+}
+
 // Gate 5: diagnostics keep their place after an await.
 
 #[test]

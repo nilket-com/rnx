@@ -1,11 +1,17 @@
 # rnx 0032: one way to run a script
 
-Status: proposed 2026-09-13; revised the same day after review, twice. The
+Status: proposed 2026-09-13; revised the same day after review, three times. The
 thirty-second record of rnx, and the async foundation record 0031 gate 2
 asks for. Three entry points drive the VM in two different ways today, and
 neither way can wait on a future. After this record a script that can await
 runs on a third way that can; the two old ways stay exactly as they are for
 every script that cannot, and everything they promised still holds.
+
+**Revision 3.** A third review found a file's shape unreadable after all —
+`pub use inner::work as main` makes an async function the entry point with
+no `async` token near `main` — and found a spent slice reported as a spent
+budget. A file is no longer classified at all, and the sliced path names the
+budget only when the last slice spent it. Decision 1 and the gates again.
 
 **Revision 2.** A second review found the shape test reading tokens out of
 strings and missing `select`, and the async path's budget report standing in
@@ -79,13 +85,14 @@ what decides the shape of the decision.
 
 ### 1. The script's shape chooses its path
 
-A script that can await runs on a new path: the whole execution under its whole budget
-on a Tokio current-thread runtime, raced against a future that reads the
-interrupt flag on a cadence while the execution is pending on a host
-future. A script that cannot await runs exactly as it did before this
-record: a file on `run`'s one call under one budget, a session input on
-record 0002's sliced resume with the flag read between slices. Neither
-synchronous path changes by a byte, and the evidence checks that.
+Every file, and every session input that can await, runs on a new path: the
+whole execution under its whole budget on a Tokio current-thread runtime,
+raced against a future that reads the interrupt flag on a cadence while the
+execution is pending on a host future. A session input that cannot await
+runs exactly as it did before this record, on record 0002's sliced resume
+with the flag read between slices, so Ctrl-C still ends a loop at a prompt.
+That path does not change by a byte, and neither does anything a file does;
+the evidence checks both.
 
 The split is not a preference. Finding 5 says the budget cannot slice an
 execution that may nest, and any execution that can await may nest; and
@@ -96,13 +103,16 @@ literal is not an await, and `select` awaits without writing the word, so a
 scan for either is wrong in both directions. Two questions, two answers, and
 both come from the parser:
 
-- **A file**: whether its `main` item carries the `async` keyword, read from
-  the parsed item. Rune refuses `.await` and `select` outside an async
-  function, so a synchronous `main` cannot await, whatever it declares or
-  calls. A source that will not parse is one the compiler has already
-  refused; the async path is chosen for it, at the cost of a runtime and no
-  correctness.
-- **A session input**: whether the compiler accepts the synchronous wrapper.
+- **A file is not asked, because it cannot answer.** Whether a file's `main`
+  can await is not in its source to read: `pub use inner::work as main` makes
+  an async function the entry point with no `async` token near `main`, an
+  alias can cross modules, and the compiled unit keeps the calling convention
+  it resolved crate-private. So every file takes the driver that copes with
+  either. A file gives up nothing by it — record 0021's file run was never
+  interruptible mid-loop — and the runtime it now always builds costs less
+  than the noise of a run, which the evidence measures.
+- **A session input is asked of the compiler**: whether it accepts the
+  synchronous wrapper.
   It is compiled first, and a refusal is the compiler saying this input needs
   the other one, in the same words for `.await` and for `select`. The input
   then gets the async wrapper and that attempt's outcome, success or failure.
@@ -126,6 +136,12 @@ reader needs; reporting the budget in its place loses it. So whenever the
 guard is exhausted and the error has a place, the error is reported with
 its place and the budget is named after it, never instead of it.
 
+A slice's guard is not an input's budget. The sliced path spends ten
+thousand instructions at a time out of two billion, so a failure landing as
+a slice runs out leaves that guard exhausted with the budget barely touched.
+It says nothing about the budget unless the slice that ran out was the one
+that would have spent it.
+
 The cost of that rule is borne by a budget spent inside a nested async
 function: the halt carries that function's location, so it reports as the
 halt it is, with the budget named beneath, rather than as the one tidy line
@@ -146,6 +162,14 @@ ten-second net record 0002 chose. That last case is the cost of finding 5,
 it is stated here rather than hidden, and it is the second thing worth
 taking upstream after the startup cost: a cooperative interrupt hook that
 does not go through the budget.
+
+What a *completed* execution means differs by caller, and did before this
+record too. The session abandons an input Ctrl-C arrived during, even if the
+input then finished, because at a prompt Ctrl-C means stop this one. A file
+run lets the script's own ending stand, which is what it has always done and
+what records 0022 and 0023 ask of it: a cancelled child is reported to the
+script, and what the script makes of that is the script's to decide. The
+driver is told which it is serving rather than deciding for both.
 
 An interrupted run says `interrupted` on standard error and exits 130,
 which is what a shell reports for a process ended by Ctrl-C. `eval` does
@@ -217,7 +241,8 @@ that each battery's burden.
    instructions — returns its value under a budget that allows it, from a
    file and from a session where the function was an earlier input. A
    failure that lands on the last permitted instruction is reported with
-   its own diagnostic, and the budget beside it.
+   its own diagnostic, and the budget beside it. A failure inside one slice
+   of a synchronous input says nothing about that input's whole budget.
 4. **Interruption reaches a pending future, and the synchronous slices are
    still there.** A run, an `eval`, and a session input pending on the
    fixture end within a stated bound of Ctrl-C; the run exits 130 and says
@@ -225,11 +250,12 @@ that each battery's burden.
    runs to completion. A synchronous session input in `loop {}` is still
    ended within a slice. A file in `loop {}` is ended by its budget, as it
    always was, and by nothing else.
-5. **The shape is read, not guessed.** A string holding `.await` leaves an
-   input on the synchronous path, with its slices; `select` reaches the
-   async path though it never writes `await`; an awaited `async` block
-   reaches it; an input that only declares an awaiting function does not.
-   A file whose string mentions `.await` still runs synchronously.
+5. **No file's shape is read, and an input's shape is the compiler's
+   answer.** An entry point reached through `pub use ... as main` runs as
+   what it is, awaiting or not. A string holding `.await` leaves an input on
+   the synchronous path, with its slices; `select` reaches the async path
+   though it never writes `await`; an awaited `async` block reaches it; an
+   input that only declares an awaiting function does not.
 6. **Diagnostics keep their place.** A runtime error after an await names
    the file, line, and column under `run`, and the input under the
    session, as today.
@@ -244,8 +270,9 @@ that each battery's burden.
 
 1. The shape chooses, and nothing else does: no flag, no environment
    variable, no per-call option picks a path.
-2. Nothing slices an execution that can await. If a future change needs
-   to, finding 5 has to be found false first.
+2. Nothing slices an execution that can await, and nothing slices a file,
+   because a file's entry cannot be known to be either. If a future change
+   needs to, finding 5 has to be found false first.
 3. The synchronous paths are the old code. If either changes by a byte,
    that is not this record.
 4. No spawned task. If a battery needs one, it gets a record.

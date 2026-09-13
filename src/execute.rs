@@ -1,17 +1,23 @@
 //! How a script runs: record 0032.
 //!
-//! Three paths, and which one a script takes is decided by one property of
-//! the script — whether it can `.await`:
+//! Two paths:
 //!
-//! - [`complete_sync`]: one call under one budget. What `run` has always
-//!   done for a file, unchanged, for a file that never awaits.
 //! - [`slice_sync`]: resumed in slices of [`SLICE`] instructions with the
 //!   interrupt flag read between them. What the session has always done for
-//!   an input (record 0002), unchanged, for an input that never awaits.
+//!   an input (record 0002), unchanged, and what an input that cannot await
+//!   still gets, so Ctrl-C still ends a loop at a prompt.
 //! - [`drive_async`]: the whole execution under its whole budget on a
 //!   current-thread Tokio runtime, raced against a future that reads the
 //!   interrupt flag on a cadence while the execution is pending on a host
-//!   future. New, for a file's `async fn main` and for an input that awaits.
+//!   future. Every file `run` executes, and every session input that awaits.
+//!
+//! A file is not classified at all. Whether its `main` can await is not a
+//! question this can answer from the source: `pub use inner::work as main`
+//! makes an async function the entry point without an `async` token in sight,
+//! and the compiled unit keeps its calling convention to itself. So every
+//! file takes the driver that copes with either, and what a file gives up by
+//! not being sliced it never had — record 0021's file run was never
+//! interruptible mid-loop.
 //!
 //! Why the async path is not sliced, and why the two synchronous paths are
 //! kept exactly: an `async fn` awaited from Rune code runs as a nested
@@ -45,6 +51,20 @@ pub const SLICE: usize = 10_000;
 /// execution pays it.
 const CADENCE: Duration = Duration::from_millis(5);
 
+/// What a completed execution means when Ctrl-C arrived while it ran.
+///
+/// The session abandons the input: at a prompt Ctrl-C means stop this one,
+/// and record 0002 has always observed, at the boundary, an interrupt that
+/// arrived while an input was inside a host call. A file run lets the
+/// script's own ending stand, which is what it has always done and what
+/// records 0022 and 0023 ask of it — a cancelled child is reported to the
+/// script, and what the script does about it is the script's to decide.
+#[derive(Clone, Copy)]
+pub enum WhenInterrupted {
+	Abandon,
+	Finish,
+}
+
 /// How an execution ended.
 pub enum Outcome {
 	/// The entry point returned this.
@@ -63,52 +83,6 @@ pub enum Outcome {
 	/// leaves the budget at zero exactly as a halt does, and the error is
 	/// the thing the reader needs.
 	Failed { error: VmError, exhausted: bool },
-}
-
-/// Whether a file's `main` is declared `async`, which is the only way a file
-/// can await: Rune refuses `.await` and `select` outside an async function,
-/// so a synchronous `main` cannot await whatever it declares or calls. Read
-/// from the parsed item, not from the text, because a string holding
-/// `.await` is not an await and `select` awaits without writing the word.
-///
-/// A source this cannot parse is one the compiler has already refused, or is
-/// about to; the async path is chosen for it, which costs a runtime and no
-/// correctness.
-pub fn file_main_is_async(source: &str) -> bool {
-	use rune::ast::Spanned;
-	let parsed = rune::parse::parse_all::<rune::ast::File>(source, rune::SourceId::empty(), false)
-		.or_else(|_| {
-			rune::parse::parse_all::<rune::ast::File>(source, rune::SourceId::empty(), true)
-		});
-	let Ok(file) = parsed else {
-		return true;
-	};
-	for (item, _) in &file.items {
-		if let rune::ast::Item::Fn(function) = item
-			&& source.get(function.name.span().range()) == Some("main")
-		{
-			return function.async_token.is_some();
-		}
-	}
-	false
-}
-
-/// A file that never awaits: one call under one budget, as `run` has always
-/// done. Not interruptible mid-loop, as it never was; record 0021 says why
-/// the bound stays.
-pub fn complete_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::GuardedArgs, budget_n: usize) -> Outcome {
-	let (outcome, exhausted) = budget::with(budget_n, || {
-		let outcome = vm.call(entry, args);
-		let exhausted = !budget::acquire().take();
-		(outcome, exhausted)
-	})
-	.call();
-	match outcome {
-		Ok(value) => Outcome::Complete(value),
-		// A halt for want of budget: no location, and the guard exhausted.
-		Err(error) if error.first_location().is_none() && exhausted => Outcome::Budget,
-		Err(error) => Outcome::Failed { error, exhausted },
-	}
 }
 
 /// An input that never awaits: resumed in slices with the flag read between
@@ -143,7 +117,13 @@ pub fn slice_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args,
 					return Outcome::Budget;
 				}
 			}
-			Err(error) => return Outcome::Failed { error, exhausted },
+			Err(error) => {
+				// The guard says this slice was spent, not that the input's
+				// budget was. Only the whole budget is worth naming beside an
+				// error, and only the last slice can have spent it.
+				let exhausted = exhausted && spent + SLICE >= budget_n;
+				return Outcome::Failed { error, exhausted };
+			}
 		}
 	}
 }
@@ -168,7 +148,14 @@ impl Runtime {
 /// within one cadence of Ctrl-C. Running Rune code, it is bounded by its
 /// budget and by nothing else: the budget cannot slice it, for the reason at
 /// the top of this file, and Rune offers no other hook.
-pub fn drive_async(runtime: &Runtime, vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args, budget_n: usize) -> Outcome {
+pub fn drive_async(
+	runtime: &Runtime,
+	vm: &mut Vm,
+	entry: [&str; 1],
+	args: impl rune::runtime::Args,
+	budget_n: usize,
+	when_interrupted: WhenInterrupted,
+) -> Outcome {
 	let execution = match vm.execute(entry, args) {
 		Ok(execution) => execution,
 		Err(error) => return Outcome::Failed { error, exhausted: false },
@@ -197,7 +184,12 @@ pub fn drive_async(runtime: &Runtime, vm: &mut Vm, entry: [&str; 1], args: impl 
 		return Outcome::Interrupted;
 	};
 	match outcome.into_result() {
-		Ok(GeneratorState::Complete(_)) if crate::host::interrupted() => Outcome::Interrupted,
+		Ok(GeneratorState::Complete(_))
+			if matches!(when_interrupted, WhenInterrupted::Abandon)
+				&& crate::host::interrupted() =>
+		{
+			Outcome::Interrupted
+		}
 		Ok(GeneratorState::Complete(value)) => Outcome::Complete(value),
 		Ok(GeneratorState::Yielded(_)) => Outcome::Yielded,
 		// A halt for want of budget, recognised as it is on both synchronous

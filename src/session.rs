@@ -729,7 +729,14 @@ impl Session {
 		);
 		let mut vm = Vm::new(runtime, unit.clone());
 		let outcome = if awaits {
-			super::execute::drive_async(&self.runtime, &mut vm, ["main"], (state,), self.budget)
+			super::execute::drive_async(
+				&self.runtime,
+				&mut vm,
+				["main"],
+				(state,),
+				self.budget,
+				super::execute::WhenInterrupted::Abandon,
+			)
 		} else {
 			super::execute::slice_sync(&mut vm, ["main"], (state,), self.budget)
 		};
