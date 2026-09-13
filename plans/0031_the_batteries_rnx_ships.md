@@ -28,15 +28,23 @@ executes scripts synchronously: `runner.rs` budgets a VM call, while
 interrupts. The integration decision is therefore about execution and host
 contracts as well as names in a module list.
 
-Claude reports a scratch measurement on nano, pinned to one core with 100
-runs: 3.5 ms for a default-context process, 3.9 ms with companion modules,
-and 4.3 ms with a Tokio runtime and an async VM call; the reported binaries
-are 9.2 and 13.9 MiB. The source and raw exports have not yet been linked
-into this record, and these remain attributed preliminary measurements.
-They are not a measurement of rnx with working HTTP, nor the whole cost of
-shipping it. The exact enabled modules, feature tree, runtime configuration,
-build conditions, and workload belong beside any adopted figures. Build
-time, first actual I/O, cancellation, and memory behavior remain to measure.
+The preserved companion probe in `rnx-bench` at commit
+`53fc3bd554befb5b55cb25aacebf07a0a96c9c1b`, measured on nano with Rust
+1.98.1 and 100 runs pinned to CPU 4, takes 3.509 ms for a default-context
+process, 3.816 ms with eight selected companion modules, and 4.242 ms when
+also constructing the runtime context, compiling, creating a current-thread
+Tokio runtime, executing an async function, and printing its result. These
+committed rerun figures replace the earlier unpreserved 3.5/3.9/4.3 ms report.
+
+The modes use one binary with the dependencies already compiled in. The
+async function constructs a Duration and returns 42; it does not await I/O
+or a timer. The companion probe is 13.894 MiB; the separate context-phases
+probe is 7.757 MiB, with different source and resolved features. Those sizes
+are not an isolated measure of adding HTTP to rnx. In particular,
+`rune-modules` enables Rune's default features, including `emit`, through
+its dependency. Source, raw exports, exact scope, and these qualifications
+are identified in the evidence file. Build time, first actual I/O,
+cancellation, memory behavior, and integrated rnx costs remain to measure.
 
 ## Decision
 
@@ -164,10 +172,11 @@ transport failure rather than inferred from an `Ok(Response)`.
 This record's inventory and direction are a plan. None of the following
 implementation gates is claimed passed by writing it.
 
-1. **Preserve the adoption experiment.** Link the scratch crate, lockfile,
-   feature tree, exact commands, and raw measurements, with build time,
-   binary size, linking, and target explicitly identified. Measure the
-   actual integrated rnx build before attributing costs to the product.
+1. **Complete adoption evidence.** The scratch crates, lockfiles, commands,
+   raw timing exports, and binary sizes are preserved at the benchmark
+   commit above. Record resolved feature trees, build time, linking, and
+   target for the shipping configuration, and measure the actual integrated
+   rnx build before attributing costs to the product.
 2. **Establish async execution.** A separate record covers all three entry
    points, synchronous compatibility, instruction accounting across real
    pending polls, interruption during pending I/O and CPU loops, source

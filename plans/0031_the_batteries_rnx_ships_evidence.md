@@ -60,23 +60,80 @@ The current host was checked in `src/runner.rs`, `src/session.rs`,
    request bytes between commands; it is not an in-flight download cap.
    Existing accounting cannot justify unbounded new body-reading helpers.
 
-## Preliminary adoption measurements
+## Preserved adoption measurements
 
-Claude reported the following on nano, pinned, with 100 runs:
+The initial 3.5/3.9/4.3 ms report had no raw export. Claude subsequently
+preserved both scratch crates and reran them in `rnx-bench` at commit
+`53fc3bd554befb5b55cb25aacebf07a0a96c9c1b`. Use that committed rerun:
 
-| Scratch configuration | Reported elapsed time |
+- `probes/companion-modules/`: source, manifest, and lockfile for adoption.
+- `probes/context-phases/`: source, manifest, and lockfile for phase probing.
+- `probes/run.sh`: release builds and exact hyperfine commands.
+- `results/probes.json`: raw observations and exit codes.
+- `results/probes.md`: rendered timing table.
+- `results/probes_versions.txt`: Rust version, host, CPU, date, binary sizes.
+
+These paths are relative to that benchmark repository and commit, not to
+rnx. It has no published remote referenced here. To inspect the retained
+export locally, for example:
+
+```sh
+git -C ../rnx-bench show 53fc3bd554befb5b55cb25aacebf07a0a96c9c1b:results/probes.json
+```
+
+Nano, Intel i7-14700, Linux 7.0.0-31-generic, Rust 1.98.1; both crates pin
+Rune 0.14.2 and the companion probe pins rune-modules 0.14.2. Release profile,
+`taskset -c 4 hyperfine -N --warmup 10 --runs 100`:
+
+| Companion-probe mode | Mean ± standard deviation |
 | --- | ---: |
-| Default context | 3.5 ms |
-| Context with selected companion modules | 3.9 ms |
-| With a Tokio runtime and one async VM call | 4.3 ms |
+| `none`: return immediately | 0.524 ± 0.016 ms |
+| `context`: default context | 3.509 ± 0.032 ms |
+| `nohttp`: add seven selected modules | 3.668 ± 0.012 ms |
+| `modules`: add HTTP as the eighth | 3.816 ± 0.026 ms |
+| `run`: also prepare and execute an async function | 4.242 ± 0.115 ms |
 
-Reported binary sizes were 9.2 and 13.9 MiB. These are attributed reports
-from the team conversation. At this record's creation, the scratch crate,
-runtime configuration, raw exports, binary hashes, link inspection, and
-exact enabled feature set were not linked to the record. They are not
-independently reproduced here. No build-time or real HTTP-request timing
-was reported. The rounded figures do not establish a precise marginal
-cost for an integrated rnx release.
+The seven are JSON, filesystem, time, TOML, process, random, and base64.
+Signal is not enabled or installed. The probe's set is an experiment, not
+the chosen shipping set in 0031; in particular it includes process.
+
+The final mode constructs `context.runtime()`, compiles a Rune function,
+creates a current-thread Tokio runtime with `enable_all()`, calls
+`vm.async_call`, and prints 42. Its entire Rune function is:
+
+```rune
+pub async fn main() { let x = time::Duration::from_millis(1); 42 }
+```
+
+It neither sleeps nor performs I/O. The 0.426 ms difference from `modules`
+is a compound workload difference, including output and cleanup, not the
+isolated cost of starting Tokio. As with record 0030, process-level deltas
+include destruction. All companion modes use the same compiled binary;
+`nohttp` does not remove HTTP dependencies from that binary.
+
+The saved sizes are 13.8938 MiB for the companion probe and 7.75674 MiB for
+the separate context-phases probe. The latter does not establish a matched
+before-build for the former. These replace the unpreserved 9.2/13.9 MiB
+size comparison for purposes of this evidence.
+
+Inspection with `cargo tree --locked --offline -e features -i rune` in the
+companion crate shows that rune-modules depends on Rune with default
+features enabled. Cargo therefore enables Rune `default` and `emit` there,
+despite the probe's direct Rune dependency specifying
+`default-features = false`. The context-phases probe only requests `std`.
+Adoption must inspect the resolved graph, not just the direct dependency
+line. Neither existing rnx's feature choice nor the companion crate's
+default-features setting suppresses that transitive request.
+
+Codex inspected the committed sources and exports; every one of the ten
+exported modes has 100 observations and all recorded exit codes are zero.
+This review did not independently rerun the timings. The harness builds
+through a pipeline ending in `tail` without `pipefail`; a failed build could
+therefore leave an older executable available. That is a reproducibility
+gap to harden, not evidence that the saved run used a stale executable.
+Binary hashes, resolved feature-tree exports, build-time measurements, and
+link inspection are not in the cited versions file. Real pending I/O,
+cancellation, memory behavior, and integrated rnx remain unmeasured here.
 
 ## Validation performed
 
@@ -84,6 +141,8 @@ cost for an integrated rnx release.
   module constructor.
 - Compared the proposed execution and memory requirements with rnx's
   existing synchronous paths and records.
+- Reviewed both probe sources, manifests, the preserved timing observations,
+  and the companion crate's resolved Rune features.
 - Checked the documentation diff for whitespace errors.
 
 No implementation tests or new benchmark runs were performed for this
