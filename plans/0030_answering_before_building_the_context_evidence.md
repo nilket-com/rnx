@@ -1,7 +1,9 @@
 # rnx 0030 evidence: answering before building the context
 
 Measured on Linux on 2026-09-13, on `nano` (Intel i7-14700, kernel
-7.0.0-31), Rust 1.95, Rune 0.14.2. `hyperfine 1.20.0` with `-N` (no shell),
+7.0.0-31), Rust **1.98.1** — the machine's default toolchain, not the 1.95 the
+manifest records as the tested one; a correction, the first draft of this
+file said 1.95 without checking — Rune 0.14.2. `hyperfine 1.20.0` with `-N` (no shell),
 pinned to one core with `taskset -c 4`, 10 warmups, 100 runs. "Before" is
 the tree at the plan commit, built with `cargo build --release --locked`
 into a separate target directory; "after" is the implementation commit.
@@ -44,13 +46,18 @@ the named phase, same hyperfine conditions:
 | after | mean | delta |
 | --- | --- | --- |
 | exit at once | 0.56 ms | the process floor |
-| `Context::with_default_modules()` | 3.7 ms | +3.1 ms |
+| `Context::with_default_modules()` | 3.7 ms | +3.1 ms, construction **and** the context's drop at exit |
 | `context.runtime()` | 3.7 ms | ~0 |
 | compiling `pub fn main() { 42 }` | 3.7 ms | ~0 |
 | running it | 3.7 ms | ~0 |
 
 The scratch crate is not in the repository; its whole source is nine lines
-of phase gating around the four calls named in the table.
+of phase gating around the four calls named in the table. Each delta is a
+whole process, so it includes dropping what the phase built: a separate
+per-module profile (`rnx-context-profile`, Codex, same day, same machine)
+puts construction at about 2.5 ms and destruction at about 0.3 ms, with
+installation into the context about 90% of construction and `ops` and `iter`
+together about 47% of it.
 
 ## The wider baseline
 
