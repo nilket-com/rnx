@@ -485,8 +485,8 @@ mod tests {
 	fn every_registered_host_function_has_a_description() {
 		let host = host();
 		// Twelve since record 0022 added `process_bytes_input`; record 0032's
-		// fixture is one more, under `test-support` only.
-		assert_eq!(host.len(), 12 + usize::from(cfg!(feature = "test-support")));
+		// async fixture and record 0034's two allocation probes are test-support only.
+		assert_eq!(host.len(), 12 + 3 * usize::from(cfg!(feature = "test-support")));
 		for function in &host {
 			assert!(
 				!function.doc.trim().is_empty(),

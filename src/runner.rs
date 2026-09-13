@@ -247,6 +247,10 @@ pub fn run(
 		// it ran; record 0023 leaves a cancelled child to the script.
 		crate::execute::WhenInterrupted::Finish,
 	);
+	drop(vm);
+	// Runtime drop cancels async work without waiting on started system DNS.
+	// Cleanup must not replace a completed script's own exit status.
+	drop(driver);
 	let value = match outcome {
 		crate::execute::Outcome::Complete(value) => value,
 		crate::execute::Outcome::Interrupted => {

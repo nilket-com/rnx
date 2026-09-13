@@ -45,9 +45,9 @@ serde_json = "1.0.149"
 libc = "0.2.177"
 rustyline = { version = "18.0.1", features = ["derive"] }
 unicode-width = "0.2.2"
-# Record 0032: the runtime every entry point drives the VM on. `rt` and `time`
-# only; a battery that needs the I/O driver asks for it in its own record.
-tokio = { version = "1", default-features = false, features = ["rt", "time"] }
+# Record 0034 adds networking to the current-thread execution runtime.
+tokio = { version = "1", default-features = false, features = ["rt", "time", "net"] }
+reqwest = { version = "=0.12.28", default-features = false, features = ["rustls-tls", "gzip"] }
 
 [profile.dev]
 debug = false
@@ -56,6 +56,8 @@ debug = false
 opt-level = 2
 
 [dev-dependencies]
+flate2 = "1"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 unicode-width = "0.2.2"
 
 [target."cfg(windows)".dependencies]

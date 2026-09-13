@@ -230,13 +230,17 @@ fn handle(
 	Outcome::Continue
 }
 
-pub fn run(context: Context, host: Vec<HostFunction>) -> crate::Result<()> {
+pub fn run(
+	context: Context,
+	host: Vec<HostFunction>,
+	http: crate::http::State,
+) -> crate::Result<()> {
 	let config = Config::builder()
 		.auto_add_history(false)
 		.completion_type(CompletionType::List)
 		.build();
 	let mut editor: Editor<RnxHelper, FileHistory> = Editor::with_config(config)?;
-	let mut session = Session::with_ceiling(context, ceiling())?;
+	let mut session = Session::with_ceiling(context, ceiling())?.with_http(http);
 	let names = Rc::new(RefCell::new(snapshot(&session, &host)));
 	editor.set_helper(Some(RnxHelper {
 		names: names.clone(),
@@ -259,7 +263,10 @@ pub fn run(context: Context, host: Vec<HostFunction>) -> crate::Result<()> {
 	loop {
 		let input = match editor.readline(PROMPT) {
 			Ok(line) => line,
-			Err(ReadlineError::Interrupted) => continue,
+			Err(ReadlineError::Interrupted) => {
+				session.cancel_http();
+				continue;
+			}
 			Err(ReadlineError::Eof) => break,
 			Err(e) => return Err(e.into()),
 		};

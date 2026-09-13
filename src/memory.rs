@@ -55,6 +55,16 @@ impl Counter {
 }
 
 static LIVE: Counter = Counter::new();
+#[cfg(feature = "test-support")]
+static PEAK: AtomicUsize = AtomicUsize::new(0);
+#[cfg(feature = "test-support")]
+pub fn peak() -> usize {
+	PEAK.load(Ordering::Relaxed)
+}
+#[cfg(feature = "test-support")]
+pub fn reset_peak() {
+	PEAK.store(LIVE.live(), Ordering::Relaxed);
+}
 /// The reference point recorded once, at startup. `usize::MAX` means it has
 /// not been recorded yet.
 static BASELINE: AtomicUsize = AtomicUsize::new(usize::MAX);
@@ -66,11 +76,15 @@ unsafe impl GlobalAlloc for Counting {
 	unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
 		let pointer = unsafe { System.alloc(layout) };
 		LIVE.allocated(pointer, layout.size());
+		#[cfg(feature = "test-support")]
+		PEAK.fetch_max(LIVE.live(), Ordering::Relaxed);
 		pointer
 	}
 	unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
 		let pointer = unsafe { System.alloc_zeroed(layout) };
 		LIVE.allocated(pointer, layout.size());
+		#[cfg(feature = "test-support")]
+		PEAK.fetch_max(LIVE.live(), Ordering::Relaxed);
 		pointer
 	}
 	unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
@@ -80,6 +94,8 @@ unsafe impl GlobalAlloc for Counting {
 	unsafe fn realloc(&self, pointer: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
 		let new_pointer = unsafe { System.realloc(pointer, layout, new_size) };
 		LIVE.reallocated(new_pointer, layout.size(), new_size);
+		#[cfg(feature = "test-support")]
+		PEAK.fetch_max(LIVE.live(), Ordering::Relaxed);
 		new_pointer
 	}
 }

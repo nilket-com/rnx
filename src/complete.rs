@@ -305,8 +305,8 @@ mod host_source_tests {
 			.into_iter()
 			.map(|f| f.path)
 			.collect();
-		// Twelve, and record 0032's fixture under `test-support`.
-		assert_eq!(registered.len(), 12 + usize::from(cfg!(feature = "test-support")));
+		// Twelve, plus the async fixture and two allocation probes under test-support.
+		assert_eq!(registered.len(), 12 + 3 * usize::from(cfg!(feature = "test-support")));
 		let names = super::Names {
 			host: registered.clone(),
 			..Default::default()

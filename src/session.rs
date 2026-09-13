@@ -253,8 +253,18 @@ pub struct Session {
 	/// Record 0032: one runtime for the session's whole life, across inputs
 	/// and across `:reset`.
 	runtime: super::execute::Runtime,
+	http: crate::http::State,
 }
 impl Session {
+	pub fn cancel_http(&self) {
+		if let Err(error) = self.http.clear(&self.runtime) {
+			eprintln!("{error}");
+		}
+	}
+	pub fn with_http(mut self, http: crate::http::State) -> Self {
+		self.http = http;
+		self
+	}
 	pub fn new(context: Context) -> Result<Self> {
 		Self::with_ceiling(context, DEFAULT_CEILING)
 	}
@@ -271,6 +281,7 @@ impl Session {
 			over_ceiling: false,
 			budget: BUDGET,
 			runtime: super::execute::Runtime::new()?,
+			http: crate::http::State::default(),
 		})
 	}
 	/// The generated source of the most recent input, for `:debug`.
@@ -306,6 +317,7 @@ impl Session {
 		self.units.clear();
 		self.last_generated.clear();
 		self.over_ceiling = false;
+		self.cancel_http();
 	}
 	pub fn ceiling(&self) -> usize {
 		self.ceiling
@@ -401,6 +413,15 @@ impl Session {
 	}
 
 	pub fn eval(&mut self, input: &str) -> std::result::Result<Value, Failure> {
+		let result = self.eval_input(input);
+		if crate::host::interrupted() {
+			if let Err(message) = self.http.clear(&self.runtime) {
+				return Err(Failure::Runtime { message, origin: None });
+			}
+		}
+		result
+	}
+	fn eval_input(&mut self, input: &str) -> std::result::Result<Value, Failure> {
 		if self.over_ceiling {
 			return Err(Failure::OverCeiling {
 				live: super::memory::live().unwrap_or(0),

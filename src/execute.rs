@@ -128,18 +128,46 @@ pub fn slice_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args,
 	}
 }
 
-/// The runtime an async execution runs on. Built only when a script can
-/// await, so a synchronous script never pays for it and records 0030's
-/// `version` and `help` never see it. A session keeps one across inputs and
-/// across `:reset`. Current-thread, timer enabled, nothing else.
-pub struct Runtime(tokio::runtime::Runtime);
+/// The current-thread runtime for every file and session. Version/help
+/// never construct one. Sessions retain it across reset; record 0034 adds
+/// the I/O driver and explicitly drains HTTP tasks after cancellation.
+pub struct Runtime(Option<tokio::runtime::Runtime>);
+
+impl Drop for Runtime {
+	fn drop(&mut self) {
+		// A started system DNS lookup cannot be cancelled. Do not let it
+		// hold process exit hostage; session reset still drains async tasks.
+		if let Some(runtime) = self.0.take() {
+			runtime.shutdown_background();
+		}
+	}
+}
 
 impl Runtime {
+	fn inner(&self) -> &tokio::runtime::Runtime {
+		self.0.as_ref().expect("runtime remains present until drop")
+	}
+	pub fn drain_http(&self) -> Result<(), String> {
+		if self.inner().metrics().num_alive_tasks() == 0 {
+			return Ok(());
+		}
+		self.inner().block_on(async {
+			let end = std::time::Instant::now() + Duration::from_millis(100);
+			while self.inner().metrics().num_alive_tasks() != 0 {
+				if std::time::Instant::now() >= end {
+					return Err("HTTP cleanup did not finish within 100 ms".into());
+				}
+				tokio::time::sleep(Duration::from_millis(5)).await;
+			}
+			Ok(())
+		})
+	}
 	pub fn new() -> std::io::Result<Self> {
 		tokio::runtime::Builder::new_current_thread()
 			.enable_time()
+			.enable_io()
 			.build()
-			.map(Self)
+			.map(|runtime| Self(Some(runtime)))
 	}
 }
 
@@ -170,7 +198,7 @@ pub fn drive_async(
 	};
 	let work = budget::with(budget_n, settled);
 	// The interval is a runtime resource, so it is made inside the runtime.
-	let outcome = runtime.0.block_on(async move {
+	let outcome = runtime.inner().block_on(async move {
 		Watched {
 			work: Box::pin(work),
 			interrupt: Interrupt::new(),
@@ -179,8 +207,8 @@ pub fn drive_async(
 	});
 	let Some(outcome) = outcome else {
 		// `Watched` is dropped with the execution and the host future it
-		// was pending on. That is the whole of cancellation: the driver
-		// spawned nothing, so nothing else is running.
+		// was pending on. The caller also clears HTTP state and drains its
+		// tracked request and connection tasks before returning to the prompt.
 		return Outcome::Interrupted;
 	};
 	match outcome.into_result() {

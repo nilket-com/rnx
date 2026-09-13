@@ -1191,6 +1191,18 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 			ms
 		}
 		module.function("test_pending", test_pending).build()?;
+		module
+			.function("test_allocation_peak", || crate::memory::peak() as u64)
+			.build()?;
+		module
+			.function("test_reset_allocation_peak", crate::memory::reset_peak)
+			.build()?;
+		for (name, doc) in [
+			("test_allocation_peak", "test_allocation_peak(): test-support allocator peak"),
+			("test_reset_allocation_peak", "test_reset_allocation_peak(): test-support reset peak"),
+		] {
+			registered.push(HostFunction { path: format!("host::{name}"), doc });
+		}
 		registered.push(HostFunction {
 			path: "host::test_pending".to_owned(),
 			doc: "test_pending(ms): test-support only; pending for ms milliseconds, then ms",

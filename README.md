@@ -117,6 +117,36 @@ serde_json's recursion guard. The writer retains its 256-level bound shared
 with the value renderer, so deeply nested JSON can be written but not read
 back. Neither bound is disabled by parsing or serialization.
 
+HTTP is available as `http::get(url).await?` and `http::get_bytes(url).await?`.
+Both return an object with `status`, `headers`, `body`, and the final `url`.
+Headers have lowercase names and lists of values, so
+`response.headers["content-type"][0]` reads the first value. HTTP 4xx/5xx
+statuses are ordinary responses. Transport errors return `Err`.
+
+`http::request(method, url, options).await?` and `http::request_bytes`
+accept `headers` (string-to-string object), `body` (String or Bytes),
+`timeout_ms`, and `body_limit`. Unknown options are refused.
+The default deadline is 30,000 ms (allowed: 1–90,000), shared by connecting,
+redirects, headers, and body reads. The default body limit is 8 MiB
+(allowed: 1 byte–64 MiB), counted after gzip decoding. Oversized and
+incomplete bodies are refused. Text must be UTF-8; other encodings need
+the bytes form. Gzip decoding removes the wire Content-Encoding and
+Content-Length headers; returned headers describe the decoded response.
+
+JSON still uses `host::json_parse(response.body)?`; request JSON uses
+`host::json_stringify(value)?` and an explicit Content-Type header.
+Redirects are followed at most ten times, with sensitive headers removed
+on host/port changes. TLS verification uses bundled roots, which require
+updating the binary to refresh. Proxy environment variables are honored.
+A client is created lazily and reused across session inputs. Ctrl-C and
+`:reset` discard it and drain its async tasks; the next request creates another.
+Name lookup uses the system resolver. A lookup already running there cannot
+be cancelled and may continue after the request times out or is interrupted.
+Session reset does not wait for it, and runtime shutdown does not delay
+process exit for it. Its OS resources remain until it returns or the process
+exits; rnx does not impose a separate deadline on that background lookup.
+Version and help do not initialize networking.
+
 Everything rnx prints itself is escaped — a diagnostic, a source excerpt, a
 file path, an error a script returned — so nothing can move the cursor of
 whoever ran it, and a caret is placed by the columns the escaped line actually

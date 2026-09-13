@@ -8,6 +8,7 @@ mod execute;
 mod delivery_control;
 mod format;
 mod host;
+mod http;
 mod inspect;
 mod json;
 mod memory;
@@ -107,6 +108,8 @@ fn main() -> Result<()> {
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = host::install(&mut context)?;
 	host_functions.extend(text::install(&mut context)?);
+	let http = http::State::default();
+	host_functions.extend(http::install(&mut context, &http)?);
 	// Answered before anything else, because it is not a Rune command at
 	// all: it drives a pipe of its own and reports what a stop did to a
 	// write blocked in the kernel.
@@ -117,7 +120,7 @@ fn main() -> Result<()> {
 	if args.first().is_some_and(|s| s == "eval") {
 		let source = args.get(1).ok_or("eval needs source")?.clone();
 		host::running_a_script();
-		let mut session = session::Session::new(context)?;
+		let mut session = session::Session::new(context)?.with_http(http.clone());
 		match session.eval(&source) {
 			// What a returned value means is decided in one place, so `eval`
 			// and `run` cannot disagree about what a failure is. The renderer
@@ -156,7 +159,7 @@ fn main() -> Result<()> {
 	// A session is what someone typing `rnx` almost always wants, and it works
 	// whether standard input is a terminal or a pipe.
 	if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
-		return repl::run(context, host_functions);
+		return repl::run(context, host_functions, http);
 	}
 	if args.first().is_some_and(|s| s == "run") {
 		// Flags are read only before the script path. Everything after the
