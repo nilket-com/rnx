@@ -1,10 +1,14 @@
-# rnx 0033: JSON that reads what it wrote
+# rnx 0033: the contract `json_parse` never had
 
 Status: proposed 2026-09-13. The thirty-third record of rnx, and record
 0031's gate 3. rnx has had `host::json_parse` since the spike: one line,
 `serde_json::from_str` into a Rune value, with no contract of its own. This
 record gives it one, and the first thing that contract has to fix is that
 rnx cannot read back a number it wrote.
+
+An earlier draft of this record was called "JSON that reads what it wrote".
+It is renamed because decision 4 declines to make that true at every depth,
+and a title should not promise what a decision withholds.
 
 ## Context
 
@@ -75,14 +79,26 @@ Parsing goes through `serde_json::Value` and rnx converts, rather than
 letting Rune's deserializer do it. Then:
 
 - an integer that fits `i64` is a signed integer;
-- an integer that fits `u64` but not `i64` is an unsigned integer, which
-  Rune has and which `json_stringify` already writes back exactly;
-- an integer that fits neither is read as the nearest `f64`, which is what
-  serde_json has already decided by the time rnx sees it, and is what this
-  record **states** rather than discovers: past 2^64 a JSON integer is a
-  double and its last digits are gone;
-- a number with a fraction or an exponent is an `f64`, and one that
-  overflows to infinity stays refused, as it is today.
+- an integer above `i64::MAX` and at most `u64::MAX` is an unsigned integer,
+  which Rune has and which `json_stringify` already writes back exactly;
+- an integer **outside `i64::MIN ..= u64::MAX`** — below `-2^63` or above
+  `2^64 - 1`, both ends, `2^64` itself being the first above — is read as a
+  double, which is what serde_json has already decided by the time rnx sees
+  it. This record states that rather than discovering it: outside that range
+  a JSON integer is a double and its last digits are gone;
+- a number with a fraction or an exponent is a double by the same
+  conversion, and one that overflows to infinity stays refused, as it is
+  today.
+
+The double is **serde_json's conversion, which is approximate**, and this
+record does not promise the nearest representable double, because the
+configured parser does not give one. Measured: `55527869896048623745833`
+reads as `0x1.78457fdde62a9p+75`, where the nearest double is
+`0x1.78457fdde62aap+75` — one unit in the last place away. serde_json's
+`float_roundtrip` feature makes the conversion correctly rounded; it is not
+enabled and this record does not enable it. That changes how every float in
+every document is read, which is a numerics decision rather than a contract,
+and belongs to a record that measures it.
 
 `-0` reads as `-0.0`: serde_json makes it a float and rnx does not re-lex
 numbers to disagree. Stated, not fixed.
@@ -103,15 +119,30 @@ nobody. The asymmetry with record 0019 is deliberate: rnx refuses to
 the ability to know a key was repeated; that is the cost, and the
 documentation says so rather than leaving it to be discovered.
 
-### 4. One depth bound, and a document may not exceed what rnx can write
+### 4. Two depth bounds, both stated, and neither moved
 
-Today the two disagree: the serializer stops at 256 levels (record 0019's
-`MAX_DEPTH`) and the parser stops at serde_json's own 128, so rnx can emit
-JSON it cannot read back. One bound, stated in the message when it is hit,
-and the JSON pair uses it in both directions. Which number it is, is
-decided in implementation against the two existing bounds; what this record
-fixes is that there is one of them and that emitting past it is not
-possible.
+The two differ and this record leaves them differing. The writer stops at
+256 levels, record 0019's `MAX_DEPTH`, deliberately **shared with the
+renderer** — `tests/json.rs` has a gate by that name. The reader stops at
+serde_json's own recursion limit, 128 today, which is not rnx's number. So a
+value between the two can be written and not read back.
+
+Both ways of reconciling them cost more than the asymmetry does:
+
+- **Raising the reader to 256** means turning serde_json's recursion guard
+  off (`unbounded_depth`) and replacing it with a depth scan of rnx's own
+  over the document text, brackets and strings and escapes. That trades a
+  guard that works for one rnx has to keep correct, and the failure when it
+  is not correct is a stack overflow — the class of failure record 0019's
+  recursive-drop draft is about. Not for a depth no real document reaches.
+- **Lowering the writer to 128** unshares a bound record 0019 shared on
+  purpose and moves its gates, to fix a case nothing reaches.
+
+So both numbers are stated, in the documentation for the pair and in the
+message when either is hit, and the asymmetry is written down rather than
+left to be discovered. If a document ever arrives that needs more, the first
+alternative is the one to cost out, with the scan gated before the guard is
+turned off.
 
 ### 5. A refusal names the document, not just the parser
 
@@ -144,39 +175,45 @@ getting a wrong number.
 1. **A number survives a round trip.** For a set spanning `0`, `±1`,
    `i64::MAX`, `i64::MAX + 1`, `u64::MAX`, `i64::MIN`, and floats,
    `json_parse(json_stringify(v))` equals `v`, and in particular
-   `18446744073709551615u64` does. A number past `2^64` is documented as a
-   double and gated as one, not as an equality.
+   `18446744073709551615u64` does. An integer outside `i64::MIN ..= u64::MAX`
+   is gated as a double at both ends, not as an equality; the gate asserts
+   what serde_json's conversion gives rather than the nearest double, and
+   carries the measured one-unit example, so enabling `float_roundtrip`
+   later shows up as a gate that has to move.
 2. **The table above is a test.** Every row, as a gate, with the two
    wrapped rows corrected and the rest asserted as decided.
 3. **`null` and unit are the same value both ways**, inside containers as
    well as alone.
 4. **A duplicate key takes the last value**, gated so the choice cannot
    change silently.
-5. **One bound.** A document deeper than the bound is refused, naming it;
-   a value deeper than the bound cannot be written; the two numbers are the
-   same number, read from one place in the source.
+5. **Both bounds.** A document at the reader's bound parses and one past it
+   is refused, carrying a position; a value at the writer's bound is written
+   and one past it is refused in record 0019's words. Both numbers are
+   asserted, so the day either changes, a gate says so.
 6. **A refusal says where in the document**, and nothing in the message can
    be mistaken for a position in the script.
 7. **Nothing about `json_stringify` changes.** Record 0019's gates pass
-   unchanged, and the JSON workload in `rnx-bench` produces identical
-   output.
+   unchanged — including `the_depth_bound_is_shared_with_the_renderer`, which
+   decision 4 is written to keep — and the JSON workload in `rnx-bench`
+   produces identical output.
 
 ## Guardrails and stop conditions
 
 1. If fixing a number requires a new dependency feature, stop and say so:
    `arbitrary_precision` changes serde_json's behaviour well beyond this.
 2. One writer and one reader, each in one place in the source.
-3. No silent widening. If a value cannot be represented, the parse says so;
-   the one exception is the integer past `2^64`, which is decided in
-   decision 1 and documented rather than refused.
+3. No silent widening, with one exception stated at both of its ends: an
+   integer outside `i64::MIN ..= u64::MAX` — below `-2^63` or above
+   `2^64 - 1` — is read as a double by decision 1 and documented rather than
+   refused. Everything inside that range is exact, or the parse says why not.
 
 ## Risks
 
 - **A script relying on today's wrapped number.** It is getting a wrong
   answer now; anything relying on it was already broken.
-- **The depth bound moving.** If the single bound is lower than 256, a
-  value that could be written yesterday is refused today. The gate for
-  record 0019's boundary has to move with it, deliberately.
+- **The two depth bounds drifting apart.** The reader's is serde_json's and
+  can move in a version bump. Gate 5 asserts both numbers, so a bump shows up
+  as a failing gate rather than as a wider gap nobody notices.
 
 ## Forward
 
