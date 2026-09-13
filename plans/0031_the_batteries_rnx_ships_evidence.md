@@ -135,6 +135,50 @@ Binary hashes, resolved feature-tree exports, build-time measurements, and
 link inspection are not in the cited versions file. Real pending I/O,
 cancellation, memory behavior, and integrated rnx remain unmeasured here.
 
+## Matched emit-feature comparison
+
+Benchmark commit `c920bfccfab91cc6b0119ee2e08fedaeef9adb4d` adds
+`probes/context-phases-emit/` and `results/probes_emit.json`/`.md`.
+Codex compared its `src/main.rs` with `context-phases/src/main.rs`: they
+are byte-identical. The manifests differ in package name and enabling Rune
+`emit`; common resolved dependency names and versions match in their
+lockfiles. Both pin Rune 0.14.2. The recorded run used 100 observations per
+mode, all with zero exit codes; the team reports the same Rust 1.98.1,
+nano, pinned CPU conditions. These exported means were inspected, not
+independently rerun:
+
+| Mode | `std` mean ± standard deviation | `std,emit` mean ± standard deviation |
+| --- | ---: | ---: |
+| Return immediately | 0.483 ± 0.069 ms | 0.463 ± 0.017 ms |
+| Default context | 3.499 ± 0.413 ms | 3.425 ± 0.031 ms |
+| Compile, execute 42, print | 3.666 ± 0.032 ms | 3.696 ± 0.018 ms |
+
+The context-only `std` result has substantial outliers; its lower `emit`
+mean is not evidence of an optimization. The run result has a small positive
+mean difference of 0.030 ms, about 0.8%. Standard deviations alone do not
+prove equivalence or establish that every difference is noise. The supported
+conclusion is that this probe shows a small effect, not that `emit` is
+universally runtime-free. It does not exercise emitting diagnostics.
+
+The probe README records sizes of 7.76 and 7.89 MiB, an approximately
+0.13 MiB difference. This controls the feature comparison better than the
+different companion/phase programs do. It still does not decompose the
+entire companion binary's growth into reqwest, Tokio, modules, and other
+code. The original 4.6 MiB growth report is not established by this rerun.
+
+The new lockfile packages, excluding the probe itself, are
+`codespan-reporting` 0.11.1, `termcolor` 1.4.1, `unicode-width` 0.1.14,
+and `winapi-util` 0.1.11. The last includes target-specific behavior;
+record 0029's target-aware workflow determines the actual notice set.
+Rune defaults enable `std` and `emit`, not `doc`. rnx's custom diagnostics
+remain its user-facing path regardless of the newly resolved emission code.
+
+With the published rune-modules dependency as it stands, disabling defaults
+on rnx's direct Rune dependency cannot remove the transitive `emit` request.
+Vendoring is not the only possible route to a smaller feature set: an
+upstream dependency change or independent adapters can change that graph.
+No such change is required or implemented by this evidence update.
+
 ## Validation performed
 
 - Read the published source and checked HTTP registrations against its

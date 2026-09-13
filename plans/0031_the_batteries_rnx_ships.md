@@ -46,6 +46,22 @@ its dependency. Source, raw exports, exact scope, and these qualifications
 are identified in the evidence file. Build time, first actual I/O,
 cancellation, memory behavior, and integrated rnx costs remain to measure.
 
+A matched feature comparison in `rnx-bench` at commit
+`c920bfccfab91cc6b0119ee2e08fedaeef9adb4d` uses identical phase-probe source
+with `std` versus `std,emit`. The run means are 3.666 and 3.696 ms; the
+benchmark README records sizes of 7.76 and 7.89 MiB. This is a small observed
+effect in that workload, not proof of zero runtime cost. `doc` remains off.
+Accept `emit` as a known consequence of this companion-crate dependency,
+subject to the integrated-build gates. It does not replace rnx's own
+diagnostics. Its additional resolved dependencies belong in record 0029's
+notices update when integration lands.
+
+Cargo cannot turn off features requested by another dependency. Keeping
+Rune strictly `std`-only would require changing that dependency path, for
+example an upstream rune-modules dependency change or independently written
+adapters to the underlying libraries. Vendoring selected module code is
+another option, not the only one, and is not selected by this record.
+
 ## Decision
 
 ### 1. Own the delivered experience, reuse upstream components
