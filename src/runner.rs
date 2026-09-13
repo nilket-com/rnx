@@ -229,7 +229,7 @@ pub fn run(
 	// that loops for ever runs until something outside kills it. A file that
 	// never awaits takes the call `run` has always made; one that can await
 	// takes record 0032's driver, and is then interruptible while it waits.
-	let outcome = if crate::execute::can_await(&text) {
+	let outcome = if crate::execute::file_main_is_async(&text) {
 		let driver = match crate::execute::Runtime::new() {
 			Ok(driver) => driver,
 			Err(error) => {
@@ -244,7 +244,7 @@ pub fn run(
 	let value = match outcome {
 		crate::execute::Outcome::Complete(value) => value,
 		crate::execute::Outcome::Interrupted => {
-			unplaced("interrupted", "");
+			eprintln!("interrupted");
 			return 130;
 		}
 		// A halt for want of budget carries no location, and saying so
@@ -263,7 +263,7 @@ pub fn run(
 			unlocated("runtime error", "unexpected yield");
 			return 1;
 		}
-		crate::execute::Outcome::Failed(error) => {
+		crate::execute::Outcome::Failed { error, exhausted } => {
 			// Rune reports a missing method by hash. Record 0014 recovers
 			// the name when it can be proved, and leaves the message alone
 			// when it cannot.
@@ -272,6 +272,18 @@ pub fn run(
 			match fault_offset(&error, &unit) {
 				Some(offset) => located("runtime error", path, &text, offset, &message),
 				None => unlocated("runtime error", &message),
+			}
+			// Said after the error and never instead of it: the budget was
+			// spent to its last instruction at the same moment, which is the
+			// reason for a halt raised inside an async function and is
+			// context for anything else.
+			if exhausted {
+				unplaced(
+					"halted",
+					&format!(
+						"the budget of {budget} instructions was exhausted at that point; {BUDGET_FLAG} N raises it"
+					),
+				);
 			}
 			return 1;
 		}

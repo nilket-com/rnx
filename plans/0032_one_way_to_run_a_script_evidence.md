@@ -45,6 +45,53 @@ whole budget once, raced against a future that reads the flag on a 5 ms
 interval (a timer wakes the task; a flag does not); a script that cannot
 await runs on the unchanged synchronous path it always had.
 
+## The second review, and what it found
+
+Review found two more, both reproduced against the implementation before
+anything changed:
+
+1. **The shape test read tokens out of the text.** `let text = ".await";
+   loop {}` took the async path and so lost the slices that make Ctrl-C end
+   a loop, and a `select` — which awaits without writing the word — was not
+   recognised at all. Rune refuses `.await` **and** `select` outside an
+   async function, in the same words, so the compiler can answer the
+   question: the synchronous wrapper is compiled first, and its refusal is
+   the answer. A file is answered from the parsed `main` item's `async`
+   keyword. Measured afterwards, by the wrapper `:debug` prints:
+
+   | input | wrapper |
+   | --- | --- |
+   | `let text = ".await"; 1` | `pub fn main` |
+   | `host::test_pending(1).await` | `pub async fn main` |
+   | `let a = 1; select { r = a => r }` | `pub async fn main` |
+   | `(async{42}).await` | `pub async fn main` |
+   | `let n = 0; for i in 0..3 { n += i; } n` | `pub fn main` |
+   | `async fn f() { host::test_pending(1).await } 1` | `pub fn main` |
+
+   The last is the one no scan of the text can get right: the declaration is
+   hoisted above the wrapper, so the input that declares an awaiting
+   function does not itself await.
+
+2. **The budget report stood in front of a real failure.** `pub async fn
+   main(_) { panic!("boom") }` under `--budget 4` reported only
+   `halted: 4 instructions exceeded`; under 5 it reported the panic. The
+   async path was classifying on the guard alone, and a failure on the last
+   permitted instruction leaves the guard at zero exactly as a halt does.
+   It now classifies as both synchronous paths always have, on the absence
+   of a location **and** the guard, and names the budget after a located
+   error rather than instead of it:
+
+   ```
+   runtime error at /tmp/boom.rn, line 1, column 24: Panicked: boom
+     pub async fn main(_) { panic!("boom") }
+                            ^
+   halted: the budget of 4 instructions was exhausted at that point; --budget N raises it
+   ```
+
+   A budget spent inside a nested async function now reports as the halt it
+   is, at that function's call site, with the same second line. Telling that
+   apart from a failure would need Rune's error kind, which is crate-private.
+
 ## Gate 1: synchronous scripts are unchanged
 
 Every suite passes: `cargo test --locked` and `cargo test --features
@@ -52,13 +99,21 @@ test-support`. Standard output, standard error and exit status were
 compared byte for byte between the two binaries for: `eval 7.3*8.75`; an
 eval with an iterator chain; `run` of the committed JSON workload and of the
 bare file; `run --budget 1000` of the JSON workload (a budget halt); `eval`
-of an index error; `eval loop {}` (the default budget's halt); and a session
-of six inputs — a binding, a declaration, `:vars`, and `:debug`, whose
-generated wrapper is the same text. All identical.
+of an index error; `eval loop {}` (the default budget's halt); `eval` of a
+parse error and of a missing item; a declaration and a call; and a session
+of eight inputs — a binding, a declaration, `:vars`, `:debug`, a broken
+input and `:debug` again. All identical, the generated wrapper included.
 
-## Gates 2 to 6: `tests/async_execution.rs`
+That last pair is what the second review's fix had to preserve: an input
+that fails to compile is now compiled twice, once per wrapper, and when both
+wrappers are refused in the same words the synchronous attempt is the one
+reported and the one `:debug` shows. An input that awaits **and** is wrong
+is the only input whose report changes, and it changes from the wrapper's
+complaint about awaiting to the input's own error.
 
-Fifteen gates, Unix and `test-support` only, all passing:
+## Gates 2 to 7: `tests/async_execution.rs`
+
+Twenty-one gates, Unix and `test-support` only, all passing:
 
 - A file whose `main` awaits the fixture prints its value; a synchronous
   file still runs; `eval` awaits; a session input awaits at the top level
@@ -78,31 +133,37 @@ Fifteen gates, Unix and `test-support` only, all passing:
   second input queued behind it, that input runs and answers. A synchronous
   session input in `loop {}` is interrupted and the next input answers. A
   file in `loop {}` under `--budget 100000` halts for budget. (Gate 4)
+- A string holding `.await` leaves a session input on the synchronous path,
+  where Ctrl-C ends its loop and the next input answers, and leaves a file
+  synchronous; `select` on a real future reaches the async path and returns
+  its value; an awaited `async` block returns its value; an input that only
+  declares an awaiting function keeps the synchronous path and its slices.
+  (Gate 5)
 - An index error on line 4, after an await on line 2, is reported at
   `line 4` with the source line under `run`; in a session it names
-  `input 2`. (Gate 5)
+  `input 2`. (Gate 6)
 - Nothing pending outlives an input: the interrupted session exits as soon
   as its pipe closes, which it could not if the 10 s future were still
   held; the interrupted run exits within the bound. Neither path spawns a
-  task. (Gate 6)
+  task. (Gate 7)
 
-## Gate 7: cost
+## Gate 8: cost
 
 | Command | Mean [µs] | Min [µs] | Max [µs] | Relative |
 |:---|---:|---:|---:|---:|
-| `version before` | 508.1 ± 19.9 | 484.5 | 597.7 | 1.03 ± 0.05 |
-| `version after` | 493.6 ± 15.4 | 472.4 | 563.8 | 1.00 |
-| `eval 42 before` | 3949.4 ± 62.7 | 3907.1 | 4492.2 | 8.00 ± 0.28 |
-| `eval 42 after` | 3884.5 ± 16.3 | 3853.6 | 3943.4 | 7.87 ± 0.25 |
-| `run bare before` | 3607.1 ± 19.9 | 3576.6 | 3713.3 | 7.31 ± 0.23 |
-| `run bare after` | 3558.4 ± 49.6 | 3512.8 | 3914.0 | 7.21 ± 0.25 |
-| `json loop before` | 11503.8 ± 295.1 | 11276.3 | 14082.8 | 23.30 ± 0.94 |
-| `json loop after` | 11597.6 ± 96.8 | 11469.5 | 11940.9 | 23.49 ± 0.76 |
+| `version before` | 515.6 ± 23.8 | 479.7 | 610.9 | 1.04 ± 0.06 |
+| `version after` | 494.1 ± 16.0 | 475.5 | 552.8 | 1.00 |
+| `eval 42 before` | 3967.6 ± 37.3 | 3918.8 | 4122.2 | 8.03 ± 0.27 |
+| `eval 42 after` | 3891.1 ± 54.3 | 3842.6 | 4307.3 | 7.87 ± 0.28 |
+| `run bare before` | 3619.4 ± 21.3 | 3582.1 | 3754.3 | 7.32 ± 0.24 |
+| `run bare after` | 3535.8 ± 13.9 | 3512.5 | 3586.7 | 7.16 ± 0.23 |
+| `json loop before` | 11502.8 ± 206.1 | 11325.2 | 12920.3 | 23.28 ± 0.86 |
+| `json loop after` | 11553.6 ± 108.5 | 11396.5 | 12220.2 | 23.38 ± 0.79 |
 
 `eval`, `run`, and the JSON workload are unchanged within 0.1 ms; those are
 synchronous and take the paths they always took. The binary grows from
-9.25 to 9.41 MiB. The session's startup reference point from `:memory`:
-1,789,936 bytes before, 1,798,072 after — 8,136 bytes for the runtime the
+9.25 to 9.42 MiB. The session's startup reference point from `:memory`:
+1,789,815 bytes before, 1,797,948 after — 8,133 bytes for the runtime the
 session builds at start, counted against the ceiling as record 0031 says.
 
 ## Dependencies and notices
@@ -112,6 +173,15 @@ and `time` features. `scripts/third-party-notices.sh` regenerated
 `THIRD-PARTY-NOTICES.md` (54 packages, one new section for tokio under its
 MIT license); its `--check` passes and so does the release-metadata gate
 that runs it.
+
+## What is open, and not claimed
+
+Record 0031's gate 2 asks for interruption during pending I/O and CPU loops.
+Every entry point is interruptible while pending on a future, and every
+synchronous script is interruptible in a loop. A script that can await and
+then loops without awaiting is bounded by its budget and by nothing else;
+that clause of gate 2 is open, and the record says why it cannot be closed
+here.
 
 ## Not measured
 

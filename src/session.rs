@@ -525,38 +525,10 @@ impl Session {
 				_ => return Err(self.refused_at("unsupported statement", number, start - 1)),
 			}
 		}
-		let mut generated = Generated::new();
-		for declaration in declarations.values() {
-			generated.user(&declaration.source, declaration.input, declaration.offset);
-			generated.raw("\n");
-		}
-		// Record 0032: `async` only for an input that can await, so every
-		// other input keeps the wrapper, the path, and the slices it always
-		// had. The declarations above the wrapper are the session's, and a
-		// declared `async fn` is only a declaration until an input awaits it.
-		let awaits = super::execute::can_await(input);
-		generated.raw(if awaits {
-			"pub async fn main(__rnx_state) {\n"
-		} else {
-			"pub fn main(__rnx_state) {\n"
-		});
 		// Restore only what this input may reference, so the prelude follows
 		// the input rather than the session.
 		let referenced = mentioned(input, &self.names);
-		for name in &referenced {
-			generated.raw(&format!("let {name} = __rnx_state[\"{name}\"];\n"));
-		}
 		let restored = self.restored(&referenced)?;
-		for (text, offset) in &statements {
-			generated.user(text, number, *offset);
-			generated.raw("\n");
-		}
-		generated.raw("let __rnx_result = (");
-		if result_is_user {
-			generated.user(&result.0, number, result.1);
-		} else {
-			generated.raw(&result.0);
-		}
 		// Publish a delta: the names this input restored, which it may have
 		// reassigned, and the names it declared. A name it never mentioned is
 		// absent, and the session leaves its entry, and its identity, alone.
@@ -565,13 +537,81 @@ impl Session {
 			.filter(|name| !self.names.contains(*name))
 			.map(String::as_str)
 			.collect();
-		let delta: BTreeSet<&str> = referenced.into_iter().chain(declared).collect();
-		generated.raw(");\n(#{");
-		generated.raw(&delta.into_iter().collect::<Vec<_>>().join(","));
-		generated.raw("}, __rnx_result)\n}");
+		let delta = referenced
+			.iter()
+			.copied()
+			.chain(declared)
+			.collect::<BTreeSet<&str>>()
+			.into_iter()
+			.collect::<Vec<_>>()
+			.join(",");
+		// Record 0032: the wrapper is `async` only for an input that needs
+		// one, so every other input keeps the wrapper, the path and the
+		// slices it always had. Which one an input needs is asked of the
+		// compiler rather than guessed from the text — a string holding
+		// `.await` is not an await, and `select` awaits without writing the
+		// word — because Rune refuses both outside an async function. The
+		// synchronous wrapper is compiled first; a refusal sends the input to
+		// the async wrapper, and that attempt's outcome is the input's,
+		// success or failure, so an input that awaits and is also wrong is
+		// told what is wrong with it rather than that it awaited.
+		let build = |awaits: bool| {
+			let mut generated = Generated::new();
+			for declaration in declarations.values() {
+				generated.user(&declaration.source, declaration.input, declaration.offset);
+				generated.raw("\n");
+			}
+			generated.raw(if awaits {
+				"pub async fn main(__rnx_state) {\n"
+			} else {
+				"pub fn main(__rnx_state) {\n"
+			});
+			for name in &referenced {
+				generated.raw(&format!("let {name} = __rnx_state[\"{name}\"];\n"));
+			}
+			for (text, offset) in &statements {
+				generated.user(text, number, *offset);
+				generated.raw("\n");
+			}
+			generated.raw("let __rnx_result = (");
+			if result_is_user {
+				generated.user(&result.0, number, result.1);
+			} else {
+				generated.raw(&result.0);
+			}
+			generated.raw(");\n(#{");
+			generated.raw(&delta);
+			generated.raw("}, __rnx_result)\n}");
+			generated
+		};
+		let synchronous = build(false);
+		let (generated, awaits, compiled) = match self.compile(&synchronous) {
+			Ok(unit) => (synchronous, false, unit),
+			Err(refused) => {
+				let asynchronous = build(true);
+				match self.compile(&asynchronous) {
+					Ok(unit) => (asynchronous, true, unit),
+					// Both wrappers were refused. Refused in the same words,
+					// the input's error has nothing to do with awaiting: the
+					// synchronous wrapper is the one to report and the one
+					// `:debug` shows, exactly as before this record. Refused
+					// differently, the synchronous refusal was about the
+					// await and the async attempt is the honest report.
+					Err(refused_again) => {
+						let (failure, text) =
+							if refused_again.to_string() == refused.to_string() {
+								(refused, synchronous.text)
+							} else {
+								(refused_again, asynchronous.text)
+							};
+						self.last_generated = text;
+						return Err(failure);
+					}
+				}
+			}
+		};
 		self.last_generated = generated.text.clone();
-
-		let unit = Arc::new(self.compile(&generated)?);
+		let unit = Arc::new(compiled);
 		// Entries whose unit nothing can call any more go before this input's
 		// entry is registered, so the bookkeeping stays proportional to the
 		// units still reachable rather than to the number of inputs.
@@ -701,7 +741,19 @@ impl Session {
 				message: "unexpected yield".into(),
 				origin: None,
 			}),
-			super::execute::Outcome::Failed(error) => Err(self.runtime_failure(error)),
+			super::execute::Outcome::Failed { error, exhausted } => {
+				let mut failure = self.runtime_failure(error);
+				// Beside the error, never in place of it.
+				if exhausted
+					&& let Failure::Runtime { message, .. } = &mut failure
+				{
+					message.push_str(&format!(
+						"; the budget of {} instructions was exhausted at that point",
+						self.budget
+					));
+				}
+				Err(failure)
+			}
 		}
 	}
 

@@ -56,18 +56,41 @@ pub enum Outcome {
 	Interrupted,
 	/// The entry point yielded, which no entry point of rnx's may do.
 	Yielded,
-	/// The VM raised this, with whatever location it carries.
-	Failed(VmError),
+	/// The VM raised this, with whatever location it carries. `exhausted`
+	/// says the budget was spent to the last instruction at the moment it
+	/// settled, which is worth reporting beside the error and is never
+	/// reported instead of it: a failure on the last permitted instruction
+	/// leaves the budget at zero exactly as a halt does, and the error is
+	/// the thing the reader needs.
+	Failed { error: VmError, exhausted: bool },
 }
 
-/// Whether a script can await: the token that does it, or the declaration
-/// that permits it. A script with neither runs on a synchronous path, which
-/// is exactly the path it ran on before record 0032. A false positive — the
-/// text in a string — sends a synchronous script down the async path, where
-/// it still runs correctly; a false negative is impossible, because a script
-/// cannot await without writing `.await` inside an `async fn`.
-pub fn can_await(source: &str) -> bool {
-	source.contains(".await") || source.contains("async fn") || source.contains("async ")
+/// Whether a file's `main` is declared `async`, which is the only way a file
+/// can await: Rune refuses `.await` and `select` outside an async function,
+/// so a synchronous `main` cannot await whatever it declares or calls. Read
+/// from the parsed item, not from the text, because a string holding
+/// `.await` is not an await and `select` awaits without writing the word.
+///
+/// A source this cannot parse is one the compiler has already refused, or is
+/// about to; the async path is chosen for it, which costs a runtime and no
+/// correctness.
+pub fn file_main_is_async(source: &str) -> bool {
+	use rune::ast::Spanned;
+	let parsed = rune::parse::parse_all::<rune::ast::File>(source, rune::SourceId::empty(), false)
+		.or_else(|_| {
+			rune::parse::parse_all::<rune::ast::File>(source, rune::SourceId::empty(), true)
+		});
+	let Ok(file) = parsed else {
+		return true;
+	};
+	for (item, _) in &file.items {
+		if let rune::ast::Item::Fn(function) = item
+			&& source.get(function.name.span().range()) == Some("main")
+		{
+			return function.async_token.is_some();
+		}
+	}
+	false
 }
 
 /// A file that never awaits: one call under one budget, as `run` has always
@@ -84,7 +107,7 @@ pub fn complete_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Gu
 		Ok(value) => Outcome::Complete(value),
 		// A halt for want of budget: no location, and the guard exhausted.
 		Err(error) if error.first_location().is_none() && exhausted => Outcome::Budget,
-		Err(error) => Outcome::Failed(error),
+		Err(error) => Outcome::Failed { error, exhausted },
 	}
 }
 
@@ -95,7 +118,7 @@ pub fn complete_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Gu
 pub fn slice_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args, budget_n: usize) -> Outcome {
 	let mut execution = match vm.execute(entry, args) {
 		Ok(execution) => execution,
-		Err(error) => return Outcome::Failed(error),
+		Err(error) => return Outcome::Failed { error, exhausted: false },
 	};
 	let mut spent = 0usize;
 	loop {
@@ -120,7 +143,7 @@ pub fn slice_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args,
 					return Outcome::Budget;
 				}
 			}
-			Err(error) => return Outcome::Failed(error),
+			Err(error) => return Outcome::Failed { error, exhausted },
 		}
 	}
 }
@@ -148,7 +171,7 @@ impl Runtime {
 pub fn drive_async(runtime: &Runtime, vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args, budget_n: usize) -> Outcome {
 	let execution = match vm.execute(entry, args) {
 		Ok(execution) => execution,
-		Err(error) => return Outcome::Failed(error),
+		Err(error) => return Outcome::Failed { error, exhausted: false },
 	};
 	let exhausted = Rc::new(Cell::new(false));
 	let settled = Settled {
@@ -177,12 +200,18 @@ pub fn drive_async(runtime: &Runtime, vm: &mut Vm, entry: [&str; 1], args: impl 
 		Ok(GeneratorState::Complete(_)) if crate::host::interrupted() => Outcome::Interrupted,
 		Ok(GeneratorState::Complete(value)) => Outcome::Complete(value),
 		Ok(GeneratorState::Yielded(_)) => Outcome::Yielded,
-		// The budget ran out. Wherever it ran out — the head or a nested
-		// future — this is genuine exhaustion, because the whole budget was
-		// installed; a halt inside a nested future carries that future's
-		// location, so the location is not consulted here, only the guard.
-		Err(_) if exhausted.get() => Outcome::Budget,
-		Err(error) => Outcome::Failed(error),
+		// A halt for want of budget, recognised as it is on both synchronous
+		// paths: no location, and the guard exhausted when the execution
+		// settled. The guard alone would not do, because a failure on the
+		// last permitted instruction leaves it exhausted too and its
+		// diagnostic is the thing worth keeping. The cost of the two
+		// together is that a budget spent inside a nested async function
+		// carries that function's location and so reports as the halt it is,
+		// with the budget named beside it, rather than as the tidier line
+		// the head gets; reading the halt apart from the error would need
+		// Rune's error kind, which it keeps to itself.
+		Err(error) if error.first_location().is_none() && exhausted.get() => Outcome::Budget,
+		Err(error) => Outcome::Failed { error, exhausted: exhausted.get() },
 	}
 }
 

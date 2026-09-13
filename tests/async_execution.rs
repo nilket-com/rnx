@@ -290,6 +290,92 @@ fn a_synchronous_session_input_in_a_loop_is_still_interrupted_within_a_slice() {
 	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
 }
 
+// Classification: which wrapper and which path an input gets is the
+// compiler's answer, not a reading of the text.
+
+#[test]
+fn a_string_that_looks_like_an_await_keeps_the_synchronous_slices() {
+	// `.await` inside a string literal is not an await. The input must stay
+	// on the synchronous path, where Ctrl-C ends a loop within a slice.
+	let ran = interrupted(
+		&["repl"],
+		Some("let text = \".await\"; loop { }\n1 + 1\n"),
+		Duration::from_millis(400),
+	);
+	assert_eq!(ran.code, Some(0), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
+	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
+	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
+	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
+}
+
+#[test]
+fn a_file_whose_string_mentions_await_is_still_synchronous() {
+	let path = script("stringy.rn", "pub fn main(_) { let text = \".await\"; text }");
+	let ran = rnx(&["run", path.to_str().unwrap()], None);
+	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
+	assert!(ran.stdout.contains(".await"), "{}", ran.stdout);
+}
+
+#[test]
+fn select_is_recognised_even_though_it_never_writes_await() {
+	// `select` awaits without the word; the compiler refuses it outside an
+	// async function, which is how it is recognised.
+	let ran = rnx(
+		&["eval", "let a = host::test_pending(5); select { r = a => r }"],
+		None,
+	);
+	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
+	assert_eq!(ran.stdout, "5\n");
+}
+
+#[test]
+fn an_awaited_async_block_is_recognised() {
+	let ran = rnx(&["eval", "(async { 42 }).await"], None);
+	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
+	assert_eq!(ran.stdout, "42\n");
+}
+
+#[test]
+fn declaring_an_async_function_does_not_make_the_input_that_declares_it_async() {
+	// The declaration is hoisted above the wrapper, so an input that only
+	// declares an awaiting function keeps the synchronous path itself.
+	let ran = interrupted(
+		&["repl"],
+		Some("async fn helper() { host::test_pending(1).await }\nloop { }\n1 + 1\n"),
+		Duration::from_millis(500),
+	);
+	assert_eq!(ran.code, Some(0), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
+	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
+	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
+	assert!(ran.elapsed < Duration::from_secs(4), "{:?}", ran.elapsed);
+}
+
+#[test]
+fn a_failure_on_the_last_permitted_instruction_keeps_its_diagnostic() {
+	// A failure that lands exactly as the budget runs out leaves the guard
+	// exhausted, as a halt does. The error is what the reader needs; the
+	// budget is said beside it and never instead of it.
+	let path = script("boom.rn", "pub async fn main(_) { panic!(\"boom\") }");
+	let mut both = None;
+	for budget in 1..=32u32 {
+		let ran = rnx(
+			&["run", "--budget", &budget.to_string(), path.to_str().unwrap()],
+			None,
+		);
+		assert_eq!(ran.code, Some(1), "budget {budget}: {}", ran.stderr);
+		if ran.stderr.contains("Panicked: boom") && ran.stderr.contains("was exhausted at that point")
+		{
+			both = Some((budget, ran.stderr));
+			break;
+		}
+	}
+	let (budget, stderr) = both.expect(
+		"no budget reported the panic together with the exhaustion: a failure on the last \
+		 permitted instruction is being reported as a budget halt",
+	);
+	assert!(stderr.contains("Panicked: boom"), "budget {budget}: {stderr}");
+}
+
 // Gate 5: diagnostics keep their place after an await.
 
 #[test]

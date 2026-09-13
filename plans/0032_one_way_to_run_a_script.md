@@ -1,13 +1,19 @@
 # rnx 0032: one way to run a script
 
-Status: proposed 2026-09-13; revised the same day after review. The
+Status: proposed 2026-09-13; revised the same day after review, twice. The
 thirty-second record of rnx, and the async foundation record 0031 gate 2
 asks for. Three entry points drive the VM in two different ways today, and
 neither way can wait on a future. After this record a script that can await
 runs on a third way that can; the two old ways stay exactly as they are for
 every script that cannot, and everything they promised still holds.
 
-**Revision.** The first draft put every script on one sliced driver. Review
+**Revision 2.** A second review found the shape test reading tokens out of
+strings and missing `select`, and the async path's budget report standing in
+front of a failure that landed on the last permitted instruction. Both are
+corrected below, in decision 1 and in the gates; neither the paths nor the
+reason for them changed.
+
+**Revision 1.** The first draft put every script on one sliced driver. Review
 (Codex) found that a nested `async fn` of more than one slice's instructions
 returned an error under it, and a probe found worse: resumed past that halt,
 the execution completes with `()` in place of the nested value. Decision 1
@@ -73,8 +79,7 @@ what decides the shape of the decision.
 
 ### 1. The script's shape chooses its path
 
-A script that can await — one that writes `.await`, or declares an
-`async fn` — runs on a new path: the whole execution under its whole budget
+A script that can await runs on a new path: the whole execution under its whole budget
 on a Tokio current-thread runtime, raced against a future that reads the
 interrupt flag on a cadence while the execution is pending on a host
 future. A script that cannot await runs exactly as it did before this
@@ -86,19 +91,47 @@ The split is not a preference. Finding 5 says the budget cannot slice an
 execution that may nest, and any execution that can await may nest; and
 finding 6 with the absence of any other hook says a running execution can
 be bounded by nothing but its budget. So an execution that can await is
-not sliced, and one that cannot keeps the slices it always had. The test
-for "can await" is the presence of the tokens that make it possible; a
-false positive sends a synchronous script down the async path, where it
-still runs correctly, and a false negative cannot happen.
+not sliced, and one that cannot keeps the slices it always had. Which one a script is, is not read out of its text. `.await` inside a string
+literal is not an await, and `select` awaits without writing the word, so a
+scan for either is wrong in both directions. Two questions, two answers, and
+both come from the parser:
+
+- **A file**: whether its `main` item carries the `async` keyword, read from
+  the parsed item. Rune refuses `.await` and `select` outside an async
+  function, so a synchronous `main` cannot await, whatever it declares or
+  calls. A source that will not parse is one the compiler has already
+  refused; the async path is chosen for it, at the cost of a runtime and no
+  correctness.
+- **A session input**: whether the compiler accepts the synchronous wrapper.
+  It is compiled first, and a refusal is the compiler saying this input needs
+  the other one, in the same words for `.await` and for `select`. The input
+  then gets the async wrapper and that attempt's outcome, success or failure.
+  Refused twice in the same words, the input's error had nothing to do with
+  awaiting: the synchronous attempt is what is reported and what `:debug`
+  shows, exactly as before this record. That also settles a case a scan
+  cannot: an input that only **declares** an awaiting function is not itself
+  an awaiting input, because the declaration is hoisted above the wrapper.
 
 All three paths report one of five outcomes — completed with a value,
 halted for budget, interrupted, yielded, or failed with the VM's error —
 and `run`, `eval` and the session interpret the outcome each in their own
-words, as they do today. A budget halt is recognised as it always was, by
-the budget guard being exhausted at the moment the execution settled; on
-the async path the error's location is not consulted, because a halt
-inside a nested future carries that future's location and is exhaustion
-all the same.
+words, as they do today.
+
+A budget halt is recognised on all three the same way, and the way is the
+one the synchronous paths have always used: the error carries no location
+**and** the guard was exhausted when the execution settled. The guard alone
+will not do. A failure that lands on the last permitted instruction leaves
+the guard at zero exactly as a halt does, and the error is the thing the
+reader needs; reporting the budget in its place loses it. So whenever the
+guard is exhausted and the error has a place, the error is reported with
+its place and the budget is named after it, never instead of it.
+
+The cost of that rule is borne by a budget spent inside a nested async
+function: the halt carries that function's location, so it reports as the
+halt it is, with the budget named beneath, rather than as the one tidy line
+the head gets. Telling the two apart would mean reading Rune's error kind,
+which `VmErrorKind` and `VmHaltInfo` keep crate-private. That is the third
+thing worth taking upstream, after the startup cost and the interrupt hook.
 
 ### 2. What Ctrl-C ends, on each path
 
@@ -182,7 +215,9 @@ that each battery's burden.
    loop under a small budget halts for budget, not for anything else. And
    the review's script — a nested `async fn` of more than a slice's
    instructions — returns its value under a budget that allows it, from a
-   file and from a session where the function was an earlier input.
+   file and from a session where the function was an earlier input. A
+   failure that lands on the last permitted instruction is reported with
+   its own diagnostic, and the budget beside it.
 4. **Interruption reaches a pending future, and the synchronous slices are
    still there.** A run, an `eval`, and a session input pending on the
    fixture end within a stated bound of Ctrl-C; the run exits 130 and says
@@ -190,13 +225,18 @@ that each battery's burden.
    runs to completion. A synchronous session input in `loop {}` is still
    ended within a slice. A file in `loop {}` is ended by its budget, as it
    always was, and by nothing else.
-5. **Diagnostics keep their place.** A runtime error after an await names
+5. **The shape is read, not guessed.** A string holding `.await` leaves an
+   input on the synchronous path, with its slices; `select` reaches the
+   async path though it never writes `await`; an awaited `async` block
+   reaches it; an input that only declares an awaiting function does not.
+   A file whose string mentions `.await` still runs synchronously.
+6. **Diagnostics keep their place.** A runtime error after an await names
    the file, line, and column under `run`, and the input under the
    session, as today.
-6. **Nothing is left pending.** After an interrupted input the session's
+7. **Nothing is left pending.** After an interrupted input the session's
    next input runs; after an interrupted run the process exits without
    waiting. The evidence states what was checked.
-7. **Cost is measured.** `version`, `help`, `eval 42`, `run` of a trivial
+8. **Cost is measured.** `version`, `help`, `eval 42`, `run` of a trivial
    file, and the JSON workload, before and after, under the bench's
    conditions; and the session's startup baseline from `:memory`.
 
@@ -220,13 +260,27 @@ that each battery's burden.
   2. In `run` the default budget ends it in milliseconds; in the session
   the net is about ten seconds, and an input that can await and loops
   without awaiting is the one input that waits for it.
-- **The shape test reads tokens.** `async` in a string sends a synchronous
-  script down the async path. It runs correctly there; it only loses the
-  slices, and only for that script.
+- **A session input that needs the async wrapper is compiled twice.** Only
+  that input, and only the second time; a compile of one input measures in
+  fractions of a millisecond, and the evidence reports the cost of the
+  paths rather than of the probe.
 - **Tokio joins the dependency tree.** `rt` and `time` only; record 0029's
   notices are regenerated.
+
+## What this record leaves open against record 0031
+
+Record 0031's gate 2 asks for interruption during pending I/O **and** CPU
+loops. Pending I/O is met at every entry point. CPU loops are met for every
+synchronous script, which is every script that ran before this record, and
+are **not** met for a script that can await and then loops without awaiting:
+its budget is its only bound, for the reason in decision 2. That clause of
+gate 2 is open, it is open because Rune 0.14.2 has no interrupt that is not
+the budget, and it is not closed by writing a record. It is recorded as open
+against 0031 rather than counted as passed.
 
 ## Forward
 
 Record 0031's gate 3, JSON, which needs none of this, and gate 4, HTTP,
-which needs all of it.
+which needs all of it. Three asks upstream, none of them a fork: a
+cooperative interrupt hook, a readable error kind, and the startup cost
+record 0030's evidence measured.
