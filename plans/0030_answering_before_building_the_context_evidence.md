@@ -52,6 +52,12 @@ the named phase, same hyperfine conditions:
 The scratch crate is not in the repository; its whole source is nine lines
 of phase gating around the four calls named in the table.
 
+## The wider baseline
+
+The same machine and conditions were used for a cross-runtime baseline kept
+in its own repository, `rnx-bench`, at commit 1e4c09b. That is the commit a
+future comparison should cite; the numbers above are rnx's rows from it.
+
 ## What was not measured
 
 The cost of the context itself was not profiled: `perf` is refused on this
