@@ -1,4 +1,4 @@
-//! The one JSON serializer rnx offers a script, and the walk that bounds it.
+//! The JSON reader, guarded serializer, and the walk that bounds writing.
 //!
 //! Rune's `Serialize` for `Value` recurses with no cycle guard and no depth
 //! bound, so a cyclic value aborts the process with a stack overflow rather
@@ -19,6 +19,68 @@
 //! was written.
 use crate::format::MAX_DEPTH;
 use rune::runtime::{Function, Object, OwnedTuple, TypeValue, Value, Vec as RuneVec};
+
+/// Read with serde_json's recursion guard intact, then preserve its numeric
+/// representation. Rune 0.14.2's Deserialize casts u64 to i64, wrapping large
+/// positive integers; its unsigned Value variant does not have that defect.
+pub fn parse(text: &str) -> Result<Value, String> {
+	let document: serde_json::Value = serde_json::from_str(text).map_err(|error| {
+		let reason = format!("cannot parse JSON document: {error}");
+		// serde_json exposes the error category, but not this specific code.
+		// Boundary gates pin both the counter and this diagnostic spelling.
+		if error.to_string().starts_with("recursion limit exceeded") {
+			format!(
+				"{reason}; the reader allows at most 127 nested arrays or objects (recursion counter 128)"
+			)
+		} else {
+			reason
+		}
+	})?;
+	from_document(document).map_err(|error| format!("cannot convert parsed JSON document: {error}"))
+}
+
+/// Only called on a tree already bounded by the parser. Consuming the tree
+/// avoids retaining a second complete copy during conversion. Allocation
+/// failures in Rune's containers remain catchable errors.
+fn from_document(document: serde_json::Value) -> Result<Value, rune::alloc::Error> {
+	use serde_json::Value as Json;
+	Ok(match document {
+		Json::Null => Value::from(()),
+		Json::Bool(value) => Value::from(value),
+		Json::Number(value) => {
+			if let Some(value) = value.as_i64() {
+				Value::from(value)
+			} else if let Some(value) = value.as_u64() {
+				Value::from(value)
+			} else {
+				// With arbitrary_precision off every remaining Number is f64.
+				Value::from(
+					value
+						.as_f64()
+						.expect("serde_json number is i64, u64, or f64"),
+				)
+			}
+		}
+		Json::String(value) => Value::try_from(rune::alloc::String::try_from(value.as_str())?)?,
+		Json::Array(values) => {
+			let mut array = RuneVec::with_capacity(values.len())?;
+			for value in values {
+				array.push(from_document(value)?)?;
+			}
+			Value::try_from(array)?
+		}
+		Json::Object(values) => {
+			let mut object = Object::with_capacity(values.len())?;
+			for (key, value) in values {
+				object.insert(
+					rune::alloc::String::try_from(key.as_str())?,
+					from_document(value)?,
+				)?;
+			}
+			Value::try_from(object)?
+		}
+	})
+}
 
 /// One step of the way into a value, for naming where a refusal happened.
 enum Step {

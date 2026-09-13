@@ -1,6 +1,8 @@
 # rnx 0033: the contract `json_parse` never had
 
-Status: proposed 2026-09-13. The thirty-third record of rnx, and record
+Status: implemented 2026-09-13. Validation is in
+[the accompanying evidence](0033_the_contract_json_parse_never_had_evidence.md).
+The thirty-third record of rnx, and record
 0031's gate 3. rnx has had `host::json_parse` since the spike: one line,
 `serde_json::from_str` into a Rune value, with no contract of its own. This
 record gives it one, and the first thing that contract has to fix is that

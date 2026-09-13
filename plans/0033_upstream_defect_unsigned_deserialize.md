@@ -5,10 +5,10 @@ This is a **defect**: a value inside the range of a type Rune has comes back
 as a different, negative number, with no error.
 
 Not filed. Filing it is the operator's call. Found on 2026-09-13 while giving
-rnx's JSON parsing a contract. rnx is affected today: record 0033 *proposes*
-converting through `serde_json::Value` instead, and until that is implemented
-`host::json_parse` goes through this deserializer and returns the wrong
-number. Every other host that deserializes into `Value` is affected too.
+rnx's JSON parsing a contract. Record 0033 now converts through
+`serde_json::Value` instead, so rnx's parser avoids this defect. Hosts that
+deserialize these unsigned values directly into Rune's `Value` remain
+affected.
 
 ---
 

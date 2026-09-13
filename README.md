@@ -102,6 +102,21 @@ JSON is something a script asks for, with `host::json_stringify(value)`, which
 refuses what JSON cannot represent and names where in the value it gave up.
 There is no flag: a script that wants JSON on standard output prints it.
 
+`host::json_parse(text)` returns a `Result` containing the parsed value.
+Integers from `i64::MIN` through `i64::MAX` become signed integers; larger
+ones through `u64::MAX` become unsigned integers, without losing digits.
+Integers outside that range, fractions, and exponent notation use
+serde_json's approximate double conversion, which does not promise correct
+rounding. Overflow to infinity is refused; `-0` becomes `-0.0`. JSON `null`
+becomes `()`, which writes back as `null`. Strings preserve Unicode and
+escaped characters. Repeated object keys keep the last value; key order is
+not preserved. Parse errors identify a position in the JSON document.
+
+The reader accepts 127 nested arrays or objects and refuses the 128th under
+serde_json's recursion guard. The writer retains its 256-level bound shared
+with the value renderer, so deeply nested JSON can be written but not read
+back. Neither bound is disabled by parsing or serialization.
+
 Everything rnx prints itself is escaped — a diagnostic, a source excerpt, a
 file path, an error a script returned — so nothing can move the cursor of
 whoever ran it, and a caret is placed by the columns the escaped line actually
