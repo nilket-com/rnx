@@ -530,8 +530,16 @@ impl Session {
 			generated.user(&declaration.source, declaration.input, declaration.offset);
 			generated.raw("\n");
 		}
-		// Async since record 0032, so an input may `.await` at the top level.
-		generated.raw("pub async fn main(__rnx_state) {\n");
+		// Record 0032: `async` only for an input that can await, so every
+		// other input keeps the wrapper, the path, and the slices it always
+		// had. The declarations above the wrapper are the session's, and a
+		// declared `async fn` is only a declaration until an input awaits it.
+		let awaits = super::execute::can_await(input);
+		generated.raw(if awaits {
+			"pub async fn main(__rnx_state) {\n"
+		} else {
+			"pub fn main(__rnx_state) {\n"
+		});
 		// Restore only what this input may reference, so the prelude follows
 		// the input rather than the session.
 		let referenced = mentioned(input, &self.names);
@@ -575,7 +583,7 @@ impl Session {
 			unit: Arc::downgrade(&unit),
 			map: generated.map,
 		});
-		let output = self.execute(&unit, restored)?;
+		let output = self.execute(&unit, restored, awaits)?;
 		let (delta, value): (Value, Value) =
 			rune::from_value(output).map_err(|e| Failure::Runtime {
 				message: e.to_string(),
@@ -671,7 +679,7 @@ impl Session {
 		}
 		rune::to_value(object).map_err(|e| fault(e.to_string()))
 	}
-	fn execute(&self, unit: &Arc<Unit>, state: Value) -> std::result::Result<Value, Failure> {
+	fn execute(&self, unit: &Arc<Unit>, state: Value, awaits: bool) -> std::result::Result<Value, Failure> {
 		// A runtime per input. Sharing one across units is what this cut set
 		// out to do and cannot: see the record.
 		let runtime = Arc::new(
@@ -680,7 +688,12 @@ impl Session {
 				.map_err(|e| Failure::Refused(e.to_string()))?,
 		);
 		let mut vm = Vm::new(runtime, unit.clone());
-		match super::execute::drive(&self.runtime, &mut vm, ["main"], (state,), self.budget) {
+		let outcome = if awaits {
+			super::execute::drive_async(&self.runtime, &mut vm, ["main"], (state,), self.budget)
+		} else {
+			super::execute::slice_sync(&mut vm, ["main"], (state,), self.budget)
+		};
+		match outcome {
 			super::execute::Outcome::Complete(value) => Ok(value),
 			super::execute::Outcome::Interrupted => Err(Failure::Interrupted),
 			super::execute::Outcome::Budget => Err(Failure::Budget(self.budget)),

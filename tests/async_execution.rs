@@ -173,15 +173,17 @@ fn an_await_does_not_grant_a_fresh_budget() {
 	// the middle, and at the end. An await mid-slice must resume with what
 	// the slice had left, so all three need the same budget.
 	let head = "pub async fn main(_) { let n = 0;";
-	let loop_a = "for i in 0..300 { n += i; }";
-	let loop_b = "for i in 0..300 { n += i; }";
+	// Each loop is several times the synchronous slice, so the property is
+	// tested across what would have been many slice boundaries.
+	let loop_a = "for i in 0..4000 { n += i; }";
+	let loop_b = "for i in 0..4000 { n += i; }";
 	let wait = "host::test_pending(1).await;";
 	let tail = "n }";
 	let at_start = format!("{head} {wait} {loop_a} {loop_b} {tail}");
 	let in_middle = format!("{head} {loop_a} {wait} {loop_b} {tail}");
 	let at_end = format!("{head} {loop_a} {loop_b} {wait} {tail}");
 	let needed = smallest_budget(&at_start);
-	assert!(needed > 1_000, "the scripts should span slices: {needed}");
+	assert!(needed > 30_000, "the scripts should dwarf a slice of 10,000: {needed}");
 	assert!(completes_under(&in_middle, needed), "the middle await needed more than {needed}");
 	assert!(completes_under(&at_end, needed), "the end await needed more than {needed}");
 	assert!(!completes_under(&in_middle, needed - 50), "the middle await got a fresh budget");
@@ -210,16 +212,13 @@ fn ctrl_c_ends_a_run_pending_on_a_future() {
 }
 
 #[test]
-fn ctrl_c_ends_a_run_in_a_loop() {
-	let path = script("loop.rn", "pub fn main(_) { loop { } }");
-	let ran = interrupted(
-		&["run", "--budget", "18446744073709551614", path.to_str().unwrap()],
-		None,
-		Duration::from_millis(300),
-	);
-	assert_eq!(ran.code, Some(130), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
-	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
-	assert!(ran.elapsed < Duration::from_secs(2), "{:?}", ran.elapsed);
+fn a_run_in_a_loop_is_bounded_by_its_budget_as_it_always_was() {
+	// A file run was never interruptible mid-loop (record 0021), and record
+	// 0032 does not make it so: the budget is the bound, sync or async.
+	let path = script("loop.rn", "pub async fn main(_) { loop { } }");
+	let ran = rnx(&["run", "--budget", "100000", path.to_str().unwrap()], None);
+	assert_eq!(ran.code, Some(1), "{}", ran.stderr);
+	assert!(ran.stderr.starts_with("halted: 100000 instructions exceeded"), "{}", ran.stderr);
 }
 
 #[test]
@@ -256,6 +255,39 @@ fn after_an_interrupted_input_the_next_input_runs_to_completion() {
 	assert_eq!(ran.code, Some(0), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.stdout.contains("11\n"), "{}", ran.stdout);
+}
+
+#[test]
+fn a_nested_async_fn_that_outruns_a_slice_still_completes() {
+	// The defect the review found: a nested async function of more than one
+	// slice's instructions, under a budget that allows it, must return its
+	// value. Slicing would have returned `()`.
+	let path = script(
+		"nested.rn",
+		"async fn work() { let n = 0; for i in 0..2000 { n += i; } n }\npub async fn main(_) { work().await }\n",
+	);
+	let ran = rnx(&["run", "--budget", "2000000", path.to_str().unwrap()], None);
+	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
+	assert_eq!(ran.stdout, "1999000\n");
+	// And in the session, where the helper is a declaration of an earlier
+	// input and the await comes later.
+	let ran = rnx(
+		&["repl"],
+		Some("async fn work() { let n = 0; for i in 0..2000 { n += i; } n }\nwork().await\n"),
+	);
+	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
+	assert!(ran.stdout.contains("1999000\n"), "{}", ran.stdout);
+}
+
+#[test]
+fn a_synchronous_session_input_in_a_loop_is_still_interrupted_within_a_slice() {
+	// Record 0002's promise for an input that never awaits, kept: the
+	// synchronous path and its slices are unchanged.
+	let ran = interrupted(&["repl"], Some("loop { }\n1 + 1\n"), Duration::from_millis(400));
+	assert_eq!(ran.code, Some(0), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
+	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
+	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
+	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
 }
 
 // Gate 5: diagnostics keep their place after an await.

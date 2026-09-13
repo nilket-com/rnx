@@ -225,17 +225,23 @@ pub fn run(
 		}
 	};
 	let mut vm = Vm::new(runtime, unit.clone());
-	let driver = match crate::execute::Runtime::new() {
-		Ok(driver) => driver,
-		Err(error) => {
-			unplaced("error", &format!("cannot start the runtime: {error}"));
-			return 1;
-		}
-	};
 	// The budget, from the command line or the default. Without one a script
-	// that loops for ever runs until something outside kills it. Record 0032
-	// slices it so Ctrl-C can end the run; the slices sum to the same bound.
-	let value = match crate::execute::drive(&driver, &mut vm, ["main"], (arguments,), budget) {
+	// that loops for ever runs until something outside kills it. A file that
+	// never awaits takes the call `run` has always made; one that can await
+	// takes record 0032's driver, and is then interruptible while it waits.
+	let outcome = if crate::execute::can_await(&text) {
+		let driver = match crate::execute::Runtime::new() {
+			Ok(driver) => driver,
+			Err(error) => {
+				unplaced("error", &format!("cannot start the runtime: {error}"));
+				return 1;
+			}
+		};
+		crate::execute::drive_async(&driver, &mut vm, ["main"], (arguments,), budget)
+	} else {
+		crate::execute::complete_sync(&mut vm, ["main"], (arguments,), budget)
+	};
+	let value = match outcome {
 		crate::execute::Outcome::Complete(value) => value,
 		crate::execute::Outcome::Interrupted => {
 			unplaced("interrupted", "");

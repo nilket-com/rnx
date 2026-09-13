@@ -1,10 +1,18 @@
 # rnx 0032: one way to run a script
 
-Status: proposed 2026-09-13. The thirty-second record of rnx, and the async
-foundation record 0031 gate 2 asks for. Three entry points drive the VM in
-two different ways today, and neither way can wait on a future. After this
-record there is one way, it can, and everything the two old ways promised
-still holds.
+Status: proposed 2026-09-13; revised the same day after review. The
+thirty-second record of rnx, and the async foundation record 0031 gate 2
+asks for. Three entry points drive the VM in two different ways today, and
+neither way can wait on a future. After this record a script that can await
+runs on a third way that can; the two old ways stay exactly as they are for
+every script that cannot, and everything they promised still holds.
+
+**Revision.** The first draft put every script on one sliced driver. Review
+(Codex) found that a nested `async fn` of more than one slice's instructions
+returned an error under it, and a probe found worse: resumed past that halt,
+the execution completes with `()` in place of the nested value. Decision 1
+and gates 3 and 4 are rewritten below; the title is kept, because the one
+way is now the way the script's own shape chooses, and that is the decision.
 
 ## Context
 
@@ -44,49 +52,79 @@ alone does not (its results are in the evidence):
    During a pure CPU loop it was observed at the next slice boundary.
 4. Dropping an execution whose host future is pending drops the future.
    Nothing was left running; nothing had been spawned.
+5. **A budget halt inside a nested async function is unrecoverable.** An
+   `async fn` awaited from Rune code runs as a nested execution wrapped in a
+   future value; a budget halt inside it resolves that future to an error,
+   and Rune drops a settled future. Resuming the outer execution afterwards
+   completed with `()` where a loop summing to 1,999,000 should have been —
+   silently. With the whole budget installed once, the same script returned
+   1,999,000. A synchronous call is a frame in the same execution, not a
+   nested one, so a synchronous execution's slices are resumable, as record
+   0002's have always been. Rune 0.14.2 offers no per-instruction hook other
+   than the budget: `VmDiagnostics` fires on function calls only.
+6. A future that only reads a flag does not wake when the flag is set: a
+   store to an atomic wakes no task. The pending-interrupt latency in 3
+   came from a timer on a cadence, and that is what the driver uses.
 
-That is enough to build on without inventing anything.
+That is enough to build on without inventing anything, and finding 5 is
+what decides the shape of the decision.
 
 ## Decision
 
-### 1. One driver, three callers
+### 1. The script's shape chooses its path
 
-A new module owns execution: given a VM, an entry point, its arguments, a
-slice size and a total budget, it resumes the execution slice by slice on
-a Tokio current-thread runtime and returns one of four outcomes —
-completed with a value, halted for budget, interrupted, or failed with the
-VM's error. `run`, `eval` and the session call it and interpret the
-outcome each in their own words, as they do today.
+A script that can await — one that writes `.await`, or declares an
+`async fn` — runs on a new path: the whole execution under its whole budget
+on a Tokio current-thread runtime, raced against a future that reads the
+interrupt flag on a cadence while the execution is pending on a host
+future. A script that cannot await runs exactly as it did before this
+record: a file on `run`'s one call under one budget, a session input on
+record 0002's sliced resume with the flag read between slices. Neither
+synchronous path changes by a byte, and the evidence checks that.
 
-Each slice is `budget::with(min(SLICE, remaining), async_resume())`
-selected against an interrupt future. A budget halt is recognised as it is
-now, by two structural facts: the error carries no location, and the
-budget guard is exhausted at the moment the poll settled. Nothing reads
-the error's text. When a slice halts for budget, the driver spends it,
-checks the flag, and starts the next; when the flag is seen, whether at a
-boundary or while pending, the driver drops the execution and reports
-interruption.
+The split is not a preference. Finding 5 says the budget cannot slice an
+execution that may nest, and any execution that can await may nest; and
+finding 6 with the absence of any other hook says a running execution can
+be bounded by nothing but its budget. So an execution that can await is
+not sliced, and one that cannot keeps the slices it always had. The test
+for "can await" is the presence of the tokens that make it possible; a
+false positive sends a synchronous script down the async path, where it
+still runs correctly, and a false negative cannot happen.
 
-### 2. `run` becomes interruptible, and its budget is unchanged
+All three paths report one of five outcomes — completed with a value,
+halted for budget, interrupted, yielded, or failed with the VM's error —
+and `run`, `eval` and the session interpret the outcome each in their own
+words, as they do today. A budget halt is recognised as it always was, by
+the budget guard being exhausted at the moment the execution settled; on
+the async path the error's location is not consulted, because a halt
+inside a nested future carries that future's location and is exhaustion
+all the same.
 
-Slicing a run's budget does not change it: the slices sum to the budget
-the operator chose, the last slice is whatever remains, and exhaustion
-reports the same line it does now. What changes is that Ctrl-C ends a run
-at the next slice boundary or as soon as a pending future is dropped.
-Record 0021 said the bound could not be removed until "a file run being
-reliably interruptible"; this record makes it so and still does not remove
-the bound, which is record 0021's decision 2 and stays.
+### 2. What Ctrl-C ends, on each path
+
+A session input that never awaits: at the next slice boundary, as always.
+A session input or a file or an `eval` that is pending on a host future:
+within one cadence of the flag, and the execution and its future are
+dropped. A file that never awaits: not mid-loop, as it never was — record
+0021 says why the bound stays, and this record does not remove it. A
+script that can await and is running Rune code rather than waiting: not
+mid-loop either; its budget is its bound, and the session's budget is the
+ten-second net record 0002 chose. That last case is the cost of finding 5,
+it is stated here rather than hidden, and it is the second thing worth
+taking upstream after the startup cost: a cooperative interrupt hook that
+does not go through the budget.
 
 An interrupted run says `interrupted` on standard error and exits 130,
-which is what a shell reports for a process ended by Ctrl-C, so a script
-around rnx reads it the same way. `eval` does the same. The session prints
-`interrupted` and returns to the prompt, as it does now.
+which is what a shell reports for a process ended by Ctrl-C. `eval` does
+the same. The session prints `interrupted` and returns to the prompt.
 
-### 3. The session's generated `main` is async
+### 3. The session's generated `main` is async when the input can await
 
-`pub fn main(__rnx_state)` becomes `pub async fn main(__rnx_state)`, so an
-input may write `.await` at the top level. Everything else about the
-generated source is unchanged: the same bindings restored, the same delta
+For an input that can await, `pub fn main(__rnx_state)` becomes
+`pub async fn main(__rnx_state)`, so it may write `.await` at the top
+level. For any other input the wrapper is what it was, and `:debug` shows
+the same text it always showed. Everything else about the generated source
+is unchanged: the same bindings restored, the same delta
 published, the same map from generated offsets to inputs. A declaration
 the input makes — `fn f() {}` — is synchronous unless the input says
 otherwise, as in a file.
@@ -94,10 +132,11 @@ otherwise, as in a file.
 ### 4. One runtime per command, kept for a session
 
 The runtime is built after the context, so records 0030's `version` and
-`help` still answer before either exists. `run` and `eval` build one, use
-it, and drop it on the way out. The session builds one when it starts and
-keeps it across inputs and across `:reset`; a reset frees the session's
-values, not the runtime. It is a current-thread runtime with the timer
+`help` still answer before either exists. `run` builds one only for a file
+that can await, uses it, and drops it on the way out; a file that cannot
+never has one. The session builds one when it starts, whichever inputs
+follow, and keeps it across inputs and across `:reset`; a reset frees the
+session's values, not the runtime. It is a current-thread runtime with the timer
 enabled and nothing else: no worker threads, no I/O driver until a battery
 record needs one and measures it. The driver spawns no task, so there is
 nothing to outlive an input.
@@ -136,15 +175,21 @@ that each battery's burden.
    awaits it, an `eval` that awaits it, and a session input that awaits it
    at top level each complete with the right value. A synchronous `main`
    in a file still runs.
-3. **The budget survives a pending poll.** Under a chosen budget, a script
-   that spends N instructions, awaits, then spends N more halts at the
-   same budget as one that spends 2N without awaiting; and one that awaits
-   in a loop under a small budget halts for budget, not for anything else.
-4. **Interruption reaches a pending future and a CPU loop.** A run and a
-   session input pending on the fixture end within a stated bound of
-   Ctrl-C; a run and an input in an infinite loop end within one slice.
-   The run exits 130 and says `interrupted`; the session returns to the
-   prompt and the next input runs to completion.
+3. **The budget survives a pending poll, and a nested async function
+   survives the budget.** Three scripts with the same instructions,
+   awaiting at the start, the middle, and the end, need the same smallest
+   budget, and that budget is several times a slice. One that awaits in a
+   loop under a small budget halts for budget, not for anything else. And
+   the review's script — a nested `async fn` of more than a slice's
+   instructions — returns its value under a budget that allows it, from a
+   file and from a session where the function was an earlier input.
+4. **Interruption reaches a pending future, and the synchronous slices are
+   still there.** A run, an `eval`, and a session input pending on the
+   fixture end within a stated bound of Ctrl-C; the run exits 130 and says
+   `interrupted`, the session returns to the prompt and the next input
+   runs to completion. A synchronous session input in `loop {}` is still
+   ended within a slice. A file in `loop {}` is ended by its budget, as it
+   always was, and by nothing else.
 5. **Diagnostics keep their place.** A runtime error after an await names
    the file, line, and column under `run`, and the input under the
    session, as today.
@@ -157,11 +202,13 @@ that each battery's burden.
 
 ## Guardrails and stop conditions
 
-1. One driver. If `run` and the session need different loops, stop: the
-   record has not found the one way.
-2. No fresh budget on a wakeup. If the count of slices for a script
-   changes when an await is added, stop.
-3. No spawned task. If a battery needs one, it gets a record.
+1. The shape chooses, and nothing else does: no flag, no environment
+   variable, no per-call option picks a path.
+2. Nothing slices an execution that can await. If a future change needs
+   to, finding 5 has to be found false first.
+3. The synchronous paths are the old code. If either changes by a byte,
+   that is not this record.
+4. No spawned task. If a battery needs one, it gets a record.
 
 ## Risks
 
@@ -169,6 +216,13 @@ that each battery's burden.
   today of `host::process` and unchanged; the driver is not concurrency.
 - **The 5 ms cadence costs a wakeup while pending.** Only while pending,
   and record 0020's own waits already poll on a cadence.
+- **A running async script cannot be ended by Ctrl-C.** Stated in decision
+  2. In `run` the default budget ends it in milliseconds; in the session
+  the net is about ten seconds, and an input that can await and loops
+  without awaiting is the one input that waits for it.
+- **The shape test reads tokens.** `async` in a string sends a synchronous
+  script down the async path. It runs correctly there; it only loses the
+  slices, and only for that script.
 - **Tokio joins the dependency tree.** `rt` and `time` only; record 0029's
   notices are regenerated.
 

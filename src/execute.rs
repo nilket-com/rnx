@@ -1,19 +1,32 @@
-//! One way to run a script: record 0032.
+//! How a script runs: record 0032.
 //!
-//! `run`, `eval` and the session each hand a VM and an entry point to
-//! [`drive`], which resumes the execution slice by slice on a current-thread
-//! Tokio runtime and says how it ended. The three callers interpret the
-//! outcome in their own words; none of them resumes a VM itself any more.
+//! Three paths, and which one a script takes is decided by one property of
+//! the script — whether it can `.await`:
 //!
-//! A slice is `min(SLICE, remaining)` instructions under Rune's budget,
-//! selected against a future that notices the interrupt flag on a cadence
-//! while the slice is pending. `budget::Budget<F>` restores the remaining
-//! budget on each poll and saves it after, so a slice that goes pending on a
-//! host future resumes with what it had left; nothing gets a fresh budget on
-//! a wakeup. Record 0032's evidence measured the slice count of a script with
-//! and without an await in the middle of it and found them equal.
-use rune::runtime::{GeneratorState, Value, VmError, budget};
+//! - [`complete_sync`]: one call under one budget. What `run` has always
+//!   done for a file, unchanged, for a file that never awaits.
+//! - [`slice_sync`]: resumed in slices of [`SLICE`] instructions with the
+//!   interrupt flag read between them. What the session has always done for
+//!   an input (record 0002), unchanged, for an input that never awaits.
+//! - [`drive_async`]: the whole execution under its whole budget on a
+//!   current-thread Tokio runtime, raced against a future that reads the
+//!   interrupt flag on a cadence while the execution is pending on a host
+//!   future. New, for a file's `async fn main` and for an input that awaits.
+//!
+//! Why the async path is not sliced, and why the two synchronous paths are
+//! kept exactly: an `async fn` awaited from Rune code runs as a nested
+//! execution wrapped in a future value, and a budget halt inside it resolves
+//! that future to an error, after which it is gone — Rune drops a settled
+//! future. Resuming the outer execution then completes with a unit value,
+//! silently, in place of the nested result. So the budget cannot be used to
+//! slice an execution that may nest, which is any execution that can await.
+//! The record's evidence has the probe; the number it produced was `()` for
+//! a loop that sums to 1,999,000. A synchronous execution nests nothing —
+//! a synchronous call is a frame in the same execution — so its slices are
+//! resumable, and Rune 0.14.2 offers no other per-instruction hook. Hence
+//! the property, and the three paths.
 use rune::Vm;
+use rune::runtime::{GeneratorState, Value, VmError, budget};
 use std::cell::Cell;
 use std::future::Future;
 use std::pin::Pin;
@@ -21,25 +34,25 @@ use std::rc::Rc;
 use std::task::{Context, Poll};
 use std::time::Duration;
 
-/// Instructions per slice between interrupt checks. Record 0002 chose the
-/// number for the session; a file run now uses the same one, because the
-/// promise is the same: Ctrl-C is observed within one slice.
+/// Instructions per slice between interrupt checks, on the synchronous
+/// sliced path. Record 0002 chose it.
 pub const SLICE: usize = 10_000;
 
-/// How often the interrupt flag is read while a slice is pending on a host
-/// future. Nothing wakes the executor when Ctrl-C sets the flag, so the
-/// driver looks on a cadence, which is how record 0020's waits already
-/// behave. Only a pending slice pays it; a running one never sleeps.
+/// How often the interrupt flag is read while an async execution is pending
+/// on a host future. Nothing wakes the executor when Ctrl-C sets the flag —
+/// a store to an atomic wakes no task, measured — so the driver looks on a
+/// timer, which is how record 0020's waits already behave. Only a pending
+/// execution pays it.
 const CADENCE: Duration = Duration::from_millis(5);
 
 /// How an execution ended.
 pub enum Outcome {
 	/// The entry point returned this.
 	Complete(Value),
-	/// The budget ran out. The execution is dropped; nothing is resumable.
+	/// The budget ran out. Nothing is resumable.
 	Budget,
-	/// Ctrl-C was observed, at a slice boundary or while a slice was pending.
-	/// The execution and any future it was waiting on are already dropped.
+	/// Ctrl-C was observed. The execution and any future it was waiting on
+	/// are already dropped.
 	Interrupted,
 	/// The entry point yielded, which no entry point of rnx's may do.
 	Yielded,
@@ -47,13 +60,75 @@ pub enum Outcome {
 	Failed(VmError),
 }
 
-/// The runtime a command runs on. Built after the context, so `version` and
-/// `help` (record 0030) never pay for it; kept by a session across inputs
-/// and across `:reset`, and dropped with the command otherwise.
-///
-/// Current-thread, timer enabled, nothing else: no worker threads, no I/O
-/// driver, no blocking pool. A battery that needs more measures it in its
-/// own record.
+/// Whether a script can await: the token that does it, or the declaration
+/// that permits it. A script with neither runs on a synchronous path, which
+/// is exactly the path it ran on before record 0032. A false positive — the
+/// text in a string — sends a synchronous script down the async path, where
+/// it still runs correctly; a false negative is impossible, because a script
+/// cannot await without writing `.await` inside an `async fn`.
+pub fn can_await(source: &str) -> bool {
+	source.contains(".await") || source.contains("async fn") || source.contains("async ")
+}
+
+/// A file that never awaits: one call under one budget, as `run` has always
+/// done. Not interruptible mid-loop, as it never was; record 0021 says why
+/// the bound stays.
+pub fn complete_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::GuardedArgs, budget_n: usize) -> Outcome {
+	let (outcome, exhausted) = budget::with(budget_n, || {
+		let outcome = vm.call(entry, args);
+		let exhausted = !budget::acquire().take();
+		(outcome, exhausted)
+	})
+	.call();
+	match outcome {
+		Ok(value) => Outcome::Complete(value),
+		// A halt for want of budget: no location, and the guard exhausted.
+		Err(error) if error.first_location().is_none() && exhausted => Outcome::Budget,
+		Err(error) => Outcome::Failed(error),
+	}
+}
+
+/// An input that never awaits: resumed in slices with the flag read between
+/// them, as the session has always done. A budget halt in a synchronous
+/// execution leaves it resumable: a synchronous call is a frame in the same
+/// execution, not a nested one.
+pub fn slice_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args, budget_n: usize) -> Outcome {
+	let mut execution = match vm.execute(entry, args) {
+		Ok(execution) => execution,
+		Err(error) => return Outcome::Failed(error),
+	};
+	let mut spent = 0usize;
+	loop {
+		let (outcome, exhausted) = budget::with(SLICE, || {
+			let outcome = execution.resume().into_result();
+			let exhausted = !budget::acquire().take();
+			(outcome, exhausted)
+		})
+		.call();
+		match outcome {
+			// Completion is a slice boundary too: an interrupt that arrived
+			// during a blocking host call is observed here.
+			Ok(GeneratorState::Complete(_)) if crate::host::interrupted() => return Outcome::Interrupted,
+			Ok(GeneratorState::Complete(value)) => return Outcome::Complete(value),
+			Ok(GeneratorState::Yielded(_)) => return Outcome::Yielded,
+			Err(error) if error.first_location().is_none() && exhausted => {
+				spent += SLICE;
+				if crate::host::interrupted() {
+					return Outcome::Interrupted;
+				}
+				if spent >= budget_n {
+					return Outcome::Budget;
+				}
+			}
+			Err(error) => return Outcome::Failed(error),
+		}
+	}
+}
+
+/// The runtime an async execution runs on. Built only when a script can
+/// await, so a synchronous script never pays for it and records 0030's
+/// `version` and `help` never see it. A session keeps one across inputs and
+/// across `:reset`. Current-thread, timer enabled, nothing else.
 pub struct Runtime(tokio::runtime::Runtime);
 
 impl Runtime {
@@ -65,82 +140,55 @@ impl Runtime {
 	}
 }
 
-/// Run `entry` on `vm` with `args`, spending at most `budget` instructions,
-/// and say how it ended.
-///
-/// The VM is borrowed for the call and released whatever the outcome, so the
-/// caller may inspect it or drop it; the execution never outlives this call.
-pub fn drive(
-	runtime: &Runtime,
-	vm: &mut Vm,
-	entry: [&str; 1],
-	args: impl rune::runtime::Args,
-	budget: usize,
-) -> Outcome {
-	runtime.0.block_on(drive_inner(vm, entry, args, budget))
-}
-
-async fn drive_inner(
-	vm: &mut Vm,
-	entry: [&str; 1],
-	args: impl rune::runtime::Args,
-	budget: usize,
-) -> Outcome {
-	let mut execution = match vm.execute(entry, args) {
+/// A script that can await: the whole execution under its whole budget,
+/// raced against the interrupt flag. Pending on a host future, it is ended
+/// within one cadence of Ctrl-C. Running Rune code, it is bounded by its
+/// budget and by nothing else: the budget cannot slice it, for the reason at
+/// the top of this file, and Rune offers no other hook.
+pub fn drive_async(runtime: &Runtime, vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args, budget_n: usize) -> Outcome {
+	let execution = match vm.execute(entry, args) {
 		Ok(execution) => execution,
 		Err(error) => return Outcome::Failed(error),
 	};
-	let mut spent = 0usize;
-	loop {
-		let slice = SLICE.min(budget - spent);
-		let exhausted = Rc::new(Cell::new(false));
-		let sliced = budget::with(
-			slice,
-			Settled {
-				inner: Box::pin(execution.async_resume()),
-				exhausted: exhausted.clone(),
-			},
-		);
-		let outcome = Watched {
-			slice: Box::pin(sliced),
+	let exhausted = Rc::new(Cell::new(false));
+	let settled = Settled {
+		inner: Box::pin(async move {
+			let mut execution = execution;
+			execution.async_resume().await
+		}),
+		exhausted: exhausted.clone(),
+	};
+	let work = budget::with(budget_n, settled);
+	// The interval is a runtime resource, so it is made inside the runtime.
+	let outcome = runtime.0.block_on(async move {
+		Watched {
+			work: Box::pin(work),
 			interrupt: Interrupt::new(),
 		}
-		.await;
-		let Some(outcome) = outcome else {
-			// The slice future, and the host future it was pending on, are
-			// dropped with `Watched`. That is the whole of cancellation here:
-			// the driver spawned nothing, so nothing else is running.
-			return Outcome::Interrupted;
-		};
-		match outcome.into_result() {
-			// Completion is a slice boundary too: an interrupt that arrived
-			// during a blocking host call is observed here, as the session
-			// always has.
-			Ok(GeneratorState::Complete(_)) if crate::host::interrupted() => {
-				return Outcome::Interrupted;
-			}
-			Ok(GeneratorState::Complete(value)) => return Outcome::Complete(value),
-			Ok(GeneratorState::Yielded(_)) => return Outcome::Yielded,
-			// A budget halt: no location on the error, and the guard was
-			// exhausted when the poll settled. Never the error's text.
-			Err(error) if error.first_location().is_none() && exhausted.get() => {
-				spent += slice;
-				if crate::host::interrupted() {
-					return Outcome::Interrupted;
-				}
-				if spent >= budget {
-					return Outcome::Budget;
-				}
-			}
-			Err(error) => return Outcome::Failed(error),
-		}
+		.await
+	});
+	let Some(outcome) = outcome else {
+		// `Watched` is dropped with the execution and the host future it
+		// was pending on. That is the whole of cancellation: the driver
+		// spawned nothing, so nothing else is running.
+		return Outcome::Interrupted;
+	};
+	match outcome.into_result() {
+		Ok(GeneratorState::Complete(_)) if crate::host::interrupted() => Outcome::Interrupted,
+		Ok(GeneratorState::Complete(value)) => Outcome::Complete(value),
+		Ok(GeneratorState::Yielded(_)) => Outcome::Yielded,
+		// The budget ran out. Wherever it ran out — the head or a nested
+		// future — this is genuine exhaustion, because the whole budget was
+		// installed; a halt inside a nested future carries that future's
+		// location, so the location is not consulted here, only the guard.
+		Err(_) if exhausted.get() => Outcome::Budget,
+		Err(error) => Outcome::Failed(error),
 	}
 }
 
-/// Polls the slice and, at the moment it settles, records whether the
-/// budget installed around this poll was exhausted. That reading has to be
-/// taken inside the budget wrapper's poll, while the budget is installed;
-/// after `Budget<F>` returns, the thread's budget is whatever it was before.
+/// Polls the execution and, at the moment it settles, records whether the
+/// budget installed around this poll was exhausted. That reading must be
+/// taken inside the budget wrapper's poll, while the budget is installed.
 struct Settled<F> {
 	inner: Pin<Box<F>>,
 	exhausted: Rc<Cell<bool>>,
@@ -157,7 +205,8 @@ impl<F: Future> Future for Settled<F> {
 	}
 }
 
-/// Resolves when the interrupt flag is seen, looking on the cadence.
+/// Resolves when the interrupt flag is seen, looking on the cadence. The
+/// interval is what wakes the task; the flag alone would not.
 struct Interrupt {
 	interval: tokio::time::Interval,
 }
@@ -186,18 +235,18 @@ impl Future for Interrupt {
 	}
 }
 
-/// The slice, or `None` if the interrupt was seen first. The slice is polled
-/// first, so an input that completes in one poll never consults the flag
-/// here; the boundary check in the loop does that.
+/// The execution's outcome, or `None` if the interrupt was seen first. The
+/// execution is polled first, so one that completes in a single poll never
+/// consults the flag here; the completion check does that.
 struct Watched<F> {
-	slice: Pin<Box<F>>,
+	work: Pin<Box<F>>,
 	interrupt: Interrupt,
 }
 
 impl<F: Future> Future for Watched<F> {
 	type Output = Option<F::Output>;
 	fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-		if let Poll::Ready(out) = self.slice.as_mut().poll(cx) {
+		if let Poll::Ready(out) = self.work.as_mut().poll(cx) {
 			return Poll::Ready(Some(out));
 		}
 		match Pin::new(&mut self.interrupt).poll(cx) {

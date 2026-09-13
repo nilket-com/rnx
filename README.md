@@ -113,10 +113,11 @@ has always been. `N` runs from 1 to one less than the largest `usize`, that
 last value being Rune's way of saying "no budget" and so refused. The count
 comes from the command line and nowhere else: no host function, environment
 variable or file directive sets it, and there is no way to remove the bound.
-Ctrl-C ends a run, whether it is looping or waiting on a future: it says
-`interrupted` and exits 130, as a shell reports a process Ctrl-C ended. A
-file's `main` may be `async` and `.await` at the top level; so may an
-`eval` expression and a session input (record 0032).
+A file's `main` may be `async` and `.await` at the top level; so may an
+`eval` expression and a session input (record 0032). Ctrl-C ends a run that
+is waiting on a future: it says `interrupted` and exits 130, as a shell
+reports a process Ctrl-C ended. A run that is looping is ended by its
+budget, as it always was.
 
 `rnx` on its own is a session, which is `rnx repl` — the thing most often
 wanted needs no word after it. `rnx help` lists the commands, and a word that
