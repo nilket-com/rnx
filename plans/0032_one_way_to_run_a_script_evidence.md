@@ -11,7 +11,7 @@ as committed. Timings are `hyperfine 1.20.0 -N`, pinned with `taskset -c 4`.
 
 The first implementation (a668f57) ran every script on one driver that
 resumed the execution in slices of 10,000 instructions under the budget.
-Review (Codex, `rnx-context-profile/reviews/0032.md` at 219ca5d) found that
+Review (Codex) found that
 this script, under `--budget 2000000`, printed
 `Halted for unexpected reason \`limited\`` at the await and exited 1:
 
