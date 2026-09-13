@@ -17,6 +17,7 @@ type Result<T> = std::result::Result<T, String>;
 fn about(verb: &str, path: &str, why: impl std::fmt::Display) -> String {
 	format!("cannot {verb} {path}: {why}")
 }
+// Refusals use the word "directory"; metadata uses the stable value "dir".
 fn kind(meta: &disk::Metadata) -> &'static str {
 	if meta.is_file() {
 		"file"
@@ -80,19 +81,24 @@ fn read_bytes(path: &str) -> Result<Bytes> {
 		rune::alloc::Vec::try_from(contents(path)?).map_err(|e| about("read", path, e))?,
 	))
 }
-fn write_data(path: &str, data: Value, mode: u8) -> Result<()> {
+enum WriteMode {
+	New,
+	Replace,
+	Append,
+}
+fn write_data(path: &str, data: Value, mode: WriteMode) -> Result<()> {
 	// Validate and borrow before opening: a type error must not truncate a file.
 	let write = |bytes: &[u8]| {
 		let mut options = disk::OpenOptions::new();
 		options.write(true);
 		match mode {
-			0 => {
+			WriteMode::New => {
 				options.create_new(true);
 			}
-			1 => {
+			WriteMode::Replace => {
 				options.create(true).truncate(true);
 			}
-			_ => {
+			WriteMode::Append => {
 				options.create(true).append(true);
 			}
 		}
@@ -110,13 +116,13 @@ fn write_data(path: &str, data: Value, mode: u8) -> Result<()> {
 	}
 }
 pub(crate) fn write_new(path: &str, data: Value) -> Result<()> {
-	write_data(path, data, 0)
+	write_data(path, data, WriteMode::New)
 }
 fn write(path: &str, data: Value) -> Result<()> {
-	write_data(path, data, 1)
+	write_data(path, data, WriteMode::Replace)
 }
 fn append(path: &str, data: Value) -> Result<()> {
-	write_data(path, data, 2)
+	write_data(path, data, WriteMode::Append)
 }
 pub(crate) fn mkdir(path: &str) -> Result<()> {
 	disk::create_dir(path).map_err(|e| about("create directory", path, e))

@@ -318,11 +318,12 @@ Linux and in record 0025's Windows suite, except where a line says Unix.
    on both platforms with **both files unchanged**, asserted by content
    and modification time before and after. The atomicity of `rename` is
    not something a fixture can race into proving, and this record does
-   not pretend one does: it is gated at the primitive — a unit test on
-   the platform layer asserts that the call made is `renameat2` with
-   `RENAME_NOREPLACE` on Linux and `MoveFileExW` without
-   `MOVEFILE_REPLACE_EXISTING` on Windows, and that no path-existence
-   check precedes it — and rests on those calls' documented guarantee.
+   not pretend one does: a unit test pins the arguments and no-replace
+   flags passed to the platform call. Source review establishes that the
+   production dispatcher uses `renameat2` on Linux and `MoveFileExW` on
+   Windows, with no existence check or fallback. A test using nonexistent
+   paths alone cannot establish the absence of such a check. Atomicity
+   rests on the selected calls' documented guarantee.
    `copy` of a directory and of a FIFO (Unix) is refused before any
    destination exists, asserted; a copy that fails after the destination
    is created leaves the partial destination and names both paths and

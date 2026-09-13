@@ -35,7 +35,8 @@ The new module gates cover:
 - Exclusive rename dispatch is isolated in `fs_platform.rs`: Linux
   renameat2/RENAME_NOREPLACE, macOS renamex_np/RENAME_EXCL, Windows
   MoveFileExW with flags 0. The argument/flag unit gate reaches the call
-  with nonexistent paths; the dispatcher has no existence check or fallback.
+  with nonexistent paths. Source review, rather than that test, establishes
+  that the dispatcher has no existence check or fallback.
   Atomicity rests on the OS primitive, not on winning a timing race.
 - Copy validates its open source first. Under test-support only,
   RNX_TEST_COPY_FAIL_AFTER=4 injects a reader error: the destination is
@@ -116,3 +117,8 @@ presented as its substitute. The synchronous filesystem functions have no
 mid-call cancellation or deadline. Record 0031's separate async CPU-loop
 interruption clause remains open. No reviews are saved in git and no
 upstream issue has been filed by this implementation.
+
+A post-review cleanup replaces the write-mode integer with a named enum,
+without changing the open flags. The existing filesystem integration suite
+passes after that cleanup. Measurements above describe the pre-cleanup
+implementation binary identified by its hash.
