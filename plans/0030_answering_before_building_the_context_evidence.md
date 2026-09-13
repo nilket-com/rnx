@@ -54,7 +54,7 @@ the named phase, same hyperfine conditions:
 The scratch crate is not in the repository; its whole source is nine lines
 of phase gating around the four calls named in the table. Each delta is a
 whole process, so it includes dropping what the phase built: a separate
-per-module profile (`rnx-context-profile`, Codex, same day, same machine)
+per-module profile (rnx-bench `probes/context-registration`, Codex, same day, same machine)
 puts construction at about 2.5 ms and destruction at about 0.3 ms, with
 installation into the context about 90% of construction and `ops` and `iter`
 together about 47% of it.
