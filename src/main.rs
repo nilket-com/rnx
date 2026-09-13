@@ -4,6 +4,7 @@ use std::sync::Arc;
 mod complete;
 mod declared;
 mod execute;
+mod env;
 #[cfg(all(windows, feature = "test-support"))]
 mod delivery_control;
 mod format;
@@ -80,7 +81,13 @@ rnx — a Rune scripting environment
 Flags for `run`, before the file: --budget N, --debug-source.";
 
 fn main() -> Result<()> {
-	let args: Vec<String> = std::env::args().skip(1).collect();
+	let args = match env::command_line(std::env::args_os()) {
+		Ok(args) => args,
+		Err(message) => {
+			eprintln!("{}", format::terminal_safe(&message));
+			std::process::exit(2);
+		}
+	};
 	// Answered before a context exists, because neither needs one and the
 	// context is three quarters of what a trivial command costs: record 0030
 	// measured 4.2 ms for `version` against 0.56 ms for a binary that exits
@@ -113,6 +120,11 @@ fn main() -> Result<()> {
 	host_functions.extend(text::install(&mut context)?);
 	let http = http::State::default();
 	host_functions.extend(http::install(&mut context, &http)?);
+	// File arguments are selected below, after the existing run flags. All
+	// other entry points have an empty script-argument snapshot.
+	if !args.first().is_some_and(|arg| arg == "run") {
+		host_functions.extend(env::install(&mut context, Arc::from([]))?);
+	}
 	// Answered before anything else, because it is not a Rune command at
 	// all: it drives a pipe of its own and reports what a stop did to a
 	// write blocked in the kernel.
@@ -204,7 +216,9 @@ fn main() -> Result<()> {
 			break;
 		}
 		let path = rest.first().ok_or("run needs a file")?;
-		let arguments = serde_json::from_str(&serde_json::to_string(&rest[1..])?)?;
+		let snapshot: Arc<[String]> = Arc::from(rest[1..].to_vec());
+		let arguments = rune::to_value(snapshot.to_vec())?;
+		env::install(&mut context, snapshot)?;
 		let code = runner::run(&context, path, arguments, debug_source, budget);
 		std::process::exit(code);
 	}

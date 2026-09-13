@@ -230,3 +230,37 @@ is not atomic against concurrent path changes. All filesystem calls are
 synchronous: there is no deadline or interruption within a call. Unix FIFO
 opens are non-blocking and refused; other opens can still block. A path such
 as `/dev/stdin` is accepted when its opened target is a regular file.
+
+## Environment and script arguments
+
+`env::args()` returns a fresh vector of fresh strings: the arguments after
+`rnx run FILE`, excluding the command and file path. It initially agrees with
+`main`'s argument; mutating either value cannot change later calls. Eval and
+the session receive an empty list. No new eval argument syntax is added.
+All command-line words after the executable name must be Unicode. The first
+invalid word is refused before dispatch, with its position (command = 1),
+escaped data and exit status 2. The executable name itself is not decoded.
+
+`env::var(name)?` returns `None` for missing and `Some("")` for empty.
+Empty names, `=` or NUL in a name, and non-Unicode values are errors.
+`env::vars()?` returns an object containing the environment or refuses the
+whole call on any non-Unicode name or value, including a shadowed duplicate.
+Unix duplicates retain their first value, as a lookup does. Windows lookups
+are case-insensitive. The module has no setter or child-environment override.
+
+`env::home_dir()?` uses Rust's platform lookup: nonempty HOME on Unix or
+nonempty USERPROFILE on Windows, otherwise the account database or profile
+API. A missing answer is None; a non-Unicode answer is an error naming its
+source. The account lookup can block; use `env::var("HOME")` when that
+fallback is unwanted.
+
+Variables read directly by rnx are `RNX_HISTORY` (history path),
+`RNX_MEMORY_CEILING` (session allocation ceiling), and `HOME`,
+`XDG_STATE_HOME`, `LOCALAPPDATA` (state-directory selection). The
+`RNX_TEST_*` family is reserved for test-support builds. The new environment
+functions also read the requested variables and the home-directory variable
+above. Separately, reqwest reads `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`,
+`NO_PROXY` and their lowercase forms on rnx's behalf. This list documents
+these interfaces, not every environment read inside the platform or its
+libraries; maintain it manually when dependencies change. Reading a variable
+through `env::` does not change how rnx or its children use it.

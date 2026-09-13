@@ -1,6 +1,8 @@
 # rnx 0036: what the process was given
 
-Status: proposed 2026-09-13; revised the same day after review. The
+Status: implemented 2026-09-13 after review. Linux gates and measurements
+are in the accompanying evidence. The environment module type-checks for
+Windows; Windows execution remains outstanding. The
 thirty-sixth record of rnx, and record
 0031's gate 5, second part: the script's arguments and the process's
 environment. Both are things the process was handed before the script
