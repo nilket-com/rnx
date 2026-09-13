@@ -305,6 +305,15 @@ gate 2 is open, it is open because Rune 0.14.2 has no interrupt that is not
 the budget, and it is not closed by writing a record. It is recorded as open
 against 0031 rather than counted as passed.
 
+`0032_upstream_enhancement_interrupt_hook.md` is a route to closing it and is
+not the closing of it. Three things have to happen, in order, and none of the
+first two is rnx's to decide: upstream has to grow a capability that stops a
+running script without the budget; rnx has to integrate it on the async path,
+where nothing is sliced; and the cancellation gates have to pass against it —
+a script that loops without awaiting, ended by Ctrl-C, at each entry point,
+with the same evidence the gates here carry. Until all three, the clause
+stays open and is described as open.
+
 ## Forward
 
 Record 0031's gate 3, JSON, which needs none of this, and gate 4, HTTP,
