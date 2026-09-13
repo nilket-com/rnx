@@ -3,6 +3,7 @@ use rune::{Context, Source, Sources, Vm};
 use std::sync::Arc;
 mod complete;
 mod declared;
+mod execute;
 #[cfg(all(windows, feature = "test-support"))]
 mod delivery_control;
 mod format;
@@ -145,7 +146,9 @@ fn main() -> Result<()> {
 			},
 			Err(failure) => {
 				eprintln!("{failure}");
-				std::process::exit(1);
+				// 130 is what a shell reports for a process Ctrl-C ended, so a
+				// script around rnx reads an interrupted eval the same way.
+				std::process::exit(if matches!(failure, session::Failure::Interrupted) { 130 } else { 1 });
 			}
 		}
 		return Ok(());

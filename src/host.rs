@@ -1181,6 +1181,21 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	crate::platform::watch_for_interrupt();
 	let mut module = Module::with_crate("host")?;
 	let mut registered = Vec::new();
+	// Record 0032's fixture: a future that is pending for `ms` and then
+	// resolves to `ms`. Only under `test-support`, because the foundation
+	// ships no battery; it exists so the gates have something to await.
+	#[cfg(feature = "test-support")]
+	{
+		async fn test_pending(ms: u64) -> u64 {
+			tokio::time::sleep(std::time::Duration::from_millis(ms)).await;
+			ms
+		}
+		module.function("test_pending", test_pending).build()?;
+		registered.push(HostFunction {
+			path: "host::test_pending".to_owned(),
+			doc: "test_pending(ms): test-support only; pending for ms milliseconds, then ms",
+		});
+	}
 	macro_rules! register {
 		($name:literal, $function:expr, $doc:literal) => {
 			module.function($name, $function).build()?;

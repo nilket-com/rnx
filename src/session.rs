@@ -6,13 +6,11 @@
 //! a source map per unit so diagnostics point at the input a person typed.
 use super::Result;
 use rune::ast::Spanned;
-use rune::runtime::{GeneratorState, Unit, VmError, budget};
+use rune::runtime::{Unit, VmError};
 use rune::{Context, Source, SourceId, Sources, Vm, ast, runtime::Value};
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, Weak};
 
-/// Instructions per slice between interrupt checks.
-pub const SLICE: usize = 10_000;
 /// Instructions per input before the session halts it: a safety net of about
 /// ten seconds of pure Rune execution, not the way to stop an input; Ctrl-C
 /// is, at every slice boundary.
@@ -252,6 +250,9 @@ pub struct Session {
 	/// latches it again if the figure is still there.
 	over_ceiling: bool,
 	budget: usize,
+	/// Record 0032: one runtime for the session's whole life, across inputs
+	/// and across `:reset`.
+	runtime: super::execute::Runtime,
 }
 impl Session {
 	pub fn new(context: Context) -> Result<Self> {
@@ -269,6 +270,7 @@ impl Session {
 			ceiling,
 			over_ceiling: false,
 			budget: BUDGET,
+			runtime: super::execute::Runtime::new()?,
 		})
 	}
 	/// The generated source of the most recent input, for `:debug`.
@@ -528,7 +530,8 @@ impl Session {
 			generated.user(&declaration.source, declaration.input, declaration.offset);
 			generated.raw("\n");
 		}
-		generated.raw("pub fn main(__rnx_state) {\n");
+		// Async since record 0032, so an input may `.await` at the top level.
+		generated.raw("pub async fn main(__rnx_state) {\n");
 		// Restore only what this input may reference, so the prelude follows
 		// the input rather than the session.
 		let referenced = mentioned(input, &self.names);
@@ -677,45 +680,15 @@ impl Session {
 				.map_err(|e| Failure::Refused(e.to_string()))?,
 		);
 		let mut vm = Vm::new(runtime, unit.clone());
-		let mut execution = vm
-			.execute(["main"], (state,))
-			.map_err(|e| self.runtime_failure(e))?;
-		let mut spent = 0usize;
-		loop {
-			// A slice: resume under a budget. A budget halt leaves the frozen
-			// instruction pointer in place and the execution resumable; it is
-			// recognised by two structural facts, no location on the error and
-			// an exhausted budget guard, never by the error's text.
-			let (outcome, exhausted) = budget::with(SLICE, || {
-				let outcome = execution.resume().into_result();
-				let exhausted = !budget::acquire().take();
-				(outcome, exhausted)
-			})
-			.call();
-			match outcome {
-				// Completion is a slice boundary too: an interrupt that arrived during
-				// a host call the input was waiting on is observed here.
-				Ok(GeneratorState::Complete(_)) if super::host::interrupted() => {
-					return Err(Failure::Interrupted);
-				}
-				Ok(GeneratorState::Complete(value)) => return Ok(value),
-				Ok(GeneratorState::Yielded(_)) => {
-					return Err(Failure::Runtime {
-						message: "unexpected yield".into(),
-						origin: None,
-					});
-				}
-				Err(error) if error.first_location().is_none() && exhausted => {
-					spent += SLICE;
-					if super::host::interrupted() {
-						return Err(Failure::Interrupted);
-					}
-					if spent >= self.budget {
-						return Err(Failure::Budget(self.budget));
-					}
-				}
-				Err(error) => return Err(self.runtime_failure(error)),
-			}
+		match super::execute::drive(&self.runtime, &mut vm, ["main"], (state,), self.budget) {
+			super::execute::Outcome::Complete(value) => Ok(value),
+			super::execute::Outcome::Interrupted => Err(Failure::Interrupted),
+			super::execute::Outcome::Budget => Err(Failure::Budget(self.budget)),
+			super::execute::Outcome::Yielded => Err(Failure::Runtime {
+				message: "unexpected yield".into(),
+				origin: None,
+			}),
+			super::execute::Outcome::Failed(error) => Err(self.runtime_failure(error)),
 		}
 	}
 

@@ -11,7 +11,7 @@
 use crate::declared::Fields;
 use crate::format::{display_width, render_complete, terminal_safe};
 use crate::session::position;
-use rune::runtime::{Unit, Value, VmError, budget};
+use rune::runtime::{Unit, Value, VmError};
 use rune::{Context, Diagnostics, Source, Sources, Vm};
 use std::sync::Arc;
 
@@ -225,17 +225,39 @@ pub fn run(
 		}
 	};
 	let mut vm = Vm::new(runtime, unit.clone());
-	// The budget, from the command line or the default. Without one a script
-	// that loops for ever runs until something outside kills it.
-	let (outcome, exhausted) = budget::with(budget, || {
-		let outcome = vm.call(["main"], (arguments,));
-		let exhausted = !budget::acquire().take();
-		(outcome, exhausted)
-	})
-	.call();
-	let value = match outcome {
-		Ok(value) => value,
+	let driver = match crate::execute::Runtime::new() {
+		Ok(driver) => driver,
 		Err(error) => {
+			unplaced("error", &format!("cannot start the runtime: {error}"));
+			return 1;
+		}
+	};
+	// The budget, from the command line or the default. Without one a script
+	// that loops for ever runs until something outside kills it. Record 0032
+	// slices it so Ctrl-C can end the run; the slices sum to the same bound.
+	let value = match crate::execute::drive(&driver, &mut vm, ["main"], (arguments,), budget) {
+		crate::execute::Outcome::Complete(value) => value,
+		crate::execute::Outcome::Interrupted => {
+			unplaced("interrupted", "");
+			return 130;
+		}
+		// A halt for want of budget carries no location, and saying so
+		// is less useful than saying the script ran out of budget.
+		crate::execute::Outcome::Budget => {
+			// The reader of this line is the person who can raise it, so
+			// it names the flag. It does not offer to remove the bound,
+			// because the bound cannot be removed.
+			unplaced(
+				"halted",
+				&format!("{budget} instructions exceeded; {BUDGET_FLAG} N raises it"),
+			);
+			return 1;
+		}
+		crate::execute::Outcome::Yielded => {
+			unlocated("runtime error", "unexpected yield");
+			return 1;
+		}
+		crate::execute::Outcome::Failed(error) => {
 			// Rune reports a missing method by hash. Record 0014 recovers
 			// the name when it can be proved, and leaves the message alone
 			// when it cannot.
@@ -243,17 +265,6 @@ pub fn run(
 			let message = crate::method::named(&message, &text).unwrap_or(message);
 			match fault_offset(&error, &unit) {
 				Some(offset) => located("runtime error", path, &text, offset, &message),
-				// A halt for want of budget carries no location, and saying so
-				// is less useful than saying the script ran out of budget.
-				None if exhausted => {
-					// The reader of this line is the person who can raise it, so
-					// it names the flag. It does not offer to remove the bound,
-					// because the bound cannot be removed.
-					unplaced(
-						"halted",
-						&format!("{budget} instructions exceeded; {BUDGET_FLAG} N raises it"),
-					);
-				}
 				None => unlocated("runtime error", &message),
 			}
 			return 1;

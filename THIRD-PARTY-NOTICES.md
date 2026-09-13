@@ -36,7 +36,7 @@ review of that distribution. This file is an input to it.
 
 ## The packages
 
-53 packages, 34 distinct licence texts.
+54 packages, 35 distinct licence texts.
 
 | Package | Version | Declared |
 | --- | --- | --- |
@@ -84,6 +84,7 @@ review of that distribution. This file is an input to it.
 | `slab` | 0.4.12 | MIT |
 | `smallvec` | 1.16.0 | MIT OR Apache-2.0 |
 | `syntree` | 0.18.0 | MIT OR Apache-2.0 |
+| `tokio` | 1.53.1 | MIT |
 | `twox-hash` | 2.1.4 | MIT |
 | `unicode-ident` | 1.0.24 | (MIT OR Apache-2.0) AND Unicode-3.0 |
 | `unicode-segmentation` | 1.13.3 | MIT OR Apache-2.0 |
@@ -516,6 +517,32 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+```
+
+### `tokio 1.53.1` (LICENSE) 
+
+```
+MIT License
+
+Copyright (c) Tokio Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ### `futures-core 0.3.34` (LICENSE-APACHE) `futures-task 0.3.34` (LICENSE-APACHE) `futures-util 0.3.34` (LICENSE-APACHE) 
