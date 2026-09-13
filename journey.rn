@@ -4,11 +4,11 @@ fn act(state, command) {
     state.sequence += 1;
     let prefix = format!("{}/{}", state.output, state.sequence);
     let commands = format!("{prefix}-commands.json");
-    host::write_new(commands, host::json_stringify(#{commands: [command]})?)?;
+    fs::write_new(commands, host::json_stringify(#{commands: [command]})?)?;
     let result = host::process(state.binary,
         ["act", state.window, "--commands", commands], 90000)?;
-    host::write_new(format!("{prefix}-events.ndjson"), result.stdout)?;
-    host::write_new(format!("{prefix}-stderr.txt"), result.stderr)?;
+    fs::write_new(format!("{prefix}-events.ndjson"), result.stdout)?;
+    fs::write_new(format!("{prefix}-stderr.txt"), result.stderr)?;
     if result.code != 0 || result.timed_out || result.cancelled || result.truncated {
         panic!("Action failed, timed out, was interrupted or exceeded capture. No replay.");
     }
@@ -60,12 +60,12 @@ fn numeric(kind) {
 }
 pub fn main(args) {
     assert!(args.len() == 6, "BINARY WINDOW DATA NEW_OUTPUT_DIRECTORY DATA_CELL PLOT_CELL");
-    host::mkdir(args[3])?;
-    let state = #{binary: args[0], window: args[1], output: host::absolute(args[3])?, sequence: 0};
+    fs::mkdir(args[3])?;
+    let state = #{binary: args[0], window: args[1], output: fs::absolute(args[3])?, sequence: 0};
     run(state, args[4])?;
     let example = run(state, args[5])?;
     let previous = example.figures[0].figure;
-    let opened = act(state, #{open_data: #{path: host::absolute(args[2])?}})?.data;
+    let opened = act(state, #{open_data: #{path: fs::absolute(args[2])?}})?.data;
     let columns = [];
     for column in opened.columns { if numeric(column[1]) { columns.push(column[0]); } }
     assert!(columns.len() >= 2, "Need two numeric columns");

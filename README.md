@@ -80,7 +80,7 @@ than truncated, because 256 would reach the shell as 0.
 
 A script given no path can read `host::stdin()`, so it can sit in a pipeline
 like any other filter. It reads the stream once, under the same eight
-mebibyte limit as `host::read`, and refuses a terminal rather than waiting
+mebibyte limit as `fs::read`, and refuses a terminal rather than waiting
 for an end-of-file nobody is going to send.
 
 Besides `host::`, scripts and sessions have `text::`: `find`, `split_max`,
@@ -193,3 +193,40 @@ rather than pretending to survive. Successful inputs publish bindings and
 declarations; failed inputs can still mutate shared values and perform
 external effects. Tests: `cargo test --locked` (the session gates run through
 a pseudo-terminal on Linux).
+
+## Files and directories
+
+Record 0035 deliberately moves `host::read`, `host::write_new`,
+`host::mkdir`, and `host::absolute` to the same names under `fs::`.
+The old names are no longer registered. `fs::read` now accepts only regular
+files and its UTF-8 refusal points to `fs::read_bytes`.
+
+```rune
+let text = fs::read("input.txt")?;
+fs::write_new("output.txt", text)?;
+for name in fs::read_dir(".")? { println(name); }
+```
+
+All eighteen functions return `Result` and name paths in refusals:
+
+- `read` and `read_bytes`: regular files, at most 8 MiB; text is strict UTF-8.
+- `write_new`, `write`, `append`: accept String or Bytes. Only `write`
+  truncates an existing file, in place; writes are not crash-atomic.
+- `exists`, `metadata`, `read_dir`, `absolute`, `cwd`, `temp_dir`:
+  queries use Unicode paths without substitution. `exists` preserves errors;
+  missing paths and dangling links return false. `metadata` follows links and
+  reports kind, size, readonly, symlink and modified_ms (epoch milliseconds,
+  floored before 1970); its underlying observations are not a snapshot.
+  Listings return byte-sorted names, at most 100,000.
+- `mkdir`, `mkdir_all`, `copy`, `rename`, `remove_file`, `remove_dir`,
+  `remove_dir_all`: copy and rename refuse existing destinations atomically.
+  Copy validates its source first; failure after destination creation leaves
+  the partial or complete file and says so. Unsupported exclusive rename is
+  an error, never a check-then-act fallback.
+
+Recursive removal does not follow symlinks. A top-level link is removed as
+such; otherwise root, cwd and its ancestors are refused. This mistake guard
+is not atomic against concurrent path changes. All filesystem calls are
+synchronous: there is no deadline or interruption within a call. Unix FIFO
+opens are non-blocking and refused; other opens can still block. A path such
+as `/dev/stdin` is accepted when its opened target is a regular file.

@@ -1,6 +1,8 @@
 # rnx 0035: a file is a value, and every refusal names its path
 
-Status: proposed 2026-09-13; revised the same day after review. The
+Status: implemented 2026-09-13 after review. Linux gates and measured costs
+are in the accompanying evidence; Windows gates are authored and the new
+module type-checks, but Windows execution remains outstanding. The
 thirty-fifth record of rnx, and record
 0031's gate 5, first part: files and directories. It gives a script the
 filesystem the way `host::process` and `http::get` already gave it a child

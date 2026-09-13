@@ -36,18 +36,6 @@ fn json_parse(text: &str) -> Result<Value, String> {
 fn json_stringify(value: Value) -> Result<String, String> {
 	super::json::stringify(&value)
 }
-fn file_read(path: &str) -> Result<String, String> {
-	let mut bytes = Vec::new();
-	std::fs::File::open(path)
-		.map_err(|e| about("read", path, e))?
-		.take(8 * 1024 * 1024 + 1)
-		.read_to_end(&mut bytes)
-		.map_err(|e| about("read", path, e))?;
-	if bytes.len() > 8 * 1024 * 1024 {
-		return Err(format!("cannot read {path}: it exceeds the 8 MiB limit"));
-	}
-	String::from_utf8(bytes).map_err(|e| about("read", path, e))
-}
 /// Whether standard input has already been consumed. The stream can only be
 /// read to its end once, and a second attempt is a mistake worth naming
 /// rather than an empty string indistinguishable from an empty stream.
@@ -73,10 +61,10 @@ fn stdin_read() -> Result<String, String> {
 	let mut bytes = Vec::new();
 	std::io::stdin()
 		.lock()
-		.take(8 * 1024 * 1024 + 1)
+		.take(crate::fs::READ_LIMIT as u64 + 1)
 		.read_to_end(&mut bytes)
 		.map_err(|e| format!("cannot read standard input: {e}"))?;
-	if bytes.len() > 8 * 1024 * 1024 {
+	if bytes.len() > crate::fs::READ_LIMIT {
 		return Err("cannot read standard input: it exceeds the 8 MiB limit".to_owned());
 	}
 	String::from_utf8(bytes).map_err(|e| format!("cannot read standard input: {e}"))
@@ -150,25 +138,6 @@ fn eprint(text: &str) -> Result<(), String> {
 		.map_err(|e| format!("cannot write to standard error: {e}"))
 }
 
-fn file_write(path: &str, text: &str) -> Result<(), String> {
-	std::fs::OpenOptions::new()
-		.write(true)
-		.create_new(true)
-		.open(path)
-		.map_err(|e| about("write", path, e))?
-		.write_all(text.as_bytes())
-		.map_err(|e| about("write", path, e))
-}
-fn mkdir(path: &str) -> Result<(), String> {
-	std::fs::create_dir(path).map_err(|e| about("create directory", path, e))
-}
-fn absolute(path: &str) -> Result<String, String> {
-	std::fs::canonicalize(path)
-		.map_err(|e| about("resolve", path, e))?
-		.into_os_string()
-		.into_string()
-		.map_err(|_| format!("cannot resolve {path}: it is not valid UTF-8"))
-}
 /// How long the readers may go on reading once the wait is over.
 ///
 /// A measured starting choice rather than a derived one: draining the whole
@@ -1228,11 +1197,6 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		"json_stringify(value) -> Result<String>: render a value as JSON text"
 	);
 	register!(
-		"read",
-		file_read,
-		"read(path) -> Result<String>: the whole file as UTF-8, up to 8 MiB"
-	);
-	register!(
 		"stdin",
 		stdin_read,
 		"stdin() -> Result<String>: the whole of standard input as UTF-8, up to 8 MiB; Err on a terminal or a second read"
@@ -1256,21 +1220,6 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		"process_bytes_input",
 		process_bytes_input,
 		"process_bytes_input(program, args, input, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process_bytes, writing the byte string `input` to the child's standard input and closing it; a success does not mean every byte was read; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first"
-	);
-	register!(
-		"write_new",
-		file_write,
-		"write_new(path, text) -> Result<()>: write a new file, refusing to overwrite an existing one"
-	);
-	register!(
-		"mkdir",
-		mkdir,
-		"mkdir(path) -> Result<()>: create one directory"
-	);
-	register!(
-		"absolute",
-		absolute,
-		"absolute(path) -> Result<String>: canonicalize an existing path"
 	);
 	register!(
 		"process",
@@ -1639,16 +1588,16 @@ mod tests {
 	#[test]
 	fn every_error_that_touches_a_path_names_it() {
 		let path = absent();
-		let read = file_read(&path).unwrap_err();
+		let read = crate::fs::read(&path).unwrap_err();
 		assert!(read.contains(&path), "{read}");
 		assert!(read.starts_with("cannot read "), "{read}");
 
 		let nested = format!("{path}/inner/deeper");
-		let made = mkdir(&nested).unwrap_err();
+		let made = crate::fs::mkdir(&nested).unwrap_err();
 		assert!(made.contains(&nested), "{made}");
 		assert!(made.starts_with("cannot create directory "), "{made}");
 
-		let resolved = absolute(&path).unwrap_err();
+		let resolved = crate::fs::absolute(&path).unwrap_err();
 		assert!(resolved.contains(&path), "{resolved}");
 		assert!(resolved.starts_with("cannot resolve "), "{resolved}");
 
@@ -1656,7 +1605,7 @@ mod tests {
 		let existing = std::env::temp_dir().join(format!("rnx-host-exists-{}", std::process::id()));
 		std::fs::write(&existing, "there").unwrap();
 		let existing = existing.to_string_lossy().into_owned();
-		let written = file_write(&existing, "again").unwrap_err();
+		let written = crate::fs::write_new(&existing, rune::to_value("again").unwrap()).unwrap_err();
 		assert!(written.contains(&existing), "{written}");
 		assert!(written.starts_with("cannot write "), "{written}");
 		let _ = std::fs::remove_file(&existing);
@@ -1693,9 +1642,9 @@ mod tests {
 	#[test]
 	fn a_file_past_the_limit_names_itself_too() {
 		let path = std::env::temp_dir().join(format!("rnx-host-large-{}", std::process::id()));
-		std::fs::write(&path, vec![b'x'; 8 * 1024 * 1024 + 1]).unwrap();
+		std::fs::write(&path, vec![b'x'; crate::fs::READ_LIMIT + 1]).unwrap();
 		let path = path.to_string_lossy().into_owned();
-		let failure = file_read(&path).unwrap_err();
+		let failure = crate::fs::read(&path).unwrap_err();
 		assert!(failure.contains(&path), "{failure}");
 		assert!(failure.contains("8 MiB limit"), "{failure}");
 		let _ = std::fs::remove_file(&path);

@@ -268,11 +268,14 @@ mod tests {
 	fn context() -> Context {
 		let mut context = Context::with_default_modules().unwrap();
 		crate::host::install(&mut context).unwrap();
+		crate::fs::install(&mut context).unwrap();
 		context
 	}
 	fn host() -> Vec<HostFunction> {
 		let mut context = Context::with_default_modules().unwrap();
-		crate::host::install(&mut context).unwrap()
+		let mut names = crate::host::install(&mut context).unwrap();
+		names.extend(crate::fs::install(&mut context).unwrap());
+		names
 	}
 	const COMMANDS: [(&str, &str); 6] = crate::repl::COMMANDS;
 
@@ -319,7 +322,7 @@ mod tests {
 			out.contains("P: struct") && out.contains("struct P { x }"),
 			"{out}"
 		);
-		let out = help(&session, &host, &COMMANDS, Some("host::write_new"), &limits);
+		let out = help(&session, &host, &COMMANDS, Some("fs::write_new"), &limits);
 		assert!(
 			out.contains("host function") && out.contains("refusing to overwrite"),
 			"{out}"
@@ -484,9 +487,9 @@ mod tests {
 	#[test]
 	fn every_registered_host_function_has_a_description() {
 		let host = host();
-		// Twelve since record 0022 added `process_bytes_input`; record 0032's
-		// async fixture and record 0034's two allocation probes are test-support only.
-		assert_eq!(host.len(), 12 + 3 * usize::from(cfg!(feature = "test-support")));
+		// Eight host functions and eighteen filesystem functions; the async
+		// fixture and two allocation probes remain test-support only.
+		assert_eq!(host.len(), 26 + 3 * usize::from(cfg!(feature = "test-support")));
 		for function in &host {
 			assert!(
 				!function.doc.trim().is_empty(),
@@ -496,7 +499,7 @@ mod tests {
 			assert!(
 				function
 					.doc
-					.starts_with(function.path.trim_start_matches("host::")),
+					.starts_with(function.path.rsplit("::").next().unwrap()),
 				"{}: description does not name the function: {}",
 				function.path,
 				function.doc
@@ -513,14 +516,14 @@ mod tests {
 		let quoted = serde_json::to_string(&effect.to_string_lossy()).unwrap();
 		session
 			.eval(&format!(
-				"let boom = || host::write_new({quoted}, \"ran\");"
+				"let boom = || fs::write_new({quoted}, \"ran\");"
 			))
 			.unwrap();
 		let limits = InspectLimits::default();
 		let out = vars(&session, &limits);
 		assert!(out.contains("boom: "), "{out}");
 		let _ = help(&session, &host, &COMMANDS, Some("boom"), &limits);
-		let _ = help(&session, &host, &COMMANDS, Some("host::write_new"), &limits);
+		let _ = help(&session, &host, &COMMANDS, Some("fs::write_new"), &limits);
 		assert!(!effect.exists(), "inspection executed the closure");
 	}
 }
@@ -533,11 +536,14 @@ mod budget_tests {
 	fn context() -> Context {
 		let mut context = Context::with_default_modules().unwrap();
 		crate::host::install(&mut context).unwrap();
+		crate::fs::install(&mut context).unwrap();
 		context
 	}
 	fn host() -> Vec<HostFunction> {
 		let mut context = Context::with_default_modules().unwrap();
-		crate::host::install(&mut context).unwrap()
+		let mut names = crate::host::install(&mut context).unwrap();
+		names.extend(crate::fs::install(&mut context).unwrap());
+		names
 	}
 	const COMMANDS: [(&str, &str); 6] = crate::repl::COMMANDS;
 
@@ -659,6 +665,7 @@ mod short_circuit_tests {
 	fn binding_help_does_not_render_a_value_it_cannot_print() {
 		let mut context = Context::with_default_modules().unwrap();
 		let host = crate::host::install(&mut context).unwrap();
+		crate::fs::install(&mut context).unwrap();
 		let mut session = Session::new(context).unwrap();
 		session.set_budget(usize::MAX);
 		session

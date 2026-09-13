@@ -6,7 +6,7 @@
 //!
 //! Record 0012 decides that the stream is read once, that a terminal is
 //! refused rather than read, and that the limit and the refusals are the ones
-//! `host::read` already has. Each of those is a behaviour, so each has a test
+//! `fs::read` already has. Each of those is a behaviour, so each has a test
 //! that fails if it stops holding.
 
 #[cfg(windows)]
@@ -165,7 +165,7 @@ fn a_redirected_file_reads_as_the_same_text_host_read_gives() {
 	let from_stream = redirected(ECHO, &file);
 	assert_eq!(from_stream.code, 0, "{}", from_stream.stderr);
 	let source = format!(
-		"pub fn main(args) {{\n\tprintln!(\"{{:?}}\", host::read({:?})?);\n\tOk(())\n}}\n",
+		"pub fn main(args) {{\n\tprintln!(\"{{:?}}\", fs::read({:?})?);\n\tOk(())\n}}\n",
 		file.to_string_lossy()
 	);
 	let from_path = piped(&source, b"");

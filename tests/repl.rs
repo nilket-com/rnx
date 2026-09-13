@@ -268,7 +268,7 @@ fn gate_2_history_survives_and_state_does_not() {
 		t.prompt();
 		t.send("fn twice(n) { n * 2 }\r");
 		t.prompt();
-		t.send(&format!("host::write_new({quoted}, \"ran\")\r"));
+		t.send(&format!("fs::write_new({quoted}, \"ran\")\r"));
 		t.prompt();
 		t.send(":quit\r");
 		t.wait_exit();
@@ -373,7 +373,7 @@ fn gate_0003_completion_in_the_terminal() {
 	let mut t = Terminal::spawn(&history);
 	t.prompt();
 	t.send(&format!(
-		"let alpha = 1; let alphabet = 2; let boom = || host::write_new({quoted}, \"ran\");\r"
+		"let alpha = 1; let alphabet = 2; let boom = || fs::write_new({quoted}, \"ran\");\r"
 	));
 	t.prompt();
 	// Ambiguous prefix: common prefix, then the list; then a unique one.
@@ -392,14 +392,20 @@ fn gate_0003_completion_in_the_terminal() {
 	t.send("to\t([1, 2])\r");
 	t.expect("2\n");
 	t.prompt();
-	t.send("host::wr\t");
+	t.send("fs::write_\t");
 	std::thread::sleep(Duration::from_millis(200));
-	assert!(t.pending().contains("host::write_new"), "{}", t.pending());
+	assert!(t.pending().contains("fs::write_new"), "{}", t.pending());
 	t.send("\x03");
 	t.prompt();
 	t.send("host::\t\t");
-	t.expect("host::json_parse");
-	t.expect("host::process");
+	// Completion columns can place these names in either screen order.
+    let end = Instant::now() + Duration::from_secs(10);
+    loop {
+        let listed = t.pending();
+        if listed.contains("host::json_parse") && listed.contains("host::process") { break; }
+        assert!(Instant::now() < end, "{listed}");
+        std::thread::sleep(Duration::from_millis(10));
+    }
 	t.send("\x03");
 	t.prompt();
 	t.send(":me\t\r");
@@ -478,7 +484,7 @@ fn gate_0004_vars_and_help_in_the_terminal() {
 	t.expect("twice: function");
 	t.expect("n * 2");
 	t.prompt();
-	t.send(":help host::write_new\r");
+	t.send(":help fs::write_new\r");
 	t.expect("host function");
 	t.expect("refusing to overwrite");
 	t.prompt();
@@ -518,7 +524,7 @@ fn gate_0004_vars_and_help_in_the_terminal() {
 	t.send(":vars\r");
 	t.expect("no bindings");
 	t.prompt();
-	t.send(":help host::read\r");
+	t.send(":help fs::read\r");
 	t.expect("host function");
 	t.prompt();
 	t.send(":quit\r");

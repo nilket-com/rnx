@@ -9,7 +9,7 @@ use rune::ast::{self, Kind, Spanned};
 pub struct Names {
 	pub bindings: Vec<String>,
 	pub declarations: Vec<String>,
-	/// Full paths, `host::read` and so on, as registered.
+	/// Full paths, `fs::read` and so on, as registered.
 	pub host: Vec<String>,
 	pub commands: Vec<String>,
 }
@@ -205,7 +205,7 @@ mod tests {
 		Names {
 			bindings: vec!["alpha".into(), "alphabet".into(), "same".into()],
 			declarations: vec!["total".into(), "same".into(), "Point".into()],
-			host: vec!["host::read".into(), "host::write_new".into()],
+			host: vec!["fs::read".into(), "fs::write_new".into()],
 			commands: vec![
 				":quit".into(),
 				":reset".into(),
@@ -234,12 +234,12 @@ mod tests {
 
 	#[test]
 	fn qualified_paths_complete_within_the_module() {
-		assert_eq!(candidates("host::wr", 8), vec!["host::write_new"]);
+		assert_eq!(candidates("fs::wr", 6), vec!["fs::write_new"]);
 		assert_eq!(
-			candidates("let r = host::", 14),
-			vec!["host::read", "host::write_new"]
+			candidates("let r = fs::", 12),
+			vec!["fs::read", "fs::write_new"]
 		);
-		assert_eq!(candidates("hos", 3), vec!["host::"]);
+		assert_eq!(candidates("f", 1), vec!["fs::"]);
 		assert_eq!(candidates("std::", 5), Vec::<String>::new());
 		for cursor in 0..=5 {
 			assert!(at("::alp", cursor).is_none(), "cursor {cursor}");
@@ -305,8 +305,8 @@ mod host_source_tests {
 			.into_iter()
 			.map(|f| f.path)
 			.collect();
-		// Twelve, plus the async fixture and two allocation probes under test-support.
-		assert_eq!(registered.len(), 12 + 3 * usize::from(cfg!(feature = "test-support")));
+		// Eight host functions after the filesystem move, plus three test-support probes.
+		assert_eq!(registered.len(), 8 + 3 * usize::from(cfg!(feature = "test-support")));
 		let names = super::Names {
 			host: registered.clone(),
 			..Default::default()

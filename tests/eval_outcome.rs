@@ -79,7 +79,7 @@ fn ran_file(source: &str) -> Ran {
 fn a_returned_error_fails() {
 	// The case that motivated the record: a read that did not happen, whose
 	// status said it had.
-	let ran = evaluated("host::read(\"no-such-file-24680\")");
+	let ran = evaluated("fs::read(\"no-such-file-24680\")");
 	assert_eq!(ran.code, 1, "a failed read reported success");
 	assert_eq!(ran.stdout, "");
 	assert!(
@@ -131,7 +131,7 @@ fn the_two_entry_points_agree_on_everything_they_show() {
 	// own test below and is decision 5's.
 	let cases = [
 		"Err(\"plain words\")",
-		"host::read(\"no-such-file-13579\")",
+		"fs::read(\"no-such-file-13579\")",
 		"Err(#{code: 7})",
 		"Err([1, 2, 3])",
 		"Ok(5)",

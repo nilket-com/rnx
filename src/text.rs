@@ -223,17 +223,18 @@ mod description_tests {
 	fn a_description_names_a_result_when_the_function_returns_one() {
 		let mut context = rune::Context::with_default_modules().unwrap();
 		let mut registered = crate::host::install(&mut context).unwrap();
+		registered.extend(crate::fs::install(&mut context).unwrap());
 		registered.extend(super::install(&mut context).unwrap());
 		let fallible = [
 			"host::json_parse",
 			"host::json_stringify",
-			"host::read",
+			"fs::read",
 			"host::stdin",
 			"host::exit",
 			"host::eprint",
-			"host::write_new",
-			"host::mkdir",
-			"host::absolute",
+			"fs::write_new",
+			"fs::mkdir",
+			"fs::absolute",
 			"host::process",
 			"host::process_bytes",
 			"text::split_max",

@@ -7,6 +7,8 @@ mod execute;
 #[cfg(all(windows, feature = "test-support"))]
 mod delivery_control;
 mod format;
+mod fs;
+mod fs_platform;
 mod host;
 mod http;
 mod inspect;
@@ -107,6 +109,7 @@ fn main() -> Result<()> {
 	}
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = host::install(&mut context)?;
+	host_functions.extend(fs::install(&mut context)?);
 	host_functions.extend(text::install(&mut context)?);
 	let http = http::State::default();
 	host_functions.extend(http::install(&mut context, &http)?);
