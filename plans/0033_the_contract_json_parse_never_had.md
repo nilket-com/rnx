@@ -124,7 +124,8 @@ documentation says so rather than leaving it to be discovered.
 The two differ and this record leaves them differing. The writer stops at
 256 levels, record 0019's `MAX_DEPTH`, deliberately **shared with the
 renderer** — `tests/json.rs` has a gate by that name. The reader stops at
-serde_json's own recursion limit, 128 today, which is not rnx's number. So a
+serde_json's own recursion counter, 128 today, which admits 127 nested
+arrays or objects and refuses the 128th. This is not rnx's number. So a
 value between the two can be written and not read back.
 
 Both ways of reconciling them cost more than the asymmetry does:
@@ -186,8 +187,8 @@ getting a wrong number.
    well as alone.
 4. **A duplicate key takes the last value**, gated so the choice cannot
    change silently.
-5. **Both bounds.** A document at the reader's bound parses and one past it
-   is refused, carrying a position; a value at the writer's bound is written
+5. **Both bounds.** Documents with 127 nested arrays or objects parse;
+   128 are refused, carrying a position; a value at the writer's bound is written
    and one past it is refused in record 0019's words. Both numbers are
    asserted, so the day either changes, a gate says so.
 6. **A refusal says where in the document**, and nothing in the message can
