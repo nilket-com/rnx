@@ -64,7 +64,7 @@ The current host was checked in `src/runner.rs`, `src/session.rs`,
 
 The initial 3.5/3.9/4.3 ms report had no raw export. Claude subsequently
 preserved both scratch crates and reran them in `rnx-bench` at commit
-`53fc3bd554befb5b55cb25aacebf07a0a96c9c1b`. Use that committed rerun:
+`dfb9e8004a679d39a91b2227943da1ba790069ac`. Use that committed rerun:
 
 - `probes/companion-modules/`: source, manifest, and lockfile for adoption.
 - `probes/context-phases/`: source, manifest, and lockfile for phase probing.
@@ -78,7 +78,7 @@ rnx. It has no published remote referenced here. To inspect the retained
 export locally, for example:
 
 ```sh
-git -C ../rnx-bench show 53fc3bd554befb5b55cb25aacebf07a0a96c9c1b:results/probes.json
+git -C ../rnx-bench show dfb9e8004a679d39a91b2227943da1ba790069ac:results/probes.json
 ```
 
 Nano, Intel i7-14700, Linux 7.0.0-31-generic, Rust 1.98.1; both crates pin
@@ -137,7 +137,7 @@ cancellation, memory behavior, and integrated rnx remain unmeasured here.
 
 ## Matched emit-feature comparison
 
-Benchmark commit `c920bfccfab91cc6b0119ee2e08fedaeef9adb4d` adds
+Benchmark commit `115270f88e551ed0b8c4f8f1f2a16a767af154f6` adds
 `probes/context-phases-emit/` and `results/probes_emit.json`/`.md`.
 Codex compared its `src/main.rs` with `context-phases/src/main.rs`: they
 are byte-identical. The manifests differ in package name and enabling Rune

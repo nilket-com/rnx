@@ -29,7 +29,7 @@ interrupts. The integration decision is therefore about execution and host
 contracts as well as names in a module list.
 
 The preserved companion probe in `rnx-bench` at commit
-`53fc3bd554befb5b55cb25aacebf07a0a96c9c1b`, measured on nano with Rust
+`dfb9e8004a679d39a91b2227943da1ba790069ac`, measured on nano with Rust
 1.98.1 and 100 runs pinned to CPU 4, takes 3.509 ms for a default-context
 process, 3.816 ms with eight selected companion modules, and 4.242 ms when
 also constructing the runtime context, compiling, creating a current-thread
@@ -47,7 +47,7 @@ are identified in the evidence file. Build time, first actual I/O,
 cancellation, memory behavior, and integrated rnx costs remain to measure.
 
 A matched feature comparison in `rnx-bench` at commit
-`c920bfccfab91cc6b0119ee2e08fedaeef9adb4d` uses identical phase-probe source
+`115270f88e551ed0b8c4f8f1f2a16a767af154f6` uses identical phase-probe source
 with `std` versus `std,emit`. The run means are 3.666 and 3.696 ms; the
 benchmark README records sizes of 7.76 and 7.89 MiB. This is a small observed
 effect in that workload, not proof of zero runtime cost. `doc` remains off.

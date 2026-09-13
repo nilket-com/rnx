@@ -59,7 +59,7 @@ The measurements compare those artifacts; the before artifact was not
 rebuilt during this implementation.
 
 The bare and 10,000-iteration JSON scripts are in rnx-bench commit
-`c920bfccfab91cc6b0119ee2e08fedaeef9adb4d`, `scripts/bare.rn` and
+`115270f88e551ed0b8c4f8f1f2a16a767af154f6`, `scripts/bare.rn` and
 `scripts/json.rn`. Both JSON workload runs exit 0 and have byte-identical
 stdout, SHA-256
 `9e7a787318d33adbd30f40f3594ba28f739932a1fac12b9fbf64b9e681764c6c`.
