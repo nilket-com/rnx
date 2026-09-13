@@ -76,10 +76,36 @@ rnx — a Rune scripting environment
 Flags for `run`, before the file: --budget N, --debug-source.";
 
 fn main() -> Result<()> {
+	let args: Vec<String> = std::env::args().skip(1).collect();
+	// Answered before a context exists, because neither needs one and the
+	// context is three quarters of what a trivial command costs: record 0030
+	// measured 4.2 ms for `version` against 0.56 ms for a binary that exits
+	// at once, and all of the difference was `with_default_modules`. Only a
+	// command that touches no Rune at all belongs above the context; anything
+	// else goes below, where `context` is in scope.
+	if args
+		.first()
+		.is_some_and(|s| s == "version" || s == "--version" || s == "-V")
+	{
+		// Both halves, because either alone leaves a question open: which rnx
+		// this is, and which Rune it embeds. Record 0001 pins an exact upstream
+		// version and asks each release to say which one; this is where a
+		// person or a script reads it without unpacking the binary.
+		println!("rnx {VERSION}");
+		println!("rune {RUNE_VERSION}");
+		return Ok(());
+	}
+	if args
+		.first()
+		.is_some_and(|s| s == "help" || s == "--help" || s == "-h")
+	{
+		// An explicit question deserves an answer rather than an error.
+		println!("{USAGE}");
+		return Ok(());
+	}
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = host::install(&mut context)?;
 	host_functions.extend(text::install(&mut context)?);
-	let args: Vec<String> = std::env::args().skip(1).collect();
 	// Answered before anything else, because it is not a Rune command at
 	// all: it drives a pipe of its own and reports what a stop did to a
 	// write blocked in the kernel.
@@ -128,26 +154,6 @@ fn main() -> Result<()> {
 	// whether standard input is a terminal or a pipe.
 	if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
 		return repl::run(context, host_functions);
-	}
-	if args
-		.first()
-		.is_some_and(|s| s == "version" || s == "--version" || s == "-V")
-	{
-		// Both halves, because either alone leaves a question open: which rnx
-		// this is, and which Rune it embeds. Record 0001 pins an exact upstream
-		// version and asks each release to say which one; this is where a
-		// person or a script reads it without unpacking the binary.
-		println!("rnx {VERSION}");
-		println!("rune {RUNE_VERSION}");
-		return Ok(());
-	}
-	if args
-		.first()
-		.is_some_and(|s| s == "help" || s == "--help" || s == "-h")
-	{
-		// An explicit question deserves an answer rather than an error.
-		println!("{USAGE}");
-		return Ok(());
 	}
 	if args.first().is_some_and(|s| s == "run") {
 		// Flags are read only before the script path. Everything after the
