@@ -1,9 +1,10 @@
 # rnx 0038: a moment is a number, and a clock is named
 
-Status: proposed 2026-09-14; revised the same day after review. The
+Status: implemented 2026-09-14 after review and the fixture correction below.
+Evidence: `0038_a_moment_is_a_number_and_a_clock_is_named_evidence.md`. The
 thirty-eighth record of rnx, and the
 batteries record 0031 called time and dates. It gives a script two clocks
-that are never confused for each other, a calendar that knows what a time
+with distinct origins and documented meanings, a calendar that knows what a time
 zone is, and a sleep that the async driver can end. It chooses one
 dependency by measurement, and it keeps every moment a script holds as
 the integer record 0035 already chose for a file's modification time.
@@ -280,7 +281,11 @@ Record 0029's notices workflow runs for the new tree.
 Every gate that touches the local zone sets `TZ` explicitly in the
 child's environment, so the developer's machine decides nothing; the
 `"local"` refusal is provoked by `TZ` naming a zone that does not exist
-and by an empty zoneinfo directory pointed to through jiff's `TZDIR`.
+and by a valid UTC-only zoneinfo directory pointed to through jiff's
+`TZDIR`, with `TZ=Europe/Paris`. An empty directory is not a missing-database
+fixture: Jiff rejects it and searches the default system directories. This
+was measured during implementation; the fixture must lack the requested name
+without triggering database discovery fallback.
 
 1. **The five examples run**, as scripts in the evidence: a stamped log
    line, a measured elapsed, files aged against `modified_ms` including
@@ -351,11 +356,11 @@ and by an empty zoneinfo directory pointed to through jiff's `TZDIR`.
    no leap second folded into the previous one, no annotation accepted
    unchecked, and no silent UTC when `"local"` was asked for.
 3. No synchronous sleep, and no sleep the driver cannot end.
-5. One conversion between milliseconds and jiff's timestamp, in one
+4. One conversion between milliseconds and jiff's timestamp, in one
    place, floor in both directions, unit-tested at the pre-epoch
    fractional case and both range ends. Formatting goes through jiff's
    fallible API; no `to_string` on a formatter that can fail.
-4. If `jiff` cannot be built with the feature set in decision 7 on a
+5. If `jiff` cannot be built with the feature set in decision 7 on a
    platform rnx builds for, stop and say which feature and why; do not
    enable the bundled database on Unix to get past it.
 

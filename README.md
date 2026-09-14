@@ -267,6 +267,70 @@ drive prefix; a drive-relative part replaces the base. Windows absolute paths
 need both a prefix and a root: `C:\a` is absolute, `C:a` and `\a` are not.
 Use `fs::absolute` to canonicalize an existing path through the filesystem.
 
+## Time and dates
+
+Moments are signed integer milliseconds since the Unix epoch, matching
+`fs::metadata(path)?.modified_ms`. Fractions floor toward negative infinity:
+parsing one nanosecond before 1970 gives `-1`. Calendar operations accept
+`-377705023201000` through `253402207200999`, with catchable refusals outside
+that range. No native time value is needed.
+
+| function | result |
+| --- | --- |
+| `time::now_ms()` | i64; wall clock, for timestamps, not elapsed time |
+| `time::monotonic_ms()` | i64; elapsed milliseconds since the first call in this process |
+| `time::format(ms, pattern, zone)` | Result<String>; Jiff's strftime dialect |
+| `time::rfc3339(ms, zone)` | Result<String>; strict RFC 3339 with three fractional digits |
+| `time::parse(text)` | Result<i64>; offset or Z required, fractions floored |
+| `time::parts(ms, zone)` | Result<Object>; calendar fields, ISO weekday, offset and zone |
+| `time::from_parts(object, zone)` | Result<i64>; calendar fields to a moment |
+| `time::sleep(ms).await` | Result<()>; interruptible sleep |
+
+```rune
+let stamp = time::rfc3339(time::now_ms(), "UTC")?;
+println(stamp);
+let start = time::monotonic_ms();
+time::sleep(500).await?;
+println(time::monotonic_ms() - start);
+```
+
+The monotonic clock never decreases and is not an epoch timestamp. Both clocks
+return integers, so rnx cannot prevent a script from mixing their meanings.
+Its origin survives session resets and means nothing in another process.
+
+Zones are `"UTC"`, IANA names such as `"Europe/Paris"`, fixed offsets in
+`±HH:MM` with hours 00–23 and minutes 00–59, or `"local"`. Local lookup uses
+`TZ` or the system configuration and refuses failure instead of substituting
+UTC. Unix uses system zoneinfo; Windows uses a bundled database which ages
+with the binary. Zone lookup can perform blocking filesystem operations.
+Jiff caches zone data; these calls do not promise immediate observation of
+an external database change. `TZDIR` selects a database when valid; an invalid
+one causes Jiff to search system directories.
+
+`parts` returns year, month, day, hour, minute, second, millisecond, weekday
+(Monday=1 through Sunday=7), offset_seconds and zone. An unnamed local zone
+retains `"local"` as its label. `from_parts` requires year/month/day; clock
+fields default to zero. Extra fields, including weekday and zone, are
+informational and ignored; the zone argument is authoritative. A fold needs
+an explicit, valid offset_seconds. A gap is always refused. A supplied offset
+that disagrees with the zone is refused even on an ordinary date.
+
+`parse` accepts Jiff's ISO/Temporal date-time forms with an offset spelled
+`±HH:MM` or Z. Leap seconds and non-zone annotations are refused. Named zone
+annotations are checked against numeric offsets exactly, including historical
+seconds. `Z[Europe/Paris]` instead specifies an exact UTC instant with Paris
+as its display zone; it is accepted, while a conflicting numeric offset is not.
+
+`rfc3339` refuses negative years and offsets that are not whole minutes within
+±23:59. The maximum supported moment fits; the minimum does not. `format`
+can represent those values with `%Y` and `%:z`. It uses Jiff's fallible
+formatter: invalid directives are catchable errors. Its precision follows
+the pattern (`%.3f` for milliseconds), with no fixed precision promise.
+
+Sleep accepts 0–68719476735 milliseconds. It is inert until awaited, and
+awaiting at the prompt promotes the input to the async driver. Pending sleep
+is interruptible; this does not change the driver's CPU-loop limitation.
+
 ## Environment and script arguments
 
 `env::args()` returns a fresh vector of fresh strings: the arguments after
@@ -295,7 +359,8 @@ Variables read directly by rnx are `RNX_HISTORY` (history path),
 `XDG_STATE_HOME`, `LOCALAPPDATA` (state-directory selection). The
 `RNX_TEST_*` family is reserved for test-support builds. The new environment
 functions also read the requested variables and the home-directory variable
-above. Separately, reqwest reads `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`,
+above. Time-zone refusal messages read `TZ` and `TZDIR`; Jiff also reads
+them on rnx's behalf for zone discovery. Separately, reqwest reads `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`,
 `NO_PROXY` and their lowercase forms on rnx's behalf. This list documents
 these interfaces, not every environment read inside the platform or its
 libraries; maintain it manually when dependencies change. Reading a variable

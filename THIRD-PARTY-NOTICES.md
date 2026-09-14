@@ -36,7 +36,7 @@ review of that distribution. This file is an input to it.
 
 ## The packages
 
-121 packages, 87 distinct licence texts.
+124 packages, 87 distinct licence texts.
 
 | Package | Version | Declared |
 | --- | --- | --- |
@@ -83,6 +83,9 @@ review of that distribution. This file is an input to it.
 | `idna_adapter` | 1.2.2 | Apache-2.0 OR MIT |
 | `ipnet` | 2.12.2 | MIT OR Apache-2.0 |
 | `itoa` | 1.0.18 | MIT OR Apache-2.0 |
+| `jiff` | 0.2.24 | Unlicense OR MIT |
+| `jiff-tzdb` | 0.1.8 | Unlicense OR MIT |
+| `jiff-tzdb-platform` | 0.1.3 | Unlicense OR MIT |
 | `libc` | 0.2.189 | MIT OR Apache-2.0 |
 | `litemap` | 0.8.3 | Unicode-3.0 |
 | `log` | 0.4.34 | MIT OR Apache-2.0 |
@@ -486,7 +489,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-### `memchr 2.8.3` (COPYING) 
+### `jiff 0.2.24` (COPYING) `jiff-tzdb 0.1.8` (COPYING) `jiff-tzdb-platform 0.1.3` (COPYING) `memchr 2.8.3` (COPYING) 
 
 ```
 This project is dual-licensed under the Unlicense and MIT licenses.
@@ -835,7 +838,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### `memchr 2.8.3` (LICENSE-MIT) 
+### `jiff 0.2.24` (LICENSE-MIT) `jiff-tzdb 0.1.8` (LICENSE-MIT) `jiff-tzdb-platform 0.1.3` (LICENSE-MIT) `memchr 2.8.3` (LICENSE-MIT) 
 
 ```
 The MIT License (MIT)

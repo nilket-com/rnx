@@ -27,6 +27,7 @@ mod repl;
 mod runner;
 mod session;
 mod text;
+mod time;
 
 // Installed for the whole process: the ceiling is enforced against what this
 // counts. A build without the feature enforces no ceiling and says so.
@@ -119,6 +120,7 @@ fn main() -> Result<()> {
 	let mut host_functions = host::install(&mut context)?;
 	host_functions.extend(fs::install(&mut context)?);
 	host_functions.extend(path::install(&mut context)?);
+	host_functions.extend(time::install(&mut context)?);
 	host_functions.extend(text::install(&mut context)?);
 	let http = http::State::default();
 	host_functions.extend(http::install(&mut context, &http)?);

@@ -42,6 +42,7 @@ test-support = []
 [dependencies]
 rune = { version = "=0.14.2", default-features = false, features = ["std"] }
 serde_json = "1.0.149"
+jiff = { version = "=0.2.24", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo"] }
 libc = "0.2.177"
 rustyline = { version = "18.0.1", features = ["derive"] }
 unicode-width = "0.2.2"
@@ -61,4 +62,5 @@ rustls = { version = "0.23", default-features = false, features = ["ring", "std"
 unicode-width = "0.2.2"
 
 [target."cfg(windows)".dependencies]
+jiff = { version = "=0.2.24", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo", "tzdb-bundle-platform"] }
 windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Console", "Win32_System_Pipes", "Win32_System_IO", "Win32_System_Diagnostics_ToolHelp", "Win32_Storage_FileSystem"] }
