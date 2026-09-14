@@ -439,6 +439,7 @@ queried to find HOME. Missing or blank files are silent.
     palette: #{
         keyword: "#c678dd", string: "#98c379", number: "#61afef",
         comment: "bright-black", prompt_number: "#98c379", error: "bright-red",
+        result_number: "blue", prompt_frame: "bright-black",
     },
 }
 ```
@@ -448,7 +449,12 @@ names (`black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`,
 with optional `bright-`) use the terminal palette. Foreground changes preserve
 bold/dim attributes; the error colour also applies to its caret. Terminal support
 and display settings still affect appearance. Without configuration, the prompt
-number and result marker are green; the other default accents remain unchanged.
+digits are bold green, result digits bold blue, and their brackets and the
+prompt arrow use dim default foreground. Value numbers remain cyan.
+`prompt_number` now colours only input digits; existing configs keep working,
+with the new `result_number` and `prompt_frame` keys defaulted independently.
+Choose `bright-blue` if your terminal’s blue is too dark. Faint intensity is
+a terminal request, not a guaranteed shade of grey.
 
 Flags override saved settings. `--color=never` wins over saved `always`,
 `NO_COLOR` disables `auto` when nonempty, and `--no-splash` overrides `splash: true`.

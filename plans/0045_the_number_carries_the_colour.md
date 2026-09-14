@@ -1,6 +1,7 @@
 # rnx 0045: the number carries the colour
 
-Status: proposed 2026-09-14. The forty-fifth record of rnx. It separates
+Status: implemented 2026-09-14; Linux gates pass, with evidence beside
+this record. Windows execution remains unverified. The forty-fifth record of rnx. It separates
 input from output at a glance, then separates the digits from their frame.
 
 ## Context

@@ -55,9 +55,9 @@ impl Colour {
 		}
 	}
 }
-static PALETTE: OnceLock<[Option<String>; 8]> = OnceLock::new();
-pub fn set_palette(colours: [Option<Colour>; 6]) {
-	let mut styles: [Option<String>; 8] = Default::default();
+static PALETTE: OnceLock<[Option<String>; 10]> = OnceLock::new();
+pub fn set_palette(colours: [Option<Colour>; 8]) {
+	let mut styles: [Option<String>; 10] = Default::default();
 	for (role, style) in [
 		(0, Style::Keyword),
 		(1, Style::Literal),
@@ -66,11 +66,13 @@ pub fn set_palette(colours: [Option<Colour>; 6]) {
 		(4, Style::PromptNumber),
 		(5, Style::Error),
 		(5, Style::Caret),
+		(6, Style::ResultNumber),
+		(7, Style::PromptFrame),
 	] {
 		if let Some(colour) = colours[role] {
 			let weight = match style {
-				Style::Error | Style::PromptNumber => "1;",
-				Style::Comment => "2;",
+				Style::Error | Style::PromptNumber | Style::ResultNumber => "1;",
+				Style::Comment | Style::PromptFrame => "2;",
 				_ => "",
 			};
 			styles[style as usize] = Some(format!("\x1b[{weight}{}m", colour.foreground()));
@@ -147,6 +149,8 @@ pub enum Style {
 	Error,
 	Caret,
 	PromptNumber,
+	ResultNumber,
+	PromptFrame,
 }
 impl Style {
 	pub fn sgr(self) -> &'static str {
@@ -162,6 +166,8 @@ impl Style {
 			Self::Error => "\x1b[1;31m",
 			Self::Caret => "\x1b[31m",
 			Self::PromptNumber => "\x1b[1;32m",
+			Self::ResultNumber => "\x1b[1;34m",
+			Self::PromptFrame => "\x1b[2m",
 		}
 	}
 }
@@ -198,6 +204,37 @@ pub fn styled(text: &str, style: Style, enabled: bool) -> Cow<'_, str> {
 		enabled,
 	)
 }
+/// A numbered prompt/marker has one coloured digit span and a dim frame.
+/// Spaces keep their bytes and share the trailing frame span. Every span
+/// resets, so the frame's faint intensity cannot leak into the digits/value.
+pub fn numbered(text: &str, number: Style, enabled: bool) -> Cow<'_, str> {
+	let Some(end) = text.find(']') else {
+		return Cow::Borrowed(text);
+	};
+	if !text.starts_with('[') || end <= 1 || !text.as_bytes()[1..end].iter().all(u8::is_ascii_digit)
+	{
+		return Cow::Borrowed(text);
+	}
+	paint(
+		text,
+		&[
+			Span {
+				range: 0..1,
+				style: Style::PromptFrame,
+			},
+			Span {
+				range: 1..end,
+				style: number,
+			},
+			Span {
+				range: end..text.len(),
+				style: Style::PromptFrame,
+			},
+		],
+		enabled,
+	)
+}
+
 pub fn error(text: &str) -> Cow<'_, str> {
 	styled(text, Style::Error, stderr())
 }
@@ -338,6 +375,22 @@ mod tests {
 		}
 		out
 	}
+    #[test]
+    fn numbered_spans_keep_digits_bold_and_frame_dim_without_changing_text() {
+        for digits in ["1", "12", "100"] {
+            for (role, suffix, sgr) in [(Style::PromptNumber, "] > ", "\x1b[1;32m"), (Style::ResultNumber, "] ", "\x1b[1;34m")] {
+                let raw=format!("[{digits}{suffix}");
+                let painted=numbered(&raw,role,true);
+                assert_eq!(painted,format!("\x1b[2m[{RESET}{sgr}{digits}{RESET}\x1b[2m{suffix}{RESET}"));
+                assert_eq!(painted.replace("\x1b[2m", "").replace(sgr, "").replace(RESET, ""),raw);
+                assert_eq!(numbered(&raw,role,false),raw);
+            }
+        }
+        for other in ["", " | ", "[x] > ", "[] > "] {
+            assert_eq!(numbered(other, Style::PromptNumber, true), other);
+        }
+    }
+
 	#[test]
 	fn every_utf8_prefix_keeps_its_bytes_and_finishes_open_tokens() {
 		let block =

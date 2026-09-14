@@ -7,19 +7,21 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 const SOURCE_CAP: usize = 64 * 1024;
 const BUDGET: usize = 100_000;
-pub const ROLES: [&str; 6] = [
+pub const ROLES: [&str; 8] = [
 	"keyword",
 	"string",
 	"number",
 	"comment",
 	"prompt_number",
 	"error",
+	"result_number",
+	"prompt_frame",
 ];
 #[derive(Default)]
 pub struct Settings {
 	pub mode: Option<Mode>,
 	pub splash: Option<bool>,
-	pub palette: [Option<Colour>; 6],
+	pub palette: [Option<Colour>; 8],
 }
 fn variable(name: &str) -> Result<Option<String>, String> {
 	std::env::var_os(name)

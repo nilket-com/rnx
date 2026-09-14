@@ -80,9 +80,7 @@ impl rustyline::highlight::Highlighter for RnxHelper {
 		Cow::Owned(presentation::highlight(line))
 	}
 	fn highlight_prompt<'b, 's: 'b, 'p: 'b>(&'s self, prompt: &'p str, _: bool) -> Cow<'b, str> {
-		if let Some((number, tail)) = prompt.split_once(']') {
-			Cow::Owned(format!("{}{}", presentation::styled(&format!("{number}]"), presentation::Style::PromptNumber, true), presentation::styled(tail, presentation::Style::Bold, true)))
-		} else { Cow::Borrowed(prompt) }
+		presentation::numbered(prompt, presentation::Style::PromptNumber, true)
 	}
 	fn highlight_char(&self, _: &str, _: usize, _: rustyline::highlight::CmdKind) -> bool {
 		true
@@ -286,7 +284,7 @@ fn handle(
 			if !crate::runner::is_unit(&value) {
 				if prompt.shown.get() {
 					let marker = format!("[{number}] ");
-					println!("{}{text}", presentation::styled(&marker, presentation::Style::PromptNumber, prompt.styled.get()));
+					println!("{}{text}", presentation::numbered(&marker, presentation::Style::ResultNumber, prompt.styled.get()));
 				} else {
 					println!("{text}");
 				}
