@@ -32,6 +32,8 @@ mod session;
 mod terminal;
 mod text;
 mod time;
+mod worker;
+mod worker_transport;
 
 // Installed for the whole process: the ceiling is enforced against what this
 // counts. A build without the feature enforces no ceiling and says so.
@@ -147,6 +149,20 @@ fn main() -> Result<()> {
 		println!("{}", presentation::help(USAGE));
 		return Ok(());
 	}
+	// Take and seal inherited endpoints before constructing a session/context.
+	let worker_transport = if args.first().is_some_and(|s| s == "worker") {
+		mode = Some(presentation::Mode::Never);
+		match worker::Transport::from_args(&args) {
+			Ok(t) => Some(t),
+			Err((code, message)) => {
+				eprintln!("{message}");
+				std::process::exit(code);
+			}
+		}
+	} else {
+		None
+	};
+
 	let settings = if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
 		config::load()
 	} else {
@@ -169,6 +185,14 @@ fn main() -> Result<()> {
 	if !args.first().is_some_and(|arg| arg == "run") {
 		host_functions.extend(env::install(&mut context, Arc::from([]))?);
 	}
+	if let Some(transport) = worker_transport {
+		// Fatal transport errors are not script stderr or a successful cell.
+		if worker::run(transport, context, http).is_err() {
+			std::process::exit(1);
+		}
+		return Ok(());
+	}
+
 	// Answered before anything else, because it is not a Rune command at
 	// all: it drives a pipe of its own and reports what a stop did to a
 	// write blocked in the kernel.

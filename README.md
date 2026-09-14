@@ -471,3 +471,43 @@ async execution are provided. Reads accept regular files only (non-blocking open
 on Unix), capped at 64 KiB; evaluation has a 100,000-instruction budget. This
 bounds VM instructions, not native-call time, filesystem stalls or process-wide
 resource exhaustion. The evaluator is discarded after extracting settings.
+
+## Evaluation worker (advanced)
+
+Record 0046 adds `rnx worker --control-read N --control-write N` for a parent
+that owns two inherited one-way control pipes and captures stdout/stderr
+concurrently. It is the foundation for a future notebook kernel, not a Jupyter
+kernel or a command to type into the REPL. Stdin must be the null device.
+Worker startup never reads personal config/history or emits a prompt, splash,
+title or presentation colour. Script printing remains raw.
+
+Control is UTF-8 JSON lines (256 KiB maximum), starting with `ready` protocol 1.
+An operation has an increasing positive `id` (at most 2^53−1), `op` (`execute`,
+`reset`, `shutdown`) and a fresh parent-generated `nonce` (64 lowercase hex
+characters). Execute also carries `source`, limited to 32 KiB. Admitted execution
+emits `armed` after clearing the interrupt flag. `settled` carries the request
+ID, reset epoch, admitted input index or null, bounded `text_plain` (null for
+unit), and a structured failure or null. Source origins name the defining input.
+
+The parent must collect both stream barriers and hand off retained output before
+sending `{"op":"ack","id":1}`. A barrier is the byte sequence
+`\x1eRNX-WORKER-1:<id>:<stdout|stderr>:<nonce>\x1f`; it is not a line and
+must be recognized before decoding text. Output collection is capped at 2 MiB
+per stream but continues draining discarded bytes until the barrier. Wrong or
+missing acknowledgements cannot admit another operation. Reset clears session
+state and advances the epoch; request IDs never reset. Cleanup failure retires
+the worker. A complete acknowledged shutdown exits zero; broken control or
+incomplete boundaries are failures, never fabricated successful cells.
+
+The parent supplies independent cancellation/kill supervision. It waits for
+`armed` before delivering a queued interrupt. Synchronous execution remains
+interruptible; async CPU loops retain the existing budget-only limitation.
+A hard restart loses bindings. Partial stdout lines may remain buffered until
+the operation's flush. Background output has interval attribution, not guaranteed
+causal ownership: between operations it is unassociated, but an old writer
+running during the next operation cannot be identified from a shared pipe.
+
+The bounded parent fixture is in `tests/worker_parent.py`; the integration gate
+requires Python 3 in addition to Rust. Unix transport has executed on nano.
+Windows transport type-checks in the standalone probe and awaits execution.
+The full wire contract, bounds and failure policy are in record 0046.

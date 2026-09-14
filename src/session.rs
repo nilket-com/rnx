@@ -20,7 +20,7 @@ pub const BUDGET: usize = 2_000_000_000;
 /// enough that a runaway session stops before the machine notices.
 pub const DEFAULT_CEILING: usize = 512 * 1024 * 1024;
 /// Longest accepted input.
-const INPUT_CAP: usize = 32 * 1024;
+pub const INPUT_CAP: usize = 32 * 1024;
 
 /// A position in an input a person typed: input number (1-based), line and
 /// column (1-based, in characters).
@@ -391,6 +391,12 @@ impl Session {
 	/// what the session holds, not the interpreter it runs on. The startup
 	/// reference point is the process's, never re-recorded.
 	pub fn reset(&mut self) {
+		if let Err(error) = self.reset_fallible() {
+			eprintln!("{error}");
+		}
+	}
+	/// Clears state even if HTTP cleanup fails; the worker then retires.
+	pub fn reset_fallible(&mut self) -> std::result::Result<(), String> {
 		self.declarations.clear();
 		self.names.clear();
 		self.state.clear();
@@ -399,7 +405,7 @@ impl Session {
 		self.units.clear();
 		self.last_generated.clear();
 		self.over_ceiling = false;
-		self.cancel_http();
+		self.http.clear(&self.runtime)
 	}
 	pub fn ceiling(&self) -> usize {
 		self.ceiling
@@ -495,36 +501,53 @@ impl Session {
 	}
 
 	pub fn eval(&mut self, input: &str) -> std::result::Result<Value, Failure> {
-		let result = self.eval_input(input);
+		self.eval_with_armed(input, |_| Ok::<(), std::convert::Infallible>(()))
+			.unwrap()
+	}
+	/// Admission is shared with the REPL. The callback runs after the flag is
+	/// cleared and source retained, but before a single instruction executes.
+	pub fn eval_with_armed<E>(
+		&mut self,
+		input: &str,
+		on_armed: impl FnOnce(usize) -> std::result::Result<(), E>,
+	) -> std::result::Result<std::result::Result<Value, Failure>, E> {
+		let result = self.eval_input(input, on_armed)?;
 		if crate::host::interrupted() {
 			if let Err(message) = self.http.clear(&self.runtime) {
-				return Err(Failure::Runtime {
+				return Ok(Err(Failure::Runtime {
 					message,
 					origin: None,
-				});
+				}));
 			}
 		}
-		result
+		Ok(result)
 	}
-	fn eval_input(&mut self, input: &str) -> std::result::Result<Value, Failure> {
+	fn eval_input<E>(
+		&mut self,
+		input: &str,
+		on_armed: impl FnOnce(usize) -> std::result::Result<(), E>,
+	) -> std::result::Result<std::result::Result<Value, Failure>, E> {
 		if self.over_ceiling {
-			return Err(Failure::OverCeiling {
+			return Ok(Err(Failure::OverCeiling {
 				live: super::memory::live().unwrap_or(0),
 				ceiling: self.ceiling,
-			});
+			}));
 		}
 		if input.len() > INPUT_CAP {
-			return Err(Failure::Refused(format!("input exceeds {INPUT_CAP} bytes")));
+			return Ok(Err(Failure::Refused(format!(
+				"input exceeds {INPUT_CAP} bytes"
+			))));
 		}
 		super::host::clear_interrupt();
 		self.inputs.push(input.to_owned());
 		let number = self.inputs.len();
+		on_armed(number)?;
 		let result = self.eval_inner(input, number);
 		if result.is_err() {
 			// A failed input publishes nothing, but its text stays so an origin
 			// recorded against it (there is none) could never dangle.
 		}
-		result
+		Ok(result)
 	}
 
 	fn eval_inner(&mut self, input: &str, number: usize) -> std::result::Result<Value, Failure> {

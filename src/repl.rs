@@ -180,7 +180,7 @@ enum Outcome {
 
 /// The ceiling on tracked live allocation request bytes: `RNX_MEMORY_CEILING`
 /// if it parses, else the session's default.
-fn ceiling() -> usize {
+pub(crate) fn ceiling() -> usize {
 	std::env::var("RNX_MEMORY_CEILING")
 		.ok()
 		.and_then(|value| value.trim().parse().ok())

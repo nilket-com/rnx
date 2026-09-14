@@ -1,6 +1,6 @@
 # rnx 0046: a worker whose output has a boundary
 
-Status: proposed 2026-09-14. The forty-sixth record of rnx, and the first
+Status: implemented 2026-09-14; Windows transport execution remains open. The forty-sixth record of rnx, and the first
 step toward a Jupyter kernel. It defines a persistent evaluation worker and
 its parent-side collection contract. It does not implement Jupyter sockets,
 kernelspec installation, notebook history, rich display or interactive stdin.
