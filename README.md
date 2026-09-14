@@ -231,6 +231,42 @@ synchronous: there is no deadline or interruption within a call. Unix FIFO
 opens are non-blocking and refused; other opens can still block. A path such
 as `/dev/stdin` is accepted when its opened target is a regular file.
 
+## Path helpers
+
+`path::` operates on Unicode strings using the running platform's Rust path
+rules. The helpers do no filesystem I/O. Non-Unicode path values remain deferred.
+
+| function | result |
+| --- | --- |
+| `join(base, part)` | String; an absolute part replaces the base |
+| `parent(p)` | Option<String>; `parent("a")` is `Some("")`, then `parent("")` is `None` |
+| `file_name(p)` | Option<String>; final name, ignoring trailing separators |
+| `file_stem(p)` | Option<String>; name without its last extension |
+| `extension(p)` | Option<String>; last extension without the dot |
+| `with_extension(p, ext)` | Result<String>; replace or remove the last extension |
+| `is_absolute(p)` | bool; the platform's absolute-path rules |
+| `separator()` | String; the platform's main separator |
+
+```rune
+let output = path::join("output", path::with_extension("report.csv", "json")?);
+```
+
+`.bashrc` has no extension; `a.` has an empty one. Removing the last extension
+from `a.tar.gz` gives `a.tar`, which still has an extension. An extension
+containing a separator is a catchable refusal: `/` on Unix, `/` or `\` on
+Windows. Other strings, including NUL, are handled lexically; filesystem
+functions validate them when used.
+
+Reassembling parent and filename can change spelling (`a//b`, `a/./b`,
+and `a/b/` reassemble alike), without asserting that they identify the same
+file. In particular, a trailing separator requires a directory.
+Unix join preserves `..`. Windows join normalizes `.` and `..` when its base
+has a verbatim prefix and the added part is nonempty. Windows joins insert
+`\` but can retain existing `/` separators. Rooted parts retain the base's
+drive prefix; a drive-relative part replaces the base. Windows absolute paths
+need both a prefix and a root: `C:\a` is absolute, `C:a` and `\a` are not.
+Use `fs::absolute` to canonicalize an existing path through the filesystem.
+
 ## Environment and script arguments
 
 `env::args()` returns a fresh vector of fresh strings: the arguments after

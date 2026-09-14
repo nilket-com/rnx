@@ -1,6 +1,7 @@
 # rnx 0037: paths are strings, until a script needs them not to be
 
-Status: proposed 2026-09-14; revised the same day after review. The
+Status: implemented 2026-09-14 after review. Evidence is in
+`0037_paths_are_strings_until_a_script_needs_them_not_to_be_evidence.md`. The
 thirty-seventh record of rnx, and record
 0031's gate 5, third part: the path helpers, and the decision records 0035
 and 0036 deferred here — whether a path value is needed now to carry a

@@ -16,6 +16,7 @@ mod inspect;
 mod json;
 mod memory;
 mod method;
+mod path;
 mod platform;
 // Record 0025's gate 5 mechanism control. Only where the mechanism it
 // gates exists, and only under `test-support`: an ordinary build has no
@@ -117,6 +118,7 @@ fn main() -> Result<()> {
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = host::install(&mut context)?;
 	host_functions.extend(fs::install(&mut context)?);
+	host_functions.extend(path::install(&mut context)?);
 	host_functions.extend(text::install(&mut context)?);
 	let http = http::State::default();
 	host_functions.extend(http::install(&mut context, &http)?);
