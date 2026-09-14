@@ -1048,6 +1048,7 @@ dependencies = [
  "rustyline",
  "serde_json",
  "tokio",
+ "unicode-ident",
  "unicode-width",
  "windows-sys 0.61.2",
 ]

@@ -1,8 +1,9 @@
 //! The interactive session: a line editor over the persistent session.
 use crate::complete::{Completion, Names, complete};
-use crate::format::{Limits, render};
+use crate::format::{Limits, render_styled};
 use crate::host::HostFunction;
 use crate::inspect::{self, InspectLimits};
+use crate::presentation;
 use crate::session::{Completeness, Session, completeness};
 use rune::Context;
 use rustyline::completion::{Completer, Pair};
@@ -10,7 +11,8 @@ use rustyline::error::ReadlineError;
 use rustyline::history::FileHistory;
 use rustyline::line_buffer::LineBuffer;
 use rustyline::validate::{ValidationContext, ValidationResult, Validator};
-use rustyline::{Changeset, CompletionType, Config, Editor, Helper, Highlighter, Hinter};
+use rustyline::{Changeset, CompletionType, Config, Editor, Helper, Hinter};
+use std::borrow::Cow;
 use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -38,11 +40,22 @@ pub const COMMANDS: [(&str, &str); 6] = [
 	),
 ];
 
-#[derive(Helper, Highlighter, Hinter)]
+#[derive(Helper, Hinter)]
 struct RnxHelper {
 	/// Names the completer draws on, refreshed by the loop after every
 	/// input that can change them. Reading them runs nothing.
 	names: Rc<RefCell<Names>>,
+}
+impl rustyline::highlight::Highlighter for RnxHelper {
+	fn highlight<'l>(&self, line: &'l str, _: usize) -> Cow<'l, str> {
+		Cow::Owned(presentation::highlight(line))
+	}
+	fn highlight_prompt<'b, 's: 'b, 'p: 'b>(&'s self, prompt: &'p str, _: bool) -> Cow<'b, str> {
+		presentation::styled(prompt, presentation::Style::Bold, true)
+	}
+	fn highlight_char(&self, _: &str, _: usize, _: rustyline::highlight::CmdKind) -> bool {
+		true
+	}
 }
 impl Validator for RnxHelper {
 	/// Enter accepts an input when it is complete, or when the person has
@@ -212,7 +225,13 @@ fn handle(
 		":help" => {
 			print!(
 				"{}",
-				inspect::help(session, host, &COMMANDS, argument, inspect_limits)
+				presentation::help(&inspect::help(
+					session,
+					host,
+					&COMMANDS,
+					argument,
+					inspect_limits
+				))
 			);
 			return Outcome::Continue;
 		}
@@ -220,12 +239,17 @@ fn handle(
 	}
 	match session.eval(input) {
 		Ok(value) => {
-			let text = render(&value, Some(&session.fields()), limits);
-			if text != "()" {
+			let text = render_styled(
+				&value,
+				Some(&session.fields()),
+				limits,
+				presentation::stdout(),
+			);
+			if !crate::runner::is_unit(&value) {
 				println!("{text}");
 			}
 		}
-		Err(failure) => eprintln!("{failure}"),
+		Err(failure) => eprintln!("{}", failure.presented()),
 	}
 	Outcome::Continue
 }
@@ -236,6 +260,7 @@ pub fn run(
 	http: crate::http::State,
 ) -> crate::Result<()> {
 	let config = Config::builder()
+		.color_mode(presentation::editor_mode())
 		.auto_add_history(false)
 		.completion_type(CompletionType::List)
 		.build();

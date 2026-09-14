@@ -170,6 +170,18 @@ is not one of them is refused rather than doing something else. `rnx
 selfcheck` asserts this build's own invariants and reports what it saw; it is
 what the bare command did before record 0024.
 
+Colour follows each output stream: a terminal gets a bold prompt, syntax
+highlighting, coloured values and diagnostic markers; a pipe stays plain.
+`NO_COLOR` with a nonempty value or `TERM=dumb` disables automatic colour.
+Use `rnx --color=always eval 'Some(42)'` to force it, or `--color=never`
+to disable it. The flag goes before the command; after a script path it
+belongs to the script. Styling preserves rendered text and its bounds;
+script `print!` / `println!` and `host::eprint` remain untouched.
+Input highlighting requires the line editor: terminal stdin and a supported
+terminal type. Redirecting stdout leaves that editor and its redraws active,
+with highlighting off in auto mode and on under always. Numbered prompts
+and a separately resettable count are deferred to the next record.
+
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's
 parser says it is unfinished (two blank lines abandon it), values rendered
@@ -354,7 +366,8 @@ API. A missing answer is None; a non-Unicode answer is an error naming its
 source. The account lookup can block; use `env::var("HOME")` when that
 fallback is unwanted.
 
-Variables read directly by rnx are `RNX_HISTORY` (history path),
+Variables read directly by rnx are `TERM` and `NO_COLOR` (automatic colour),
+`RNX_HISTORY` (history path),
 `RNX_MEMORY_CEILING` (session allocation ceiling), and `HOME`,
 `XDG_STATE_HOME`, `LOCALAPPDATA` (state-directory selection). The
 `RNX_TEST_*` family is reserved for test-support builds. The new environment

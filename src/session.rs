@@ -71,6 +71,43 @@ impl std::fmt::Display for Failure {
 		}
 	}
 }
+impl Failure {
+	pub fn presented(&self) -> String {
+		// Display remains plain for callers and tests. Source/caret spans are
+		// identified from the structured failure, not guessed from its text.
+		let text = self.to_string();
+		let located = matches!(
+			self,
+			Self::Compile {
+				origin: Some(_),
+				..
+			} | Self::Runtime {
+				origin: Some(_),
+				..
+			}
+		);
+		if !located {
+			return crate::presentation::error(&text).into_owned();
+		}
+		let first = text.find('\n').unwrap_or(text.len());
+		let last = text.rfind('\n').unwrap_or(text.len());
+		crate::presentation::paint(
+			&text,
+			&[
+				crate::presentation::Span {
+					range: 0..first,
+					style: crate::presentation::Style::Error,
+				},
+				crate::presentation::Span {
+					range: last..text.len(),
+					style: crate::presentation::Style::Caret,
+				},
+			],
+			crate::presentation::stderr(),
+		)
+		.into_owned()
+	}
+}
 impl std::error::Error for Failure {}
 fn located(
 	f: &mut std::fmt::Formatter<'_>,

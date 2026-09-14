@@ -18,6 +18,7 @@ mod memory;
 mod method;
 mod path;
 mod platform;
+mod presentation;
 // Record 0025's gate 5 mechanism control. Only where the mechanism it
 // gates exists, and only under `test-support`: an ordinary build has no
 // such module and no such command.
@@ -83,13 +84,30 @@ rnx — a Rune scripting environment
 Flags for `run`, before the file: --budget N, --debug-source.";
 
 fn main() -> Result<()> {
-	let args = match env::command_line(std::env::args_os()) {
+	let mut args = match env::command_line(std::env::args_os()) {
 		Ok(args) => args,
 		Err(message) => {
 			eprintln!("{}", format::terminal_safe(&message));
 			std::process::exit(2);
 		}
 	};
+	let mut mode = presentation::Mode::Auto;
+	if let Some(flag) = args.first().and_then(|a| a.strip_prefix("--color=")) {
+		mode = match flag {
+			"auto" => presentation::Mode::Auto,
+			"always" => presentation::Mode::Always,
+			"never" => presentation::Mode::Never,
+			_ => {
+				eprintln!(
+					"rnx: --color takes auto, always, or never, not `{}`",
+					format::terminal_safe(flag)
+				);
+				std::process::exit(2);
+			}
+		};
+		args.remove(0);
+	}
+	presentation::initialize(mode);
 	// Answered before a context exists, because neither needs one and the
 	// context is three quarters of what a trivial command costs: record 0030
 	// measured 4.2 ms for `version` against 0.56 ms for a binary that exits
@@ -113,7 +131,7 @@ fn main() -> Result<()> {
 		.is_some_and(|s| s == "help" || s == "--help" || s == "-h")
 	{
 		// An explicit question deserves an answer rather than an error.
-		println!("{USAGE}");
+		println!("{}", presentation::help(USAGE));
 		return Ok(());
 	}
 	let mut context = Context::with_default_modules()?;
@@ -149,10 +167,20 @@ fn main() -> Result<()> {
 					if !runner::is_unit(&value) {
 						// A shell entry point renders the whole value or reports
 						// why it could not, in the same words `run` uses.
-						match format::render_complete(&value, Some(&session.fields())) {
+						match format::render_complete_styled(
+							&value,
+							Some(&session.fields()),
+							presentation::stdout(),
+						) {
 							Ok(text) => println!("{text}"),
 							Err(reason) => {
-								eprintln!("error: {}", runner::cannot_show(&reason));
+								eprintln!(
+									"{}",
+									presentation::error(&format!(
+										"error: {}",
+										runner::cannot_show(&reason)
+									))
+								);
 								std::process::exit(1);
 							}
 						}
@@ -167,10 +195,14 @@ fn main() -> Result<()> {
 				}
 			},
 			Err(failure) => {
-				eprintln!("{failure}");
+				eprintln!("{}", failure.presented());
 				// 130 is what a shell reports for a process Ctrl-C ended, so a
 				// script around rnx reads an interrupted eval the same way.
-				std::process::exit(if matches!(failure, session::Failure::Interrupted) { 130 } else { 1 });
+				std::process::exit(if matches!(failure, session::Failure::Interrupted) {
+					130
+				} else {
+					1
+				});
 			}
 		}
 		return Ok(());

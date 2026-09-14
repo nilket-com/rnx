@@ -9,7 +9,8 @@
 //! to standard output, which is a guarantee this module preserves rather
 //! than introduces.
 use crate::declared::Fields;
-use crate::format::{display_width, render_complete, terminal_safe};
+use crate::format::{display_width, render_complete_styled, terminal_safe};
+use crate::presentation;
 use crate::session::position;
 use rune::runtime::{Unit, Value, VmError};
 use rune::{Context, Diagnostics, Source, Sources, Vm};
@@ -53,23 +54,35 @@ fn located(kind: &str, path: &str, text: &str, offset: usize, message: &str) {
 	// characters, because that is what a person or an editor uses to find the
 	// place. The caret is a display artifact and is placed separately.
 	eprintln!(
-		"{kind} at {}, line {line}, column {column}: {}",
-		terminal_safe(path),
-		terminal_safe(message)
+		"{}",
+		presentation::error(&format!(
+			"{kind} at {}, line {line}, column {column}: {}",
+			terminal_safe(path),
+			terminal_safe(message)
+		))
 	);
 	eprintln!("  {}", terminal_safe(&line_text));
 	// Placed by the display width of the escaped prefix that was actually
 	// printed above: an escape, a tab and a wide character each occupy
 	// something other than the one column a character count assumes.
 	let prefix: String = line_text.chars().take(column.saturating_sub(1)).collect();
-	eprintln!("  {}^", " ".repeat(display_width(&terminal_safe(&prefix))));
+	eprintln!(
+		"{}",
+		presentation::caret(&format!(
+			"  {}^",
+			" ".repeat(display_width(&terminal_safe(&prefix)))
+		))
+	);
 }
 
 /// Report something that has no place in any source and never could: a file
 /// that could not be read, or an error a script returned. Nothing is
 /// invented for it, and it does not claim a position was looked for.
 fn unplaced(kind: &str, message: &str) {
-	eprintln!("{kind}: {}", terminal_safe(message));
+	eprintln!(
+		"{}",
+		presentation::error(&format!("{kind}: {}", terminal_safe(message)))
+	);
 }
 
 /// Report a fault the runtime or the compiler raised whose place could not
@@ -77,8 +90,11 @@ fn unplaced(kind: &str, message: &str) {
 /// absence is stated rather than passed over in silence.
 fn unlocated(kind: &str, message: &str) {
 	eprintln!(
-		"{kind} (no source position is available for this fault): {}",
-		terminal_safe(message)
+		"{}",
+		presentation::error(&format!(
+			"{kind} (no source position is available for this fault): {}",
+			terminal_safe(message)
+		))
 	);
 }
 
@@ -154,7 +170,7 @@ fn show(value: &Value, fields: &Fields) -> i32 {
 	if is_unit(value) {
 		return 0;
 	}
-	match render_complete(value, Some(fields)) {
+	match render_complete_styled(value, Some(fields), presentation::stdout()) {
 		Ok(text) => {
 			println!("{text}");
 			0

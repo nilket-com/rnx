@@ -1,6 +1,9 @@
 # rnx 0039: colour belongs to the presentation
 
-Status: proposed 2026-09-14; revised the same day after review. The
+Status: implemented 2026-09-14 after review and the Linux gates below.
+Windows presentation code and its unit tests type-check in an isolated
+probe; Windows terminal execution remains unverified. See the evidence
+file beside this record. The
 thirty-ninth record of rnx, and the first about how a session looks
 rather than what it does. It gives the session colour — on what a person
 types, on what rnx prints back, on where an error is — under one rule
@@ -186,6 +189,10 @@ rewrote the text would put the cursor somewhere else. A control
 character a person pastes into the line is the editor's to display as
 it does today; the highlighter colours around it.
 
+Identifier boundaries use `unicode-ident`, the same Unicode tables Rune
+uses and an existing resolved dependency; adding it directly introduces no
+new package or feature. The keyword list follows Rune 0.14.2.
+
 An unfinished line is the normal case — a person is in the middle of
 typing it — and it is highlighted as far as it goes, with an open string
 coloured as a string to its end. The tokenizer is bounded by the line's
@@ -214,7 +221,7 @@ untouched, so every existing test, all of which read rnx through pipes,
 passes with no edits, and that is gate 1. Numbered prompts and an `Out`
 marker, which IPython has and which change the transcript, are a
 separate decision for a later record, because they alter what a pipe
-sees and this record's whole promise is that a pipe sees nothing new.
+sees and this record preserves plain pipe output under `auto`.
 
 ### 6. The evidence is a picture as well as a number
 

@@ -46,6 +46,8 @@ jiff = { version = "=0.2.24", default-features = false, features = ["std", "tz-s
 libc = "0.2.177"
 rustyline = { version = "18.0.1", features = ["derive"] }
 unicode-width = "0.2.2"
+# The same identifier boundaries Rune uses, including combining marks.
+unicode-ident = "1"
 # Record 0034 adds networking to the current-thread execution runtime.
 tokio = { version = "1", default-features = false, features = ["rt", "time", "net"] }
 reqwest = { version = "=0.12.28", default-features = false, features = ["rustls-tls", "gzip"] }

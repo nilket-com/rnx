@@ -4,6 +4,7 @@
 //! before anything is copied or descended into, so the work done is bounded
 //! by the output allowed, not by the size of the value.
 use crate::declared::Fields;
+use crate::presentation::{self, Span, Style};
 use rune::runtime::{Function, Object, OwnedTuple, TypeValue, Value, Vec as RuneVec};
 
 /// The deepest a value is opened where the output is the product rather than
@@ -99,10 +100,20 @@ pub fn error_text(value: &Value, fields: Option<&Fields>) -> String {
 /// A cycle and an opaque value are **not** failures. `<cycle>`, `<function>`
 /// and the like are what those values look like, and a value containing one
 /// is rendered whole.
+#[cfg(test)]
 pub fn render_complete(value: &Value, fields: Option<&Fields>) -> Result<String, String> {
+	render_complete_styled(value, fields, false)
+}
+pub fn render_complete_styled(
+	value: &Value,
+	fields: Option<&Fields>,
+	styled: bool,
+) -> Result<String, String> {
 	let limits = Limits::complete();
 	let mut r = Renderer {
 		out: String::new(),
+		spans: Vec::new(),
+		styled,
 		fields,
 		limits: &limits,
 		path: Vec::new(),
@@ -113,6 +124,7 @@ pub fn render_complete(value: &Value, fields: Option<&Fields>) -> Result<String,
 	r.value(value, 0);
 	match r.failure {
 		Some(reason) => Err(reason),
+		None if styled => Ok(presentation::paint(&r.out, &r.spans, true).into_owned()),
 		None => Ok(r.out),
 	}
 }
@@ -120,12 +132,48 @@ pub fn render_complete(value: &Value, fields: Option<&Fields>) -> Result<String,
 /// Render a value. `fields` supplies candidate field names for structs whose
 /// declarations rnx compiled; each is verified against the value before use.
 pub fn render(value: &Value, fields: Option<&Fields>, limits: &Limits) -> String {
-	render_with_work(value, fields, limits).0
+	render_styled(value, fields, limits, false)
+}
+/// Render a preview with optional semantic styling.
+pub fn render_styled(
+	value: &Value,
+	fields: Option<&Fields>,
+	limits: &Limits,
+	styled: bool,
+) -> String {
+	render_inner(value, fields, limits, styled).0
 }
 /// Render, and report the work done, for tests that bound it.
+#[cfg(test)]
 pub fn render_with_work(value: &Value, fields: Option<&Fields>, limits: &Limits) -> (String, Work) {
+	render_inner(value, fields, limits, false)
+}
+fn render_inner(
+	value: &Value,
+	fields: Option<&Fields>,
+	limits: &Limits,
+	styled: bool,
+) -> (String, Work) {
+	let (text, spans, work) = render_document(value, fields, limits, styled);
+	let text = if styled {
+		presentation::paint(&text, &spans, true).into_owned()
+	} else {
+		text
+	};
+	(text, work)
+}
+/// Plain bounded text and its semantic ranges, for inspection to compose
+/// under its own byte budget before applying any styles.
+pub fn render_document(
+	value: &Value,
+	fields: Option<&Fields>,
+	limits: &Limits,
+	styled: bool,
+) -> (String, Vec<Span>, Work) {
 	let mut r = Renderer {
 		out: String::new(),
+		spans: Vec::new(),
+		styled,
 		fields,
 		limits,
 		path: Vec::new(),
@@ -140,11 +188,13 @@ pub fn render_with_work(value: &Value, fields: Option<&Fields>, limits: &Limits)
 			limits.total_bytes
 		));
 	}
-	(r.out, r.work)
+	(r.out, r.spans, r.work)
 }
 
 struct Renderer<'a> {
 	out: String,
+	spans: Vec<Span>,
+	styled: bool,
 	fields: Option<&'a Fields>,
 	limits: &'a Limits,
 	/// Addresses of shared allocations on the current render path.
@@ -174,6 +224,30 @@ fn prefix(s: &str, bytes: usize) -> &str {
 	&s[..end]
 }
 impl Renderer<'_> {
+	fn marked(&mut self, style: Style, f: impl FnOnce(&mut Self)) {
+		let start = self.out.len();
+		let prior = self.spans.len();
+		f(self);
+		if self.styled && self.out.len() > start {
+			self.spans.truncate(prior);
+			self.spans.push(Span {
+				range: start..self.out.len(),
+				style,
+			});
+		}
+	}
+	fn token(&mut self, s: &str, style: Style) {
+		self.marked(style, |r| r.push(s));
+	}
+	fn wrapper(&mut self, s: &str, label_bytes: usize) {
+		// Preserve the old atomic append (notably `Some(` at a byte bound),
+		// while leaving its opening punctuation in the foreground.
+		let start = self.out.len();
+		self.push(s);
+		if self.styled && self.out.len() > start {
+			self.spans.push(Span { range: start..start + label_bytes, style: Style::Number });
+		}
+	}
 	fn full(&self) -> bool {
 		self.truncated
 	}
@@ -232,7 +306,7 @@ impl Renderer<'_> {
 			return;
 		}
 		if let Ok(s) = value.borrow_string_ref() {
-			self.string(&s, s.len());
+			self.marked(Style::Literal, |r| r.string(&s, s.len()));
 			return;
 		}
 		if let Ok(v) = value.borrow_ref::<RuneVec>() {
@@ -258,7 +332,7 @@ impl Renderer<'_> {
 		if let Ok(b) = value.borrow_ref::<rune::runtime::Bytes>() {
 			let bytes = b.as_slice().to_vec();
 			drop(b);
-			self.bytes(&bytes);
+			self.marked(Style::Literal, |r| r.bytes(&bytes));
 			return;
 		}
 		if let Ok(o) = value.borrow_ref::<Option<Value>>() {
@@ -266,11 +340,11 @@ impl Renderer<'_> {
 				Some(inner) => {
 					let inner = inner.clone();
 					drop(o);
-					self.push("Some(");
+					self.wrapper("Some(", 4);
 					self.value(&inner, depth + 1);
 					self.push(")");
 				}
-				None => self.push("None"),
+				None => self.token("None", Style::Number),
 			}
 			return;
 		}
@@ -286,7 +360,7 @@ impl Renderer<'_> {
 			return;
 		}
 		match value.as_type_value() {
-			Ok(TypeValue::Unit) => self.push("()"),
+			Ok(TypeValue::Unit) => self.token("()", Style::Number),
 			Ok(TypeValue::Tuple(t)) => {
 				let address = &*t as *const OwnedTuple as usize;
 				let total = t.len();
@@ -387,19 +461,19 @@ impl Renderer<'_> {
 	}
 	fn inline(&mut self, value: &Value) {
 		if let Ok(b) = rune::from_value::<bool>(value.clone()) {
-			self.push(if b { "true" } else { "false" });
+			self.token(if b { "true" } else { "false" }, Style::Number);
 		} else if let Ok(c) = rune::from_value::<char>(value.clone()) {
-			self.push(&format!("{c:?}"));
+			self.token(&format!("{c:?}"), Style::Literal);
 		} else if let Ok(i) = value.as_integer::<i64>() {
-			self.push(&i.to_string());
+			self.token(&i.to_string(), Style::Number);
 		} else if let Ok(u) = value.as_integer::<u64>() {
-			self.push(&u.to_string());
+			self.token(&u.to_string(), Style::Number);
 		} else if let Ok(f) = rune::from_value::<f64>(value.clone()) {
 			let mut s = f.to_string();
 			if !s.contains('.') && !s.contains('e') && f.is_finite() {
 				s.push_str(".0");
 			}
-			self.push(&s);
+			self.token(&s, Style::Number);
 		} else {
 			self.opaque(value);
 		}
@@ -491,9 +565,9 @@ impl Renderer<'_> {
 				self.push(", ");
 			}
 			if quote_keys {
-				self.string(key, *key_len);
+				self.marked(Style::Bold, |r| r.string(key, *key_len));
 			} else {
-				self.push(key);
+				self.token(key, Style::Bold);
 			}
 			self.push(": ");
 			self.value(item, depth + 1);
@@ -942,6 +1016,18 @@ mod boundary_tests {
 		let mut context = rune::Context::with_default_modules().unwrap();
 		crate::host::install(&mut context).unwrap();
 		context
+	}
+
+	#[test]
+	fn styling_preserves_an_atomic_wrapper_at_the_byte_boundary() {
+		let value = rune::to_value(Some(42i64)).unwrap();
+		for (bytes, prefix) in [(4, ""), (5, "Some(")] {
+			let limits = Limits { total_bytes: bytes, ..Limits::default() };
+			let expected = format!("{prefix} …(output truncated at {bytes} bytes)");
+			assert_eq!(render(&value, None, &limits), expected);
+			let styled = render_styled(&value, None, &limits, true);
+			assert_eq!(styled.replace("\x1b[36m", "").replace("\x1b[0m", ""), expected);
+		}
 	}
 
 	#[test]

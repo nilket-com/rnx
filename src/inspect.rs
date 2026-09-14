@@ -4,7 +4,7 @@
 //! Rune evaluation is refused. Every path checks the invocation budget
 //! before it copies or escapes, so a command's work is bounded by what it
 //! may print, not by the size of what it describes.
-use crate::format::{Limits, render, terminal_safe_into, type_name};
+use crate::format::{Limits, render_document, terminal_safe_into, type_name};
 use crate::host::HostFunction;
 use crate::session::Session;
 
@@ -51,6 +51,7 @@ pub struct Work {
 /// is written and the caller stops traversing; the marker names what was cut.
 struct Budget<'a> {
 	out: String,
+	spans: Vec<crate::presentation::Span>,
 	limits: &'a InspectLimits,
 	full: bool,
 	work: Work,
@@ -59,6 +60,7 @@ impl<'a> Budget<'a> {
 	fn new(limits: &'a InspectLimits) -> Self {
 		Self {
 			out: String::new(),
+			spans: Vec::new(),
 			limits,
 			full: false,
 			work: Work::default(),
@@ -93,6 +95,39 @@ impl<'a> Budget<'a> {
 	fn line(&mut self, text: &str) -> bool {
 		self.push(text) && self.push("\n")
 	}
+	fn value_line(
+		&mut self,
+		prefix: &str,
+		value: &rune::runtime::Value,
+		session: &Session,
+	) -> bool {
+		let (text, spans, _) = render_document(
+			value,
+			Some(&session.fields()),
+			&self.limits.values,
+			crate::presentation::stdout(),
+		);
+		let offset = self.out.len() + prefix.len();
+		let line = format!("{prefix}{text}");
+		let accepted = self.line(&line);
+		// line() may append the line but refuse its trailing newline.
+		if self.out.len() >= offset + text.len() {
+			self.spans.extend(spans.into_iter().map(|mut s| {
+				s.range.start += offset;
+				s.range.end += offset;
+				s
+			}));
+		}
+		accepted
+	}
+	fn into_output(self) -> (String, Work) {
+		let text = if crate::presentation::stdout() {
+			crate::presentation::paint(&self.out, &self.spans, true).into_owned()
+		} else {
+			self.out
+		};
+		(text, self.work)
+	}
 	fn finish(mut self, cut: String) -> (String, Work) {
 		if self.full {
 			self.out.push_str(&format!(
@@ -100,7 +135,7 @@ impl<'a> Budget<'a> {
 				self.limits.total_bytes
 			));
 		}
-		(self.out, self.work)
+		self.into_output()
 	}
 }
 
@@ -134,12 +169,7 @@ pub fn vars_with_work(session: &Session, limits: &InspectLimits) -> (String, Wor
 			return false;
 		}
 		budget.work.values_rendered += 1;
-		let line = format!(
-			"{name}: {} = {}",
-			type_of(value),
-			render(value, Some(&session.fields()), &limits.values)
-		);
-		if !budget.line(&line) {
+		if !budget.value_line(&format!("{name}: {} = ", type_of(value)), value, session) {
 			return false;
 		}
 		shown += 1;
@@ -155,8 +185,7 @@ pub fn vars_with_work(session: &Session, limits: &InspectLimits) -> (String, Wor
 			limits.bindings
 		);
 		budget.out.push_str(&marker);
-		let work = budget.work.clone();
-		return (budget.out, work);
+		return budget.into_output();
 	}
 	budget.finish(format!("{cut} of {total} bindings"))
 }
@@ -194,10 +223,7 @@ pub fn help_with_work(
 			&& budget.line(&format!("  type: {}", type_of(&value)))
 		{
 			budget.work.values_rendered += 1;
-			budget.line(&format!(
-				"  value: {}",
-				render(&value, Some(&session.fields()), &limits.values)
-			));
+			budget.value_line("  value: ", &value, session);
 			if session.declaration(name).is_some() {
 				budget.line("  a declaration of this name also exists");
 			}
@@ -489,7 +515,10 @@ mod tests {
 		let host = host();
 		// Eight host functions and eighteen filesystem functions; the async
 		// fixture and two allocation probes remain test-support only.
-		assert_eq!(host.len(), 26 + 3 * usize::from(cfg!(feature = "test-support")));
+		assert_eq!(
+			host.len(),
+			26 + 3 * usize::from(cfg!(feature = "test-support"))
+		);
 		for function in &host {
 			assert!(
 				!function.doc.trim().is_empty(),
@@ -515,9 +544,7 @@ mod tests {
 		let _ = std::fs::remove_file(&effect);
 		let quoted = serde_json::to_string(&effect.to_string_lossy()).unwrap();
 		session
-			.eval(&format!(
-				"let boom = || fs::write_new({quoted}, \"ran\");"
-			))
+			.eval(&format!("let boom = || fs::write_new({quoted}, \"ran\");"))
 			.unwrap();
 		let limits = InspectLimits::default();
 		let out = vars(&session, &limits);
