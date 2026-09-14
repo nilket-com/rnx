@@ -886,6 +886,13 @@ impl Session {
 			let (input, offset) = map.locate(inst.span.range().start)?;
 			self.origin(input, offset)
 		});
+		// Prove the name against the call site's retained input, never the
+		// caller's input or a display number. Unplaced errors remain untouched.
+		let named = origin.as_ref()
+			.and_then(|o| o.input.checked_sub(1))
+			.and_then(|index| self.inputs.get(index))
+			.and_then(|source| crate::method::named(&message, source));
+		let message = named.unwrap_or(message);
 		Failure::Runtime { message, origin }
 	}
 
@@ -1930,5 +1937,58 @@ mod numbering_tests {
 			let _ = s.eval(text);
 			assert_eq!(s.next_number(), before + 1);
 		}
+	}
+}
+
+#[cfg(test)]
+mod method_naming_tests {
+	use super::*;
+	fn session() -> Session {
+		Session::new(Context::with_default_modules().unwrap()).unwrap()
+	}
+	#[test]
+	fn an_unmapped_retained_error_never_uses_the_callers_matching_candidate() {
+		let mut s = session();
+		s.eval("let old = |v| v.missing();").unwrap();
+		s.units.clear();
+		let failure = s.eval("if false { 1.missing(); } old(1)").unwrap_err();
+		match failure {
+			Failure::Runtime {
+				message,
+				origin: None,
+			} => {
+				assert!(
+					message.starts_with("Missing instance function `0x"),
+					"{message}"
+				);
+				assert!(
+					crate::method::named(&message, "if false { 1.missing(); } old(1)").is_some()
+				);
+			}
+			other => panic!("{other:?}"),
+		}
+	}
+	#[test]
+	fn the_exhaustion_clause_follows_the_proved_name() {
+		let mut s = session();
+		// Find the instruction at which the actual VM fault spends the guard.
+		// The bounded search tolerates wrapper instruction-count changes.
+		let mut found = false;
+		for budget in 1..100 {
+			s.set_budget(budget);
+			let failure = s
+				.eval("async { 1 }.await.missing()")
+				.unwrap_err()
+				.to_string();
+			if failure.contains("was exhausted at that point") && failure.contains("no method") {
+				assert!(failure.contains(&format!("no method `missing` on `::std::i64`; the budget of {budget} instructions was exhausted at that point")), "{failure}");
+				found = true;
+				break;
+			}
+		}
+		assert!(
+			found,
+			"no coincident missing-method fault and exhaustion in 1..100"
+		);
 	}
 }

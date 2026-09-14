@@ -1,6 +1,7 @@
 # rnx 0041: the same name, wherever the method went missing
 
-Status: proposed 2026-09-14. The forty-first record of rnx, and a
+Status: implemented 2026-09-14; Linux gates pass. Windows execution remains
+unverified. Evidence is beside this record. The forty-first record of rnx, and a
 consistency fix: record 0014 taught `rnx run` to say `no method `join` on
 `::std::vec::Vec`` where Rune says `Missing instance function
 `0xf77d…``, and it never taught the session or `eval`. This record
