@@ -197,14 +197,25 @@ config wins over the built-in `auto`; `NO_COLOR` is still honoured by
 the config outranks the built-in. Nothing surprising, stated so the order
 is a decision and not an accident.
 
-### 5. When the config is read, and when it is not
+### 5. The config is read for the interactive session only
 
-The config is read exactly where colour is emitted and the context is
-built: `run`, `eval`, and the session. It is **not** read by `version` or
-`help`, which record 0030 answers before building anything and which this
-record keeps free of a file read, so the fast path stays fast. Reading
-and evaluating a small config is a cost the context-building paths already
-resemble; gate 6 measures it and holds `version`/`help` unchanged.
+The config is read for **session entry points** — bare `rnx` and `rnx repl`,
+including piped sessions — and nowhere else.
+`run`, `eval`, `version` and `help` do not open it. This is narrower than
+an earlier draft, which read it wherever colour is emitted, and the
+reason is startup: rnx-bench measures `rnx run` and `rnx eval`, and a config read adds a cost — measured
+at about 2.8 ms for a six-colour file — that would land on every
+benchmark of `run` and `eval` on any machine where a config happens to
+exist. A presentation setting has no business slowing a one-shot run or a
+piped eval, and those are exactly the paths that must stay fast and
+benchmark-stable. So `run` and `eval` take colour from `--color` and the
+defaults only; the config's palette and splash apply to the session,
+where a person lives and where custom colours are the point.
+
+This isolates benchmarks of `run` and `eval` from personal config by
+construction. Benchmarks of the session still select their config explicitly.
+The session still checks for the file; evaluation cost is paid only when
+a nonblank config is present. Gate 6 measures it against an absent config.
 
 ### 6. The `[n]` default becomes IPython's green
 
@@ -223,6 +234,7 @@ overrides it like any other role.
 - A `256`-colour indexed mode; `#rrggbb` and the sixteen names are the
   two a person needs.
 - Per-project config, or a config that layers over another. One file.
+- A config for `run` or `eval`: they are flag-controlled, and `--color` selects their colour mode, not a custom palette.
 - Reloading the config without restarting.
 
 ## Acceptance gates
@@ -252,17 +264,21 @@ overrides it like any other role.
    "always"` beats the default on a pipe; `NO_COLOR` disables `auto`
    however `auto` was chosen; `--no-splash` beats `splash: true` and
    `splash: false` suppresses the banner with no flag.
-5. **Read where colour is, not where speed is.** `run` and `eval` apply
-   the config's palette to their diagnostics; `version` and `help` never
-   open the file — established by source review and by a `test-support`
-   read counter that stays zero across `version` and `help` and is
-   non-zero after a session, not by a throwing config, which cannot prove
-   a file was never opened; `RNX_CONFIG` pointing at a fixture is
-   honoured.
-6. **Cost.** `version`, `help`, `eval 42`, the bare run and the JSON
-   workload before and after; the config read's cost appears on `eval`
-   and the session and not on `version`/`help`; a session with a
-   six-colour config starts within a stated bound of one without.
+5. **Read for the session only.** The `test-support` read counter is
+   zero after `version`, `help`, `rnx run f.rn` and `rnx eval 42`, and
+   non-zero only after a session entry point — established by that
+   counter and by source review, not by a throwing config, which cannot
+   prove a file was never opened; a config that would recolour a
+   diagnostic changes `run`'s and `eval`'s output not at all, while
+   `--color` still does; `RNX_CONFIG` pointing at a fixture is honoured
+   by the session.
+6. **Cost lands only on the session.** `version`, `help`, `eval 42`, the
+   bare run and the JSON workload measure identical before and after with
+   a six-colour config installed, because none of them reads it; a
+   configured session meets the local measurement gate of the absent-config
+   mean plus 10 ms. The earlier measured addition was about 2.8 ms, not a
+   universal latency bound. Session benchmarks still need explicit config
+   isolation; the guarantee here concerns one-shot commands.
 7. **Existing guarantees.** Both suites, and record 0039's strip-to-plain
    equality holds with a truecolor palette in force.
 

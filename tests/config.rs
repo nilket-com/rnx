@@ -145,8 +145,9 @@ fn palette_foregrounds_preserve_attributes_and_plain_text() {
 		"#{color: \"always\", palette: #{number: \"#123456\", string: \"bright-magenta\", error: \"#00ff00\"}}",
 	);
 	for source in ["[42, \"\\u{1b}[2J\", \"é界\\t\"]", "let 界 = ;"] {
-		let coloured = run(&p, &["eval", source], "", &[]);
-		let plain = run(&p, &["--color=never", "eval", source], "", &[]);
+		let input = format!("{source}\n:q\n");
+		let coloured = run(&p, &[], &input, &[]);
+		let plain = run(&p, &["--color=never"], &input, &[]);
 		let strip = |bytes: Vec<u8>| {
 			let mut t = String::from_utf8(bytes).unwrap();
 			for s in [
@@ -164,7 +165,7 @@ fn palette_foregrounds_preserve_attributes_and_plain_text() {
 		assert_eq!(strip(coloured.stdout).as_bytes(), plain.stdout);
 		assert_eq!(strip(coloured.stderr).as_bytes(), plain.stderr);
 	}
-	let out = run(&p, &["eval", "1.missing()"], "", &[]);
+	let out = run(&p, &[], "1.missing()\n:q\n", &[]);
 	assert!(
 		String::from_utf8(out.stderr)
 			.unwrap()
@@ -239,14 +240,18 @@ fn fifo_config_is_refused_without_waiting_for_a_writer() {
 }
 #[cfg(feature = "test-support")]
 #[test]
-fn fast_paths_do_not_attempt_to_open_config() {
+fn only_session_entry_points_attempt_to_open_config() {
 	let p = fixture("#{splash:false}");
 	let count = p.with_extension("count");
+	let script = p.with_extension("script.rn");
+	std::fs::write(&script, "pub fn main(_) { 42 }").unwrap();
 	for (args, input, expected) in [
 		(&["version"][..], "", "0"),
 		(&["help"][..], "", "0"),
 		(&[][..], ":q\n", "1"),
-		(&["eval", "1"][..], "", "1"),
+		(&["eval", "1"][..], "", "0"),
+		(&["run", script.to_str().unwrap()][..], "", "0"),
+		(&["repl"][..], ":q\n", "1"),
 	] {
 		let out = run(
 			&p,
@@ -260,17 +265,34 @@ fn fast_paths_do_not_attempt_to_open_config() {
 	done(&p);
 }
 #[test]
-fn file_diagnostics_use_the_saved_error_colour() {
-	let p = fixture("#{color: \"always\",palette:#{error:\"#123456\"}}");
+fn one_shot_commands_ignore_valid_invalid_and_missing_config() {
+	let p = fixture("#{}");
+	let missing = p.with_extension("absent");
 	let script = p.with_extension("script.rn");
 	std::fs::write(&script, "pub fn main(_) { 1.missing() }").unwrap();
-	let out = run(&p, &["run", script.to_str().unwrap()], "", &[]);
-	assert_eq!(out.status.code(), Some(1));
-	assert!(
-		String::from_utf8(out.stderr)
-			.unwrap()
-			.contains("\x1b[1;38;2;18;52;86m")
-	);
+	for args in [
+		vec!["run", script.to_str().unwrap()],
+		vec!["eval", "1.missing()"],
+		vec!["version"],
+		vec!["help"],
+	] {
+		for flag in ["--color=auto", "--color=always", "--color=never"] {
+			let mut command = vec![flag];
+			command.extend_from_slice(&args);
+			let reference = run(&missing, &command, "", &[]);
+			for source in [
+				"#{color: \"always\", splash:false,palette:#{error:\"#123456\"}}",
+				"panic!(\"config must not execute\")",
+				"loop {}",
+			] {
+				std::fs::write(&p, source).unwrap();
+				let actual = run(&p, &command, "", &[]);
+				assert_eq!(actual.status.code(), reference.status.code());
+				assert_eq!(actual.stdout, reference.stdout);
+				assert_eq!(actual.stderr, reference.stderr);
+			}
+		}
+	}
 	done(&p);
 }
 #[cfg(unix)]

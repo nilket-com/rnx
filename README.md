@@ -428,7 +428,9 @@ number and result marker are green; the other default accents remain unchanged.
 
 Flags override saved settings. `--color=never` wins over saved `always`,
 `NO_COLOR` disables `auto` when nonempty, and `--no-splash` overrides `splash: true`.
-Config is read for run, eval and sessions, never for version/help or selfcheck.
+Config is read only for session entry points (bare `rnx` and `rnx repl`),
+including piped sessions. `run`, `eval`, `version`, `help` and `selfcheck` never
+read it; run and eval take colour from flags and defaults only.
 An invalid field warns and keeps its default; valid neighbours still apply.
 A parse, compile, evaluation or top-level shape failure warns and uses defaults.
 Warnings name the file and are escaped plain text, before palette initialization.

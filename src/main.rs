@@ -141,7 +141,7 @@ fn main() -> Result<()> {
 		println!("{}", presentation::help(USAGE));
 		return Ok(());
 	}
-	let settings = if args.is_empty() || args.first().is_some_and(|s| matches!(s.as_str(), "run" | "eval" | "repl")) {
+	let settings = if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
 		config::load()
 	} else { config::Settings::default() };
 	presentation::set_palette(settings.palette);
