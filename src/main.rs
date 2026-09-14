@@ -20,6 +20,7 @@ mod method;
 mod path;
 mod platform;
 mod presentation;
+mod process;
 // Record 0025's gate 5 mechanism control. Only where the mechanism it
 // gates exists, and only under `test-support`: an ordinary build has no
 // such module and no such command.
@@ -149,6 +150,7 @@ fn main() -> Result<()> {
 	splash = splash && settings.splash.unwrap_or(true);
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = host::install(&mut context)?;
+	host_functions.extend(process::install(&mut context)?);
 	host_functions.extend(fs::install(&mut context)?);
 	host_functions.extend(path::install(&mut context)?);
 	host_functions.extend(time::install(&mut context)?);

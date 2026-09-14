@@ -44,12 +44,12 @@ goes to standard error and the script's own output to standard output.
 `--debug-source`, before the path, also prints the compiled source; anything
 after the path is the script's argument.
 
-`host::process` runs a child and refuses output that is not UTF-8, naming the
+`process::run(program, args, options)` runs a child and refuses output that is not UTF-8, naming the
 stream rather than handing back a plausible string with the evidence
-replaced. `host::process_bytes` runs the same child and returns its streams as
+replaced. `process::run_bytes(program, args, options)` runs the same child and returns its streams as
 byte strings, for a script whose child speaks bytes.
 
-`host::process` and its two byte-returning forms report three things about a
+Both forms report three things about a
 capture, independently: `truncated` if the size cap was reached, `cut_short`
 if rnx stopped reading before the stream ended, and `unreadable` if a read
 failed. A caller that needs everything the child produced checks all three,
@@ -64,13 +64,37 @@ from a child that chose to exit 1. Both mean the same thing about the child,
 which is that it did not choose how it ended, and `timed_out` and `cancelled`
 are where that is said unambiguously on either platform. Read them first.
 
-`host::process_bytes_input` also tells the child what to do: the byte string
-it is given is written to the child's standard input, which is then closed,
-because a child like `git cat-file --batch` needs the end of its input to
-finish. All three streams move at once, so a large input cannot wedge against
-a large reply, and delivery gives up at the same deadline the call has. A
-success means the child answered, not that it read everything: a child may
-stop reading, and that is its prerogative.
+Pass `#{}` for default options, or choose `timeout_ms` (default 30000,
+1 through 90000), `input` (String or Bytes), `cwd`, `env` and `env_clear`.
+Input strings are sent as UTF-8 without adding a newline; both forms accept
+bytes too. Delivery closes stdin and shares the existing deadline. A child
+may stop reading early, so success does not certify consumption. Without
+input, stdin is null. Capture retains at most 2 MiB per stream.
+
+```rune
+let result = process::run("git", ["status", "--porcelain"], #{
+    cwd: "checkout",
+    env: #{GIT_PAGER: "cat", GIT_DIR: None},
+})?;
+```
+
+An environment string sets a variable (including an empty string), `None`
+removes it, and `env_clear: true` disables inheritance before applying the
+object. These settings change only the child. Unknown options, invalid
+names and NUL-containing arguments or environment values are refused before
+launch. Nonzero exit is an `Ok` reply; launching failure is `Err`.
+
+Explicit relative program paths always resolve against rnx's directory,
+even without `cwd`; `./build.sh` with `cwd: "out"` runs the parent's script
+inside `out`. Relative `cwd` also starts at rnx's directory. Windows
+drive-relative paths such as `C:build.exe` are refused; use an absolute path.
+Bare names retain the platform's executable lookup, including its limitations
+on `PATH` overrides. Supply an explicit path to select an exact executable.
+
+These calls are synchronous, including inside async code. The deadline
+starts after spawn, so it does not bound validation, lookup or launch.
+`host::process`, `host::process_bytes` and `host::process_bytes_input` remain
+compatible, without runtime warnings; their help points to `process::`.
 
 A script chooses its own exit status with `host::exit(code)`, and can say
 something on the way out with `host::eprint(text)`, so it can fail quietly

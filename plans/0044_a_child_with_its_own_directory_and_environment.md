@@ -1,6 +1,8 @@
 # rnx 0044: a child with its own directory and environment
 
-Status: proposed 2026-09-14. The forty-fourth record of rnx. It gives
+Status: implemented 2026-09-14; Linux gates pass, with evidence beside
+this record. Windows facade/unit-test type-check passes; Windows execution
+remains unverified. The forty-fourth record of rnx. It gives
 the existing process supervisor a `process::` facade, text input, a
 working directory and child-only environment changes. It takes up the
 child-environment work deferred by records 0031 and 0036; it does not

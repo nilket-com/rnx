@@ -606,6 +606,16 @@ fn run_child(
 	timeout_ms: u64,
 	input: Option<Vec<u8>>,
 ) -> Result<Ran, String> {
+	run_child_with(program, arguments, timeout_ms, input, None)
+}
+
+fn run_child_with(
+	program: &str,
+	arguments: Value,
+	timeout_ms: u64,
+	input: Option<Vec<u8>>,
+	launch: Option<&crate::process::Launch>,
+) -> Result<Ran, String> {
 	let values = arguments
 		.borrow_ref::<rune::runtime::Vec>()
 		.map_err(|e| about("run", program, e))?;
@@ -624,7 +634,10 @@ fn run_child(
 			"the deadline must be between 1 and 90000 ms",
 		));
 	}
-	let mut command = Command::new(program);
+	let mut command = match launch {
+		Some(launch) => launch.command(),
+		None => Command::new(program),
+	};
 	command
 		.args(args)
 		.stdin(if input.is_some() {
@@ -639,7 +652,15 @@ fn run_child(
 	// the assignment happens while the child is still suspended, because
 	// assigning a running child races whatever it spawns first.
 	let (mut child, group) =
-		crate::platform::spawn_in_group(&mut command).map_err(|e| about("run", program, e))?;
+		crate::platform::spawn_in_group(&mut command).map_err(|e| {
+			match launch.and_then(|l| l.cwd.as_ref()) {
+				Some(cwd) => about(
+					"run", program,
+					format!("with working directory {cwd:?}: {e}"),
+				),
+				None => about("run", program, e),
+			}
+		})?;
 	let deadline = Instant::now() + Duration::from_millis(timeout_ms);
 	let stdout = child.stdout.take().unwrap();
 	let stderr = child.stderr.take().unwrap();
@@ -1041,7 +1062,7 @@ impl Ran {
 /// Each stream is judged on **its own** flags: a truncated standard output has
 /// never excused a standard error the child ended mid-character, and an
 /// unreadable standard error must not refuse a standard output read whole.
-fn decode(program: &str, stream: &str, got: &Captured) -> Result<String, String> {
+fn decode(program: &str, stream: &str, got: &Captured, sibling: &str) -> Result<String, String> {
 	let bytes = &got.bytes[..];
 	let stopped_by_rnx = (got.truncated || got.cut_short) && !got.unreadable;
 	match std::str::from_utf8(bytes) {
@@ -1053,7 +1074,7 @@ fn decode(program: &str, stream: &str, got: &Captured) -> Result<String, String>
 				.to_owned())
 		}
 		Err(error) => Err(format!(
-			"cannot run {program}: its {stream} is not UTF-8 at byte {}; use host::process_bytes to read it",
+			"cannot run {program}: its {stream} is not UTF-8 at byte {}; use {sibling} to read it",
 			error.valid_up_to()
 		)),
 	}
@@ -1061,11 +1082,15 @@ fn decode(program: &str, stream: &str, got: &Captured) -> Result<String, String>
 
 fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, String> {
 	let ran = run_child(program, arguments, timeout_ms, None)?;
+	text_reply(program, ran, "host::process_bytes")
+}
+
+fn text_reply(program: &str, ran: Ran, sibling: &str) -> Result<Value, String> {
 	// Each stream is decoded against its own flag. The record reports both
 	// together, because a caller checking `truncated` wants to know that
 	// something fell short, not which half did.
-	let stdout = decode(program, "standard output", &ran.out)?;
-	let stderr = decode(program, "standard error", &ran.err)?;
+	let stdout = decode(program, "standard output", &ran.out, sibling)?;
+	let stderr = decode(program, "standard error", &ran.err, sibling)?;
 	json_parse(
 		&serde_json::json!({
 			"code": ran.code, "timed_out": ran.timed_out, "cancelled": ran.cancelled,
@@ -1074,6 +1099,23 @@ fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, St
 		})
 		.to_string(),
 	)
+}
+
+/// The facade supplies launch settings; capture and cleanup stay in run_child_with.
+pub(crate) fn configured_process(
+	program: &str,
+	arguments: Value,
+	timeout_ms: u64,
+	input: Option<Vec<u8>>,
+	launch: &crate::process::Launch,
+	bytes: bool,
+) -> Result<Value, String> {
+	let ran = run_child_with(program, arguments, timeout_ms, input, Some(launch))?;
+	if bytes {
+		bytes_reply(ran)
+	} else {
+		text_reply(program, ran, "process::run_bytes")
+	}
 }
 
 /// The same child, with its streams exactly as they came.
@@ -1214,17 +1256,17 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	register!(
 		"process_bytes",
 		process_bytes,
-		"process_bytes(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process, with the streams as byte strings and no decoding; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first"
+		"process_bytes(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process, with the streams as byte strings and no decoding; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first; compatibility name: prefer process::run or process::run_bytes with an options object"
 	);
 	register!(
 		"process_bytes_input",
 		process_bytes_input,
-		"process_bytes_input(program, args, input, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process_bytes, writing the byte string `input` to the child's standard input and closing it; a success does not mean every byte was read; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first"
+		"process_bytes_input(program, args, input, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process_bytes, writing the byte string `input` to the child's standard input and closing it; a success does not mean every byte was read; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first; compatibility name: prefer process::run or process::run_bytes with an options object"
 	);
 	register!(
 		"process",
 		process,
-		"process(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: run a child with a deadline, bounded capture, and cancellation on Ctrl-C; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first"
+		"process(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: run a child with a deadline, bounded capture, and cancellation on Ctrl-C; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first; compatibility name: prefer process::run or process::run_bytes with an options object"
 	);
 	context.install(module)?;
 	Ok(registered)
@@ -1420,6 +1462,10 @@ fn probe(context: &Context, label: &str, source: &str) -> super::Result<serde_js
 
 #[cfg(test)]
 mod tests {
+	fn decode(program: &str, stream: &str, got: &super::Captured) -> Result<String, String> {
+		super::decode(program, stream, got, "host::process_bytes")
+	}
+
 	use super::*;
 
 	/// A probe that cannot spawn reports the spawn failure, not a complaint
