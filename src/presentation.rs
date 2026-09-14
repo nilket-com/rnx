@@ -10,6 +10,74 @@ pub enum Mode {
 	Always,
 	Never,
 }
+impl Mode {
+	pub fn parse(value: &str) -> Option<Self> {
+		match value {
+			"auto" => Some(Self::Auto),
+			"always" => Some(Self::Always),
+			"never" => Some(Self::Never),
+			_ => None,
+		}
+	}
+}
+/// Parsed colours carry no arbitrary terminal text.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Colour {
+	Ansi(u8),
+	Rgb(u8, u8, u8),
+}
+impl Colour {
+	pub fn parse(text: &str) -> Option<Self> {
+		if text.len() == 7
+			&& text.starts_with('#')
+			&& text.as_bytes()[1..].iter().all(u8::is_ascii_hexdigit)
+		{
+			return Some(Self::Rgb(
+				u8::from_str_radix(&text[1..3], 16).ok()?,
+				u8::from_str_radix(&text[3..5], 16).ok()?,
+				u8::from_str_radix(&text[5..7], 16).ok()?,
+			));
+		}
+		let (bright, name) = text
+			.strip_prefix("bright-")
+			.map_or((false, text), |name| (true, name));
+		[
+			"black", "red", "green", "yellow", "blue", "magenta", "cyan", "white",
+		]
+		.iter()
+		.position(|&n| n == name)
+		.map(|n| Self::Ansi(n as u8 + if bright { 90 } else { 30 }))
+	}
+	fn foreground(self) -> String {
+		match self {
+			Self::Ansi(code) => code.to_string(),
+			Self::Rgb(r, g, b) => format!("38;2;{r};{g};{b}"),
+		}
+	}
+}
+static PALETTE: OnceLock<[Option<String>; 8]> = OnceLock::new();
+pub fn set_palette(colours: [Option<Colour>; 6]) {
+	let mut styles: [Option<String>; 8] = Default::default();
+	for (role, style) in [
+		(0, Style::Keyword),
+		(1, Style::Literal),
+		(2, Style::Number),
+		(3, Style::Comment),
+		(4, Style::PromptNumber),
+		(5, Style::Error),
+		(5, Style::Caret),
+	] {
+		if let Some(colour) = colours[role] {
+			let weight = match style {
+				Style::Error | Style::PromptNumber => "1;",
+				Style::Comment => "2;",
+				_ => "",
+			};
+			styles[style as usize] = Some(format!("\x1b[{weight}{}m", colour.foreground()));
+		}
+	}
+	let _ = PALETTE.set(styles);
+}
 #[derive(Clone, Copy, Debug)]
 struct Policy {
 	out: bool,
@@ -82,6 +150,9 @@ pub enum Style {
 }
 impl Style {
 	pub fn sgr(self) -> &'static str {
+		if let Some(style) = PALETTE.get().and_then(|styles| styles[self as usize].as_deref()) {
+			return style;
+		}
 		match self {
 			Self::Bold => "\x1b[1m",
 			Self::Keyword => "\x1b[35m",
@@ -90,7 +161,7 @@ impl Style {
 			Self::Comment => "\x1b[2m",
 			Self::Error => "\x1b[1;31m",
 			Self::Caret => "\x1b[31m",
-			Self::PromptNumber => "\x1b[1;36m",
+			Self::PromptNumber => "\x1b[1;32m",
 		}
 	}
 }

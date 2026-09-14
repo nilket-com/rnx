@@ -379,6 +379,7 @@ source. The account lookup can block; use `env::var("HOME")` when that
 fallback is unwanted.
 
 Variables read directly by rnx are `TERM` and `NO_COLOR` (automatic colour),
+`RNX_CONFIG` (config file), `XDG_CONFIG_HOME`, `APPDATA`,
 `RNX_HISTORY` (history path),
 `RNX_MEMORY_CEILING` (session allocation ceiling), and `HOME`,
 `XDG_STATE_HOME`, `LOCALAPPDATA` (state-directory selection). The
@@ -399,3 +400,42 @@ window titles require a supported terminal on stdout independently of colour;
 `--color=never` still permits them and `always` never sends them into a pipe.
 Titles are restored on return and explicit exit where the terminal supports a
 title stack; unsupported stacks and abnormal termination may leave the title set.
+
+Presentation settings live in `config.rn`: use an absolute `RNX_CONFIG` path,
+otherwise `$XDG_CONFIG_HOME/rnx/config.rn` or `$HOME/.config/rnx/config.rn`
+on Unix, and `%APPDATA%/rnx/config.rn` (falling back to `%LOCALAPPDATA%`) on Windows.
+Empty directory variables count as absent; relative XDG_CONFIG_HOME is ignored.
+Other relative or non-Unicode configuration paths warn. No account database is
+queried to find HOME. Missing or blank files are silent.
+
+```rune
+#{
+    color: "auto",
+    splash: false,
+    palette: #{
+        keyword: "#c678dd", string: "#98c379", number: "#61afef",
+        comment: "bright-black", prompt_number: "#98c379", error: "bright-red",
+    },
+}
+```
+
+Every key is optional. Six-digit hex colours send RGB requests; the sixteen ANSI
+names (`black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`,
+with optional `bright-`) use the terminal palette. Foreground changes preserve
+bold/dim attributes; the error colour also applies to its caret. Terminal support
+and display settings still affect appearance. Without configuration, the prompt
+number and result marker are green; the other default accents remain unchanged.
+
+Flags override saved settings. `--color=never` wins over saved `always`,
+`NO_COLOR` disables `auto` when nonempty, and `--no-splash` overrides `splash: true`.
+Config is read for run, eval and sessions, never for version/help or selfcheck.
+An invalid field warns and keeps its default; valid neighbours still apply.
+A parse, compile, evaluation or top-level shape failure warns and uses defaults.
+Warnings name the file and are escaped plain text, before palette initialization.
+
+Config is a synchronous function body returning the object. Local helper functions
+and computed settings work, but no host modules, printing, external modules or
+async execution are provided. Reads accept regular files only (non-blocking open
+on Unix), capped at 64 KiB; evaluation has a 100,000-instruction budget. This
+bounds VM instructions, not native-call time, filesystem stalls or process-wide
+resource exhaustion. The evaluator is discarded after extracting settings.

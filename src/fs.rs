@@ -34,7 +34,7 @@ fn kind(meta: &disk::Metadata) -> &'static str {
 		"special file"
 	}
 }
-fn regular(path: &str) -> std::io::Result<disk::File> {
+pub(crate) fn regular(path: impl AsRef<std::path::Path>) -> std::io::Result<disk::File> {
 	let mut options = disk::OpenOptions::new();
 	options.read(true);
 	#[cfg(unix)]

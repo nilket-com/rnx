@@ -915,7 +915,7 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 	let history = history_file("colour_edits");
 	let mut t = Terminal::spawn_with(&history, &[("NO_COLOR", "")]);
 	t.prompt();
-	expect_raw(&mut t, 0, "\x1b[1;36m[1]\x1b[0m\x1b[1m > \x1b[0m");
+	expect_raw(&mut t, 0, "\x1b[1;32m[1]\x1b[0m\x1b[1m > \x1b[0m");
 	t.send("le");
 	t.expect("le");
 	let start = t.seen.len();
@@ -924,7 +924,7 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 	let start = t.seen.len();
 	t.send("\x03");
 	t.prompt();
-	expect_raw(&mut t, start, "\x1b[1;36m[1]\x1b[0m\x1b[1m > \x1b[0m");
+	expect_raw(&mut t, start, "\x1b[1;32m[1]\x1b[0m\x1b[1m > \x1b[0m");
 	let raw = String::from_utf8_lossy(&t.seen[start..]);
 	// Redraw/cursor CSI traffic may follow the reset. Only SGR chooses
 	// attributes, so the last SGR, rather than the last escape, must reset.
@@ -937,7 +937,7 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 		rest = &rest[end + 1..];
 	}
 	assert_eq!(last_sgr, Some("0m"), "{raw:?}");
-	assert!(raw.contains("\x1b[1;36m[1]\x1b[0m\x1b[1m > \x1b[0m"), "{raw:?}");
+	assert!(raw.contains("\x1b[1;32m[1]\x1b[0m\x1b[1m > \x1b[0m"), "{raw:?}");
 	t.send(":quit\r");
 	t.wait_exit();
 }
@@ -1066,12 +1066,12 @@ fn gate_0040_a_result_marker_has_the_prompts_style() {
 	t.expect("[1] 42\n");
 	t.prompt();
 	let raw = String::from_utf8_lossy(&t.seen);
-	assert!(raw.contains("\x1b[1;36m[1]\x1b[0m\x1b[1m > \x1b[0m"), "{raw:?}");
+	assert!(raw.contains("\x1b[1;32m[1]\x1b[0m\x1b[1m > \x1b[0m"), "{raw:?}");
 	assert!(
-		raw.contains("\x1b[1;36m[1] \x1b[0m\x1b[36m42\x1b[0m"),
+		raw.contains("\x1b[1;32m[1] \x1b[0m\x1b[36m42\x1b[0m"),
 		"{raw:?}"
 	);
-	assert!(raw.contains("\x1b[1;36m[2]\x1b[0m\x1b[1m > \x1b[0m"), "{raw:?}");
+	assert!(raw.contains("\x1b[1;32m[2]\x1b[0m\x1b[1m > \x1b[0m"), "{raw:?}");
 	t.send(":quit\r");
 	t.wait_exit();
 }
@@ -1113,4 +1113,39 @@ fn gate_0042_run_restores_titles_before_explicit_exits() {
         assert_eq!(raw.matches("\x1b[23;2t").count(),1,"{raw:?}");
         std::fs::remove_file(file).unwrap();
     }
+}
+
+#[test]
+fn gate_0043_saved_palette_reaches_input_prompt_result_and_error() {
+	let history = history_file("palette");
+	let config = history.with_extension("rn");
+	std::fs::write(&config,"#{splash:false,palette:#{keyword:\"#123456\",number:\"#112233\",prompt_number:\"#abcdef\",error:\"#445566\",comment:\"bright-black\"}}").unwrap();
+	let mut t = Terminal::spawn_with(
+		&history,
+		&[("RNX_CONFIG", config.to_str().unwrap()), ("NO_COLOR", "")],
+	);
+	t.prompt();
+	assert!(!clean(&t.seen).contains("Rune session"));
+	assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[1;38;2;171;205;239m[1]"));
+	t.send("let x = 42;");
+	t.expect("42;");
+	assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[38;2;18;52;86mlet"));
+	t.send("\r");
+	t.prompt();
+	t.send("x\r");
+	t.expect("[2] 42");
+	t.prompt();
+	assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[38;2;17;34;51m42"));
+	t.send("1.missing()\r");
+	t.expect("no method `missing`");
+	t.prompt();
+	assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[1;38;2;68;85;102mruntime error"));
+	t.send("// comment");
+	t.expect("comment");
+	assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[2;90m// comment"));
+	t.send("\x03");
+	t.prompt();
+	t.send(":q\r");
+	t.wait_exit();
+	std::fs::remove_file(config).unwrap();
 }

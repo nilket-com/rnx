@@ -1,6 +1,7 @@
 # rnx 0043: colours a person can choose, in a Rune file
 
-Status: proposed 2026-09-14; revised the same day after review. The
+Status: implemented 2026-09-14; evidence is beside this record. Windows
+execution remains unverified. The
 forty-third record of rnx. A person ran
 the session on Windows and on Linux and found the colours beautiful on one
 and bland on the other, and asked for two things that pull against each

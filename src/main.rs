@@ -2,6 +2,7 @@ use rune::runtime::Value;
 use rune::{Context, Source, Sources, Vm};
 use std::sync::Arc;
 mod complete;
+mod config;
 mod declared;
 mod execute;
 mod env;
@@ -85,6 +86,8 @@ rnx — a Rune scripting environment
 Flags for `run`, before the file: --budget N, --debug-source.";
 
 fn main() -> Result<()> {
+	#[cfg(feature = "test-support")]
+	let _config_reads = config::ReadReport;
 	let mut args = match env::command_line(std::env::args_os()) {
 		Ok(args) => args,
 		Err(message) => {
@@ -92,13 +95,13 @@ fn main() -> Result<()> {
 			terminal::exit(2);
 		}
 	};
-	let mut mode = presentation::Mode::Auto;
+	let mut mode = None;
 	let mut splash = true;
 	loop {
 		if args.first().is_some_and(|s| s == "--no-splash") {
 			splash = false;
 		} else if let Some(flag) = args.first().and_then(|a| a.strip_prefix("--color=")) {
-			mode = match flag {
+			mode = Some(match flag {
 				"auto" => presentation::Mode::Auto,
 				"always" => presentation::Mode::Always,
 				"never" => presentation::Mode::Never,
@@ -106,11 +109,11 @@ fn main() -> Result<()> {
 					eprintln!("rnx: --color takes auto, always, or never, not `{}`", format::terminal_safe(flag));
 					terminal::exit(2);
 				}
-			};
+			});
 		} else { break; }
 		args.remove(0);
 	}
-	presentation::initialize(mode);
+
 	// Answered before a context exists, because neither needs one and the
 	// context is three quarters of what a trivial command costs: record 0030
 	// measured 4.2 ms for `version` against 0.56 ms for a binary that exits
@@ -134,9 +137,16 @@ fn main() -> Result<()> {
 		.is_some_and(|s| s == "help" || s == "--help" || s == "-h")
 	{
 		// An explicit question deserves an answer rather than an error.
+		presentation::initialize(mode.unwrap_or(presentation::Mode::Auto));
 		println!("{}", presentation::help(USAGE));
 		return Ok(());
 	}
+	let settings = if args.is_empty() || args.first().is_some_and(|s| matches!(s.as_str(), "run" | "eval" | "repl")) {
+		config::load()
+	} else { config::Settings::default() };
+	presentation::set_palette(settings.palette);
+	presentation::initialize(mode.or(settings.mode).unwrap_or(presentation::Mode::Auto));
+	splash = splash && settings.splash.unwrap_or(true);
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = host::install(&mut context)?;
 	host_functions.extend(fs::install(&mut context)?);
