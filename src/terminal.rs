@@ -43,7 +43,7 @@ pub fn restore() {
 }
 /// Explicit exits bypass Drop; normal returns use the title guard.
 pub fn exit(code: i32) -> ! {
-	#[cfg(feature="test-support")]
+	#[cfg(feature = "test-support")]
 	crate::config::report_reads();
 	restore();
 	std::process::exit(code)

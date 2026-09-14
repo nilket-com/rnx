@@ -24,13 +24,22 @@ fn rnx(args: &[&str], stdin: Option<&str>) -> Ran {
 	let start = Instant::now();
 	let mut child = Command::new(env!("CARGO_BIN_EXE_rnx"))
 		.args(args)
-		.stdin(if stdin.is_some() { Stdio::piped() } else { Stdio::null() })
+		.stdin(if stdin.is_some() {
+			Stdio::piped()
+		} else {
+			Stdio::null()
+		})
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())
 		.spawn()
 		.unwrap();
 	if let Some(text) = stdin {
-		child.stdin.take().unwrap().write_all(text.as_bytes()).unwrap();
+		child
+			.stdin
+			.take()
+			.unwrap()
+			.write_all(text.as_bytes())
+			.unwrap();
 	}
 	let done = child.wait_with_output().unwrap();
 	Ran {
@@ -48,7 +57,11 @@ fn interrupted(args: &[&str], stdin: Option<&str>, after: Duration) -> Ran {
 	let start = Instant::now();
 	let mut child = Command::new(env!("CARGO_BIN_EXE_rnx"))
 		.args(args)
-		.stdin(if stdin.is_some() { Stdio::piped() } else { Stdio::null() })
+		.stdin(if stdin.is_some() {
+			Stdio::piped()
+		} else {
+			Stdio::null()
+		})
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())
 		.spawn()
@@ -110,7 +123,10 @@ fn script(name: &str, source: &str) -> PathBuf {
 
 #[test]
 fn a_file_may_await_in_main() {
-	let path = script("await.rn", "pub async fn main(_) { host::test_pending(20).await }");
+	let path = script(
+		"await.rn",
+		"pub async fn main(_) { host::test_pending(20).await }",
+	);
 	let ran = rnx(&["run", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
 	assert_eq!(ran.stdout, "20\n");
@@ -118,7 +134,10 @@ fn a_file_may_await_in_main() {
 
 #[test]
 fn a_synchronous_file_still_runs() {
-	let path = script("sync.rn", "pub fn main(_) { let n = 0; for i in 0..10 { n += i; } n }");
+	let path = script(
+		"sync.rn",
+		"pub fn main(_) { let n = 0; for i in 0..10 { n += i; } n }",
+	);
 	let ran = rnx(&["run", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
 	assert_eq!(ran.stdout, "45\n");
@@ -147,7 +166,12 @@ fn a_session_input_may_await_at_the_top_level() {
 fn completes_under(source: &str, budget: usize) -> bool {
 	let path = script("budget.rn", source);
 	let ran = rnx(
-		&["run", "--budget", &budget.to_string(), path.to_str().unwrap()],
+		&[
+			"run",
+			"--budget",
+			&budget.to_string(),
+			path.to_str().unwrap(),
+		],
 		None,
 	);
 	match ran.code {
@@ -183,19 +207,41 @@ fn an_await_does_not_grant_a_fresh_budget() {
 	let in_middle = format!("{head} {loop_a} {wait} {loop_b} {tail}");
 	let at_end = format!("{head} {loop_a} {loop_b} {wait} {tail}");
 	let needed = smallest_budget(&at_start);
-	assert!(needed > 30_000, "the scripts should dwarf a slice of 10,000: {needed}");
-	assert!(completes_under(&in_middle, needed), "the middle await needed more than {needed}");
-	assert!(completes_under(&at_end, needed), "the end await needed more than {needed}");
-	assert!(!completes_under(&in_middle, needed - 50), "the middle await got a fresh budget");
-	assert!(!completes_under(&at_end, needed - 50), "the end await got a fresh budget");
+	assert!(
+		needed > 30_000,
+		"the scripts should dwarf a slice of 10,000: {needed}"
+	);
+	assert!(
+		completes_under(&in_middle, needed),
+		"the middle await needed more than {needed}"
+	);
+	assert!(
+		completes_under(&at_end, needed),
+		"the end await needed more than {needed}"
+	);
+	assert!(
+		!completes_under(&in_middle, needed - 50),
+		"the middle await got a fresh budget"
+	);
+	assert!(
+		!completes_under(&at_end, needed - 50),
+		"the end await got a fresh budget"
+	);
 }
 
 #[test]
 fn awaiting_in_a_loop_halts_for_budget_and_nothing_else() {
-	let path = script("await-loop.rn", "pub async fn main(_) { loop { host::test_pending(0).await; } }");
+	let path = script(
+		"await-loop.rn",
+		"pub async fn main(_) { loop { host::test_pending(0).await; } }",
+	);
 	let ran = rnx(&["run", "--budget", "5000", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(1), "{}", ran.stderr);
-	assert!(ran.stderr.starts_with("halted: 5000 instructions exceeded"), "{}", ran.stderr);
+	assert!(
+		ran.stderr.starts_with("halted: 5000 instructions exceeded"),
+		"{}",
+		ran.stderr
+	);
 	assert_eq!(ran.stdout, "");
 }
 
@@ -203,9 +249,22 @@ fn awaiting_in_a_loop_halts_for_budget_and_nothing_else() {
 
 #[test]
 fn ctrl_c_ends_a_run_pending_on_a_future() {
-	let path = script("pending.rn", "pub async fn main(_) { host::test_pending(10000).await }");
-	let ran = interrupted(&["run", path.to_str().unwrap()], None, Duration::from_millis(300));
-	assert_eq!(ran.code, Some(130), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
+	let path = script(
+		"pending.rn",
+		"pub async fn main(_) { host::test_pending(10000).await }",
+	);
+	let ran = interrupted(
+		&["run", path.to_str().unwrap()],
+		None,
+		Duration::from_millis(300),
+	);
+	assert_eq!(
+		ran.code,
+		Some(130),
+		"stdout: {}\nstderr: {}",
+		ran.stdout,
+		ran.stderr
+	);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.elapsed < Duration::from_secs(2), "{:?}", ran.elapsed);
 	assert_eq!(ran.stdout, "");
@@ -218,12 +277,21 @@ fn a_run_in_a_loop_is_bounded_by_its_budget_as_it_always_was() {
 	let path = script("loop.rn", "pub async fn main(_) { loop { } }");
 	let ran = rnx(&["run", "--budget", "100000", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(1), "{}", ran.stderr);
-	assert!(ran.stderr.starts_with("halted: 100000 instructions exceeded"), "{}", ran.stderr);
+	assert!(
+		ran.stderr
+			.starts_with("halted: 100000 instructions exceeded"),
+		"{}",
+		ran.stderr
+	);
 }
 
 #[test]
 fn ctrl_c_ends_an_eval_pending_on_a_future() {
-	let ran = interrupted(&["eval", "host::test_pending(10000).await"], None, Duration::from_millis(300));
+	let ran = interrupted(
+		&["eval", "host::test_pending(10000).await"],
+		None,
+		Duration::from_millis(300),
+	);
 	assert_eq!(ran.code, Some(130), "{}", ran.stderr);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 }
@@ -238,7 +306,13 @@ fn ctrl_c_ends_a_session_input_pending_on_a_future_and_the_next_input_runs() {
 	// The session stays up after the interrupt; it ended because its input
 	// pipe was closed once the interrupt had landed. Nothing pending was
 	// left: had the future outlived the input, the exit would have waited.
-	assert_eq!(ran.code, Some(0), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
+	assert_eq!(
+		ran.code,
+		Some(0),
+		"stdout: {}\nstderr: {}",
+		ran.stdout,
+		ran.stderr
+	);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
 }
@@ -252,7 +326,13 @@ fn after_an_interrupted_input_the_next_input_runs_to_completion() {
 		Some("host::test_pending(10000).await\nhost::test_pending(10).await + 1\n"),
 		Duration::from_millis(400),
 	);
-	assert_eq!(ran.code, Some(0), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
+	assert_eq!(
+		ran.code,
+		Some(0),
+		"stdout: {}\nstderr: {}",
+		ran.stdout,
+		ran.stderr
+	);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.stdout.contains("11\n"), "{}", ran.stdout);
 }
@@ -266,7 +346,10 @@ fn a_nested_async_fn_that_outruns_a_slice_still_completes() {
 		"nested.rn",
 		"async fn work() { let n = 0; for i in 0..2000 { n += i; } n }\npub async fn main(_) { work().await }\n",
 	);
-	let ran = rnx(&["run", "--budget", "2000000", path.to_str().unwrap()], None);
+	let ran = rnx(
+		&["run", "--budget", "2000000", path.to_str().unwrap()],
+		None,
+	);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
 	assert_eq!(ran.stdout, "1999000\n");
 	// And in the session, where the helper is a declaration of an earlier
@@ -283,8 +366,18 @@ fn a_nested_async_fn_that_outruns_a_slice_still_completes() {
 fn a_synchronous_session_input_in_a_loop_is_still_interrupted_within_a_slice() {
 	// Record 0002's promise for an input that never awaits, kept: the
 	// synchronous path and its slices are unchanged.
-	let ran = interrupted(&["repl"], Some("loop { }\n1 + 1\n"), Duration::from_millis(400));
-	assert_eq!(ran.code, Some(0), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
+	let ran = interrupted(
+		&["repl"],
+		Some("loop { }\n1 + 1\n"),
+		Duration::from_millis(400),
+	);
+	assert_eq!(
+		ran.code,
+		Some(0),
+		"stdout: {}\nstderr: {}",
+		ran.stdout,
+		ran.stderr
+	);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
 	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
@@ -302,7 +395,13 @@ fn a_string_that_looks_like_an_await_keeps_the_synchronous_slices() {
 		Some("let text = \".await\"; loop { }\n1 + 1\n"),
 		Duration::from_millis(400),
 	);
-	assert_eq!(ran.code, Some(0), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
+	assert_eq!(
+		ran.code,
+		Some(0),
+		"stdout: {}\nstderr: {}",
+		ran.stdout,
+		ran.stderr
+	);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
 	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
@@ -310,7 +409,10 @@ fn a_string_that_looks_like_an_await_keeps_the_synchronous_slices() {
 
 #[test]
 fn a_file_whose_string_mentions_await_is_still_synchronous() {
-	let path = script("stringy.rn", "pub fn main(_) { let text = \".await\"; text }");
+	let path = script(
+		"stringy.rn",
+		"pub fn main(_) { let text = \".await\"; text }",
+	);
 	let ran = rnx(&["run", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
 	assert!(ran.stdout.contains(".await"), "{}", ran.stdout);
@@ -321,7 +423,10 @@ fn select_is_recognised_even_though_it_never_writes_await() {
 	// `select` awaits without the word; the compiler refuses it outside an
 	// async function, which is how it is recognised.
 	let ran = rnx(
-		&["eval", "let a = host::test_pending(5); select { r = a => r }"],
+		&[
+			"eval",
+			"let a = host::test_pending(5); select { r = a => r }",
+		],
 		None,
 	);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
@@ -344,7 +449,13 @@ fn declaring_an_async_function_does_not_make_the_input_that_declares_it_async() 
 		Some("async fn helper() { host::test_pending(1).await }\nloop { }\n1 + 1\n"),
 		Duration::from_millis(500),
 	);
-	assert_eq!(ran.code, Some(0), "stdout: {}\nstderr: {}", ran.stdout, ran.stderr);
+	assert_eq!(
+		ran.code,
+		Some(0),
+		"stdout: {}\nstderr: {}",
+		ran.stdout,
+		ran.stderr
+	);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
 	assert!(ran.elapsed < Duration::from_secs(4), "{:?}", ran.elapsed);
@@ -359,11 +470,17 @@ fn a_failure_on_the_last_permitted_instruction_keeps_its_diagnostic() {
 	let mut both = None;
 	for budget in 1..=32u32 {
 		let ran = rnx(
-			&["run", "--budget", &budget.to_string(), path.to_str().unwrap()],
+			&[
+				"run",
+				"--budget",
+				&budget.to_string(),
+				path.to_str().unwrap(),
+			],
 			None,
 		);
 		assert_eq!(ran.code, Some(1), "budget {budget}: {}", ran.stderr);
-		if ran.stderr.contains("Panicked: boom") && ran.stderr.contains("was exhausted at that point")
+		if ran.stderr.contains("Panicked: boom")
+			&& ran.stderr.contains("was exhausted at that point")
 		{
 			both = Some((budget, ran.stderr));
 			break;
@@ -373,7 +490,10 @@ fn a_failure_on_the_last_permitted_instruction_keeps_its_diagnostic() {
 		"no budget reported the panic together with the exhaustion: a failure on the last \
 		 permitted instruction is being reported as a budget halt",
 	);
-	assert!(stderr.contains("Panicked: boom"), "budget {budget}: {stderr}");
+	assert!(
+		stderr.contains("Panicked: boom"),
+		"budget {budget}: {stderr}"
+	);
 }
 
 #[test]
@@ -435,7 +555,10 @@ fn a_runtime_error_after_an_await_is_still_placed() {
 
 #[test]
 fn a_session_error_after_an_await_names_its_input() {
-	let ran = rnx(&["repl"], Some("1\nhost::test_pending(1).await; let v = []; v[3]\n"));
+	let ran = rnx(
+		&["repl"],
+		Some("1\nhost::test_pending(1).await; let v = []; v[3]\n"),
+	);
 	assert_eq!(ran.code, Some(0));
 	assert!(ran.stderr.contains("runtime error"), "{}", ran.stderr);
 	assert!(ran.stderr.contains("input 2"), "{}", ran.stderr);

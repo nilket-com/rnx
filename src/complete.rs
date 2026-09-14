@@ -306,7 +306,10 @@ mod host_source_tests {
 			.map(|f| f.path)
 			.collect();
 		// Eight host functions after the filesystem move, plus three test-support probes.
-		assert_eq!(registered.len(), 8 + 3 * usize::from(cfg!(feature = "test-support")));
+		assert_eq!(
+			registered.len(),
+			8 + 3 * usize::from(cfg!(feature = "test-support"))
+		);
 		let names = super::Names {
 			host: registered.clone(),
 			..Default::default()

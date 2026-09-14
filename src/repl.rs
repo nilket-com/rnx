@@ -52,7 +52,10 @@ impl rustyline::Prompt for NumberedPrompt {
 pub const COMMANDS: [(&str, &str); 8] = [
 	(":quit", "(:q) end the session"),
 	(":clear", "clear the screen, keeping session state"),
-	(":renumber", "start the prompt count over, keeping everything else"),
+	(
+		":renumber",
+		"start the prompt count over, keeping everything else",
+	),
 	(
 		":reset",
 		"empty the session: bindings, declarations, and retained units",
@@ -160,7 +163,11 @@ fn snapshot(session: &Session, host: &[HostFunction]) -> Names {
 		bindings: session.binding_names(),
 		declarations: session.declaration_names(),
 		host: host.iter().map(|f| f.path.clone()).collect(),
-		commands: COMMANDS.iter().map(|(c, _)| c.to_string()).chain([":q".to_owned()]).collect(),
+		commands: COMMANDS
+			.iter()
+			.map(|(c, _)| c.to_string())
+			.chain([":q".to_owned()])
+			.collect(),
 	}
 }
 
@@ -233,7 +240,10 @@ fn handle(
 	};
 	match command {
 		":quit" | ":q" => return Outcome::Quit,
-		":clear" => { crate::terminal::clear(); return Outcome::Continue; },
+		":clear" => {
+			crate::terminal::clear();
+			return Outcome::Continue;
+		}
 		":renumber" => {
 			session.renumber();
 			return Outcome::Continue;
@@ -284,7 +294,14 @@ fn handle(
 			if !crate::runner::is_unit(&value) {
 				if prompt.shown.get() {
 					let marker = format!("[{number}] ");
-					println!("{}{text}", presentation::numbered(&marker, presentation::Style::ResultNumber, prompt.styled.get()));
+					println!(
+						"{}{text}",
+						presentation::numbered(
+							&marker,
+							presentation::Style::ResultNumber,
+							prompt.styled.get()
+						)
+					);
 				} else {
 					println!("{text}");
 				}
@@ -323,7 +340,9 @@ pub fn run(
 	}
 	let limits = Limits::default();
 	let inspect_limits = InspectLimits::default();
-	if splash { println!("rnx: a Rune session. :help lists the commands, :quit ends it."); }
+	if splash {
+		println!("rnx: a Rune session. :help lists the commands, :quit ends it.");
+	}
 	// The reference point, and the first sample, after initialization and
 	// history loading and before the first evaluation is admitted.
 	crate::memory::record_baseline();
@@ -346,7 +365,14 @@ pub fn run(
 		if let Some(path) = &history {
 			let _ = editor.append_history(path);
 		}
-		let outcome = handle(&mut session, &host, &input, &limits, &inspect_limits, &prompt);
+		let outcome = handle(
+			&mut session,
+			&host,
+			&input,
+			&limits,
+			&inspect_limits,
+			&prompt,
+		);
 		// The input buffer is disposable too, and the record excludes it from
 		// the sample, so it goes before the sample rather than at the end of
 		// the iteration.

@@ -655,7 +655,8 @@ fn run_child_with(
 		crate::platform::spawn_in_group(&mut command).map_err(|e| {
 			match launch.and_then(|l| l.cwd.as_ref()) {
 				Some(cwd) => about(
-					"run", program,
+					"run",
+					program,
 					format!("with working directory {cwd:?}: {e}"),
 				),
 				None => about("run", program, e),
@@ -1209,10 +1210,19 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 			.function("test_reset_allocation_peak", crate::memory::reset_peak)
 			.build()?;
 		for (name, doc) in [
-			("test_allocation_peak", "test_allocation_peak(): test-support allocator peak"),
-			("test_reset_allocation_peak", "test_reset_allocation_peak(): test-support reset peak"),
+			(
+				"test_allocation_peak",
+				"test_allocation_peak(): test-support allocator peak",
+			),
+			(
+				"test_reset_allocation_peak",
+				"test_reset_allocation_peak(): test-support reset peak",
+			),
 		] {
-			registered.push(HostFunction { path: format!("host::{name}"), doc });
+			registered.push(HostFunction {
+				path: format!("host::{name}"),
+				doc,
+			});
 		}
 		registered.push(HostFunction {
 			path: "host::test_pending".to_owned(),
@@ -1651,7 +1661,8 @@ mod tests {
 		let existing = std::env::temp_dir().join(format!("rnx-host-exists-{}", std::process::id()));
 		std::fs::write(&existing, "there").unwrap();
 		let existing = existing.to_string_lossy().into_owned();
-		let written = crate::fs::write_new(&existing, rune::to_value("again").unwrap()).unwrap_err();
+		let written =
+			crate::fs::write_new(&existing, rune::to_value("again").unwrap()).unwrap_err();
 		assert!(written.contains(&existing), "{written}");
 		assert!(written.starts_with("cannot write "), "{written}");
 		let _ = std::fs::remove_file(&existing);

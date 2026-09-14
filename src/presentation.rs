@@ -154,7 +154,10 @@ pub enum Style {
 }
 impl Style {
 	pub fn sgr(self) -> &'static str {
-		if let Some(style) = PALETTE.get().and_then(|styles| styles[self as usize].as_deref()) {
+		if let Some(style) = PALETTE
+			.get()
+			.and_then(|styles| styles[self as usize].as_deref())
+		{
 			return style;
 		}
 		match self {
@@ -375,21 +378,33 @@ mod tests {
 		}
 		out
 	}
-    #[test]
-    fn numbered_spans_keep_digits_bold_and_frame_dim_without_changing_text() {
-        for digits in ["1", "12", "100"] {
-            for (role, suffix, sgr) in [(Style::PromptNumber, "] > ", "\x1b[1;32m"), (Style::ResultNumber, "] ", "\x1b[1;34m")] {
-                let raw=format!("[{digits}{suffix}");
-                let painted=numbered(&raw,role,true);
-                assert_eq!(painted,format!("\x1b[2m[{RESET}{sgr}{digits}{RESET}\x1b[2m{suffix}{RESET}"));
-                assert_eq!(painted.replace("\x1b[2m", "").replace(sgr, "").replace(RESET, ""),raw);
-                assert_eq!(numbered(&raw,role,false),raw);
-            }
-        }
-        for other in ["", " | ", "[x] > ", "[] > "] {
-            assert_eq!(numbered(other, Style::PromptNumber, true), other);
-        }
-    }
+	#[test]
+	fn numbered_spans_keep_digits_bold_and_frame_dim_without_changing_text() {
+		for digits in ["1", "12", "100"] {
+			for (role, suffix, sgr) in [
+				(Style::PromptNumber, "] > ", "\x1b[1;32m"),
+				(Style::ResultNumber, "] ", "\x1b[1;34m"),
+			] {
+				let raw = format!("[{digits}{suffix}");
+				let painted = numbered(&raw, role, true);
+				assert_eq!(
+					painted,
+					format!("\x1b[2m[{RESET}{sgr}{digits}{RESET}\x1b[2m{suffix}{RESET}")
+				);
+				assert_eq!(
+					painted
+						.replace("\x1b[2m", "")
+						.replace(sgr, "")
+						.replace(RESET, ""),
+					raw
+				);
+				assert_eq!(numbered(&raw, role, false), raw);
+			}
+		}
+		for other in ["", " | ", "[x] > ", "[] > "] {
+			assert_eq!(numbered(other, Style::PromptNumber, true), other);
+		}
+	}
 
 	#[test]
 	fn every_utf8_prefix_keeps_its_bytes_and_finishes_open_tokens() {

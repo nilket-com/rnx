@@ -490,7 +490,12 @@ impl Repl {
 			let mut byte = [0];
 			while stdout.read(&mut byte).unwrap_or(0) != 0 {
 				acc.push(byte[0]);
-				if acc.strip_suffix(b"] > ").and_then(|prefix| prefix.rsplit(|&b| b == b'[').next()).is_some_and(|number| !number.is_empty() && number.iter().all(u8::is_ascii_digit)) {
+				if acc
+					.strip_suffix(b"] > ")
+					.and_then(|prefix| prefix.rsplit(|&b| b == b'[').next())
+					.is_some_and(|number| {
+						!number.is_empty() && number.iter().all(u8::is_ascii_digit)
+					}) {
 					let _ = tx.send(String::from_utf8_lossy(&acc).into_owned());
 					acc.clear();
 				}

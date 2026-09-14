@@ -4,10 +4,10 @@ use std::sync::Arc;
 mod complete;
 mod config;
 mod declared;
-mod execute;
-mod env;
 #[cfg(all(windows, feature = "test-support"))]
 mod delivery_control;
+mod env;
+mod execute;
 mod format;
 mod fs;
 mod fs_platform;
@@ -29,8 +29,8 @@ mod pipe_control;
 mod repl;
 mod runner;
 mod session;
-mod text;
 mod terminal;
+mod text;
 mod time;
 
 // Installed for the whole process: the ceiling is enforced against what this
@@ -107,11 +107,16 @@ fn main() -> Result<()> {
 				"always" => presentation::Mode::Always,
 				"never" => presentation::Mode::Never,
 				_ => {
-					eprintln!("rnx: --color takes auto, always, or never, not `{}`", format::terminal_safe(flag));
+					eprintln!(
+						"rnx: --color takes auto, always, or never, not `{}`",
+						format::terminal_safe(flag)
+					);
 					terminal::exit(2);
 				}
 			});
-		} else { break; }
+		} else {
+			break;
+		}
 		args.remove(0);
 	}
 
@@ -144,7 +149,9 @@ fn main() -> Result<()> {
 	}
 	let settings = if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
 		config::load()
-	} else { config::Settings::default() };
+	} else {
+		config::Settings::default()
+	};
 	presentation::set_palette(settings.palette);
 	presentation::initialize(mode.or(settings.mode).unwrap_or(presentation::Mode::Auto));
 	splash = splash && settings.splash.unwrap_or(true);

@@ -344,12 +344,16 @@ fn windows_discovery_uses_appdata_then_localappdata() {
 
 #[test]
 fn marker_palette_keys_accept_colours_and_refuse_invalid_values() {
-    let config=fixture("#{palette:#{result_number: \"bright-blue\",prompt_frame: \"#777777\"}}");
-    let out=run(&config,&["repl"],":q\n",&[]);
-    assert!(out.status.success()); assert!(out.stderr.is_empty(), "{:?}",out.stderr);
-    let config=fixture("#{palette:#{result_number: \"not-blue\",prompt_frame: 42}}");
-    let out=run(&config,&["repl"],":q\n",&[]);
-    assert!(out.status.success());
-    let err=String::from_utf8_lossy(&out.stderr);
-    assert!(err.contains("palette.result_number") && err.contains("palette.prompt_frame"),"{err}");
+	let config = fixture("#{palette:#{result_number: \"bright-blue\",prompt_frame: \"#777777\"}}");
+	let out = run(&config, &["repl"], ":q\n", &[]);
+	assert!(out.status.success());
+	assert!(out.stderr.is_empty(), "{:?}", out.stderr);
+	let config = fixture("#{palette:#{result_number: \"not-blue\",prompt_frame: 42}}");
+	let out = run(&config, &["repl"], ":q\n", &[]);
+	assert!(out.status.success());
+	let err = String::from_utf8_lossy(&out.stderr);
+	assert!(
+		err.contains("palette.result_number") && err.contains("palette.prompt_frame"),
+		"{err}"
+	);
 }

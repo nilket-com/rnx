@@ -402,13 +402,15 @@ fn gate_0003_completion_in_the_terminal() {
 	t.prompt();
 	t.send("host::\t\t");
 	// Completion columns can place these names in either screen order.
-    let end = Instant::now() + Duration::from_secs(10);
-    loop {
-        let listed = t.pending();
-        if listed.contains("host::json_parse") && listed.contains("host::process") { break; }
-        assert!(Instant::now() < end, "{listed}");
-        std::thread::sleep(Duration::from_millis(10));
-    }
+	let end = Instant::now() + Duration::from_secs(10);
+	loop {
+		let listed = t.pending();
+		if listed.contains("host::json_parse") && listed.contains("host::process") {
+			break;
+		}
+		assert!(Instant::now() < end, "{listed}");
+		std::thread::sleep(Duration::from_millis(10));
+	}
 	t.send("\x03");
 	t.prompt();
 	t.send(":me\t\r");
@@ -907,7 +909,9 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 		loop {
 			t.pump();
 			let raw = String::from_utf8_lossy(&t.seen[start..]);
-			if raw.contains(fragment) { return; }
+			if raw.contains(fragment) {
+				return;
+			}
 			assert!(Instant::now() < deadline, "missing {fragment:?}: {raw:?}");
 			std::thread::sleep(Duration::from_millis(10));
 		}
@@ -915,7 +919,11 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 	let history = history_file("colour_edits");
 	let mut t = Terminal::spawn_with(&history, &[("NO_COLOR", "")]);
 	t.prompt();
-	expect_raw(&mut t, 0, "\x1b[2m[\x1b[0m\x1b[1;32m1\x1b[0m\x1b[2m] > \x1b[0m");
+	expect_raw(
+		&mut t,
+		0,
+		"\x1b[2m[\x1b[0m\x1b[1;32m1\x1b[0m\x1b[2m] > \x1b[0m",
+	);
 	t.send("le");
 	t.expect("le");
 	let start = t.seen.len();
@@ -924,7 +932,11 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 	let start = t.seen.len();
 	t.send("\x03");
 	t.prompt();
-	expect_raw(&mut t, start, "\x1b[2m[\x1b[0m\x1b[1;32m1\x1b[0m\x1b[2m] > \x1b[0m");
+	expect_raw(
+		&mut t,
+		start,
+		"\x1b[2m[\x1b[0m\x1b[1;32m1\x1b[0m\x1b[2m] > \x1b[0m",
+	);
 	let raw = String::from_utf8_lossy(&t.seen[start..]);
 	// Redraw/cursor CSI traffic may follow the reset. Only SGR chooses
 	// attributes, so the last SGR, rather than the last escape, must reset.
@@ -932,12 +944,19 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 	let mut last_sgr = None;
 	while let Some(at) = rest.find("\x1b[") {
 		rest = &rest[at + 2..];
-		let Some(end) = rest.bytes().position(|b| (0x40..=0x7e).contains(&b)) else { break; };
-		if rest.as_bytes()[end] == b'm' { last_sgr = Some(&rest[..=end]); }
+		let Some(end) = rest.bytes().position(|b| (0x40..=0x7e).contains(&b)) else {
+			break;
+		};
+		if rest.as_bytes()[end] == b'm' {
+			last_sgr = Some(&rest[..=end]);
+		}
 		rest = &rest[end + 1..];
 	}
 	assert_eq!(last_sgr, Some("0m"), "{raw:?}");
-	assert!(raw.contains("\x1b[2m[\x1b[0m\x1b[1;32m1\x1b[0m\x1b[2m] > \x1b[0m"), "{raw:?}");
+	assert!(
+		raw.contains("\x1b[2m[\x1b[0m\x1b[1;32m1\x1b[0m\x1b[2m] > \x1b[0m"),
+		"{raw:?}"
+	);
 	t.send(":quit\r");
 	t.wait_exit();
 }
@@ -1066,53 +1085,82 @@ fn gate_0045_a_result_marker_is_blue_with_the_same_dim_frame() {
 	t.expect("[1] 42\n");
 	t.prompt();
 	let raw = String::from_utf8_lossy(&t.seen);
-	assert!(raw.contains("\x1b[2m[\x1b[0m\x1b[1;32m1\x1b[0m\x1b[2m] > \x1b[0m"), "{raw:?}");
+	assert!(
+		raw.contains("\x1b[2m[\x1b[0m\x1b[1;32m1\x1b[0m\x1b[2m] > \x1b[0m"),
+		"{raw:?}"
+	);
 	assert!(
 		raw.contains("\x1b[2m[\x1b[0m\x1b[1;34m1\x1b[0m\x1b[2m] \x1b[0m\x1b[36m42\x1b[0m"),
 		"{raw:?}"
 	);
-	assert!(raw.contains("\x1b[2m[\x1b[0m\x1b[1;32m2\x1b[0m\x1b[2m] > \x1b[0m"), "{raw:?}");
+	assert!(
+		raw.contains("\x1b[2m[\x1b[0m\x1b[1;32m2\x1b[0m\x1b[2m] > \x1b[0m"),
+		"{raw:?}"
+	);
 	t.send(":quit\r");
 	t.wait_exit();
 }
 
 #[test]
 fn gate_0042_clear_and_title_follow_the_real_session_lifetime() {
-    for exit in [":quit\r", ":q\r", "\x04"] {
-        let history = history_file("title");
-        let mut t = Terminal::spawn_args(&history, &[], &["--color=never", "--no-splash", "repl"]);
-        t.prompt();
-        assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[22;2t\x1b]2;rnx\x07"));
-        t.send("let x = 7;\r"); t.prompt();
-        t.send(":clear\r"); t.prompt();
-        assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[2J\x1b[H"));
-        assert!(clean(&t.seen).ends_with("[2] > "));
-        t.send(":vars\r"); t.expect("x: i64 = 7"); t.prompt();
-        t.send("\x03"); t.prompt();
-        assert!(!String::from_utf8_lossy(&t.seen).contains("\x1b[23;2t"));
-        assert!(t.child.try_wait().unwrap().is_none());
-        t.send(exit);
-        let deadline = Instant::now()+Duration::from_secs(10);
-        while t.child.try_wait().unwrap().is_none() { t.pump(); assert!(Instant::now()<deadline); std::thread::sleep(Duration::from_millis(10)); }
-        t.pump();
-        assert_eq!(String::from_utf8_lossy(&t.seen).matches("\x1b[23;2t").count(), 1);
-        assert!(std::fs::read_to_string(history).unwrap().contains(":clear"));
-    }
+	for exit in [":quit\r", ":q\r", "\x04"] {
+		let history = history_file("title");
+		let mut t = Terminal::spawn_args(&history, &[], &["--color=never", "--no-splash", "repl"]);
+		t.prompt();
+		assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[22;2t\x1b]2;rnx\x07"));
+		t.send("let x = 7;\r");
+		t.prompt();
+		t.send(":clear\r");
+		t.prompt();
+		assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[2J\x1b[H"));
+		assert!(clean(&t.seen).ends_with("[2] > "));
+		t.send(":vars\r");
+		t.expect("x: i64 = 7");
+		t.prompt();
+		t.send("\x03");
+		t.prompt();
+		assert!(!String::from_utf8_lossy(&t.seen).contains("\x1b[23;2t"));
+		assert!(t.child.try_wait().unwrap().is_none());
+		t.send(exit);
+		let deadline = Instant::now() + Duration::from_secs(10);
+		while t.child.try_wait().unwrap().is_none() {
+			t.pump();
+			assert!(Instant::now() < deadline);
+			std::thread::sleep(Duration::from_millis(10));
+		}
+		t.pump();
+		assert_eq!(
+			String::from_utf8_lossy(&t.seen)
+				.matches("\x1b[23;2t")
+				.count(),
+			1
+		);
+		assert!(std::fs::read_to_string(history).unwrap().contains(":clear"));
+	}
 }
 #[test]
 fn gate_0042_run_restores_titles_before_explicit_exits() {
-    for source in ["pub fn main(_) { 42 }", "pub fn main(_) { panic!(\"oops\") }", "pub fn main(_) { host::exit(7) }"] {
-        let history = history_file("run_title");
-        let file = history.with_extension("rn");
-        std::fs::write(&file,source).unwrap();
-        let mut t=Terminal::spawn_args(&history,&[], &["run",file.to_str().unwrap()]);
-        let deadline=Instant::now()+Duration::from_secs(10);
-        while t.child.try_wait().unwrap().is_none() {t.pump();assert!(Instant::now()<deadline);std::thread::sleep(Duration::from_millis(10));}
-        t.pump(); let raw=String::from_utf8_lossy(&t.seen);
-        assert!(raw.contains("\x1b]2;rnx "),"{raw:?}");
-        assert_eq!(raw.matches("\x1b[23;2t").count(),1,"{raw:?}");
-        std::fs::remove_file(file).unwrap();
-    }
+	for source in [
+		"pub fn main(_) { 42 }",
+		"pub fn main(_) { panic!(\"oops\") }",
+		"pub fn main(_) { host::exit(7) }",
+	] {
+		let history = history_file("run_title");
+		let file = history.with_extension("rn");
+		std::fs::write(&file, source).unwrap();
+		let mut t = Terminal::spawn_args(&history, &[], &["run", file.to_str().unwrap()]);
+		let deadline = Instant::now() + Duration::from_secs(10);
+		while t.child.try_wait().unwrap().is_none() {
+			t.pump();
+			assert!(Instant::now() < deadline);
+			std::thread::sleep(Duration::from_millis(10));
+		}
+		t.pump();
+		let raw = String::from_utf8_lossy(&t.seen);
+		assert!(raw.contains("\x1b]2;rnx "), "{raw:?}");
+		assert_eq!(raw.matches("\x1b[23;2t").count(), 1, "{raw:?}");
+		std::fs::remove_file(file).unwrap();
+	}
 }
 
 #[test]
@@ -1153,13 +1201,25 @@ fn gate_0043_saved_palette_reaches_input_prompt_result_and_error() {
 
 #[test]
 fn gate_0045_input_output_and_frame_are_independently_configurable() {
-    let history = history_file("three_marker_roles");
-    let config = history.with_extension("rn");
-    std::fs::write(&config, "#{palette:#{prompt_number: \"#112233\",result_number: \"#445566\",prompt_frame: \"#778899\"}}").unwrap();
-    let mut t = Terminal::spawn_with(&history, &[("RNX_CONFIG",config.to_str().unwrap()),("NO_COLOR", "")]);
-    t.prompt(); t.send("42\r"); t.expect("[1] 42"); t.prompt();
-    let raw=String::from_utf8_lossy(&t.seen);
-    assert!(raw.contains("\x1b[2;38;2;119;136;153m[\x1b[0m\x1b[1;38;2;17;34;51m1\x1b[0m\x1b[2;38;2;119;136;153m] > \x1b[0m"), "{raw:?}");
-    assert!(raw.contains("\x1b[2;38;2;119;136;153m[\x1b[0m\x1b[1;38;2;68;85;102m1\x1b[0m\x1b[2;38;2;119;136;153m] \x1b[0m\x1b[36m42"), "{raw:?}");
-    t.send(":q\r"); t.wait_exit(); std::fs::remove_file(config).unwrap();
+	let history = history_file("three_marker_roles");
+	let config = history.with_extension("rn");
+	std::fs::write(
+		&config,
+		"#{palette:#{prompt_number: \"#112233\",result_number: \"#445566\",prompt_frame: \"#778899\"}}",
+	)
+	.unwrap();
+	let mut t = Terminal::spawn_with(
+		&history,
+		&[("RNX_CONFIG", config.to_str().unwrap()), ("NO_COLOR", "")],
+	);
+	t.prompt();
+	t.send("42\r");
+	t.expect("[1] 42");
+	t.prompt();
+	let raw = String::from_utf8_lossy(&t.seen);
+	assert!(raw.contains("\x1b[2;38;2;119;136;153m[\x1b[0m\x1b[1;38;2;17;34;51m1\x1b[0m\x1b[2;38;2;119;136;153m] > \x1b[0m"), "{raw:?}");
+	assert!(raw.contains("\x1b[2;38;2;119;136;153m[\x1b[0m\x1b[1;38;2;68;85;102m1\x1b[0m\x1b[2;38;2;119;136;153m] \x1b[0m\x1b[36m42"), "{raw:?}");
+	t.send(":q\r");
+	t.wait_exit();
+	std::fs::remove_file(config).unwrap();
 }

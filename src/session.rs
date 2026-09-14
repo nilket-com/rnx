@@ -356,7 +356,9 @@ impl Session {
 		// Strictly less: a boundary counts inputs already admitted. Repeated
 		// boundaries select the LAST numbering for the next input, without
 		// changing the numbering any older source belongs to.
-		let epoch = self.numberings.partition_point(|&boundary| boundary < index);
+		let epoch = self
+			.numberings
+			.partition_point(|&boundary| boundary < index);
 		let base = epoch.checked_sub(1).map_or(0, |i| self.numberings[i]);
 		InputNumber {
 			position: index - base,
@@ -496,7 +498,10 @@ impl Session {
 		let result = self.eval_input(input);
 		if crate::host::interrupted() {
 			if let Err(message) = self.http.clear(&self.runtime) {
-				return Err(Failure::Runtime { message, origin: None });
+				return Err(Failure::Runtime {
+					message,
+					origin: None,
+				});
 			}
 		}
 		result
@@ -699,12 +704,11 @@ impl Session {
 					// differently, the synchronous refusal was about the
 					// await and the async attempt is the honest report.
 					Err(refused_again) => {
-						let (failure, text) =
-							if refused_again.to_string() == refused.to_string() {
-								(refused, synchronous.text)
-							} else {
-								(refused_again, asynchronous.text)
-							};
+						let (failure, text) = if refused_again.to_string() == refused.to_string() {
+							(refused, synchronous.text)
+						} else {
+							(refused_again, asynchronous.text)
+						};
 						self.last_generated = text;
 						return Err(failure);
 					}
@@ -820,7 +824,12 @@ impl Session {
 		}
 		rune::to_value(object).map_err(|e| fault(e.to_string()))
 	}
-	fn execute(&self, unit: &Arc<Unit>, state: Value, awaits: bool) -> std::result::Result<Value, Failure> {
+	fn execute(
+		&self,
+		unit: &Arc<Unit>,
+		state: Value,
+		awaits: bool,
+	) -> std::result::Result<Value, Failure> {
 		// A runtime per input. Sharing one across units is what this cut set
 		// out to do and cannot: see the record.
 		let runtime = Arc::new(
@@ -852,9 +861,7 @@ impl Session {
 			super::execute::Outcome::Failed { error, exhausted } => {
 				let mut failure = self.runtime_failure(error);
 				// Beside the error, never in place of it.
-				if exhausted
-					&& let Failure::Runtime { message, .. } = &mut failure
-				{
+				if exhausted && let Failure::Runtime { message, .. } = &mut failure {
 					message.push_str(&format!(
 						"; the budget of {} instructions was exhausted at that point",
 						self.budget
@@ -888,7 +895,8 @@ impl Session {
 		});
 		// Prove the name against the call site's retained input, never the
 		// caller's input or a display number. Unplaced errors remain untouched.
-		let named = origin.as_ref()
+		let named = origin
+			.as_ref()
 			.and_then(|o| o.input.checked_sub(1))
 			.and_then(|index| self.inputs.get(index))
 			.and_then(|source| crate::method::named(&message, source));

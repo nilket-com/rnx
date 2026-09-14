@@ -89,10 +89,20 @@ pub enum Outcome {
 /// them, as the session has always done. A budget halt in a synchronous
 /// execution leaves it resumable: a synchronous call is a frame in the same
 /// execution, not a nested one.
-pub fn slice_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args, budget_n: usize) -> Outcome {
+pub fn slice_sync(
+	vm: &mut Vm,
+	entry: [&str; 1],
+	args: impl rune::runtime::Args,
+	budget_n: usize,
+) -> Outcome {
 	let mut execution = match vm.execute(entry, args) {
 		Ok(execution) => execution,
-		Err(error) => return Outcome::Failed { error, exhausted: false },
+		Err(error) => {
+			return Outcome::Failed {
+				error,
+				exhausted: false,
+			};
+		}
 	};
 	let mut spent = 0usize;
 	loop {
@@ -105,7 +115,9 @@ pub fn slice_sync(vm: &mut Vm, entry: [&str; 1], args: impl rune::runtime::Args,
 		match outcome {
 			// Completion is a slice boundary too: an interrupt that arrived
 			// during a blocking host call is observed here.
-			Ok(GeneratorState::Complete(_)) if crate::host::interrupted() => return Outcome::Interrupted,
+			Ok(GeneratorState::Complete(_)) if crate::host::interrupted() => {
+				return Outcome::Interrupted;
+			}
 			Ok(GeneratorState::Complete(value)) => return Outcome::Complete(value),
 			Ok(GeneratorState::Yielded(_)) => return Outcome::Yielded,
 			Err(error) if error.first_location().is_none() && exhausted => {
@@ -186,7 +198,12 @@ pub fn drive_async(
 ) -> Outcome {
 	let execution = match vm.execute(entry, args) {
 		Ok(execution) => execution,
-		Err(error) => return Outcome::Failed { error, exhausted: false },
+		Err(error) => {
+			return Outcome::Failed {
+				error,
+				exhausted: false,
+			};
+		}
 	};
 	let exhausted = Rc::new(Cell::new(false));
 	let settled = Settled {
@@ -231,7 +248,10 @@ pub fn drive_async(
 		// the head gets; reading the halt apart from the error would need
 		// Rune's error kind, which it keeps to itself.
 		Err(error) if error.first_location().is_none() && exhausted.get() => Outcome::Budget,
-		Err(error) => Outcome::Failed { error, exhausted: exhausted.get() },
+		Err(error) => Outcome::Failed {
+			error,
+			exhausted: exhausted.get(),
+		},
 	}
 }
 

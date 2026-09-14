@@ -245,7 +245,10 @@ impl Renderer<'_> {
 		let start = self.out.len();
 		self.push(s);
 		if self.styled && self.out.len() > start {
-			self.spans.push(Span { range: start..start + label_bytes, style: Style::Number });
+			self.spans.push(Span {
+				range: start..start + label_bytes,
+				style: Style::Number,
+			});
 		}
 	}
 	fn full(&self) -> bool {
@@ -1022,11 +1025,17 @@ mod boundary_tests {
 	fn styling_preserves_an_atomic_wrapper_at_the_byte_boundary() {
 		let value = rune::to_value(Some(42i64)).unwrap();
 		for (bytes, prefix) in [(4, ""), (5, "Some(")] {
-			let limits = Limits { total_bytes: bytes, ..Limits::default() };
+			let limits = Limits {
+				total_bytes: bytes,
+				..Limits::default()
+			};
 			let expected = format!("{prefix} …(output truncated at {bytes} bytes)");
 			assert_eq!(render(&value, None, &limits), expected);
 			let styled = render_styled(&value, None, &limits, true);
-			assert_eq!(styled.replace("\x1b[36m", "").replace("\x1b[0m", ""), expected);
+			assert_eq!(
+				styled.replace("\x1b[36m", "").replace("\x1b[0m", ""),
+				expected
+			);
 		}
 	}
 
