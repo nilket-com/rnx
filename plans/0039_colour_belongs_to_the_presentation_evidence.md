@@ -107,3 +107,18 @@ controls the actual colours. The files are `specimen-dark.png` and
 `specimen-light.png`, with the raw capture and escaped-byte rendering beside
 them. Numbered prompts remain the next record, including a count reset
 that preserves bindings.
+
+## Continuous terminal smoke gate
+
+The ordinary Linux PTY suite now also checks the bold prompt, keyword
+recolouring when `le` becomes `let`, and the final SGR reset after Ctrl-C.
+These byte-level checks run under `cargo test`; the Python emulator remains
+the full screen/cursor gate. They do not compare redraw traffic wholesale.
+The session caret span now starts after its leading newline, asserted by a
+separate pipe test. Plain diagnostic text and caret columns are unchanged.
+
+Validation of this follow-up: `TERM=xterm-256color cargo test --locked
+--test colour --test repl`: 4 colour tests and 17 REPL tests pass. The full
+suite counts, timings and specimen above describe the preceding implementation;
+this follow-up adds two tests and moves one styling boundary without changing
+visible output. No benchmark was repeated for it.

@@ -121,3 +121,11 @@ fn colour_flag_belongs_only_before_the_command() {
 	assert!(String::from_utf8_lossy(&out.stderr).contains("--color=never"));
 	std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn diagnostic_caret_styling_starts_after_the_source_newline() {
+	let out = run("always", &["eval", "let x = ;"], "");
+	let error = String::from_utf8(out.stderr).unwrap();
+	assert!(error.contains("\n\x1b[31m  "), "{error:?}");
+	assert!(!error.contains("\x1b[31m\n"), "{error:?}");
+}

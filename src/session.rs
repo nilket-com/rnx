@@ -90,7 +90,7 @@ impl Failure {
 			return crate::presentation::error(&text).into_owned();
 		}
 		let first = text.find('\n').unwrap_or(text.len());
-		let last = text.rfind('\n').unwrap_or(text.len());
+		let caret_start = text.rfind('\n').map_or(text.len(), |at| at + 1);
 		crate::presentation::paint(
 			&text,
 			&[
@@ -99,7 +99,7 @@ impl Failure {
 					style: crate::presentation::Style::Error,
 				},
 				crate::presentation::Span {
-					range: last..text.len(),
+					range: caret_start..text.len(),
 					style: crate::presentation::Style::Caret,
 				},
 			],

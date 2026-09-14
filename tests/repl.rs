@@ -894,3 +894,47 @@ fn gate_0013_the_exit_status_is_refused_at_the_prompt_and_the_prompt_survives() 
 	t.send(":quit\r");
 	t.wait_exit();
 }
+
+/// These byte-level hooks run in cargo test; the separate emulator probe
+/// continues to assert full screen contents and cursor positions.
+#[test]
+fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
+	fn expect_raw(t: &mut Terminal, start: usize, fragment: &str) {
+		let deadline = Instant::now() + Duration::from_secs(10);
+		loop {
+			t.pump();
+			let raw = String::from_utf8_lossy(&t.seen[start..]);
+			if raw.contains(fragment) { return; }
+			assert!(Instant::now() < deadline, "missing {fragment:?}: {raw:?}");
+			std::thread::sleep(Duration::from_millis(10));
+		}
+	}
+	let history = history_file("colour_edits");
+	let mut t = Terminal::spawn_with(&history, &[("NO_COLOR", "")]);
+	t.prompt();
+	expect_raw(&mut t, 0, "\x1b[1mrnx> \x1b[0m");
+	t.send("le");
+	t.expect("le");
+	let start = t.seen.len();
+	t.send("t");
+	expect_raw(&mut t, start, "\x1b[35mlet\x1b[0m");
+	let start = t.seen.len();
+	t.send("\x03");
+	t.prompt();
+	expect_raw(&mut t, start, "\x1b[1mrnx> \x1b[0m");
+	let raw = String::from_utf8_lossy(&t.seen[start..]);
+	// Redraw/cursor CSI traffic may follow the reset. Only SGR chooses
+	// attributes, so the last SGR, rather than the last escape, must reset.
+	let mut rest = raw.as_ref();
+	let mut last_sgr = None;
+	while let Some(at) = rest.find("\x1b[") {
+		rest = &rest[at + 2..];
+		let Some(end) = rest.bytes().position(|b| (0x40..=0x7e).contains(&b)) else { break; };
+		if rest.as_bytes()[end] == b'm' { last_sgr = Some(&rest[..=end]); }
+		rest = &rest[end + 1..];
+	}
+	assert_eq!(last_sgr, Some("0m"), "{raw:?}");
+	assert!(raw.contains("\x1b[1mrnx> \x1b[0m"), "{raw:?}");
+	t.send(":quit\r");
+	t.wait_exit();
+}
