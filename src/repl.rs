@@ -29,7 +29,7 @@ struct NumberedPrompt {
 impl NumberedPrompt {
 	fn new(number: usize) -> Self {
 		Self {
-			text: format!("[{number}] rnx> "),
+			text: format!("[{number}] > "),
 			shown: Cell::new(false),
 			styled: Cell::new(false),
 		}
@@ -49,8 +49,9 @@ impl rustyline::Prompt for NumberedPrompt {
 /// The session's commands and their one-line descriptions, which are what
 /// `:help` shows: the description lives with the command, not in a second
 /// catalogue.
-pub const COMMANDS: [(&str, &str); 7] = [
-	(":quit", "end the session"),
+pub const COMMANDS: [(&str, &str); 8] = [
+	(":quit", "(:q) end the session"),
+	(":clear", "clear the screen, keeping session state"),
 	(":renumber", "start the prompt count over, keeping everything else"),
 	(
 		":reset",
@@ -79,7 +80,9 @@ impl rustyline::highlight::Highlighter for RnxHelper {
 		Cow::Owned(presentation::highlight(line))
 	}
 	fn highlight_prompt<'b, 's: 'b, 'p: 'b>(&'s self, prompt: &'p str, _: bool) -> Cow<'b, str> {
-		presentation::styled(prompt, presentation::Style::Bold, true)
+		if let Some((number, tail)) = prompt.split_once(']') {
+			Cow::Owned(format!("{}{}", presentation::styled(&format!("{number}]"), presentation::Style::PromptNumber, true), presentation::styled(tail, presentation::Style::Bold, true)))
+		} else { Cow::Borrowed(prompt) }
 	}
 	fn highlight_char(&self, _: &str, _: usize, _: rustyline::highlight::CmdKind) -> bool {
 		true
@@ -159,7 +162,7 @@ fn snapshot(session: &Session, host: &[HostFunction]) -> Names {
 		bindings: session.binding_names(),
 		declarations: session.declaration_names(),
 		host: host.iter().map(|f| f.path.clone()).collect(),
-		commands: COMMANDS.iter().map(|(c, _)| c.to_string()).collect(),
+		commands: COMMANDS.iter().map(|(c, _)| c.to_string()).chain([":q".to_owned()]).collect(),
 	}
 }
 
@@ -231,7 +234,8 @@ fn handle(
 		None => (trimmed, None),
 	};
 	match command {
-		":quit" => return Outcome::Quit,
+		":quit" | ":q" => return Outcome::Quit,
+		":clear" => { crate::terminal::clear(); return Outcome::Continue; },
 		":renumber" => {
 			session.renumber();
 			return Outcome::Continue;
@@ -262,7 +266,7 @@ fn handle(
 					session,
 					host,
 					&COMMANDS,
-					argument,
+					argument.map(|name| if name == ":q" { ":quit" } else { name }),
 					inspect_limits
 				))
 			);
@@ -282,7 +286,7 @@ fn handle(
 			if !crate::runner::is_unit(&value) {
 				if prompt.shown.get() {
 					let marker = format!("[{number}] ");
-					println!("{}{text}", presentation::styled(&marker, presentation::Style::Bold, prompt.styled.get()));
+					println!("{}{text}", presentation::styled(&marker, presentation::Style::PromptNumber, prompt.styled.get()));
 				} else {
 					println!("{text}");
 				}
@@ -297,7 +301,9 @@ pub fn run(
 	context: Context,
 	host: Vec<HostFunction>,
 	http: crate::http::State,
+	splash: bool,
 ) -> crate::Result<()> {
+	let _title = crate::terminal::Title::new("rnx");
 	let config = Config::builder()
 		.color_mode(presentation::editor_mode())
 		.auto_add_history(false)
@@ -319,7 +325,7 @@ pub fn run(
 	}
 	let limits = Limits::default();
 	let inspect_limits = InspectLimits::default();
-	println!("rnx: a Rune session. :help lists the commands, :quit ends it.");
+	if splash { println!("rnx: a Rune session. :help lists the commands, :quit ends it."); }
 	// The reference point, and the first sample, after initialization and
 	// history loading and before the first evaluation is admitted.
 	crate::memory::record_baseline();

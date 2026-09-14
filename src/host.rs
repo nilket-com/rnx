@@ -98,7 +98,7 @@ fn leave(code: i32) -> ! {
 			if code == 0 { 1 } else { code }
 		}
 	};
-	std::process::exit(code);
+	crate::terminal::exit(code);
 }
 
 /// End the script with `code`.

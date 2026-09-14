@@ -21,6 +21,9 @@ impl Terminal {
 	/// Spawn with extra environment, for the accounting gates, which need a
 	/// ceiling of their own and a process of their own.
 	fn spawn_with(history: &std::path::Path, environment: &[(&str, &str)]) -> Self {
+		Self::spawn_args(history, environment, &["repl"])
+	}
+	fn spawn_args(history: &std::path::Path, environment: &[(&str, &str)], args: &[&str]) -> Self {
 		let mut master = 0;
 		let mut slave = 0;
 		let mut size = libc::winsize {
@@ -45,7 +48,7 @@ impl Terminal {
 		let stderr = Stdio::from(slave_fd);
 		let mut command = Command::new(env!("CARGO_BIN_EXE_rnx"));
 		command
-			.arg("repl")
+			.args(args)
 			.env("RNX_HISTORY", history)
 			.env("TERM", "xterm")
 			.stdin(stdin)
@@ -120,7 +123,7 @@ impl Terminal {
 		let deadline = Instant::now() + Duration::from_secs(10);
 		loop {
 			let text = self.pending();
-			if text.ends_with("rnx> ") {
+			if text.ends_with("] > ") {
 				self.cursor = self.seen.len();
 				return;
 			}
@@ -229,7 +232,7 @@ fn gate_1_the_ordinary_session() {
 		std::thread::sleep(Duration::from_millis(200));
 		let text = t.pending();
 		assert!(
-			!text.ends_with("rnx> ") && !text.contains("error"),
+			!text.ends_with("] > ") && !text.contains("error"),
 			"{open:?} was not continued: {text:?}"
 		);
 		t.send(close);
@@ -912,7 +915,7 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 	let history = history_file("colour_edits");
 	let mut t = Terminal::spawn_with(&history, &[("NO_COLOR", "")]);
 	t.prompt();
-	expect_raw(&mut t, 0, "\x1b[1m[1] rnx> \x1b[0m");
+	expect_raw(&mut t, 0, "\x1b[1;36m[1]\x1b[0m\x1b[1m > \x1b[0m");
 	t.send("le");
 	t.expect("le");
 	let start = t.seen.len();
@@ -921,7 +924,7 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 	let start = t.seen.len();
 	t.send("\x03");
 	t.prompt();
-	expect_raw(&mut t, start, "\x1b[1m[1] rnx> \x1b[0m");
+	expect_raw(&mut t, start, "\x1b[1;36m[1]\x1b[0m\x1b[1m > \x1b[0m");
 	let raw = String::from_utf8_lossy(&t.seen[start..]);
 	// Redraw/cursor CSI traffic may follow the reset. Only SGR chooses
 	// attributes, so the last SGR, rather than the last escape, must reset.
@@ -934,7 +937,7 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 		rest = &rest[end + 1..];
 	}
 	assert_eq!(last_sgr, Some("0m"), "{raw:?}");
-	assert!(raw.contains("\x1b[1m[1] rnx> \x1b[0m"), "{raw:?}");
+	assert!(raw.contains("\x1b[1;36m[1]\x1b[0m\x1b[1m > \x1b[0m"), "{raw:?}");
 	t.send(":quit\r");
 	t.wait_exit();
 }
@@ -944,7 +947,7 @@ fn gate_0040_numbers_follow_admission_and_not_editor_or_command_activity() {
 	fn prompt(t: &mut Terminal, number: usize) {
 		t.prompt();
 		assert!(
-			clean(&t.seen).ends_with(&format!("[{number}] rnx> ")),
+			clean(&t.seen).ends_with(&format!("[{number}] > ")),
 			"{}",
 			clean(&t.seen)
 		);
@@ -1042,11 +1045,11 @@ fn gate_0040_a_ceiling_refusal_spends_no_number() {
 		t.send("42\r");
 		t.expect(":reset to continue");
 		t.prompt();
-		assert!(clean(&t.seen).ends_with("[1] rnx> "));
+		assert!(clean(&t.seen).ends_with("[1] > "));
 	}
 	t.send(":renumber\r");
 	t.prompt();
-	assert!(clean(&t.seen).ends_with("[1] rnx> "));
+	assert!(clean(&t.seen).ends_with("[1] > "));
 	t.send(":memory\r");
 	t.expect("tracked live allocation request bytes:");
 	t.prompt();
@@ -1063,12 +1066,51 @@ fn gate_0040_a_result_marker_has_the_prompts_style() {
 	t.expect("[1] 42\n");
 	t.prompt();
 	let raw = String::from_utf8_lossy(&t.seen);
-	assert!(raw.contains("\x1b[1m[1] rnx> \x1b[0m"), "{raw:?}");
+	assert!(raw.contains("\x1b[1;36m[1]\x1b[0m\x1b[1m > \x1b[0m"), "{raw:?}");
 	assert!(
-		raw.contains("\x1b[1m[1] \x1b[0m\x1b[36m42\x1b[0m"),
+		raw.contains("\x1b[1;36m[1] \x1b[0m\x1b[36m42\x1b[0m"),
 		"{raw:?}"
 	);
-	assert!(raw.contains("\x1b[1m[2] rnx> \x1b[0m"), "{raw:?}");
+	assert!(raw.contains("\x1b[1;36m[2]\x1b[0m\x1b[1m > \x1b[0m"), "{raw:?}");
 	t.send(":quit\r");
 	t.wait_exit();
+}
+
+#[test]
+fn gate_0042_clear_and_title_follow_the_real_session_lifetime() {
+    for exit in [":quit\r", ":q\r", "\x04"] {
+        let history = history_file("title");
+        let mut t = Terminal::spawn_args(&history, &[], &["--color=never", "--no-splash", "repl"]);
+        t.prompt();
+        assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[22;2t\x1b]2;rnx\x07"));
+        t.send("let x = 7;\r"); t.prompt();
+        t.send(":clear\r"); t.prompt();
+        assert!(String::from_utf8_lossy(&t.seen).contains("\x1b[2J\x1b[H"));
+        assert!(clean(&t.seen).ends_with("[2] > "));
+        t.send(":vars\r"); t.expect("x: i64 = 7"); t.prompt();
+        t.send("\x03"); t.prompt();
+        assert!(!String::from_utf8_lossy(&t.seen).contains("\x1b[23;2t"));
+        assert!(t.child.try_wait().unwrap().is_none());
+        t.send(exit);
+        let deadline = Instant::now()+Duration::from_secs(10);
+        while t.child.try_wait().unwrap().is_none() { t.pump(); assert!(Instant::now()<deadline); std::thread::sleep(Duration::from_millis(10)); }
+        t.pump();
+        assert_eq!(String::from_utf8_lossy(&t.seen).matches("\x1b[23;2t").count(), 1);
+        assert!(std::fs::read_to_string(history).unwrap().contains(":clear"));
+    }
+}
+#[test]
+fn gate_0042_run_restores_titles_before_explicit_exits() {
+    for source in ["pub fn main(_) { 42 }", "pub fn main(_) { panic!(\"oops\") }", "pub fn main(_) { host::exit(7) }"] {
+        let history = history_file("run_title");
+        let file = history.with_extension("rn");
+        std::fs::write(&file,source).unwrap();
+        let mut t=Terminal::spawn_args(&history,&[], &["run",file.to_str().unwrap()]);
+        let deadline=Instant::now()+Duration::from_secs(10);
+        while t.child.try_wait().unwrap().is_none() {t.pump();assert!(Instant::now()<deadline);std::thread::sleep(Duration::from_millis(10));}
+        t.pump(); let raw=String::from_utf8_lossy(&t.seen);
+        assert!(raw.contains("\x1b]2;rnx "),"{raw:?}");
+        assert_eq!(raw.matches("\x1b[23;2t").count(),1,"{raw:?}");
+        std::fs::remove_file(file).unwrap();
+    }
 }

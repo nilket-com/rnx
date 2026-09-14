@@ -48,11 +48,11 @@ pub fn editor_mode() -> rustyline::ColorMode {
 	}
 }
 #[cfg(not(windows))]
-fn console(terminal: bool, _: bool, _: bool) -> bool {
+pub(crate) fn console(terminal: bool, _: bool, _: bool) -> bool {
 	terminal
 }
 #[cfg(windows)]
-fn console(terminal: bool, stderr: bool, enable: bool) -> bool {
+pub(crate) fn console(terminal: bool, stderr: bool, enable: bool) -> bool {
 	use windows_sys::Win32::System::Console::*;
 	if !terminal || !enable {
 		return terminal;
@@ -78,6 +78,7 @@ pub enum Style {
 	Comment,
 	Error,
 	Caret,
+	PromptNumber,
 }
 impl Style {
 	pub fn sgr(self) -> &'static str {
@@ -89,6 +90,7 @@ impl Style {
 			Self::Comment => "\x1b[2m",
 			Self::Error => "\x1b[1;31m",
 			Self::Caret => "\x1b[31m",
+			Self::PromptNumber => "\x1b[1;36m",
 		}
 	}
 }

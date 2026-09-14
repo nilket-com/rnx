@@ -40,7 +40,7 @@ fn marker_visibility_tracks_the_actual_reader_including_uppercase_unsupported_mo
 		assert!(out.stderr.is_empty());
 		assert_eq!(
 			String::from_utf8(out.stdout).unwrap(),
-			"rnx: a Rune session. :help lists the commands, :quit ends it.\n[1] rnx> [2] rnx> [2] 2\n[3] rnx> [4] rnx> "
+			"rnx: a Rune session. :help lists the commands, :quit ends it.\n[1] > [2] > [2] 2\n[3] > [4] > "
 		);
 	}
 }
@@ -55,19 +55,19 @@ fn renumbering_keeps_history_and_old_origins_while_reset_clears_origins() {
 	assert_eq!(stderr.matches("input 1,").count(), 2, "{stderr}");
 	assert!(stdout.contains("x: i64 = 7"), "{stdout}");
 	assert!(stdout.contains("no bindings;"), "{stdout}");
-	assert!(stdout.contains("session reset\n[1] rnx> "), "{stdout}");
+	assert!(stdout.contains("session reset\n[1] > "), "{stdout}");
 	for line in input.lines().take(4).chain([":renumber"]) {
 		assert!(history.contains(line), "{history}");
 	}
-	let prefix = "[5] rnx> ";
+	let prefix = "[5] > ";
 	let before = stdout
 		.split_once(prefix)
 		.unwrap()
 		.1
-		.split_once("[5] rnx> ")
+		.split_once("[5] > ")
 		.unwrap()
 		.0;
-	let after = stdout.split_once("[1] rnx> ").unwrap().1;
+	let after = stdout.split_once("[1] > ").unwrap().1;
 	// Source preservation is also checked structurally in the session unit
 	// gate; the transcript must contain the exact debug block a second time.
 	assert!(after.contains(before), "{stdout}");
@@ -82,9 +82,9 @@ fn colours_are_separable_and_commands_are_not_marked_as_results() {
 		text = text.replace(sgr, "");
 	}
 	assert_eq!(text.as_bytes(), plain.stdout);
-	assert!(text.contains("[1] 1\n[2] rnx> [1] rnx> [1] 2\n"), "{text}");
+	assert!(text.contains("[1] 1\n[2] > [1] > [1] 2\n"), "{text}");
 	assert!(
-		text.contains("[2] rnx> :renumber: session command\n"),
+		text.contains("[2] > :renumber: session command\n"),
 		"{text}"
 	);
 	assert!(!text.contains("[2] :renumber:"));

@@ -28,6 +28,7 @@ mod repl;
 mod runner;
 mod session;
 mod text;
+mod terminal;
 mod time;
 
 // Installed for the whole process: the ceiling is enforced against what this
@@ -88,23 +89,25 @@ fn main() -> Result<()> {
 		Ok(args) => args,
 		Err(message) => {
 			eprintln!("{}", format::terminal_safe(&message));
-			std::process::exit(2);
+			terminal::exit(2);
 		}
 	};
 	let mut mode = presentation::Mode::Auto;
-	if let Some(flag) = args.first().and_then(|a| a.strip_prefix("--color=")) {
-		mode = match flag {
-			"auto" => presentation::Mode::Auto,
-			"always" => presentation::Mode::Always,
-			"never" => presentation::Mode::Never,
-			_ => {
-				eprintln!(
-					"rnx: --color takes auto, always, or never, not `{}`",
-					format::terminal_safe(flag)
-				);
-				std::process::exit(2);
-			}
-		};
+	let mut splash = true;
+	loop {
+		if args.first().is_some_and(|s| s == "--no-splash") {
+			splash = false;
+		} else if let Some(flag) = args.first().and_then(|a| a.strip_prefix("--color=")) {
+			mode = match flag {
+				"auto" => presentation::Mode::Auto,
+				"always" => presentation::Mode::Always,
+				"never" => presentation::Mode::Never,
+				_ => {
+					eprintln!("rnx: --color takes auto, always, or never, not `{}`", format::terminal_safe(flag));
+					terminal::exit(2);
+				}
+			};
+		} else { break; }
 		args.remove(0);
 	}
 	presentation::initialize(mode);
@@ -181,7 +184,7 @@ fn main() -> Result<()> {
 										runner::cannot_show(&reason)
 									))
 								);
-								std::process::exit(1);
+								terminal::exit(1);
 							}
 						}
 					}
@@ -191,14 +194,14 @@ fn main() -> Result<()> {
 					// without a wrapper; it does not mean unescaped, and it does
 					// not mean unbounded.
 					runner::report_error(&error, Some(&session.fields()));
-					std::process::exit(1);
+					terminal::exit(1);
 				}
 			},
 			Err(failure) => {
 				eprintln!("{}", failure.presented());
 				// 130 is what a shell reports for a process Ctrl-C ended, so a
 				// script around rnx reads an interrupted eval the same way.
-				std::process::exit(if matches!(failure, session::Failure::Interrupted) {
+				terminal::exit(if matches!(failure, session::Failure::Interrupted) {
 					130
 				} else {
 					1
@@ -210,7 +213,7 @@ fn main() -> Result<()> {
 	// A session is what someone typing `rnx` almost always wants, and it works
 	// whether standard input is a terminal or a pipe.
 	if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
-		return repl::run(context, host_functions, http);
+		return repl::run(context, host_functions, http, splash);
 	}
 	if args.first().is_some_and(|s| s == "run") {
 		// Flags are read only before the script path. Everything after the
@@ -252,11 +255,12 @@ fn main() -> Result<()> {
 			break;
 		}
 		let path = rest.first().ok_or("run needs a file")?;
+		let _title = terminal::Title::new(&format!("rnx {path}"));
 		let snapshot: Arc<[String]> = Arc::from(rest[1..].to_vec());
 		let arguments = rune::to_value(snapshot.to_vec())?;
 		env::install(&mut context, snapshot)?;
 		let code = runner::run(&context, path, arguments, debug_source, budget);
-		std::process::exit(code);
+		terminal::exit(code);
 	}
 	// Anything that is not a command says so. Falling through to the
 	// self-check is how a typo used to print a page of diagnostics and exit 0.
@@ -269,7 +273,7 @@ fn main() -> Result<()> {
 			"rnx: `{}` is not a command\n\n{USAGE}",
 			format::terminal_safe(&args[0])
 		);
-		std::process::exit(2);
+		terminal::exit(2);
 	}
 	// The self-check: it asserts what it prints, and calls the process and
 	// session checks, so a broken invariant fails here rather than being

@@ -181,7 +181,7 @@ Input highlighting requires the line editor: terminal stdin and a supported
 terminal type. Redirecting stdout leaves that editor and its redraws active,
 with highlighting off in auto mode and on under always.
 
-A visible prompt is numbered, `[1] rnx> `, and a printed result carries the
+A visible prompt is numbered, `[1] > `, and a printed result carries the
 same marker, `[1] 42`. Unit results stay silent. `:renumber` starts at `[1]`
 again while keeping bindings, declarations, retained source and history;
 `:reset` clears the session and starts numbering over too. Errors from older
@@ -390,3 +390,12 @@ them on rnx's behalf for zone discovery. Separately, reqwest reads `HTTP_PROXY`,
 these interfaces, not every environment read inside the platform or its
 libraries; maintain it manually when dependencies change. Reading a variable
 through `env::` does not change how rnx or its children use it.
+
+Record 0042 adds `:q` as an alias for `:quit`, `:clear` to clear the visible
+screen without clearing bindings or numbering, and `--no-splash` before the
+command to omit the session greeting. Global flags can appear in either order.
+The compact `[n] > ` prompt and result marker share an accent. Clearing and
+window titles require a supported terminal on stdout independently of colour;
+`--color=never` still permits them and `always` never sends them into a pipe.
+Titles are restored on return and explicit exit where the terminal supports a
+title stack; unsupported stacks and abnormal termination may leave the title set.

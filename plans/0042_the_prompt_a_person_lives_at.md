@@ -1,6 +1,7 @@
 # rnx 0042: the prompt a person lives at
 
-Status: proposed 2026-09-14; revised the same day after review. The
+Status: implemented 2026-09-14. Evidence is beside this record; Windows
+execution remains unverified. The
 forty-second record of rnx, and the
 first drawn from using the session rather than testing it. Four small
 things a person reached for and did not find: a short quit, a way to
