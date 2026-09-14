@@ -179,8 +179,20 @@ belongs to the script. Styling preserves rendered text and its bounds;
 script `print!` / `println!` and `host::eprint` remain untouched.
 Input highlighting requires the line editor: terminal stdin and a supported
 terminal type. Redirecting stdout leaves that editor and its redraws active,
-with highlighting off in auto mode and on under always. Numbered prompts
-and a separately resettable count are deferred to the next record.
+with highlighting off in auto mode and on under always.
+
+A visible prompt is numbered, `[1] rnx> `, and a printed result carries the
+same marker, `[1] 42`. Unit results stay silent. `:renumber` starts at `[1]`
+again while keeping bindings, declarations, retained source and history;
+`:reset` clears the session and starts numbering over too. Errors from older
+code say, for example, `input 4 of numbering 1`; current-source errors name
+only their position. Recognised commands, empty or abandoned inputs and
+Ctrl-C while editing do not count. Admitted inputs count even when they fail
+or are interrupted; allocation-ceiling and input-cap refusals do not.
+With ordinary piped input there are no prompts or result markers. Rustyline's
+unsupported-terminal modes (`dumb`, `cons25`, `emacs`, case-insensitively)
+write prompts even for pipes, and now write numbered results there too.
+Script output, colon-command output, and diagnostics do not get result markers.
 
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's

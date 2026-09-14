@@ -26,11 +26,30 @@ const INPUT_CAP: usize = 32 * 1024;
 /// column (1-based, in characters).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Origin {
+	/// Stable source index, never a display number.
 	pub input: usize,
+	number: InputNumber,
 	pub line: usize,
 	pub column: usize,
 	/// The text of that line, for the diagnostic.
 	pub text: String,
+}
+
+/// A presentation label resolved against the current numbering. Source maps
+/// and retained declarations never contain this type.
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct InputNumber {
+	position: usize,
+	older_numbering: Option<usize>,
+}
+impl std::fmt::Display for InputNumber {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", self.position)?;
+		if let Some(numbering) = self.older_numbering {
+			write!(f, " of numbering {numbering}")?;
+		}
+		Ok(())
+	}
 }
 
 #[derive(Debug)]
@@ -127,7 +146,7 @@ fn located(
 			writeln!(
 				f,
 				"{kind} at input {}, line {}, column {}: {message}",
-				o.input, o.line, o.column
+				o.number, o.line, o.column
 			)?;
 			writeln!(f, "  {}", crate::format::terminal_safe(&o.text))?;
 			let prefix: String = o.text.chars().take(o.column.saturating_sub(1)).collect();
@@ -279,6 +298,9 @@ pub struct Session {
 	/// every fallible step happens before anything is committed.
 	state: BTreeMap<String, Value>,
 	inputs: Vec<String>,
+	/// Number of admitted inputs before each :renumber. The initial zero
+	/// boundary is implicit, so ordinary sessions allocate nothing here.
+	numberings: Vec<usize>,
 	units: Vec<Retained>,
 	last_generated: String,
 	ceiling: usize,
@@ -312,6 +334,7 @@ impl Session {
 			names: BTreeSet::new(),
 			state: BTreeMap::new(),
 			inputs: Vec::new(),
+			numberings: Vec::new(),
 			units: Vec::new(),
 			last_generated: String::new(),
 			ceiling,
@@ -320,6 +343,25 @@ impl Session {
 			runtime: super::execute::Runtime::new()?,
 			http: crate::http::State::default(),
 		})
+	}
+	/// Next admitted input's display position. Refusals before admission do
+	/// not grow `inputs`, so the same number remains on the next prompt.
+	pub fn next_number(&self) -> usize {
+		self.inputs.len() - self.numberings.last().copied().unwrap_or(0) + 1
+	}
+	pub fn renumber(&mut self) {
+		self.numberings.push(self.inputs.len());
+	}
+	fn input_number(&self, index: usize) -> InputNumber {
+		// Strictly less: a boundary counts inputs already admitted. Repeated
+		// boundaries select the LAST numbering for the next input, without
+		// changing the numbering any older source belongs to.
+		let epoch = self.numberings.partition_point(|&boundary| boundary < index);
+		let base = epoch.checked_sub(1).map_or(0, |i| self.numberings[i]);
+		InputNumber {
+			position: index - base,
+			older_numbering: (epoch != self.numberings.len()).then_some(epoch + 1),
+		}
 	}
 	/// The generated source of the most recent input, for `:debug`.
 	pub fn last_generated(&self) -> &str {
@@ -351,6 +393,7 @@ impl Session {
 		self.names.clear();
 		self.state.clear();
 		self.inputs.clear();
+		self.numberings.clear();
 		self.units.clear();
 		self.last_generated.clear();
 		self.over_ceiling = false;
@@ -854,7 +897,7 @@ impl Session {
 		match self.origin(input, offset) {
 			Some(o) => Failure::Refused(format!(
 				"{message} (input {}, line {}, column {})",
-				o.input, o.line, o.column
+				o.number, o.line, o.column
 			)),
 			None => Failure::Refused(message.to_owned()),
 		}
@@ -865,6 +908,7 @@ impl Session {
 		let (line, column, line_text) = position(text, offset);
 		Some(Origin {
 			input,
+			number: self.input_number(input),
 			line,
 			column,
 			text: line_text,
@@ -1783,5 +1827,108 @@ mod position_tests {
 	#[test]
 	fn the_first_character_is_line_one_column_one() {
 		assert_eq!(position("abc", 0), (1, 1, "abc".to_owned()));
+	}
+}
+
+#[cfg(test)]
+mod numbering_tests {
+	use super::*;
+	fn session() -> Session {
+		Session::new(Context::with_default_modules().unwrap()).unwrap()
+	}
+	#[test]
+	fn renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering() {
+		let mut s = session();
+		for text in [
+			"let x = 7;",
+			"let v = [x];",
+			"fn kept(n) { n + 1 }",
+			"let c = |v| v.missing_method();",
+		] {
+			s.eval(text).unwrap();
+		}
+		let sources = s.inputs.clone();
+		let generated = s.last_generated().to_owned();
+		let retained = s.retained_bytes();
+		s.renumber();
+		assert_eq!(s.next_number(), 1);
+		assert_eq!(s.inputs, sources);
+		assert_eq!(s.last_generated(), generated);
+		assert_eq!(s.retained_bytes(), retained);
+		assert!(s.declaration("kept").is_some());
+		assert_eq!(
+			crate::format::render(
+				&s.binding("v").unwrap(),
+				None,
+				&crate::format::Limits::default()
+			),
+			"[7]"
+		);
+		let failure = s.eval("c(1)").unwrap_err();
+		assert!(
+			failure.to_string().contains("input 4 of numbering 1"),
+			"{failure}"
+		);
+		if let Failure::Runtime {
+			origin: Some(o), ..
+		} = failure
+		{
+			assert_eq!(o.input, 4, "storage index remains unchanged");
+		} else {
+			panic!("expected located runtime error");
+		}
+		let failure = s.eval("let x = ;").unwrap_err();
+		assert!(failure.to_string().contains("input 2, "), "{failure}");
+		assert!(!failure.to_string().contains("numbering"));
+	}
+	#[test]
+	fn repeated_boundaries_and_three_generations_do_not_relabel_old_sources() {
+		let mut s = session();
+		s.eval("let a = |v| v.missing_method();").unwrap();
+		s.renumber();
+		s.eval("let b = |v| v.missing_method();").unwrap();
+		s.renumber();
+		s.eval("let c = |v| v.missing_method();").unwrap();
+		for (call, label) in [
+			("a(1)", "input 1 of numbering 1"),
+			("b(1)", "input 1 of numbering 2"),
+			("c(1)", "input 1,"),
+		] {
+			let e = s.eval(call).unwrap_err();
+			assert!(e.to_string().contains(label), "{e}");
+		}
+		s.renumber();
+		s.renumber();
+		assert_eq!(s.next_number(), 1);
+		let e = s.eval("let broken = ;").unwrap_err();
+		assert!(e.to_string().contains("input 1,"), "{e}");
+		assert!(!e.to_string().contains("numbering"));
+		let e = s.eval("c(1)").unwrap_err();
+		assert!(e.to_string().contains("input 1 of numbering 3"), "{e}");
+		s.reset();
+		assert_eq!(s.next_number(), 1);
+		assert_eq!(s.binding_count(), 0);
+		assert!(s.numberings.is_empty());
+		let e = s.eval("a(1)").unwrap_err();
+		assert!(e.to_string().contains("input 1,"), "{e}");
+		assert!(!e.to_string().contains("numbering"));
+	}
+	#[test]
+	fn admission_not_success_spends_the_next_number() {
+		let mut s = session();
+		s.renumber();
+		s.renumber();
+		let e = s.eval(&"x".repeat(INPUT_CAP + 1)).unwrap_err();
+		assert!(matches!(e, Failure::Refused(_)));
+		assert_eq!(s.next_number(), 1);
+		s.over_ceiling = true;
+		assert!(matches!(s.eval("1"), Err(Failure::OverCeiling { .. })));
+		assert_eq!(s.next_number(), 1);
+		s.over_ceiling = false;
+		for text in ["()", "let x = 1;", ":bogus", "let broken = ;"] {
+			let before = s.next_number();
+			let _ = s.eval(text);
+			assert_eq!(s.next_number(), before + 1);
+		}
 	}
 }

@@ -13,17 +13,45 @@ use rustyline::line_buffer::LineBuffer;
 use rustyline::validate::{ValidationContext, ValidationResult, Validator};
 use rustyline::{Changeset, CompletionType, Config, Editor, Helper, Hinter};
 use std::borrow::Cow;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::path::PathBuf;
 use std::rc::Rc;
 
-const PROMPT: &str = "rnx> ";
+/// Observe the prompt requests made by rustyline's chosen reader. The direct
+/// ordinary-pipe path never asks for it; unsupported terminals ask for raw,
+/// and the editor asks for styled only when its colour policy allows that.
+/// This keeps result markers coupled to the actual reader on both platforms.
+struct NumberedPrompt {
+	text: String,
+	shown: Cell<bool>,
+	styled: Cell<bool>,
+}
+impl NumberedPrompt {
+	fn new(number: usize) -> Self {
+		Self {
+			text: format!("[{number}] rnx> "),
+			shown: Cell::new(false),
+			styled: Cell::new(false),
+		}
+	}
+}
+impl rustyline::Prompt for NumberedPrompt {
+	fn raw(&self) -> &str {
+		self.shown.set(true);
+		&self.text
+	}
+	fn styled(&self) -> &str {
+		self.styled.set(true);
+		self.raw()
+	}
+}
 
 /// The session's commands and their one-line descriptions, which are what
 /// `:help` shows: the description lives with the command, not in a second
 /// catalogue.
-pub const COMMANDS: [(&str, &str); 6] = [
+pub const COMMANDS: [(&str, &str); 7] = [
 	(":quit", "end the session"),
+	(":renumber", "start the prompt count over, keeping everything else"),
 	(
 		":reset",
 		"empty the session: bindings, declarations, and retained units",
@@ -190,6 +218,7 @@ fn handle(
 	input: &str,
 	limits: &Limits,
 	inspect_limits: &InspectLimits,
+	prompt: &NumberedPrompt,
 ) -> Outcome {
 	if abandoned(input) {
 		println!("(input abandoned; it is in history)");
@@ -203,6 +232,10 @@ fn handle(
 	};
 	match command {
 		":quit" => return Outcome::Quit,
+		":renumber" => {
+			session.renumber();
+			return Outcome::Continue;
+		}
 		":reset" => {
 			session.reset();
 			println!("session reset");
@@ -237,6 +270,7 @@ fn handle(
 		}
 		_ => {}
 	}
+	let number = session.next_number();
 	match session.eval(input) {
 		Ok(value) => {
 			let text = render_styled(
@@ -246,7 +280,12 @@ fn handle(
 				presentation::stdout(),
 			);
 			if !crate::runner::is_unit(&value) {
-				println!("{text}");
+				if prompt.shown.get() {
+					let marker = format!("[{number}] ");
+					println!("{}{text}", presentation::styled(&marker, presentation::Style::Bold, prompt.styled.get()));
+				} else {
+					println!("{text}");
+				}
 			}
 		}
 		Err(failure) => eprintln!("{}", failure.presented()),
@@ -286,7 +325,8 @@ pub fn run(
 	crate::memory::record_baseline();
 	session.sample();
 	loop {
-		let input = match editor.readline(PROMPT) {
+		let prompt = NumberedPrompt::new(session.next_number());
+		let input = match editor.readline(&prompt) {
 			Ok(line) => line,
 			Err(ReadlineError::Interrupted) => {
 				session.cancel_http();
@@ -302,11 +342,12 @@ pub fn run(
 		if let Some(path) = &history {
 			let _ = editor.append_history(path);
 		}
-		let outcome = handle(&mut session, &host, &input, &limits, &inspect_limits);
+		let outcome = handle(&mut session, &host, &input, &limits, &inspect_limits, &prompt);
 		// The input buffer is disposable too, and the record excludes it from
 		// the sample, so it goes before the sample rather than at the end of
 		// the iteration.
 		drop(input);
+		drop(prompt);
 		// Everything else disposable the input made is gone by here. The completion
 		// snapshot is refreshed first, because it is state the session keeps,
 		// and then one sample covers this command, whichever kind it was: an

@@ -912,7 +912,7 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 	let history = history_file("colour_edits");
 	let mut t = Terminal::spawn_with(&history, &[("NO_COLOR", "")]);
 	t.prompt();
-	expect_raw(&mut t, 0, "\x1b[1mrnx> \x1b[0m");
+	expect_raw(&mut t, 0, "\x1b[1m[1] rnx> \x1b[0m");
 	t.send("le");
 	t.expect("le");
 	let start = t.seen.len();
@@ -921,7 +921,7 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 	let start = t.seen.len();
 	t.send("\x03");
 	t.prompt();
-	expect_raw(&mut t, start, "\x1b[1mrnx> \x1b[0m");
+	expect_raw(&mut t, start, "\x1b[1m[1] rnx> \x1b[0m");
 	let raw = String::from_utf8_lossy(&t.seen[start..]);
 	// Redraw/cursor CSI traffic may follow the reset. Only SGR chooses
 	// attributes, so the last SGR, rather than the last escape, must reset.
@@ -934,7 +934,141 @@ fn gate_0039_prompt_edits_and_cancellation_carry_balanced_styles() {
 		rest = &rest[end + 1..];
 	}
 	assert_eq!(last_sgr, Some("0m"), "{raw:?}");
-	assert!(raw.contains("\x1b[1mrnx> \x1b[0m"), "{raw:?}");
+	assert!(raw.contains("\x1b[1m[1] rnx> \x1b[0m"), "{raw:?}");
+	t.send(":quit\r");
+	t.wait_exit();
+}
+
+#[test]
+fn gate_0040_numbers_follow_admission_and_not_editor_or_command_activity() {
+	fn prompt(t: &mut Terminal, number: usize) {
+		t.prompt();
+		assert!(
+			clean(&t.seen).ends_with(&format!("[{number}] rnx> ")),
+			"{}",
+			clean(&t.seen)
+		);
+	}
+	let history = history_file("numbering_admission");
+	let mut t = Terminal::spawn_with(&history, &[("NO_COLOR", "1")]);
+	prompt(&mut t, 1);
+	t.send("\r");
+	prompt(&mut t, 1);
+	t.send(":vars\r");
+	t.expect("no bindings;");
+	prompt(&mut t, 1);
+	t.send(":bogus\r");
+	t.expect("input 1,");
+	prompt(&mut t, 2);
+	t.send("let bad = ;\r");
+	t.expect("input 2,");
+	prompt(&mut t, 3);
+	let start = t.seen.len();
+	t.send("()\r");
+	prompt(&mut t, 4);
+	assert!(!clean(&t.seen[start..]).contains("\n[3] ()\n"));
+	t.send("let x = 1;\r");
+	prompt(&mut t, 5);
+	t.send("(\r");
+	t.send("x + 1\r)\r");
+	t.expect("[5] 2\n");
+	prompt(&mut t, 6);
+	t.send("\"unfinished\r\r\r");
+	t.expect("(input abandoned;");
+	prompt(&mut t, 6);
+	t.send("let half");
+	t.expect("let half");
+	t.send("\x03");
+	prompt(&mut t, 6);
+	t.send("println!(\"entered loop\"); loop {}\r");
+	t.expect("entered loop\n");
+	t.send("\x03");
+	t.expect("interrupted");
+	prompt(&mut t, 7);
+	// This gate deliberately exceeds the session cap. The existing small-
+	// input helper uses write_all on a nonblocking PTY, so feed and drain
+	// the larger paste under a deadline instead of assuming it fits.
+	let paste_start = t.seen.len();
+	let paste = format!("\x1b[200~//{}\x1b[201~\r", "x".repeat(32770));
+	let mut remaining = paste.as_bytes();
+	let deadline = Instant::now() + Duration::from_secs(10);
+	while !remaining.is_empty() {
+		match t.master.write(remaining) {
+			Ok(0) => panic!("PTY closed during paste"),
+			Ok(n) => remaining = &remaining[n..],
+			Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+			Err(e) => panic!("PTY paste: {e}"),
+		}
+		t.pump();
+		assert!(Instant::now() < deadline, "PTY paste timed out");
+		if !remaining.is_empty() {
+			std::thread::sleep(Duration::from_millis(1));
+		}
+	}
+	prompt(&mut t, 7);
+	assert!(clean(&t.seen[paste_start..]).contains("refused: input exceeds 32768 bytes"));
+	t.send(":renumber\r");
+	prompt(&mut t, 1);
+	t.send("x\r");
+	t.expect("[1] 1\n");
+	prompt(&mut t, 2);
+	t.send(":renumber\r");
+	prompt(&mut t, 1);
+	t.send(":renumber\r");
+	prompt(&mut t, 1);
+	t.send("let bad = ;\r");
+	t.expect("input 1,");
+	prompt(&mut t, 2);
+	t.send(":reset\r");
+	t.expect("session reset");
+	prompt(&mut t, 1);
+	t.send(":vars\r");
+	t.expect("no bindings;");
+	prompt(&mut t, 1);
+	t.send(":quit\r");
+	t.wait_exit();
+	let saved = std::fs::read_to_string(history).unwrap();
+	assert!(saved.contains("let x = 1;"));
+	assert!(saved.contains(":renumber"));
+}
+
+#[test]
+#[cfg(feature = "count-allocations")]
+fn gate_0040_a_ceiling_refusal_spends_no_number() {
+	let history = history_file("numbering_ceiling");
+	let mut t = Terminal::spawn_with(&history, &[("RNX_MEMORY_CEILING", "1"), ("NO_COLOR", "1")]);
+	t.prompt();
+	for _ in 0..2 {
+		t.send("42\r");
+		t.expect(":reset to continue");
+		t.prompt();
+		assert!(clean(&t.seen).ends_with("[1] rnx> "));
+	}
+	t.send(":renumber\r");
+	t.prompt();
+	assert!(clean(&t.seen).ends_with("[1] rnx> "));
+	t.send(":memory\r");
+	t.expect("tracked live allocation request bytes:");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}
+
+#[test]
+fn gate_0040_a_result_marker_has_the_prompts_style() {
+	let history = history_file("numbering_styles");
+	let mut t = Terminal::spawn_with(&history, &[("NO_COLOR", "")]);
+	t.prompt();
+	t.send("42\r");
+	t.expect("[1] 42\n");
+	t.prompt();
+	let raw = String::from_utf8_lossy(&t.seen);
+	assert!(raw.contains("\x1b[1m[1] rnx> \x1b[0m"), "{raw:?}");
+	assert!(
+		raw.contains("\x1b[1m[1] \x1b[0m\x1b[36m42\x1b[0m"),
+		"{raw:?}"
+	);
+	assert!(raw.contains("\x1b[1m[2] rnx> \x1b[0m"), "{raw:?}");
 	t.send(":quit\r");
 	t.wait_exit();
 }

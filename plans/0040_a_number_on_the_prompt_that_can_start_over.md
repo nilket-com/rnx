@@ -1,6 +1,7 @@
 # rnx 0040: a number on the prompt, that can start over
 
-Status: proposed 2026-09-14; revised the same day after review. The
+Status: implemented 2026-09-14; Linux gates pass, Windows execution remains
+unverified. Evidence is beside this record. The
 fortieth record of rnx, and the second
 about how a session reads. It puts a number on the prompt and the same
 number on the result, so that a person scrolling back can tell which
@@ -52,7 +53,7 @@ terminal mode, which writes the prompt plainly before each line
 whatever standard input is. Measured: `TERM=dumb` with a piped standard
 input prints `rnx> ` prompts. Outside those two, with standard input a
 pipe, there is no prompt at all. So a change to the prompt changes
-nothing a piped test sees unless that test set `TERM=dumb`, and record
+nothing a piped test sees unless that test selected unsupported-terminal mode, and record
 0039's rule that a pipe sees nothing new holds on the input side with
 that one stated exclusion. The output side is where the decision is.
 
@@ -87,7 +88,7 @@ the three names above compared case-insensitively, so that the marker
 and the prompt can never disagree about the mode. With standard input a pipe and an ordinary `TERM`
 there is no prompt and there is no marker, and that is why every such
 piped transcript is byte-for-byte what it was: record 0039's promise,
-kept, with dumb mode as the stated exclusion on both sides.
+kept, with unsupported-terminal mode as the stated exclusion on both sides.
 
 Only a printed value gets a marker, and what is printed does not change.
 Today an input whose value is unit — `()`, or a declaration such as
@@ -213,9 +214,9 @@ keeping everything else". Completion of colon commands includes it.
    advances it.
 3. **Markers.** `[2] 2` beside a value; nothing at all for `()` and for a
    declaration, as today; no marker on a diagnostic, on `:vars` output,
-   on the banner, or on the reset and abandonment messages; a value
-   rendered over several lines is prefixed on its first line only and
-   otherwise byte-identical to its unprefixed rendering; with standard
+   on the banner, or on the reset and abandonment messages; source review establishes that the prefix is emitted once before the
+   complete rendering, so any subsequent lines would remain untouched
+   (the current renderer produces only single-line values); with standard
    input a pipe and an ordinary `TERM`, no marker anywhere; with
    `TERM=dumb` and a pipe, prompt and marker both appear, and so they
    do with `TERM=EMACS`, to hold the predicate to rustyline's.
