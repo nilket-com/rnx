@@ -1,11 +1,11 @@
-# rnx 0048 evidence: the client still sends PING
+# rnx 0048 evidence: the bounded heartbeat extension passes
 
 Measured by Codex on nano/Linux on 2026-09-15. Plan `1f689be` preceded the
 prototype. Sources, lockfile, tests, wire traces and environment/build data are
 in rnx-bench **ae74699**, `probes/jupyter-zmtp` and
 `results/jupyter-zmtp-0048/README.md`. This is a prototype, not a kernel.
 
-## Stop condition
+## Original stop condition
 
 The server sends a ZMTP 3.0 greeting. The pinned Python client (pyzmq 27.2.0,
 libzmq 4.3.5) sends a 3.1 greeting and completes NULL/READY. Its subscription
@@ -57,3 +57,65 @@ full-rnx-suite rerun, notebook installation or screen evidence under this record
 Review the bounded heartbeat-command extension versus a different supported-client
 contract. Neither is chosen here. The prototype is not marked implemented or
 adopted, and record 0047's integration remains stopped.
+
+
+## Accepted extension and completed prototype gates
+
+Measured 2026-09-15 after plan revision `29f6fda`. Current implementation and
+results are in rnx-bench **00fc828**, `probes/jupyter-zmtp` and
+`results/jupyter-zmtp-0048-extension/README.md`. The earlier sections describe
+the original failed candidate; the extension supersedes their pending decision.
+
+PING accepts 7–23 body bytes and PONG 5–21, including the length byte and name.
+Context is at most 16 bytes and TTL is two bytes. That corrects the proposed
+22-byte-after-name wording before implementation. PONG uses the same bounded
+connection writer. Valid inbound PONG and TTL are ignored. Heartbeats do not
+reset a multipart deadline or impose a five-second lifetime on an idle connection.
+Other 3.1 commands remain unsupported and the greeting still advertises 3.0.
+
+Both complete wire-fixture passes exit zero with client heartbeats enabled.
+Eleven Rust tests pass, including exact/excess capacities, subscription counters,
+atomic fanout failure, current-plus-queued write credit, fragmented/truncated
+frames and the five-second writer deadline despite partial progress. Formatting
+and the Windows MSVC type check pass. No Windows execution is inferred.
+
+The paced PUB gate sends 1000 messages with a requested 2 ms producer pause.
+The stalled subscriber retires, the reader keeps generation 32, and all 1000
+messages plus a final marker arrive. Control calls during pending publication
+remain below the 500 ms gate (at most 0.994 ms in confirmation). This is continuity
+under the stated load, not arbitrary-rate lossless delivery. The earlier unpaced
+flood is retained as an inconclusive result rather than counted as this gate.
+
+The aggregate wire test occupies all forty slots with 40 MiB of partial payloads,
+refuses excess connections and repeats cleanup three times. Confirmation live
+requested allocation returns to 116696 bytes after each cycle; while full it
+is about 42.3 million bytes, with the largest request exactly 1 MiB. RSS is
+sampled separately. This is neither a 40 MiB process ceiling nor a measurement
+of allocator-internal size classes. Independent System-allocator counters,
+wire traces and the source ownership accounting are preserved together.
+
+Two completion findings were corrected. Payload counters and allocator totals
+were sampled at different instants, so the fixture now awaits both quiescence
+conditions within its unchanged five-second bound. The failed early assertion
+is preserved. Also, connection permits previously could drop before completed
+JoinSet records were collected. Permits now stay in a listener-owned bounded
+map until joining, bounding completed metadata as well as running connections.
+
+A blocked 250499-byte reply is not delivered to a reconnected peer with the same
+identity. Shutdown of a blocked writer completes in about 4.4 ms in confirmation.
+Other gates establish greeting, READY, header, body and multipart pending states
+before stopping. Final snapshots show zero connection/route/payload/publication
+credits. The 64-message inbound queue ceiling is satisfied structurally: the
+prototype has no additional input queue and retains at most one message per
+connection, eight per endpoint. Integration must preserve its ownership bounds
+if it introduces another queue.
+
+The evidence map covers the remaining numerical endpoints and failure modes.
+The clean offline build took 5.35 seconds; local signed-echo samples averaged
+about 0.433 ms in confirmation. These are fixture observations, not kernel costs
+or a speedup claim. Source/binary hashes, raw exits, versions, package licence
+declarations and the complete reproduction script are committed.
+
+No root-rnx source or dependency changed, so its full suites were not rerun.
+There is no kernel installation, JupyterLab capture or production process change.
+0048 is ready for review; adoption and notebook acceptance remain 0047's work.

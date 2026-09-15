@@ -1,7 +1,7 @@
 # rnx 0048: a bounded transport before a notebook
 
-Status: heartbeat extension accepted 2026-09-15 after the prototype reached
-the command-compatibility stop. Remaining gates still required before adoption. The forty-eighth
+Status: prototype gates measured 2026-09-15 after the accepted heartbeat
+extension. Ready for review; not yet adopted by record 0047. The forty-eighth
 record authorizes a
 standalone transport prototype and evidence, not a kernel implementation or
 an automatic replacement of record 0047's transport decision. Review of these
@@ -24,7 +24,7 @@ decision, but is not silently substituted for a bound. This record prices the
 owned implementation by building and testing a prototype first. No line-count
 or delivery-date estimate is an acceptance argument.
 
-## Prototype outcome
+## Initial prototype outcome (superseded by the extension below)
 
 The prototype and traces are in rnx-bench `ae74699`, under `probes/jupyter-zmtp`
 and `results/jupyter-zmtp-0048`. Plan `1f689be` preceded it. The heartbeat-enabled
@@ -42,6 +42,30 @@ continued service to the reading peer. The evidence names the remaining work.
 
 No PING/PONG support or other 3.1 extension was added after this finding. Review
 must decide the supported command scope before continuation; 0047 stays stopped.
+
+## Extended prototype outcome
+
+Plan revision `29f6fda` preceded the extension. rnx-bench `00fc828` carries the
+implementation and final evidence in `results/jupyter-zmtp-0048-extension`.
+Both complete fixture passes succeed with client heartbeat options enabled;
+eleven Rust tests, formatting and Windows type checking pass. Windows execution
+and the kernel/notebook acceptance gates are not claimed here.
+
+The paced publication fixture retains the reader's original connection generation,
+delivers all 1000 messages plus a final marker, and proves the stalled subscriber
+has retired. Control and heartbeat are exercised while publication is pending.
+The forty-connection allocation test holds 40 MiB and recovers over three cycles.
+Wire tests also cover old pending replies across identity reuse and shutdown in
+partial reader/writer states. Unit tests cover exact/excess capacities, atomic
+fanout failure and the writer deadline despite partial progress. The evidence
+maps each bound to wire tests, unit tests or a tighter structural limit.
+
+Admission permits now remain with the listener until each task record is joined,
+so completed-task metadata cannot accumulate outside the eight-slot limit.
+Allocator recovery waits for quiescence as well as zero payload counters, because
+those observations are not one atomic snapshot. Both corrections are documented
+with their evidence. No further transport scope was added; 0047 still requires
+a reviewed integration decision before using this prototype.
 
 ## Decision
 
