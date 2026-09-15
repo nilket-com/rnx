@@ -1,6 +1,7 @@
 # rnx 0047: a notebook cell over the worker
 
-Status: proposed 2026-09-14. The forty-seventh record, following the accepted
+Status: accepted for probes 2026-09-14; probes completed the same day and
+implementation stopped at the transport and containment conditions. The forty-seventh record, following the accepted
 worker in 0046. This is the first usable Jupyter kernel: installation, execution,
 text output, errors, interruption and restart. Completion, inspection, rich
 media and interactive stdin are later records. No kernel implementation has
@@ -32,6 +33,27 @@ Normative references checked 2026-09-14:
 - [Kernel construction and installation](https://jupyter-client.readthedocs.io/en/stable/kernels.html)
   describes connection files and kernelspecs. Installation will delegate directory
   selection to Jupyter instead of copying evcxr's directory-discovery code.
+
+## Probe outcome: implementation has not started
+
+The two probes and their pinned environments are committed in rnx-bench at
+`1a1fc7a`, under `probes/jupyter-transport`, `probes/jupyter-containment` and
+`results/jupyter-0047`. See the evidence file beside this record.
+
+Both stop conditions were reached. zeromq 0.6.0 requests an allocation of about
+64 MiB from a nine-byte frame-length header before receiving any body, so the
+application's 1 MiB check cannot enforce the transport bound. The child deadline
+is polled by the worker's supervisor; killing the worker removes that enforcement.
+A child with a two-second requested deadline remains alive 2.5 seconds after a
+hard worker kill. An escaped setsid descendant survives cooperative interruption
+as well. All fixture survivors were explicitly killed and reaped.
+
+The suggestion that surviving children retain a 90-second bound is therefore
+not adopted. That maximum constrains the live supervisor's requested wait, not
+an OS timer inherited by the child. Sending SIGINT before a hard kill does not
+prove cleanup ran. These findings require reviewed revisions to decisions 1/6
+and 5 before kernel implementation; this record does not silently choose a new
+transport, introduce containment, or weaken the promised bounds.
 
 ## Decision
 
