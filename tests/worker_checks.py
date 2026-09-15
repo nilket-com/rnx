@@ -78,6 +78,9 @@ def basic():
             check(run("x")["failure"]["category"] == "compile")
             check(run("io::stdin()?")["failure"] is not None)
             check(run("let y=9;")["input"] == 3)
+            for module in ["mod a;", "mod a { pub fn value() { 42 } }"]:
+                failed = run(module)["failure"]
+                check("modules, imports, macro declarations, and impl blocks work in files" in failed["diagnostic"], failed)
             w.begin(op="shutdown")
             r, _ = w.settled()
             check(r["failure"] is None)

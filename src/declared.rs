@@ -55,15 +55,6 @@ impl Fields {
 /// the top level, inside a module, or inside a function's body. A file that
 /// does not parse yields nothing rather than failing; the compiler is what
 /// reports that, and it reports it better.
-pub fn in_file(text: &str) -> Fields {
-	let mut fields = Fields::default();
-	into_fields(text, &mut fields);
-	fields
-}
-
-/// The same, collecting into a table that already holds candidates. This is
-/// the one place a declaration becomes a candidate, so a session and a file
-/// cannot come to different conclusions about the same text.
 pub fn into_fields(text: &str, fields: &mut Fields) {
 	let Ok(file) = parse_all::<ast::File>(text, SourceId::empty(), false) else {
 		return;

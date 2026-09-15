@@ -1,12 +1,11 @@
 # rnx 0050: a program is more than one file
 
-Status: proposed 2026-09-15, drafted by Claude; revised the same day after
-Codex's review (loader cannot be wrapped; method naming, returned-value
-rendering and the allowance gate strengthened). For review before
-implementation. The fiftieth record is step one of the extensibility
-sequence agreed on 2026-09-15: local file modules for `rnx run`. It chooses
-no package search path, registry or dependency syntax; those are step five.
-No implementation or measurement is claimed by this draft.
+Status: implemented 2026-09-15. Planned in `e6c56cd`, after Claude's
+proposal and Codex's review. Implementation clarifies the private Rune error
+and source-text APIs below; the evidence file records the gates and costs.
+The fiftieth record is step one of the agreed extensibility sequence: local
+file modules for `rnx run`. It chooses no package search path, registry or
+dependency syntax; those are step five.
 
 ## Context
 
@@ -116,6 +115,13 @@ must collect candidates from every loaded source, still verifying each
 against the value as today, so a struct or a named enum variant declared
 in a module renders with its names.
 
+Rune also keeps the source-text accessor private. The loader retains the
+bounded read beside Rune's source; diagnostics resolve the actual source
+id through `Sources` and use its path to find that snapshot. Load order is
+not assumed to be source-id order: a duplicate declaration can load without
+insertion. If repeated reads of one path disagree, attribution is refused
+rather than guessed. No diagnostic rereads a file from disk.
+
 Paths print as recorded, so a program run as `rnx run app/main.rn` reports
 `app/a/b.rn`, and one run by absolute path reports absolute paths. This is
 the entry file's existing behaviour extended to its modules; no
@@ -142,9 +148,12 @@ between choosing and reading, so it cannot be wrapped. rnx therefore ships
 its own small `SourceLoader` that reproduces the pinned 0.14.2 candidate
 rule exactly: pop the file name off the root, push every component of the
 item path, refuse a non-string component, try `mod.rn` then `.rn`, accept
-the first that `is_file()`, and raise Rune's own `ModNotFound { path }`
-with the extensionless base, as Rune does, because Rune's formatter appends
-`.rn` itself; passing the candidate would print `name.rn.rn`. A metadata
+the first that `is_file()`, and report the missing-module message using the extensionless base.
+Implementation source review found `ErrorKind::ModNotFound` crate-private
+as well: the public `compile::Error::msg` constructor carries the exact
+text of Rune's formatter, which appends `.rn`; passing the candidate would
+print `name.rn.rn`. The comparison gate checks the message and location,
+not equality of the private error variant. A metadata
 size check before opening is only an optional early refusal: a file can
 grow after the check, and some files report a size smaller than their
 contents. The bound is the read itself, limited to the remaining allowance

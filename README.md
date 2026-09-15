@@ -44,6 +44,35 @@ goes to standard error and the script's own output to standard output.
 `--debug-source`, before the path, also prints the compiled source; anything
 after the path is the script's argument.
 
+A file may load other Rune files with `mod name;` and use their public
+items. Lookup follows Rune 0.14.2's layout: start at the entry file's
+directory, append the module's full item path, then prefer `mod.rn` over
+`.rn`. For example:
+
+```text
+app/main.rn                  mod a; mod inline { pub mod deep; }
+app/a.rn                     pub mod b;
+app/a/b.rn                   // a::b, not app/b.rn
+app/inline/deep.rn            pub mod leaf;
+app/inline/deep/leaf.rn       // inline::deep::leaf
+app/c/mod.rn                 // preferred to app/c.rn for mod c;
+```
+
+The executable fixture at `tests/fixtures/modules/mixed` checks this layout
+against Rune's loader. A relative entry path resolves against the working
+directory; module lookup adds no working-directory search. Symlinks are
+followed. This is local source loading, with no package search path or
+manifest. Eval, sessions and notebook cells still refuse module declarations;
+settings still cannot load files.
+
+The entry and loaded modules share a new **8 MiB source allowance**, measured
+in bytes. Reads stop at the remaining allowance plus one detection byte,
+which is discarded on refusal; the error names the crossing file. This is a
+source-size limit, not a bound on compilation time or total process memory.
+Compile and runtime errors name the file that failed, and `--debug-source`
+prints each loaded source under its own path header. Returned structs and
+named variants retain their field names across files.
+
 `process::run(program, args, options)` runs a child and refuses output that is not UTF-8, naming the
 stream rather than handing back a plausible string with the evidence
 replaced. `process::run_bytes(program, args, options)` runs the same child and returns its streams as

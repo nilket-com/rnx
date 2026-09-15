@@ -27,6 +27,7 @@ mod process;
 // such module and no such command.
 #[cfg(all(windows, feature = "test-support"))]
 mod pipe_control;
+mod program;
 mod repl;
 #[cfg(feature = "test-support")]
 mod rnx_test;

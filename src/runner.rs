@@ -1,9 +1,9 @@
-//! `rnx run`: compile one file and execute its `main`.
+//! `rnx run`: compile a file and its modules, then execute its `main`.
 //!
 //! Diagnostics have the shape the session's do, because the first port
 //! measured what their absence costs. `run` compiles the file as written,
-//! with no wrapper and no prelude, so a position in the compiled unit is a
-//! position in the file and no mapping is needed beyond the file's own text.
+//! with no wrapper and no prelude. Instruction source identities select the
+//! file whose text and path give a diagnostic its place.
 //!
 //! Everything rnx says goes to standard error. What the script prints goes
 //! to standard output, which is a guarantee this module preserves rather
@@ -11,9 +11,10 @@
 use crate::declared::Fields;
 use crate::format::{display_width, render_complete_styled, terminal_safe};
 use crate::presentation;
+use crate::program::{Loader, Text};
 use crate::session::position;
 use rune::runtime::{Unit, Value, VmError};
-use rune::{Context, Diagnostics, Source, Sources, Vm};
+use rune::{Context, Diagnostics, Sources, Vm};
 use std::sync::Arc;
 
 /// Instructions one script may spend unless the command line says otherwise.
@@ -98,23 +99,12 @@ fn unlocated(kind: &str, message: &str) {
 	);
 }
 
-fn compile(context: &Context, path: &str, text: &str, debug_source: bool) -> Option<Unit> {
-	let mut sources = Sources::new();
-	let source = match Source::memory(text) {
-		Ok(source) => source,
-		Err(error) => {
-			unplaced("error", &error.to_string());
-			return None;
-		}
-	};
-	if sources.insert(source).is_err() {
-		unplaced("error", "the source could not be held for compilation");
-		return None;
-	}
+fn compile(context: &Context, sources: &mut Sources, loader: &mut Loader) -> Option<Unit> {
 	let mut diagnostics = Diagnostics::new();
-	let built = rune::prepare(&mut sources)
+	let built = rune::prepare(sources)
 		.with_context(context)
 		.with_diagnostics(&mut diagnostics)
+		.with_source_loader(loader)
 		.build();
 	match built {
 		Ok(unit) => Some(unit),
@@ -123,37 +113,57 @@ fn compile(context: &Context, path: &str, text: &str, debug_source: bool) -> Opt
 				rune::diagnostics::Diagnostic::Fatal(fatal) => match fatal.kind() {
 					rune::diagnostics::FatalDiagnosticKind::CompileError(e) => {
 						use rune::ast::Spanned;
-						Some((e.to_string(), e.span().range().start))
+						Some((e.to_string(), fatal.source_id(), e.span().range().start))
 					}
 					_ => None,
 				},
 				_ => None,
 			});
 			match first {
-				Some((message, offset)) => located("error", path, text, offset, &message),
+				Some((message, id, offset)) => match loader.get(sources, id) {
+					Some(source) => located(
+						"error",
+						&source.path.to_string_lossy(),
+						&source.text,
+						offset,
+						&message,
+					),
+					None => unlocated("error", &message),
+				},
 				None => unlocated("error", &error.to_string()),
-			}
-			if debug_source {
-				eprintln!("--- compiled source of {path}");
-				eprint!("{text}");
-				eprintln!("--- end of compiled source");
 			}
 			None
 		}
 	}
 }
 
-/// Where a runtime error happened, as an offset into the compiled source.
+fn debug_sources(loader: &Loader) {
+	for source in &loader.texts {
+		eprintln!("--- compiled source of {}", source.path.display());
+		eprint!("{}", source.text);
+		eprintln!("--- end of compiled source");
+	}
+}
+
+/// The source and offset of a runtime error in this compiled unit.
 /// A failure the runtime raises carries the instruction that raised it, so
 /// an error inside a called function reports that function's expression
 /// rather than the line of the call.
-fn fault_offset(error: &VmError, unit: &Arc<Unit>) -> Option<usize> {
+fn fault_source<'a>(
+	error: &VmError,
+	unit: &Arc<Unit>,
+	sources: &Sources,
+	loader: &'a Loader,
+) -> Option<(&'a Text, usize)> {
 	let location = error.first_location()?;
 	if !Arc::ptr_eq(&location.unit, unit) {
 		return None;
 	}
 	let instruction = location.unit.debug_info()?.instruction_at(location.ip)?;
-	Some(instruction.span.range().start)
+	Some((
+		loader.get(sources, instruction.source_id)?,
+		instruction.span.range().start,
+	))
 }
 
 /// Print the value a script returned, and report whether it could be shown.
@@ -216,23 +226,27 @@ pub fn run(
 	budget: usize,
 ) -> i32 {
 	crate::host::running_a_script();
-	let text = match std::fs::read_to_string(path) {
-		Ok(text) => text,
+	let mut loader = Loader::new();
+	let source = match loader.entry(std::path::Path::new(path)) {
+		Ok(source) => source,
 		Err(error) => {
-			// No source exists, so there is no line, column, or caret to give.
-			unplaced("error", &format!("cannot read {path}: {error}"));
+			unplaced("error", &error);
 			return 1;
 		}
 	};
-	let Some(unit) = compile(context, path, &text, debug_source) else {
+	let mut sources = Sources::new();
+	if sources.insert(source).is_err() {
+		unplaced("error", "the source could not be held for compilation");
+		return 1;
+	}
+	let compiled = compile(context, &mut sources, &mut loader);
+	if debug_source {
+		debug_sources(&loader);
+	}
+	let Some(unit) = compiled else {
 		return 1;
 	};
 	let unit = Arc::new(unit);
-	if debug_source {
-		eprintln!("--- compiled source of {path}");
-		eprint!("{text}");
-		eprintln!("--- end of compiled source");
-	}
 	let runtime = match context.runtime() {
 		Ok(runtime) => Arc::new(runtime),
 		Err(error) => {
@@ -294,9 +308,16 @@ pub fn run(
 			// the name when it can be proved, and leaves the message alone
 			// when it cannot.
 			let message = error.to_string();
-			let message = crate::method::named(&message, &text).unwrap_or(message);
-			match fault_offset(&error, &unit) {
-				Some(offset) => located("runtime error", path, &text, offset, &message),
+			let origin = fault_source(&error, &unit, &sources, &loader);
+			let message = named_fault(message, origin);
+			match origin {
+				Some((source, offset)) => located(
+					"runtime error",
+					&source.path.to_string_lossy(),
+					&source.text,
+					offset,
+					&message,
+				),
 				None => unlocated("runtime error", &message),
 			}
 			// Said after the error and never instead of it: the budget was
@@ -314,10 +335,13 @@ pub fn run(
 			return 1;
 		}
 	};
-	// A file's own declarations are the candidates for the value it returns.
+	// The program's loaded declarations are candidates for its returned value.
 	// They are only candidates: each is verified against the value, because a
 	// name and a shape are two different claims.
-	let fields = crate::declared::in_file(&text);
+	let mut fields = Fields::default();
+	for source in &loader.texts {
+		crate::declared::into_fields(&source.text, &mut fields);
+	}
 	match returned(&value) {
 		Ok(value) => show(&value, &fields),
 		Err(error) => {
@@ -337,5 +361,50 @@ pub fn returned(value: &Value) -> std::result::Result<Value, Value> {
 	match rune::from_value::<std::result::Result<Value, Value>>(value.clone()) {
 		Ok(inner) => inner,
 		Err(_) => Ok(value.clone()),
+	}
+}
+
+// The origin is the only candidate source, including when attribution fails.
+fn named_fault(message: String, origin: Option<(&Text, usize)>) -> String {
+	origin
+		.and_then(|(source, _)| crate::method::named(&message, &source.text))
+		.unwrap_or(message)
+}
+
+#[cfg(test)]
+mod module_tests {
+	use super::*;
+	#[test]
+	fn unavailable_origin_keeps_the_hash_despite_a_matching_entry_candidate() {
+		let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+			.join("tests/fixtures/modules/fault/main.rn");
+		let mut loader = Loader::new();
+		let mut sources = Sources::new();
+		sources.insert(loader.entry(&path).unwrap()).unwrap();
+		let context = Context::with_default_modules().unwrap();
+		let unit = Arc::new(compile(&context, &mut sources, &mut loader).unwrap());
+		let mut vm = Vm::new(Arc::new(context.runtime().unwrap()), unit.clone());
+		let error = vm.call(["main"], ((),)).unwrap_err();
+		let original = error.to_string();
+		assert!(original.contains("Missing instance function"));
+		assert!(crate::method::named(&original, &loader.texts[0].text).is_some());
+		let origin = fault_source(&error, &unit, &sources, &loader).unwrap();
+		assert!(origin.0.path.ends_with("broken.rn"));
+		assert!(named_fault(original.clone(), Some(origin)).contains("no method `missing`"));
+		let empty = Sources::new();
+		assert_eq!(
+			named_fault(
+				original.clone(),
+				fault_source(&error, &unit, &empty, &loader)
+			),
+			original
+		);
+		let different = Arc::new(
+			rune::prepare(&mut Sources::new())
+				.with_context(&context)
+				.build()
+				.unwrap(),
+		);
+		assert!(fault_source(&error, &different, &sources, &loader).is_none());
 	}
 }
