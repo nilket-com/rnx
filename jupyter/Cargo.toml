@@ -1,0 +1,25 @@
+[package]
+name = "rnx-jupyter"
+publish = false
+description = "A Jupyter kernel over the rnx evaluation worker"
+version = "0.0.0"
+edition = "2024"
+[workspace]
+[dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "io-util", "io-std", "sync", "net"] }
+serde_json = "1"
+hmac = "=0.13.0"
+sha2 = "=0.11.0"
+uuid = { version = "1", features = ["v4"] }
+hex = "0.4"
+
+[features]
+default = []
+transport-probe = []
+
+[[example]]
+name = "transport-probe"
+required-features = ["transport-probe"]
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

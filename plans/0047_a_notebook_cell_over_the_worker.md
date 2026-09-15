@@ -1,7 +1,9 @@
 # rnx 0047: a notebook cell over the worker
 
 Status: revised 2026-09-15 after acceptance of record 0048. Its owned bounded
-transport is adopted below; kernel implementation may start. The forty-seventh
+transport is adopted below; kernel implementation is in progress. The first
+component commit extracts the transport, connection-file parser and signed
+message codec; it is not yet an executable notebook kernel. The forty-seventh
 record, following the accepted worker in 0046. This is the first usable Jupyter
 kernel: installation, execution, text output, errors, interruption and restart.
 Completion, inspection, rich media and interactive stdin are later records.

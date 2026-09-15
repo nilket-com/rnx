@@ -1,4 +1,10 @@
-# rnx 0047 evidence: both pre-kernel probes stop
+# rnx 0047 evidence: from stopped probes to an owned transport
+
+The original failed candidates are preserved below. Record 0048 subsequently
+passed and was accepted; the final section covers its extraction into the kernel
+package. Record 0047 remains in progress, not accepted as a notebook kernel.
+
+## Original probes, 2026-09-14
 
 Measured by Codex on nano/Linux on 2026-09-14. Plan commit 5d17a64 preceded the
 probes. Sources/results/environment pins are in rnx-bench commit **1a1fc7a**:
@@ -133,3 +139,56 @@ gate or Windows result.
 Rust formatting and Python syntax/undefined-name checks pass. Both probes ran
 again; production rnx source and dependency graph are untouched, so its full
 suites were not rerun. No replacement notebook adapter or browser capture exists.
+
+
+## First implementation: owned transport and message layer, 2026-09-15
+
+Plan revision `69bd98f` adopts the accepted 0048 transport and precedes this code.
+The independent `jupyter/` package now contains its transport, a Jupyter 5.4
+HMAC/JSON codec and a capped regular connection-file reader. Evidence is in
+rnx-bench `72fbb0b`, `results/jupyter-0047-integration/README.md`,
+with hashes, raw outputs and reproduction commands. No rnx production source,
+manifest, lockfile or notices changed. Root metadata has one workspace member
+and no kernel dependency.
+
+The application callback borrows received parts while transport byte credits
+remain attached. There is no new inbound queue. Retained execution requests
+will need their own byte admission before copying. Route replies hold the
+original connection generation. A new scope guard retires that generation even
+if an application future unwinds or is cancelled. The other extraction change
+is the API boundary: listeners and connection tasks belong to a Server, with
+bounded shutdown and a separate publishing capability that refuses after stop.
+The original framing, credit accounting and tests move with the implementation.
+
+The new codec verifies signatures before JSON parsing, preserves original parent
+header bytes and routing prefixes, refuses unsupported buffers, and caps JSON
+serialization while it writes. The connection reader validates the local subset
+before any listener binds. Fixture commands, test key, fixed date, allocation
+instrumentation and stdout telemetry stay in a feature-gated acceptance example,
+not a kernel entry point. The package has separate reproducible notices.
+
+Verification: eighteen kernel-component tests pass with default features and
+with the acceptance feature, including the original eleven. Both original wire
+fixtures pass twice against the extracted transport **and new codec**. The
+unchanged reading subscriber receives all 1,001 paced publications; the stalled
+subscriber is disconnected. Forty concurrent payload holders recover; heartbeat
+commands, oversized declarations, stale replies, partial writes and shutdown
+remain gated. Whole-message and encoded-byte limits have not been relaxed.
+
+The root suites pass sequentially under TERM=xterm-256color: 344 default and
+385 test-support. Root/kernel formatting and notices checks pass. Windows type
+checking passes for the new component; Windows execution is still unverified.
+Playwright 1.62.0 and Chromium 151.0.7922.34 pass a launch/DOM/screenshot check.
+That image is a browser prerequisite, **not notebook screen evidence**.
+
+The clean-build time and binary size in the raw results describe the instrumented
+acceptance example, not a serving kernel. No ordinary-rnx startup comparison,
+kernel-ready or cell latency claim is made by this implementation phase. Root
+source/dependency identity is separately recorded; it is not a timing test.
+
+Gates still open: worker supervision and containment integrated into this
+package, execution scheduling/counters/history, stream attribution/barriers,
+interrupt/restart/shutdown at the notebook layer, kernelspec installation,
+nbclient, actual JupyterLab execution/save/reopen and the kernel timing evidence.
+The separate shared parent-death change remains outside this record. This is a
+completed transport integration step, not completion of record 0047.
