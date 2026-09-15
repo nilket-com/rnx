@@ -1,8 +1,8 @@
 # rnx 0047: a notebook cell over the worker
 
-Status: revised for review 2026-09-15 after the accepted probes reached both
-stop conditions. The replacement transport and containment probes below must
-pass before kernel implementation starts. The forty-seventh record, following the accepted
+Status: replacement probes completed 2026-09-15 after acceptance of revision
+123bfd0. Native multipart buffering still reaches the receive stop condition;
+kernel implementation remains stopped pending review of the results. The forty-seventh record, following the accepted
 worker in 0046. This is the first usable Jupyter kernel: installation, execution,
 text output, errors, interruption and restart. Completion, inspection, rich
 media and interactive stdin are later records. No kernel implementation has
@@ -57,6 +57,32 @@ Those are replacements to validate, not successful results of the first probes.
 The containment fixture used a subreaper and explicitly killed known fixture
 PIDs/groups; it did not prove a general adopted-child discovery and cleanup
 algorithm. The original evidence remains a record of the failed candidates.
+
+
+## Replacement outcome: native buffering still stops integration
+
+The replacement probes are in rnx-bench `0637193`, under
+`probes/jupyter-libzmq`, `probes/jupyter-containment-replacement` and
+`results/jupyter-0047-replacement`. The linked native version is 4.3.4 from
+the locked source crate, not the machine’s system 4.3.5.
+
+Two runs show the frame cap rejects a 64 MiB declared frame before body receipt,
+but 4096 legal 8 KiB MORE parts grow sampled native-process RSS by 34,025,472
+bytes while the application receives zero parts. Only the final part exposes
+the multipart to the part-at-a-time reader. Native ypipe buffering withholds
+incomplete items from the flush boundary. The proposed application-side
+32-part check therefore cannot bound this receive path. Other shell requests,
+control and heartbeat remained responsive during the unfinished message; the
+predicted shell head-of-line stall was not observed at that stage. This is still
+a receive-memory stop, not grounds to reclassify the problem as only a stall.
+
+Linux adopted-child discovery independently found and reaped escaped,
+double-forked fixtures after worker termination. The parent-death probe also
+confirmed that a spawning thread exiting before prctl can leave the child alive
+with an unchanged parent PID. The separate shared-process plan must account for
+that lifetime; these probes change no production spawn path. Windows execution
+and the notebook integration gates remain unrun. See the evidence alongside this
+record for scope and measurements. Review precedes any next transport decision.
 
 ## Decision
 

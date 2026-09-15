@@ -75,3 +75,61 @@ Kernel implementation waits for review of two decisions: enforce receive bounds
 below application deserialization, and define containment which survives hard
 worker death and accounts for descendants leaving a process group (or explicitly
 revise that promise). Neither change has been selected or implemented here.
+
+
+## Replacement probes, 2026-09-15
+
+Accepted revision `123bfd0` preceded this work. Sources, lockfile, two transport
+runs, initial/expanded containment traces and source audit are in rnx-bench
+**0637193**, `results/jupyter-0047-replacement/README.md` and the probe directories
+it names. Kernel implementation has not started. The earlier sections retain
+the initial candidates’ evidence; the decisions in the revised plan supersede
+their pending-choice wording.
+
+The zmq 0.10.0 / zmq-sys 0.12.0 graph builds bundled libzmq 4.3.4 through cc,
+without CMake. It does not select the installed 4.3.5. An offline clean-target
+release build took 7.02 seconds. Build logs, native version, linked libraries,
+executable hashes and licence declarations are preserved; no finished kernel
+notices, Windows build or kernel-size measurement is claimed.
+
+With MAXMSGSIZE=1 MiB, both high-water marks=64 and linger=0, an oversized
+64 MiB length header is refused by connection close with no sampled RSS growth.
+But 16 MiB of legal incomplete parts grows RSS by 17,010,688 bytes, and 32 MiB
+grows it by 34,025,472 bytes, in both runs. The application receives **zero parts**
+until a final part arrives, then receives 4098 including the routing identity and
+empty final part and rejects the multipart. The receive loop already reads one
+part at a time and limits retained application data. This does not limit native
+buffering before that loop. ypipe’s flush boundary and pipe’s message-count
+updates explain the observation; source hashes/line references are preserved.
+RSS was sampled externally at page resolution in a server limited to 512 MiB
+address space. The fixture sends only 32 MiB; no exhaustion test is needed to
+refute the proposed bound. No specific individual native allocation is inferred.
+
+Other shell requests answered in under 1.5 ms in these observations, alongside
+responsive control and heartbeat. An unfinished multipart did not lock the
+application’s fair queue in this probe. Signed/empty-key exchanges and malformed
+message refusals passed. A reading subscriber received output while another
+stopped reading, with 20,000 successful PUB sends and no send errors. Successful
+sends remain no proof of delivery; the receiving counts are observations only.
+Joining socket-owner threads and dropping the context ended the server cleanly
+in about 33–36 ms. The outstanding memory stop blocks further integration.
+
+The Linux replacement discovers adopted descendants through all task child lists,
+uses pidfds for signalling and a single reaper, and repeats until empty. It does
+not consume fixture-supplied PIDs for cleanup. Cooperative worker shutdown, hard
+worker death and stopped-worker termination all reaped the double-forked,
+new-session fixture, in about 10–11 ms here. An initial confirmation attempt
+exposed a partial readiness-file read; atomic publication corrected that fixture
+before the saved confirmation. No descendants remained after the runs.
+
+The C parent-death probe confirms direct-child death when armed and catches
+parent-process death before setup by rechecking the pre-fork parent PID. It also
+confirms a child dies when its spawning thread exits while the process lives.
+If that thread exits before prctl, the PID check still matches and the child
+survives: a concrete negative case for the separate shared-rnx plan. The harness
+then kills/reaps it. This is not a production implementation, credential-change
+gate or Windows result.
+
+Rust formatting and Python syntax/undefined-name checks pass. Both probes ran
+again; production rnx source and dependency graph are untouched, so its full
+suites were not rerun. No replacement notebook adapter or browser capture exists.
