@@ -1,6 +1,8 @@
 # rnx 0048: a bounded transport before a notebook
 
-Status: proposed 2026-09-15. The forty-eighth record. It authorizes a
+Status: accepted and prototyped 2026-09-15; the required client gate reaches
+the command-compatibility stop. Not accepted for adoption. The forty-eighth
+record authorizes a
 standalone transport prototype and evidence, not a kernel implementation or
 an automatic replacement of record 0047's transport decision. Review of these
 results comes before integration. Record 0047 remains stopped.
@@ -21,6 +23,25 @@ bounds. Accepting libzmq's local-peer memory exposure remains another possible
 decision, but is not silently substituted for a bound. This record prices the
 owned implementation by building and testing a prototype first. No line-count
 or delivery-date estimate is an acceptance argument.
+
+## Prototype outcome
+
+The prototype and traces are in rnx-bench `ae74699`, under `probes/jupyter-zmtp`
+and `results/jupyter-zmtp-0048`. Plan `1f689be` preceded it. The heartbeat-enabled
+pyzmq/libzmq 4.3.5 client sends PING after the server's 3.0 greeting. The bounded
+command body capture is `0450494e470000`; the server closes that unsupported
+connection as decision 2 requires. Both required runs fail the client gate and
+clean up. Advertising 3.0 alone did not suppress heartbeat commands.
+
+A separately labelled diagnostic run with client transport heartbeats disabled
+passes the currently implemented checks. It is not counted as acceptance of the
+required client. Five Rust tests and Windows type checking pass; Windows execution
+and several aggregate/fairness/teardown gates remain unpassed. In particular, the
+unpaced publication flood outpaced both subscribers and does not establish
+continued service to the reading peer. The evidence names the remaining work.
+
+No PING/PONG support or other 3.1 extension was added after this finding. Review
+must decide the supported command scope before continuation; 0047 stays stopped.
 
 ## Decision
 
