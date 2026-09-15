@@ -1012,7 +1012,7 @@ fn bindings(
 pub fn checks() -> Result<()> {
 	let render = |v: &Value| super::format::render(v, None, &super::format::Limits::default());
 	let mut context = Context::with_default_modules()?;
-	super::host::install(&mut context)?;
+	super::install_core(&mut context)?;
 	super::fs::install(&mut context)?;
 	let mut session = Session::new(context)?;
 	for (input, expected) in [
@@ -1072,7 +1072,7 @@ pub fn checks() -> Result<()> {
 	std::fs::remove_file(effect_path)?;
 	println!("external write before runtime failure survives; later input does not replay it");
 	let mut context = Context::with_default_modules()?;
-	super::host::install(&mut context)?;
+	super::install_core(&mut context)?;
 	super::fs::install(&mut context)?;
 	let mut reset = Session::new(context)?;
 	assert!(reset.eval("x").is_err());
@@ -1094,7 +1094,7 @@ mod tests {
 
 	fn context() -> Context {
 		let mut context = Context::with_default_modules().unwrap();
-		crate::host::install(&mut context).unwrap();
+		crate::install_core(&mut context).unwrap();
 		crate::fs::install(&mut context).unwrap();
 		context
 	}
@@ -1270,7 +1270,7 @@ mod retention_tests {
 
 	fn session() -> Session {
 		let mut context = Context::with_default_modules().unwrap();
-		crate::host::install(&mut context).unwrap();
+		crate::install_core(&mut context).unwrap();
 		crate::fs::install(&mut context).unwrap();
 		let mut session = Session::new(context).unwrap();
 		session.set_budget(usize::MAX);
@@ -1555,7 +1555,7 @@ mod prelude_tests {
 
 	fn session() -> Session {
 		let mut context = Context::with_default_modules().unwrap();
-		crate::host::install(&mut context).unwrap();
+		crate::install_core(&mut context).unwrap();
 		crate::fs::install(&mut context).unwrap();
 		let mut session = Session::new(context).unwrap();
 		session.set_budget(usize::MAX);

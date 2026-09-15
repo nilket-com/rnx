@@ -1,7 +1,7 @@
 //! Text helpers, each earned by the first port and none of them speculative.
 //!
 //! These are pure functions of their arguments, which is why they sit beside
-//! `host::` rather than inside it: a reader can tell at a glance which calls
+//! the I/O modules rather than inside them: a reader can tell at a glance which calls
 //! can fail because of the world and which cannot. They exist only because
 //! upstream Rune does not have them, and each goes when upstream offers the
 //! same behaviour, not merely the same name.
@@ -222,21 +222,21 @@ mod description_tests {
 	#[test]
 	fn a_description_names_a_result_when_the_function_returns_one() {
 		let mut context = rune::Context::with_default_modules().unwrap();
-		let mut registered = crate::host::install(&mut context).unwrap();
+		let mut registered = crate::install_core(&mut context).unwrap();
 		registered.extend(crate::fs::install(&mut context).unwrap());
 		registered.extend(super::install(&mut context).unwrap());
 		let fallible = [
-			"host::json_parse",
-			"host::json_stringify",
+			"json::parse",
+			"json::stringify",
 			"fs::read",
-			"host::stdin",
-			"host::exit",
-			"host::eprint",
+			"io::stdin",
+			"process::exit",
+			"io::eprint",
 			"fs::write_new",
 			"fs::mkdir",
 			"fs::absolute",
-			"host::process",
-			"host::process_bytes",
+			"process::run",
+			"process::run_bytes",
 			"text::split_max",
 		];
 		for path in fallible {

@@ -116,7 +116,7 @@ fn a_value_that_is_not_a_result_is_unchanged() {
 fn a_child_that_failed_is_still_a_success() {
 	// The call worked and the child did not. Only the shape of the returned
 	// value decides, so nothing inside it turns this into a failure.
-	let ran = evaluated("host::process(@FAIL@, 5000).map(|r| r.code)");
+	let ran = evaluated("process::run(@FAIL@, #{timeout_ms: 5000}).map(|r| r.code)");
 	assert_eq!(ran.code, 0, "{}", ran.stderr);
 	assert_eq!(ran.stdout, "1\n");
 	assert_eq!(ran.stderr, "");
@@ -138,7 +138,7 @@ fn the_two_entry_points_agree_on_everything_they_show() {
 		"1 + 1",
 		"\"hi\"",
 		"()",
-		"host::process(@FAIL@, 5000).map(|r| r.code)",
+		"process::run(@FAIL@, #{timeout_ms: 5000}).map(|r| r.code)",
 		// Differed in spacing under two renderers.
 		"[1, 2, 3]",
 		"#{a: 1}",
@@ -343,8 +343,8 @@ fn nothing_else_about_eval_changed() {
 	let ran = evaluated("let v = []; v[7]");
 	assert_eq!(ran.code, 1);
 	assert!(ran.stderr.contains("runtime error at"), "{}", ran.stderr);
-	// And `host::exit` still chooses the status, as record 0013 decided.
-	let ran = evaluated("host::exit(5)");
+	// And `process::exit` still chooses the status, as record 0013 decided.
+	let ran = evaluated("process::exit(5)");
 	assert_eq!(ran.code, 5);
 	assert_eq!(ran.stderr, "");
 }

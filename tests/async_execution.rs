@@ -125,7 +125,7 @@ fn script(name: &str, source: &str) -> PathBuf {
 fn a_file_may_await_in_main() {
 	let path = script(
 		"await.rn",
-		"pub async fn main(_) { host::test_pending(20).await }",
+		"pub async fn main(_) { rnx_test::test_pending(20).await }",
 	);
 	let ran = rnx(&["run", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
@@ -145,7 +145,7 @@ fn a_synchronous_file_still_runs() {
 
 #[test]
 fn eval_may_await() {
-	let ran = rnx(&["eval", "host::test_pending(20).await + 1"], None);
+	let ran = rnx(&["eval", "rnx_test::test_pending(20).await + 1"], None);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
 	assert_eq!(ran.stdout, "21\n");
 }
@@ -154,7 +154,7 @@ fn eval_may_await() {
 fn a_session_input_may_await_at_the_top_level() {
 	let ran = rnx(
 		&["repl"],
-		Some("let waited = host::test_pending(20).await;\nwaited + 1\n"),
+		Some("let waited = rnx_test::test_pending(20).await;\nwaited + 1\n"),
 	);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
 	assert!(ran.stdout.contains("21\n"), "{}", ran.stdout);
@@ -201,7 +201,7 @@ fn an_await_does_not_grant_a_fresh_budget() {
 	// tested across what would have been many slice boundaries.
 	let loop_a = "for i in 0..4000 { n += i; }";
 	let loop_b = "for i in 0..4000 { n += i; }";
-	let wait = "host::test_pending(1).await;";
+	let wait = "rnx_test::test_pending(1).await;";
 	let tail = "n }";
 	let at_start = format!("{head} {wait} {loop_a} {loop_b} {tail}");
 	let in_middle = format!("{head} {loop_a} {wait} {loop_b} {tail}");
@@ -233,7 +233,7 @@ fn an_await_does_not_grant_a_fresh_budget() {
 fn awaiting_in_a_loop_halts_for_budget_and_nothing_else() {
 	let path = script(
 		"await-loop.rn",
-		"pub async fn main(_) { loop { host::test_pending(0).await; } }",
+		"pub async fn main(_) { loop { rnx_test::test_pending(0).await; } }",
 	);
 	let ran = rnx(&["run", "--budget", "5000", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(1), "{}", ran.stderr);
@@ -251,7 +251,7 @@ fn awaiting_in_a_loop_halts_for_budget_and_nothing_else() {
 fn ctrl_c_ends_a_run_pending_on_a_future() {
 	let path = script(
 		"pending.rn",
-		"pub async fn main(_) { host::test_pending(10000).await }",
+		"pub async fn main(_) { rnx_test::test_pending(10000).await }",
 	);
 	let ran = interrupted(
 		&["run", path.to_str().unwrap()],
@@ -288,7 +288,7 @@ fn a_run_in_a_loop_is_bounded_by_its_budget_as_it_always_was() {
 #[test]
 fn ctrl_c_ends_an_eval_pending_on_a_future() {
 	let ran = interrupted(
-		&["eval", "host::test_pending(10000).await"],
+		&["eval", "rnx_test::test_pending(10000).await"],
 		None,
 		Duration::from_millis(300),
 	);
@@ -300,7 +300,7 @@ fn ctrl_c_ends_an_eval_pending_on_a_future() {
 fn ctrl_c_ends_a_session_input_pending_on_a_future_and_the_next_input_runs() {
 	let ran = interrupted(
 		&["repl"],
-		Some("host::test_pending(10000).await\n"),
+		Some("rnx_test::test_pending(10000).await\n"),
 		Duration::from_millis(400),
 	);
 	// The session stays up after the interrupt; it ended because its input
@@ -323,7 +323,7 @@ fn after_an_interrupted_input_the_next_input_runs_to_completion() {
 	// SIGINT arrives, and the second must then run and answer.
 	let ran = interrupted(
 		&["repl"],
-		Some("host::test_pending(10000).await\nhost::test_pending(10).await + 1\n"),
+		Some("rnx_test::test_pending(10000).await\nrnx_test::test_pending(10).await + 1\n"),
 		Duration::from_millis(400),
 	);
 	assert_eq!(
@@ -425,7 +425,7 @@ fn select_is_recognised_even_though_it_never_writes_await() {
 	let ran = rnx(
 		&[
 			"eval",
-			"let a = host::test_pending(5); select { r = a => r }",
+			"let a = rnx_test::test_pending(5); select { r = a => r }",
 		],
 		None,
 	);
@@ -446,7 +446,7 @@ fn declaring_an_async_function_does_not_make_the_input_that_declares_it_async() 
 	// declares an awaiting function keeps the synchronous path itself.
 	let ran = interrupted(
 		&["repl"],
-		Some("async fn helper() { host::test_pending(1).await }\nloop { }\n1 + 1\n"),
+		Some("async fn helper() { rnx_test::test_pending(1).await }\nloop { }\n1 + 1\n"),
 		Duration::from_millis(500),
 	);
 	assert_eq!(
@@ -504,7 +504,7 @@ fn an_entry_point_reached_through_an_alias_is_executed_as_what_it_is() {
 	// runs; a version that read it halted here for `awaited`.
 	let path = script(
 		"alias.rn",
-		"mod inner {\n    pub async fn work(_) { host::test_pending(5).await }\n}\npub use inner::work as main;\n",
+		"mod inner {\n    pub async fn work(_) { rnx_test::test_pending(5).await }\n}\npub use inner::work as main;\n",
 	);
 	let ran = rnx(&["run", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
@@ -544,7 +544,7 @@ fn a_failure_inside_one_slice_does_not_claim_the_whole_budget() {
 fn a_runtime_error_after_an_await_is_still_placed() {
 	let path = script(
 		"placed.rn",
-		"pub async fn main(_) {\n    host::test_pending(1).await;\n    let v = [];\n    v[3]\n}\n",
+		"pub async fn main(_) {\n    rnx_test::test_pending(1).await;\n    let v = [];\n    v[3]\n}\n",
 	);
 	let ran = rnx(&["run", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(1));
@@ -557,7 +557,7 @@ fn a_runtime_error_after_an_await_is_still_placed() {
 fn a_session_error_after_an_await_names_its_input() {
 	let ran = rnx(
 		&["repl"],
-		Some("1\nhost::test_pending(1).await; let v = []; v[3]\n"),
+		Some("1\nrnx_test::test_pending(1).await; let v = []; v[3]\n"),
 	);
 	assert_eq!(ran.code, Some(0));
 	assert!(ran.stderr.contains("runtime error"), "{}", ran.stderr);

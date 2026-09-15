@@ -19,15 +19,12 @@ fn result(source: &str) -> String {
 }
 
 fn parse_expression(document: &str) -> String {
-	format!(
-		"host::json_parse({})",
-		serde_json::to_string(document).unwrap()
-	)
+	format!("json::parse({})", serde_json::to_string(document).unwrap())
 }
 
 fn rewritten(document: &str) -> String {
 	let printed = result(&format!(
-		"host::json_stringify({}?)?",
+		"json::stringify({}?)?",
 		parse_expression(document)
 	));
 	serde_json::from_str(&printed).unwrap()
@@ -71,7 +68,7 @@ fn integers_keep_their_full_signed_and_unsigned_ranges() {
 	] {
 		assert_eq!(
 			result(&format!(
-				"let v = {literal}; host::json_parse(host::json_stringify(v)?)? == v"
+				"let v = {literal}; json::parse(json::stringify(v)?)? == v"
 			)),
 			"true"
 		);
@@ -98,7 +95,7 @@ fn floats_and_out_of_range_integers_keep_the_configured_conversion() {
 
 #[test]
 fn null_is_unit_and_round_trips_inside_containers() {
-	assert_eq!(result("host::json_parse(\"null\")? == ()"), "true");
+	assert_eq!(result("json::parse(\"null\")? == ()"), "true");
 	assert_eq!(rewritten("null"), "null");
 	assert_eq!(rewritten("[1,null,2]"), "[1,null,2]");
 	assert_eq!(rewritten("{\"a\":null}"), "{\"a\":null}");

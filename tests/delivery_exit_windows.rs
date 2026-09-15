@@ -57,15 +57,13 @@ fn a_normal_child_exit_collects_the_unfinished_writer() {
 	let release = dir.join("release-worker");
 	let leave = dir.join("release-child");
 	let command = commands::exit_when_released(&leave);
-	// `host::stdin()` at the end keeps rnx alive after the call, so the
+	// `io::stdin()` at the end keeps rnx alive after the call, so the
 	// writer's end and the child's can be observed from outside while it is
 	// still running. The teardown closes that stdin to let it leave.
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(_) {{ let input = \"\"; for i in 0..50000 {{ input += \"0123456789abcdefghij\\n\" }} \
-			 let r = host::process_bytes_input({command}, input.as_bytes(), {DEADLINE_MS})?; \
-			 println!(\"{{:?}}\", (r.code, r.timed_out, r.cancelled)); host::stdin()?; Ok(()) }}"
+			"pub fn main(_) {{ let input = \"\"; for i in 0..50000 {{ input += \"0123456789abcdefghij\\n\" }} let r = process::run_bytes({command}, #{{input: input.as_bytes(), timeout_ms: {DEADLINE_MS}}})?; println!(\"{{:?}}\", (r.code, r.timed_out, r.cancelled)); io::stdin()?; Ok(()) }}"
 		),
 	)
 	.unwrap();

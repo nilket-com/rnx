@@ -300,22 +300,28 @@ mod host_source_tests {
 	#[test]
 	fn host_candidates_are_the_registered_functions() {
 		let mut context = rune::Context::with_default_modules().unwrap();
-		let registered: Vec<String> = crate::host::install(&mut context)
+		let registered: Vec<String> = crate::install_core(&mut context)
 			.unwrap()
 			.into_iter()
 			.map(|f| f.path)
 			.collect();
-		// Eight host functions after the filesystem move, plus three test-support probes.
+		// Seven core functions in domain modules, plus three test-support probes.
 		assert_eq!(
 			registered.len(),
-			8 + 3 * usize::from(cfg!(feature = "test-support"))
+			7 + 3 * usize::from(cfg!(feature = "test-support"))
 		);
 		let names = super::Names {
 			host: registered.clone(),
 			..Default::default()
 		};
-		let listed = super::complete("host::", 6, &names).unwrap().candidates;
-		assert_eq!(listed, registered);
+		let listed = super::complete("json::", 6, &names).unwrap().candidates;
+		assert_eq!(listed, ["json::parse", "json::stringify"]);
+		assert!(
+			super::complete("host::", 6, &names)
+				.unwrap()
+				.candidates
+				.is_empty()
+		);
 		for path in &registered {
 			let source = format!("pub fn main() {{ {path} }}");
 			assert!(

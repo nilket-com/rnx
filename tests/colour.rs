@@ -87,10 +87,7 @@ fn raw_script_output_is_not_presentation() {
 	for mode in ["auto", "always", "never"] {
 		let out = run(
 			mode,
-			&[
-				"eval",
-				r#"println!("\u{1b}[2J"); host::eprint("\u{1b}[31m")"#,
-			],
+			&["eval", r#"println!("\u{1b}[2J"); io::eprint("\u{1b}[31m")"#],
 			"",
 		);
 		assert_eq!(out.stdout, b"\x1b[2J\n");

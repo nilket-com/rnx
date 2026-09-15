@@ -47,7 +47,7 @@ impl Run {
 		let args =
 			serde_json::to_string(&["--exact", "immediate_spawner_helper", "--nocapture"]).unwrap();
 		let script = dir.join("run.rn");
-		std::fs::write(&script, format!("pub fn main(_) {{ let r = host::process({exe}, {args}, 3000)?; println!(\"CALL timed_out={{}} cancelled={{}}\", r.timed_out, r.cancelled); Ok(()) }}")).unwrap();
+		std::fs::write(&script, format!("pub fn main(_) {{ let r = process::run({exe}, {args}, #{{timeout_ms: 3000}})?; println!(\"CALL timed_out={{}} cancelled={{}}\", r.timed_out, r.cancelled); Ok(()) }}")).unwrap();
 		let mut command = Command::new(env!("CARGO_BIN_EXE_rnx"));
 		command
 			.arg("run")

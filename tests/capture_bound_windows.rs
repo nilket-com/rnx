@@ -39,7 +39,7 @@ use std::time::{Duration, Instant};
 
 static NEXT: AtomicUsize = AtomicUsize::new(0);
 
-/// What `host::process` caps a single stream at.
+/// What `process::run` caps a single stream at.
 const CAP: usize = 2 * 1024 * 1024;
 
 /// How much more than the cap the child writes. Small enough to sit in the
@@ -98,9 +98,7 @@ fn a_stream_past_the_cap_is_also_cut_short_when_the_call_ends() {
 	)
 	.expect("cannot write the batch file");
 
-	let script = "pub fn main(args) { let r = host::process(\"cmd\", [\"/c\", args[0]], 30000)?; \
-	              println!(\"code={:?} timed_out={} cancelled={} truncated={} cut_short={} unreadable={} out={}\", \
-	              r.code, r.timed_out, r.cancelled, r.truncated, r.cut_short, r.unreadable, r.stdout.len()); Ok(()) }";
+	let script = "pub fn main(args) { let r = process::run(\"cmd\", [\"/c\", args[0]], #{timeout_ms: 30000})?; println!(\"code={:?} timed_out={} cancelled={} truncated={} cut_short={} unreadable={} out={}\", r.code, r.timed_out, r.cancelled, r.truncated, r.cut_short, r.unreadable, r.stdout.len()); Ok(()) }";
 	let path = dir.join("capture.rn");
 	std::fs::write(&path, script).expect("cannot write the script");
 
@@ -233,7 +231,7 @@ exit 0
 	);
 	let script = dir.join("prefix.rn");
 	std::fs::write(&script, r#"pub fn main(args) {
-    let r = host::process(args[0], ["-NoProfile", "-NonInteractive", "-Command", args[1]], 30000)?;
+    let r = process::run(args[0], ["-NoProfile", "-NonInteractive", "-Command", args[1]], #{timeout_ms: 30000})?;
     println!("code={:?} timed_out={} cancelled={} truncated={} cut_short={} unreadable={} out={} err={}",
         r.code, r.timed_out, r.cancelled, r.truncated, r.cut_short, r.unreadable, r.stdout, r.stderr);
     Ok(())

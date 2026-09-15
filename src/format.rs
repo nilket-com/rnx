@@ -655,7 +655,7 @@ mod tests {
 
 	fn context() -> Context {
 		let mut context = Context::with_default_modules().unwrap();
-		crate::host::install(&mut context).unwrap();
+		crate::install_core(&mut context).unwrap();
 		context
 	}
 	fn eval(session: &mut Session, input: &str) -> String {
@@ -1017,7 +1017,7 @@ mod boundary_tests {
 
 	fn context() -> rune::Context {
 		let mut context = rune::Context::with_default_modules().unwrap();
-		crate::host::install(&mut context).unwrap();
+		crate::install_core(&mut context).unwrap();
 		context
 	}
 

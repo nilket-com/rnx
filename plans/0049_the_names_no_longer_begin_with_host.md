@@ -1,10 +1,12 @@
 # rnx 0049: the names no longer begin with host
 
-Status: proposed 2026-09-15, for review before implementation. The
-forty-ninth record completes the script-visible namespace migration. It
-removes `host::`, gives JSON and standard streams their own names, and
-retires the process compatibility functions. No implementation or new
-performance measurement is claimed by this draft.
+Status: implemented 2026-09-15, pending review. Linux gates and migrated
+notebook fixtures pass, with evidence beside this record. Root clippy has
+an unchanged inherited diagnostic baseline; the full Windows build remains
+blocked by missing MSVC tooling. Neither is reported as a passing clean
+check. The forty-ninth record completes the script-visible namespace
+migration: `host::` is removed, JSON and streams have domain names, and the
+process compatibility functions are retired.
 
 ## Context
 
@@ -187,7 +189,11 @@ historical material. Review notes stay gitignored.
    worker and installed-kernel notebook smoke fixtures with migrated
    code, validate the saved notebook, and preserve the results in rnx-bench.
 6. **Regression and cost.** Both root suites, the separate kernel suites,
-   formatting, clippy and notices checks pass. Run available cross-checks
+   formatting and notices checks pass. Run clippy and compare any inherited
+   diagnostics with the accepted baseline rather than claim a clean pass.
+   Implementation found 35 emitted code-bearing diagnostics in both trees
+   under the same command/toolchain, none added or removed; the evidence
+   preserves both logs. Kernel clippy is clean. Run available cross-checks
    and report exactly which platforms executed; this record does not close
    0047's non-Linux supervision gates. Measure matched release version,
    eval, bare run, migrated JSON workload and session baseline; record

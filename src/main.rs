@@ -14,6 +14,7 @@ mod fs_platform;
 mod host;
 mod http;
 mod inspect;
+mod io;
 mod json;
 mod memory;
 mod method;
@@ -27,6 +28,8 @@ mod process;
 #[cfg(all(windows, feature = "test-support"))]
 mod pipe_control;
 mod repl;
+#[cfg(feature = "test-support")]
+mod rnx_test;
 mod runner;
 mod session;
 mod terminal;
@@ -42,6 +45,18 @@ mod worker_transport;
 static ALLOCATOR: memory::Counting = memory::Counting;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+/// Register the core host APIs and preserve interrupt setup for every caller.
+/// The pure config evaluator deliberately does not call this function.
+fn install_core(context: &mut Context) -> Result<Vec<host::HostFunction>> {
+	platform::watch_for_interrupt();
+	let mut functions = json::install(context)?;
+	functions.extend(io::install(context)?);
+	functions.extend(process::install(context)?);
+	#[cfg(feature = "test-support")]
+	functions.extend(rnx_test::install(context)?);
+	Ok(functions)
+}
 
 fn compile(context: &Context, source: &str) -> Result<rune::Unit> {
 	let mut sources = Sources::new();
@@ -172,8 +187,7 @@ fn main() -> Result<()> {
 	presentation::initialize(mode.or(settings.mode).unwrap_or(presentation::Mode::Auto));
 	splash = splash && settings.splash.unwrap_or(true);
 	let mut context = Context::with_default_modules()?;
-	let mut host_functions = host::install(&mut context)?;
-	host_functions.extend(process::install(&mut context)?);
+	let mut host_functions = install_core(&mut context)?;
 	host_functions.extend(fs::install(&mut context)?);
 	host_functions.extend(path::install(&mut context)?);
 	host_functions.extend(time::install(&mut context)?);
@@ -398,4 +412,58 @@ fn main() -> Result<()> {
 	host::process_checks(&context)?;
 	session::checks()?;
 	Ok(())
+}
+
+#[cfg(test)]
+mod namespace_tests {
+	#[test]
+	fn core_inventory_has_domain_names_and_no_host_crate() {
+		let mut context = rune::Context::with_default_modules().unwrap();
+		let functions = super::install_core(&mut context).unwrap();
+		let mut names: Vec<_> = functions.iter().map(|f| f.path.as_str()).collect();
+		names.sort();
+		let mut expected = vec![
+			"json::parse",
+			"json::stringify",
+			"io::stdin",
+			"io::eprint",
+			"process::exit",
+			"process::run",
+			"process::run_bytes",
+		];
+		#[cfg(feature = "test-support")]
+		expected.extend([
+			"rnx_test::test_pending",
+			"rnx_test::test_allocation_peak",
+			"rnx_test::test_reset_allocation_peak",
+		]);
+		expected.sort();
+		assert_eq!(names, expected);
+		for name in names {
+			assert!(
+				super::compile(&context, &format!("pub fn main() {{ {name} }}")).is_ok(),
+				"{name}"
+			);
+		}
+		for name in [
+			"json_parse",
+			"json_stringify",
+			"stdin",
+			"eprint",
+			"exit",
+			"process",
+			"process_bytes",
+			"process_bytes_input",
+			"test_pending",
+			"test_allocation_peak",
+			"test_reset_allocation_peak",
+		] {
+			assert!(
+				super::compile(&context, &format!("pub fn main() {{ host::{name} }}")).is_err(),
+				"host::{name} survived"
+			);
+		}
+		#[cfg(not(feature = "test-support"))]
+		assert!(super::compile(&context, "pub fn main() { rnx_test::test_pending }").is_err());
+	}
 }

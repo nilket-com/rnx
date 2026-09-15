@@ -267,8 +267,7 @@ fn refusal(expr: &str) -> String {
 	.unwrap()
 }
 fn response(expr: &str) -> Value {
-	let text: String =
-		serde_json::from_str(&eval(&format!("host::json_stringify({expr}?)?"))).unwrap();
+	let text: String = serde_json::from_str(&eval(&format!("json::stringify({expr}?)?"))).unwrap();
 	serde_json::from_str(&text).unwrap()
 }
 #[test]
@@ -309,14 +308,14 @@ fn json_text_and_byte_contracts() {
 	let s = Server::new();
 	assert_eq!(
 		eval(&format!(
-			"let r = http::get({:?}).await?; host::json_parse(r.body)?.n == 18446744073709551615u64",
+			"let r = http::get({:?}).await?; json::parse(r.body)?.n == 18446744073709551615u64",
 			s.url("/json")
 		)),
 		"true"
 	);
 	for path in ["/deep", "/bad-json"] {
 		let message = refusal(&format!(
-			"host::json_parse(http::get({:?}).await?.body)",
+			"json::parse(http::get({:?}).await?.body)",
 			s.url(path)
 		));
 		assert!(message.contains("JSON document"), "{message}");
@@ -639,7 +638,7 @@ fn tls_verification_and_plaintext_protocol_failures_are_distinct() {
 fn declared_size_never_becomes_a_buffer_allocation() {
 	let s = Server::new();
 	let peak = eval(&format!(
-		"host::test_reset_allocation_peak(); let r = {} ; host::test_allocation_peak()",
+		"rnx_test::test_reset_allocation_peak(); let r = {} ; rnx_test::test_allocation_peak()",
 		request(&s, "/short", "#{}")
 	));
 	let peak: u64 = peak.parse().unwrap();

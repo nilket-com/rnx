@@ -4,9 +4,9 @@ fn act(state, command) {
     state.sequence += 1;
     let prefix = format!("{}/{}", state.output, state.sequence);
     let commands = format!("{prefix}-commands.json");
-    fs::write_new(commands, host::json_stringify(#{commands: [command]})?)?;
-    let result = host::process(state.binary,
-        ["act", state.window, "--commands", commands], 90000)?;
+    fs::write_new(commands, json::stringify(#{commands: [command]})?)?;
+    let result = process::run(state.binary,
+        ["act", state.window, "--commands", commands], #{timeout_ms: 90000})?;
     fs::write_new(format!("{prefix}-events.ndjson"), result.stdout)?;
     fs::write_new(format!("{prefix}-stderr.txt"), result.stderr)?;
     if result.code != 0 || result.timed_out || result.cancelled || result.truncated {
@@ -15,7 +15,7 @@ fn act(state, command) {
     let answer = None;
     for line in result.stdout.split('\n') {
         if line.trim().is_empty() { continue; }
-        let event = host::json_parse(line)?;
+        let event = json::parse(line)?;
         if event.get("id") != Some(1) { continue; }
         let terminal = match event.event {
             "completed" => true,

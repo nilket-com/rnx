@@ -199,15 +199,13 @@ fn a_held_pipe_does_not_hold_the_call(
 	let err_path = dir.join("stderr");
 	let release = dir.join("exit-holder");
 	let deadline_ms = if normal_exit { 30_000 } else { DEADLINE_MS };
-	// `host::stdin()` after the call keeps rnx alive, so the ends of the child
+	// `io::stdin()` after the call keeps rnx alive, so the ends of the child
 	// and its grandchild can be observed from outside while it is still
 	// running. The teardown closes that stdin to let it leave.
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(_) {{ let r = host::process({}, {deadline_ms})?; \
-			 println!(\"code={{:?}} timed_out={{}} cancelled={{}} out={{}} err={{}}\", r.code, r.timed_out, r.cancelled, r.stdout.len(), r.stderr.len()); \
-			 host::stdin()?; Ok(()) }}",
+			"pub fn main(_) {{ let r = process::run({}, #{{timeout_ms: {deadline_ms}}})?; println!(\"code={{:?}} timed_out={{}} cancelled={{}} out={{}} err={{}}\", r.code, r.timed_out, r.cancelled, r.stdout.len(), r.stderr.len()); io::stdin()?; Ok(()) }}",
 			holder(
 				&ids,
 				keeps_stdout,
@@ -378,9 +376,7 @@ fn a_descendant_that_never_stops_writing_does_not_hold_the_call_windows() {
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(_) {{ let r = host::process({}, {DEADLINE_MS})?; \
-			 println!(\"timed_out={{}} cancelled={{}} cut_short={{}} unreadable={{}} out={{}}\", r.timed_out, r.cancelled, r.cut_short, r.unreadable, r.stdout.len()); \
-			 host::stdin()?; Ok(()) }}",
+			"pub fn main(_) {{ let r = process::run({}, #{{timeout_ms: {DEADLINE_MS}}})?; println!(\"timed_out={{}} cancelled={{}} cut_short={{}} unreadable={{}} out={{}}\", r.timed_out, r.cancelled, r.cut_short, r.unreadable, r.stdout.len()); io::stdin()?; Ok(()) }}",
 			holder(
 				&ids,
 				true,

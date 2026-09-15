@@ -65,7 +65,7 @@ fn call(name: &str, mode: &str, opts: &str) -> String {
 	format!("process::{name}({}, [{}], {opts})", q(fixture()), q(mode))
 }
 #[test]
-fn defaults_compatibility_nonzero_and_input_are_the_same_supervised_reply() {
+fn defaults_explicit_timeout_nonzero_and_input_are_the_same_supervised_reply() {
 	let dir = scratch();
 	let p = q(fixture());
 	ok(run(
@@ -73,13 +73,13 @@ fn defaults_compatibility_nonzero_and_input_are_the_same_supervised_reply() {
 		&format!(
 			r#"
         let a = process::run({p}, ["fail"], #{{}})?;
-        let b = host::process({p}, ["fail"], 30000)?;
-        assert_eq!(host::json_stringify(a)?, host::json_stringify(b)?);
+        let b = process::run({p}, ["fail"], #{{timeout_ms: 30000}})?;
+        assert_eq!(json::stringify(a)?, json::stringify(b)?);
         assert_eq!(a.code, 7); assert_eq!(a.stderr, "complaint");
 
         for name in ["timed_out", "cancelled", "truncated", "cut_short", "unreadable"] {{ assert_eq!(a[name], false); }}
         let c = process::run_bytes({p}, ["fail"], #{{}})?;
-        let d = host::process_bytes({p}, ["fail"], 30000)?;
+        let d = process::run_bytes({p}, ["fail"], #{{timeout_ms: 30000}})?;
         assert_eq!(c.stdout, d.stdout); assert_eq!(c.stderr, d.stderr); assert_eq!(c.code, d.code);
         let c = process::run({p}, ["echo"], #{{input: "hé\0"}})?;
         assert_eq!(c.stdout, "hé\0");

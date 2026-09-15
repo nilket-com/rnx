@@ -40,7 +40,7 @@ fn run(source: &str) -> Ran {
 fn a_chosen_status_reaches_the_shell() {
 	for status in [0, 1, 2, 7, 255] {
 		let ran = run(&format!(
-			"pub fn main(args) {{\n\thost::exit({status})?;\n\tOk(())\n}}\n"
+			"pub fn main(args) {{\n\tprocess::exit({status})?;\n\tOk(())\n}}\n"
 		));
 		assert_eq!(ran.code, status, "{}", ran.stderr);
 		assert_eq!(ran.stderr, "", "exit({status}) said something");
@@ -52,7 +52,7 @@ fn a_script_can_fail_quietly() {
 	// The case that motivated the cut: a complete report on standard output
 	// and a failing status, with nothing on standard error.
 	let ran = run(
-		"pub fn main(args) {\n\tprintln!(\"the whole report\");\n\thost::exit(1)?;\n\tOk(())\n}\n",
+		"pub fn main(args) {\n\tprintln!(\"the whole report\");\n\tprocess::exit(1)?;\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 1);
 	assert_eq!(ran.stdout, "the whole report\n");
@@ -63,8 +63,9 @@ fn a_script_can_fail_quietly() {
 fn output_with_no_trailing_newline_is_not_lost() {
 	// A completed line is flushed on its own; an unterminated one is not, and
 	// the process is about to end without unwinding.
-	let ran =
-		run("pub fn main(args) {\n\tprint!(\"unterminated\");\n\thost::exit(3)?;\n\tOk(())\n}\n");
+	let ran = run(
+		"pub fn main(args) {\n\tprint!(\"unterminated\");\n\tprocess::exit(3)?;\n\tOk(())\n}\n",
+	);
 	assert_eq!(ran.code, 3);
 	assert_eq!(ran.stdout, "unterminated");
 }
@@ -76,7 +77,7 @@ fn a_status_outside_the_range_is_refused_rather_than_truncated() {
 	// arrive as 0 and turn a failure into a success.
 	for (asked, would_become) in [(256, 0), (300, 44), (-1, 255)] {
 		let ran = run(&format!(
-			"pub fn main(args) {{\n\tprintln!(\"printed\");\n\thost::exit({asked})?;\n\tOk(())\n}}\n"
+			"pub fn main(args) {{\n\tprintln!(\"printed\");\n\tprocess::exit({asked})?;\n\tOk(())\n}}\n"
 		));
 		assert_ne!(ran.code, would_become, "exit({asked}) was truncated");
 		assert_ne!(ran.code, 0, "exit({asked}) reported success");
@@ -101,7 +102,7 @@ fn a_status_outside_the_range_is_refused_rather_than_truncated() {
 #[test]
 fn nothing_after_the_exit_runs() {
 	let ran = run(
-		"pub fn main(args) {\n\tprintln!(\"before\");\n\thost::exit(4)?;\n\tprintln!(\"after\");\n\tOk(())\n}\n",
+		"pub fn main(args) {\n\tprintln!(\"before\");\n\tprocess::exit(4)?;\n\tprintln!(\"after\");\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 4);
 	assert_eq!(ran.stdout, "before\n");
@@ -111,7 +112,7 @@ fn nothing_after_the_exit_runs() {
 #[test]
 fn eprint_writes_exactly_what_it_is_given() {
 	let ran = run(
-		"pub fn main(args) {\n\thost::eprint(\"one\\n\")?;\n\thost::eprint(\"two, {not a format} \\\\ \\\"quoted\\\"\")?;\n\tprintln!(\"out\");\n\tOk(())\n}\n",
+		"pub fn main(args) {\n\tio::eprint(\"one\\n\")?;\n\tio::eprint(\"two, {not a format} \\\\ \\\"quoted\\\"\")?;\n\tprintln!(\"out\");\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 0, "{}", ran.stderr);
 	// Verbatim: nothing added, nothing escaped, no newline of its own.
@@ -125,7 +126,7 @@ fn eval_may_choose_a_status() {
 	// `eval` runs one thing and exits, which is what a status is for.
 	let output = Command::new(env!("CARGO_BIN_EXE_rnx"))
 		.arg("eval")
-		.arg("host::exit(5)")
+		.arg("process::exit(5)")
 		.output()
 		.unwrap();
 	assert_eq!(output.status.code(), Some(5));
@@ -193,8 +194,9 @@ fn an_invalid_status_ends_the_script_even_when_the_result_is_discarded() {
 	// The refusal cannot be an ordinary error, because an ordinary error is a
 	// value a script can drop, and dropping it would let a script that asked
 	// for an impossible status carry on and exit 0.
-	let ran =
-		run("pub fn main(args) {\n\thost::exit(256);\n\tprintln!(\"continued\");\n\tOk(())\n}\n");
+	let ran = run(
+		"pub fn main(args) {\n\tprocess::exit(256);\n\tprintln!(\"continued\");\n\tOk(())\n}\n",
+	);
 	assert_ne!(ran.code, 0, "an impossible status exited successfully");
 	assert_eq!(ran.stdout, "", "the script carried on: {}", ran.stdout);
 	assert!(
@@ -204,7 +206,7 @@ fn an_invalid_status_ends_the_script_even_when_the_result_is_discarded() {
 	);
 	// The same with the result bound and ignored rather than dropped.
 	let ran = run(
-		"pub fn main(args) {\n\tlet ignored = host::exit(300);\n\tprintln!(\"continued\");\n\tOk(())\n}\n",
+		"pub fn main(args) {\n\tlet ignored = process::exit(300);\n\tprintln!(\"continued\");\n\tOk(())\n}\n",
 	);
 	assert_ne!(ran.code, 0);
 	assert_eq!(ran.stdout, "");
@@ -214,7 +216,7 @@ fn an_invalid_status_ends_the_script_even_when_the_result_is_discarded() {
 fn an_invalid_status_from_eval_also_fails() {
 	let output = Command::new(env!("CARGO_BIN_EXE_rnx"))
 		.arg("eval")
-		.arg("host::exit(256)")
+		.arg("process::exit(256)")
 		.output()
 		.unwrap();
 	assert_ne!(output.status.code(), Some(0));
@@ -233,7 +235,7 @@ fn output_that_could_not_be_written_never_reports_success() {
 	// write, so the report is lost at the flush. A status of 0 there would
 	// say the script did what it said, and it did not.
 	let ran = run_writing_to(
-		"pub fn main(args) {\n\tprint!(\"report\");\n\thost::exit(0)?;\n\tOk(())\n}\n",
+		"pub fn main(args) {\n\tprint!(\"report\");\n\tprocess::exit(0)?;\n\tOk(())\n}\n",
 	);
 	assert_ne!(ran.code, 0, "output was lost and the status said success");
 	assert!(
@@ -248,7 +250,7 @@ fn a_status_that_was_already_failing_survives_a_failing_stream() {
 	// The script had decided it was failing, and that is still true, so the
 	// status it chose is kept and the lost output is named beside it.
 	let ran = run_writing_to(
-		"pub fn main(args) {\n\tprint!(\"report\");\n\thost::exit(2)?;\n\tOk(())\n}\n",
+		"pub fn main(args) {\n\tprint!(\"report\");\n\tprocess::exit(2)?;\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 2, "{}", ran.stderr);
 	assert!(

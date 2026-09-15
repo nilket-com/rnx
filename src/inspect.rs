@@ -293,13 +293,13 @@ mod tests {
 
 	fn context() -> Context {
 		let mut context = Context::with_default_modules().unwrap();
-		crate::host::install(&mut context).unwrap();
+		crate::install_core(&mut context).unwrap();
 		crate::fs::install(&mut context).unwrap();
 		context
 	}
 	fn host() -> Vec<HostFunction> {
 		let mut context = Context::with_default_modules().unwrap();
-		let mut names = crate::host::install(&mut context).unwrap();
+		let mut names = crate::install_core(&mut context).unwrap();
 		names.extend(crate::fs::install(&mut context).unwrap());
 		names
 	}
@@ -513,11 +513,11 @@ mod tests {
 	#[test]
 	fn every_registered_host_function_has_a_description() {
 		let host = host();
-		// Eight host functions and eighteen filesystem functions; the async
+		// Seven core functions and eighteen filesystem functions; the async
 		// fixture and two allocation probes remain test-support only.
 		assert_eq!(
 			host.len(),
-			26 + 3 * usize::from(cfg!(feature = "test-support"))
+			25 + 3 * usize::from(cfg!(feature = "test-support"))
 		);
 		for function in &host {
 			assert!(
@@ -562,13 +562,13 @@ mod budget_tests {
 
 	fn context() -> Context {
 		let mut context = Context::with_default_modules().unwrap();
-		crate::host::install(&mut context).unwrap();
+		crate::install_core(&mut context).unwrap();
 		crate::fs::install(&mut context).unwrap();
 		context
 	}
 	fn host() -> Vec<HostFunction> {
 		let mut context = Context::with_default_modules().unwrap();
-		let mut names = crate::host::install(&mut context).unwrap();
+		let mut names = crate::install_core(&mut context).unwrap();
 		names.extend(crate::fs::install(&mut context).unwrap());
 		names
 	}
@@ -691,7 +691,7 @@ mod short_circuit_tests {
 	#[test]
 	fn binding_help_does_not_render_a_value_it_cannot_print() {
 		let mut context = Context::with_default_modules().unwrap();
-		let host = crate::host::install(&mut context).unwrap();
+		let host = crate::install_core(&mut context).unwrap();
 		crate::fs::install(&mut context).unwrap();
 		let mut session = Session::new(context).unwrap();
 		session.set_budget(usize::MAX);

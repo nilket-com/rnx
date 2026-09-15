@@ -375,7 +375,7 @@ fn cancellation_ends_pending_sleep_in_run_eval_and_session() {
 	};
 	for mode in ["run", "eval", "session"] {
 		let f = Fixture::new();
-		let body = "host::eprint(\"ready\\n\"); time::sleep(10000).await?; 7";
+		let body = "io::eprint(\"ready\\n\"); time::sleep(10000).await?; 7";
 		let file = f.file(&format!("pub async fn main(_) {{ {body} }}"));
 		let mut command = f.command();
 		if mode == "run" {

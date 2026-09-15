@@ -149,8 +149,7 @@ fn interrupted_run(dir: &Path, ignoring_first: bool) -> Result<Ran, String> {
 	)
 	.map_err(|e| format!("cannot write the batch file: {e}"))?;
 	let script = format!(
-		"pub fn main(_) {{ let r = host::process(\"cmd\", [\"/c\", {}], {CHILD_DEADLINE_MS})?; \
-		 (r.cancelled, r.timed_out) }}",
+		"pub fn main(_) {{ let r = process::run(\"cmd\", [\"/c\", {}], #{{timeout_ms: {CHILD_DEADLINE_MS}}})?; (r.cancelled, r.timed_out) }}",
 		serde_escape(&batch.display().to_string())
 	);
 	let path = dir.join("waiting.rn");
@@ -246,9 +245,7 @@ fn cancellation_collects_a_writer_blocked_on_child_input() {
 	let received = dir.join("interrupt-received");
 	let release = dir.join("release-worker");
 	std::fs::write(&path, format!(
-		"pub fn main(_) {{ let input = \"\"; for i in 0..50000 {{ input += \"0123456789abcdefghij\\n\" }} \
-		 let r = host::process_bytes_input(\"ping\", [\"-n\", \"30\", \"127.0.0.1\"], input.as_bytes(), {CHILD_DEADLINE_MS})?; \
-		 println!(\"{{:?}}\", (r.cancelled, r.timed_out)); host::stdin()?; Ok(()) }}"
+		"pub fn main(_) {{ let input = \"\"; for i in 0..50000 {{ input += \"0123456789abcdefghij\\n\" }} let r = process::run_bytes(\"ping\", [\"-n\", \"30\", \"127.0.0.1\"], #{{input: input.as_bytes(), timeout_ms: {CHILD_DEADLINE_MS}}})?; println!(\"{{:?}}\", (r.cancelled, r.timed_out)); io::stdin()?; Ok(()) }}"
 	)).unwrap();
 	watch_for_leaks().expect("the console leak detector must be armed");
 	let leaks_before = LEAKS.load(Ordering::Relaxed);
@@ -626,8 +623,7 @@ fn an_interrupt_during_the_cleanup_is_still_reported() {
 	let batch = dir.join("say-and-go.bat");
 	std::fs::write(&batch, "@echo off\r\necho six!!\r\n").expect("cannot write the batch file");
 	let script = format!(
-		"pub fn main(_) {{ let r = host::process(\"cmd\", [\"/c\", {}], 10000)?; \
-		 (r.cancelled, r.timed_out, r.cut_short) }}",
+		"pub fn main(_) {{ let r = process::run(\"cmd\", [\"/c\", {}], #{{timeout_ms: 10000}})?; (r.cancelled, r.timed_out, r.cut_short) }}",
 		serde_escape(&batch.display().to_string())
 	);
 	let path = dir.join("cleanup.rn");

@@ -35,7 +35,7 @@ fn a_failure_after_cleanup_begins_still_reaches_the_script() {
 	let path = dir.join("script.rn");
 	std::fs::write(
 		&path,
-		"pub fn main(args) {\n\tlet s = \"\";\n\tfor i in 0..50000 { s += \"0123456789abcdefghij\\n\" }\n\t// The `?` is the point: a delivery failure must reach the script as an\n\t// error rather than being swallowed with the thread that found it.\n\tlet r = host::process_bytes_input(\"sh\", [\"-c\", args[0]], s.as_bytes(), 30000)?;\n\tprintln!(\"the call succeeded, which it should not have\");\n\tOk(())\n}\n",
+		"pub fn main(args) {\n\tlet s = \"\";\n\tfor i in 0..50000 { s += \"0123456789abcdefghij\\n\" }\n\t// The `?` is the point: a delivery failure must reach the script as an\n\t// error rather than being swallowed with the thread that found it.\n\tlet r = process::run_bytes(\"sh\", [\"-c\", args[0]], #{input: s.as_bytes(), timeout_ms: 30000})?;\n\tprintln!(\"the call succeeded, which it should not have\");\n\tOk(())\n}\n",
 	)
 	.unwrap();
 	let child = Command::new(env!("CARGO_BIN_EXE_rnx"))
@@ -105,7 +105,7 @@ fn an_unreadable_stream_is_reported_and_excuses_nothing() {
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(_) {{ let r = host::process({}, 20000)?; println!(\"unreadable={{}} truncated={{}} cut_short={{}} out={{}}\", r.unreadable, r.truncated, r.cut_short, r.stdout.len()); Ok(()) }}",
+			"pub fn main(_) {{ let r = process::run({}, #{{timeout_ms: 20000}})?; println!(\"unreadable={{}} truncated={{}} cut_short={{}} out={{}}\", r.unreadable, r.truncated, r.cut_short, r.stdout.len()); Ok(()) }}",
 			commands::echo("hello")
 		),
 	)
@@ -157,7 +157,7 @@ fn a_reader_that_panics_does_not_strand_the_other() {
 	let path = dir.join("script.rn");
 	std::fs::write(
 		&path,
-		"pub fn main(args) {\n\t// Kept rather than propagated, so this process is still here to be\n\t// counted.\n\tlet outcome = host::process(\"sh\", [\"-c\", args[0]], 30000);\n\tprintln!(\"returned {}\", outcome is Result);\n\thost::stdin()?;\n\tOk(())\n}\n",
+		"pub fn main(args) {\n\t// Kept rather than propagated, so this process is still here to be\n\t// counted.\n\tlet outcome = process::run(\"sh\", [\"-c\", args[0]], #{timeout_ms: 30000});\n\tprintln!(\"returned {}\", outcome is Result);\n\tio::stdin()?;\n\tOk(())\n}\n",
 	)
 	.unwrap();
 	let mut child = Command::new(env!("CARGO_BIN_EXE_rnx"))

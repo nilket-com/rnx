@@ -32,7 +32,7 @@ fn reported_with(
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(_) {{\n\tlet r = host::process({child}, {deadline_ms})?;\n\tprintln!(\"timed_out={{}} cancelled={{}} truncated={{}} cut_short={{}} unreadable={{}} out={{}} err={{}}\", r.timed_out, r.cancelled, r.truncated, r.cut_short, r.unreadable, r.stdout.len(), r.stderr.len());\n\tOk(())\n}}\n"
+			"pub fn main(_) {{\n\tlet r = process::run({child}, #{{timeout_ms: {deadline_ms}}})?;\n\tprintln!(\"timed_out={{}} cancelled={{}} truncated={{}} cut_short={{}} unreadable={{}} out={{}} err={{}}\", r.timed_out, r.cancelled, r.truncated, r.cut_short, r.unreadable, r.stdout.len(), r.stderr.len());\n\tOk(())\n}}\n"
 		),
 	)
 	.unwrap();
@@ -261,7 +261,7 @@ fn an_interrupt_during_the_cleanup_is_still_an_interrupt() {
 	let path = dir.join("script.rn");
 	std::fs::write(
 		&path,
-		"pub fn main(args) {\n\tlet r = host::process(\"sh\", [\"-c\", args[0]], 30000)?;\n\tprintln!(\"cancelled={} cut_short={}\", r.cancelled, r.cut_short);\n\tOk(())\n}\n",
+		"pub fn main(args) {\n\tlet r = process::run(\"sh\", [\"-c\", args[0]], #{timeout_ms: 30000})?;\n\tprintln!(\"cancelled={} cut_short={}\", r.cancelled, r.cut_short);\n\tOk(())\n}\n",
 	)
 	.unwrap();
 	let mut child = Command::new(env!("CARGO_BIN_EXE_rnx"))

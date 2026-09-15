@@ -76,15 +76,13 @@ fn a_deadline_ends_a_blocked_delivery_and_the_writer_is_collected() {
 	let out_path = dir.join("stdout");
 	let err_path = dir.join("stderr");
 	let release = dir.join("release-worker");
-	// `host::stdin()` at the end keeps rnx alive after the call, so the
+	// `io::stdin()` at the end keeps rnx alive after the call, so the
 	// writer's end and the child's can be observed from outside while it is
 	// still running. The teardown closes that stdin to let it leave.
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(_) {{ let input = \"\"; for i in 0..50000 {{ input += \"0123456789abcdefghij\\n\" }} \
-			 let r = host::process_bytes_input(\"ping\", [\"-n\", \"30\", \"127.0.0.1\"], input.as_bytes(), {DEADLINE_MS})?; \
-			 println!(\"{{:?}}\", (r.timed_out, r.cancelled)); host::stdin()?; Ok(()) }}"
+			"pub fn main(_) {{ let input = \"\"; for i in 0..50000 {{ input += \"0123456789abcdefghij\\n\" }} let r = process::run_bytes(\"ping\", [\"-n\", \"30\", \"127.0.0.1\"], #{{input: input.as_bytes(), timeout_ms: {DEADLINE_MS}}})?; println!(\"{{:?}}\", (r.timed_out, r.cancelled)); io::stdin()?; Ok(()) }}"
 		),
 	)
 	.unwrap();

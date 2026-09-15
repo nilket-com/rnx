@@ -51,11 +51,11 @@ def basic():
             check(over["input"] is None)
             check(len(msg) == 1, msg)
             check(run("x")["input"] == call["input"] + 1)
-            check(run("host::stdin()?")["text_plain"] == '""')
-            check(run("host::stdin()?")["failure"] is not None)
-            check(run("host::exit(0)?")["failure"] is not None)
+            check(run("io::stdin()?")["text_plain"] == '""')
+            check(run("io::stdin()?")["failure"] is not None)
+            check(run("process::exit(0)?")["failure"] is not None)
             r, _, streams = w.execute(
-                'print!("no newline"); host::eprint("stderr tail")?; 7'
+                'print!("no newline"); io::eprint("stderr tail")?; 7'
             )
             check(r["text_plain"] == "7")
             check(streams["stdout"].data == b"no newline")
@@ -76,7 +76,7 @@ def basic():
             check(r["epoch"] == 2)
             w.handoff()
             check(run("x")["failure"]["category"] == "compile")
-            check(run("host::stdin()?")["failure"] is not None)
+            check(run("io::stdin()?")["failure"] is not None)
             check(run("let y=9;")["input"] == 3)
             w.begin(op="shutdown")
             r, _ = w.settled()
@@ -95,6 +95,22 @@ def basic():
     print(
         "persistence, source origins, refusal admission, stdin, reset, barriers, config isolation: pass"
     )
+
+
+def namespaces():
+    w = Parent(BINARY)
+    try:
+        for name in ["json_parse", "json_stringify", "stdin", "eprint", "exit", "process", "process_bytes", "process_bytes_input", "test_pending", "test_allocation_peak", "test_reset_allocation_peak"]:
+            check(w.execute("host::" + name)[0]["failure"]["category"] == "compile")
+        source = 'json::parse(json::stringify(18446744073709551615u64)?)? == 18446744073709551615u64'
+        check(w.execute(source)[0]["text_plain"] == "true")
+        check(w.execute("process::exit(0).is_err()")[0]["text_plain"] == "true")
+        r, _, streams = w.execute('io::eprint("tail\\0")?; 42')
+        check(r["text_plain"] == "42")
+        check(streams["stderr"].data == b"tail\0")
+    finally:
+        w.close()
+    print("domain namespaces and removed host names in worker: pass")
 
 
 def malformed():
@@ -188,7 +204,7 @@ def volume_and_failure():
     try:
         text = "x" * 8192
         source = (
-            'for n in 0..300 { print!("' + text + '"); host::eprint("' + text + '")?; }'
+            'for n in 0..300 { print!("' + text + '"); io::eprint("' + text + '")?; }'
         )
         r, m, streams = w.execute(source)
         check(r["failure"] is None, r)
@@ -322,6 +338,7 @@ def blocked_handoff():
 
 for test in [
     basic,
+    namespaces,
     malformed,
     interrupt,
     ceiling,

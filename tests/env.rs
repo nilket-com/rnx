@@ -98,7 +98,7 @@ fn environment_distinguishes_missing_empty_and_invalid_names() {
 		.env("A", "1")
 		.env("E", ""));
 	yes(f
-		.eval(r#"host::json_stringify(env::vars()?)? == host::json_stringify(#{A:"1", E:""})?"#)
+		.eval(r#"json::stringify(env::vars()?)? == json::stringify(#{A:"1", E:""})?"#)
 		.env("A", "1")
 		.env("E", ""));
 	for name in ["", "A=B", "A\0"] {

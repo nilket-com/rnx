@@ -93,23 +93,46 @@ on `PATH` overrides. Supply an explicit path to select an exact executable.
 
 These calls are synchronous, including inside async code. The deadline
 starts after spawn, so it does not bound validation, lookup or launch.
-`host::process`, `host::process_bytes` and `host::process_bytes_input` remain
-compatible, without runtime warnings; their help points to `process::`.
+Record 0049 removes the old `host::` namespace, including the compatibility
+process names. Existing scripts and notebook cells need these replacements:
 
-A script chooses its own exit status with `host::exit(code)`, and can say
-something on the way out with `host::eprint(text)`, so it can fail quietly
+| old call | replacement |
+| --- | --- |
+| `host::json_parse(text)` | `json::parse(text)` |
+| `host::json_stringify(value)` | `json::stringify(value)` |
+| `host::stdin()` | `io::stdin()` |
+| `host::eprint(text)` | `io::eprint(text)` |
+| `host::exit(code)` | `process::exit(code)` |
+| `host::process(p, args, ms)` | `process::run(p, args, #{timeout_ms: ms})` |
+| `host::process_bytes(p, args, ms)` | `process::run_bytes(p, args, #{timeout_ms: ms})` |
+| `host::process_bytes_input(p, args, data, ms)` | `process::run_bytes(p, args, #{input: data, timeout_ms: ms})` |
+
+Keep the explicit timeout when migrating. The process facade also validates
+options, NULs and paths before launch and resolves explicit relative program
+paths against rnx's working directory, as described above; it does not retain
+the legacy entry points' validation or relative-path behavior. There are no
+aliases or runtime deprecation warnings.
+
+`io` is rnx's module; `use std::io;` shadows it with Rune's module. Use
+`::io::stdin()` if that import is present. Rune's print/println/dbg functions
+and macros are unchanged. `io::stdin()` is a once-per-process stream read,
+not Jupyter notebook input; a session reset does not make it readable again.
+`process::exit` is refused catchably in sessions and notebook workers.
+
+A script chooses its own exit status with `process::exit(code)`, and can say
+something on the way out with `io::eprint(text)`, so it can fail quietly
 with its report on standard output or exit 2 for a usage error the way a
 command-line tool is expected to. A status outside 0 to 255 is refused rather
 than truncated, because 256 would reach the shell as 0.
 
-A script given no path can read `host::stdin()`, so it can sit in a pipeline
+A script given no path can read `io::stdin()`, so it can sit in a pipeline
 like any other filter. It reads the stream once, under the same eight
 mebibyte limit as `fs::read`, and refuses a terminal rather than waiting
 for an end-of-file nobody is going to send.
 
-Besides `host::`, scripts and sessions have `text::`: `find`, `split_max`,
-and `group_digits`, each added because one real script needed it. Both
-modules complete and describe themselves at the prompt.
+Scripts and sessions also have `text::`: `find`, `split_max`, and
+`group_digits`, each added because one real script needed it. Domain modules
+complete and describe themselves at the prompt.
 
 `rnx eval <source>` evaluates one expression and exits. It reads what the
 expression returned the way `run` reads what a script returned, so an
@@ -122,11 +145,11 @@ prompt previews instead, marking what it cut, because a person is reading
 that. A value too deeply nested to render is reported on standard error with a
 nonzero status rather than printed in part.
 
-JSON is something a script asks for, with `host::json_stringify(value)`, which
+JSON is something a script asks for, with `json::stringify(value)`, which
 refuses what JSON cannot represent and names where in the value it gave up.
 There is no flag: a script that wants JSON on standard output prints it.
 
-`host::json_parse(text)` returns a `Result` containing the parsed value.
+`json::parse(text)` returns a `Result` containing the parsed value.
 Integers from `i64::MIN` through `i64::MAX` become signed integers; larger
 ones through `u64::MAX` become unsigned integers, without losing digits.
 Integers outside that range, fractions, and exponent notation use
@@ -157,8 +180,8 @@ incomplete bodies are refused. Text must be UTF-8; other encodings need
 the bytes form. Gzip decoding removes the wire Content-Encoding and
 Content-Length headers; returned headers describe the decoded response.
 
-JSON still uses `host::json_parse(response.body)?`; request JSON uses
-`host::json_stringify(value)?` and an explicit Content-Type header.
+JSON still uses `json::parse(response.body)?`; request JSON uses
+`json::stringify(value)?` and an explicit Content-Type header.
 Redirects are followed at most ten times, with sensitive headers removed
 on host/port changes. TLS verification uses bundled roots, which require
 updating the binary to refresh. Proxy environment variables are honored.
@@ -200,7 +223,7 @@ highlighting, coloured values and diagnostic markers; a pipe stays plain.
 Use `rnx --color=always eval 'Some(42)'` to force it, or `--color=never`
 to disable it. The flag goes before the command; after a script path it
 belongs to the script. Styling preserves rendered text and its bounds;
-script `print!` / `println!` and `host::eprint` remain untouched.
+script `print!` / `println!` and `io::eprint` remain untouched.
 Input highlighting requires the line editor: terminal stdin and a supported
 terminal type. Redirecting stdout leaves that editor and its redraws active,
 with highlighting off in auto mode and on under always.
@@ -223,7 +246,7 @@ incremental search, an input that continues on the next line while Rune's
 parser says it is unfinished (two blank lines abandon it), values rendered
 within bounds, diagnostics at the line and column typed, Ctrl-C to clear an
 input or stop a running one, Tab to complete a binding, a declaration, a
-`host::` function path, or a command, Ctrl-D or `:quit` to leave. `:reset` empties
+registered function path such as `json::parse`, or a command, Ctrl-D or `:quit` to leave. `:reset` empties
 the session, `:memory` reports tracked live allocation request bytes against
 a ceiling, `:debug` shows the source generated for the last input, and
 `:help` lists them all. The ceiling is `RNX_MEMORY_CEILING` bytes if set,

@@ -107,7 +107,7 @@ fn all_three_streams_under_pressure_at_once() {
 	// bytes it read, which is how delivery is confirmed rather than assumed.
 	let ran = run_bounded(
 		&format!(
-			"pub fn main(_) {{\n\t{BUILD_INPUT}\tlet r = host::process_bytes_input(@PRESSURE@, s.as_bytes(), 30000)?;\n\tprintln!(\"code={{:?}} out={{}} err={{}} truncated={{}} read={{}}\", r.code, r.stdout.len(), r.stderr.len(), r.truncated, String::from_utf8(host::process_bytes(@SUCCEED@, 1000)?.stdout)?);\n\tprintln!(\"tail={{:?}}\", String::from_utf8(r.stdout[200000..r.stdout.len()])?);\n\tOk(())\n}}\n"
+			"pub fn main(_) {{\n\t{BUILD_INPUT}\tlet r = process::run_bytes(@PRESSURE@, #{{input: s.as_bytes(), timeout_ms: 30000}})?;\n\tprintln!(\"code={{:?}} out={{}} err={{}} truncated={{}} read={{}}\", r.code, r.stdout.len(), r.stderr.len(), r.truncated, String::from_utf8(process::run_bytes(@SUCCEED@, #{{timeout_ms: 1000}})?.stdout)?);\n\tprintln!(\"tail={{:?}}\", String::from_utf8(r.stdout[200000..r.stdout.len()])?);\n\tOk(())\n}}\n"
 		),
 		Duration::from_secs(20),
 	);
@@ -142,7 +142,7 @@ fn start_blocked_run(dir: &std::path::Path, deadline_ms: u32) -> Command {
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(args) {{\n\t{BUILD_INPUT}\tlet r = host::process_bytes_input(\"sh\", [\"-c\", args[0]], s.as_bytes(), {deadline_ms})?;\n\tprintln!(\"timed_out={{}} cancelled={{}}\", r.timed_out, r.cancelled);\n\tOk(())\n}}\n"
+			"pub fn main(args) {{\n\t{BUILD_INPUT}\tlet r = process::run_bytes(\"sh\", [\"-c\", args[0]], #{{input: s.as_bytes(), timeout_ms: {deadline_ms}}})?;\n\tprintln!(\"timed_out={{}} cancelled={{}}\", r.timed_out, r.cancelled);\n\tOk(())\n}}\n"
 		),
 	)
 	.unwrap();
@@ -247,7 +247,7 @@ fn start_held_run(dir: &std::path::Path) -> Command {
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(args) {{\n\t{BUILD_INPUT}\tlet r = host::process_bytes_input(\"sh\", [\"-c\", args[0]], s.as_bytes(), 30000)?;\n\tprintln!(\"returned\");\n\t// Blocks until the teardown closes this end, spawning nothing, so the\n\t// thread count is the delivery's alone.\n\thost::stdin()?;\n\tOk(())\n}}\n"
+			"pub fn main(args) {{\n\t{BUILD_INPUT}\tlet r = process::run_bytes(\"sh\", [\"-c\", args[0]], #{{input: s.as_bytes(), timeout_ms: 30000}})?;\n\tprintln!(\"returned\");\n\t// Blocks until the teardown closes this end, spawning nothing, so the\n\t// thread count is the delivery's alone.\n\tio::stdin()?;\n\tOk(())\n}}\n"
 		),
 	)
 	.unwrap();
@@ -361,7 +361,7 @@ fn a_child_that_stops_reading_is_reported_as_itself() {
 	// back is what it said and the status it exited with.
 	let ran = run_bounded(
 		&format!(
-			"pub fn main(_) {{\n\t{BUILD_INPUT}\tlet r = host::process_bytes_input(@FIRST_LINE@, s.as_bytes(), 20000)?;\n\tprintln!(\"code={{:?}} out={{:?}}\", r.code, String::from_utf8(r.stdout)?);\n\tOk(())\n}}\n"
+			"pub fn main(_) {{\n\t{BUILD_INPUT}\tlet r = process::run_bytes(@FIRST_LINE@, #{{input: s.as_bytes(), timeout_ms: 20000}})?;\n\tprintln!(\"code={{:?}} out={{:?}}\", r.code, String::from_utf8(r.stdout)?);\n\tOk(())\n}}\n"
 		),
 		Duration::from_secs(20),
 	);
@@ -382,7 +382,7 @@ fn a_child_that_stops_reading_is_reported_as_itself() {
 #[test]
 fn nothing_to_say_and_nothing_to_hear_are_ordinary() {
 	let ran = run_bounded(
-		"pub fn main(_) {\n\tlet a = host::process_bytes_input(@COPY_STDIN@, b\"\", 20000)?;\n\tlet b = host::process_bytes_input(@SUCCEED@, b\"ignored\", 20000)?;\n\tlet c = host::process_bytes_input(@COPY_STDIN@, b\"echoed\", 20000)?;\n\tprintln!(\"{:?} {:?} {:?}\", a.code, b.code, String::from_utf8(c.stdout)?);\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet a = process::run_bytes(@COPY_STDIN@, #{input: b\"\", timeout_ms: 20000})?;\n\tlet b = process::run_bytes(@SUCCEED@, #{input: b\"ignored\", timeout_ms: 20000})?;\n\tlet c = process::run_bytes(@COPY_STDIN@, #{input: b\"echoed\", timeout_ms: 20000})?;\n\tprintln!(\"{:?} {:?} {:?}\", a.code, b.code, String::from_utf8(c.stdout)?);\n\tOk(())\n}\n",
 		Duration::from_secs(10),
 	);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
@@ -396,7 +396,7 @@ fn the_guarantees_of_the_older_forms_hold_for_this_one() {
 	// `host.rs` sets, which is two mebibytes and not the eight an earlier
 	// draft of record 0022 claimed.
 	let ran = run_bounded(
-		"pub fn main(_) {\n\tlet slow = host::process_bytes_input(@SLEEP_5@, b\"x\", 200)?;\n\tprintln!(\"timed_out={} code={:?}\", slow.timed_out, slow.code);\n\tlet big = host::process_bytes_input(@THREE_MILLION_ZEROS@, b\"x\", 20000)?;\n\tprintln!(\"truncated={} out={}\", big.truncated, big.stdout.len());\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet slow = process::run_bytes(@SLEEP_5@, #{input: b\"x\", timeout_ms: 200})?;\n\tprintln!(\"timed_out={} code={:?}\", slow.timed_out, slow.code);\n\tlet big = process::run_bytes(@THREE_MILLION_ZEROS@, #{input: b\"x\", timeout_ms: 20000})?;\n\tprintln!(\"truncated={} out={}\", big.truncated, big.stdout.len());\n\tOk(())\n}\n",
 		Duration::from_secs(10),
 	);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
@@ -414,7 +414,7 @@ fn the_older_forms_are_untouched() {
 	// Three arguments still, and the same shape of answer, so the other three
 	// ports cannot notice record 0022 happened.
 	let ran = run_bounded(
-		"pub fn main(_) {\n\tlet a = host::process(@ECHO_TEXT@, 20000)?;\n\tlet b = host::process_bytes(@ECHO_BYTES@, 20000)?;\n\tprintln!(\"{:?} {:?} {:?}\", a.stdout, a.code, String::from_utf8(b.stdout)?);\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet a = process::run(@ECHO_TEXT@, #{timeout_ms: 20000})?;\n\tlet b = process::run_bytes(@ECHO_BYTES@, #{timeout_ms: 20000})?;\n\tprintln!(\"{:?} {:?} {:?}\", a.stdout, a.code, String::from_utf8(b.stdout)?);\n\tOk(())\n}\n",
 		Duration::from_secs(10),
 	);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
@@ -458,7 +458,7 @@ fn the_harness_remembers_a_run_that_outstayed_its_bound() {
 	let (program, args) = ("ping", &["-n", "2", "127.0.0.1"][..]);
 	run_bounded(
 		&format!(
-			"pub fn main(_) {{ host::process({program:?}, {}, 20000)?; Ok(()) }}",
+			"pub fn main(_) {{ process::run({program:?}, {}, #{{timeout_ms: 20000}})?; Ok(()) }}",
 			serde_json::to_string(args).unwrap()
 		),
 		Duration::from_millis(200),

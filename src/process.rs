@@ -216,7 +216,7 @@ impl Request {
 	}
 }
 
-fn run(program: &str, args: Value, options: Value, bytes: bool) -> Result<Value> {
+pub(crate) fn run(program: &str, args: Value, options: Value, bytes: bool) -> Result<Value> {
 	let request = Request::parse(program, &args, options)
 		.map_err(|e| format!("cannot run {program}: {e}"))?;
 	crate::host::configured_process(
@@ -229,7 +229,7 @@ fn run(program: &str, args: Value, options: Value, bytes: bool) -> Result<Value>
 	)
 }
 
-const CONTRACT: &str = "(program, args, options) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: synchronous supervised child; run returns strict UTF-8 stdout/stderr, run_bytes returns Bytes; options: timeout_ms (default 30000, 1..=90000), input (String or Bytes), cwd, env (String values set, None removes), env_clear (default false). Explicit relative program paths always resolve against rnx's directory, even without cwd; bare names use platform lookup, whose PATH-override behaviour is platform-specific. The deadline starts after spawn. Check timed_out/cancelled before code, then truncated/cut_short/unreadable before trusting capture completeness. Killed children have no code on Unix and code 1 on Windows. Nonzero exit is Ok; launch/validation failures are Err. Input delivery does not certify consumption. No global environment or directory changes.";
+macro_rules! contract { () => { "(program, args, options) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: synchronous supervised child; run returns strict UTF-8 stdout/stderr, run_bytes returns Bytes; options: timeout_ms (default 30000, 1..=90000), input (String or Bytes), cwd, env (String values set, None removes), env_clear (default false). Explicit relative program paths always resolve against rnx's directory, even without cwd; bare names use platform lookup, whose PATH-override behaviour is platform-specific. The deadline starts after spawn. Check timed_out/cancelled before code, then truncated/cut_short/unreadable before trusting capture completeness. Killed children have no code on Unix and code 1 on Windows. Nonzero exit is Ok; launch/validation failures are Err. Input delivery does not certify consumption. No global environment or directory changes." }; }
 
 pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = Module::with_crate("process")?;
@@ -243,15 +243,20 @@ pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::H
 			run(program, args, options, true)
 		})
 		.build()?;
+	module.function("exit", crate::host::exit).build()?;
 	context.install(module)?;
 	Ok(vec![
 		crate::host::HostFunction {
+			path: "process::exit".into(),
+			doc: "exit(code) -> Result<()>: end the script with this status, which must be 0 to 255; a status outside that ends the script with 1 rather than being truncated; in run or eval it never returns, and in a session or worker it is refused with Err",
+		},
+		crate::host::HostFunction {
 			path: "process::run".into(),
-			doc: CONTRACT,
+			doc: concat!("run", contract!()),
 		},
 		crate::host::HostFunction {
 			path: "process::run_bytes".into(),
-			doc: CONTRACT,
+			doc: concat!("run_bytes", contract!()),
 		},
 	])
 }
@@ -260,7 +265,7 @@ pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::H
 mod tests {
 	use super::*;
 	#[test]
-	fn the_module_registers_exactly_the_two_documented_names() {
+	fn the_module_registers_exactly_the_three_documented_names() {
 		let mut context = Context::with_default_modules().unwrap();
 		let functions = install(&mut context).unwrap();
 		assert_eq!(
@@ -268,7 +273,7 @@ mod tests {
 				.iter()
 				.map(|f| f.path.as_str())
 				.collect::<Vec<_>>(),
-			["process::run", "process::run_bytes"]
+			["process::exit", "process::run", "process::run_bytes"]
 		);
 	}
 	#[test]

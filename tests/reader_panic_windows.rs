@@ -23,11 +23,11 @@ fn a_reader_that_panics_does_not_strand_the_other_windows() {
 	std::fs::write(
 		&script,
 		r#"pub fn main(_) {
-    match host::process("cmd", ["/c", "exit 0"], 30000) {
+    match process::run("cmd", ["/c", "exit 0"], #{timeout_ms: 30000}) {
         Ok(_) => println!("unexpected success"),
         Err(error) => println!("error={}", error),
     }
-    host::stdin()?;
+    io::stdin()?;
     Ok(())
 }"#,
 	)

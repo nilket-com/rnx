@@ -212,10 +212,7 @@ fn a_child_cannot_break_away_because_the_job_forbids_it() {
 	// The call's own outcome is reported too: stdout alone would read the same
 	// whether the helper ran and answered or the call was deadlined short.
 	let script = format!(
-		"pub fn main(_) {{ let r = host::process({}, [\"--exact\", \
-		 \"a_child_cannot_break_away_because_the_job_forbids_it\", \"--nocapture\"], 20000)?; \
-		 println!(\"CALL code={{:?}} timed_out={{}} cancelled={{}}\", r.code, r.timed_out, r.cancelled); \
-		 print!(\"{{}}\", r.stdout); Ok(()) }}",
+		"pub fn main(_) {{ let r = process::run({}, [\"--exact\", \"a_child_cannot_break_away_because_the_job_forbids_it\", \"--nocapture\"], #{{timeout_ms: 20000}})?; println!(\"CALL code={{:?}} timed_out={{}} cancelled={{}}\", r.code, r.timed_out, r.cancelled); print!(\"{{}}\", r.stdout); Ok(()) }}",
 		quoted(&exe.display().to_string())
 	);
 	let path = dir.join("breakaway.rn");

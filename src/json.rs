@@ -188,7 +188,7 @@ fn walk(
 		};
 	}
 	if value.borrow_ref::<Result<Value, Value>>().is_ok() {
-		// Measured: `host::json_stringify(Ok(1))` refuses. A result is not in
+		// Measured: `json::stringify(Ok(1))` refuses. A result is not in
 		// the serializer's list of known types, so it is an external
 		// reference like any other.
 		return Err(refuse("a result", path));
@@ -282,4 +282,26 @@ fn descend(
 	}
 	active.pop();
 	Ok(())
+}
+
+/// The only script-visible JSON reader and guarded writer.
+pub(crate) fn install(
+	context: &mut rune::Context,
+) -> crate::Result<Vec<crate::host::HostFunction>> {
+	let mut module = rune::Module::with_crate("json")?;
+	module.function("parse", parse).build()?;
+	module
+		.function("stringify", |value: Value| stringify(&value))
+		.build()?;
+	context.install(module)?;
+	Ok(vec![
+		crate::host::HostFunction {
+			path: "json::parse".into(),
+			doc: "parse(text) -> Result<value>: read JSON with exact signed/unsigned integers in range and document-position refusals",
+		},
+		crate::host::HostFunction {
+			path: "json::stringify".into(),
+			doc: "stringify(value) -> Result<String>: render JSON with cycle and depth guards; refuse unrepresentable values",
+		},
+	])
 }

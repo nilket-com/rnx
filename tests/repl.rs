@@ -302,7 +302,7 @@ fn gate_5_a_waited_child_is_cancelled_and_the_next_input_runs() {
 	let history = history_file("child");
 	let mut t = Terminal::spawn(&history);
 	t.prompt();
-	t.send("host::process(\"/bin/sh\", [\"-c\", \"sleep 30\"], 60000)\r");
+	t.send("process::run(\"/bin/sh\", [\"-c\", \"sleep 30\"], #{timeout_ms: 60000})\r");
 	std::thread::sleep(Duration::from_millis(300));
 	let start = Instant::now();
 	t.send("\x03");
@@ -400,12 +400,12 @@ fn gate_0003_completion_in_the_terminal() {
 	assert!(t.pending().contains("fs::write_new"), "{}", t.pending());
 	t.send("\x03");
 	t.prompt();
-	t.send("host::\t\t");
+	t.send("json::\t\t");
 	// Completion columns can place these names in either screen order.
 	let end = Instant::now() + Duration::from_secs(10);
 	loop {
 		let listed = t.pending();
-		if listed.contains("host::json_parse") && listed.contains("host::process") {
+		if listed.contains("json::parse") && listed.contains("json::stringify") {
 			break;
 		}
 		assert!(Instant::now() < end, "{listed}");
@@ -453,9 +453,9 @@ fn gate_0003_completion_in_the_terminal() {
 	assert!(!t.pending().contains("alphabet"), "{}", t.pending());
 	t.send("\x03");
 	t.prompt();
-	t.send("hos\t");
+	t.send("jso\t");
 	std::thread::sleep(Duration::from_millis(200));
-	assert!(t.pending().contains("host::"), "{}", t.pending());
+	assert!(t.pending().contains("json::"), "{}", t.pending());
 	t.send("\x03");
 	t.prompt();
 	t.send(":quit\r");
@@ -798,7 +798,7 @@ fn gate_0010_the_text_helpers_can_be_found_at_the_prompt() {
 	let history = history_file("text");
 	let mut t = Terminal::spawn(&history);
 	t.prompt();
-	// The module completes from its registered paths, like `host::`.
+	// The module completes from its registered paths, like `json::`.
 	t.send("tex\t");
 	std::thread::sleep(Duration::from_millis(200));
 	assert!(t.pending().contains("text::"), "{}", t.pending());
@@ -842,7 +842,7 @@ fn gate_0012_standard_input_is_refused_at_the_prompt_and_the_prompt_survives() {
 	let history = history_file("stdin");
 	let mut t = Terminal::spawn(&history);
 	t.prompt();
-	t.send("host::stdin()\r");
+	t.send("io::stdin()\r");
 	t.expect("it is a terminal");
 	t.prompt();
 	// The next thing typed is still the person's own.
@@ -850,14 +850,14 @@ fn gate_0012_standard_input_is_refused_at_the_prompt_and_the_prompt_survives() {
 	t.expect("2");
 	t.prompt();
 	// It is discoverable, and its description names the result it returns.
-	t.send(":help host::stdin\r");
+	t.send(":help io::stdin\r");
 	t.expect("host function");
 	t.expect("-> Result<String>");
 	t.expect("whole of standard input");
 	t.prompt();
 	// A refusal is not a consumed stream: it can be asked again and refused
 	// again, rather than reporting that it was already read.
-	t.send("host::stdin()\r");
+	t.send("io::stdin()\r");
 	t.expect("it is a terminal");
 	t.prompt();
 	t.send(":quit\r");
@@ -866,18 +866,18 @@ fn gate_0012_standard_input_is_refused_at_the_prompt_and_the_prompt_survives() {
 
 #[test]
 fn gate_0013_the_exit_status_is_refused_at_the_prompt_and_the_prompt_survives() {
-	// `host::exit` at a prompt would end the person's session, and `:quit`
+	// `process::exit` at a prompt would end the person's session, and `:quit`
 	// already does that deliberately.
 	let history = history_file("exit");
 	let mut t = Terminal::spawn(&history);
 	t.prompt();
-	t.send("host::exit(0)\r");
+	t.send("process::exit(0)\r");
 	t.expect("this is a session, not a script");
 	t.expect(":quit");
 	t.prompt();
 	// A status that could never be valid is refused the same way here: the
 	// prompt is the reason, and nothing about it ends the session.
-	t.send("host::exit(256)\r");
+	t.send("process::exit(256)\r");
 	t.expect("this is a session, not a script");
 	t.prompt();
 	// The session is still here and still the person's.
@@ -885,15 +885,15 @@ fn gate_0013_the_exit_status_is_refused_at_the_prompt_and_the_prompt_survives() 
 	t.expect("2");
 	t.prompt();
 	// Writing to standard error is harmless at a prompt, so it is allowed.
-	t.send("host::eprint(\"a warning\\n\")\r");
+	t.send("io::eprint(\"a warning\\n\")\r");
 	t.expect("a warning");
 	t.prompt();
 	// Both describe themselves from their registration.
-	t.send(":help host::exit\r");
+	t.send(":help process::exit\r");
 	t.expect("host function");
 	t.expect("end the script with this status");
 	t.prompt();
-	t.send(":help host::eprint\r");
+	t.send(":help io::eprint\r");
 	t.expect("adding nothing");
 	t.prompt();
 	t.send(":quit\r");
@@ -1143,7 +1143,7 @@ fn gate_0042_run_restores_titles_before_explicit_exits() {
 	for source in [
 		"pub fn main(_) { 42 }",
 		"pub fn main(_) { panic!(\"oops\") }",
-		"pub fn main(_) { host::exit(7) }",
+		"pub fn main(_) { process::exit(7) }",
 	] {
 		let history = history_file("run_title");
 		let file = history.with_extension("rn");

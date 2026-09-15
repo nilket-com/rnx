@@ -1,4 +1,4 @@
-//! What `host::process` refuses, and what `host::process_bytes` preserves.
+//! What `process::run` refuses, and what `process::run_bytes` preserves.
 #[path = "harness/commands.rs"]
 mod commands;
 use std::path::PathBuf;
@@ -44,7 +44,7 @@ fn run_in(dir: &PathBuf, source: &str) -> Ran {
 	}
 }
 
-const READ_TEXT: &str = "pub fn main(_) {\n\tlet r = host::process(@CAT_DATA@, 20000)?;\n\tprintln!(\"len={} truncated={}\", r.stdout.len(), r.truncated);\n\tOk(())\n}\n";
+const READ_TEXT: &str = "pub fn main(_) {\n\tlet r = process::run(@CAT_DATA@, #{timeout_ms: 20000})?;\n\tprintln!(\"len={} truncated={}\", r.stdout.len(), r.truncated);\n\tOk(())\n}\n";
 
 #[test]
 fn output_that_is_not_utf8_is_refused_and_says_where_to_go() {
@@ -59,7 +59,7 @@ fn output_that_is_not_utf8_is_refused_and_says_where_to_go() {
 	);
 	// It names where the fault is and what can read it.
 	assert!(ran.stderr.contains("at byte 3"), "{}", ran.stderr);
-	assert!(ran.stderr.contains("host::process_bytes"), "{}", ran.stderr);
+	assert!(ran.stderr.contains("process::run_bytes"), "{}", ran.stderr);
 	// Nothing plausible-looking was handed back.
 	assert_eq!(ran.stdout, "");
 	assert!(!ran.stderr.contains('\u{fffd}'), "{}", ran.stderr);
@@ -72,7 +72,7 @@ fn standard_error_that_is_not_utf8_is_refused_too() {
 	std::fs::write(dir.join("data"), b"bad \xff\xfe\n").unwrap();
 	let ran = run_in(
 		&dir,
-		"pub fn main(_) {\n\tlet r = host::process(@DATA_ON_STDERR@, 20000)?;\n\tprintln!(\"{}\", r.code);\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet r = process::run(@DATA_ON_STDERR@, #{timeout_ms: 20000})?;\n\tprintln!(\"{}\", r.code);\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 1);
 	assert!(
@@ -155,7 +155,7 @@ fn process_bytes_returns_the_bytes_exactly() {
 	std::fs::write(dir.join("data"), &every).unwrap();
 	let ran = run_in(
 		&dir,
-		"pub fn main(_) {\n\tlet r = host::process_bytes(@CAT_DATA@, 20000)?;\n\tlet i = 0;\n\tlet out = [];\n\twhile i < r.stdout.len() {\n\t\tout.push(r.stdout[i]);\n\t\ti += 1;\n\t}\n\tprintln!(\"{:?}\", out);\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet r = process::run_bytes(@CAT_DATA@, #{timeout_ms: 20000})?;\n\tlet i = 0;\n\tlet out = [];\n\twhile i < r.stdout.len() {\n\t\tout.push(r.stdout[i]);\n\t\ti += 1;\n\t}\n\tprintln!(\"{:?}\", out);\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 0, "{}", ran.stderr);
 	let expected = format!(
@@ -175,7 +175,7 @@ fn both_report_the_same_outcome_fields_for_the_same_child() {
 	let dir = scratch();
 	let ran = run_in(
 		&dir,
-		"fn show(r) { format!(\"code={:?} timed_out={} cancelled={} truncated={}\", r.code, r.timed_out, r.cancelled, r.truncated) }\npub fn main(_) {\n\tprintln!(\"{}\", show(host::process(@EXIT_7@, 20000)?));\n\tprintln!(\"{}\", show(host::process_bytes(@EXIT_7@, 20000)?));\n\tprintln!(\"{}\", show(host::process(@SLEEP_5@, 200)?));\n\tprintln!(\"{}\", show(host::process_bytes(@SLEEP_5@, 200)?));\n\tOk(())\n}\n",
+		"fn show(r) { format!(\"code={:?} timed_out={} cancelled={} truncated={}\", r.code, r.timed_out, r.cancelled, r.truncated) }\npub fn main(_) {\n\tprintln!(\"{}\", show(process::run(@EXIT_7@, #{timeout_ms: 20000})?));\n\tprintln!(\"{}\", show(process::run_bytes(@EXIT_7@, #{timeout_ms: 20000})?));\n\tprintln!(\"{}\", show(process::run(@SLEEP_5@, #{timeout_ms: 200})?));\n\tprintln!(\"{}\", show(process::run_bytes(@SLEEP_5@, #{timeout_ms: 200})?));\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 0, "{}", ran.stderr);
 	let lines: Vec<&str> = ran.stdout.lines().collect();
@@ -218,7 +218,7 @@ fn one_streams_truncation_does_not_excuse_the_other() {
 	// Truncated standard output, malformed standard error.
 	let ran = run_in(
 		&dir,
-		"pub fn main(_) {\n\tlet r = host::process(@BIG_AND_PARTIAL@, 20000)?;\n\tprintln!(\"accepted truncated={} stderr={:?}\", r.truncated, r.stderr);\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet r = process::run(@BIG_AND_PARTIAL@, #{timeout_ms: 20000})?;\n\tprintln!(\"accepted truncated={} stderr={:?}\", r.truncated, r.stderr);\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 1, "accepted: {}", ran.stdout);
 	assert!(
@@ -233,7 +233,7 @@ fn one_streams_truncation_does_not_excuse_the_other() {
 	// output. The fault and the excuse swap streams.
 	let ran = run_in(
 		&dir,
-		"pub fn main(_) {\n\tlet r = host::process(@PARTIAL_AND_BIG@, 20000)?;\n\tprintln!(\"accepted truncated={} stdout={:?}\", r.truncated, r.stdout);\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet r = process::run(@PARTIAL_AND_BIG@, #{timeout_ms: 20000})?;\n\tprintln!(\"accepted truncated={} stdout={:?}\", r.truncated, r.stdout);\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 1, "accepted: {}", ran.stdout);
 	assert!(
@@ -253,7 +253,7 @@ fn a_streams_own_truncation_still_excuses_its_own_tail() {
 	std::fs::write(dir.join("big"), "€".repeat(LIMIT / 2).as_bytes()).unwrap();
 	let ran = run_in(
 		&dir,
-		"pub fn main(_) {\n\tlet r = host::process(@BIG_AND_FINE@, 20000)?;\n\tprintln!(\"len={} truncated={} err={:?}\", r.stdout.len(), r.truncated, r.stderr);\n\tOk(())\n}\n",
+		"pub fn main(_) {\n\tlet r = process::run(@BIG_AND_FINE@, #{timeout_ms: 20000})?;\n\tprintln!(\"len={} truncated={} err={:?}\", r.stdout.len(), r.truncated, r.stderr);\n\tOk(())\n}\n",
 	);
 	assert_eq!(ran.code, 0, "{}", ran.stderr);
 	assert!(ran.stdout.contains("truncated=true"), "{}", ran.stdout);

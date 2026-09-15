@@ -1,4 +1,4 @@
-//! What `host::stdin` reads, and what it refuses.
+//! What `io::stdin` reads, and what it refuses.
 //!
 //! Unix uses a pseudo-terminal; Windows uses a headless ConPTY console.
 //! Both must refuse input with the same message. Pipe and file cases run on
@@ -142,7 +142,7 @@ fn on_a_terminal(source: &str) -> Ran {
 }
 
 /// Prints standard input exactly, escaped, so a trailing newline is visible.
-const ECHO: &str = "pub fn main(args) {\n\tprintln!(\"{:?}\", host::stdin()?);\n\tOk(())\n}\n";
+const ECHO: &str = "pub fn main(args) {\n\tprintln!(\"{:?}\", io::stdin()?);\n\tOk(())\n}\n";
 
 #[test]
 fn a_pipe_is_read_exactly() {
@@ -202,7 +202,7 @@ fn a_terminal_is_refused_and_does_not_block() {
 
 #[test]
 fn a_second_read_is_refused_and_is_not_the_empty_stream() {
-	let source = "pub fn main(args) {\n\tlet first = host::stdin()?;\n\tprintln!(\"first {:?}\", first);\n\tlet second = host::stdin()?;\n\tprintln!(\"second {:?}\", second);\n\tOk(())\n}\n";
+	let source = "pub fn main(args) {\n\tlet first = io::stdin()?;\n\tprintln!(\"first {:?}\", first);\n\tlet second = io::stdin()?;\n\tprintln!(\"second {:?}\", second);\n\tOk(())\n}\n";
 	let ran = piped(source, b"a\n");
 	assert_eq!(ran.code, 1);
 	// The first read succeeded and printed before the second was refused.
@@ -228,7 +228,7 @@ fn the_limit_holds_at_its_boundary() {
 	let limit = 8 * 1024 * 1024;
 	let at = dir.join("at.txt");
 	std::fs::write(&at, vec![b'a'; limit]).unwrap();
-	let source = "pub fn main(args) {\n\tprintln!(\"{}\", host::stdin()?.len());\n\tOk(())\n}\n";
+	let source = "pub fn main(args) {\n\tprintln!(\"{}\", io::stdin()?.len());\n\tOk(())\n}\n";
 	let ran = redirected(source, &at);
 	assert_eq!(ran.code, 0, "{}", ran.stderr);
 	assert_eq!(ran.stdout, format!("{limit}\n"));

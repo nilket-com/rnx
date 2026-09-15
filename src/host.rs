@@ -1,5 +1,5 @@
-//! Minimal trusted-local host for the spike, not a proposed standard library.
-use rune::{Context, Module, runtime::Value};
+//! Internal process supervisor and shared host support. No Rune `host` module.
+use rune::{Context, runtime::Value};
 use std::io::{Read, Write};
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -27,15 +27,6 @@ fn error(e: impl std::fmt::Display) -> String {
 fn about(what: &str, subject: &str, e: impl std::fmt::Display) -> String {
 	format!("cannot {what} {subject}: {e}")
 }
-fn json_parse(text: &str) -> Result<Value, String> {
-	super::json::parse(text)
-}
-/// The one JSON serializer a script can reach. The bound and the refusal
-/// vocabulary live in `json`, so nothing else in the crate decides what JSON
-/// can represent.
-fn json_stringify(value: Value) -> Result<String, String> {
-	super::json::stringify(&value)
-}
 /// Whether standard input has already been consumed. The stream can only be
 /// read to its end once, and a second attempt is a mistake worth naming
 /// rather than an empty string indistinguishable from an empty stream.
@@ -47,7 +38,7 @@ static STDIN_READ: AtomicBool = AtomicBool::new(false);
 /// the terminal, and under `run` with no redirection reading one blocks until
 /// somebody types an end-of-file, which is indistinguishable from a hung
 /// script. A pipe, a redirected file, and a closed stream are all read.
-fn stdin_read() -> Result<String, String> {
+pub(crate) fn stdin_read() -> Result<String, String> {
 	// SAFETY: isatty only inspects the descriptor.
 	if crate::platform::stdin_is_a_terminal() {
 		return Err(
@@ -75,7 +66,7 @@ fn stdin_read() -> Result<String, String> {
 static RUNNING_A_SCRIPT: AtomicBool = AtomicBool::new(false);
 
 /// Called by `run` and by `eval`, the two entry points whose whole job is to
-/// run one thing and exit. The session never calls it, so `host::exit` is
+/// run one thing and exit. The session never calls it, so `process::exit` is
 /// refused there rather than ending a person's session.
 pub fn running_a_script() {
 	RUNNING_A_SCRIPT.store(true, Ordering::Relaxed);
@@ -114,7 +105,7 @@ fn leave(code: i32) -> ! {
 /// exit 0, which is exactly the outcome the refusal exists to prevent. At a
 /// session prompt there is nothing to end, so the refusal there is an
 /// ordinary error the session reports and recovers from.
-fn exit(code: i64) -> Result<(), String> {
+pub(crate) fn exit(code: i64) -> Result<(), String> {
 	if !RUNNING_A_SCRIPT.load(Ordering::Relaxed) {
 		return Err("cannot exit: this is a session, not a script; use :quit".to_owned());
 	}
@@ -130,7 +121,7 @@ fn exit(code: i64) -> Result<(), String> {
 
 /// Write to standard error, adding nothing. A function that appended a
 /// newline could not be asked not to; this one can be asked to.
-fn eprint(text: &str) -> Result<(), String> {
+pub(crate) fn eprint(text: &str) -> Result<(), String> {
 	let mut stderr = std::io::stderr().lock();
 	stderr
 		.write_all(text.as_bytes())
@@ -600,15 +591,6 @@ fn capture(
 /// The input is copied into the writer thread rather than borrowed: record
 /// 0022 hands the bytes to a thread, which outlives the `Value` they came
 /// from even though it no longer outlives the call.
-fn run_child(
-	program: &str,
-	arguments: Value,
-	timeout_ms: u64,
-	input: Option<Vec<u8>>,
-) -> Result<Ran, String> {
-	run_child_with(program, arguments, timeout_ms, input, None)
-}
-
 fn run_child_with(
 	program: &str,
 	arguments: Value,
@@ -1081,18 +1063,13 @@ fn decode(program: &str, stream: &str, got: &Captured, sibling: &str) -> Result<
 	}
 }
 
-fn process(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, String> {
-	let ran = run_child(program, arguments, timeout_ms, None)?;
-	text_reply(program, ran, "host::process_bytes")
-}
-
 fn text_reply(program: &str, ran: Ran, sibling: &str) -> Result<Value, String> {
 	// Each stream is decoded against its own flag. The record reports both
 	// together, because a caller checking `truncated` wants to know that
 	// something fell short, not which half did.
 	let stdout = decode(program, "standard output", &ran.out, sibling)?;
 	let stderr = decode(program, "standard error", &ran.err, sibling)?;
-	json_parse(
+	crate::json::parse(
 		&serde_json::json!({
 			"code": ran.code, "timed_out": ran.timed_out, "cancelled": ran.cancelled,
 			"stdout": stdout, "stderr": stderr, "truncated": ran.truncated(),
@@ -1117,32 +1094,6 @@ pub(crate) fn configured_process(
 	} else {
 		text_reply(program, ran, "process::run_bytes")
 	}
-}
-
-/// The same child, with its streams exactly as they came.
-fn process_bytes(program: &str, arguments: Value, timeout_ms: u64) -> Result<Value, String> {
-	bytes_reply(run_child(program, arguments, timeout_ms, None)?)
-}
-
-/// As `process_bytes`, and the child is told what to do: `input` is written to
-/// its standard input, which is then closed, because a child like
-/// `git cat-file --batch` needs the end of its input to finish.
-///
-/// A success does not certify that every byte was consumed — a child may stop
-/// reading, and that is its prerogative. What comes back is what the child
-/// said and the status it exited with.
-fn process_bytes_input(
-	program: &str,
-	arguments: Value,
-	input: Value,
-	timeout_ms: u64,
-) -> Result<Value, String> {
-	let bytes = input
-		.borrow_ref::<rune::runtime::Bytes>()
-		.map_err(|e| about("run", program, e))?
-		.as_slice()
-		.to_vec();
-	bytes_reply(run_child(program, arguments, timeout_ms, Some(bytes))?)
 }
 
 /// What both byte-returning forms report, so the two cannot describe the same
@@ -1186,102 +1137,6 @@ pub struct HostFunction {
 	pub doc: &'static str,
 }
 
-/// Install the host module and return every function it registered, path and
-/// description recorded at the registration itself so completion and `:help`
-/// have no second list to keep in step.
-pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
-	crate::platform::watch_for_interrupt();
-	let mut module = Module::with_crate("host")?;
-	let mut registered = Vec::new();
-	// Record 0032's fixture: a future that is pending for `ms` and then
-	// resolves to `ms`. Only under `test-support`, because the foundation
-	// ships no battery; it exists so the gates have something to await.
-	#[cfg(feature = "test-support")]
-	{
-		async fn test_pending(ms: u64) -> u64 {
-			tokio::time::sleep(std::time::Duration::from_millis(ms)).await;
-			ms
-		}
-		module.function("test_pending", test_pending).build()?;
-		module
-			.function("test_allocation_peak", || crate::memory::peak() as u64)
-			.build()?;
-		module
-			.function("test_reset_allocation_peak", crate::memory::reset_peak)
-			.build()?;
-		for (name, doc) in [
-			(
-				"test_allocation_peak",
-				"test_allocation_peak(): test-support allocator peak",
-			),
-			(
-				"test_reset_allocation_peak",
-				"test_reset_allocation_peak(): test-support reset peak",
-			),
-		] {
-			registered.push(HostFunction {
-				path: format!("host::{name}"),
-				doc,
-			});
-		}
-		registered.push(HostFunction {
-			path: "host::test_pending".to_owned(),
-			doc: "test_pending(ms): test-support only; pending for ms milliseconds, then ms",
-		});
-	}
-	macro_rules! register {
-		($name:literal, $function:expr, $doc:literal) => {
-			module.function($name, $function).build()?;
-			registered.push(HostFunction {
-				path: format!("host::{}", $name),
-				doc: $doc,
-			});
-		};
-	}
-	register!(
-		"json_parse",
-		json_parse,
-		"json_parse(text) -> Result<value>: parse JSON text into a Rune value"
-	);
-	register!(
-		"json_stringify",
-		json_stringify,
-		"json_stringify(value) -> Result<String>: render a value as JSON text"
-	);
-	register!(
-		"stdin",
-		stdin_read,
-		"stdin() -> Result<String>: the whole of standard input as UTF-8, up to 8 MiB; Err on a terminal or a second read"
-	);
-	register!(
-		"exit",
-		exit,
-		"exit(code) -> Result<()>: end the script with this status, which must be 0 to 255; a status outside that ends the script with 1 rather than being truncated; in a script it never returns, and at a session prompt it is refused with Err"
-	);
-	register!(
-		"eprint",
-		eprint,
-		"eprint(text) -> Result<()>: write text to standard error, adding nothing"
-	);
-	register!(
-		"process_bytes",
-		process_bytes,
-		"process_bytes(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process, with the streams as byte strings and no decoding; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first; compatibility name: prefer process::run or process::run_bytes with an options object"
-	);
-	register!(
-		"process_bytes_input",
-		process_bytes_input,
-		"process_bytes_input(program, args, input, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: as process_bytes, writing the byte string `input` to the child's standard input and closing it; a success does not mean every byte was read; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first; compatibility name: prefer process::run or process::run_bytes with an options object"
-	);
-	register!(
-		"process",
-		process,
-		"process(program, args, timeout_ms) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: run a child with a deadline, bounded capture, and cancellation on Ctrl-C; for everything the child produced, check timed_out and cancelled first and then truncated, cut_short and unreadable; `code` alone does not say the child chose how it ended — a child rnx ended reports no status on Unix and 1 on Windows, so read timed_out and cancelled first; compatibility name: prefer process::run or process::run_bytes with an options object"
-	);
-	context.install(module)?;
-	Ok(registered)
-}
-
 pub fn process_checks(context: &Context) -> super::Result<()> {
 	// Removed by the guard's `Drop`, so a probe that fails its assertion still
 	// takes its three megabytes with it. Deleting after the loop leaves the
@@ -1299,7 +1154,7 @@ pub fn process_checks(context: &Context) -> super::Result<()> {
 				// null. Windows has no signals: `TerminateJobObject` **is**
 				// an exit status, and the 1 it reports is the one rnx passed
 				// it. Both say the same thing about the child — it did not
-				// choose how it ended — and `host::process` already tells a
+				// choose how it ended — and `process::run` already tells a
 				// caller to read `timed_out` before `code` for exactly this
 				// reason.
 				#[cfg(unix)]
@@ -1379,20 +1234,20 @@ fn probes(_bulk: &Option<std::path::PathBuf>) -> Vec<(&'static str, String)> {
 	vec![
 		(
 			"exit status",
-			r#"pub fn main(_) { host::process("/bin/sh", ["-c", "exit 7"], 1000)? }"#.to_owned(),
+			r#"pub fn main(_) { process::run("/bin/sh", ["-c", "exit 7"], #{timeout_ms: 1000})? }"#.to_owned(),
 		),
 		(
 			"deadline",
-			r#"pub fn main(_) { host::process("/bin/sh", ["-c", "sleep 10 & wait"], 40)? }"#
+			r#"pub fn main(_) { process::run("/bin/sh", ["-c", "sleep 10 & wait"], #{timeout_ms: 40})? }"#
 				.to_owned(),
 		),
 		(
 			"capture cap",
-			r#"pub fn main(_) { let r = host::process("/usr/bin/head", ["-c", "3000000", "/dev/zero"], 1000)?; (r.truncated, r.stdout.len()) }"#.to_owned(),
+			r#"pub fn main(_) { let r = process::run("/usr/bin/head", ["-c", "3000000", "/dev/zero"], #{timeout_ms: 1000})?; (r.truncated, r.stdout.len()) }"#.to_owned(),
 		),
 		(
 			"interruption",
-			r#"pub fn main(_) { host::process("/bin/sh", ["-c", "kill -INT $PPID; sleep 10"], 1000)? }"#.to_owned(),
+			r#"pub fn main(_) { process::run("/bin/sh", ["-c", "kill -INT $PPID; sleep 10"], #{timeout_ms: 1000})? }"#.to_owned(),
 		),
 	]
 }
@@ -1404,19 +1259,19 @@ fn probes(bulk: &Option<std::path::PathBuf>) -> Vec<(&'static str, String)> {
 	vec![
 		(
 			"exit status",
-			r#"pub fn main(_) { host::process("cmd", ["/c", "exit 7"], 1000)? }"#.to_owned(),
+			r#"pub fn main(_) { process::run("cmd", ["/c", "exit 7"], #{timeout_ms: 1000})? }"#.to_owned(),
 		),
 		(
 			// `ping` rather than a shell: nothing here needs one, and record
 			// 0016's rule is easier to keep when no shell is involved at all.
 			"deadline",
-			r#"pub fn main(_) { host::process("ping", ["-n", "20", "127.0.0.1"], 40)? }"#
+			r#"pub fn main(_) { process::run("ping", ["-n", "20", "127.0.0.1"], #{timeout_ms: 40})? }"#
 				.to_owned(),
 		),
 		(
 			"capture cap",
 			format!(
-				"pub fn main(_) {{ let r = host::process(\"cmd\", [\"/c\", \"type\", {}], 1000)?; (r.truncated, r.stdout.len()) }}",
+				"pub fn main(_) {{ let r = process::run(\"cmd\", [\"/c\", \"type\", {}], #{{timeout_ms: 1000}})?; (r.truncated, r.stdout.len()) }}",
 				quoted(&bulk.display().to_string())
 			),
 		),
@@ -1472,8 +1327,18 @@ fn probe(context: &Context, label: &str, source: &str) -> super::Result<serde_js
 
 #[cfg(test)]
 mod tests {
+	// Exercise the public facade's validation with the same failure cases.
+	fn process(
+		program: &str,
+		args: rune::runtime::Value,
+		timeout: u64,
+	) -> Result<rune::runtime::Value, String> {
+		let options = crate::json::parse(&format!("{{\"timeout_ms\":{timeout}}}"))?;
+		crate::process::run(program, args, options, false)
+	}
+
 	fn decode(program: &str, stream: &str, got: &super::Captured) -> Result<String, String> {
-		super::decode(program, stream, got, "host::process_bytes")
+		super::decode(program, stream, got, "process::run_bytes")
 	}
 
 	use super::*;
@@ -1490,9 +1355,11 @@ mod tests {
 	#[test]
 	fn a_probe_that_cannot_spawn_reports_the_spawn_failure() {
 		let mut context = Context::with_default_modules().unwrap();
-		install(&mut context).unwrap();
+		crate::install_core(&mut context).unwrap();
 		let missing = "rnx-no-such-program-4a7f";
-		let source = format!(r#"pub fn main(_) {{ host::process("{missing}", [], 1000)? }}"#);
+		let source = format!(
+			r#"pub fn main(_) {{ process::run("{missing}", [], #{{timeout_ms: 1000}})? }}"#
+		);
 
 		let why = probe(&context, "a probe", &source)
 			.expect_err("a probe that cannot spawn reported success")

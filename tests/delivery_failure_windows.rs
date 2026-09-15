@@ -66,9 +66,7 @@ fn a_failure_after_cleanup_begins_still_reaches_the_script_windows() {
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(_) {{ let s = \"\"; for i in 0..50000 {{ s += \"0123456789abcdefghij\\n\" }} \
-			 host::process_bytes_input(\"ping\", [\"-n\", \"30\", \"127.0.0.1\"], s.as_bytes(), {DEADLINE_MS})?; \
-			 println!(\"the call succeeded, which it should not have\"); Ok(()) }}"
+			"pub fn main(_) {{ let s = \"\"; for i in 0..50000 {{ s += \"0123456789abcdefghij\\n\" }} process::run_bytes(\"ping\", [\"-n\", \"30\", \"127.0.0.1\"], #{{input: s.as_bytes(), timeout_ms: {DEADLINE_MS}}})?; println!(\"the call succeeded, which it should not have\"); Ok(()) }}"
 		),
 	)
 	.unwrap();
