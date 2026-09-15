@@ -1,7 +1,7 @@
 # rnx 0048: a bounded transport before a notebook
 
-Status: accepted and prototyped 2026-09-15; the required client gate reaches
-the command-compatibility stop. Not accepted for adoption. The forty-eighth
+Status: heartbeat extension accepted 2026-09-15 after the prototype reached
+the command-compatibility stop. Remaining gates still required before adoption. The forty-eighth
 record authorizes a
 standalone transport prototype and evidence, not a kernel implementation or
 an automatic replacement of record 0047's transport decision. Review of these
@@ -67,7 +67,7 @@ implementing execute, worker supervision or notebook state.
 
 The normative references are [RFC 23, ZMTP 3.0](https://rfc.zeromq.org/spec/23/)
 and [RFC 37, ZMTP 3.1](https://rfc.zeromq.org/spec/37/). Implement the former's
-NULL handshake and framing; 3.1 commands are deferred. Send the 64-byte 3.0
+NULL handshake and framing; 3.1 features other than the bounded heartbeat extension below are deferred. Send the 64-byte 3.0
 greeting, use NULL with as-server zero, send READY without waiting for the
 peer's READY, and negotiate 3.0 with peers advertising 3.0 or higher. Refuse
 older versions and non-NULL mechanisms. Ignore greeting padding as specified.
@@ -81,8 +81,20 @@ application, while enforcing limits incrementally during assembly.
 SUB subscriptions use the 3.0 one-byte subscribe/unsubscribe prefix and binary
 prefix matching on the first publication frame, including the empty prefix.
 Maintain reference counts, with bounded counters; refuse invalid subscription
-messages and counter overflow. No PING/PONG generation or 3.1 command support
-is promised. Unsupported post-handshake commands close that connection.
+messages and counter overflow. Accept the bounded PING/PONG extension observed from libzmq, without advertising
+3.1. PING has a one-byte name length, four name bytes, a two-byte TTL and at
+most 16 context bytes: 7–23 command-body bytes, at most 18 after the name.
+The earlier suggested 22-byte-after-name limit is not the RFC grammar.
+PONG has 5–21 body bytes. Check these bounds before allocation, reject malformed
+lengths or names, and close the peer on excess. Reply to PING with PONG echoing
+only its context, through that connection's existing bounded send path. Close
+the peer when admission fails. Ignore TTL and discard valid inbound PONG; the
+server never originates PING. Commands may interleave with multipart frames,
+but do not reset its assembly deadline or release its retained credits. Idle
+heartbeat exchanges do not start a data-message lifetime. Yield after bounded
+command processing so floods cannot monopolize an executor thread.
+
+All other unsupported post-handshake commands close that connection.
 Jupyter's separate REP heartbeat remains supported; it is not ZMTP heartbeating.
 
 These are interoperability gates, not assumptions that clients follow our
@@ -213,7 +225,9 @@ under the stated workloads; none is advertised as a kernel startup measurement.
    Repeat the previous 32 MiB unfinished-multipart attempt: the peer must be
    disconnected at the bounded threshold, with no native-style accumulation.
    Stop on unexplained retained growth or unbounded allocation/queue ownership.
-2. Real Python signed exchanges on shell/control/stdin, extra routing envelopes,
+2. PING/PONG context endpoints (0 and 16 bytes), excess/truncated bodies, ignored
+   TTL/PONG, interleaved multipart commands, flood admission, and an idle client
+   kept alive beyond the assembly deadline. Real Python signed exchanges on shell/control/stdin, extra routing envelopes,
    wrong-signature silence, empty-key mode and binary heartbeat round trips.
    Capture 3.0 negotiation and subscription traffic from the pinned 3.1-capable
    client, with heartbeat options enabled. Test NULL/READY failures, version
@@ -239,7 +253,7 @@ under the stated workloads; none is advertised as a kernel startup measurement.
 
 Kernel integration and JupyterLab screenshots remain 0047's work. General ZeroMQ
 socket compatibility, connecting instead of listening, remote endpoints,
-PLAIN/CURVE, ZMTP 3.1 commands, transport authentication, automatic retries and
+PLAIN/CURVE, other ZMTP 3.1 commands, transport authentication, automatic retries and
 arbitrary process-memory/availability guarantees are outside this prototype.
 Linux parent-death changes remain a separate shared-rnx plan; containment is not
 reimplemented here. A passing prototype earns an integration decision, not a
