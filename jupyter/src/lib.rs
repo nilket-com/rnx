@@ -9,3 +9,5 @@ pub mod transport;
 pub mod wire;
 #[cfg(target_os = "linux")]
 pub mod worker;
+
+pub mod install;

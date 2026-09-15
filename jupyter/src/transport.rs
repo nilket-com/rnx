@@ -591,6 +591,26 @@ pub struct Publisher {
 	shutdown: watch::Receiver<bool>,
 }
 impl Publisher {
+	/// A current matching subscription, not proof of future delivery.
+	pub fn has_subscriber(&self, topic: &[u8]) -> bool {
+		if *self.shutdown.borrow() {
+			return false;
+		}
+		self.state.endpoints[4]
+			.peers
+			.lock()
+			.unwrap()
+			.values()
+			.any(|p| {
+				!*p.stop.borrow()
+					&& p.subs
+						.lock()
+						.unwrap()
+						.keys()
+						.any(|prefix| topic.starts_with(prefix))
+			})
+	}
+
 	pub fn publish(&self, parts: &[Vec<u8>]) -> Res<()> {
 		if parts.is_empty() {
 			return Err(err("publication needs a topic"));
@@ -990,7 +1010,7 @@ mod tests {
 			e.peers.lock().unwrap().insert(vec![id], p);
 			receivers.push(rx);
 		}
-		publish(&st, &[body.clone()]).unwrap();
+		publish(&st, std::slice::from_ref(&body)).unwrap();
 		publish(&st, &[body]).unwrap();
 		assert_eq!(st.publication.available_permits(), 0);
 		// A byte beyond a subscriber's allowance retires it without growing queues.

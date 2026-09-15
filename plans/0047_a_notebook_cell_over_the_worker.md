@@ -5,7 +5,9 @@ transport is adopted below; kernel implementation is in progress. The first
 component commit extracted the transport, connection-file parser and signed
 message codec. The next implementation step adds Linux worker supervision,
 execution scheduling and stream forwarding, with a private nbclient fixture.
-Installation, JupyterLab acceptance and non-Linux supervision remain open.
+Linux installation and the JupyterLab acceptance path are now implemented.
+Non-Linux supervision and execution remain open; this is a qualified Linux
+implementation, not a completed cross-platform gate.
 The forty-seventh
 record, following the accepted worker in 0046. This is the first usable Jupyter
 kernel: installation, execution, text output, errors, interruption and restart.
@@ -157,7 +159,11 @@ reply pretending the sender was known. Header IDs are opaque strings.
 
 Heartbeat and control remain responsive independently of execution, worker
 pipe collection and blocked IOPub sends. No shared lock may hold control behind
-an executing cell or a publishing task. Kernel-info identifies Rune 0.14.2,
+an executing cell or a publishing task. Shell kernel-info waits behind active execution, with its receive credits
+retained until the response completes; its own idle must not obscure a running
+cell. Control kernel-info is immediate, without a status pair during execution.
+An idle shell-info response waits at most two seconds for a matching status
+subscription to reduce startup loss, not guarantee browser delivery. Kernel-info identifies Rune 0.14.2,
 implementation rnx, protocol 5.4, file extension .rn and text/plain output.
 
 ### 3. Execution, counters and source identities
@@ -208,7 +214,9 @@ Use only text/plain. Ignore the worker's render_bounded field in notebook metada
 a preview renderer, not actual truncation. Leave the worker protocol unchanged;
 a real truncation indicator requires its own measured renderer follow-up.
 Failure names are stable mappings of the worker categories; traceback is the
-plain diagnostic split into lines. A Rune panic is an ordinary cell error.
+plain diagnostic split into lines. IOPub errors contain only ename, evalue and
+traceback; reply-only status and execution_count must not enter saved notebook
+error outputs. A Rune panic is an ordinary cell error.
 
 Scan byte barriers before decoding streams. Incremental UTF-8 decoding preserves
 valid characters across chunks, replaces invalid sequences with U+FFFD and
@@ -360,7 +368,11 @@ remain outside this record.
 and invokes `jupyter kernelspec install --user --name rnx` without a shell.
 Record absolute kernel and worker executable paths in argv, including the
 connection_file placeholder. Display name is Rune (rnx), language rune.
-Refuse an existing installation unless --replace was explicitly passed. This explicitly requires a working `jupyter` CLI; a Desktop-only installation
+Refuse an existing installation unless --replace was explicitly passed. The
+pinned CLI always replaces, so preflight its registry and reported user
+destination before invoking it; include malformed and dangling destinations.
+This is not atomic against a concurrent installer. Installation invokes trusted
+Jupyter commands synchronously, outside the serving shutdown deadline. This explicitly requires a working `jupyter` CLI; a Desktop-only installation
 without that CLI is refused with installation guidance rather than falling back
 to guessed directories. No auto-install/update during kernel startup. Refuse non-Unicode paths that cannot
 be represented by the kernelspec JSON, naming the offending path.
@@ -394,8 +406,8 @@ shared-code edit makes that necessary.
    adopted children itself, covering nested forks and changing sessions. Prove
    the proposed parent-death hook’s setup and thread-lifetime rules separately;
    the shared rnx change needs its own accepted plan. Run Windows job gates on
-   Windows before claiming that platform. Kernel-info/heartbeat/control must
-   remain responsive during execution.
+   Windows before claiming that platform. Control kernel-info, heartbeat and interruption remain responsive during
+   execution; shell kernel-info deliberately waits, per the F1 correction.
 5. Install in temporary directories including spaces; open JupyterLab, select
    Rune (rnx), execute multiple cells, interrupt, restart, save and reopen an
    actual notebook. Preserve notebook and screen evidence alongside an automated

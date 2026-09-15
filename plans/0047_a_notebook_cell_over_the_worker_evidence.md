@@ -260,3 +260,84 @@ actual JupyterLab operation/screens and kernel-ready/first/warm-cell timing rema
 open as well. The 2,369,656-byte serving binary size is recorded, not compared to
 a clean-build or startup benchmark. Hard kernel death still cannot run a Linux
 sweep, and OS-uninterruptible descendants can defeat the cleanup deadline.
+
+## Third implementation: Linux installation and JupyterLab, 2026-09-15
+
+Supervision was accepted and pushed through rnx `7bb612e` and rnx-bench `4eefd66`
+before this step. Evidence is now rnx-bench `bd84e81`,
+`results/jupyter-0047-notebook/README.md`: genuine screenshots, saved notebooks,
+strict validation, raw timings, commands, package versions and source/binary
+hashes. This closes the Linux installation/browser implementation step for
+review. It does not claim non-Linux supervision or execution.
+
+`rnx-jupyter install --rnx ABSOLUTE_EXECUTABLE [--replace]` creates a temporary
+kernelspec with absolute argv and delegates the installation to Jupyter's CLI.
+The CLI actually always replaces, even without --replace, so rnx checks both
+its registry and the standard destination beneath its reported data directory.
+The latter catches malformed specs omitted by discovery. Existing destinations
+are refused unless replacement was requested. The check is not atomic against
+another installer. Installation runs trusted CLI calls synchronously outside
+the serving kernel's shutdown budget. The real-CLI fixture covers paths with
+spaces, exact argv, existing/invalid specs, replacement, non-Unicode paths and
+missing-CLI guidance. All fixtures use temporary user directories.
+
+F1 is fixed by deferring shell kernel-info until execution is idle, retaining
+its transport receive credit during the wait. The ordering lock keeps its status
+pair together with the reply, without holding a lock across awaits. Control info
+still answers immediately, omitting the status pair during active execution.
+The fixture verifies the deferred shell reply, immediate control reply, absence
+of a premature idle and recovery after interruption. A delayed-subscription
+fixture gates the bounded two-second wait for an observed status subscriber;
+this is not a delivery receipt or a guarantee to a particular frontend.
+Admission-refusal status behavior is unchanged by this scoped correction.
+
+The browser exposed another integration defect: IOPub error content included
+execute-reply status/count fields, which JupyterLab copied into a notebook output
+that failed its schema. IOPub errors now contain only ename, evalue and traceback;
+execute replies keep their required fields. A component gate pins the separation
+and the saved notebook passes strict nbformat validation. nbclient alone had
+normalized these outputs and therefore had not exposed this defect.
+
+JupyterLab now selects Rune, runs persistent values and named errors, reloads
+while a cell is pending without showing a false idle, interrupts and restarts.
+A post-restart execution proves the old binding is gone. The fixture reruns the
+example, saves and reopens it. A reloaded page does not recreate the old client's
+cell future, so visible interruption is tested on a new request. An early
+fixture wrongly waited for unsolicited idle immediately after restart; the
+final test waits for the restart command and verifies fresh execution instead.
+Neither frontend status nor notebook output is fabricated by the fixture.
+
+The browser environment is isolated from the earlier probes. JupyterLab 4.6.3,
+Server 2.21.0, Playwright 1.62.0 and Chromium 151.0.7922.34 are recorded. Tornado
+6.5.9 initially failed static asset delivery before loading the notebook: its
+new handler attribute is absent in the server's FileFindHandler. That failure is
+preserved. The browser environment pins 6.5.8; no Python dependency or patched
+third-party source enters either Rust package. Specimens are actual browser page
+captures, and the notebook comes from JupyterLab's save operation.
+
+Verification: installer/status/nbclient/browser fixtures pass twice; all four
+previous supervision and both wire fixtures pass again. Kernel suites pass 23
+in each feature configuration, clippy with warnings denied and formatting pass,
+and root suites pass sequentially: 344 default, 385 test-support. Both notices
+checks pass. No fixture kernel or worker remains. Root source, manifest, lockfile
+and notices remain byte-identical to 7bb612e. Windows type checking still covers
+portable code plus an explicit unsupported supervisor, not Windows execution.
+
+Core 4 measurements: twenty launches and 600 warm cells yield client-observed
+medians of 393.35 ms through wait_for_ready, 3.38 ms for the first `1 + 1`, and
+0.87 ms for warm `1 + 1`. Ready includes Python channel startup/readiness polling,
+not just executable startup. Cell intervals include reply/idle observation.
+The serving binary is 2,432,024 bytes. A build into an empty target directory took
+6.78 seconds with downloads cached and reproduced its hash. Acceptance examples
+are built separately with their feature, then the serving binary with defaults.
+
+Five ordinary-rnx command cases retain exact exit/stdout/stderr bytes. Hyperfine
+compares an accepted copy with the current byte-identical binary, 100 runs and
+10 warmups: version 0.870/0.877 ms, eval 4.451/4.337 ms, run 4.055/3.983 ms.
+These differences and the preserved outlier warnings are variation/path effects,
+not an implementation speedup. The kernel remains outside rnx's build graph.
+
+Still open: Windows job ownership and execution, macOS/BSD supervision, the
+separately planned shared parent-death change, and the documented async CPU-loop
+and abrupt Linux-kernel-death limitations. Completion/history queries, richer
+displays and other deferred notebook features are not added by installation.

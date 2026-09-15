@@ -90,6 +90,11 @@ impl Book {
 fn error(name: &str, text: &str) -> Value {
 	json!({"status":"error","ename":name,"evalue":text,"traceback":text.lines().collect::<Vec<_>>()})
 }
+// IOPub error becomes an nbformat output verbatim in JupyterLab. Reply-only
+// status/count fields must not leak into that narrower schema.
+fn error_output(reply: &Value) -> Value {
+	json!({"ename":reply["ename"],"evalue":reply["evalue"],"traceback":reply["traceback"]})
+}
 fn category(f: &Value) -> &'static str {
 	match f["category"].as_str() {
 		Some("compile") => "CompileError",
@@ -104,6 +109,7 @@ struct Output {
 	codec: Codec,
 	publisher: OnceLock<Publisher>,
 	order: Mutex<()>,
+	idle: watch::Sender<bool>,
 }
 impl Output {
 	fn frames(
@@ -123,24 +129,90 @@ impl Output {
 			content,
 		)
 	}
-	fn publish(&self, parent: &[u8], kind: &str, meta: &Value, content: &Value) -> Res<()> {
-		// The owner never waits for a socket: transport admission is bounded and
-		// immediate. No lock spans an await or a blocked subscriber write.
-		let _order = self.order.lock().unwrap();
+	fn publish_locked(&self, parent: &[u8], kind: &str, meta: &Value, content: &Value) -> Res<()> {
 		let frames = self.frames(&[kind.as_bytes().to_vec()], parent, kind, meta, content)?;
 		self.publisher
 			.get()
 			.ok_or("publisher not ready")?
 			.publish(&frames)
 	}
+	fn publish(&self, parent: &[u8], kind: &str, meta: &Value, content: &Value) -> Res<()> {
+		let _order = self.order.lock().unwrap();
+		self.publish_locked(parent, kind, meta, content)
+	}
 	fn status(&self, parent: &[u8], status: &str) -> Res<()> {
-		self.publish(
+		let _order = self.order.lock().unwrap();
+		self.idle.send_replace(status == "idle");
+		self.publish_locked(
 			parent,
 			"status",
 			&json!({}),
 			&json!({"execution_state":status}),
 		)
 	}
+	// A shell kernel-info future in JupyterLab needs its own idle. Delay the whole
+	// response until execution is idle, retaining the transport's receive credit.
+	// The order lock closes the race with the next cell beginning execution.
+	async fn shell_info(&self, parent: &Parent, content: &Value) -> Res<()> {
+		let mut idle = self.idle.subscribe();
+		let subscription_end = Instant::now() + Duration::from_secs(2);
+		while !self
+			.publisher
+			.get()
+			.ok_or("publisher not ready")?
+			.has_subscriber(b"status")
+		{
+			if Instant::now() >= subscription_end {
+				break;
+			}
+			tokio::time::sleep(Duration::from_millis(5)).await;
+		}
+		loop {
+			{
+				let _order = self.order.lock().unwrap();
+				if *idle.borrow_and_update() {
+					self.publish_locked(
+						&parent.header,
+						"status",
+						&json!({}),
+						&json!({"execution_state":"busy"}),
+					)?;
+					self.reply(parent, "kernel_info_reply", &json!({}), content)?;
+					return self.publish_locked(
+						&parent.header,
+						"status",
+						&json!({}),
+						&json!({"execution_state":"idle"}),
+					);
+				}
+			}
+			idle.changed().await?;
+		}
+	}
+
+	fn control_info(&self, parent: &Parent, content: &Value) -> Res<()> {
+		let _order = self.order.lock().unwrap();
+		let idle = *self.idle.borrow();
+		if idle {
+			self.publish_locked(
+				&parent.header,
+				"status",
+				&json!({}),
+				&json!({"execution_state":"busy"}),
+			)?;
+		}
+		self.reply(parent, "kernel_info_reply", &json!({}), content)?;
+		if idle {
+			self.publish_locked(
+				&parent.header,
+				"status",
+				&json!({}),
+				&json!({"execution_state":"idle"}),
+			)?;
+		}
+		Ok(())
+	}
+
 	fn reply(&self, parent: &Parent, kind: &str, meta: &Value, content: &Value) -> Res<()> {
 		if parent.route.is_closed() {
 			return Ok(());
@@ -172,14 +244,25 @@ impl Output {
 		text: &str,
 		count: u64,
 	) -> Res<()> {
-		self.status(&parent.header, "busy")?;
+		let _order = self.order.lock().unwrap();
+		self.publish_locked(
+			&parent.header,
+			"status",
+			&json!({}),
+			&json!({"execution_state":"busy"}),
+		)?;
 		let mut failure = error(name, text);
 		failure["execution_count"] = json!(count);
 		if !silent {
-			self.publish(&parent.header, "error", &json!({}), &failure)?;
+			self.publish_locked(&parent.header, "error", &json!({}), &error_output(&failure))?;
 		}
 		self.reply(parent, "execute_reply", &json!({}), &failure)?;
-		self.status(&parent.header, "idle")
+		self.publish_locked(
+			&parent.header,
+			"status",
+			&json!({}),
+			&json!({"execution_state":"idle"}),
+		)
 	}
 }
 struct App {
@@ -308,9 +391,12 @@ impl Handler for App {
 				}
 				"kernel_info_request" => {
 					let p = Parent::from_request(route, &request);
-					self.out.status(&p.header, "busy")?;
-					self.out.reply(&p,"kernel_info_reply",&json!({}),&json!({"status":"ok","protocol_version":"5.4","implementation":"rnx","implementation_version":"0.0.0","language_info":{"name":"rune","version":"0.14.2","mimetype":"text/plain","file_extension":".rn"},"banner":"Rune 0.14.2 on rnx","help_links":[]}))?;
-					self.out.status(&p.header, "idle")
+					let content = json!({"status":"ok","protocol_version":"5.4","implementation":"rnx","implementation_version":"0.0.0","language_info":{"name":"rune","version":"0.14.2","mimetype":"text/plain","file_extension":".rn"},"banner":"Rune 0.14.2 on rnx","help_links":[]});
+					if channel == "shell" {
+						self.out.shell_info(&p, &content).await
+					} else {
+						self.out.control_info(&p, &content)
+					}
 				}
 				"interrupt_request" if channel == "control" => {
 					let p = Parent::from_request(route, &request);
@@ -402,8 +488,12 @@ impl App {
 		result["execution_count"] = json!(count);
 		if !job.silent {
 			if failed {
-				self.out
-					.publish(&job.parent.header, "error", &metadata, &result)?;
+				self.out.publish(
+					&job.parent.header,
+					"error",
+					&metadata,
+					&error_output(&result),
+				)?;
 			} else if let Some(text) = reply["text_plain"].as_str() {
 				self.out.publish(
 					&job.parent.header,
@@ -485,6 +575,7 @@ pub async fn run(connection: Connection, binary: &Path) -> Res<()> {
 			codec: Codec::new(connection.key),
 			publisher: OnceLock::new(),
 			order: Mutex::new(()),
+			idle: watch::channel(true).0,
 		}),
 		queue: Mutex::new(Queue::default()),
 		bytes: Arc::new(Semaphore::new(4 * M)),
@@ -541,7 +632,7 @@ pub async fn run(connection: Connection, binary: &Path) -> Res<()> {
 						&job.parent.header,
 						"error",
 						&json!({"rnx":{"state_lost":true}}),
-						&reply,
+						&error_output(&reply),
 					);
 				}
 				let _ = app
@@ -597,6 +688,16 @@ pub async fn run(connection: Connection, binary: &Path) -> Res<()> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn iopub_errors_exclude_reply_only_fields() {
+		let mut reply = error("RuntimeError", "example");
+		reply["execution_count"] = json!(3);
+		let output = error_output(&reply);
+		assert_eq!(
+			output,
+			json!({"ename":"RuntimeError","evalue":"example","traceback":["example"]})
+		);
+	}
 	#[test]
 	fn history_and_origins_evict_without_borrowing_the_current_count() {
 		let mut b = Book::default();

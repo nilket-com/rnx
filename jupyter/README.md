@@ -1,10 +1,9 @@
 # rnx Jupyter kernel
 
-Implementation of record 0047 is in progress. This independent package now runs
-a Linux notebook kernel over the accepted 0046 worker. Worker supervision,
-execution scheduling and stream forwarding are ready for the next review.
-Kernelspec installation, JupyterLab screen acceptance and non-Linux supervision
-remain unfinished; this is not a completion claim for record 0047.
+Implementation of record 0047 now installs and runs a Linux notebook kernel over
+the accepted 0046 worker. The Linux JupyterLab acceptance path is implemented;
+non-Linux supervision remains unfinished. This package is not a claim that the
+record's Windows and macOS/BSD gates are complete.
 
 Ordinary `cargo build` in the parent directory does not build this package or
 resolve its dependencies. This package has its own workspace boundary, lockfile
@@ -27,10 +26,26 @@ The transport and message layer contains:
   and HMAC-SHA256 (an empty key disables authentication). Unix opens use
   `O_NONBLOCK` so the subsequent handle check refuses a FIFO without waiting.
 
-On Linux, build and launch with a Jupyter-generated connection file:
+On Linux, build and install into the Jupyter CLI's user registry:
 
 ```sh
 cargo build --release --locked
+./target/release/rnx-jupyter install --rnx /absolute/path/to/rnx
+```
+
+Then choose **Rune (rnx)** in JupyterLab. The kernelspec records absolute executable
+paths, so paths containing spaces need no shell wrapper. Keep both binaries at
+those paths, or install again with `--replace`. An existing rnx spec is refused
+without that flag. Jupyter's CLI currently always replaces, so rnx preflights both
+its registry listing and its reported user destination, including malformed specs.
+This check is not atomic against another concurrent installer. The Jupyter CLI
+must be on PATH; a Desktop-only setup without it gets installation guidance.
+Installation is explicit and launches trusted Jupyter commands synchronously;
+it does not inherit the serving kernel's five-second shutdown budget.
+
+A Jupyter manager launches the serving command directly:
+
+```sh
 ./target/release/rnx-jupyter --connection-file /absolute/connection.json --rnx /absolute/rnx
 ```
 
@@ -46,6 +61,21 @@ active request retaining its byte credit. History is bounded at 16 MiB/10,000
 entries; source-origin mappings at 10,000. The transport's receive credits stay
 held until admission finishes. One owner publishes output under the immutable
 request header. Control and heartbeat remain independent of the worker.
+
+Shell kernel-info waits behind active execution while retaining the transport's
+receive credit. Its busy/idle pair cannot leave a running notebook falsely idle.
+Control kernel-info stays immediate and suppresses that pair during execution.
+At startup, shell info waits up to two seconds for an observed status subscriber;
+this narrows the PUB startup race but does not guarantee frontend delivery.
+A shell-only caller still receives its reply after the bounded wait. The input
+channel is deliberate: execute on control and interrupt on shell are ignored.
+IOPub errors carry only notebook error fields, separate from execute replies.
+
+After restart, the next execution confirms fresh state; an unsolicited idle is
+not a readiness requirement. Reloading while a cell runs does not recreate the
+old page's output future. Interrupt remains available, and subsequent cells use
+the same live kernel. Completion, inspection, history queries and rich output
+remain deferred; unsupported optional requests may be ignored.
 
 Each stream retains at most 2 MiB per operation while continuing to drain. UTF-8
 replacement is marked in message metadata. Short flushed lines can arrive during
@@ -94,3 +124,10 @@ The transport came from rnx-bench `00fc828`, `probes/jupyter-zmtp`, measured and
 accepted under record 0048. The original failed candidates and all prototype
 measurements remain there. Changes at extraction are described in record 0047's
 evidence; review notes remain gitignored.
+
+The browser fixture is `probes/jupyter-notebook/run.sh` in rnx-bench. It installs
+only into temporary directories and records real JupyterLab screenshots and
+saved notebooks. Its separate Python environment pins Tornado 6.5.8: the original
+6.5.9/Jupyter Server 2.21.0 combination failed serving static assets before the
+notebook loaded. This is a test-environment compatibility pin, not a Python or
+Tornado dependency of rnx-jupyter. See the evidence for versions and limits.
