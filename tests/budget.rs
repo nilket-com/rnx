@@ -191,7 +191,7 @@ fn the_budget_is_written_in_one_place_in_the_source() {
 		!host.contains("BUDGET"),
 		"the host module can see the budget"
 	);
-	let main = std::fs::read_to_string("src/main.rs").unwrap();
+	let main = std::fs::read_to_string("src/lib.rs").unwrap();
 	let sets: Vec<&str> = main
 		.lines()
 		.filter(|l| l.contains("budget =") && !l.trim_start().starts_with("//"))

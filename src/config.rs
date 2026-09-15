@@ -255,6 +255,26 @@ fn settings(value: &Value) -> Result<(Settings, Vec<String>), String> {
 
 #[cfg(test)]
 mod tests {
+	#[test]
+	fn extension_in_a_serving_context_is_absent_from_settings() {
+		let mut serving = rune::Context::with_default_modules().unwrap();
+		let mut module = rune::Module::with_crate("fixture").unwrap();
+		module.function("answer", || 42i64).build().unwrap();
+		serving.install(module).unwrap();
+		let source = "pub fn main() { fixture::answer() }";
+		let mut sources = rune::Sources::new();
+		sources
+			.insert(rune::Source::memory(source).unwrap())
+			.unwrap();
+		assert!(
+			rune::prepare(&mut sources)
+				.with_context(&serving)
+				.build()
+				.is_ok()
+		);
+		let error = super::evaluate(source).err().unwrap();
+		assert!(error.contains("fixture"), "{error}");
+	}
 	use super::*;
 	#[test]
 	fn every_colour_name_and_rgb_value_is_validated_before_emission() {

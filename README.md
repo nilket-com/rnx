@@ -563,3 +563,64 @@ The bounded parent fixture is in `tests/worker_parent.py`; the integration gate
 requires Python 3 in addition to Rust. Unix transport has executed on nano.
 Windows transport type-checks in the standalone probe and awaits execution.
 The full wire contract, bounds and failure policy are in record 0046.
+
+
+## Assemble an executable with native extensions
+
+An external Rust application can depend on this checkout and run rnx with
+its own Rune modules. No package manager or dynamic plugin loading is involved.
+The library exposes only `main_with`, `Extensions`, and its pinned `rune`
+re-export. Keep the normal `main` return type so startup errors retain rnx's
+exit status and diagnostics:
+
+```rust
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let extensions = rnx::Extensions::none().with("example", |module| {
+        module.function("answer", || 42i64)
+            .build().map_err(|error| error.to_string())?;
+        Ok(vec![("example::answer".into(), "answer() -> 42")])
+    });
+    rnx::main_with(extensions)
+}
+```
+
+Use `rnx::rune` rather than a separately versioned Rune dependency. An
+incompatible Rune version has different Rust types; conflicting exact pins
+within the same compatible version line can instead fail Cargo resolution.
+Call `main_with` once, from the main thread. Builders may capture owned
+non-`Send` state. They run in order after the batteries and, for sessions,
+after settings evaluation, before user input. Run, eval, the session and the
+worker all receive extensions; reset retains them without rebuilding.
+Version, help, selfcheck and the pure settings evaluator do not run builders.
+An assembled application works with `rnx-jupyter install --rnx /absolute/path/to/app`.
+
+Adapters are trusted Rust code. Each owns its declared namespace. rnx checks
+the declared name against reserved and earlier extension names, checks help
+paths under `name::`, and reports Rune's installation errors. These checks
+catch mistakes, not misbehaviour. They cannot verify that help describes a
+registered function or that a builder kept its module in that namespace.
+An adapter can replace the lent module, and the fixture demonstrates that
+replacing it with a module named `fs` adds a function to `fs`. Do not do that.
+
+Registration uses Rune's full API. A plain function name is one component:
+`function(["nested", "answer"], ...)` does not compile, and the string
+`"nested::answer"` does not create a callable nested path. Native type item
+attributes carry their own path: use, for example,
+`#[derive(rnx::rune::Any)]` with `#[rune(crate = rnx::rune, item = ::example)]`
+for a type owned by `example`. A mismatched `item = ::other` is not rewritten
+to `example`; the probe resolves it as `::other::Elsewhere` even before declaring an
+`other` crate, and then as `other::Elsewhere` after declaring that crate. The checked-in assembly fixture in rnx-bench records these cases.
+
+Builder errors and unwinding panics refuse startup once, naming the
+extension, before the prompt or worker ready message. During a builder,
+rnx suppresses the panic hook only on that thread and forwards other threads'
+panics to the previous hook, restoring it afterwards. Aborts, panic-abort
+builds, explicit process exits and panics on spawned threads are not converted.
+Native code can perform I/O, block, allocate, or change process state; the
+registration checks do not bound that work.
+
+The default `count-allocations` feature supplies the executable's global
+allocator, allocation reports and ceiling. An application cannot declare a
+second global allocator while it is enabled. Turning off rnx's default
+features disables accounting and its ceiling, just as in the stock binary.
+Extensions' retained allocations count toward that ceiling.

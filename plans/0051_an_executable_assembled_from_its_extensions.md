@@ -1,14 +1,14 @@
 # rnx 0051: an executable assembled from its extensions
 
-Status: proposed 2026-09-15, drafted by Claude; revised the same day after
+Status: implemented 2026-09-15, drafted by Claude; revised the same day after
 Codex's review (name before builder, trusted adapters rather than structural
 namespace confinement, per-thread panic conversion, settings ordering,
-exit contract, allocator baseline gate). For review
-before implementation. The fifty-first record is step two of the extensibility
+exit contract, allocator baseline gate). Implementation and evidence by Codex.
+The fifty-first record is step two of the extensibility
 sequence agreed on 2026-09-15: a small supported library interface through
 which an application executable assembles rnx with external native modules.
-It adds no package discovery, no plugin loading and no database. No
-implementation or measurement is claimed by this draft.
+It adds no package discovery, no plugin loading and no database. See the
+companion evidence for measurements and platform limits.
 
 ## Context
 
@@ -31,8 +31,9 @@ making them public would turn today's internals into a promise.
 
 Three facts shape the boundary. First, `rune::Module` is a Rune type, so
 any interface that touches one exposes Rune's version; Cargo will resolve
-two Rune versions side by side if an adapter names its own, and the failure
-then surfaces only where the two `Module` types meet. Second, Rune 0.14.2
+incompatible Rune versions side by side if an adapter names its own, with a
+type error where the two `Module` types meet. Conflicting exact pins within
+a compatible release line can instead fail dependency resolution. Second, Rune 0.14.2
 gives a host no public way to enumerate what a module or a context
 contains: `Context::iter_functions`, `contains_crate` and the module's item
 are all crate-private. A label an adapter attaches to a module it built
@@ -244,9 +245,11 @@ anywhere but the bench's temporary directories.
    `rnx_test::test_allocation_peak` for an empty input, since extension
    modules, help entries and stored closures allocate what stock rnx does
    not. Then a known allocation (a script building a 1 MiB string) raises
-   both peaks by the same amount within the existing tolerance, and the
-   existing over-ceiling fixture is refused by `app` with the
-   `AllocationCeiling` category and the same message. Without
+   both peaks by the same amount (the fixture states a 4 KiB tolerance for
+   surrounding evaluation allocations), and the existing over-ceiling fixture
+   is refused by `app` with the existing `over_ceiling` wire category and
+   the same message template. The live-byte count in that message is each
+   process's measured count, not a requirement that different baselines match. Without
    `count-allocations`, `app` says so in the same words `rnx` does. The
    README states that an application cannot declare its own global
    allocator while rnx's counting feature is enabled, because Rust admits
@@ -261,12 +264,13 @@ anywhere but the bench's temporary directories.
    crate confirms that only `main_with`, `Extensions` and `rune` are nameable
    from `rnx`; the `cargo doc` item list is recorded in
    the evidence. An adapter that depends on a different `rune` version
-   fails to build with a type mismatch at the builder's `&mut Module`
-   parameter, and the
-   evidence shows that failure once.
+   from an incompatible release line fails to build with a type mismatch at
+   the builder's `&mut Module` parameter. The evidence also records the
+   resolution failure for conflicting compatible exact pins.
 7. **Regression and checks.** Both root suites, formatting, clippy at the
-   inherited baseline, notices unchanged, kernel suites unchanged. Windows
-   type-check of the library and binary; execution unverified as before.
+   inherited baseline, notices unchanged, kernel suites unchanged. Attempt the Windows type-check of the library and binary. If the existing
+   native-toolchain blocker persists, record it and type-check the changed
+   extension assembly code separately; neither is Windows execution.
 
 ## Guardrails and stop conditions
 
