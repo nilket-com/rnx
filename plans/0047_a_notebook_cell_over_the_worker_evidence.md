@@ -192,3 +192,71 @@ interrupt/restart/shutdown at the notebook layer, kernelspec installation,
 nbclient, actual JupyterLab execution/save/reopen and the kernel timing evidence.
 The separate shared parent-death change remains outside this record. This is a
 completed transport integration step, not completion of record 0047.
+
+## Second implementation: Linux worker supervision, 2026-09-15
+
+The accepted extraction was pushed through rnx `4b5fa0a` and rnx-bench `72fbb0b`
+before this step. The executable now supervises one 0046 worker, admits execute
+requests, forwards streams and publishes replies. Evidence is rnx-bench
+`4eefd66`, `results/jupyter-0047-supervision/README.md`; source and binary hashes,
+commands, all fixture exit statuses, package versions and raw results live there.
+This step is ready for supervision review; it does not mark 0047 implemented.
+
+Private control pipes start close-on-exec. Only their child ends have the flag
+cleared in pre-exec; the worker reinstates it before session construction. Pipe
+readers use Tokio readiness, fixed reads and bounded storage, not blocking reader
+threads. The control queue holds eight capped replies. All stream capture is
+installed before sending execute, and attribution is attached at collection,
+not looked up from a mutable current-parent field at publication.
+
+Transport callbacks keep original receive credits until the separate execution
+admission succeeds. The 64-request queue charges the complete serialized payload
+before copying and keeps byte credit through active execution. The shared 4 MiB
+limit therefore includes the active request. History and origin maps keep their
+stated eviction limits; silent inputs do not acquire a fictitious notebook count.
+Oversized source refuses before execute_input, avoiding an oversized echo. The
+per-key unsupported-expression response is size-checked before admission.
+
+One publishing owner performs bounded transport admission, with immutable request
+headers. Both byte barriers, the worker settlement, retained streams and the
+result/error/reply/idle handoff precede ack. The watchdog starts at the first
+settlement, independently of a pending stream or result sink; duplicate messages
+cannot renew it. A blocked handoff retires without ack at about 5.001–5.003 seconds.
+A malformed settlement or incomplete stderr boundary exits with state loss,
+without a fabricated result or successful idle. PUB acceptance is still not
+frontend receipt.
+
+The scanner retains only an actual possible marker prefix. This matters for
+short progress lines: retaining an arbitrary marker-sized tail would delay them
+until the barrier. Every split and stale marker/prefix is component-tested;
+flushed short text, unflushed partial text, split/invalid UTF-8, NUL and both
+2 MiB caps pass through real IOPub. Each cap notice states the exact discarded
+count. Late output has an empty parent and a separate 2 MiB lifetime allowance
+per stream. An output interval is still not proof of background-task causality.
+
+Control/heartbeat do not wait on execution. Interrupts are held until armed;
+synchronous, awaiting and child-supervision cases recover for another cell.
+The async CPU loop retains its existing limitation and requires shutdown's
+hard stop in the fixture. Shutdown uses one deadline starting with the first
+request, including reply write confirmation and cleanup. A repeated request
+cannot start another budget. Linux startup checks subreaper, /proc discovery
+and pidfd signalling support. One owner discovers adopted children across task
+lists, signals stable pidfd identities and reaps repeatedly. Escaped double-fork
+fixtures disappear after shutdown and worker death without supplying discovery
+PIDs to the kernel. No shared rnx parent-death change is included.
+
+Verification: 22 kernel tests in each feature configuration; all four supervision
+fixtures and both original wire fixtures pass twice. The private nbclient
+kernelspec executes, saves and reopens a notebook without user installation.
+Root suites pass sequentially under TERM=xterm-256color: 344 default and 385
+with test-support. Root/kernel formatting and notices checks pass. Root source,
+manifest, lockfile and notices are byte-identical to the accepted extraction.
+Jiff is added only to the kernel graph for current UTC message headers.
+
+The Windows check passes for the portable component and explicit unsupported
+launcher; Linux is the only implemented supervisor in this interim step. Windows
+job execution and macOS/BSD supervision remain open. Kernelspec installation,
+actual JupyterLab operation/screens and kernel-ready/first/warm-cell timing remain
+open as well. The 2,369,656-byte serving binary size is recorded, not compared to
+a clean-build or startup benchmark. Hard kernel death still cannot run a Linux
+sweep, and OS-uninterruptible descendants can defeat the cleanup deadline.

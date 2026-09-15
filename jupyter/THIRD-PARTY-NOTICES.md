@@ -23,6 +23,7 @@ identical texts are grouped by SHA-256. Generation refuses missing texts.
 | hmac | 0.13.0 | MIT OR Apache-2.0 |
 | hybrid-array | 0.4.15 | MIT OR Apache-2.0 |
 | itoa | 1.0.18 | MIT OR Apache-2.0 |
+| jiff | 0.2.24 | Unlicense OR MIT |
 | libc | 0.2.189 | MIT OR Apache-2.0 |
 | memchr | 2.8.3 | Unlicense OR MIT |
 | mio | 1.2.3 | MIT |
@@ -43,7 +44,7 @@ identical texts are grouped by SHA-256. Generation refuses missing texts.
 | windows-sys | 0.61.2 | MIT OR Apache-2.0 |
 | zmij | 1.0.23 | MIT |
 
-## memchr 2.8.3 (COPYING)
+## jiff 0.2.24 (COPYING), memchr 2.8.3 (COPYING)
 
 SHA-256: `01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f`
 
@@ -292,7 +293,7 @@ SHA-256: `0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594`
    END OF TERMS AND CONDITIONS
 ```
 
-## memchr 2.8.3 (LICENSE-MIT)
+## jiff 0.2.24 (LICENSE-MIT), memchr 2.8.3 (LICENSE-MIT)
 
 SHA-256: `0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f`
 

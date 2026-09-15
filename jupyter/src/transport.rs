@@ -31,6 +31,7 @@ struct Stats {
 	generated_collisions: AtomicUsize,
 }
 struct Packet {
+	written: Option<tokio::sync::oneshot::Sender<()>>,
 	wire: Arc<Vec<u8>>,
 	_bytes: OwnedSemaphorePermit,
 	_count: OwnedSemaphorePermit,
@@ -284,6 +285,14 @@ async fn handshake(s: &mut TcpStream, ep: &Endpoint, st: &State) -> Res<Option<V
 	.await?
 }
 fn enqueue(peer: &Peer, wire: Arc<Vec<u8>>, global: Option<OwnedSemaphorePermit>) -> Res<()> {
+	enqueue_with(peer, wire, global, None)
+}
+fn enqueue_with(
+	peer: &Peer,
+	wire: Arc<Vec<u8>>,
+	global: Option<OwnedSemaphorePermit>,
+	written: Option<tokio::sync::oneshot::Sender<()>>,
+) -> Res<()> {
 	if *peer.stop.borrow() {
 		return Err(err("closed generation"));
 	}
@@ -294,6 +303,7 @@ fn enqueue(peer: &Peer, wire: Arc<Vec<u8>>, global: Option<OwnedSemaphorePermit>
 	let count = peer.count.clone().try_acquire_owned()?;
 	peer.tx
 		.try_send(Packet {
+			written,
 			wire,
 			_bytes: bytes,
 			_count: count,
@@ -342,6 +352,7 @@ fn publish(st: &State, parts: &[Vec<u8>]) -> Res<()> {
 	}
 	for ((peer, bytes, count), global) in reserved.into_iter().zip(globals) {
 		let _ = peer.tx.try_send(Packet {
+			written: None,
 			wire: wire.clone(),
 			_bytes: bytes,
 			_count: count,
@@ -393,6 +404,9 @@ async fn write_packets<W: tokio::io::AsyncWrite + Unpin>(
 		peer.writing.store(p.wire.len(), SeqCst);
 		let _writing = Writing(&peer.writing);
 		timeout(Duration::from_secs(5), write.write_all(&p.wire)).await??;
+		if let Some(done) = p.written {
+			let _ = done.send(());
+		}
 	}
 	Ok(())
 }
@@ -547,6 +561,19 @@ pub struct Route(Arc<Peer>);
 impl Route {
 	pub fn reply(&self, parts: &[Vec<u8>]) -> Res<()> {
 		let result = encode(parts).and_then(|wire| enqueue(&self.0, wire, None));
+		if result.is_err() {
+			self.0.stop.send_replace(true);
+		}
+		result
+	}
+	pub async fn reply_written(&self, parts: &[Vec<u8>]) -> Res<()> {
+		let (tx, rx) = tokio::sync::oneshot::channel();
+		let result = async {
+			enqueue_with(&self.0, encode(parts)?, None, Some(tx))?;
+			timeout(Duration::from_secs(5), rx).await??;
+			Ok(())
+		}
+		.await;
 		if result.is_err() {
 			self.0.stop.send_replace(true);
 		}

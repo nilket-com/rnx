@@ -1,15 +1,16 @@
 # rnx Jupyter kernel
 
-Implementation of record 0047 is in progress. This independent package currently
-contains the owned transport and message layer. It does **not yet install or run
-a notebook kernel**: worker supervision, execution scheduling, kernelspec
-installation and JupyterLab acceptance are the remaining implementation.
+Implementation of record 0047 is in progress. This independent package now runs
+a Linux notebook kernel over the accepted 0046 worker. Worker supervision,
+execution scheduling and stream forwarding are ready for the next review.
+Kernelspec installation, JupyterLab screen acceptance and non-Linux supervision
+remain unfinished; this is not a completion claim for record 0047.
 
 Ordinary `cargo build` in the parent directory does not build this package or
 resolve its dependencies. This package has its own workspace boundary, lockfile
 and notices, and remains unpublished at version 0.0.0.
 
-The first implementation contains:
+The transport and message layer contains:
 
 - `transport`: the accepted 0048 server-side ZMTP component. Five loopback TCP
   endpoints; 3.0 framing with bounded PING/PONG, not full 3.1. Receive and send
@@ -19,12 +20,52 @@ The first implementation contains:
 - `wire`: Jupyter 5.4 JSON framing and HMAC-SHA256. Authentication precedes JSON
   parsing. Replies retain the request's routing and original header bytes;
   no mutable "latest request" determines attribution. Serialization has a byte
-  cap before allocation grows beyond the encoded budget. The caller supplies
-  the message timestamp; the fixture's fixed timestamp is not a kernel clock.
+  cap before allocation grows beyond the encoded budget. The kernel supplies the current UTC timestamp through jiff; the acceptance
+  fixture alone uses a fixed timestamp.
 - `connection`: the local connection-file subset from 0047. A regular file of
   at most 64 KiB, numeric loopback TCP address, five distinct nonzero ports,
   and HMAC-SHA256 (an empty key disables authentication). Unix opens use
   `O_NONBLOCK` so the subsequent handle check refuses a FIFO without waiting.
+
+On Linux, build and launch with a Jupyter-generated connection file:
+
+```sh
+cargo build --release --locked
+./target/release/rnx-jupyter --connection-file /absolute/connection.json --rnx /absolute/rnx
+```
+
+The launcher inherits the notebook working directory and environment. It starts
+one worker with null stdin and private control pipes. The server requires Linux
+subreaper, `/proc` child discovery and pidfd signalling support; it refuses
+startup when these are unavailable. Other platforms explicitly refuse this
+interim executable. Windows type checking below covers the portable component
+and that refusal, not Windows worker containment.
+
+Execution admits 64 queued requests and 4 MiB of serialized payload, with the
+active request retaining its byte credit. History is bounded at 16 MiB/10,000
+entries; source-origin mappings at 10,000. The transport's receive credits stay
+held until admission finishes. One owner publishes output under the immutable
+request header. Control and heartbeat remain independent of the worker.
+
+Each stream retains at most 2 MiB per operation while continuing to drain. UTF-8
+replacement is marked in message metadata. Short flushed lines can arrive during
+execution; unflushed partial lines wait for the worker's barrier. Late output has
+an empty parent header and a separate 2 MiB lifetime allowance per stream. The
+worker is acknowledged only after both barriers, its settlement and all retained
+output/result/error have reached bounded publication admission (or intentional
+silent suppression). This is not a browser delivery receipt.
+
+Interruption preserves rnx's async CPU-loop limitation. Shutdown uses one
+five-second budget, interrupts active execution, then kills/reaps the worker and
+adopted descendants. No shared rnx spawn behavior changes. A hard-killed kernel
+cannot run Linux cleanup; escaped descendants can survive. OS-uninterruptible
+work may outlast the cleanup deadline, which is reported as failure.
+
+`bash probes/jupyter-supervision/run.sh` from rnx-bench runs real-client, queue,
+byte-stream, blocked-handoff, Linux descendant and private nbclient notebook
+fixtures twice, plus both original transport fixtures. It uses the existing
+pinned Python environment and installs no user kernelspec. Review notes are not
+part of either repository's history.
 
 To check this component:
 

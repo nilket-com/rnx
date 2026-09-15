@@ -2,8 +2,11 @@
 
 Status: revised 2026-09-15 after acceptance of record 0048. Its owned bounded
 transport is adopted below; kernel implementation is in progress. The first
-component commit extracts the transport, connection-file parser and signed
-message codec; it is not yet an executable notebook kernel. The forty-seventh
+component commit extracted the transport, connection-file parser and signed
+message codec. The next implementation step adds Linux worker supervision,
+execution scheduling and stream forwarding, with a private nbclient fixture.
+Installation, JupyterLab acceptance and non-Linux supervision remain open.
+The forty-seventh
 record, following the accepted worker in 0046. This is the first usable Jupyter
 kernel: installation, execution, text output, errors, interruption and restart.
 Completion, inspection, rich media and interactive stdin are later records.
@@ -177,11 +180,14 @@ history number. Preserve the worker's plain diagnostic and attach structured
 origin information as namespaced metadata.
 
 Exactly one worker operation is active. Queue at most 64 execute requests and
-4 MiB of their serialized payloads. On a script error with stop_on_error set,
+4 MiB of their serialized payloads, including the active request until it
+finishes. Validate the bounded size of the generated per-key user_expressions
+reply before admission. On a script error with stop_on_error set,
 fail the already-queued execute requests as ExecutionAborted without running
 or counting them; new requests after that queue snapshot remain admissible.
 Source past the worker's 32 KiB limit settles as a refused execution, not an
-attempt to split a cell. Colon commands are source, not notebook controls.
+attempt to split a cell. Refuse it before publishing execute_input, so an
+oversized source cannot exhaust a reply while being echoed. Colon commands are source, not notebook controls.
 
 Nonempty user_expressions receives a per-key UnsupportedFeature error after the
 main execution, without evaluating extra source or mutating bindings. Never
@@ -215,7 +221,7 @@ bytes. Emit one clearly rnx-labelled truncation notice per affected nonsilent
 stream, with its discarded byte count. Give notices a separate fixed 1 KiB
 allowance; they cannot recursively consume the script-output allowance.
 Late output between operations has an empty parent header and a separate bounded
-allowance; output during another interval retains 0046's causal ambiguity.
+allowance (2 MiB per stream over this worker lifetime); output during another interval retains 0046's causal ambiguity.
 
 Do not ack until the worker reply and both barriers are present, and retained
 output has been handed to IOPub or explicitly suppressed by silent policy.
