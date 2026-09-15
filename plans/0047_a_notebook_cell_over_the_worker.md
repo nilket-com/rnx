@@ -1,12 +1,11 @@
 # rnx 0047: a notebook cell over the worker
 
-Status: replacement probes completed 2026-09-15 after acceptance of revision
-123bfd0. Native multipart buffering still reaches the receive stop condition;
-kernel implementation remains stopped pending review of the results. The forty-seventh record, following the accepted
-worker in 0046. This is the first usable Jupyter kernel: installation, execution,
-text output, errors, interruption and restart. Completion, inspection, rich
-media and interactive stdin are later records. No kernel implementation has
-started under this record.
+Status: revised 2026-09-15 after acceptance of record 0048. Its owned bounded
+transport is adopted below; kernel implementation may start. The forty-seventh
+record, following the accepted worker in 0046. This is the first usable Jupyter
+kernel: installation, execution, text output, errors, interruption and restart.
+Completion, inspection, rich media and interactive stdin are later records.
+Acceptance of the transport does not pass the notebook integration gates.
 
 ## Context
 
@@ -35,7 +34,7 @@ Normative references checked 2026-09-14:
   describes connection files and kernelspecs. Installation will delegate directory
   selection to Jupyter instead of copying evcxr's directory-discovery code.
 
-## Probe outcome: implementation has not started
+## Original probe outcome: rejected transport candidate
 
 The two probes and their pinned environments are committed in rnx-bench at
 `1a1fc7a`, under `probes/jupyter-transport`, `probes/jupyter-containment` and
@@ -59,7 +58,7 @@ PIDs/groups; it did not prove a general adopted-child discovery and cleanup
 algorithm. The original evidence remains a record of the failed candidates.
 
 
-## Replacement outcome: native buffering still stops integration
+## Native replacement outcome: rejected transport candidate
 
 The replacement probes are in rnx-bench `0637193`, under
 `probes/jupyter-libzmq`, `probes/jupyter-containment-replacement` and
@@ -82,7 +81,21 @@ confirmed that a spawning thread exiting before prctl can leave the child alive
 with an unchanged parent PID. The separate shared-process plan must account for
 that lifetime; these probes change no production spawn path. Windows execution
 and the notebook integration gates remain unrun. See the evidence alongside this
-record for scope and measurements. Review precedes any next transport decision.
+record for scope and measurements. The next section records the reviewed replacement decision.
+
+## Accepted replacement: the owned 0048 transport
+
+The user accepted 0048 and authorized integration after independent review on
+2026-09-15. The source, lockfile and repeated wire tests are at rnx-bench
+`00fc828`, `probes/jupyter-zmtp` and
+`results/jupyter-zmtp-0048-extension`. Review independently exercised declared
+oversize frames, simultaneous unfinished messages and a non-reading PING flood.
+Those findings stand on their reproductions; review notes stay outside history.
+
+This is a scope and maintenance choice, not a claim that a patched dependency
+could not meet the bounds. rnx owns the small server-side transport inside the
+kernel package. Neither the rejected pure-Rust dependency nor libzmq is shipped.
+The original failed-probe evidence remains above and beside this record.
 
 ## Decision
 
@@ -94,26 +107,23 @@ the rnx executable's internal modules. Ordinary rnx builds do not resolve or
 compile the kernel's ZMQ dependencies. Keep rnx's version/release gates intact;
 the kernel also remains unpublished at 0.0.0.
 
-Use libzmq through `zmq = 0.10.0` and `zmq-sys = 0.12.0`, confined to this
-package. First repeat the transport probe against the actual locked native
-build. Configure a receive frame cap, finite high-water marks and zero linger
-before binding. These settings address individual frames, queue pressure and
-pending sends respectively; decision 6 states what they do not establish.
-Keep one owner per socket; blocking native calls must not hold heartbeat or
-control behind another channel. Probe the selected polling/thread arrangement.
+Adopt 0048's listening transport as an owned module inside this package, using
+Tokio TCP. Keep its framing, admission-credit ownership and tests together.
+Advertise ZMTP 3.0 with the bounded PING/PONG extension libzmq sends, not full
+3.1 support. Pair ROUTER with DEALER, PUB with SUB, and REP with REQ only.
+Subscriptions retain their 3.0 prefix-byte framing. Unknown traffic commands
+close the peer. PING carries two TTL bytes and at most sixteen context bytes;
+PONG echoes only the context through the existing bounded reply path. Ignore
+TTL and valid inbound PONG; the server originates no PING. Jupyter's REP
+heartbeat remains independent.
 
-Record the exact native source version, features, licences, compiler, clean
-build time, linked libraries and binary size. Nano has system libzmq 4.3.5,
-but that does not identify what these bindings build. The published
-[zmq-sys build script](https://github.com/erickt/rust-zmq/blob/v0.10.0/zmq-sys/build/main.rs)
-calls zeromq-src directly. The inspected
-[zeromq-src 0.2.6+4.3.4](https://docs.rs/crate/zeromq-src/0.2.6+4.3.4/source/src/lib.rs)
-builds through `cc`, not CMake. A missing CMake is therefore not an established
-blocker, and a system-library measurement cannot stand in for this build.
-Resolve and preserve the actual lockfile in the replacement probe. Windows
-native compilation and execution remain separate gates. If this transport
-still fails the bounds, stop again; neither a fork nor a weaker bound is
-implicitly authorized by selecting it.
+The accepted source is moved from the probe into the kernel package without
+importing fixture commands, test keys, stdout telemetry or the allocator probe
+into production. Retain reusable adversarial tests and rerun real-client wire
+fixtures against the extracted component. Record the kernel's lockfile, features,
+licences, clean build time, linked libraries and size as integration progresses.
+No native ZMQ build is added to either package. Windows type checking remains
+separate from executing the Windows/Jupyter gates.
 
 CLI: `rnx-jupyter --connection-file FILE --rnx ABSOLUTE_EXECUTABLE`.
 The kernel launches that exact worker with null stdin and explicit inherited
@@ -289,48 +299,52 @@ worker death reports WorkerDied/state loss where channels permit, fails queued
 requests, and exits nonzero. No replay of cells. A new kernel has a fresh session
 identity and counter, and has no old bindings.
 
-### 6. Bounds need a transport probe
+### 6. Preserve the accepted transport bounds at integration
 
 Application limits: 1 MiB total incoming multipart payload, 32 parts and 64 KiB
 per routing/header field; unsupported binary buffers are bounded then refused.
 Outgoing stream chunks contain at most 16 KiB raw data before UTF-8/JSON
 conversion. Budget encoded publishing payload separately at 16 MiB, since raw
-bytes can expand under JSON escaping. Do not count only queue item numbers.
-When application admission is full, return a named busy/refusal rather than
-retain another unbounded request. Unknown optional request types may be ignored.
+bytes can expand under JSON escaping. When execution admission is full, return
+a named busy/refusal rather than retain another unbounded request. Unknown
+optional request types may be ignored.
 
-Set `MAXMSGSIZE` to 1 MiB and finite send/receive high-water marks before
-bind/connect; begin the probe at 64 messages per peer and record the actual
-settings. Set linger to zero on every socket and explicitly close sockets
-before terminating the context. Probe the whole shutdown, not just the return
-from socket close. The application’s encoded byte budgets remain necessary.
+Each of the five listening endpoints admits eight connections, including
+handshakes and completed task records awaiting collection. One multipart per
+connection retains its receive credits until application consumption finishes:
+at most eight complete or incomplete messages and 8 MiB payload per endpoint,
+40 MiB across all five. If integration adds an inbound channel, queued messages
+must retain those credits and the structural eight-message bound; releasing a
+permit while retaining its payload is forbidden. The separately admitted
+execution queue's 64 requests/4 MiB is additional application storage, counted
+before transfer out of the transport message. Count retained representations,
+not only item numbers; this is not a total-process memory ceiling.
 
-libzmq’s [decoder](https://github.com/zeromq/libzmq/blob/v4.3.5/src/v2_decoder.cpp)
-checks the declared *frame* size before allocating that frame. This closes the
-specific large-header path only if confirmed against the linked version.
-Its [pipe accounting](https://github.com/zeromq/libzmq/blob/v4.3.5/src/pipe.cpp)
-advances the message count at the final multipart part. An arbitrarily long
-unfinished multipart can therefore defeat the inference that a frame limit
-plus a message-count high-water mark bounds receive memory. The replacement
-probe must include many individually legal parts with MORE set, both finished
-and unfinished, not just one oversized frame. Application rejection after a
-whole multipart has accumulated is still too late. If that path remains
-unbounded, this stop condition remains open and implementation does not start.
+A peer has a two-second handshake deadline and a five-second multipart assembly
+deadline starting at the first header byte. Interleaved PING cannot restart it.
+Enforce declared lengths as u64 before narrowing or allocation. Preserve READY's
+8 KiB/64-property caps, identity's 255 bytes, generated-identity collision checks,
+and subscription bounds of 128 distinct prefixes, 256 bytes each, with checked
+reference counts. Live duplicate identities refuse the new connection; replies
+hold the original generation, never a lookup of a possibly reused identity.
 
-[Socket options](https://libzmq.readthedocs.io/en/latest/zmq_setsockopt.html)
-provide per-peer queue controls, not a process-wide byte ceiling or a limit on
-all connected peers. Record native queue ownership, incomplete messages and
-connection-count exposure separately. Rust allocator instrumentation alone
-cannot observe allocations made by libzmq; use native allocation instrumentation
-or an externally bounded process measurement, with its resolution stated.
+Reply credit covers queued and currently writing data: 1 MiB and 32 entries per
+peer. Publication has 2 MiB/64 entries per subscriber and 16 MiB aggregate encoded
+fanout obligations. Reserve the entire fanout before enqueueing any of it. A
+subscriber exceeding its own allowance is disconnected; it does not hold other
+subscribers behind its writer. A write has a five-second absolute deadline,
+including partial progress. Cancellation releases both current and queued
+credits. Keep publication ordered under one owner and test its handoff deadline.
 
-PUB may discard messages for a subscriber that cannot keep up. This is accepted
-as a transport limitation: send success proves neither delivery nor that the
-frontend saw idle, and the kernel cannot report an exact subscriber drop count.
-Test a reading subscriber alongside a stalled one and keep heartbeat/control
-responsive. Do not describe a frozen browser tab as necessarily stalling the
-ZMQ subscriber; Jupyter’s server is normally that peer. No-subscriber sends,
-queue saturation and interrupted context shutdown all need raw traces.
+Residuals are explicit. A local connector can fill all eight slots and exclude
+legitimate clients; these bounds do not promise fairness or authenticate ZMTP
+handshakes. A slow subscriber is disconnected, so successful PUB admission does
+not prove delivery or that a frontend saw idle. The accepted paced test delivered
+all 1,001 messages to an unchanged reading subscriber while dropping the stalled
+one; it is not an unlimited-rate losslessness claim. Socket buffers, runtime
+metadata and application representations sit outside payload credits. Windows
+execution is unverified. Full 3.1, remote kernels and stronger local isolation
+remain outside this record.
 
 ### 7. Installation and acceptance
 
@@ -352,14 +366,13 @@ shared-code edit makes that necessary.
 
 ## Gates
 
-1. Probe the chosen ZMQ transport against real Python sockets before integration:
-   signed round trips, wrong signatures, routing prefixes, extra fields, empty
-   key, malformed multipart, oversized frames, stalled publisher and heartbeat/
-   control responsiveness. Preserve source, lockfiles, commands and raw traces
-   in rnx-bench. Include the unfinished multipart case, native allocation
-   measurement, a healthy subscriber alongside a stalled one, and full native
-   context shutdown. Stop on unresolved unbounded buffering or lifecycle failures.
-   Review these replacement results before kernel implementation.
+1. The standalone transport and Linux containment probes are accepted. Preserve
+   their sources and original failures in rnx-bench. On extraction into the kernel
+   package rerun 0048's unit and real-client fixtures, including declared lengths,
+   incomplete multipart, heartbeat commands, identity reuse, publication admission,
+   paced subscriber continuity and full shutdown. Establish that added application
+   queues retain the bounds in decision 6. Adoption passes the transport decision,
+   not the following kernel gates.
 2. Drive execute with jupyter_client: persistent bindings, unit, compile/runtime
    errors, origins from retained closures, silent/empty requests, history/count
    choices, user_expressions refusals, queue limits and stop_on_error both ways.
@@ -394,5 +407,5 @@ shared-code edit makes that necessary.
 Completion/is_complete/inspect need a worker assistance protocol record. Rich
 JSON/HTML/media, display updates, widgets, frontend stdin, disk-backed history,
 remote kernels, registration handshake and arbitrary background-task ownership
-are not quietly added here. This draft is ready for review; the transport and
-process-containment probes precede an implementation claim.
+are not quietly added here. The transport and Linux process-containment probes are accepted; the integrated
+notebook gates still precede an implementation claim.
