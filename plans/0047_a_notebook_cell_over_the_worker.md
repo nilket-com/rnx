@@ -1,7 +1,8 @@
 # rnx 0047: a notebook cell over the worker
 
-Status: accepted for probes 2026-09-14; probes completed the same day and
-implementation stopped at the transport and containment conditions. The forty-seventh record, following the accepted
+Status: revised for review 2026-09-15 after the accepted probes reached both
+stop conditions. The replacement transport and containment probes below must
+pass before kernel implementation starts. The forty-seventh record, following the accepted
 worker in 0046. This is the first usable Jupyter kernel: installation, execution,
 text output, errors, interruption and restart. Completion, inspection, rich
 media and interactive stdin are later records. No kernel implementation has
@@ -18,8 +19,8 @@ prerequisite; missing Python must fail the worker gate, not silently skip it.
 
 The local evcxr checkout was read, including connection.rs, control_file.rs,
 jupyter_message.rs, core.rs and install.rs. Its Jupyter crate selects zeromq
-0.6.0 with Tokio and TCP. That is a candidate dependency configuration, not
-measured compatibility or a proof of bounded buffering. No source is copied
+0.6.0 with Tokio and TCP. That was the initial candidate configuration; the probes below reject it
+for this record’s receive and publication requirements. No source is copied
 by this draft. Any later copying keeps the applicable copyright and licence
 and appears in the kernel's notices.
 
@@ -51,9 +52,11 @@ as well. All fixture survivors were explicitly killed and reaped.
 The suggestion that surviving children retain a 90-second bound is therefore
 not adopted. That maximum constrains the live supervisor's requested wait, not
 an OS timer inherited by the child. Sending SIGINT before a hard kill does not
-prove cleanup ran. These findings require reviewed revisions to decisions 1/6
-and 5 before kernel implementation; this record does not silently choose a new
-transport, introduce containment, or weaken the promised bounds.
+prove cleanup ran. Decisions 1/6 and 5 now propose libzmq and platform-specific containment.
+Those are replacements to validate, not successful results of the first probes.
+The containment fixture used a subreaper and explicitly killed known fixture
+PIDs/groups; it did not prove a general adopted-child discovery and cleanup
+algorithm. The original evidence remains a record of the failed candidates.
 
 ## Decision
 
@@ -65,12 +68,26 @@ the rnx executable's internal modules. Ordinary rnx builds do not resolve or
 compile the kernel's ZMQ dependencies. Keep rnx's version/release gates intact;
 the kernel also remains unpublished at 0.0.0.
 
-Start with a probe of zeromq 0.6.0, using only Tokio runtime and TCP transport,
-against Python's real jupyter_client/pyzmq stack. Resolve and lock compatible
-HMAC-SHA256 and UUID dependencies during that probe, recording the exact graph,
-features, licences, build time and sizes before committing the implementation.
-A copied dependency list is not evidence. If bounds or lifecycle require a
-transport change, stop and revise this decision rather than conceal it.
+Use libzmq through `zmq = 0.10.0` and `zmq-sys = 0.12.0`, confined to this
+package. First repeat the transport probe against the actual locked native
+build. Configure a receive frame cap, finite high-water marks and zero linger
+before binding. These settings address individual frames, queue pressure and
+pending sends respectively; decision 6 states what they do not establish.
+Keep one owner per socket; blocking native calls must not hold heartbeat or
+control behind another channel. Probe the selected polling/thread arrangement.
+
+Record the exact native source version, features, licences, compiler, clean
+build time, linked libraries and binary size. Nano has system libzmq 4.3.5,
+but that does not identify what these bindings build. The published
+[zmq-sys build script](https://github.com/erickt/rust-zmq/blob/v0.10.0/zmq-sys/build/main.rs)
+calls zeromq-src directly. The inspected
+[zeromq-src 0.2.6+4.3.4](https://docs.rs/crate/zeromq-src/0.2.6+4.3.4/source/src/lib.rs)
+builds through `cc`, not CMake. A missing CMake is therefore not an established
+blocker, and a system-library measurement cannot stand in for this build.
+Resolve and preserve the actual lockfile in the replacement probe. Windows
+native compilation and execution remain separate gates. If this transport
+still fails the bounds, stop again; neither a fork nor a weaker bound is
+implicitly authorized by selecting it.
 
 CLI: `rnx-jupyter --connection-file FILE --rnx ABSOLUTE_EXECUTABLE`.
 The kernel launches that exact worker with null stdin and explicit inherited
@@ -188,10 +205,57 @@ Restart/shutdown can hard-stop a worker independently of all I/O. An idle worker
 gets acknowledged shutdown with the 0046 five-second bound. An active worker
 gets an interrupt and a bounded grace period, then force termination if needed;
 use five seconds for the whole shutdown operation, not successive unbounded
-waits. Reap the worker. Test descendant behavior separately; killing a Unix
-worker is not assumed to kill its separately grouped process:: children.
-A descendant surviving shutdown is a stop condition requiring an explicit
-containment decision before this record is marked implemented.
+waits. Reap the worker and apply the following platform policy, using the same
+five-second shutdown budget for cleanup. A timeout reports cleanup failure and
+state loss; it does not claim every process is reaped. OS-uninterruptible work
+cannot be made to exit on a userspace deadline.
+
+**Linux kernel containment.** Set `PR_SET_CHILD_SUBREAPER` before spawning the
+worker, refusing startup if it fails. On worker death, restart or shutdown,
+terminate its group and repeatedly discover, kill and reap adopted descendants
+until there are no children left. Adoption happens when an intermediate parent
+dies, so a single snapshot is insufficient. The serving kernel launches no
+unrelated helper children: installation and browser fixtures run elsewhere.
+The probe must establish discovery across threads, ownership and stable process
+identity while signalling, rather than killing arbitrary PIDs from a stale
+list. Keep reaping under one owner. Test escaped sessions, double forks and a
+parent that exits during cleanup, without relying on fixture-supplied PIDs to
+find survivors. The fixture independently checks for leftovers. Subreaping
+alone sends no termination signal.
+
+**Linux direct-child protection in rnx.** The proposed `PR_SET_PDEATHSIG(SIGKILL)`
+addition to `spawn_in_group` changes ordinary run and REPL behavior as well as
+the worker. Give it a separate plan and regression evidence before landing it;
+0047 must not quietly change the existing process contract. Probe it alongside
+containment. Capture the expected parent PID before spawning, set the signal
+in the child’s async-signal-safe pre-exec hook, and recheck parent identity to
+close the parent-process-death setup race. The signal follows the spawning
+*thread*, not the last thread of the parent process. Verify that thread’s
+lifetime, including early thread exit during setup; a PID comparison alone
+does not prove the thread remained alive. The setting does not propagate
+through fork and can be cleared by privileged exec or credential changes.
+No claim extends it to all descendants or uncooperative programs.
+
+**Windows.** Create the worker suspended, assign it to a kernel-owned
+kill-on-close job without breakaway, then resume. Refuse launch if assignment
+fails. Do not let the worker or its children inherit the owning job handle.
+Test nesting with the existing process supervisor’s jobs, descendant cleanup
+and abrupt kernel death on Windows. Type checking does not pass these gates.
+
+**macOS/BSD.** This record provides group termination only. Descendants that
+leave those groups are explicitly outside the cleanup guarantee on these
+platforms; do not label their containment equivalent to Linux or Windows.
+
+If the Jupyter kernel process on Linux dies abruptly, it cannot run its sweep.
+Escaped descendants can survive; this is not limited to Jupyter initiating the
+kill. Cgroup containment is deferred. The chosen mechanisms are lifecycle
+cleanup, not isolation from hostile notebook code. On supported Linux fixtures,
+a surviving descendant is still a stop condition, not an accepted timeout.
+
+The platform semantics are documented in
+[PR_SET_CHILD_SUBREAPER](https://man7.org/linux/man-pages/man2/PR_SET_CHILD_SUBREAPER.2const.html),
+[PR_SET_PDEATHSIG](https://man7.org/linux/man-pages/man2/PR_SET_PDEATHSIG.2const.html)
+and [Windows job objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects).
 
 Echo restart in shutdown_reply and exit; the Jupyter manager starts a new kernel.
 Do not secretly respawn a worker under the same live kernel session. Unexpected
@@ -209,13 +273,38 @@ bytes can expand under JSON escaping. Do not count only queue item numbers.
 When application admission is full, return a named busy/refusal rather than
 retain another unbounded request. Unknown optional request types may be ignored.
 
-These are application limits, not claims that checking an already allocated
-ZMQ message bounds the transport's memory. Probe the crate's receive allocations,
-internal queues/high-water behavior and disconnected/slow subscribers. Record
-what is bounded, what may be dropped, and what remains owned after cancellation.
-If the transport can accumulate unbounded data behind these checks, revise the
-transport or configuration before implementing the rest. Do not sell PUB send
-success as delivery or a total process memory ceiling.
+Set `MAXMSGSIZE` to 1 MiB and finite send/receive high-water marks before
+bind/connect; begin the probe at 64 messages per peer and record the actual
+settings. Set linger to zero on every socket and explicitly close sockets
+before terminating the context. Probe the whole shutdown, not just the return
+from socket close. The application’s encoded byte budgets remain necessary.
+
+libzmq’s [decoder](https://github.com/zeromq/libzmq/blob/v4.3.5/src/v2_decoder.cpp)
+checks the declared *frame* size before allocating that frame. This closes the
+specific large-header path only if confirmed against the linked version.
+Its [pipe accounting](https://github.com/zeromq/libzmq/blob/v4.3.5/src/pipe.cpp)
+advances the message count at the final multipart part. An arbitrarily long
+unfinished multipart can therefore defeat the inference that a frame limit
+plus a message-count high-water mark bounds receive memory. The replacement
+probe must include many individually legal parts with MORE set, both finished
+and unfinished, not just one oversized frame. Application rejection after a
+whole multipart has accumulated is still too late. If that path remains
+unbounded, this stop condition remains open and implementation does not start.
+
+[Socket options](https://libzmq.readthedocs.io/en/latest/zmq_setsockopt.html)
+provide per-peer queue controls, not a process-wide byte ceiling or a limit on
+all connected peers. Record native queue ownership, incomplete messages and
+connection-count exposure separately. Rust allocator instrumentation alone
+cannot observe allocations made by libzmq; use native allocation instrumentation
+or an externally bounded process measurement, with its resolution stated.
+
+PUB may discard messages for a subscriber that cannot keep up. This is accepted
+as a transport limitation: send success proves neither delivery nor that the
+frontend saw idle, and the kernel cannot report an exact subscriber drop count.
+Test a reading subscriber alongside a stalled one and keep heartbeat/control
+responsive. Do not describe a frozen browser tab as necessarily stalling the
+ZMQ subscriber; Jupyter’s server is normally that peer. No-subscriber sends,
+queue saturation and interrupted context shutdown all need raw traces.
 
 ### 7. Installation and acceptance
 
@@ -241,7 +330,10 @@ shared-code edit makes that necessary.
    signed round trips, wrong signatures, routing prefixes, extra fields, empty
    key, malformed multipart, oversized frames, stalled publisher and heartbeat/
    control responsiveness. Preserve source, lockfiles, commands and raw traces
-   in rnx-bench. Stop on unresolved unbounded buffering or lifecycle failures.
+   in rnx-bench. Include the unfinished multipart case, native allocation
+   measurement, a healthy subscriber alongside a stalled one, and full native
+   context shutdown. Stop on unresolved unbounded buffering or lifecycle failures.
+   Review these replacement results before kernel implementation.
 2. Drive execute with jupyter_client: persistent bindings, unit, compile/runtime
    errors, origins from retained closures, silent/empty requests, history/count
    choices, user_expressions refusals, queue limits and stop_on_error both ways.
@@ -251,12 +343,19 @@ shared-code edit makes that necessary.
 4. Interrupt while synchronous, awaiting and supervising a child; document async
    CPU behavior. Restart and shutdown with a blocked sink and surviving-descendant
    fixtures, worker death at partial boundaries, bounded reap and explicit state
-   loss. Kernel-info/heartbeat/control must remain responsive during execution.
+   loss. The standalone containment probe precedes integration and must discover
+   adopted children itself, covering nested forks and changing sessions. Prove
+   the proposed parent-death hook’s setup and thread-lifetime rules separately;
+   the shared rnx change needs its own accepted plan. Run Windows job gates on
+   Windows before claiming that platform. Kernel-info/heartbeat/control must
+   remain responsive during execution.
 5. Install in temporary directories including spaces; open JupyterLab, select
    Rune (rnx), execute multiple cells, interrupt, restart, save and reopen an
    actual notebook. Preserve notebook and screen evidence alongside an automated
    nbclient run. Use a headless Chromium browser driven by Playwright on nano, with versioned
-   browser/tooling and genuine page screenshots. Protocol tests alone do not
+   browser/tooling and genuine page screenshots. Install and smoke-test the pinned
+   browser before starting integration; the existing Python environment alone
+   does not include that evidence. Protocol tests alone do not
    establish the JupyterLab gate.
 6. Run both rnx suites sequentially with Python present, kernel tests separately,
    notices and formatting checks. Compare rnx's ordinary command bytes, dependency
