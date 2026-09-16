@@ -2,8 +2,8 @@
 
 Status: proposed 2026-09-16; revised after the first review. The boundary
 probes are accepted and pushed in rnx-bench at `8b97577`. This is the step-four design draft, not an implemented server or a
-claim that the existing extension interface can already assemble one. The remaining probe review and separate server-entry contract must be settled
-before implementation is ready.
+claim that the existing extension interface can already assemble one. The separate supported server-entry contract must be settled before
+implementation is ready; its proposal is record 0056.
 
 Gate 2's original assembly evidence is in the companion
 `0054_a_server_owns_more_than_a_handler_assembly_evidence.md`. Its HTTP cleanup
@@ -16,9 +16,11 @@ prototype now has two passing raw-wire/resource repeats in the companion
 and pushed at rnx `6fb89e7` and rnx-bench `6ab105e`. The review follow-up
 records parser tolerance and inherited-descriptor accounting. Gate 4's scheduling evidence is accepted and pushed at rnx `1b2030d` and
 rnx-bench `6d146e2` (including the review follow-up `9de3321`). Gate 5's transaction/pool evidence is accepted and pushed at rnx `beffe80` and
-rnx-bench `b0d1cf1`. Gate 6 now has passing 13-case matrices under SIGTERM and
-SIGINT in `0054_a_server_owns_more_than_a_handler_shutdown_evidence.md`, pending
-review. The supported server-entry contract remains open.
+rnx-bench `b0d1cf1`. Gate 6's 13-case matrices under SIGTERM and SIGINT in
+`0054_a_server_owns_more_than_a_handler_shutdown_evidence.md` are accepted and
+pushed at rnx `032579a` and rnx-bench `453e618`. Gates 2 through 6 are closed.
+The supported server-entry contract remains open, proposed in
+`0056_a_server_entry_without_ownership_by_accident.md`.
 
 ## Context
 
@@ -223,7 +225,7 @@ The original boundary probe proved this order with one connection and an
 800 ms server timeout. Gate 5 extends settled-work closure to the two-slot
 per-worker pools specified above. Neither sets production timeouts or claims
 that dropping a query cancels its server command. Shutdown during active work
-and deadline-failure outcomes are measured in gate 6's companion, pending review.
+and deadline-failure outcomes are measured in gate 6's accepted companion.
 
 The shutdown prototype distinguishes resource cleanup from request success.
 An unacknowledged transaction can be retired and its request reported as failed
