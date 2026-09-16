@@ -1,9 +1,9 @@
 # rnx 0053: cancellation reaches the operation, not just the binding
 
-Status: accepted 2026-09-16; implementation pending. This is the separate lifecycle decision required by 0052's
+Status: implemented 2026-09-16; review pending. This is the separate lifecycle decision required by 0052's
 stop condition; it does not mark the PostgreSQL adapter implemented or
-weaken its cleanup gate. API shape below is a proposal to review before
-any public library change.
+weaken its cleanup gate. The implementation and its ownership rerun are recorded in the companion
+evidence; record 0052 resumes only after that review.
 
 ## Context
 
@@ -25,7 +25,7 @@ operation when the host cancels the execution using it, without deleting the
 Rune value or requiring another poll? A resource can need cancellation even
 when it has no spawned task and no active executor poll.
 
-## Proposed decisions
+## Decisions
 
 ### 1. Preserve bindings and revoke the operation's resources
 
@@ -76,7 +76,7 @@ operations independently of their last execution identity.
 ### 3. The host needs revocable ownership, not a notification-only callback
 
 A callback telling an adapter that cancellation happened does not by itself
-solve ownership of a connection buried inside a retained future. The proposed
+solve ownership of a connection buried inside a retained future. The
 primitive is a tracked future whose inner native future is separately owned
 and synchronously removable. The wrapper holds the owner strongly through Rc;
 the registry holds it weakly. The owner holds an optional pinned boxed future
@@ -150,7 +150,7 @@ ownership, stop; do not add unsafe access to a borrowed or polled future.
 
 A panic while revoking an adapter operation is not successful cleanup. The
 implementation must not print an ordinary settled/idle response and continue
-with unknown resources. The proposed policy is a named lifecycle failure and
+with unknown resources. The policy is a named lifecycle failure and
 retirement of the serving context, with the worker reporting state loss through
 its existing terminal-failure path. It must attempt remaining independent
 revocations without holding the registry lock. Unwinding panic conversion and
@@ -164,7 +164,7 @@ The CLI emits the named lifecycle refusal and exits unsuccessfully; a session
 must not return to its prompt after this failure. No new claim that arbitrary native
 cleanup is bounded in time is made.
 
-## Acceptance gates proposed for review
+## Acceptance gates
 
 1. An external fixture registers a tracked, lazy native future. Creating it
    opens nothing. Dropping an unpolled value leaves no registry entry. Normal
@@ -196,7 +196,7 @@ cleanup is bounded in time is made.
    interface, then reruns its ownership evidence. Only after this is reviewed
    does 0052 resume implementing its database contract.
 
-## Risks and decisions still requiring review
+## Risks and remaining limits
 
 The core risk is the lifetime model, not the number of registration methods.
 The current execution identity must be accessible during each native poll
@@ -210,7 +210,7 @@ keep a resource open while the REPL is idle; the difference is that cancellation
 and reset now have an explicit way to revoke it. Server-side transaction outcome
 remains independent of client revocation, and no retry is implied.
 
-This proposal chooses execution-scoped cancellation rather than cancelling all
+This record chooses execution-scoped cancellation rather than cancelling all
 extension work after any failed input. The HTTP policy difference is explicit. The capture-safe Scope handle and its
 thread-local lookup are accepted with the distinct misuse errors above. Nothing
 in 0052 authorizes implementing those choices silently inside the adapter.

@@ -569,7 +569,7 @@ The full wire contract, bounds and failure policy are in record 0046.
 
 An external Rust application can depend on this checkout and run rnx with
 its own Rune modules. No package manager or dynamic plugin loading is involved.
-The library exposes only `main_with`, `Extensions`, and its pinned `rune`
+The library exposes only `main_with`, `Extensions`, `Scope`, and its pinned `rune`
 re-export. Keep the normal `main` return type so startup errors retain rnx's
 exit status and diagnostics:
 
@@ -624,3 +624,35 @@ allocator, allocation reports and ceiling. An application cannot declare a
 second global allocator while it is enabled. Turning off rnx's default
 features disables accounting and its ceiling, just as in the stock binary.
 Extensions' retained allocations count toward that ceiling.
+
+An extension whose pending futures hold resources can opt into cancellation:
+
+```rust
+let extensions = rnx::Extensions::none().with_lifecycle("example", |module, scope| {
+    module.function("answer", move || scope.track(async { Ok(42i64) }))
+        .build().map_err(|e| e.to_string())?;
+    Ok(vec![("example::answer".into(), "answer() -> future<Result<i64>>")])
+});
+```
+
+`Scope::track` accepts a `'static` future returning `Result<T, String>`. Neither
+that future nor `T` needs `Send` or `Sync`. The clonable scope is safe to capture
+in Rune's `Send + Sync` function closure, but its operations belong to the
+serving context's thread. Wrong-thread and retired-context calls return distinct
+errors without polling the supplied future.
+
+A failed execution revokes pending tracked operations it polled, even if an
+older binding retains the future. Revocation drops the inner future synchronously,
+without another runtime turn. A retained wrapper subsequently returns
+`Err("operation cancelled")`; this does not change Rune's consuming `await`
+semantics. Use `select` when the Rune future must remain available. Successful
+selection keeps the losing operation, and failures leave unrelated operations
+alone. Reset and normal teardown revoke all tracked operations. Renumber does
+not. A destructor panic retires the context; a worker reports state loss.
+
+This primitive requires resources that close on drop. It does not drain spawned
+tasks, stop blocking calls, roll back server-side effects, or retry work. HTTP
+still uses its existing all-requests cleanup on interrupt/reset; migrating that
+battery to the execution-scoped rule is deferred. `process::exit` invokes cleanup
+for registered owners explicitly; a native future currently on the poll stack
+ends with the process, since there is no subsequent return from that call.

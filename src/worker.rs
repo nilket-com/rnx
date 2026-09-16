@@ -163,10 +163,12 @@ pub fn run(
 	mut transport: Transport,
 	context: rune::Context,
 	http: crate::http::State,
+	lifecycle: crate::lifecycle::Lifecycle,
 ) -> io::Result<()> {
 	let mut session = Session::with_ceiling(context, crate::repl::ceiling())
 		.map_err(|e| io::Error::other(e.to_string()))?
-		.with_http(http);
+		.with_http(http)
+		.with_lifecycle(lifecycle);
 	crate::memory::record_baseline();
 	session.sample();
 	transport.send(json!({"type":"ready","protocol":1,"rnx":crate::VERSION,"rune":crate::RUNE_VERSION,
@@ -226,6 +228,11 @@ pub fn run(
 				}
 				Ok(_) => {}
 				Err(f) => reply["failure"] = failure(&f, epoch),
+			}
+			if session.lifecycle_failed() {
+				reply["state_lost"] = json!(true);
+				cleanup_failed = true;
+				retire = true;
 			}
 		} else {
 			if let Err(message) = session.reset_fallible() {

@@ -224,6 +224,7 @@ pub fn run(
 	arguments: Value,
 	debug_source: bool,
 	budget: usize,
+	lifecycle: &crate::lifecycle::Lifecycle,
 ) -> i32 {
 	crate::host::running_a_script();
 	let mut loader = Loader::new();
@@ -267,6 +268,10 @@ pub fn run(
 			return 1;
 		}
 	};
+	if let Err(error) = lifecycle.begin() {
+		unplaced("error", &error);
+		return 1;
+	}
 	let outcome = crate::execute::drive_async(
 		&driver,
 		&mut vm,
@@ -278,6 +283,10 @@ pub fn run(
 		crate::execute::WhenInterrupted::Finish,
 	);
 	drop(vm);
+	if let Err(error) = lifecycle.finish(!matches!(outcome, crate::execute::Outcome::Complete(_))) {
+		unplaced("error", &error);
+		return 1;
+	}
 	// Runtime drop cancels async work without waiting on started system DNS.
 	// Cleanup must not replace a completed script's own exit status.
 	drop(driver);

@@ -4,7 +4,12 @@ use rune::{Context, Module, SourceId};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::Arc;
 
-type Builder = Box<dyn FnOnce(&mut Module) -> Result<Vec<(String, &'static str)>, String>>;
+type Builder = Box<
+	dyn FnOnce(
+		&mut Module,
+		&crate::lifecycle::Lifecycle,
+	) -> Result<Vec<(String, &'static str)>, String>,
+>;
 struct Extension {
 	name: &'static str,
 	build: Builder,
@@ -19,6 +24,7 @@ struct Extension {
 /// Only an ordinary panic unwinding through the builder call is converted.
 pub struct Extensions {
 	builders: Vec<Extension>,
+	lifecycle: bool,
 }
 
 impl Extensions {
@@ -26,6 +32,7 @@ impl Extensions {
 	pub fn none() -> Self {
 		Self {
 			builders: Vec::new(),
+			lifecycle: false,
 		}
 	}
 
@@ -38,12 +45,38 @@ impl Extensions {
 	) -> Self {
 		self.builders.push(Extension {
 			name,
-			build: Box::new(build),
+			build: Box::new(move |module, _| build(module)),
 		});
 		self
 	}
 
+	/// Append a trusted builder with a context-owned operation scope.
+	pub fn with_lifecycle(
+		mut self,
+		name: &'static str,
+		build: impl FnOnce(&mut Module, crate::Scope) -> Result<Vec<(String, &'static str)>, String>
+		+ 'static,
+	) -> Self {
+		self.lifecycle = true;
+		self.builders.push(Extension {
+			name,
+			build: Box::new(move |module, lifecycle| build(module, lifecycle.scope(name))),
+		});
+		self
+	}
+	pub(crate) fn lifecycle(&self) -> Result<crate::lifecycle::Lifecycle, String> {
+		crate::lifecycle::Lifecycle::new(self.lifecycle)
+	}
+	#[cfg(test)]
 	pub(crate) fn install(self, context: &mut Context) -> Result<Vec<HostFunction>, String> {
+		let lifecycle = self.lifecycle()?;
+		self.install_with(context, &lifecycle)
+	}
+	pub(crate) fn install_with(
+		self,
+		context: &mut Context,
+		lifecycle: &crate::lifecycle::Lifecycle,
+	) -> Result<Vec<HostFunction>, String> {
 		let mut installed = Vec::new();
 		let mut functions = Vec::new();
 		for extension in self.builders {
@@ -67,7 +100,8 @@ impl Extensions {
 			}
 			installed.push(name);
 			let mut module = Module::with_crate(name).map_err(|e| failure(e.to_string()))?;
-			let entries = build_catching(|| (extension.build)(&mut module)).map_err(&failure)?;
+			let entries =
+				build_catching(|| (extension.build)(&mut module, lifecycle)).map_err(&failure)?;
 			let prefix = format!("{name}::");
 			for (path, _) in &entries {
 				if !path
@@ -98,23 +132,51 @@ fn identifier(name: &str) -> bool {
 		.is_ok_and(|id| id.span().range() == (0..name.len()))
 }
 
-fn build_catching<T>(build: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
-	let owner = std::thread::current().id();
-	let previous = Arc::new(std::panic::take_hook());
-	let delegate = previous.clone();
-	std::panic::set_hook(Box::new(move |info| {
-		if std::thread::current().id() != owner {
-			delegate(info);
+type Hook = Box<dyn Fn(&std::panic::PanicHookInfo<'_>) + Send + Sync + 'static>;
+struct Hooks {
+	active: usize,
+	previous: Option<Arc<Hook>>,
+}
+static HOOKS: std::sync::Mutex<Hooks> = std::sync::Mutex::new(Hooks {
+	active: 0,
+	previous: None,
+});
+thread_local! { static QUIET: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
+
+pub(crate) fn build_catching<T>(build: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
+	// Scope misuse can be refused on another thread, and dropping that supplied
+	// future can panic. Share one dispatcher across overlapping catches; only
+	// mutate the hook under this lock, never run adapter code under it. Nested
+	// catches and a builder joining a catching child therefore cannot deadlock.
+	{
+		let mut hooks = HOOKS.lock().unwrap_or_else(|e| e.into_inner());
+		if hooks.active == 0 {
+			let previous = Arc::new(std::panic::take_hook());
+			let delegate = previous.clone();
+			std::panic::set_hook(Box::new(move |info| {
+				if QUIET.with(|quiet| quiet.get() == 0) {
+					delegate(info);
+				}
+			}));
+			hooks.previous = Some(previous);
 		}
-	}));
+		hooks.active += 1;
+		QUIET.with(|quiet| quiet.set(quiet.get() + 1));
+	}
 	let result = catch_unwind(AssertUnwindSafe(build));
-	// Drop our hook before recovering the previous one. It owns the only
-	// other Arc, so normal restoration returns the original hook unchanged.
-	drop(std::panic::take_hook());
-	std::panic::set_hook(match Arc::try_unwrap(previous) {
-		Ok(hook) => hook,
-		Err(hook) => Box::new(move |info| hook(info)),
-	});
+	{
+		let mut hooks = HOOKS.lock().unwrap_or_else(|e| e.into_inner());
+		QUIET.with(|quiet| quiet.set(quiet.get() - 1));
+		hooks.active -= 1;
+		if hooks.active == 0 {
+			drop(std::panic::take_hook());
+			let previous = hooks.previous.take().expect("active catch installed hook");
+			std::panic::set_hook(match Arc::try_unwrap(previous) {
+				Ok(hook) => hook,
+				Err(hook) => Box::new(move |info| hook(info)),
+			});
+		}
+	}
 	match result {
 		Ok(result) => result,
 		Err(payload) => {
@@ -182,5 +244,18 @@ mod tests {
 			});
 		assert!(extensions.install(&mut Context::new()).is_err());
 		assert_eq!(calls.get(), 1);
+	}
+	#[test]
+	fn overlapping_and_nested_catches_do_not_hold_a_lock_across_adapter_code() {
+		let result = build_catching(|| {
+			let child = std::thread::spawn(|| build_catching::<()>(|| panic!("child catch")));
+			assert_eq!(
+				build_catching::<()>(|| panic!("nested catch")).unwrap_err(),
+				"panicked: nested catch"
+			);
+			assert_eq!(child.join().unwrap().unwrap_err(), "panicked: child catch");
+			Ok(())
+		});
+		assert!(result.is_ok());
 	}
 }

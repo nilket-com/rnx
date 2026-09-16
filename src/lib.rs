@@ -7,7 +7,9 @@
 //! process's global allocator. The executable must not supply a second one.
 pub use rune;
 mod extensions;
+mod lifecycle;
 pub use extensions::Extensions;
+pub use lifecycle::Scope;
 
 use rune::runtime::Value;
 use rune::{Context, Source, Sources, Vm};
@@ -122,6 +124,15 @@ Flags for `run`, before the file: --budget N, --debug-source.";
 /// across session resets. As with the stock executable, some dispatch paths
 /// exit the process; ordinary returns preserve Rust's `Termination` behavior.
 pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std::error::Error>> {
+	let lifecycle = extensions.lifecycle()?;
+	let result = main_inner(extensions, &lifecycle);
+	lifecycle.close()?;
+	result
+}
+fn main_inner(
+	extensions: Extensions,
+	lifecycle: &lifecycle::Lifecycle,
+) -> std::result::Result<(), Box<dyn std::error::Error>> {
 	let mut extensions = Some(extensions);
 	#[cfg(feature = "test-support")]
 	let _config_reads = config::ReadReport;
@@ -223,12 +234,16 @@ pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std:
 			.first()
 			.is_some_and(|arg| matches!(arg.as_str(), "repl" | "eval" | "worker"));
 	if serves_without_run {
-		host_functions.extend(install_extensions(extensions.take().unwrap(), &mut context));
+		host_functions.extend(install_extensions(
+			extensions.take().unwrap(),
+			&mut context,
+			lifecycle,
+		));
 	}
 	if let Some(transport) = worker_transport {
 		// Fatal transport errors are not script stderr or a successful cell.
-		if worker::run(transport, context, http).is_err() {
-			std::process::exit(1);
+		if worker::run(transport, context, http, lifecycle.clone()).is_err() {
+			terminal::exit(1);
 		}
 		return Ok(());
 	}
@@ -243,7 +258,9 @@ pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std:
 	if args.first().is_some_and(|s| s == "eval") {
 		let source = args.get(1).ok_or("eval needs source")?.clone();
 		host::running_a_script();
-		let mut session = session::Session::new(context)?.with_http(http.clone());
+		let mut session = session::Session::new(context)?
+			.with_http(http.clone())
+			.with_lifecycle(lifecycle.clone());
 		match session.eval(&source) {
 			// What a returned value means is decided in one place, so `eval`
 			// and `run` cannot disagree about what a failure is. The renderer
@@ -296,7 +313,7 @@ pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std:
 	// A session is what someone typing `rnx` almost always wants, and it works
 	// whether standard input is a terminal or a pipe.
 	if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
-		return repl::run(context, host_functions, http, splash);
+		return repl::run(context, host_functions, http, splash, lifecycle.clone());
 	}
 	if args.first().is_some_and(|s| s == "run") {
 		// Flags are read only before the script path. Everything after the
@@ -342,8 +359,8 @@ pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std:
 		let snapshot: Arc<[String]> = Arc::from(rest[1..].to_vec());
 		let arguments = rune::to_value(snapshot.to_vec())?;
 		env::install(&mut context, snapshot)?;
-		install_extensions(extensions.take().unwrap(), &mut context);
-		let code = runner::run(&context, path, arguments, debug_source, budget);
+		install_extensions(extensions.take().unwrap(), &mut context, lifecycle);
+		let code = runner::run(&context, path, arguments, debug_source, budget, lifecycle);
 		terminal::exit(code);
 	}
 	// Anything that is not a command says so. Falling through to the
@@ -441,8 +458,12 @@ pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std:
 	Ok(())
 }
 
-fn install_extensions(extensions: Extensions, context: &mut Context) -> Vec<host::HostFunction> {
-	match extensions.install(context) {
+fn install_extensions(
+	extensions: Extensions,
+	context: &mut Context,
+	lifecycle: &lifecycle::Lifecycle,
+) -> Vec<host::HostFunction> {
+	match extensions.install_with(context, lifecycle) {
 		Ok(functions) => functions,
 		Err(message) => {
 			eprintln!("error: {}", format::terminal_safe(&message));

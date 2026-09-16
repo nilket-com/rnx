@@ -313,8 +313,19 @@ pub struct Session {
 	/// and across `:reset`.
 	runtime: super::execute::Runtime,
 	http: crate::http::State,
+	lifecycle: crate::lifecycle::Lifecycle,
 }
 impl Session {
+	pub fn with_lifecycle(mut self, lifecycle: crate::lifecycle::Lifecycle) -> Self {
+		self.lifecycle = lifecycle;
+		self
+	}
+	pub fn lifecycle_failed(&self) -> bool {
+		self.lifecycle.failed()
+	}
+	pub fn close(&self) -> std::result::Result<(), String> {
+		self.lifecycle.close()
+	}
 	pub fn cancel_http(&self) {
 		if let Err(error) = self.http.clear(&self.runtime) {
 			eprintln!("{error}");
@@ -342,6 +353,7 @@ impl Session {
 			budget: BUDGET,
 			runtime: super::execute::Runtime::new()?,
 			http: crate::http::State::default(),
+			lifecycle: crate::lifecycle::Lifecycle::default(),
 		})
 	}
 	/// Next admitted input's display position. Refusals before admission do
@@ -397,6 +409,7 @@ impl Session {
 	}
 	/// Clears state even if HTTP cleanup fails; the worker then retires.
 	pub fn reset_fallible(&mut self) -> std::result::Result<(), String> {
+		let cleanup = self.lifecycle.clear();
 		self.declarations.clear();
 		self.names.clear();
 		self.state.clear();
@@ -405,7 +418,8 @@ impl Session {
 		self.units.clear();
 		self.last_generated.clear();
 		self.over_ceiling = false;
-		self.http.clear(&self.runtime)
+		let http = self.http.clear(&self.runtime);
+		cleanup.and(http)
 	}
 	pub fn ceiling(&self) -> usize {
 		self.ceiling
@@ -512,6 +526,12 @@ impl Session {
 		on_armed: impl FnOnce(usize) -> std::result::Result<(), E>,
 	) -> std::result::Result<std::result::Result<Value, Failure>, E> {
 		let result = self.eval_input(input, on_armed)?;
+		if let Err(message) = self.lifecycle.finish(result.is_err()) {
+			return Ok(Err(Failure::Runtime {
+				message,
+				origin: None,
+			}));
+		}
 		if crate::host::interrupted() {
 			if let Err(message) = self.http.clear(&self.runtime) {
 				return Ok(Err(Failure::Runtime {
@@ -861,6 +881,10 @@ impl Session {
 				.map_err(|e| Failure::Refused(e.to_string()))?,
 		);
 		let mut vm = Vm::new(runtime, unit.clone());
+		self.lifecycle.begin().map_err(|message| Failure::Runtime {
+			message,
+			origin: None,
+		})?;
 		let outcome = if awaits {
 			super::execute::drive_async(
 				&self.runtime,

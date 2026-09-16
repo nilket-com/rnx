@@ -250,6 +250,9 @@ fn handle(
 		}
 		":reset" => {
 			session.reset();
+			if session.lifecycle_failed() {
+				crate::terminal::exit(1);
+			}
 			println!("session reset");
 			return Outcome::Reset;
 		}
@@ -309,6 +312,9 @@ fn handle(
 		}
 		Err(failure) => eprintln!("{}", failure.presented()),
 	}
+	if session.lifecycle_failed() {
+		crate::terminal::exit(1);
+	}
 	Outcome::Continue
 }
 
@@ -317,6 +323,7 @@ pub fn run(
 	host: Vec<HostFunction>,
 	http: crate::http::State,
 	splash: bool,
+	lifecycle: crate::lifecycle::Lifecycle,
 ) -> crate::Result<()> {
 	let _title = crate::terminal::Title::new("rnx");
 	let config = Config::builder()
@@ -325,7 +332,9 @@ pub fn run(
 		.completion_type(CompletionType::List)
 		.build();
 	let mut editor: Editor<RnxHelper, FileHistory> = Editor::with_config(config)?;
-	let mut session = Session::with_ceiling(context, ceiling())?.with_http(http);
+	let mut session = Session::with_ceiling(context, ceiling())?
+		.with_http(http)
+		.with_lifecycle(lifecycle);
 	let names = Rc::new(RefCell::new(snapshot(&session, &host)));
 	editor.set_helper(Some(RnxHelper {
 		names: names.clone(),
@@ -394,5 +403,6 @@ pub fn run(
 			_ => {}
 		}
 	}
+	session.close()?;
 	Ok(())
 }

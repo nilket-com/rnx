@@ -42,7 +42,11 @@ pub fn restore() {
 	}
 }
 /// Explicit exits bypass Drop; normal returns use the title guard.
-pub fn exit(code: i32) -> ! {
+pub fn exit(mut code: i32) -> ! {
+	if let Err(error) = crate::lifecycle::close_thread() {
+		eprintln!("error: {}", crate::format::terminal_safe(&error));
+		code = 1;
+	}
 	#[cfg(feature = "test-support")]
 	crate::config::report_reads();
 	restore();
