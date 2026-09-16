@@ -11,9 +11,10 @@ Gate 2's original assembly evidence is in the companion
 stop is now closed by accepted record 0055 (`d87334f`) and the two assembly
 replays in rnx-bench `92388a5`. Request ownership stays isolated, cleanup works
 inside a running runtime, and final teardown reaches zero tasks after all
-owners end. Decision 1 now selects multiplexed admission. Decision 5 specifies
-the proposed gate-3 HTTP boundary and selects a library for its next probe;
-those new details are for review, not claims of an implemented HTTP server.
+owners end. Decision 1 now selects multiplexed admission. Decision 5's HTTP boundary was accepted and committed in `ae1d620`. Its private
+prototype now has two passing raw-wire/resource repeats in the companion
+`0054_a_server_owns_more_than_a_handler_http_evidence.md`, for gate-3 review.
+This does not close gates 4–6 or publish a server entry point.
 
 ## Context
 
