@@ -91,6 +91,11 @@ directory; `sql` is one statement with `$1` placeholders, at most 1 MiB;
 `timeout_ms` only, an integer 1 through 90000, default 30000; any other
 key, or a wrong type, is refused before connecting naming the key.
 
+URL and SQL are borrowed at the native boundary and copied into the call's
+owned future. Creating or awaiting a query consumes neither binding and keeps
+neither borrowed across suspension. Gate 2 queries twice with the same bound
+URL and SQL, including across separate session inputs.
+
 The call connects, prepares the statement, executes it, streams the rows,
 closes the connection and returns:
 

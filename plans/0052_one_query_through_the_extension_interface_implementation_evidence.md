@@ -168,3 +168,30 @@ The full Windows cross-check stops in ring's build before the adapter is checked
 because `lib.exe` is unavailable. There is no claim of a successful full or
 isolated Windows adapter check, nor of Windows execution. TLS, pools, cross-call
 transactions, numeric/date representations and web serving remain deferred.
+
+
+## Review follow-up: reusable URL and SQL bindings
+
+Review found that the native signature's owned `String` arguments consumed Rune
+bindings. The boundary now takes `&str` for both inputs and creates owned snapshots
+for the lazy tracked future. The query body, driver and lifecycle wrapper are
+unchanged. No borrow survives the native call; a script can also mutate its SQL
+while an unpolled query retains the original text.
+
+Two integration tests in the adapter's regular Cargo suite exercise repeated
+calls and mutation after creating a lazy future, without a database. Both feature
+configurations now pass **5 tests** (3 unit and 2 integration), and clippy with
+warnings denied and formatting pass. Root runtime code is unchanged.
+
+The real-database follow-up is `rnx-bench/probes/postgres/reuse.py`. Run and eval
+query twice using the same URL and SQL bindings, returning 42 and 43 and showing
+both original strings intact. A worker session retains those bindings across
+separate inputs and repeats the calls. Its lazy-snapshot case mutates SQL after
+creating a query, then successfully executes the original SQL. The private cluster
+is stopped and removed. The full SQL contract fixture is rerun into the separate
+`results/postgres-0052-reuse/` directory, preserving the original measurements.
+
+Corrected release SHA-256: `8132775a5496c99e6d77c6f49fb2938c8d5978404123c6530924ed7e3ba90d4d`.
+The earlier hashes and cost table describe the pre-fix implementation; timings
+were not rerun for this follow-up. The pre-existing HTTP ownership issue is a
+separate root change and remains outside 0052.

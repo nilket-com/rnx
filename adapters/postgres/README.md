@@ -22,6 +22,8 @@ The success value has `columns` (names in server order), `rows` (objects keyed b
 those names), and `affected` (the driver's command-completion count, including
 SELECT rows, or zero for commands with no count). There are always four arguments.
 Duplicate column names are refused before execution; use SQL aliases to distinguish them.
+URL and SQL bindings are borrowed, not consumed. Each lazy query owns snapshots
+of their text, so both bindings can be reused or changed after creating a query.
 
 Options accept only `timeout_ms`: an integer from 1 through 90000, default 30000.
 Unknown options are errors. One call opens one connection, prepares one statement,

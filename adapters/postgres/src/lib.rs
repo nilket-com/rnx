@@ -17,8 +17,11 @@ pub fn build(
 	module
 		.function(
 			"query",
-			move |url: String, sql: String, params: Value, options: Value| {
-				scope.track(query(url, sql, params, options))
+			move |url: &str, sql: &str, params: Value, options: Value| {
+				// Borrow the caller's strings only for the native call, then
+				// give the lazy tracked future its own snapshot. Neither binding
+				// is consumed or kept borrowed across await.
+				scope.track(query(url.to_owned(), sql.to_owned(), params, options))
 			},
 		)
 		.build()
