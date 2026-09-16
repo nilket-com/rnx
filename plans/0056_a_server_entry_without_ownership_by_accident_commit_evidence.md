@@ -1,7 +1,8 @@
 # rnx 0056: gate 3, a rejected COMMIT is not a lost reply
 
-Status: implemented as an isolated probe, pending review, 2026-09-16. Gates 1
-and 2 are accepted and pushed. Gates 4–6 remain open. No root source, manifest,
+Status: accepted and pushed 2026-09-16 at rnx `1aa600e` and rnx-bench
+`181a444`. Gates 1 and 2 are accepted and pushed. Gate 4 extraction evidence
+is recorded separately; gates 5 and 6 remain open. No root source, manifest,
 lockfile, notices, kernel, adapter or accepted pool prototype changed.
 
 ## Reproduce and identify

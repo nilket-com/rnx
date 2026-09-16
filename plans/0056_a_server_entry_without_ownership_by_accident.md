@@ -5,10 +5,12 @@ Gate 1 is accepted and pushed at rnx `abc9bdd` and rnx-bench `99f5830`;
 evidence is in `0056_a_server_entry_without_ownership_by_accident_evidence.md`.
 Gate 2 is accepted and pushed at rnx `a12fd06` and rnx-bench `32ad598`, with
 evidence in `0056_a_server_entry_without_ownership_by_accident_host_evidence.md`.
-Gate 3 has passing private-cluster classification and regression evidence,
-pending review, in `0056_a_server_entry_without_ownership_by_accident_commit_evidence.md`.
-Gates 4 through 6 and server extraction remain unimplemented.
-This specifies the supported entry, not an implemented HTTP server. The HTTP,
+Gate 3 is accepted and pushed at rnx `1aa600e` and rnx-bench `181a444`, with
+evidence in `0056_a_server_entry_without_ownership_by_accident_commit_evidence.md`.
+Gate 4 has passing extraction and regression evidence, pending review, in
+`0056_a_server_entry_without_ownership_by_accident_extraction_evidence.md`.
+The separate Linux server package is implemented; gates 5 and 6 remain open.
+This specifies the supported entry and its first assembled application. The HTTP,
 scheduling, transaction and shutdown evidence lives with 0054. This record
 turns the private assembly into an external caller's contract. Review precedes
 implementation; the API assembly gate precedes extraction of the server.

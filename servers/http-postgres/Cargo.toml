@@ -1,0 +1,22 @@
+[package]
+name = "rnx-http-postgres"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[workspace]
+[features]
+test-support = []
+[dependencies]
+rnx = { path = "../..", default-features = false, features = ["server-runtime"] }
+hyper = { version = "=1.11.1", default-features = false, features = ["server", "http1"] }
+hyper-util = { version = "=0.1.20", default-features = false, features = ["tokio"] }
+http-body-util = "=0.1.5"
+bytes = "1"
+tokio = { version = "1", default-features = false, features = ["rt", "time", "net", "sync", "macros"] }
+tokio-postgres = "=0.7.18"
+serde_json = "1"
+libc = "0.2"
+[profile.dev]
+debug = false
+[profile.dev.package."*"]
+opt-level = 2
