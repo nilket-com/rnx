@@ -8,11 +8,9 @@ use rune::{
 	runtime::{Bytes, Object, Value},
 };
 use std::{
-	collections::HashMap,
 	sync::{Arc, Mutex},
 	time::Duration,
 };
-use tokio::task::{AbortHandle, JoinHandle};
 
 const DEFAULT_LIMIT: usize = 8 * 1024 * 1024;
 const MAX_LIMIT: usize = 64 * 1024 * 1024;
@@ -22,21 +20,15 @@ pub struct State(Arc<Mutex<Inner>>);
 #[derive(Default)]
 struct Inner {
 	client: Option<Client>,
-	next: u64,
-	active: HashMap<u64, AbortHandle>,
 }
 
 impl State {
-	/// No request can retain a live transport after cancellation, even when
-	/// its Rune Future is held in a binding from an earlier input.
-	pub fn clear(&self, runtime: &crate::execute::Runtime) -> Result<(), String> {
-		let mut inner = self.0.lock().unwrap();
-		for (_, handle) in std::mem::take(&mut inner.active) {
-			handle.abort();
-		}
-		inner.client = None;
-		drop(inner);
-		runtime.drain_http()
+	/// Release this owner's cached client. Request revocation belongs to its
+	/// lifecycle; socket closure still needs progress from the owning runtime.
+	/// This method is safe to call inside a running runtime and never drains it.
+	pub fn cancel(&self) {
+		let client = self.0.lock().unwrap().client.take();
+		drop(client);
 	}
 
 	fn client(&self) -> Result<Client, String> {
@@ -58,55 +50,17 @@ impl State {
 
 	async fn request(
 		&self,
-		method: String,
 		url: String,
-		options: Option<Value>,
+		request: Result<Request, String>,
 		bytes: bool,
 	) -> Result<Value, String> {
 		let outcome = async {
-			let request = Request::parse(&method, &url, options)?;
+			let request = request?;
 			let client = self.client()?;
-			let id = {
-				let mut inner = self.0.lock().unwrap();
-				let id = inner.next;
-				inner.next = inner.next.wrapping_add(1);
-				id
-			};
-			let state = self.clone();
-			let guard = Active { state, id };
-			let task = tokio::spawn(async move {
-				let _guard = guard;
-				fetch(client, request).await
-			});
-			self.0
-				.lock()
-				.unwrap()
-				.active
-				.insert(id, task.abort_handle());
-			// Dropping an unretained Rune future also cancels its request.
-			let mut task = AbortOnDrop(task);
-			let response = (&mut task.0)
-				.await
-				.map_err(|e| format!("request task ended: {e}"))??;
-			response.value(bytes)
+			fetch(client, request).await?.value(bytes)
 		}
 		.await;
 		outcome.map_err(|e| format!("cannot get {url}: {e}"))
-	}
-}
-struct Active {
-	state: State,
-	id: u64,
-}
-impl Drop for Active {
-	fn drop(&mut self) {
-		self.state.0.lock().unwrap().active.remove(&self.id);
-	}
-}
-struct AbortOnDrop<T>(JoinHandle<T>);
-impl<T> Drop for AbortOnDrop<T> {
-	fn drop(&mut self) {
-		self.0.abort();
 	}
 }
 
@@ -359,16 +313,20 @@ impl reqwest::dns::Resolve for FixtureResolver {
 pub fn install(
 	context: &mut Context,
 	state: &State,
+	scope: crate::Scope,
 ) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = Module::with_crate("http")?;
 	let mut registered = Vec::new();
 	macro_rules! simple {
 		($name:literal, $bytes:expr) => {{
 			let state = state.clone();
+			let scope = scope.clone();
 			module
-				.function($name, move |url: String| {
+				.function($name, move |url: &str| {
+					let url = url.to_owned();
+					let request = Request::parse("GET", &url, None);
 					let state = state.clone();
-					async move { state.request("GET".into(), url, None, $bytes).await }
+					scope.track(async move { state.request(url, request, $bytes).await })
 				})
 				.build()?;
 			registered.push(crate::host::HostFunction {
@@ -380,10 +338,13 @@ pub fn install(
 	macro_rules! request {
 		($name:literal, $bytes:expr) => {{
 			let state = state.clone();
+			let scope = scope.clone();
 			module
-				.function($name, move |method: String, url: String, options: Value| {
+				.function($name, move |method: &str, url: &str, options: Value| {
+					let url = url.to_owned();
+					let request = Request::parse(method, &url, Some(options));
 					let state = state.clone();
-					async move { state.request(method, url, Some(options), $bytes).await }
+					scope.track(async move { state.request(url, request, $bytes).await })
 				})
 				.build()?;
 			registered.push(crate::host::HostFunction {
@@ -408,7 +369,13 @@ mod tests {
 	#[test]
 	fn the_module_registers_exactly_four_functions_and_no_json_reader() {
 		let mut context = rune::Context::with_default_modules().unwrap();
-		let functions = super::install(&mut context, &super::State::default()).unwrap();
+		let lifecycle = crate::lifecycle::Lifecycle::new(true).unwrap();
+		let functions = super::install(
+			&mut context,
+			&super::State::default(),
+			lifecycle.scope("http"),
+		)
+		.unwrap();
 		let names: Vec<_> = functions.iter().map(|f| f.path.as_str()).collect();
 		assert_eq!(
 			names,
@@ -418,6 +385,197 @@ mod tests {
 				"http::request",
 				"http::request_bytes"
 			]
+		);
+	}
+	// This wrapper observes the real inline HTTP request's lifetime, not socket
+	// EOF (hyper is entitled to need another runtime turn to close its socket).
+	#[test]
+	fn retained_rune_http_inner_drops_synchronously_on_failure_and_reset() {
+		use std::io::{Read, Write};
+		use std::sync::Arc;
+		use std::sync::atomic::{AtomicUsize, Ordering};
+		struct Guard(Arc<AtomicUsize>);
+		impl Drop for Guard {
+			fn drop(&mut self) {
+				self.0.fetch_sub(1, Ordering::SeqCst);
+			}
+		}
+		for ending in ["panic!(\"failed\")", "loop {}", "reset", "close"] {
+			let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+			let url = format!("http://{}/", listener.local_addr().unwrap());
+			let (tx, rx) = std::sync::mpsc::channel();
+			let server = std::thread::spawn(move || {
+				let (mut stream, _) = listener.accept().unwrap();
+				stream
+					.set_read_timeout(Some(std::time::Duration::from_secs(5)))
+					.unwrap();
+				let mut request = Vec::new();
+				let mut byte = [0];
+				while !request.ends_with(b"\r\n\r\n") {
+					assert_eq!(stream.read(&mut byte).unwrap(), 1);
+					request.push(byte[0]);
+				}
+				tx.send(()).unwrap();
+				assert_eq!(stream.read(&mut byte).unwrap(), 0);
+				let _ = stream.flush();
+			});
+			let life = crate::lifecycle::Lifecycle::new(true).unwrap();
+			let scope = life.scope("http");
+			let state = super::State::default();
+			state.0.lock().unwrap().client =
+				Some(reqwest::Client::builder().no_proxy().build().unwrap());
+			let live = Arc::new(AtomicUsize::new(0));
+			let count = live.clone();
+			let owned = state.clone();
+			let mut module = rune::Module::with_crate("observed").unwrap();
+			module
+				.function("get", move || {
+					let (state, count, url) = (owned.clone(), count.clone(), url.clone());
+					let request = super::Request::parse("GET", &url, None);
+					scope.track(async move {
+						count.fetch_add(1, Ordering::SeqCst);
+						let _guard = Guard(count);
+						state.request(url, request, false).await
+					})
+				})
+				.build()
+				.unwrap();
+			let mut context = rune::Context::with_default_modules().unwrap();
+			crate::time::install(&mut context).unwrap();
+			context.install(module).unwrap();
+			let mut session = crate::session::Session::new(context)
+				.unwrap()
+				.with_http(state)
+				.with_lifecycle(life);
+			session.set_budget(10000);
+			session.eval("let q = observed::get();").unwrap();
+			assert_eq!(live.load(Ordering::SeqCst), 0);
+			const SELECT: &str = "select { _ = q => (), _ = time::sleep(20) => () };";
+			session.eval(SELECT).unwrap();
+			rx.recv_timeout(std::time::Duration::from_secs(5)).unwrap();
+			assert_eq!(live.load(Ordering::SeqCst), 1);
+			if ending == "close" {
+				session.close().unwrap();
+				assert_eq!(live.load(Ordering::SeqCst), 0);
+				server.join().unwrap();
+				continue;
+			}
+			if ending == "reset" {
+				session.reset_fallible().unwrap();
+				assert_eq!(
+					live.load(Ordering::SeqCst),
+					0,
+					"reset needs no runtime turn"
+				);
+				session.eval("42").unwrap();
+				session.close().unwrap();
+				server.join().unwrap();
+				continue;
+			}
+			assert!(session.eval(ending).is_err());
+			assert_eq!(
+				live.load(Ordering::SeqCst),
+				1,
+				"unrelated failure must preserve q"
+			);
+			assert!(session.eval("let broken = ;").is_err());
+			assert_eq!(live.load(Ordering::SeqCst), 1);
+			assert!(session.eval(&format!("{SELECT} {ending}")).is_err());
+			assert_eq!(
+				live.load(Ordering::SeqCst),
+				0,
+				"no runtime turn since finish"
+			);
+			let value = session.eval("q.await").unwrap();
+			assert_eq!(
+				crate::format::render(&value, None, &Default::default()),
+				"Err(\"operation cancelled\")"
+			);
+			session.reset_fallible().unwrap();
+			assert_eq!(
+				crate::format::render(&session.eval("42").unwrap(), None, &Default::default()),
+				"42"
+			);
+			session.close().unwrap();
+			server.join().unwrap();
+		}
+	}
+	#[test]
+	fn unpolled_native_calls_construct_no_client() {
+		let life = crate::lifecycle::Lifecycle::new(true).unwrap();
+		let state = super::State::default();
+		let mut context = rune::Context::with_default_modules().unwrap();
+		super::install(&mut context, &state, life.scope("http")).unwrap();
+		let mut session = crate::session::Session::new(context)
+			.unwrap()
+			.with_http(state.clone())
+			.with_lifecycle(life);
+		for name in ["get", "get_bytes", "request", "request_bytes"] {
+			let args = if name.starts_with("request") {
+				"\"GET\", \"http://127.0.0.1:1/\", #{}"
+			} else {
+				"\"http://127.0.0.1:1/\""
+			};
+			session
+				.eval(&format!("let q = http::{name}({args});"))
+				.unwrap();
+			assert!(state.0.lock().unwrap().client.is_none());
+		}
+		session
+			.eval("let q = http::request(\"GET\", \"http://127.0.0.1:1/\", #{timeout_ms: 0});")
+			.unwrap();
+		let value = session.eval("q.await").unwrap();
+		let text = crate::format::render(&value, None, &Default::default());
+		assert!(
+			text.contains("cannot get http://127.0.0.1:1/") && text.contains("deadline must"),
+			"{text}"
+		);
+		assert!(state.0.lock().unwrap().client.is_none());
+		session.close().unwrap();
+	}
+	#[test]
+	fn lifecycle_failure_releases_the_cached_client_before_returning() {
+		struct BadDrop;
+		impl Drop for BadDrop {
+			fn drop(&mut self) {
+				panic!("injected destructor failure");
+			}
+		}
+		let life = crate::lifecycle::Lifecycle::new(true).unwrap();
+		let scope = life.scope("fixture");
+		let state = super::State::default();
+		state.0.lock().unwrap().client =
+			Some(reqwest::Client::builder().no_proxy().build().unwrap());
+		let mut context = rune::Context::with_default_modules().unwrap();
+		crate::time::install(&mut context).unwrap();
+		let mut module = rune::Module::with_crate("fixture").unwrap();
+		module
+			.function("bad", move || {
+				scope.track(async {
+					let _guard = BadDrop;
+					std::future::pending::<Result<i64, String>>().await
+				})
+			})
+			.build()
+			.unwrap();
+		context.install(module).unwrap();
+		let mut session = crate::session::Session::new(context)
+			.unwrap()
+			.with_http(state.clone())
+			.with_lifecycle(life);
+		let error = session
+			.eval(
+				"let q = fixture::bad(); select { _ = q => (), _ = time::sleep(1) => () }; panic!(\"fail\")",
+			)
+			.unwrap_err();
+		assert!(
+			error.to_string().contains("lifecycle cleanup panicked"),
+			"{error}"
+		);
+		assert!(session.lifecycle_failed());
+		assert!(
+			state.0.lock().unwrap().client.is_none(),
+			"retirement releases pool before settlement/ack"
 		);
 	}
 }

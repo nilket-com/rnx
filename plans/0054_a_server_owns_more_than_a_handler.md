@@ -10,8 +10,11 @@ Gate 2 was measured on 2026-09-16 against `c28cf22`; see the companion
 assemble, lifecycle isolation passes and request ownership is separate, but
 HTTP cleanup reproduces a stop: nested block_on inside a running server, and
 a whole-runtime drain that cannot finish while a healthy peer request remains.
-Gate 2 stays open. No admission shape or HTTP library has been selected, and
-gate 3 waits for the cleanup boundary to be settled.
+Record 0055 subsequently replays gate 2 with inline tracked HTTP operations:
+owner cleanup inside the running runtime succeeds, the healthy request survives,
+and final teardown reaches zero tasks after all owners end. Its implementation
+and replay evidence are pending review. No admission shape or HTTP library has
+been selected; those decisions still belong to this record after that review.
 
 ## Context
 

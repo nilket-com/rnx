@@ -235,7 +235,12 @@ pub fn run(
 				retire = true;
 			}
 		} else {
-			if let Err(message) = session.reset_fallible() {
+			let cleanup = if op == "shutdown" {
+				session.close()
+			} else {
+				session.reset_fallible()
+			};
+			if let Err(message) = cleanup {
 				reply["failure"] = failure(
 					&Failure::Runtime {
 						message,
@@ -268,9 +273,7 @@ pub fn run(
 			return if !cleanup_failed {
 				Ok(())
 			} else {
-				Err(io::Error::other(
-					"worker retired after reset cleanup failure",
-				))
+				Err(io::Error::other("worker retired after cleanup failure"))
 			};
 		}
 		// As in the REPL, sample after disposable per-input data is dropped,

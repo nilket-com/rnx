@@ -1,5 +1,15 @@
 # rnx 0034: a bounded request, with no second JSON
 
+Current lifecycle qualification (record 0055): requests are now inline tracked
+operations. A failed execution revokes only requests it polled; editing Ctrl-C
+does not cancel older work. Reset revokes operations and drops the client but
+neither reset nor interrupt proves socket EOF/zero tasks before the next prompt.
+Transport closure and allocation release need runtime progress. Whole-runtime
+drain belongs to final session/worker shutdown. This supersedes decision 3 and
+gate 6's cancellation/cleanup guarantees below; historical measurements remain
+unchanged. An unpolled retained request observes its original deadline on repoll.
+
+
 Status: proposed 2026-09-13; revised the same day after review, and
 again after implementation stopped on the resolver, which decision 3 now
 settles; implemented, with evidence beside this record. This is the thirty-fourth record of rnx

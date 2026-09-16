@@ -1,9 +1,10 @@
 # rnx 0055: HTTP cancellation belongs to its execution
 
-Status: proposed 2026-09-16, for review before implementation. This is the
+Status: implemented on Linux 2026-09-16, review pending; see the companion
+`0055_http_cancellation_belongs_to_its_execution_evidence.md`. This is the
 HTTP migration reserved by 0053, prompted by the accepted 0054 assembly stop.
 It changes a root battery's ownership policy, not the server's admission shape
-or HTTP library. No implementation is part of this draft.
+or HTTP library. Windows execution remains unverified.
 
 ## Context
 

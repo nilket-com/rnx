@@ -514,7 +514,7 @@ impl Repl {
 			.recv_timeout(WAIT)
 			.expect("no prompt within five seconds")
 	}
-	fn close(mut self) {
+	fn close(mut self) -> String {
 		drop(self.input.take());
 		let end = Instant::now() + WAIT;
 		while self.child.try_wait().unwrap().is_none() {
@@ -528,7 +528,8 @@ impl Repl {
 			.unwrap()
 			.read_to_string(&mut errors)
 			.unwrap();
-		assert!(!errors.contains("cleanup did not finish"), "{errors}");
+		assert!(!errors.contains("did not finish"), "{errors}");
+		errors
 	}
 }
 impl Drop for Repl {
@@ -542,7 +543,7 @@ impl Drop for Repl {
 
 #[test]
 #[cfg(unix)]
-fn cancellation_discards_healthy_pool_and_retained_request_then_reset_closes_reused_socket() {
+fn cancellation_preserves_pool_and_reset_releases_it_on_runtime_progress() {
 	let (healthy, hanging) = (Server::new(), Server::new());
 	let mut repl = Repl::new();
 	repl.prompt();
@@ -576,18 +577,22 @@ fn cancellation_discards_healthy_pool_and_retained_request_then_reset_closes_reu
 			.success()
 	);
 	repl.prompt();
-	healthy.eof();
-	hanging.eof();
 	assert!(start.elapsed() < Duration::from_millis(355));
+	// Revocation is synchronous; transport closure needs a runtime turn.
+	repl.send("time::sleep(30).await?");
+	repl.prompt();
+	hanging.eof();
 	repl.send(&format!("http::get({:?}).await?.body", healthy.url("/ok")));
 	assert!(repl.prompt().contains("hello"));
-	assert_eq!(healthy.count.load(Ordering::Relaxed), 2);
+	assert_eq!(healthy.count.load(Ordering::Relaxed), 1);
 	repl.send(":reset");
+	repl.prompt();
+	repl.send("time::sleep(30).await?");
 	repl.prompt();
 	healthy.eof();
 	repl.send(&format!("http::get({:?}).await?.body", healthy.url("/ok")));
 	repl.prompt();
-	assert_eq!(healthy.count.load(Ordering::Relaxed), 3);
+	assert_eq!(healthy.count.load(Ordering::Relaxed), 2);
 	repl.close();
 }
 
@@ -702,5 +707,119 @@ fn stalled_system_lookup_does_not_delay_run_eval_session_or_reset() {
 	println!(
 		"stalled DNS session deadline, next input, reset and exit completed in {:?}",
 		start.elapsed()
+	);
+}
+
+#[test]
+fn all_four_calls_borrow_and_snapshot_their_inputs() {
+	let s = Server::new();
+	for name in ["get", "get_bytes", "request", "request_bytes"] {
+		let args = if name.starts_with("request") {
+			"method, url, options"
+		} else {
+			"url"
+		};
+		let source = format!(
+			"let url = {:?}; let method = \"GET\"; let options = #{{}}; let a = http::{name}({args}).await?; let b = http::{name}({args}).await?; [a.status, b.status, url, method, options]",
+			s.url("/ok")
+		);
+		let out = eval(&source);
+		assert!(out.contains("[200, 200,"), "{name}: {out}");
+	}
+	for name in ["get", "get_bytes", "request", "request_bytes"] {
+		let call = if name.starts_with("request") {
+			format!("http::{name}(method, url, #{{body: body}})")
+		} else {
+			format!("http::{name}(url)")
+		};
+		let out = eval(&format!(
+			"let url = {:?}; let method = \"GET\"; let body = \"first\"; let pending = {call}; url = \"bad url\"; method = \"BAD METHOD\"; body.push_str(\"second\"); let response = pending.await?; [response.status, response.body, url, method, body]",
+			s.url(if name.starts_with("request") {
+				"/echo"
+			} else {
+				"/ok"
+			})
+		));
+		let expected_body = if name.starts_with("request") {
+			"first"
+		} else {
+			"hello"
+		};
+		let prefix = if name.ends_with("bytes") { "b" } else { "" };
+		assert_eq!(
+			out.trim(),
+			format!(
+				"[200, {prefix}{expected_body:?}, \"bad url\", \"BAD METHOD\", \"firstsecond\"]"
+			)
+		);
+	}
+	let source = format!(
+		r#"
+let url = {url:?}; let method = "POST";
+let body = b"old"; let headers = #{{"X-Snapshot": "before"}};
+let options = #{{body, headers, timeout_ms: 1000}};
+let pending = http::request(method, url, options);
+url = "http://127.0.0.1:1/not-the-request"; method = "BAD METHOD";
+body[0] = 88; headers["X-Snapshot"] = "after"; options.timeout_ms = 0;
+[pending.await?.body, method, headers["X-Snapshot"], options.timeout_ms, body[0]]
+"#,
+		url = s.url("/echo")
+	);
+	let out = eval(&source);
+	assert_eq!(out.trim(), "[\"old\", \"BAD METHOD\", \"after\", 0, 88]");
+	// This request's headers were snapped before the caller mutated them.
+	loop {
+		match s.events.recv_timeout(WAIT).unwrap() {
+			Event::Request(text) if text.starts_with("POST /echo ") => {
+				assert!(
+					text.to_ascii_lowercase().contains("x-snapshot: before"),
+					"{text}"
+				);
+				break;
+			}
+			Event::Error(e) => panic!("{e}"),
+			_ => {}
+		}
+	}
+}
+
+#[test]
+fn retained_http_uses_execution_scopes_and_observes_an_expired_deadline_on_repoll() {
+	let s = Server::new();
+	let mut repl = Repl::new();
+	repl.prompt();
+	repl.send(&format!(
+		"let q = http::request(\"GET\", {:?}, #{{timeout_ms: 100}});",
+		s.url("/hang")
+	));
+	repl.prompt();
+	repl.send("select { _ = q => (), _ = time::sleep(10) => () }");
+	repl.prompt();
+	s.request_seen("/hang");
+	repl.send("panic!(\"unrelated\")");
+	repl.prompt();
+	repl.send("let broken = ;");
+	repl.prompt();
+	// Drive unrelated work beyond the deadline: q is not polled by that work.
+	repl.send("time::sleep(150).await?");
+	repl.prompt();
+	repl.send("match q.await { Ok(_) => \"bad\", Err(e) => e }");
+	let error = repl.prompt();
+	assert!(error.contains("deadline of 100 ms"), "{error}");
+	repl.send(&format!("let q = http::get({:?});", s.url("/hang")));
+	repl.prompt();
+	repl.send("select { _ = q => (), _ = time::sleep(10) => () }; panic!(\"touched\")");
+	repl.prompt();
+	repl.send("match q.await { Ok(_) => \"bad\", Err(e) => e }");
+	let error = repl.prompt();
+	assert!(error.contains("operation cancelled"), "{error}");
+	repl.send(":reset");
+	repl.prompt();
+	repl.send("42");
+	assert!(repl.prompt().contains("42"));
+	let errors = repl.close();
+	assert!(
+		errors.contains("unrelated") && errors.contains("touched"),
+		"{errors}"
 	);
 }

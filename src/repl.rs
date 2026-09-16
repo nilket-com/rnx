@@ -361,11 +361,13 @@ pub fn run(
 		let input = match editor.readline(&prompt) {
 			Ok(line) => line,
 			Err(ReadlineError::Interrupted) => {
-				session.cancel_http();
 				continue;
 			}
 			Err(ReadlineError::Eof) => break,
-			Err(e) => return Err(e.into()),
+			Err(e) => {
+				session.close()?;
+				return Err(e.into());
+			}
 		};
 		if input.trim().is_empty() {
 			continue;

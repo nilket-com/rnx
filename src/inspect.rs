@@ -514,10 +514,10 @@ mod tests {
 	fn every_registered_host_function_has_a_description() {
 		let host = host();
 		// Seven core functions and eighteen filesystem functions; the async
-		// fixture and two allocation probes remain test-support only.
+		// fixtures and two allocation probes remain test-support only.
 		assert_eq!(
 			host.len(),
-			25 + 3 * usize::from(cfg!(feature = "test-support"))
+			25 + 4 * usize::from(cfg!(feature = "test-support"))
 		);
 		for function in &host {
 			assert!(

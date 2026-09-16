@@ -214,8 +214,17 @@ JSON still uses `json::parse(response.body)?`; request JSON uses
 Redirects are followed at most ten times, with sensitive headers removed
 on host/port changes. TLS verification uses bundled roots, which require
 updating the binary to refresh. Proxy environment variables are honored.
-A client is created lazily and reused across session inputs. Ctrl-C and
-`:reset` discard it and drain its async tasks; the next request creates another.
+A client is created lazily and reused across session inputs. HTTP requests use
+execution-scoped cancellation: an interrupted, failed or budget-exhausted input
+revokes requests it polled, while unrelated retained requests and pooled
+connections survive. Ctrl-C while editing abandons only the edit. `:reset`
+revokes all requests and releases the cached client; transport tasks and their
+allocations finish on subsequent runtime progress, not necessarily before the
+next prompt. Session exit and worker shutdown drain their stopped runtime.
+A retained request selected away from can hold its socket until repoll, reset
+or retirement; repoll observes its original deadline rather than starting over.
+All four calls borrow their arguments and snapshot options at creation; network
+I/O and the deadline start only when the returned future is first polled.
 Name lookup uses the system resolver. A lookup already running there cannot
 be cancelled and may continue after the request times out or is interrupted.
 Session reset does not wait for it, and runtime shutdown does not delay
@@ -652,12 +661,12 @@ not. A destructor panic retires the context; a worker reports state loss.
 
 This primitive requires resources that close on drop. It does not drain spawned
 tasks, stop blocking calls, roll back server-side effects, or retry work. HTTP
-still uses its existing all-requests cleanup on interrupt/reset; migrating that
-battery to the execution-scoped rule is deferred. `process::exit` invokes cleanup
+uses this same execution-scoped ownership, including in stock rnx contexts.
+`process::exit` invokes cleanup
 for registered owners explicitly; a native future currently on the poll stack
 ends with the process, since there is no subsequent return from that call.
 
-The first external capability is [rnx-postgres](adapters/postgres/README.md).
+The first external capability is [rnx-postgres](https://github.com/nilket-com/rnx/blob/main/adapters/postgres/README.md).
 It builds its own `rnx-pg` executable with `postgres::query`, using typed
 parameters and tracked per-call connections. It is an independent workspace;
 stock rnx's dependency graph and batteries do not include the database driver.

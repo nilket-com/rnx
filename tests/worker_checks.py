@@ -339,7 +339,30 @@ def blocked_handoff():
     print("blocked forwarding expires without ack and reaps worker: pass")
 
 
+def shutdown_drain_failure():
+    if "--test-support" not in sys.argv:
+        return
+    w = Parent(BINARY)
+    try:
+        check(w.execute('rnx_test::test_shutdown_task().await')[0]['failure'] is None)
+        start = time.monotonic()
+        w.begin(op='shutdown')
+        reply, _ = w.settled()
+        check(reply['state_lost'], reply)
+        check(reply['failure']['category'] == 'runtime', reply)
+        check('runtime shutdown did not finish within 100 ms' in str(reply), reply)
+        check(time.monotonic() - start < .5)
+        # Both stream barriers and settlement have arrived; only now ack.
+        check(w.p.poll() is None)
+        w.handoff()
+        check(w.p.wait(timeout=WAIT) == 1)
+    finally:
+        w.close()
+    print("failed final drain settles state loss before ack and exits nonzero: pass")
+
+
 for test in [
+    shutdown_drain_failure,
     basic,
     namespaces,
     malformed,

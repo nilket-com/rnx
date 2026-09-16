@@ -8,6 +8,13 @@ pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::H
 		ms
 	}
 	module.function("test_pending", pending).build()?;
+	// A deliberately ownerless task makes final drain fail without changing
+	// its allowance. Only the test-support binary can create this fixture.
+	module
+		.function("test_shutdown_task", || async {
+			tokio::spawn(std::future::pending::<()>());
+		})
+		.build()?;
 	module
 		.function("test_allocation_peak", || crate::memory::peak() as u64)
 		.build()?;
@@ -16,6 +23,10 @@ pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::H
 		.build()?;
 	context.install(module)?;
 	Ok([
+		(
+			"test_shutdown_task",
+			"test_shutdown_task().await: inject a task that prevents clean shutdown",
+		),
 		(
 			"test_pending",
 			"test_pending(ms): pending for ms milliseconds, then ms",

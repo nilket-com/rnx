@@ -124,16 +124,9 @@ Flags for `run`, before the file: --budget N, --debug-source.";
 /// across session resets. As with the stock executable, some dispatch paths
 /// exit the process; ordinary returns preserve Rust's `Termination` behavior.
 pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std::error::Error>> {
-	let lifecycle = extensions.lifecycle()?;
-	let result = main_inner(extensions, &lifecycle);
-	lifecycle.close()?;
-	result
+	main_inner(extensions)
 }
-fn main_inner(
-	extensions: Extensions,
-	lifecycle: &lifecycle::Lifecycle,
-) -> std::result::Result<(), Box<dyn std::error::Error>> {
-	let mut extensions = Some(extensions);
+fn main_inner(extensions: Extensions) -> Result<()> {
 	#[cfg(feature = "test-support")]
 	let _config_reads = config::ReadReport;
 	let mut args = match env::command_line(std::env::args_os()) {
@@ -216,6 +209,21 @@ fn main_inner(
 	presentation::set_palette(settings.palette);
 	presentation::initialize(mode.or(settings.mode).unwrap_or(presentation::Mode::Auto));
 	splash = splash && settings.splash.unwrap_or(true);
+	// HTTP uses the same lifecycle as extensions, even in the stock executable.
+	// Keep activation after version/help and pure settings evaluation.
+	let lifecycle = lifecycle::Lifecycle::new(true)?;
+	let result = serve(args, extensions, worker_transport, splash, &lifecycle);
+	lifecycle.close()?;
+	result
+}
+fn serve(
+	args: Vec<String>,
+	extensions: Extensions,
+	worker_transport: Option<worker::Transport>,
+	splash: bool,
+	lifecycle: &lifecycle::Lifecycle,
+) -> Result<()> {
+	let mut extensions = Some(extensions);
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = install_core(&mut context)?;
 	host_functions.extend(fs::install(&mut context)?);
@@ -223,7 +231,7 @@ fn main_inner(
 	host_functions.extend(time::install(&mut context)?);
 	host_functions.extend(text::install(&mut context)?);
 	let http = http::State::default();
-	host_functions.extend(http::install(&mut context, &http)?);
+	host_functions.extend(http::install(&mut context, &http, lifecycle.scope("http"))?);
 	// File arguments are selected below, after the existing run flags. All
 	// other entry points have an empty script-argument snapshot.
 	if !args.first().is_some_and(|arg| arg == "run") {
@@ -491,6 +499,7 @@ mod namespace_tests {
 		];
 		#[cfg(feature = "test-support")]
 		expected.extend([
+			"rnx_test::test_shutdown_task",
 			"rnx_test::test_pending",
 			"rnx_test::test_allocation_peak",
 			"rnx_test::test_reset_allocation_peak",

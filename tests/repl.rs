@@ -1223,3 +1223,65 @@ fn gate_0045_input_output_and_frame_are_independently_configurable() {
 	t.wait_exit();
 	std::fs::remove_file(config).unwrap();
 }
+
+#[test]
+fn editing_ctrl_c_preserves_a_started_http_request() {
+	use std::net::TcpListener;
+	let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+	let url = format!("http://{}/", listener.local_addr().unwrap());
+	let (seen_tx, seen_rx) = std::sync::mpsc::channel();
+	let (release_tx, release_rx) = std::sync::mpsc::channel();
+	let server = std::thread::spawn(move || {
+		let (mut stream, _) = listener.accept().unwrap();
+		stream
+			.set_read_timeout(Some(Duration::from_secs(5)))
+			.unwrap();
+		let mut request = Vec::new();
+		let mut byte = [0];
+		while !request.ends_with(b"\r\n\r\n") {
+			assert_eq!(stream.read(&mut byte).unwrap(), 1);
+			request.push(byte[0]);
+		}
+		seen_tx.send(()).unwrap();
+		release_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+		stream.set_nonblocking(true).unwrap();
+		assert_eq!(
+			stream.read(&mut byte).unwrap_err().kind(),
+			std::io::ErrorKind::WouldBlock
+		);
+		stream.set_nonblocking(false).unwrap();
+		stream
+			.write_all(
+				b"HTTP/1.1 200 OK\r\nContent-Length: 12\r\nConnection: close\r\n\r\nrequest kept",
+			)
+			.unwrap();
+	});
+	let history = history_file("http-edit-cancel");
+	let mut terminal = Terminal::spawn_with(
+		&history,
+		&[
+			("HTTP_PROXY", ""),
+			("HTTPS_PROXY", ""),
+			("ALL_PROXY", ""),
+			("http_proxy", ""),
+			("https_proxy", ""),
+			("all_proxy", ""),
+			("NO_PROXY", "*"),
+			("RNX_CONFIG", "/nonexistent-rnx-0055-config"),
+		],
+	);
+	terminal.expect("[1] > ");
+	terminal.send(&format!("let q = http::get({url:?});\n"));
+	terminal.expect("[2] > ");
+	terminal.send("select { _ = q => (), _ = time::sleep(30) => () };\n");
+	terminal.expect("[3] > ");
+	seen_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+	terminal.send("unfinished edit\x03");
+	terminal.expect("[3] > ");
+	release_tx.send(()).unwrap();
+	terminal.send("q.await?.body\n");
+	terminal.expect("\"request kept\"");
+	terminal.expect("[4] > ");
+	terminal.send(":q\n");
+	server.join().unwrap();
+}

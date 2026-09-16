@@ -24,7 +24,6 @@ struct Extension {
 /// Only an ordinary panic unwinding through the builder call is converted.
 pub struct Extensions {
 	builders: Vec<Extension>,
-	lifecycle: bool,
 }
 
 impl Extensions {
@@ -32,7 +31,6 @@ impl Extensions {
 	pub fn none() -> Self {
 		Self {
 			builders: Vec::new(),
-			lifecycle: false,
 		}
 	}
 
@@ -57,15 +55,15 @@ impl Extensions {
 		build: impl FnOnce(&mut Module, crate::Scope) -> Result<Vec<(String, &'static str)>, String>
 		+ 'static,
 	) -> Self {
-		self.lifecycle = true;
 		self.builders.push(Extension {
 			name,
 			build: Box::new(move |module, lifecycle| build(module, lifecycle.scope(name))),
 		});
 		self
 	}
+	#[cfg(test)]
 	pub(crate) fn lifecycle(&self) -> Result<crate::lifecycle::Lifecycle, String> {
-		crate::lifecycle::Lifecycle::new(self.lifecycle)
+		crate::lifecycle::Lifecycle::new(true)
 	}
 	#[cfg(test)]
 	pub(crate) fn install(self, context: &mut Context) -> Result<Vec<HostFunction>, String> {

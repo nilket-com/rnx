@@ -142,13 +142,13 @@ pub fn slice_sync(
 
 /// The current-thread runtime for every file and session. Version/help
 /// never construct one. Sessions retain it across reset; record 0034 adds
-/// the I/O driver and explicitly drains HTTP tasks after cancellation.
+/// the I/O driver. Record 0055 drains tasks only at whole-runtime shutdown.
 pub struct Runtime(Option<tokio::runtime::Runtime>);
 
 impl Drop for Runtime {
 	fn drop(&mut self) {
 		// A started system DNS lookup cannot be cancelled. Do not let it
-		// hold process exit hostage; session reset still drains async tasks.
+		// hold process exit hostage; shutdown drains only asynchronous tasks.
 		if let Some(runtime) = self.0.take() {
 			runtime.shutdown_background();
 		}
@@ -159,7 +159,7 @@ impl Runtime {
 	fn inner(&self) -> &tokio::runtime::Runtime {
 		self.0.as_ref().expect("runtime remains present until drop")
 	}
-	pub fn drain_http(&self) -> Result<(), String> {
+	pub fn drain_shutdown(&self) -> Result<(), String> {
 		if self.inner().metrics().num_alive_tasks() == 0 {
 			return Ok(());
 		}
@@ -167,7 +167,7 @@ impl Runtime {
 			let end = std::time::Instant::now() + Duration::from_millis(100);
 			while self.inner().metrics().num_alive_tasks() != 0 {
 				if std::time::Instant::now() >= end {
-					return Err("HTTP cleanup did not finish within 100 ms".into());
+					return Err("runtime shutdown did not finish within 100 ms".into());
 				}
 				tokio::time::sleep(Duration::from_millis(5)).await;
 			}
@@ -322,5 +322,23 @@ impl<F: Future> Future for Watched<F> {
 			Poll::Ready(()) => Poll::Ready(None),
 			Poll::Pending => Poll::Pending,
 		}
+	}
+}
+
+#[cfg(test)]
+mod shutdown_tests {
+	#[test]
+	fn final_drain_refuses_a_live_task_then_succeeds_after_it_ends() {
+		let runtime = super::Runtime::new().unwrap();
+		let task = runtime.inner().spawn(std::future::pending::<()>());
+		let start = std::time::Instant::now();
+		assert_eq!(
+			runtime.drain_shutdown().unwrap_err(),
+			"runtime shutdown did not finish within 100 ms"
+		);
+		assert!(start.elapsed() < std::time::Duration::from_millis(500));
+		task.abort();
+		runtime.drain_shutdown().unwrap();
+		assert_eq!(runtime.inner().metrics().num_alive_tasks(), 0);
 	}
 }

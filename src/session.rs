@@ -323,13 +323,12 @@ impl Session {
 	pub fn lifecycle_failed(&self) -> bool {
 		self.lifecycle.failed()
 	}
+	/// Terminal boundary: admission has ended and this session owns its runtime.
 	pub fn close(&self) -> std::result::Result<(), String> {
-		self.lifecycle.close()
-	}
-	pub fn cancel_http(&self) {
-		if let Err(error) = self.http.clear(&self.runtime) {
-			eprintln!("{error}");
-		}
+		let revoked = self.lifecycle.close();
+		self.http.cancel();
+		let drained = self.runtime.drain_shutdown();
+		revoked.and(drained)
 	}
 	pub fn with_http(mut self, http: crate::http::State) -> Self {
 		self.http = http;
@@ -407,7 +406,8 @@ impl Session {
 			eprintln!("{error}");
 		}
 	}
-	/// Clears state even if HTTP cleanup fails; the worker then retires.
+	/// Logical reset: revoke operations and release the client without driving
+	/// unrelated runtime work. Lifecycle cleanup failure still retires the worker.
 	pub fn reset_fallible(&mut self) -> std::result::Result<(), String> {
 		let cleanup = self.lifecycle.clear();
 		self.declarations.clear();
@@ -418,8 +418,8 @@ impl Session {
 		self.units.clear();
 		self.last_generated.clear();
 		self.over_ceiling = false;
-		let http = self.http.clear(&self.runtime);
-		cleanup.and(http)
+		self.http.cancel();
+		cleanup
 	}
 	pub fn ceiling(&self) -> usize {
 		self.ceiling
@@ -527,19 +527,13 @@ impl Session {
 	) -> std::result::Result<std::result::Result<Value, Failure>, E> {
 		let result = self.eval_input(input, on_armed)?;
 		if let Err(message) = self.lifecycle.finish(result.is_err()) {
+			self.http.cancel();
 			return Ok(Err(Failure::Runtime {
 				message,
 				origin: None,
 			}));
 		}
-		if crate::host::interrupted() {
-			if let Err(message) = self.http.clear(&self.runtime) {
-				return Ok(Err(Failure::Runtime {
-					message,
-					origin: None,
-				}));
-			}
-		}
+
 		Ok(result)
 	}
 	fn eval_input<E>(
