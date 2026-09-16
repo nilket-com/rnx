@@ -5,8 +5,8 @@ A standalone Linux application assembled through `rnx::server`, behind rnx's
 stock rnx does not acquire a listener, PostgreSQL driver or server command.
 Record 0056 gate 4 extracts the measured server from record 0054 and is
 accepted. The separate-client example journey and matched stock-rnx comparison
-now have passing evidence for gates 5 and 6, pending review. Reproduction is in
-rnx-bench `probes/server-acceptance/`.
+are recorded in gates 5 and 6. Reproduction is in rnx-bench
+`probes/server-acceptance/`.
 
 Build from the repository root:
 

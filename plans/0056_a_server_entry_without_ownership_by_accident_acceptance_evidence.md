@@ -121,13 +121,33 @@ and `timing-2.json`, with compiler/build provenance in `build.json`.
 | CPU loop | 9.00478 / 9.00350 | −0.01% | 9.01012 / 9.00459 | −0.06% |
 | String loop | 5.99703 / 6.00231 | +0.09% | 5.99120 / 5.99926 | +0.13% |
 
-`version` is about 0.049 ms slower in both repeats and JSON about 0.09 ms
-slower. These are observed regressions, not labelled drift or attributed to
-code layout without evidence. Their causes are not isolated. Bare run and
-strings also have small positive deltas in both repeats, recorded above; help
-and eval change direction. No speedup is claimed and no threshold discards
-unfavorable samples. This comparison is to 032579a as requested, not to the
-older 0053 JSON baseline, and does not erase that earlier observation.
+`version` is about 0.049 ms slower in both Python-harness repeats and JSON
+about 0.09 ms slower. These remain recorded harness observations, not an
+established product regression. This clock includes Python spawn/communicate/
+wait overhead: its version measurement is about 1.9 ms versus about 0.54 ms
+with the reviewer's hyperfine clock. The small deltas sit within that broader
+measurement overhead; their cause has not been isolated. The independent
+counter-measurement did not reproduce a consistent process-level regression.
+
+The gates 5/6 review in the local `reviews/0056_review_claude.md` records a fresh
+032579a build, hyperfine `-N`, core 4, 100 runs and ABAB order:
+
+| Workload | Before, two blocks | After, two blocks |
+| --- | --- | --- |
+| version | 562 / 545 µs | 539 / 541 µs |
+| JSON 10k | 11.6 / 11.6 ms | 11.9 / 11.6 ms |
+
+The reviewer reports σ 1.3 ms in the first after-JSON block with an outlier;
+the second block matches before. This table transcribes that independent
+review, not a Codex rerun or a replacement of the original raw samples. The
+review note remains local and untracked, so its reported method and numbers
+are preserved here for readers of the committed evidence.
+
+Bare run and strings also have small positive deltas in both Python repeats,
+recorded above; help and eval change direction. No speedup is claimed and no
+threshold discards unfavorable samples. This comparison is to 032579a as
+requested, not to the older 0053 JSON baseline, and does not erase that earlier
+observation.
 
 ## Scope of completion
 

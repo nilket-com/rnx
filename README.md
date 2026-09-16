@@ -593,10 +593,8 @@ it does not certify that the runtime's network tasks have finished. Zero and
 no colour config and always refuses script `process::exit` catchably. Native
 extensions remain trusted. No listener, pool, worker threads or process-kill
 policy is supplied by this feature. The separate Linux example application in
-[servers/http-postgres](servers/http-postgres/README.md) assembles that policy
-through this public API, with its own workspace, lockfile and executable. Its
-extraction is accepted; record 0056's final journey and stock-regression
-evidence awaits review.
+[servers/http-postgres](https://github.com/nilket-com/rnx/blob/main/servers/http-postgres/README.md) assembles that policy
+through this public API, with its own workspace, lockfile and executable. Record 0056 documents its execution and ownership contracts.
 
 ## Assemble an executable with native extensions
 
