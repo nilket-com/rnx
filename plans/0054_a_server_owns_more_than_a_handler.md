@@ -15,10 +15,11 @@ owners end. Decision 1 now selects multiplexed admission. Decision 5's HTTP boun
 prototype now has two passing raw-wire/resource repeats in the companion
 `0054_a_server_owns_more_than_a_handler_http_evidence.md`. Gate 3 is accepted
 and pushed at rnx `6fb89e7` and rnx-bench `6ab105e`. The review follow-up
-records parser tolerance and inherited-descriptor accounting. Gate 4 now has
-two passing scheduling repeats in
-`0054_a_server_owns_more_than_a_handler_scheduling_evidence.md`, pending review.
-Gates 5–6 and the supported server-entry contract remain open.
+records parser tolerance and inherited-descriptor accounting. Gate 4's scheduling evidence is accepted and pushed at rnx `1b2030d` and
+rnx-bench `6d146e2` (including the review follow-up `9de3321`). Gate 5 now has
+two passing transaction/pool repeats in
+`0054_a_server_owns_more_than_a_handler_transactions_evidence.md`, pending review.
+Gate 6 and the supported server-entry contract remain open.
 
 ## Context
 
@@ -167,7 +168,7 @@ manager until completion is established. Handler failure, budget halt or
 cancellation begins rollback; it does not return the connection to the idle
 pool. Reuse follows acknowledged rollback and protocol synchronization.
 A failed rollback retires the connection instead of admitting another borrower.
-The latter is a required integration gate, not a measured claim from this probe.
+The gate-5 companion now supplies that integration evidence, pending review.
 
 The first application owns its transaction boundary. Arbitrary script-issued
 BEGIN/COMMIT, nested transactions, commit-on-disconnect assumptions and retry
@@ -175,6 +176,37 @@ policies are not inferred from the single-slot example. Commit ambiguity and
 cancellation during COMMIT require an explicit contract before exposing
 transactions to general scripts. The accepted per-call `postgres::query`
 contract remains unchanged.
+
+The gate-5 prototype makes that contract concrete for the first application,
+without exposing a public transaction interface. Each worker owns two persistent
+connections and their driver tasks. A permit gives one handler an exclusive
+lease; waiters consume an already charged active HTTP slot, not another admission
+queue, and build no handler context until a lease exists. BEGIN is owner work.
+The VM and its tracked operations end before COMMIT or ROLLBACK completes.
+An active HTTP credit lasts through acknowledgement or retirement.
+
+A successfully validated handler starts COMMIT. After dispatch, cancellation
+of the HTTP request does not switch that command to rollback. The owner awaits
+acknowledgement or its cleanup deadline. Any unacknowledged COMMIT is
+conservatively reported as ambiguous, with no replay and no reconciliation
+query. Even a server error is conservatively classified this way in this first
+prototype; finer classification is deferred. Retiring and replenishing capacity
+is not a retry of the transaction. A missing rollback acknowledgement also
+retires, even if the server may already have rolled back.
+
+The error belongs to the request/transaction owner: the handler VM has already
+ended. It is logged by request id and gives the existing generic HTTP 500 when
+a response is still possible, not a new catchable exception in an ended VM.
+The test observer's knowledge of the committed/rolled-back state never changes
+the owner's answer. Connection loss during COMMIT can therefore produce an
+ambiguous error alongside a committed row, and the gate deliberately proves it.
+
+The prototype uses a 1 s connect timeout, 800 ms per-command server statement
+timeout, 1.2 s COMMIT/ROLLBACK acknowledgement deadline and 1.2 s driver-retirement
+deadline. No PostgreSQL CancelRequest is sent. Failed driver retirement forces
+abort-and-join and fails the fixture rather than reporting clean shutdown; that
+path still needs gate-6 evidence. These are private integration choices, not
+production defaults or changes to the per-call PostgreSQL adapter.
 
 ### 3. Shutdown belongs to the server owner
 
@@ -184,10 +216,11 @@ Observe client descriptor closure and backend disappearance separately.
 The normal path must not report clean shutdown merely because a runtime was
 dropped. A deadline/failure path must say what cleanup did not complete.
 
-The probe proves this order with one connection and an 800 ms server timeout.
-It does not set production timeouts or claim that dropping a query cancels its
-server command. Pool size, maintenance policy, cancellation protocol and
-shutdown deadline remain integration decisions measured against the same gates.
+The original boundary probe proved this order with one connection and an
+800 ms server timeout. Gate 5 extends settled-work closure to the two-slot
+per-worker pools specified above. Neither sets production timeouts or claims
+that dropping a query cancels its server command. Shutdown during active work
+and deadline-failure policy still require gate 6.
 
 Do not turn Scope::track into an asynchronous drain hook. It revokes operation
 futures, not idle pooled connections or server tasks. Keep the prototype owner
