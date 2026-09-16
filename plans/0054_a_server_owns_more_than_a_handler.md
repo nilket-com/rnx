@@ -1,9 +1,10 @@
 # rnx 0054: a server owns more than a handler
 
 Status: proposed 2026-09-16; revised after the first review. The boundary
-probes are accepted and pushed in rnx-bench at `8b97577`. This is the step-four design draft, not an implemented server or a
-claim that the existing extension interface can already assemble one. The separate supported server-entry contract must be settled before
-implementation is ready; its proposal is record 0056.
+probes are accepted and pushed in rnx-bench at `8b97577`. This records the step-four design and its accepted prototypes. Record 0056
+now implements the public execution entry and the independent Linux server
+package; its gates 1 through 4 are accepted and pushed. Final journey and stock
+regression evidence for gates 5 and 6 awaits review.
 
 Gate 2's original assembly evidence is in the companion
 `0054_a_server_owns_more_than_a_handler_assembly_evidence.md`. Its HTTP cleanup
@@ -19,8 +20,9 @@ rnx-bench `6d146e2` (including the review follow-up `9de3321`). Gate 5's transac
 rnx-bench `b0d1cf1`. Gate 6's 13-case matrices under SIGTERM and SIGINT in
 `0054_a_server_owns_more_than_a_handler_shutdown_evidence.md` are accepted and
 pushed at rnx `032579a` and rnx-bench `453e618`. Gates 2 through 6 are closed.
-The supported server-entry contract remains open, proposed in
-`0056_a_server_entry_without_ownership_by_accident.md`.
+The supported server-entry contract is implemented in record 0056, including
+extraction at `3f8f6af`. Its final acceptance remains pending review of
+`0056_a_server_entry_without_ownership_by_accident_acceptance_evidence.md`.
 
 ## Context
 

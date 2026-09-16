@@ -1,7 +1,7 @@
 # 0056 gate 4: extracted server, public execution boundary
 
-Status: implemented 2026-09-16, passing evidence, pending review. Gates 5 and 6
-remain open. Gate 3's accepted commits `1aa600e` / `181a444` were pushed before
+Status: accepted and pushed 2026-09-16 at rnx `3f8f6af` and rnx-bench
+`dede5d3`. Gates 5 and 6 are recorded in the separate acceptance evidence. Gate 3's accepted commits `1aa600e` / `181a444` were pushed before
 this work. Root source, root manifest/lock/notices, kernel and PostgreSQL adapter
 are unchanged from that base. New runtime code is confined to the independent
 `servers/http-postgres/` workspace.

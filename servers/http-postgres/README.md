@@ -3,8 +3,10 @@
 A standalone Linux application assembled through `rnx::server`, behind rnx's
 `server-runtime` feature. This is its own Cargo workspace, lockfile and executable;
 stock rnx does not acquire a listener, PostgreSQL driver or server command.
-Record 0056 gate 4 extracts the measured server from record 0054. The real example
-journey and stock-rnx comparison are still gates 5 and 6, not claimed here.
+Record 0056 gate 4 extracts the measured server from record 0054 and is
+accepted. The separate-client example journey and matched stock-rnx comparison
+now have passing evidence for gates 5 and 6, pending review. Reproduction is in
+rnx-bench `probes/server-acceptance/`.
 
 Build from the repository root:
 

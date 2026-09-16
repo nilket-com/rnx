@@ -592,8 +592,11 @@ it does not certify that the runtime's network tasks have finished. Zero and
 `usize::MAX` budgets are refused. This entry installs no signal handler, reads
 no colour config and always refuses script `process::exit` catchably. Native
 extensions remain trusted. No listener, pool, worker threads or process-kill
-policy is supplied by this feature. Record 0056's external assembly gate is
-implemented; server extraction and the remaining acceptance gates are pending.
+policy is supplied by this feature. The separate Linux example application in
+[servers/http-postgres](servers/http-postgres/README.md) assembles that policy
+through this public API, with its own workspace, lockfile and executable. Its
+extraction is accepted; record 0056's final journey and stock-regression
+evidence awaits review.
 
 ## Assemble an executable with native extensions
 
