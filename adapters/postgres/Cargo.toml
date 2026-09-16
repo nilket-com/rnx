@@ -1,0 +1,33 @@
+[package]
+name = "rnx-postgres"
+version = "0.0.0"
+edition = "2024"
+publish = false
+description = "A typed PostgreSQL query extension for rnx"
+
+[workspace]
+
+[features]
+test-support = []
+
+[dependencies]
+rnx = { path = "../.." }
+tokio-postgres = "=0.7.18"
+tokio = { version = "1", features = ["time", "macros"] }
+futures-util = "0.3"
+bytes = "1"
+
+[[bin]]
+name = "rnx-pg"
+path = "src/main.rs"
+
+[[bin]]
+name = "rnx-pg-test"
+path = "src/test_main.rs"
+required-features = ["test-support"]
+
+[profile.dev]
+debug = false
+
+[profile.dev.package."*"]
+opt-level = 2

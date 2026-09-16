@@ -1,9 +1,11 @@
 # rnx 0052: one query through the extension interface
 
-Status: proposed 2026-09-16; implementation stopped at the ownership prototype
-on 2026-09-16. The seven agreed cases pass, but a future retained by an earlier
-input keeps its socket after interruption. See the companion evidence. No
-adapter implementation is claimed. Drafted by Claude; revised the same day after
+Status: implementation resumed 2026-09-16 after record 0053 was accepted.
+The original ownership stop and its evidence remain recorded: registration alone
+could not release an interrupted retained future. The 0053 rerun closes that
+stop through tracked ownership, without a spawned task or an extra runtime turn.
+The adapter implementation is ready for review; see the separate implementation
+evidence. Drafted by Claude; revised the same day after
 Codex's two reviews (rnx/reviews/0052_review_codex.md: cancellation
 ownership, JSON as text, streamed result accounting, typed preparation,
 result-shape edges, fixed arity, fixture corrections; then client versus
@@ -12,9 +14,9 @@ refusal, the finite timestamp range, and the allowance's name). For review befor
 sequence agreed on 2026-09-15: an independently maintained PostgreSQL
 adapter, compiled through Cargo into an application executable by record
 0051's interface, proven on one parameterized query. Pooling, transactions,
-a web server and package declarations are later steps. The adapter remains
-unimplemented; only the ownership prototype is measured in the companion
-evidence. The decisions below remain proposed pending the lifecycle follow-up.
+a web server and package declarations are later steps. The original companion
+evidence records the stopped prototype. Implementation evidence is separate
+from that historical result.
 
 ## Context
 
@@ -32,10 +34,11 @@ only while something is inside `block_on`, and aborting a task schedules
 its cancellation rather than completing it; between inputs nothing runs
 (record 0034 section 3 states the consequences for HTTP's connection
 pool). The HTTP battery holds its client in a `State` that the session's
-`:reset` clears and drains through a private runtime hook. An extension
-has neither: whatever it keeps across inputs, a session cannot release,
-and whatever it spawns, nothing drains. The guarded JSON reader is
-private to rnx as well; 0051's three public names do not reach it. rnx's tokio features are `rt`, `time`
+`:reset` clears and drains through a private runtime hook. Record 0053 now
+gives an extension a `Scope` that revokes tracked inner
+futures at execution boundaries and reset; it does not drain spawned tasks.
+The adapter uses that scope. The guarded JSON reader remains private; the
+four-name boundary after 0053 does not expose it. rnx's tokio features are `rt`, `time`
 and `net`; an application's Cargo graph unifies features, so an adapter
 may add what its driver needs without changing rnx.
 
@@ -52,10 +55,9 @@ not end a running `pg_sleep`; only a server-side timeout or a cancel
 request does. PostgreSQL 18.6 is installed on the development machine with `initdb` and
 `pg_ctl`, so a fixture can run a private cluster in a temporary directory
 over a unix socket without touching the system server or a TCP port.
-The system server is not used. No Rust PostgreSQL driver is cached
-locally; the adapter's first build fetches one. `tokio-postgres` 0.7.18 is
-the candidate at drafting; the implementation confirms the exact pin
-before its source, API and licence inventory gates run against it.
+The system server is not used. No Rust PostgreSQL driver was cached at drafting. The ownership prototype
+fetched `tokio-postgres` 0.7.18; the adapter now pins that exact version and
+records its resolved graph and licence inventory.
 
 ## Decision
 
@@ -67,7 +69,7 @@ notices, exactly as `jupyter/` is. It depends on rnx by path and on
 `tokio-postgres` pinned to an exact version in its manifest. rnx's own
 manifest, lockfile and notices do not change. The crate builds one
 executable, `rnx-pg`, whose `main` is `rnx::main_with(Extensions::none()
-.with("postgres", rnx_postgres::build))`, and exposes `build` so another
+.with_lifecycle("postgres", rnx_postgres::build))`, and exposes `build` so another
 application can include the adapter beside other extensions.
 
 Moving the adapter to its own repository is a decision for the user, not
@@ -109,13 +111,23 @@ types are refused from the prepared statement's metadata, before
 execution, so an empty or all-`NULL` result is refused the same way as a
 full one.
 
+The builder receives record 0053's scope and wraps each query in `Scope::track`.
+A retained pending wrapper therefore cannot retain its inner connection after
+revocation. Failure revokes operations touched by that execution; reset revokes
+all pending operations. A successful input may retain a pending query.
+
 A connection lives for one call and is owned by the call: the connection
 future is driven inside the query future, joined with the statement's
 own future, never spawned as a detached task. Dropping the query future
 therefore drops the socket with it, on that turn, with nothing left for a
-runtime rnx cannot drain. There is no pool, no session-held connection
-and no transaction spanning calls, so nothing exists for `:reset` to
-release and nothing stalls between inputs. Each call pays a connection
+runtime rnx cannot drain. TCP hostname lookup still goes through Tokio's OS
+resolver on the blocking pool; an already running native lookup cannot be
+cancelled by dropping its future. This is the native DNS exception already
+stated for HTTP in 0034. These Unix-socket gates establish connection ownership,
+not DNS cancellation. There is no pool, no session-held connection
+and no transaction spanning calls. A retained pending query is released by
+`:reset` through the scope; the driver needs no runtime work to close it.
+Each call pays a connection
 handshake; gate 8 measures it so step four's pooling has a number to
 beat.
 
@@ -147,6 +159,13 @@ after execution and shows the row present.
 
 ### 4. Values in, typed; values out, exact or refused
 
+Parameter counts follow the prepared metadata, not a second SQL parser.
+Implementation measured that PostgreSQL treats supplied type hints as declared
+parameters even when unused: `SELECT $1` with `[1, 2]`, and `SELECT 1` with `[1]`,
+both succeed. Too few values for the prepared count are refused with both counts.
+The extra-argument cases are recorded as accepted by PostgreSQL; rejecting unused
+arguments would require a separate SQL-analysis decision.
+
 Parameters are sent through `prepare_typed` with the type each Rune value
 maps to, so the server never infers a narrower type than the value:
 `bool` as `BOOL`, `i64` as `INT8`, `f64` as `FLOAT8`, `String` as
@@ -166,7 +185,8 @@ to `i64`; `float4`, `float8` to `f64`; `text`, `varchar`, `char(n)`,
 `name` to `String`; `bytea` to `Bytes`; `json` and `jsonb` to their text
 as the server sends it, `jsonb` therefore normalized by the server, for
 the script to hand to `json::parse`, so record 0033's reader stays the
-only one and 0051's boundary stays three names. `timestamptz` decodes to
+only one and the existing four-name boundary stays unchanged.
+`timestamptz` decodes to
 `i64` milliseconds since the epoch, the time battery's moment, flooring
 microseconds toward negative infinity; that floor is this record's one
 stated approximation. `infinity`, `-infinity`, and any finite value
@@ -251,14 +271,20 @@ bound; `:memory` comparisons allow 64 KiB.
    `i64` of 42 bound into an `INT4` column is converted and stored, and
    2147483648 is the server's error with SQLSTATE 22003; `SELECT $1` with
    the `String` `"x"` returns `"x"` and `SELECT $1::int8` with the `i64`
-   7 returns 7; a parameter-count mismatch is refused naming the counts.
+   7 returns 7; a missing-parameter mismatch is refused naming the counts,
+   while the two
+   unused-argument cases above are accepted and recorded.
 3. **Decoding, named.** A table with one column of every supported type
    decodes to the stated Rune values; a `timestamptz` of a known instant
    decodes to the millisecond the time battery formats back to the same
    instant, a negative sub-millisecond instant floors as stated, the range check
    is applied to the original microsecond instant before flooring so
-   both ends of the time battery's range decode and one microsecond
-   beyond each is refused, and both infinities are refused. `affected` is
+   a decoder unit gate accepts both time-range endpoints and refuses one
+   microsecond beyond each. PostgreSQL cannot store the lower rnx endpoint
+   (its timestamp domain begins in 4713 BC), so SQL gates cover the server
+   lower endpoint, the rnx upper endpoint and upper-plus-one-microsecond.
+   Both infinities are refused. This qualification changes the test domain,
+   not the accepted values or the pre-floor range check. `affected` is
    gated on a `SELECT` of three rows, an `UPDATE` of two, an
    `INSERT ... RETURNING` of one, and a `CREATE TABLE`, as 3, 2, 1 and 0. `json` and `jsonb` return text, `jsonb`
    normalized, and `json::parse` reads them. `numeric`, `timestamp`,
@@ -272,7 +298,8 @@ bound; `:memory` comparisons allow 64 KiB.
    a dropped pending future, the executable's open unix-socket
    descriptors (read from `/proc/<pid>/fd` by the fixture) are back to
    their pre-call count before the fixture sends the next input, and no
-   spawned task outlives the call. Backend lifetime is measured
+   connection-driving task outlives the call (the native DNS qualification is
+   separate). Backend lifetime is measured
    separately through `pg_stat_activity` and reported as its own number.
    `timeout_ms` of 0, 90001, a non-integer and an unknown option key
    refuse before connecting; `SELECT 1 AS n FROM pg_sleep(5)` with a 200 ms deadline returns
@@ -316,7 +343,8 @@ bound; `:memory` comparisons allow 64 KiB.
    a loop, so the session's own input storage does not grow between
    measurements; afterwards `pg_stat_activity` shows no tagged connection
    and `:memory` is within 64 KiB of its value after a one-call input; `:reset` changes nothing about the
-   adapter because it holds nothing.
+   adapter after completed calls; reset also revokes retained pending calls as
+   record 0053 requires.
 7. **Cleanup.** The fixture leaves no postmaster, no socket file and no
    directory after success, after a deliberately failing gate, after
    SIGINT during a query, and after SIGINT during `initdb` and during
@@ -355,7 +383,8 @@ bound; `:memory` comparisons allow 64 KiB.
 A connection per call is honest and slow; gate 8 puts a number on it and
 step four adds pooling with the lifetime rules a pool needs, which are a
 record of their own because they meet `:reset`, the runtime's drain and
-the worker's lifetime, none of which an extension can reach today.
+the worker's lifetime. Operation lifetimes are now reachable through 0053;
+pool and transaction policies remain undecided here.
 Transactions across calls need a handle that outlives a call and the same
 rules. The driver's unbounded frame buffering is accepted and stated, not
 solved. The type set is small on purpose; `numeric` and dates need

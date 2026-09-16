@@ -656,3 +656,8 @@ still uses its existing all-requests cleanup on interrupt/reset; migrating that
 battery to the execution-scoped rule is deferred. `process::exit` invokes cleanup
 for registered owners explicitly; a native future currently on the poll stack
 ends with the process, since there is no subsequent return from that call.
+
+The first external capability is [rnx-postgres](adapters/postgres/README.md).
+It builds its own `rnx-pg` executable with `postgres::query`, using typed
+parameters and tracked per-call connections. It is an independent workspace;
+stock rnx's dependency graph and batteries do not include the database driver.
