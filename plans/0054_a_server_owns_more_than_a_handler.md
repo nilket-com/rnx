@@ -2,9 +2,8 @@
 
 Status: proposed 2026-09-16; revised after the first review. The boundary
 probes are accepted and pushed in rnx-bench at `8b97577`. This is the step-four design draft, not an implemented server or a
-claim that the existing extension interface can already assemble one. The
-remaining HTTP gates and separate server-entry contract must be settled before
-implementation is ready.
+claim that the existing extension interface can already assemble one. The remaining probe review and separate server-entry contract must be settled
+before implementation is ready.
 
 Gate 2's original assembly evidence is in the companion
 `0054_a_server_owns_more_than_a_handler_assembly_evidence.md`. Its HTTP cleanup
@@ -16,10 +15,10 @@ prototype now has two passing raw-wire/resource repeats in the companion
 `0054_a_server_owns_more_than_a_handler_http_evidence.md`. Gate 3 is accepted
 and pushed at rnx `6fb89e7` and rnx-bench `6ab105e`. The review follow-up
 records parser tolerance and inherited-descriptor accounting. Gate 4's scheduling evidence is accepted and pushed at rnx `1b2030d` and
-rnx-bench `6d146e2` (including the review follow-up `9de3321`). Gate 5 now has
-two passing transaction/pool repeats in
-`0054_a_server_owns_more_than_a_handler_transactions_evidence.md`, pending review.
-Gate 6 and the supported server-entry contract remain open.
+rnx-bench `6d146e2` (including the review follow-up `9de3321`). Gate 5's transaction/pool evidence is accepted and pushed at rnx `beffe80` and
+rnx-bench `b0d1cf1`. Gate 6 now has passing 13-case matrices under SIGTERM and
+SIGINT in `0054_a_server_owns_more_than_a_handler_shutdown_evidence.md`, pending
+review. The supported server-entry contract remains open.
 
 ## Context
 
@@ -205,8 +204,12 @@ The prototype uses a 1 s connect timeout, 800 ms per-command server statement
 timeout, 1.2 s COMMIT/ROLLBACK acknowledgement deadline and 1.2 s driver-retirement
 deadline. No PostgreSQL CancelRequest is sent. Failed driver retirement forces
 abort-and-join and fails the fixture rather than reporting clean shutdown; that
-path still needs gate-6 evidence. These are private integration choices, not
-production defaults or changes to the per-call PostgreSQL adapter.
+path is now exercised in the gate-6 companion, pending review. These are private
+integration choices, not production defaults or changes to the per-call adapter.
+Before the public contract is fixed, distinguish a definitive COMMIT rejection
+(such as a deferred constraint or serialization failure) from missing/malformed
+completion. The prototype conservatively labels both ambiguous; retaining that
+simplification in this evidence is not a decision to expose it permanently.
 
 ### 3. Shutdown belongs to the server owner
 
@@ -220,7 +223,21 @@ The original boundary probe proved this order with one connection and an
 800 ms server timeout. Gate 5 extends settled-work closure to the two-slot
 per-worker pools specified above. Neither sets production timeouts or claims
 that dropping a query cancels its server command. Shutdown during active work
-and deadline-failure policy still require gate 6.
+and deadline-failure outcomes are measured in gate 6's companion, pending review.
+
+The shutdown prototype distinguishes resource cleanup from request success.
+An unacknowledged transaction can be retired and its request reported as failed
+while all server resources are subsequently closed and joined. That can produce
+a resource-clean exit; it does not prove the transaction committed or rolled
+back. A driver-retirement failure or an unjoined worker at the overall deadline
+instead produces a failed-shutdown event and no clean-close event.
+
+Gate 6's two negative fixtures deliberately use the Rust test process's nonzero
+termination to contain remaining work after failure. Driver abort-and-join is
+recorded, while other tasks disposed by unwinding are not called joined. A
+blocked native worker is identified at the deadline, not claimed stopped by
+thread cancellation. This is private executable containment, not permission for
+a future library API to terminate its embedding host.
 
 Do not turn Scope::track into an asynchronous drain hook. It revokes operation
 futures, not idle pooled connections or server tasks. Keep the prototype owner
