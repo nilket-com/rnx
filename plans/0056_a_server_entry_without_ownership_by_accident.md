@@ -10,9 +10,11 @@ evidence in `0056_a_server_entry_without_ownership_by_accident_commit_evidence.m
 Gate 4 is accepted and pushed at rnx `3f8f6af` and rnx-bench `dede5d3`;
 its extraction evidence is in
 `0056_a_server_entry_without_ownership_by_accident_extraction_evidence.md`.
-Gates 5 and 6 have passing journey/regression evidence, pending review, in
-`0056_a_server_entry_without_ownership_by_accident_acceptance_evidence.md`.
-All specified implementation work is present; final acceptance remains open.
+Gates 5 and 6 are accepted after the README packaging fix and final suite
+reruns at `bd3dc04`; evidence and the independent timing counter-measurement
+are in `0056_a_server_entry_without_ownership_by_accident_acceptance_evidence.md`.
+Record 0056 is closed on Linux. Non-Linux execution, context caching and
+framework ergonomics remain deferred; the stated native/CPU limitations remain.
 This specifies the supported entry and its first assembled application. The HTTP,
 scheduling, transaction and shutdown evidence lives with 0054. This record
 turns the private assembly into an external caller's contract. Review precedes

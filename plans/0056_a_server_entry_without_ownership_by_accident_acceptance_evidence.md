@@ -1,11 +1,12 @@
 # 0056 gates 5 and 6: an ordinary example and an unchanged stock boundary
 
-Status: implemented 2026-09-16, passing evidence, pending review. Gate 4 was
+Status: accepted on Linux after review fix F1, 2026-09-16. The final three
+configurations pass at fix commit `bd3dc04`. Gate 4 was
 accepted and pushed at rnx `3f8f6af` and rnx-bench `dede5d3` before these runs.
 No Rust source, manifest, lockfile, notices, kernel or adapter changed in this
 step. The changes are reproduction fixtures, raw evidence and status/docs.
-All record 0056 implementation gates now have evidence; this does not preempt
-review acceptance or claim non-Linux server execution.
+All record 0056 gates are now accepted on Linux. Non-Linux server execution
+is not claimed.
 
 ## Gate 5: the shipped application, separate HTTP client
 
@@ -67,7 +68,15 @@ final coherent run, not a mixture of samples or a latency guarantee.
 
 ## Gate 6: root checks and isolation
 
-Sequential runs under TERM=xterm, locked and offline:
+Final sequential runs at `bd3dc04`, under TERM=xterm, locked and offline.
+The review found that 3dea1cb added a relative README link to a server README
+not shipped in the crate, after the original suites had run. Those earlier
+counts did not validate that commit. F1 replaces the link with the repository
+URL, following 0052's adapter precedent. All README edits precede the final
+reruns below; HEAD remained `bd3dc04` through their completion. Each
+configuration explicitly passes `the_packaged_manifest_makes_the_same_claims`.
+The checks logs are replaced with these reruns and `summary.json` records the
+full tested commit. Subsequent closure edits change only excluded plan files.
 
 | Root configuration | Passed | Failed |
 | --- | ---: | ---: |
@@ -158,5 +167,6 @@ separation remain as previously tested. The nested-async budget limitation,
 CPU/native poll behavior and deferred context-cache/framework work remain.
 
 Record 0054's prototype gates are accepted, and its public-entry extraction is
-now implemented through 0056. Gates 5 and 6 are ready for review with these
-measurements; final record closure waits for that review.
+now implemented through 0056. The review accepted gate 5 and conditionally accepted gate 6. F1 and its
+required final reruns are complete, so record 0056 is closed on Linux with
+the stated open items.
