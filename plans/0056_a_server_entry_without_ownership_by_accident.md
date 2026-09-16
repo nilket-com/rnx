@@ -1,9 +1,11 @@
 # rnx 0056: a server entry without ownership by accident
 
 Status: plan committed 2026-09-16 after acceptance of record 0054 gates 2 through 6.
-The gate-1 execution API and external assembly fixture are implemented, pending
-review; evidence is in `0056_a_server_entry_without_ownership_by_accident_evidence.md`.
-Gates 2 through 6 and server extraction remain open.
+Gate 1 is accepted and pushed at rnx `abc9bdd` and rnx-bench `99f5830`;
+evidence is in `0056_a_server_entry_without_ownership_by_accident_evidence.md`.
+Gate 2 has passing host-boundary subprocess evidence, pending review, in
+`0056_a_server_entry_without_ownership_by_accident_host_evidence.md`.
+Gates 3 through 6 and server extraction remain unimplemented.
 This specifies the supported entry, not an implemented HTTP server. The HTTP,
 scheduling, transaction and shutdown evidence lives with 0054. This record
 turns the private assembly into an external caller's contract. Review precedes

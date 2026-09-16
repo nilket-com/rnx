@@ -4,6 +4,19 @@
 //! and never terminates the host. Trusted native extensions are not sandboxed.
 //! Construct fresh extensions with identical registrations for compilation and
 //! each invocation. Values and invocations stay on their creating thread.
+//! The context constructor and ownership fields are deliberately private:
+//! ```compile_fail
+//! use rnx::server::context;
+//! ```
+//! ```compile_fail
+//! fn owner(invocation: rnx::server::Invocation) { let _ = invocation.owner; }
+//! ```
+//! ```compile_fail
+//! fn unit(program: rnx::server::Program) { let _ = program.0; }
+//! ```
+//! ```compile_fail
+//! fn category(failure: rnx::server::Failure) { let _ = failure.category; }
+//! ```
 use crate::{Extensions, http, lifecycle::Lifecycle, program::Loader};
 use rune::{
 	Context, Diagnostics, Sources, Vm,
@@ -311,6 +324,235 @@ impl Invocation {
 		match self.failure.take() {
 			Some(error) => Err(error),
 			None => Ok(()),
+		}
+	}
+}
+
+#[cfg(all(test, feature = "test-support", target_os = "linux"))]
+mod host_tests {
+	use super::*;
+	use std::sync::{
+		Condvar, Mutex,
+		atomic::{AtomicUsize, Ordering},
+	};
+	static SIGNALS: AtomicUsize = AtomicUsize::new(0);
+	extern "C" fn host_signal(_: libc::c_int) {
+		SIGNALS.fetch_add(1, Ordering::SeqCst);
+	}
+	fn runtime() -> tokio::runtime::Runtime {
+		tokio::runtime::Builder::new_current_thread()
+			.enable_all()
+			.build()
+			.unwrap()
+	}
+	fn invoke(program: &Program, handler: &str) -> Result<Value, Failure> {
+		let mut invocation = program
+			.prepare(Extensions::none(), handler, Value::from(0i64), 10000)
+			.unwrap();
+		let result = runtime().block_on(invocation.run());
+		let close = invocation.close();
+		if result.is_ok() {
+			close.unwrap();
+		} else {
+			assert_eq!(close.unwrap_err().category(), "vm");
+		}
+		result
+	}
+	fn preserved_signals(expected: usize) {
+		// Exercise delivery, not only the address stored in sigaction.
+		unsafe {
+			libc::raise(libc::SIGINT);
+			libc::raise(libc::SIGTERM);
+		}
+		assert_eq!(SIGNALS.load(Ordering::SeqCst), expected);
+	}
+	fn policy_child(entry: &Path, report: &Path) {
+		unsafe {
+			libc::signal(libc::SIGINT, host_signal as *const () as libc::sighandler_t);
+			libc::signal(
+				libc::SIGTERM,
+				host_signal as *const () as libc::sighandler_t,
+			);
+		}
+		preserved_signals(2);
+		// A real preexisting CLI state: omitting the setter would prove nothing.
+		crate::host::running_a_script();
+		let program = Program::compile(entry, Extensions::none()).unwrap();
+		preserved_signals(4);
+		let value = invoke(&program, "exit").unwrap();
+		let refusal = value.borrow_ref::<Result<Value, Value>>().unwrap();
+		let Err(error_value) = &*refusal else {
+			panic!("exit did not refuse")
+		};
+		let error = error_value.borrow_string_ref().unwrap();
+		assert_eq!(&*error, "cannot exit: this is a server/embedding context");
+		drop(error);
+		drop(refusal);
+		drop(value);
+		preserved_signals(6);
+		let failure = invoke(&program, "bad").unwrap_err();
+		assert_eq!(failure.category(), "vm");
+		assert!(failure.message().contains("missing"));
+		assert_eq!(failure.path(), Some(entry));
+		preserved_signals(8);
+		// Force an owned compile diagnostic as well, without printing it.
+		let invalid = entry.with_file_name("invalid.rn");
+		let failed = Program::compile(invalid, Extensions::none()).err().unwrap();
+		assert_eq!(failed.category(), "preparation");
+		crate::config::report_reads();
+		assert_eq!(std::fs::read_to_string(report).unwrap(), "0");
+		// Positive control: the same valid installed config really is counted.
+		let _ = crate::config::load();
+		crate::config::report_reads();
+		assert_eq!(std::fs::read_to_string(report).unwrap(), "1");
+		preserved_signals(10);
+		println!(
+			"HOST policy passed: signals=10, exit refused with script flag, config reads=0 then control=1, owned diagnostics"
+		);
+	}
+	fn blocked_child(entry: &Path) {
+		let gate = Arc::new((Mutex::new(false), Condvar::new()));
+		let (started, observed) = std::sync::mpsc::sync_channel(1);
+		let factory = |started: std::sync::mpsc::SyncSender<()>| {
+			let gate = gate.clone();
+			Extensions::none().with("native", move |module| {
+				module
+					.function("blocked", move || {
+						started.send(()).unwrap();
+						let (lock, wake) = &*gate;
+						let mut released = lock.lock().unwrap();
+						while !*released {
+							released = wake.wait(released).unwrap();
+						}
+						73i64
+					})
+					.build()
+					.map_err(|e| e.to_string())?;
+				Ok(vec![])
+			})
+		};
+		let program = Program::compile(entry, factory(started.clone())).unwrap();
+		let extension = factory(started);
+		// Extensions is deliberately not Send; recreate the worker's captures there.
+		drop(extension);
+		let worker_gate = gate.clone();
+		let (started, observed_worker) = std::sync::mpsc::sync_channel(1);
+		let worker = std::thread::spawn(move || {
+			let extension = Extensions::none().with("native", move |module| {
+				module
+					.function("blocked", move || {
+						started.send(()).unwrap();
+						let (lock, wake) = &*worker_gate;
+						let mut released = lock.lock().unwrap();
+						while !*released {
+							released = wake.wait(released).unwrap();
+						}
+						73i64
+					})
+					.build()
+					.map_err(|e| e.to_string())?;
+				Ok(vec![])
+			});
+			let mut invocation = program
+				.prepare(extension, "blocked", Value::from(0i64), 10000)
+				.unwrap();
+			let value = runtime().block_on(invocation.run()).unwrap();
+			assert_eq!(value.as_integer::<i64>().unwrap(), 73);
+			drop(value);
+			invocation.close().unwrap();
+		});
+		observed_worker
+			.recv_timeout(std::time::Duration::from_secs(5))
+			.unwrap();
+		assert!(observed.try_recv().is_err(), "schema executed native code");
+		// Longer than the separate standalone server's five-second policy.
+		std::thread::sleep(std::time::Duration::from_millis(5250));
+		assert!(!worker.is_finished(), "native poll unexpectedly completed");
+		println!("HOST deadline passed: worker still owned, host alive");
+		*gate.0.lock().unwrap() = true;
+		gate.1.notify_all();
+		worker.join().unwrap();
+		println!("HOST released native poll and joined worker");
+	}
+	#[test]
+	fn subprocess_host_boundary() {
+		if let Ok(mode) = std::env::var("RNX_HOST_FIXTURE_CHILD") {
+			let entry = PathBuf::from(std::env::var_os("RNX_HOST_FIXTURE_ENTRY").unwrap());
+			if mode == "policy" {
+				policy_child(
+					&entry,
+					Path::new(&std::env::var_os("RNX_TEST_CONFIG_READS").unwrap()),
+				);
+			} else {
+				blocked_child(&entry);
+			}
+			return;
+		}
+		let dir = std::env::temp_dir().join(format!("rnx-host-boundary-{}", std::process::id()));
+		std::fs::create_dir(&dir).unwrap();
+		struct Remove(PathBuf);
+		impl Drop for Remove {
+			fn drop(&mut self) {
+				let _ = std::fs::remove_dir_all(&self.0);
+			}
+		}
+		let _remove = Remove(dir.clone());
+		std::fs::write(
+			dir.join("policy.rn"),
+			"pub fn exit(_) { process::exit(7) }\npub fn bad(_) { 1.missing() }\n",
+		)
+		.unwrap();
+		std::fs::write(
+			dir.join("blocked.rn"),
+			"pub fn blocked(_) { native::blocked() }\n",
+		)
+		.unwrap();
+		std::fs::write(dir.join("invalid.rn"), "pub fn bad(_) { unknown }\n").unwrap();
+		std::fs::write(dir.join("config.rn"), "#{}\n").unwrap();
+		for mode in ["policy", "blocked"] {
+			let output = std::process::Command::new(std::env::current_exe().unwrap())
+				.args([
+					"--exact",
+					"server::host_tests::subprocess_host_boundary",
+					"--nocapture",
+				])
+				.env("RNX_HOST_FIXTURE_CHILD", mode)
+				.env("RNX_HOST_FIXTURE_ENTRY", dir.join(format!("{mode}.rn")))
+				.env("RNX_CONFIG", dir.join("config.rn"))
+				.env("RNX_TEST_CONFIG_READS", dir.join("reads"))
+				.output()
+				.unwrap();
+			assert!(
+				output.status.success(),
+				"{mode}: {:?} {} {}",
+				output.status,
+				String::from_utf8_lossy(&output.stdout),
+				String::from_utf8_lossy(&output.stderr)
+			);
+			assert!(
+				output.stderr.is_empty(),
+				"unexpected stderr: {}",
+				String::from_utf8_lossy(&output.stderr)
+			);
+			let stdout = String::from_utf8(output.stdout).unwrap();
+			for line in stdout.lines().filter(|line| !line.is_empty()) {
+				assert!(
+					line.starts_with("HOST ")
+						|| line == "running 1 test"
+						|| line == "test server::host_tests::subprocess_host_boundary ... ok"
+						|| line.starts_with("test result: ok."),
+					"unexpected stdout: {line}"
+				);
+			}
+
+			for line in stdout.lines().filter(|line| line.starts_with("HOST ")) {
+				println!("{line}");
+			}
+			assert!(stdout.contains(if mode == "policy" {
+				"HOST policy passed"
+			} else {
+				"HOST released native poll and joined worker"
+			}));
 		}
 	}
 }

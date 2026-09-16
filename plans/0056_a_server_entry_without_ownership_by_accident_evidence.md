@@ -1,6 +1,7 @@
 # rnx 0056: gate 1, external assembly
 
-Status: implemented, pending review, 2026-09-16. Gates 2–6 remain open. No
+Status: accepted and pushed at rnx `abc9bdd` and rnx-bench `99f5830`,
+2026-09-16. Gate 2 follows in the host-evidence companion; gates 3–6 remain open. No
 HTTP server, pool or adapter was extracted. No PostgreSQL service was used.
 
 ## Artifacts and reproduction
