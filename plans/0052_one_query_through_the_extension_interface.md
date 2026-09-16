@@ -1,6 +1,9 @@
 # rnx 0052: one query through the extension interface
 
-Status: proposed 2026-09-16, drafted by Claude; revised the same day after
+Status: proposed 2026-09-16; implementation stopped at the ownership prototype
+on 2026-09-16. The seven agreed cases pass, but a future retained by an earlier
+input keeps its socket after interruption. See the companion evidence. No
+adapter implementation is claimed. Drafted by Claude; revised the same day after
 Codex's two reviews (rnx/reviews/0052_review_codex.md: cancellation
 ownership, JSON as text, streamed result accounting, typed preparation,
 result-shape edges, fixed arity, fixture corrections; then client versus
@@ -9,8 +12,9 @@ refusal, the finite timestamp range, and the allowance's name). For review befor
 sequence agreed on 2026-09-15: an independently maintained PostgreSQL
 adapter, compiled through Cargo into an application executable by record
 0051's interface, proven on one parameterized query. Pooling, transactions,
-a web server and package declarations are later steps. No implementation
-or measurement is claimed by this draft.
+a web server and package declarations are later steps. The adapter remains
+unimplemented; only the ownership prototype is measured in the companion
+evidence. The decisions below remain proposed pending the lifecycle follow-up.
 
 ## Context
 
