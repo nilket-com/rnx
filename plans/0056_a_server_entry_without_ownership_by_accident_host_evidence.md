@@ -1,6 +1,7 @@
 # rnx 0056: gate 2, the embedding host keeps control
 
-Status: implemented, pending review, 2026-09-16. Gate 1 is accepted and pushed
+Status: accepted and pushed at rnx `a12fd06` and rnx-bench `32ad598`,
+2026-09-16. Gate 1 is accepted and pushed
 at rnx `abc9bdd` and rnx-bench `99f5830`. Gates 3–6 remain open. This step adds
 only tests, documentation and evidence. No production execution path, manifest,
 lockfile, notices, kernel or adapter changed.

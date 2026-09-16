@@ -3,9 +3,11 @@
 Status: plan committed 2026-09-16 after acceptance of record 0054 gates 2 through 6.
 Gate 1 is accepted and pushed at rnx `abc9bdd` and rnx-bench `99f5830`;
 evidence is in `0056_a_server_entry_without_ownership_by_accident_evidence.md`.
-Gate 2 has passing host-boundary subprocess evidence, pending review, in
-`0056_a_server_entry_without_ownership_by_accident_host_evidence.md`.
-Gates 3 through 6 and server extraction remain unimplemented.
+Gate 2 is accepted and pushed at rnx `a12fd06` and rnx-bench `32ad598`, with
+evidence in `0056_a_server_entry_without_ownership_by_accident_host_evidence.md`.
+Gate 3 has passing private-cluster classification and regression evidence,
+pending review, in `0056_a_server_entry_without_ownership_by_accident_commit_evidence.md`.
+Gates 4 through 6 and server extraction remain unimplemented.
 This specifies the supported entry, not an implemented HTTP server. The HTTP,
 scheduling, transaction and shutdown evidence lives with 0054. This record
 turns the private assembly into an external caller's contract. Review precedes
