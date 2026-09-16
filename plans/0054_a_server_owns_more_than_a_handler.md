@@ -13,8 +13,12 @@ replays in rnx-bench `92388a5`. Request ownership stays isolated, cleanup works
 inside a running runtime, and final teardown reaches zero tasks after all
 owners end. Decision 1 now selects multiplexed admission. Decision 5's HTTP boundary was accepted and committed in `ae1d620`. Its private
 prototype now has two passing raw-wire/resource repeats in the companion
-`0054_a_server_owns_more_than_a_handler_http_evidence.md`, for gate-3 review.
-This does not close gates 4–6 or publish a server entry point.
+`0054_a_server_owns_more_than_a_handler_http_evidence.md`. Gate 3 is accepted
+and pushed at rnx `6fb89e7` and rnx-bench `6ab105e`. The review follow-up
+records parser tolerance and inherited-descriptor accounting. Gate 4 now has
+two passing scheduling repeats in
+`0054_a_server_owns_more_than_a_handler_scheduling_evidence.md`, pending review.
+Gates 5–6 and the supported server-entry contract remain open.
 
 ## Context
 
@@ -280,7 +284,9 @@ Reject Expect with 417 before polling the body, and reject protocol switches
 rather than constructing upgrade tasks. Malformed requests the HTTP parser
 cannot expose safely may receive its bounded error response or connection
 close; the raw-wire gate records which. No universal custom diagnostic is
-promised before a valid request head exists.
+promised before a valid request head exists. The pinned parser accepts bare-LF
+line endings, as measured in the review follow-up. This tolerance is retained;
+a reverse-proxy deployment must verify framing agreement with its proxy.
 
 #### Owned data and routing
 
@@ -396,7 +402,8 @@ Limited checks data after receiving a frame and passes non-data frames through.
 It does not prove a parser allocation bound, cap trailers, or limit the queue.
 The prototype must combine incremental body accounting with the upstream parser
 bounds and test oversized lengths/chunks/trailers before asserting boundedness.
-Library adoption remains contingent on gate 3's wire/resource evidence.
+Gate 3's accepted wire/resource evidence supports adopting this library for
+the stated boundary.
 
 ## Gates before an implementation record is ready
 

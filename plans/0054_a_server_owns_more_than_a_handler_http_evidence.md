@@ -174,3 +174,20 @@ the 505 response body; it was replaced with framing-aware length assertions.
 An earlier response-accounting draft counted only handler fields; the final
 code and gates reserve and test host fields too. Final evidence uses the same
 completed source and binary across both repeats, not those development runs.
+
+## Accepted review and follow-up
+
+Gate 3 was independently reviewed, accepted and pushed at rnx `6fb89e7` and
+rnx-bench `6ab105e`. The historical measurements above remain unchanged.
+Bench `9de3321` records the two review observations and their fixtures:
+
+- Hyper accepts bare LF. The expanded raw-wire corpus passes 57 cases and
+  records that tolerance; no extra parser is introduced.
+- Shutdown compares `(fd, socket identity)` against a snapshot taken before
+  startup. Null, pipe and Unix-socket stdin all pass with no newly owned socket
+  remaining and the inherited set preserved. The ordinary harness explicitly
+  uses null stdin. An absolute zero count was valid only for the original
+  launch environment, not for arbitrary inherited descriptors.
+
+Results are in `results/server-http-0054-review/`. The separate scheduling
+companion now supplies gate 4's HTTP measurements; it does not settle gates 5–6.
