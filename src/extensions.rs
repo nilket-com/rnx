@@ -142,6 +142,12 @@ static HOOKS: std::sync::Mutex<Hooks> = std::sync::Mutex::new(Hooks {
 thread_local! { static QUIET: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
 
 pub(crate) fn build_catching<T>(build: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
+	// Rust forbids changing hooks while unwinding. Cleanup can still catch a
+	// destructor panic; leave the caller's hook intact on this path.
+	if std::thread::panicking() {
+		return panic_result(catch_unwind(AssertUnwindSafe(build)));
+	}
+
 	// Scope misuse can be refused on another thread, and dropping that supplied
 	// future can panic. Share one dispatcher across overlapping catches; only
 	// mutate the hook under this lock, never run adapter code under it. Nested
@@ -175,6 +181,10 @@ pub(crate) fn build_catching<T>(build: impl FnOnce() -> Result<T, String>) -> Re
 			});
 		}
 	}
+	panic_result(result)
+}
+
+fn panic_result<T>(result: std::thread::Result<Result<T, String>>) -> Result<T, String> {
 	match result {
 		Ok(result) => result,
 		Err(payload) => {
@@ -191,6 +201,27 @@ pub(crate) fn build_catching<T>(build: impl FnOnce() -> Result<T, String>) -> Re
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn cleanup_while_unwinding_keeps_the_original_panic() {
+		struct Cleanup;
+		impl Drop for Cleanup {
+			fn drop(&mut self) {
+				assert_eq!(build_catching(|| Ok(7)).unwrap(), 7);
+				assert!(
+					build_catching::<()>(|| panic!("inner cleanup"))
+						.unwrap_err()
+						.contains("inner cleanup")
+				);
+			}
+		}
+		let panic = catch_unwind(|| {
+			let _cleanup = Cleanup;
+			panic!("outer caller");
+		})
+		.unwrap_err();
+		assert_eq!(panic.downcast_ref::<&str>(), Some(&"outer caller"));
+	}
+
 	#[test]
 	fn names_and_help_are_checked_before_installation() {
 		for name in [

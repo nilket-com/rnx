@@ -1,7 +1,10 @@
 # rnx 0056: a server entry without ownership by accident
 
-Status: proposed 2026-09-16, after acceptance of record 0054 gates 2 through 6.
-This is the supported-entry proposal, not an implemented server. The HTTP,
+Status: plan committed 2026-09-16 after acceptance of record 0054 gates 2 through 6.
+The gate-1 execution API and external assembly fixture are implemented, pending
+review; evidence is in `0056_a_server_entry_without_ownership_by_accident_evidence.md`.
+Gates 2 through 6 and server extraction remain open.
+This specifies the supported entry, not an implemented HTTP server. The HTTP,
 scheduling, transaction and shutdown evidence lives with 0054. This record
 turns the private assembly into an external caller's contract. Review precedes
 implementation; the API assembly gate precedes extraction of the server.

@@ -232,6 +232,13 @@ pub(crate) fn run(program: &str, args: Value, options: Value, bytes: bool) -> Re
 macro_rules! contract { () => { "(program, args, options) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: synchronous supervised child; run returns strict UTF-8 stdout/stderr, run_bytes returns Bytes; options: timeout_ms (default 30000, 1..=90000), input (String or Bytes), cwd, env (String values set, None removes), env_clear (default false). Explicit relative program paths always resolve against rnx's directory, even without cwd; bare names use platform lookup, whose PATH-override behaviour is platform-specific. The deadline starts after spawn. Check timed_out/cancelled before code, then truncated/cut_short/unreadable before trusting capture completeness. Killed children have no code on Unix and code 1 on Windows. Nonzero exit is Ok; launch/validation failures are Err. Input delivery does not certify consumption. No global environment or directory changes." }; }
 
 pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::HostFunction>> {
+	install_with_exit(context, crate::host::exit)
+}
+
+pub(crate) fn install_with_exit(
+	context: &mut Context,
+	exit: fn(i64) -> Result<()>,
+) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = Module::with_crate("process")?;
 	module
 		.function("run", |program: &str, args: Value, options: Value| {
@@ -243,7 +250,7 @@ pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::H
 			run(program, args, options, true)
 		})
 		.build()?;
-	module.function("exit", crate::host::exit).build()?;
+	module.function("exit", exit).build()?;
 	context.install(module)?;
 	Ok(vec![
 		crate::host::HostFunction {

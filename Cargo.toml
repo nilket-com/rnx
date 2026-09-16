@@ -38,6 +38,8 @@ count-allocations = []
 # nothing in an ordinary build reads it: record 0022 explains why the
 # delivery's failure path needs one.
 test-support = []
+# Record 0056: caller-owned handler execution, without HTTP server dependencies.
+server-runtime = []
 
 [dependencies]
 rune = { version = "=0.14.2", default-features = false, features = ["std"] }

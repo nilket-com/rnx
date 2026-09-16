@@ -574,11 +574,32 @@ Windows transport type-checks in the standalone probe and awaits execution.
 The full wire contract, bounds and failure policy are in record 0046.
 
 
+## Caller-owned handler execution (optional)
+
+The `server-runtime` feature exposes `rnx::server::{Program, Invocation, Failure}`.
+Compile an entry file once with `Program::compile(path, schema_extensions)`;
+create fresh, identically registered extensions on each worker and call
+`program.prepare(extensions, "module::handler", request_value, budget)`.
+The handler takes one Rune value. Construct and inspect values through
+`rnx::rune`; no private renderer or serializer is needed. `Program` is shareable;
+an `Invocation` and its values stay on their owner thread.
+
+Await `invocation.run()` once on the caller's runtime, then explicitly call
+`invocation.close()`, including after dropping a polled run. Close repeats a
+remembered execution failure (`cancelled` or `vm`), with `cleanup` taking
+precedence for state loss. Success means execution and retirement succeeded;
+it does not certify that the runtime's network tasks have finished. Zero and
+`usize::MAX` budgets are refused. This entry installs no signal handler, reads
+no colour config and always refuses script `process::exit` catchably. Native
+extensions remain trusted. No listener, pool, worker threads or process-kill
+policy is supplied by this feature. Record 0056's external assembly gate is
+implemented; server extraction and the remaining acceptance gates are pending.
+
 ## Assemble an executable with native extensions
 
 An external Rust application can depend on this checkout and run rnx with
 its own Rune modules. No package manager or dynamic plugin loading is involved.
-The library exposes only `main_with`, `Extensions`, `Scope`, and its pinned `rune`
+With default features the library exposes only `main_with`, `Extensions`, `Scope`, and its pinned `rune`
 re-export. Keep the normal `main` return type so startup errors retain rnx's
 exit status and diagnostics:
 

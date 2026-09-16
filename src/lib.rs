@@ -45,6 +45,8 @@ mod repl;
 #[cfg(feature = "test-support")]
 mod rnx_test;
 mod runner;
+#[cfg(feature = "server-runtime")]
+pub mod server;
 mod session;
 mod terminal;
 mod text;
