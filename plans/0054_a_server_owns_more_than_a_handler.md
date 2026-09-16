@@ -5,6 +5,14 @@ probes are accepted and pushed in rnx-bench at `8b97577`. This is the step-four 
 claim that the existing extension interface can already assemble one. The
 assembly gate below must settle the interface before implementation is ready.
 
+Gate 2 was measured on 2026-09-16 against `c28cf22`; see the companion
+`0054_a_server_owns_more_than_a_handler_assembly_evidence.md`. Both shapes
+assemble, lifecycle isolation passes and request ownership is separate, but
+HTTP cleanup reproduces a stop: nested block_on inside a running server, and
+a whole-runtime drain that cannot finish while a healthy peer request remains.
+Gate 2 stays open. No admission shape or HTTP library has been selected, and
+gate 3 waits for the cleanup boundary to be settled.
+
 ## Context
 
 Records 0050 through 0053 proved multi-file programs, executable assembly,
