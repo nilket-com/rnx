@@ -5,9 +5,10 @@ at rnx b96a94a / rnx-bench 0147c24, recorded in `_context_evidence.md`. Gate 2
 is accepted and pushed at rnx 3cc0b51 / rnx-bench 3f23e43, recorded in
 `_identity_evidence.md`. Gate 3 is accepted and pushed at rnx 814d20f / rnx-bench 4c8256f, recorded in
 `_publication_evidence.md`. Gate 4 is accepted and pushed at rnx 3c4ed67 /
-rnx-bench 4b58319, recorded in `_commands_evidence.md`. Gate 5's real Polars
-journey and measurements are ready for Linux review in `_polars_evidence.md`;
-gate 6 remains open. The assembly-identity probe
+rnx-bench 4b58319, recorded in `_commands_evidence.md`. Gate 5 is accepted and
+pushed at rnx b96d784 / rnx-bench c3eb0d8, recorded in `_polars_evidence.md`.
+Gate 6 passes and the record is ready for Linux closing review in
+`_regression_evidence.md`. The assembly-identity probe
 is accepted and pushed at rnx-bench 26af790. This is the shared-cache decision
 before an adapter catalogue or :dep workflow.
 
@@ -274,6 +275,8 @@ and cleanup bounds; its measured millisecond cost is not itself a bound. Setting
 are session-only, so even eval success is not a complete session-readiness proof.
 Nothing here transfers bindings or makes a later exec atomic against failure.
 
-The next review point is this draft, then gate 1's context/ownership evidence
-before general cache implementation. Preserve the accepted probe and meaningful
-stops as measured checkpoints; fold incidental review corrections before push.
+All six gates now have evidence. Gates 1–5 are accepted; the next review point
+is gate 6 and Linux closure. Windows execution, automatic eviction/live-entry
+tracking, a catalogue and session replacement remain later work. Preserve the
+accepted probe and meaningful stops as measured checkpoints; fold incidental
+review corrections before push.
