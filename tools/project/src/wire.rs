@@ -55,7 +55,13 @@ fn parse<T: serde::de::DeserializeOwned>(bytes: &[u8]) -> Result<T, String> {
 	}
 	serde_json::from_slice(bytes).map_err(|e| e.to_string())
 }
-fn encode<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
+pub(crate) fn encode<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
+	encoded(value, false)
+}
+pub(crate) fn pretty<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
+	encoded(value, true)
+}
+fn encoded<T: Serialize>(value: &T, pretty: bool) -> Result<Vec<u8>, String> {
 	// Cap while serializing, including any escaping expansion.
 	struct Writer(Vec<u8>);
 	impl std::io::Write for Writer {
@@ -71,7 +77,12 @@ fn encode<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
 		}
 	}
 	let mut writer = Writer(vec![]);
-	serde_json::to_writer(&mut writer, value).map_err(|e| e.to_string())?;
+	if pretty {
+		serde_json::to_writer_pretty(&mut writer, value)
+	} else {
+		serde_json::to_writer(&mut writer, value)
+	}
+	.map_err(|e| e.to_string())?;
 	Ok(writer.0)
 }
 impl Handoff {
@@ -130,7 +141,7 @@ pub(crate) struct Lock {
 	pub format: u32,
 	pub declarations: Manifest,
 	pub sources: Handoff,
-	pub packages: Vec<Package>,
+	pub inputs: Inputs,
 	pub assembly: Assembly,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -153,11 +164,10 @@ pub(crate) enum Assembly {
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub(crate) struct Package {
-	pub root: String,
-	pub manifest: String,
-	pub tree_sha256: String,
-	pub files: Vec<File>,
+pub(crate) struct Inputs {
+	pub source: crate::inventory::Sources,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub native: Option<crate::inventory::Inventory>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -178,11 +188,16 @@ impl Lock {
 		let mut files = 0usize;
 		let mut bytes = 0u64;
 		let mut roots = BTreeSet::new();
-		for package in &self.packages {
-			absolute(&package.root)?;
-			absolute(&package.manifest)?;
-			digest(&package.tree_sha256)?;
-			if !roots.insert(&package.root) {
+		for (kind, package) in self.inputs.source.trees.iter().map(|p| (0, p)).chain(
+			self.inputs
+				.native
+				.iter()
+				.flat_map(|n| n.trees.iter())
+				.map(|p| (1, p)),
+		) {
+			absolute(package.root.to_str().ok_or("non-Unicode root")?)?;
+			digest(&package.sha256)?;
+			if !roots.insert((kind, &package.root)) {
 				return Err("duplicate package root".into());
 			}
 			let mut paths = BTreeSet::new();
@@ -201,6 +216,60 @@ impl Lock {
 					return Err("duplicate inventory path".into());
 				}
 				digest(&file.sha256)?;
+				files += 1;
+				bytes = bytes
+					.checked_add(file.bytes)
+					.ok_or("inventory size overflow")?;
+				if files > 100_000 || bytes > 512 * 1024 * 1024 {
+					return Err("inventory exceeds 100000 entries or 512 MiB".into());
+				}
+			}
+		}
+
+		if self.inputs.source.packages.len() > 64 {
+			return Err("too many source packages".into());
+		}
+		for p in &self.inputs.source.packages {
+			absolute(p.manifest.to_str().ok_or("non-Unicode manifest")?)?;
+			absolute(p.root.to_str().ok_or("non-Unicode source root")?)?;
+			if !self.inputs.source.trees.iter().any(|t| t.root == p.root) {
+				return Err("source package has no tree".into());
+			}
+		}
+		if let Some(n) = &self.inputs.native {
+			if n.platform.is_empty() || n.packages.len() > 100_000 || n.external.len() > 100_000 {
+				return Err("invalid native inventory bounds".into());
+			}
+			let mut ids = BTreeSet::new();
+			for p in &n.packages {
+				absolute(p.manifest.to_str().ok_or("non-Unicode manifest")?)?;
+				absolute(p.root.to_str().ok_or("non-Unicode native root")?)?;
+				if p.name.is_empty()
+					|| !ids.insert(&p.id)
+					|| !n.trees.iter().any(|t| t.root == p.root)
+				{
+					return Err("invalid native package association".into());
+				}
+			}
+		}
+		let mut external_paths = BTreeSet::new();
+		for external in self
+			.inputs
+			.source
+			.outside_manifests
+			.iter()
+			.chain(self.inputs.native.iter().flat_map(|n| n.external.iter()))
+		{
+			absolute(external.path.to_str().ok_or("non-Unicode external path")?)?;
+			// The same file can legitimately govern both source and native roots.
+			if !external_paths.insert(&external.path) {
+				continue;
+			}
+			if let Some(file) = &external.file {
+				digest(&file.sha256)?;
+				if Some(std::ffi::OsStr::new(&file.path)) != external.path.file_name() {
+					return Err("external file path mismatch".into());
+				}
 				files += 1;
 				bytes = bytes
 					.checked_add(file.bytes)

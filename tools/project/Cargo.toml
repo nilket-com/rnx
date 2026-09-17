@@ -29,3 +29,8 @@ name = "rnx-project-assembly-probe"
 path = "src/assembly_probe.rs"
 test = false
 required-features = ["test-support"]
+
+[[bin]]
+name = "rnx-project"
+path = "src/main.rs"
+test = false

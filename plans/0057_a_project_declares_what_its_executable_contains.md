@@ -1,12 +1,12 @@
 # rnx 0057: a project declares what its executable contains
 
-Status: plan accepted and committed as `73fd306` on 2026-09-16.
-Gate 1 is accepted and pushed at rnx `c8fb102` and rnx-bench `d7bc333`.
-Gate 2 is accepted and pushed at rnx `109eedf` and rnx-bench `3e9ca1c`.
-Gate 3 is accepted and pushed at rnx `bb9ae35` and rnx-bench `b78202c`.
-Gate 4 assembly and integration evidence are submitted for review; gates 5–6
-remain open. See the companion `_loader_evidence.md`, `_inputs_evidence.md`,
-`_fingerprint_evidence.md` and `_assembly_evidence.md` files. Step five of
+Status: plan accepted as `bbf3337` (subject-only rewrite of `73fd306`).
+Gates 1–4 are accepted and pushed; gate 4 is rnx `25dda00` and rnx-bench
+`0fbb525`. Earlier acceptance hashes in companion evidence refer to the original
+signed commits before the subject-only rewrite. Gate 5's Linux workflow is
+submitted for review; gate 6 remains open. See `_workflow_evidence.md` and the
+previous `_loader_evidence.md`, `_inputs_evidence.md`, `_fingerprint_evidence.md`
+and `_assembly_evidence.md` files. Step five of
 extensibility, first local-package contract. The accepted source/native prototype
 is rnx-bench `1da057c`, with evidence in `results/package-boundary/` and review
 in `reviews/0057_package_prototype_review_claude.md`. The prototype is pushed.

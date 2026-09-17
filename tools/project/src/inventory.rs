@@ -140,6 +140,9 @@ pub(crate) fn native(
 	// the generated wrapper's workspace). Explicit workspace redirects are followed.
 	let mut external = BTreeMap::new();
 	while let Some(path) = candidates.pop_first() {
+		if path.starts_with(generated_root) {
+			continue;
+		}
 		if external.contains_key(&path) {
 			continue;
 		}

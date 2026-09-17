@@ -47,7 +47,14 @@ fn lock(root: &Path) -> Lock {
 		format: 1,
 		declarations: app(),
 		sources: handoff(root),
-		packages: vec![],
+		inputs: wire::Inputs {
+			source: crate::inventory::Sources {
+				packages: vec![],
+				trees: vec![],
+				outside_manifests: vec![],
+			},
+			native: None,
+		},
 		assembly: Assembly::Generated {
 			manifest_sha256: "a".repeat(64),
 			main_sha256: "b".repeat(64),
@@ -253,10 +260,9 @@ fn locks_are_strict_documents_not_verified_content() {
 fn inventory_limits_paths_and_hashes() {
 	let t = Tree::new();
 	let mut doc = lock(&t.0);
-	doc.packages.push(wire::Package {
-		root: t.0.to_str().unwrap().into(),
-		manifest: t.0.join("Cargo.toml").to_str().unwrap().into(),
-		tree_sha256: "d".repeat(64),
+	doc.inputs.source.trees.push(crate::fingerprint::Tree {
+		root: t.0.clone(),
+		sha256: "d".repeat(64),
 		files: vec![wire::File {
 			path: "src/lib.rs".into(),
 			executable: false,
@@ -265,14 +271,14 @@ fn inventory_limits_paths_and_hashes() {
 		}],
 	});
 	assert!(doc.validate().is_ok());
-	doc.packages[0].files[0].bytes += 1;
+	doc.inputs.source.trees[0].files[0].bytes += 1;
 	assert!(doc.validate().is_err());
-	doc.packages[0].files[0].bytes = 0;
+	doc.inputs.source.trees[0].files[0].bytes = 0;
 	for bad in ["../x", "a/../b", "/root", "a\\b", "a//b", "./x", ""] {
-		doc.packages[0].files[0].path = bad.into();
+		doc.inputs.source.trees[0].files[0].path = bad.into();
 		assert!(doc.validate().is_err(), "{bad}");
 	}
-	doc.packages[0].files = (0..100_000)
+	doc.inputs.source.trees[0].files = (0..100_000)
 		.map(|n| wire::File {
 			path: format!("f{n}"),
 			executable: false,
@@ -281,7 +287,7 @@ fn inventory_limits_paths_and_hashes() {
 		})
 		.collect();
 	assert!(doc.validate().is_ok());
-	doc.packages[0].files.push(wire::File {
+	doc.inputs.source.trees[0].files.push(wire::File {
 		path: "extra".into(),
 		executable: false,
 		bytes: 0,

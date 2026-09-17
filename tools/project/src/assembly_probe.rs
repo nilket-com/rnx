@@ -5,6 +5,7 @@ mod generate;
 mod graph;
 mod handshake;
 mod input;
+mod inventory;
 mod manifest;
 mod wire;
 use std::{ffi::OsString, path::Path};
