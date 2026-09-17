@@ -160,6 +160,46 @@ impl Identity {
 		}
 		Ok(identity)
 	}
+	pub(crate) fn context(&self) -> &Context {
+		&self.document.context
+	}
+	pub(crate) fn wrapper(&self) -> (&str, &str) {
+		(&self.document.manifest, &self.document.main)
+	}
+	pub(crate) fn check_lock(&self, bytes: &[u8]) -> Result<(), String> {
+		if digest(bytes) != self.document.cargo_lock_sha256 {
+			return Err("assembly Cargo lock mismatch".into());
+		}
+		Ok(())
+	}
+	/// No Cargo resolution: use recorded associations to repeat the full input audit.
+	pub(crate) fn revalidate(&self, stage: &Path) -> Result<(), String> {
+		let c = self.context();
+		let packages: Vec<_> = self
+			.document
+			.native
+			.packages
+			.iter()
+			.map(
+				|p| serde_json::json!({"id":p.id,"name":p.name,"source":null,"manifest_path":p.manifest}),
+			)
+			.collect();
+		let metadata =
+			wire::encode(&serde_json::json!({"workspace_root":stage,"packages":packages}))?;
+		let native = crate::inventory::native(
+			&metadata,
+			stage,
+			&c.cache_root,
+			&c.cargo_home,
+			&mut fingerprint::Allowance::default(),
+		)?;
+		crate::cache_storage::policy(&native)?;
+		if native != self.document.native {
+			return Err("assembly native/context inputs changed; run lock".into());
+		}
+		Ok(())
+	}
+
 	pub(crate) fn key(&self) -> &str {
 		&self.key
 	}

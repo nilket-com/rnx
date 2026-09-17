@@ -1,7 +1,11 @@
 //! Test-only adapter around private core functions, not the product CLI.
 mod artifact;
 mod assembly;
+mod cache_entry;
 mod cache_identity;
+mod cache_storage;
+#[allow(dead_code)]
+mod commands;
 mod fingerprint;
 mod generate;
 mod graph;

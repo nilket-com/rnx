@@ -1,6 +1,8 @@
 mod artifact;
 mod assembly;
+mod cache_entry;
 mod cache_identity;
+mod cache_storage;
 mod commands;
 mod fingerprint;
 mod generate;

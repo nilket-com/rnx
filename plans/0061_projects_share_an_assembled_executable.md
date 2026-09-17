@@ -2,7 +2,9 @@
 
 Status: plan accepted 2026-09-17 at 3c27365. Gate 1 is accepted and pushed
 at rnx b96a94a / rnx-bench 0147c24, recorded in `_context_evidence.md`. Gate 2
-is ready for Linux review in `_identity_evidence.md`; gates 3–6 remain open. The assembly-identity probe
+is accepted and pushed at rnx 3cc0b51 / rnx-bench 3f23e43, recorded in
+`_identity_evidence.md`. Gate 3 publication core is ready for Linux review in
+`_publication_evidence.md`; gates 4–6 remain open. The assembly-identity probe
 is accepted and pushed at rnx-bench 26af790. This is the shared-cache decision
 before an adapter catalogue or :dep workflow.
 
