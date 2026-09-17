@@ -2,8 +2,10 @@
 
 Status: plan accepted and committed as `73fd306` on 2026-09-16.
 Gate 1 is accepted and pushed at rnx `c8fb102` and rnx-bench `d7bc333`.
-Gate 2 implementation and evidence are submitted for review; gates 3–6 remain
-open. See the companion `_loader_evidence.md` and `_inputs_evidence.md` files. Step five of
+Gate 2 is accepted and pushed at rnx `109eedf` and rnx-bench `3e9ca1c`.
+Gate 3 fingerprinting and audit evidence are submitted for review; gates 4–6
+remain open. See the companion `_loader_evidence.md`, `_inputs_evidence.md` and
+`_fingerprint_evidence.md` files. Step five of
 extensibility, first local-package contract. The accepted source/native prototype
 is rnx-bench `1da057c`, with evidence in `results/package-boundary/` and review
 in `reviews/0057_package_prototype_review_claude.md`. The prototype is pushed.

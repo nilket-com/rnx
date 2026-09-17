@@ -1,9 +1,9 @@
-# rnx-project (gate 2)
+# rnx-project (gate 3)
 
 The independent project tool currently implements input validation and generation
 as private library code exercised by tests. There is **no lock/build/run command
-yet**, no source fingerprinting, Cargo build orchestration or build receipt.
-These remain the later gates of record 0057.
+yet**, no Cargo build orchestration or build receipt. Those remain the later
+gates of record 0057. Source fingerprints are now computed by the private core.
 
 Implemented: bounded regular-file reads, strict TOML manifests, recursive graph
 expansion, typed JSON lock documents and source maps, deterministic Cargo/main
@@ -45,9 +45,54 @@ Lock schema version 1 has declarations, an expanded source map, package file
 inventories and a generated-or-executable identity. Serialization is deterministic;
 root SHA-256 fields here are only syntax-checked. Toolchain versions are part of
 the planned build identity, so upgrading the toolchain will require rebuilding.
-Content comparisons and ancestor Cargo-input accounting remain gate 3.
+Content inventories are computed separately from these staged wire documents;
+writing and verifying a product lock/receipt remains the workflow gates.
 
 Private modules retain staged unused-code allowances until the product commands
 call them. Nothing here is a new supported public rnx Rust API. The resolved
 all-platform dependency graph and notices are separate from stock rnx's graph;
 Windows type-checking is not execution evidence.
+
+
+## Content identity
+
+The source inventory walks the application entry directory and each distinct
+Rune source root, hashing working-tree bytes. External source manifests get their
+own file identity. Only `.git` directories and `.rnx`, `rnx.lock` and
+`rnx.Cargo.lock` at the application root are excluded. Files, not mtimes, decide
+identity; symlinks, special files and non-Unicode names refuse.
+
+The native inventory consumes bounded Cargo metadata for the generated assembly.
+It retains each local package association and hashes each distinct package root
+once, using Git-tracked working-tree files. Dirty edits count. Untracked,
+non-ignored files, missing tracked files, unmerged index entries, submodules and
+symlinks refuse. Ignored files remain outside this contract even if a trusted
+build script reads them. Git inventory output has an additional 16 MiB cap.
+
+Tree hashes use SHA-256 and `rnx-tree-v1` framing from the record: sorted UTF-8
+slash paths, big-endian u64 path length, path, executable byte, big-endian u64
+content length, contents. Unix executable bits count; other platforms use zero.
+The inventory records OS and architecture. A shared allowance caps traversal at
+100,000 entries (including walked source directories) and all fingerprint reads
+at 512 MiB. Ancestor parsing rereads are charged too. Hashing streams through a
+16 KiB buffer. Size changes detected during reading refuse; this is not an atomic
+snapshot against a concurrent editor.
+
+Ancestor Cargo.toml, both Cargo config spellings, and both toolchain spellings
+are inventoried along package and invocation-directory ancestry. Cargo home's
+config candidates and explicit `package.workspace` redirects are included.
+Absent candidates are recorded so adding a file invalidates the inventory. This
+is conservative: an inactive config spelling or ancestor may also invalidate it.
+Cargo configuration follows the invocation directory, not each dependency root.
+The workflow must retain that directory across lock/build checks.
+
+A config containing `include` currently stops the audit with a named refusal:
+this core does not claim to inventory its external include graph. It must not
+proceed to a build. Build command/environment overrides and effective toolchain
+identities still belong to the workflow gate; these file inventories alone are
+not permission to build. Trusted build scripts, proc macros and compiler inputs
+outside the declared trees remain the record's non-hermetic qualification.
+
+The test-only repository audit writes a snapshot outside the repository, avoiding
+an inventory that includes its own output. It is deliberately ignored in ordinary
+tests because its native root must first have all new files tracked or staged.
