@@ -1,7 +1,9 @@
 # rnx 0058: a small dataframe pipeline through the same engine
 
-Status: gates 1–4 accepted 2026-09-17. Gate 5's timing and ownership evidence
-is ready for review in `_cost_evidence.md`; gate 6 remains open.
+Status: gates 1–5 accepted 2026-09-17. Gate 6 is ready for Linux review in
+`_regression_evidence.md`, with existing root lint failures, unavailable upstream
+licence texts and unexecuted Windows coverage explicit. `_cost_evidence.md`
+records the accepted timing and ownership results.
 `_assembly_evidence.md` records the accepted project/notebook route.
 `_preview_evidence.md` records the accepted bounded preview.
 `_files_evidence.md` records the accepted CSV/Parquet contract.
@@ -342,6 +344,12 @@ It remains a hypothesis. Different engine revisions, features, CPU dispatch and
 allocators can dominate a small timing; record them rather than attributing every
 delta to Python or Rune. A process-global pool and uninterruptible native work
 remain relevant in notebooks even when a tiny CLI example is fast.
+
+Project launch verification is a measured follow-up: gate 5 found about 144 ms
+over the same generated artifact launched directly. No verification policy
+changes here. A path/size/inode shortcut misses same-inode, same-size edits, and
+source fingerprinting has its own cost. Any cache record must state what content
+checks it relaxes and measure the remaining input cost before promising latency.
 
 ## Sources checked for this draft
 

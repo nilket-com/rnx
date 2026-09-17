@@ -2,7 +2,7 @@
 
 A small synchronous Polars extension, staged through record 0058. Gate 2 covers
 CSV and Parquet; gate 3 adds bounded preview. Project/notebook integration
-is exercised by gate 4; the timing gate is recorded below; final regression remains open. It is an independent workspace and does not add Polars to stock rnx.
+is exercised by gate 4; the timing gate is recorded below; Linux regression results and platform limits follow. It is an independent workspace and does not add Polars to stock rnx.
 
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
@@ -100,8 +100,13 @@ assertions; it adds the observation function `polars::engine_counts`.
 
 The engine pins differ between Rust and the Python wheel; gate 1 records their
 provenance. No matched-engine or speed claim follows from this correctness gate.
-The independent notices currently identify three missing upstream licence texts
-explicitly; the complete notices/platform/regression gate remains open.
+The independent notices include the alloc-stdlib text recovered from its exact
+published revision. Two package-wide texts remain unavailable at their published
+revisions: polars-parquet-format 0.1.0 and syntree 0.18.0. Their declared licences
+and the missing texts remain explicit in the inventory; this is not a complete
+licence-text clearance. Linux regression passes. The Windows cross-check stops
+in native dependencies because this Linux host lacks lib.exe; neither a full
+Windows type-check nor Windows execution is claimed.
 
 Validation:
 

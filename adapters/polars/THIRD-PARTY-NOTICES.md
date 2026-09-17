@@ -340,7 +340,6 @@ and remains unpublished; its dependency texts are included here.
 
 ## Texts not available
 
-alloc-stdlib 0.2.4: BSD-3-Clause
 polars-parquet-format 0.1.0: MIT AND Apache-2.0
 syntree 0.18.0: MIT OR Apache-2.0
 
@@ -12654,7 +12653,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-## alloc-no-stdlib 2.0.4 (LICENSE), brotli 8.0.4 (LICENSE.BSD-3-Clause), brotli-decompressor 5.0.3 (LICENSE)
+## alloc-no-stdlib 2.0.4 (LICENSE), alloc-stdlib 0.2.4 (LICENSE), brotli 8.0.4 (LICENSE.BSD-3-Clause), brotli-decompressor 5.0.3 (LICENSE)
 
 SHA-256: `c0c56f26d9c051cac4d200c34c84e7ae9aaa853e01a982a1df08b09931e518ae`
 
