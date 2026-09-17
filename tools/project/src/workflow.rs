@@ -389,7 +389,7 @@ impl Project {
 		eprintln!("built {}", artifact.display());
 		Ok(())
 	}
-	fn run(self, args: Vec<OsString>, verify: bool) -> Result<(), String> {
+	fn launch(self, mode: Launch, verify: bool) -> Result<(), String> {
 		let (lock, bytes) = self.read_lock()?;
 		self.verify_inputs(&lock)?;
 		let lock_digest = hash(&bytes);
@@ -438,13 +438,25 @@ impl Project {
 			)?;
 		}
 
-		let maps = self.dot.join("maps");
-		fs::create_dir_all(&maps).map_err(err)?;
-		let map_bytes = lock.sources.encode()?;
-		let map = maps.join(format!("{}.json", hash(&map_bytes)));
-		crate::maps::ensure(&map, &map_bytes, || self.atomic(&map, &map_bytes))?;
-		let mut command =
-			assembly::command_checked(&checked, Some(&map), Path::new(&lock.sources.entry), &args)?;
+		let mut command = match mode {
+			Launch::Run(args) => {
+				let maps = self.dot.join("maps");
+				fs::create_dir_all(&maps).map_err(err)?;
+				let map_bytes = lock.sources.encode()?;
+				let map = maps.join(format!("{}.json", hash(&map_bytes)));
+				crate::maps::ensure(&map, &map_bytes, || self.atomic(&map, &map_bytes))?;
+				assembly::command_checked(
+					&checked,
+					Some(&map),
+					Path::new(&lock.sources.entry),
+					&args,
+				)?
+			}
+			Launch::Session { flags } => assembly::interactive_checked(&checked, &flags, None),
+			Launch::Eval { flags, source } => {
+				assembly::interactive_checked(&checked, &flags, Some(&source))
+			}
+		};
 		commands::check()?;
 		// Advisory lock descriptors are close-on-exec; the script is not a project
 		// writer. The immutable map/artifact outlive this process without a parent.
@@ -556,24 +568,42 @@ fn fault(name: &str) -> Result<(), String> {
 	let _ = name;
 	Ok(())
 }
+
+enum Launch {
+	Run(Vec<OsString>),
+	Session {
+		flags: Vec<OsString>,
+	},
+	Eval {
+		flags: Vec<OsString>,
+		source: OsString,
+	},
+}
+
 pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	if args.len() == 1 && matches!(args[0].to_str(), Some("--help" | "help")) {
 		println!(
-			"rnx-project lock|build|run --manifest FILE [-- script arguments]\nrun checks your sources, trusts your build output unless you ask it to verify.\nUse run --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run never builds."
+			"rnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build."
 		);
 		return Ok(());
 	}
 	let command = args
 		.first()
 		.and_then(|a| a.to_str())
-		.ok_or("expected lock, build or run")?;
-	if !matches!(command, "lock" | "build" | "run") {
-		return Err("expected lock, build or run".into());
+		.ok_or("expected lock, build, run, session or eval")?;
+	if !matches!(command, "lock" | "build" | "run" | "session" | "eval") {
+		return Err("expected lock, build, run, session or eval".into());
 	}
+	let launch = matches!(command, "run" | "session" | "eval");
+	let interactive = matches!(command, "session" | "eval");
 	let mut manifest = None;
 	let mut offline = false;
 	let mut verify = false;
-	let mut script = vec![];
+	let mut color = false;
+	let mut splash = false;
+	let mut flags = Vec::new();
+	let mut script = Vec::new();
+	let mut source = None;
 	let mut n = 1;
 	while n < args.len() {
 		match args[n].to_str() {
@@ -581,15 +611,36 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 				n += 1;
 				manifest = Some(PathBuf::from(args.get(n).ok_or("--manifest needs a path")?));
 			}
-			Some("--offline") if command != "run" && !offline => offline = true,
-			Some("--verify") if command == "run" && !verify => verify = true,
+			Some("--offline") if !launch && !offline => offline = true,
+			Some("--verify") if launch && !verify => verify = true,
+			Some("--no-splash") if command == "session" && !splash => {
+				splash = true;
+				flags.push(args[n].clone());
+			}
+			Some(value) if interactive && !color && value.starts_with("--color=") => {
+				if !matches!(value, "--color=auto" | "--color=always" | "--color=never") {
+					return Err("--color takes auto, always, or never".into());
+				}
+				color = true;
+				flags.push(args[n].clone());
+			}
 			Some("--") if command == "run" => {
 				script = args[n + 1..].to_vec();
+				break;
+			}
+			Some("--") if command == "eval" => {
+				if args.len() != n + 2 {
+					return Err("eval needs exactly one source argument after --".into());
+				}
+				source = Some(args[n + 1].clone());
 				break;
 			}
 			_ => return Err(format!("unexpected or duplicate option {:?}", args[n])),
 		}
 		n += 1;
+	}
+	if command == "eval" && source.is_none() {
+		return Err("eval needs exactly one source argument after --".into());
 	}
 	let manifest = manifest.ok_or("--manifest is required; no upward search")?;
 	commands::install_signals()?;
@@ -598,7 +649,15 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	match command {
 		"lock" => project.lock(offline),
 		"build" => project.build(offline),
-		"run" => project.run(script, verify),
+		"run" => project.launch(Launch::Run(script), verify),
+		"session" => project.launch(Launch::Session { flags }, verify),
+		"eval" => project.launch(
+			Launch::Eval {
+				flags,
+				source: source.unwrap(),
+			},
+			verify,
+		),
 		_ => unreachable!(),
 	}
 }

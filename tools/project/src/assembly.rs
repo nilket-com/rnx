@@ -74,3 +74,23 @@ pub(crate) fn command_checked(
 	command.arg(entry).args(args);
 	Ok(command)
 }
+
+/// Native extensions are already in the artifact. Interactive modes carry no
+/// entry or source map and do not require the mapped-run capability handshake.
+pub(crate) fn interactive_checked(
+	checked: &crate::artifact::Checked,
+	flags: &[OsString],
+	source: Option<&std::ffi::OsStr>,
+) -> Command {
+	let mut command = Command::new(checked.path());
+	command.args(flags);
+	match source {
+		Some(source) => {
+			command.arg("eval").arg(source);
+		}
+		None => {
+			command.arg("repl");
+		}
+	}
+	command
+}

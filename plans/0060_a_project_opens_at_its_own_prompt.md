@@ -1,7 +1,8 @@
 # rnx 0060: a project opens at its own prompt
 
-Status: proposed 2026-09-17. The sixtieth record follows the accepted Linux
-closure of 0059. This is a draft for review, not implementation authority.
+Status: plan accepted 2026-09-17 at 9a5b510. Linux implementation and gates
+1–6 are ready for review in `_evidence.md`. The sixtieth record follows the
+accepted Linux closure of 0059.
 
 ## Context
 

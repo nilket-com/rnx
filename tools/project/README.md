@@ -7,6 +7,8 @@ Cargo workspace; none of its dependencies enters stock rnx's default graph.
 cargo build --locked --release --manifest-path tools/project/Cargo.toml --bin rnx-project
 rnx-project lock --manifest app/rnx.toml --offline
 rnx-project build --manifest app/rnx.toml --offline
+rnx-project session --manifest app/rnx.toml
+rnx-project eval --manifest app/rnx.toml -- '1 + 1'
 rnx-project run --manifest app/rnx.toml -- argument1 argument2
 rnx-project run --manifest app/rnx.toml --verify -- argument1 argument2
 ```
@@ -15,7 +17,7 @@ rnx-project run --manifest app/rnx.toml --verify -- argument1 argument2
 relative to that manifest. Only lock resolves the Cargo graph. Build uses
 `--locked`, the release profile and the compiler's host target; run never invokes
 Cargo or rustc, builds anything, repairs a lock or requires a network connection.
-**Run checks your sources, trusts your build output unless you ask it to verify.**
+**Launch checks your sources, trusts your build output unless you ask it to verify.**
 
 By default, matching artifact size, modification time, executable-bit state and
 Unix device/inode avoid rereading the executable. A mismatch triggers a full hash
@@ -24,6 +26,36 @@ contents refuse. `run --verify` always hashes the artifact. It is accepted once,
 in either order with `--manifest`, before `--`; lock/build do not accept it.
 Run passes everything after `--` as script arguments. Direct runner flags before
 `--` are not exposed by this first project CLI. Build chatter goes to stderr.
+
+## Open the project's prompt
+
+After the explicit lock and build above, `session` opens the assembled executable's
+REPL with its native extensions, including Polars. `eval` takes exactly one source
+argument after `--`; quote it in your shell. Neither command runs the manifest's
+entry file, builds anything, or imports mapped Rune packages. Module declarations
+remain unavailable in eval and sessions. Source dependencies are still checked
+for changes even though these modes do not use a source map.
+
+```sh
+rnx-project session --manifest app/rnx.toml --no-splash --color=never
+rnx-project eval --verify --manifest app/rnx.toml -- '1 + 1'
+```
+
+Session and eval accept `--verify` and `--color=auto|always|never` once, before
+any `--` boundary, in either order with `--manifest`. Only session accepts
+`--no-splash`. Session takes no positional arguments or trailing `--`; eval takes
+exactly one source argument, including an empty string. `--offline` belongs only
+to lock/build. Run's existing script-argument boundary is unchanged.
+
+All three launch modes share the receipt and source checks described below.
+They inherit your working directory: relative CSV and Parquet paths refer to
+where you launched the command, not the manifest directory. Session loads your
+usual rnx settings; eval does not. The executable owns the terminal, history,
+signals and exit status, with no proxy process. Reset clears bindings and retains
+extensions. Use a frame's `preview()` for bounded display; bare frames remain
+opaque. Opening a session releases the project command lock, and verification
+runs once before launch, not again between inputs. Rebuilding a project does not
+change an already-running session.
 
 ## Files you commit
 
