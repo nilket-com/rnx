@@ -1,8 +1,9 @@
 # rnx 0061: projects share an assembled executable
 
-Status: proposed 2026-09-17. The assembly-identity probe is accepted and pushed at
-rnx-bench 26af790; rnx remains at the accepted 0060 implementation, 83398d9.
-This is the shared-cache decision before an adapter catalogue or :dep workflow.
+Status: plan accepted 2026-09-17 at 3c27365. Gate 1 is ready for Linux review
+in `_context_evidence.md`; gates 2–6 remain open. The assembly-identity probe
+is accepted and pushed at rnx-bench 26af790. This is the shared-cache decision
+before an adapter catalogue or :dep workflow.
 
 ## Context
 
