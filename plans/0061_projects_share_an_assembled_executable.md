@@ -4,8 +4,10 @@ Status: plan accepted 2026-09-17 at 3c27365. Gate 1 is accepted and pushed
 at rnx b96a94a / rnx-bench 0147c24, recorded in `_context_evidence.md`. Gate 2
 is accepted and pushed at rnx 3cc0b51 / rnx-bench 3f23e43, recorded in
 `_identity_evidence.md`. Gate 3 is accepted and pushed at rnx 814d20f / rnx-bench 4c8256f, recorded in
-`_publication_evidence.md`. Gate 4 command integration is ready for Linux review
-in `_commands_evidence.md`; gates 5–6 remain open. The assembly-identity probe
+`_publication_evidence.md`. Gate 4 is accepted and pushed at rnx 3c4ed67 /
+rnx-bench 4b58319, recorded in `_commands_evidence.md`. Gate 5's real Polars
+journey and measurements are ready for Linux review in `_polars_evidence.md`;
+gate 6 remains open. The assembly-identity probe
 is accepted and pushed at rnx-bench 26af790. This is the shared-cache decision
 before an adapter catalogue or :dep workflow.
 

@@ -175,6 +175,23 @@ or universal latency bounds. Native input checks remain about 17 ms. Legacy
 migration and metadata-mismatch refresh each took about 98 ms on this example;
 they are separate first-use costs, not part of the warm default number.
 
+The 0061 shared-cache measurement used two different applications with the same
+Polars extension. A fresh entry with an empty Cargo target took 106 seconds to
+build on that host, with dependency sources already cached and Cargo offline.
+The second application attached to the existing entry without compilation:
+566 ms for its first attachment, and a 315 ms median across ten subsequent
+pinned measurements. Attachment includes a full executable hash, input checks,
+tool-version checks and receipt publication; it is not free.
+
+Everyday shared launches of the tiny pipeline took about 31 ms, versus 11 ms
+direct and 97 ms with `--verify`. Eval and first prompt each added about 20 ms
+over direct, within the same 25 ms gate. These are single-host measurements,
+not latency promises. The complete retained entry occupied **1,570,058,240 bytes
+(about 1.46 GiB)** on disk, including its assembly, Cargo target and 107 MB
+artifact. Two applications shared that one entry. Distinct assembly keys retain
+additional whole entries; there is no automatic eviction. Do not keep only the
+executable: trusted build scripts can make it depend on retained build outputs.
+
 ## Inputs and build policy
 
 Source trees include regular files recursively, excluding `.git` directories and
