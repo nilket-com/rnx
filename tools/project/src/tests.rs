@@ -415,3 +415,31 @@ fn manifest_to_runner_handoff() {
 		"[42, [\"sentinel\"]]\n"
 	);
 }
+
+#[test]
+fn assembly_stages_without_overwriting_and_verifies_before_launch() {
+	let t = Tree::new();
+	let manifest = t.write("rnx.toml", APP);
+	t.write("main.rn", "pub fn main(_) {42}");
+	std::fs::create_dir(t.0.join(".rnx")).unwrap();
+	let stage = t.0.join(".rnx/build");
+	assert!(crate::assembly::prepare(&manifest, &t.0.join("outside")).is_err());
+	crate::assembly::prepare(&manifest, &stage).unwrap();
+	let cargo = std::fs::read(stage.join("Cargo.toml")).unwrap();
+	assert!(crate::assembly::prepare(&manifest, &stage).is_err());
+	assert_eq!(cargo, std::fs::read(stage.join("Cargo.toml")).unwrap());
+	let executable = t.write("program", "not an executable");
+	let hash = crate::assembly::executable_hash(&executable).unwrap();
+	crate::assembly::verify(&executable, &hash).unwrap();
+	std::fs::write(&executable, "changed").unwrap();
+	let error = crate::assembly::command(
+		&executable,
+		&hash,
+		Some(&t.0.join("missing-map")),
+		&t.0.join("main.rn"),
+		&[],
+	)
+	.err()
+	.unwrap();
+	assert!(error.contains("hash mismatch"), "{error}");
+}

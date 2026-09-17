@@ -1,4 +1,4 @@
-# rnx-project (gate 3)
+# rnx-project (gate 4)
 
 The independent project tool currently implements input validation and generation
 as private library code exercised by tests. There is **no lock/build/run command
@@ -96,3 +96,34 @@ outside the declared trees remain the record's non-hermetic qualification.
 The test-only repository audit writes a snapshot outside the repository, avoiding
 an inventory that includes its own output. It is deliberately ignored in ordinary
 tests because its native root must first have all new files tracked or staged.
+
+
+A native package root covers every tracked file below that root, not only Rust
+source files. For rnx as a path dependency that means the repository, including
+plans and the nested adapter. Editing a plan therefore invalidates the build
+identity. Narrowing the package input set would require a separate root decision.
+
+
+## Generated assembly gate
+
+With `test-support`, `rnx-project-assembly-probe` exposes only the private
+assembly primitives to the integration fixture. It is **not** the planned
+`lock/build/run` CLI. `prepare` validates a real manifest and source graph, then
+writes Cargo.toml, main.rs and the handoff into a fresh directory directly below
+`.rnx`; existing staging is never overwritten. The fixture lets Cargo resolve
+from the accepted adapter lock, then builds with `--locked`.
+
+The probe's `run` verifies an explicitly supplied executable digest before any
+capability or script call. A nonempty map requires the capability handshake;
+an empty map uses ordinary run so an older rnx-pg remains usable. On Unix it
+execs the checked executable, preserving arguments, status and signal delivery.
+On other platforms the test probe waits for the child; those paths have not been
+executed and are not the product signal-handling contract.
+
+The executable hash is a primitive, not a receipt. The probe accepts its expected
+hash from the fixture. Published locks, build-environment policy, provenance,
+pre/post checks and receipt validation remain gate 5. The fixture under
+`rnx-bench/probes/package-assembly` exercises PostgreSQL on a private cluster,
+a mapped Rune package, both builder kinds, arguments/status/interrupt cleanup,
+prebuilt overrides and a native notebook across restart. It never grants source
+loading to eval, sessions or workers.
