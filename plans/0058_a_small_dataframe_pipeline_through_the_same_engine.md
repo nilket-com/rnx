@@ -1,8 +1,9 @@
 # rnx 0058: a small dataframe pipeline through the same engine
 
 Status: plan accepted 2026-09-17 after draft review, with the first gate 1 stop accepted.
-The revised engine-thread decision below is the adapter-side response; gate 1
-must rerun before implementation. `_boundary_evidence.md` preserves the original
+The revised engine-thread decision below is the adapter-side response; its gate 1
+rerun is ready for review in `_engine_thread_evidence.md`. The adapter has not
+been implemented. `_boundary_evidence.md` preserves the original
 current-thread failure. No product adapter is implemented.
 The fifty-eighth record follows the completed 0050–0057 extensibility sequence. It tests a small
 Polars adapter and a useful script, not a new dataframe implementation or a
