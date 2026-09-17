@@ -1,10 +1,12 @@
 # rnx 0058: a small dataframe pipeline through the same engine
 
-Status: plan accepted 2026-09-17 after draft review, with gate 1 next. The fifty-eighth
-record follows the completed 0050–0057 extensibility sequence. It tests a small
+Status: plan accepted 2026-09-17 after draft review, with gate 1 stopped for review.
+See `_boundary_evidence.md`: direct collect panics inside the current-thread
+runtime, while synchronous controls pass. No product adapter is implemented.
+The fifty-eighth record follows the completed 0050–0057 extensibility sequence. It tests a small
 Polars adapter and a useful script, not a new dataframe implementation or a
-claim that Rune makes Polars' query engine faster than Python does. No dependency
-has been fetched or build measured for this record yet.
+claim that Rune makes Polars' query engine faster than Python does. At drafting no dependency had been fetched. Gate 1 now
+records the pinned graph and a release prototype build, but makes no performance claim.
 
 ## Context
 
