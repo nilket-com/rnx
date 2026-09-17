@@ -1,8 +1,9 @@
 # rnx 0058: a small dataframe pipeline through the same engine
 
-Status: plan accepted 2026-09-17 after draft review, with gate 1 stopped for review.
-See `_boundary_evidence.md`: direct collect panics inside the current-thread
-runtime, while synchronous controls pass. No product adapter is implemented.
+Status: plan accepted 2026-09-17 after draft review, with the first gate 1 stop accepted.
+The revised engine-thread decision below is the adapter-side response; gate 1
+must rerun before implementation. `_boundary_evidence.md` preserves the original
+current-thread failure. No product adapter is implemented.
 The fifty-eighth record follows the completed 0050–0057 extensibility sequence. It tests a small
 Polars adapter and a useful script, not a new dataframe implementation or a
 claim that Rune makes Polars' query engine faster than Python does. At drafting no dependency had been fetched. Gate 1 now
@@ -128,6 +129,44 @@ No mixed scalar coercions: use lit explicitly. Comparisons remain methods even
 if arithmetic succeeds. A failed arithmetic probe drops the optional sugar;
 it does not justify changing Rune or using > with surprising semantics.
 
+### 2a. Blocking engine work runs on a call-owned plain thread
+
+The accepted gate 1 stop identifies an executor-context incompatibility, not a
+need to change rnx's runtime. Polars' runtime manager reaches Tokio block_in_place;
+a current-thread block_on disallows that operation, whereas a plain thread with
+no entered Tokio context permits it. File execution and async-promoted eval
+therefore failed while synchronous controls passed.
+
+The adapter performs collect, CSV/Parquet reading and Parquet writing on a fresh
+scoped std thread, with no entered Tokio context. Snapshot/clone the owned Send
+Polars inputs and paths before spawning; Rune wrappers, references and VM values
+stay on their calling thread. The worker returns owned engine data or an engine
+error, and the caller constructs the Rune-visible wrapper only after joining.
+Pure expression/plan construction, cloning and bounded value inspection remain
+on the caller; they do not execute the engine or perform file I/O. Gate 1 checks
+that distinction on the pinned version. Any newly exposed operation that can
+enter the engine goes through the same boundary.
+
+The native call owns its thread and joins before returning, on success and error.
+Use a fallible scoped-thread builder so spawn failure is a named catchable error
+for these Result-returning operations. An unexpected panic is joined and its
+unwind resumed on the caller; it is not silently converted into an ordinary
+Polars error. No detached job or global adapter thread queue is introduced.
+Polars may still own its separate process-global pool, as already stated.
+
+The call remains synchronous and blocks the caller until completion. Ctrl-C and
+instruction budgets still cannot preempt it. Thread spawn/join is included in
+all timings; a persistent owned engine thread is a later measured optimisation,
+not a hidden change if the first numbers disappoint. Awaitable collect is also
+later: dropping its future would not stop the engine work without another
+explicit ownership/cancellation design.
+
+Gate 1 must prove no current Tokio context inside each scoped engine thread,
+completion and join before return, success from file and async eval, and nested
+and overlapping engine calls with a small Polars pool. A nested call must not
+wait on a single-worker adapter queue. Record adapter-owned scoped threads
+separately from Polars' persistent threads, including error paths.
+
 ### 3. Local files and explicit side effects
 
 Reads take borrowed Unicode paths, open a local regular file, and pass an owned
@@ -138,6 +177,13 @@ frame: this record does not expose lazy file scanning or defer path resolution.
 
 CSV is UTF-8, comma separated, header present, double-quote escaping, strict
 parse errors, no date inference, no lossy decoding and no skipped error rows.
+Header validation reads the first record as string data with has_header=false,
+infer_schema_length=0 and n_rows=1, compares its raw names/arity to the declared
+schema, then rewinds the same owned file handle for typed reading. The accepted
+probe shows with_schema alone replaces names, and inferred headers de-duplicate
+them; neither can validate this contract. Use Polars for both passes, with no
+second CSV parser and no reopening the path. Concurrent file mutation is not a
+consistent-snapshot guarantee. Gate 2 must observe the same handle being rewound.
 Explicit schema removes inference differences from the race. Use the pinned
 reader's missing-field/quoted-empty semantics, document its measured answers,
 and match them in Python. Short rows, extra fields, duplicate headers, CRLF,
