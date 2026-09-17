@@ -1,6 +1,8 @@
 # rnx 0057: a project declares what its executable contains
 
-Status: proposed 2026-09-16, for review before implementation. Step five of
+Status: plan accepted and committed as `73fd306` on 2026-09-16.
+Gate 1 implementation and evidence are submitted for review; gates 2–6 remain
+open. See `0057_a_project_declares_what_its_executable_contains_loader_evidence.md`. Step five of
 extensibility, first local-package contract. The accepted source/native prototype
 is rnx-bench `1da057c`, with evidence in `results/package-boundary/` and review
 in `reviews/0057_package_prototype_review_claude.md`. The prototype is pushed.

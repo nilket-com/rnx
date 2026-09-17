@@ -40,6 +40,8 @@ count-allocations = []
 test-support = []
 # Record 0056: caller-owned handler execution, without HTTP server dependencies.
 server-runtime = []
+# Record 0057: explicit mapped file sources; CLI handoff follows gate 1.
+project-sources = []
 
 [dependencies]
 rune = { version = "=0.14.2", default-features = false, features = ["std"] }

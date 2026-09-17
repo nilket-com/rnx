@@ -12,7 +12,14 @@ pub struct Text {
 	pub text: String,
 }
 
+#[cfg(feature = "project-sources")]
+mod mounts;
+#[cfg(feature = "project-sources")]
+use mounts::Mounts;
+
 pub struct Loader {
+	#[cfg(feature = "project-sources")]
+	mounts: Mounts,
 	pub texts: Vec<Text>,
 	limit: usize,
 	remaining: usize,
@@ -28,12 +35,25 @@ impl Loader {
 
 	fn with_limit(limit: usize) -> Self {
 		Self {
+			#[cfg(feature = "project-sources")]
+			mounts: Mounts::default(),
 			texts: Vec::new(),
 			limit,
 			remaining: limit,
 			exhausted: false,
 			#[cfg(test)]
 			opens: 0,
+		}
+	}
+
+	// Gate 1 installs resolved mounts internally. The bounded CLI handoff is
+	// a later gate; no public Rust API or ambient context input is introduced.
+	#[cfg(feature = "project-sources")]
+	#[allow(dead_code)]
+	fn with_mounts(mounts: Mounts) -> Self {
+		Self {
+			mounts,
+			..Self::new()
 		}
 	}
 
@@ -99,6 +119,10 @@ impl SourceLoader for Loader {
 		if self.exhausted {
 			return Err(compile::Error::msg(span, self.limit_error()));
 		}
+		#[cfg(feature = "project-sources")]
+		if let Some((base, at_root)) = self.mounts.resolve(item) {
+			return self.candidate(&base, at_root, span);
+		}
 		let mut base = PathBuf::from(root);
 		if !base.pop() {
 			return Err(compile::Error::msg(
@@ -116,15 +140,34 @@ impl SourceLoader for Loader {
 				));
 			}
 		}
+		self.candidate(&base, false, span)
+	}
+}
+
+impl Loader {
+	fn candidate(
+		&mut self,
+		base: &Path,
+		at_mount: bool,
+		span: &dyn Spanned,
+	) -> compile::Result<Source> {
 		let candidates = [base.join("mod.rn"), base.with_extension("rn")];
+		let candidates = if at_mount {
+			&candidates[..1]
+		} else {
+			&candidates[..]
+		};
 		let Some(path) = candidates.iter().find(|path| path.is_file()) else {
-			// Rune's ErrorKind is private. Keep its formatter's wording and
-			// extensionless base through the public message constructor.
+			let expected = if at_mount {
+				base.join("mod.rn")
+			} else {
+				base.with_extension("rn")
+			};
 			return Err(compile::Error::msg(
 				span,
 				format!(
-					"File not found, expected a module file like `{}.rn`",
-					base.display()
+					"File not found, expected a module file like `{}`",
+					expected.display()
 				),
 			));
 		};
@@ -358,3 +401,6 @@ mod tests {
 		assert!(loader.get(&sources, second_id).is_none());
 	}
 }
+
+#[cfg(all(test, feature = "project-sources"))]
+mod project_tests;
