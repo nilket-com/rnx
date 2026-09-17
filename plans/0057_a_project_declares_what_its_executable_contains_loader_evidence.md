@@ -1,6 +1,6 @@
 # Record 0057 gate 1: mapped sources through the bounded loader
 
-2026-09-16. Plan `73fd306`; gate 1 submitted for review, not accepted yet.
+2026-09-16. Plan `73fd306`; gate 1 accepted and pushed at rnx `c8fb102`, bench `d7bc333`.
 Gates 2–6 remain open. Raw checks and reproduction commands are in rnx-bench
 `results/package-loader-0057/` and `probes/package-loader/`.
 

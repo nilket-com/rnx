@@ -40,10 +40,11 @@ count-allocations = []
 test-support = []
 # Record 0056: caller-owned handler execution, without HTTP server dependencies.
 server-runtime = []
-# Record 0057: explicit mapped file sources; CLI handoff follows gate 1.
-project-sources = []
+# Record 0057: explicit versioned source maps for the file runner.
+project-sources = ["dep:serde"]
 
 [dependencies]
+serde = { version = "1", features = ["derive"], optional = true }
 rune = { version = "=0.14.2", default-features = false, features = ["std"] }
 serde_json = "1.0.149"
 jiff = { version = "=0.2.24", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo"] }

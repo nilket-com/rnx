@@ -15,6 +15,8 @@ pub struct Text {
 #[cfg(feature = "project-sources")]
 mod mounts;
 #[cfg(feature = "project-sources")]
+mod source_map;
+#[cfg(feature = "project-sources")]
 use mounts::Mounts;
 
 pub struct Loader {
@@ -46,15 +48,18 @@ impl Loader {
 		}
 	}
 
-	// Gate 1 installs resolved mounts internally. The bounded CLI handoff is
-	// a later gate; no public Rust API or ambient context input is introduced.
+	// Only explicit run callers install a map; contexts never inherit it.
 	#[cfg(feature = "project-sources")]
-	#[allow(dead_code)]
 	fn with_mounts(mounts: Mounts) -> Self {
 		Self {
 			mounts,
 			..Self::new()
 		}
+	}
+
+	#[cfg(feature = "project-sources")]
+	pub fn mapped(map: &Path, entry: &Path) -> Result<Self, String> {
+		source_map::read(map, entry).map(Self::with_mounts)
 	}
 
 	fn limit_error(&self) -> io::Error {

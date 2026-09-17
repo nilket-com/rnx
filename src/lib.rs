@@ -168,6 +168,15 @@ fn main_inner(extensions: Extensions) -> Result<()> {
 	// at once, and all of the difference was `with_default_modules`. Only a
 	// command that touches no Rune at all belongs above the context; anything
 	// else goes below, where `context` is in scope.
+
+	#[cfg(feature = "project-sources")]
+	if args.first().is_some_and(|s| s == "project-source-version") {
+		if args.len() != 1 {
+			return Err("project-source-version takes no arguments".into());
+		}
+		println!("{{\"format\":1}}");
+		return Ok(());
+	}
 	if args
 		.first()
 		.is_some_and(|s| s == "version" || s == "--version" || s == "-V")
@@ -331,8 +340,19 @@ fn serve(
 		// like a flag reaches the script instead of changing rnx's behaviour.
 		let mut rest = &args[1..];
 		let mut debug_source = false;
+		#[cfg(feature = "project-sources")]
+		let mut source_map = None;
 		let mut budget = runner::BUDGET;
 		loop {
+			#[cfg(feature = "project-sources")]
+			if rest.first().is_some_and(|a| a == "--source-map") {
+				if source_map.is_some() {
+					return Err("run accepts only one --source-map".into());
+				}
+				source_map = Some(rest.get(1).ok_or("--source-map needs a file")?);
+				rest = &rest[2..];
+				continue;
+			}
 			if rest.first().is_some_and(|a| a == runner::DEBUG_SOURCE) {
 				debug_source = true;
 				rest = &rest[1..];
@@ -365,11 +385,29 @@ fn serve(
 			break;
 		}
 		let path = rest.first().ok_or("run needs a file")?;
+		#[cfg(feature = "project-sources")]
+		let loader = if let Some(map) = source_map {
+			program::Loader::mapped(std::path::Path::new(map), std::path::Path::new(path))
+				.map_err(|e| format::terminal_safe(&e))?
+		} else {
+			program::Loader::new()
+		};
 		let _title = terminal::Title::new(&format!("rnx {path}"));
 		let snapshot: Arc<[String]> = Arc::from(rest[1..].to_vec());
 		let arguments = rune::to_value(snapshot.to_vec())?;
 		env::install(&mut context, snapshot)?;
 		install_extensions(extensions.take().unwrap(), &mut context, lifecycle);
+		#[cfg(feature = "project-sources")]
+		let code = runner::run_loaded(
+			&context,
+			path,
+			arguments,
+			debug_source,
+			budget,
+			lifecycle,
+			loader,
+		);
+		#[cfg(not(feature = "project-sources"))]
 		let code = runner::run(&context, path, arguments, debug_source, budget, lifecycle);
 		terminal::exit(code);
 	}

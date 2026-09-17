@@ -218,6 +218,7 @@ pub fn report_error(value: &Value, fields: Option<&Fields>) {
 /// Run one file. Returns the process exit code, and prints everything it
 /// has to say itself: diagnostics to standard error, script output to
 /// standard output.
+#[cfg(not(feature = "project-sources"))]
 pub fn run(
 	context: &Context,
 	path: &str,
@@ -226,8 +227,28 @@ pub fn run(
 	budget: usize,
 	lifecycle: &crate::lifecycle::Lifecycle,
 ) -> i32 {
+	run_loaded(
+		context,
+		path,
+		arguments,
+		debug_source,
+		budget,
+		lifecycle,
+		Loader::new(),
+	)
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn run_loaded(
+	context: &Context,
+	path: &str,
+	arguments: Value,
+	debug_source: bool,
+	budget: usize,
+	lifecycle: &crate::lifecycle::Lifecycle,
+	mut loader: Loader,
+) -> i32 {
 	crate::host::running_a_script();
-	let mut loader = Loader::new();
 	let source = match loader.entry(std::path::Path::new(path)) {
 		Ok(source) => source,
 		Err(error) => {

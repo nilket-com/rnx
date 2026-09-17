@@ -62,8 +62,20 @@ The executable fixture at `tests/fixtures/modules/mixed` checks this layout
 against Rune's loader. A relative entry path resolves against the working
 directory; module lookup adds no working-directory search. Symlinks are
 followed. This is local source loading, with no package search path or
-manifest. Eval, sessions and notebook cells still refuse module declarations;
+manifest in an ordinary run. Eval, sessions and notebook cells still refuse module declarations;
 settings still cannot load files.
+
+With an executable built using the optional `project-sources` feature,
+`project-source-version` returns `{"format":1}` without constructing a context.
+`run --source-map MAP ENTRY` accepts an explicit version-one JSON map with
+`format`, an absolute `entry`, and `mounts` containing identifier-array `prefix`
+and absolute `root` fields. The entry must match. The map is capped at 16 MiB,
+256 mounts and 16 prefix components. Unknown or duplicate fields refuse.
+An exact mount loads its root's `mod.rn`; descendants use the layout above,
+with the longest mounted prefix winning and no fallback to a local file.
+No map is read by eval, sessions, notebooks, config or the server entry.
+This is explicit file selection, not package-lock verification or a sandbox.
+The separate project tool's lock/build/run commands are still under development.
 
 The entry and loaded modules share a new **8 MiB source allowance**, measured
 in bytes. Reads stop at the remaining allowance plus one detection byte,

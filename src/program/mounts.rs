@@ -6,9 +6,7 @@ use std::path::PathBuf;
 pub(super) struct Mounts(Vec<(Vec<String>, PathBuf)>);
 
 impl Mounts {
-	// Internal gate-1 constructor. Later handoff parsing must validate before
-	// this constructor too, but cannot bypass these structural limits.
-	#[allow(dead_code)]
+	// Every handoff passes these structural limits.
 	pub(super) fn new(entries: Vec<(Vec<String>, PathBuf)>) -> Result<Self, String> {
 		if entries.len() > 256 {
 			return Err("source map exceeds 256 mounts".into());
