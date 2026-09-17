@@ -74,3 +74,27 @@ pub(crate) fn wrapper(manifest: &Manifest, base: &Path) -> Result<(String, Strin
 	};
 	Ok((toml::to_string(&cargo).map_err(|e| e.to_string())?, main))
 }
+
+/// Shared assembly generation resolves native locations without changing the
+/// legacy per-project wrapper or normalizing paths inside native source bytes.
+pub(crate) fn canonical_wrapper(
+	manifest: &Manifest,
+	base: &Path,
+) -> Result<(String, String), String> {
+	let mut manifest = manifest.clone();
+	let canonical = |path: &str| -> Result<String, String> {
+		base.join(path)
+			.canonicalize()
+			.map_err(|e| format!("native path {path}: {e}"))?
+			.into_os_string()
+			.into_string()
+			.map_err(|_| "native path is not Unicode".into())
+	};
+	if let Some(runtime) = &mut manifest.runtime {
+		runtime.path = canonical(&runtime.path)?;
+	}
+	for native in manifest.native.values_mut() {
+		native.path = canonical(&native.path)?;
+	}
+	wrapper(&manifest, base)
+}

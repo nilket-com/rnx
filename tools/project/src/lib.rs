@@ -1,6 +1,7 @@
 //! Private implementation for record 0057. Product commands follow input gates.
 mod artifact;
 mod assembly;
+mod cache_identity;
 mod fingerprint;
 mod generate;
 mod graph;
