@@ -1,3 +1,4 @@
+mod add;
 mod shared;
 use crate::artifact::{self, Receipt};
 use crate::{
@@ -598,18 +599,45 @@ enum Launch {
 }
 
 pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
+	if args.first().and_then(|s| s.to_str()) == Some("adapters") {
+		if args.len() != 1 {
+			return Err("adapters takes no arguments".into());
+		}
+		print!("{}", crate::catalogue::listing());
+		return Ok(());
+	}
+	if args.first().and_then(|s| s.to_str()) == Some("add") {
+		let mut manifest = None;
+		let mut names = Vec::new();
+		let mut n = 1;
+		while n < args.len() {
+			match args[n].to_str() {
+				Some("--manifest") if manifest.is_none() => {
+					n += 1;
+					manifest = Some(PathBuf::from(args.get(n).ok_or("--manifest needs a path")?));
+				}
+				Some(s) if !s.starts_with('-') => names.push(s.to_owned()),
+				_ => return Err(format!("unexpected or duplicate add option {:?}", args[n])),
+			}
+			n += 1;
+		}
+		let entries = crate::catalogue::select(&names)?;
+		let manifest = manifest.ok_or("--manifest is required; no upward search")?;
+		commands::install_signals()?;
+		return Project::open(&manifest)?.add(&entries);
+	}
 	if args.len() == 1 && matches!(args[0].to_str(), Some("--help" | "help")) {
 		println!(
-			"rnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build."
+			"rnx-project adapters\nrnx-project add --manifest FILE NAME [NAME...]\nrnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build."
 		);
 		return Ok(());
 	}
 	let command = args
 		.first()
 		.and_then(|a| a.to_str())
-		.ok_or("expected lock, build, run, session or eval")?;
+		.ok_or("expected adapters, add, lock, build, run, session or eval")?;
 	if !matches!(command, "lock" | "build" | "run" | "session" | "eval") {
-		return Err("expected lock, build, run, session or eval".into());
+		return Err("expected adapters, add, lock, build, run, session or eval".into());
 	}
 	let launch = matches!(command, "run" | "session" | "eval");
 	let interactive = matches!(command, "session" | "eval");

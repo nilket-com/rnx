@@ -57,6 +57,67 @@ opaque. Opening a session releases the project command lock, and verification
 runs once before launch, not again between inputs. Rebuilding a project does not
 change an already-running session.
 
+## Add a known adapter
+
+The tool ships a small catalogue of adapter declarations:
+
+```text
+$ rnx-project adapters
+NAME      PACKAGE       HOOK       PATH BELOW RUNTIME
+polars    rnx-polars    plain      adapters/polars
+postgres  rnx-postgres  lifecycle  adapters/postgres
+```
+
+In an existing application with a `[runtime]` path, add a name, then explicitly
+lock, build and open the new executable:
+
+```sh
+rnx-project add --manifest app/rnx.toml polars
+rnx-project lock --manifest app/rnx.toml --offline
+rnx-project build --manifest app/rnx.toml --offline
+rnx-project session --manifest app/rnx.toml
+```
+
+Use `--offline` only when the needed Cargo dependency sources are already cached;
+omit it from lock/build when they need to be fetched. `add` itself never fetches,
+builds, invokes Cargo or starts a builder. Both `polars` and `postgres` can be
+given in one add command, before or after `--manifest`. Names are case-sensitive.
+Custom adapters still use explicit native tables; there is no registry lookup.
+
+The adapter must exist under the project's declared runtime checkout, at the
+listed path. Listing a name does not claim that its sources are installed. Add
+checks the shipped Cargo layouts and their direct dependency on that runtime;
+compilation and startup remain separate checks. A prebuilt executable override
+or a source-only manifest cannot gain adapters with add.
+
+For `[runtime] path = "../rnx"`, add writes a normal `[native.polars]` table with
+`path = "../rnx/adapters/polars"`, package, builder and hook. Relative paths stay
+relative, absolute paths stay absolute. No catalogue selector remains in your
+manifest or lock, so future catalogue changes cannot reinterpret it. Moving a
+relative source layout still requires relocking its canonical build identity.
+
+Add preserves existing text and appends missing tables in name order. An
+equivalent existing declaration is a no-op that does not touch the manifest;
+a different declaration under the same name refuses. A closed inline `native`
+table may need to be rewritten as explicit tables by you before appending. All
+names and the whole candidate are validated before one manifest replacement.
+The original and candidate are each limited to 1 MiB, with at most 32 requested
+names and the existing limit of 256 declarations per table.
+
+The project command lock excludes other tool writers. Add rechecks bytes and
+file identity before replacing the manifest, but cannot prevent an arbitrary
+editor from racing the final rename. Before-rename failure leaves the original;
+after-rename failure can leave the complete new file and reports that replacement
+happened without confirmed durability. Ordinary permission bits are preserved;
+other filesystem attributes are not copied. A stale `.rnx/add-manifest.new`
+refuses rather than being followed or overwritten; remove it only when no project
+command owns it. No lockfile, receipt or cache entry is updated by add: after an
+addition, old launch refuses until explicit lock/build. An already running
+session keeps its executable and bindings; add does not load into that process.
+
+Listing is platform-independent. Manifest mutation retains the tool's existing
+Unix supervision requirement; Linux is exercised and Windows add refuses.
+
 ## Files you commit
 
 The generated form writes exactly **rnx.lock** and **rnx.Cargo.lock** beside

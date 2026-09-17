@@ -3,6 +3,7 @@ mod assembly;
 mod cache_entry;
 mod cache_identity;
 mod cache_storage;
+mod catalogue;
 mod commands;
 mod fingerprint;
 mod generate;

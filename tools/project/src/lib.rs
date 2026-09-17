@@ -5,6 +5,8 @@ mod cache_entry;
 mod cache_identity;
 mod cache_storage;
 #[allow(dead_code)]
+mod catalogue;
+#[allow(dead_code)]
 mod commands;
 mod fingerprint;
 mod generate;

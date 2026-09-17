@@ -1,9 +1,11 @@
 # rnx 0062: an adapter name becomes a declaration
 
 Status: plan accepted 2026-09-17 with the path-spelling decision below, following
-accepted 0061 at rnx d4f10b9 / rnx-bench 6576a88. Gate 1's authoring prototype
-passes and is ready for Linux review in `_authoring_evidence.md`; gates 2–6
-remain open. This is the catalogue step before a live session can request a dependency.
+accepted 0061 at rnx d4f10b9 / rnx-bench 6576a88. Gate 1 was accepted at
+075e95e / a649ac4. Gates 2–6 pass and are ready for Linux batch review in
+`_implementation_evidence.md`; the catalogue commands are implemented with no
+format or dependency changes. This is the catalogue step before a live session
+can request a dependency.
 
 ## Context
 
@@ -224,5 +226,4 @@ handshake does not establish successful startup. Eviction/live-entry tracking,
 native relocation sharing and Windows execution remain separate work.
 
 Keep meaningful measured checkpoints; fold incidental review edits before push.
-The next review point is gate 1's authoring evidence before product command
-integration and publication.
+The next review point is the gates 2–6 implementation and evidence as one batch.
