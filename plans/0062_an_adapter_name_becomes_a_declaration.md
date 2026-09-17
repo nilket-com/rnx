@@ -2,7 +2,8 @@
 
 Status: plan accepted 2026-09-17 with the path-spelling decision below, following
 accepted 0061 at rnx d4f10b9 / rnx-bench 6576a88. Gate 1's authoring prototype
-is next. This is the catalogue step before a live session can request a dependency.
+passes and is ready for Linux review in `_authoring_evidence.md`; gates 2–6
+remain open. This is the catalogue step before a live session can request a dependency.
 
 ## Context
 
@@ -223,4 +224,5 @@ handshake does not establish successful startup. Eviction/live-entry tracking,
 native relocation sharing and Windows execution remain separate work.
 
 Keep meaningful measured checkpoints; fold incidental review edits before push.
-The next review point is the authoring prototype in gate 1.
+The next review point is gate 1's authoring evidence before product command
+integration and publication.
