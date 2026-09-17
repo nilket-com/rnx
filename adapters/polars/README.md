@@ -2,7 +2,7 @@
 
 A small synchronous Polars extension, staged through record 0058. Gate 2 covers
 CSV and Parquet; gate 3 adds bounded preview. Project/notebook integration
-is exercised by gate 4; performance and final regression gates remain open. It is an independent workspace and does not add Polars to stock rnx.
+is exercised by gate 4; the timing gate is recorded below; final regression remains open. It is an independent workspace and does not add Polars to stock rnx.
 
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
@@ -148,3 +148,52 @@ The gate 4 fixture uses a private kernelspec directory and does not install into
 the user's Jupyter registry. Its test-support builder marker
 `RNX_POLARS_BUILD_MARKER` is absent from ordinary builds; when explicitly set in
 a test build it appends one line per builder call.
+
+
+## Measured tiny-pipeline costs (0058 gate 5)
+
+On the recorded Linux host, one pinned CPU and one Polars thread, two interleaved
+repeats of thirty warm launches per workload produced these medians in ms:
+
+| Launch | Init (two repeats) | Full pipeline (two repeats) |
+| --- | --- | --- |
+| Python Polars 1.44.2 | 96.71 / 96.80 | 99.87 / 99.99 |
+| Ordinary rnx-polars | 6.76 / 6.73 | 11.44 / 11.47 |
+| Verified rnx-project run | 150.76 / 150.11 | 155.10 / 154.81 |
+| Generated artifact directly, same map | 6.61 / 6.69 | 10.88 / 10.85 |
+| Direct wrapper with matching project feature | 6.77 / 6.80 | 11.49 / 11.45 |
+
+Direct rnx-polars is faster for this tiny end-to-end workload; verified project
+launch is slower than Python. The project hashes about 7 MB of source-tree
+inputs plus the executable and other inventory on each launch. That verification
+cost is part of the product, not hidden from its timing. The generated-direct
+control isolates it using the same artifact and map. The feature-aligned direct
+control has the generated assembly's dependency versions/features.
+
+Python uses normal bytecode caching after warm-up. Both pipelines create CSV,
+validate its header through the same handle, read with a schema, perform the
+native query, write/flush/close uncompressed create-new Parquet, read it back,
+compare previews and collect again. Output-directory setup/removal is outside
+timing. There is no fsync durability measurement and no query UDF. Median
+pipeline peak RSS from separate launches was 86.5 MiB for Python, 45.9 MiB for
+the ordinary adapter and 48.7 MiB for project launch.
+
+Setup has a different tradeoff: with cached downloads and two build jobs, the
+empty-target Rust build took 505.48 seconds, the warm build 0.19 seconds. Private
+Python venv creation took 0.61 seconds and installing exact cached wheels took
+0.48 seconds. The ordinary executable is 107,400,144 bytes. These are single-host
+observations, not installation or build-time promises.
+
+The Rust crate and Python wheel have different engine revisions. Wheel hashes
+are fixed and installed code was verified, but complete wheel compiler/allocator
+settings are not exposed by build_info. These numbers do not prove a compute win
+or isolate language-boundary cost. All samples, the excluded preliminary
+no-bytecode-cache run, graphs and provenance are in rnx-bench's
+results/polars-cost-0058; no corrected-run samples were discarded.
+
+The ownership probe also confirms the limitations: a native read can return
+above a session ceiling before that ceiling is sampled. Reset releases its
+frame while Polars pool threads persist. SIGINT during collect cannot stop the
+native call. A file that finishes in the same poll can retain successful
+completion; an ensuing await observes the signal after collect returns. The
+observed roughly 312 ms signal-to-exit interval is not a cancellation bound.
