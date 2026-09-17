@@ -3,8 +3,11 @@
 Status: plan accepted as `bbf3337` (subject-only rewrite of `73fd306`).
 Gates 1–4 are accepted and pushed; gate 4 is rnx `25dda00` and rnx-bench
 `0fbb525`. Earlier acceptance hashes in companion evidence refer to the original
-signed commits before the subject-only rewrite. Gate 5's Linux workflow is
-submitted for review; gate 6 remains open. See `_workflow_evidence.md` and the
+signed commits before the subject-only rewrite. Gate 5 is accepted and pushed as
+rnx `e50eda3` and rnx-bench `2d64744`. Gate 6 has Linux regression and cost
+evidence submitted for review, including the unchanged baseline Clippy failures
+and the full Windows check blocked by the missing native toolchain. It is not
+marked accepted here. See `_regression_evidence.md`, `_workflow_evidence.md` and the
 previous `_loader_evidence.md`, `_inputs_evidence.md`, `_fingerprint_evidence.md`
 and `_assembly_evidence.md` files. Step five of
 extensibility, first local-package contract. The accepted source/native prototype
