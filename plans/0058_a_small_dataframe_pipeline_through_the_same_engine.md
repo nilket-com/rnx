@@ -1,10 +1,9 @@
 # rnx 0058: a small dataframe pipeline through the same engine
 
-Status: plan accepted 2026-09-17 after draft review, with the first gate 1 stop accepted.
-The revised engine-thread decision below is the adapter-side response; its gate 1
-rerun is ready for review in `_engine_thread_evidence.md`. The adapter has not
-been implemented. `_boundary_evidence.md` preserves the original
-current-thread failure. No product adapter is implemented.
+Status: gate 1 accepted 2026-09-17. Gate 2's product adapter and CSV/Parquet
+contract are ready for review in `_files_evidence.md`; gates 3–6 remain open.
+`_boundary_evidence.md` preserves the original current-thread failure and
+`_engine_thread_evidence.md` records its accepted adapter-side resolution.
 The fifty-eighth record follows the completed 0050–0057 extensibility sequence. It tests a small
 Polars adapter and a useful script, not a new dataframe implementation or a
 claim that Rune makes Polars' query engine faster than Python does. At drafting no dependency had been fetched. Gate 1 now
@@ -88,9 +87,9 @@ Rust internals or an arbitrary Polars object conversion API. Proposed script API
 | polars::lit(value) | Result<Expr> |
 | frame.lazy() | LazyFrame |
 | plan.filter(expr) | LazyFrame |
-| plan.group_by(keys) | LazyGroupBy |
-| grouped.agg(aggregates) | LazyFrame |
-| plan.sort(column_names) | LazyFrame |
+| plan.group_by(keys) | Result<LazyGroupBy> |
+| grouped.agg(aggregates) | Result<LazyFrame> |
+| plan.sort(column_names) | Result<LazyFrame> |
 | plan.collect() | Result<DataFrame> |
 | expr.gt(other) | Expr |
 | expr.add(other) | Expr |
@@ -99,6 +98,8 @@ Rust internals or an arbitrary Polars object conversion API. Proposed script API
 | frame.write_parquet_new(path) | Result<()> |
 | frame.preview() | Result<String> |
 
+The array-taking methods return Result for invalid Rune shapes, as the accepted
+gate 1 prototype already did; the table now makes that fallibility explicit.
 Arrays of Expr are used for keys and aggregates; sort takes ascending column
 names, nulls first, matching Polars' default. The fourth opaque value keeps
 `group_by(...).agg(...)` faithful to both Rust and Python; avoiding one wrapper

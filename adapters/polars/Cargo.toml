@@ -1,0 +1,23 @@
+[package]
+name = "rnx-polars"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[features]
+test-support = ["dep:tokio"]
+
+[dependencies]
+rnx = { path = "../.." }
+polars = { version = "=0.55.2", default-features = false, features = ["lazy", "csv", "parquet"] }
+tokio = { version = "1", features = ["rt"], optional = true }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[profile.dev]
+debug = false
+[profile.release]
+debug = false
