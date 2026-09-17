@@ -2,7 +2,7 @@
 
 A small synchronous Polars extension, staged through record 0058. Gate 2 covers
 CSV and Parquet; gate 3 adds bounded preview. Project/notebook integration
-and performance gates remain open. It is an independent workspace and does not add Polars to stock rnx.
+is exercised by gate 4; performance and final regression gates remain open. It is an independent workspace and does not add Polars to stock rnx.
 
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
@@ -117,3 +117,34 @@ Run configurations serially in the shared target directory. The bench's
 `probes/polars-contract/check.py` drives scripts and verifies both Parquet
 producers through its pinned private Python environment. Same-handle and faulted
 writer unit tests run the actual engine helpers and require no product hooks.
+
+
+## Project and notebook assembly
+
+The checked-in project example lives outside this native package root at
+`rnx-bench/examples/polars/`. With sibling rnx and rnx-bench checkouts, run:
+
+```sh
+rnx-project lock --manifest ../rnx-bench/examples/polars/rnx.toml --offline
+rnx-project build --manifest ../rnx-bench/examples/polars/rnx.toml --offline
+rnx-project run --manifest ../rnx-bench/examples/polars/rnx.toml -- /absolute/fresh/output/directory
+```
+
+Create that output directory first. The script refuses existing CSV/Parquet
+files. The manifest declares `rnx-polars` with the plain `build` hook; the project
+tool generates the executable. Local locks/receipts identify local paths and
+native working-tree bytes and are not a portable dependency snapshot.
+
+For Jupyter, install the **generated executable** from `.rnx/artifacts/` with
+`rnx-jupyter install --rnx /absolute/path/to/artifact` (or use the ordinary
+`rnx-polars` executable). Do not point the kernel at rnx-project: the kernel
+needs a worker executable, not the project's command dispatcher. The Jupyter
+CLI must be on PATH. Restart drops notebook bindings while the new worker keeps
+the compiled-in adapter. Use `println!("{}", frame.preview()?)` for text output;
+a bare frame stays opaque. Mapped source packages are not supplied to notebook
+cells by this record.
+
+The gate 4 fixture uses a private kernelspec directory and does not install into
+the user's Jupyter registry. Its test-support builder marker
+`RNX_POLARS_BUILD_MARKER` is absent from ordinary builds; when explicitly set in
+a test build it appends one line per builder call.

@@ -1,7 +1,8 @@
 # rnx 0058: a small dataframe pipeline through the same engine
 
-Status: gates 1 and 2 accepted 2026-09-17. Gate 3's bounded preview is ready
-for review in `_preview_evidence.md`; gates 4–6 remain open.
+Status: gates 1–3 accepted 2026-09-17. Gate 4's project and notebook assembly
+is ready for review in `_assembly_evidence.md`; gates 5–6 remain open.
+`_preview_evidence.md` records the accepted bounded preview.
 `_files_evidence.md` records the accepted CSV/Parquet contract.
 `_boundary_evidence.md` preserves the original current-thread failure and
 `_engine_thread_evidence.md` records its accepted adapter-side resolution.

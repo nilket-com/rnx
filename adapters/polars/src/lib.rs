@@ -123,6 +123,17 @@ fn read_parquet(path: &str) -> Result<DataFrame, String> {
 }
 /// Install into an rnx-created `polars` module. All native values remain opaque.
 pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String> {
+	#[cfg(feature = "test-support")]
+	if let Some(path) = std::env::var_os("RNX_POLARS_BUILD_MARKER") {
+		use std::io::Write;
+		std::fs::OpenOptions::new()
+			.create(true)
+			.append(true)
+			.open(path)
+			.and_then(|mut file| file.write_all(b"polars builder\n"))
+			.map_err(|e| format!("Polars test builder marker: {e}"))?;
+	}
+
 	m.ty::<DataFrame>().map_err(err)?;
 	m.ty::<LazyFrame>().map_err(err)?;
 	m.ty::<LazyGroupBy>().map_err(err)?;
