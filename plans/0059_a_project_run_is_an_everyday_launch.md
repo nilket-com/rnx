@@ -1,7 +1,8 @@
 # rnx 0059: a project run is an everyday launch
 
-Status: proposed 2026-09-17, for review. The attribution probe is accepted and
-pushed in rnx-bench 95dbf04. This draft precedes implementation.
+Status: plan accepted 2026-09-17. Stage one (gates 1–2) is ready for review
+in `_stage_one_evidence.md`; gates 3–6 remain open. The attribution probe is
+accepted and pushed in rnx-bench 95dbf04.
 The fifty-ninth record follows the accepted Polars application in 0058. Its
 customer is the person running an application, not the person running tests.
 

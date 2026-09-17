@@ -239,3 +239,120 @@ fn submodules_and_unmerged_entries_refuse() {
 			.contains("submodule")
 	);
 }
+
+type OpenHook = Box<dyn FnOnce(&Path)>;
+thread_local! {
+	static AFTER_OPEN: std::cell::RefCell<Option<OpenHook>> = const { std::cell::RefCell::new(None) };
+}
+pub(super) fn after_open(path: &Path) {
+	let hook = AFTER_OPEN.with(|h| h.borrow_mut().take());
+	if let Some(hook) = hook {
+		hook(path);
+	}
+}
+#[test]
+fn single_file_matches_tree_record_and_shared_allowance() {
+	let t = Temp::new();
+	for size in [0, 1, 16383, 16384, 16385, 32768] {
+		t.write("data", vec![b'x'; size]);
+		for available in [
+			size as u64,
+			size as u64 + 1,
+			(size as u64).saturating_sub(1),
+		] {
+			let mut a = Allowance {
+				entries: 1,
+				bytes: available,
+			};
+			let mut b = Allowance {
+				entries: 1,
+				bytes: available,
+			};
+			let one = one(&t.0.join("data"), &mut a);
+			let tree = source(&t.0, false, &mut b).map(|mut t| t.files.remove(0));
+			assert_eq!(one, tree);
+			assert_eq!((a.entries, a.bytes), (b.entries, b.bytes));
+		}
+	}
+	assert!(
+		one(
+			&t.0.join("data"),
+			&mut Allowance {
+				entries: 0,
+				bytes: BYTES
+			}
+		)
+		.unwrap_err()
+		.contains("entry allowance")
+	);
+}
+#[test]
+fn shared_reader_refuses_early_eof_and_growth_for_single_and_tree() {
+	let t = Temp::new();
+	for single in [false, true] {
+		for grow in [false, true] {
+			t.write("data", b"abc");
+			AFTER_OPEN.with(|h| {
+				*h.borrow_mut() = Some(Box::new(move |p| {
+					fs::write(
+						p,
+						if grow {
+							b"abcd".as_slice()
+						} else {
+							b"".as_slice()
+						},
+					)
+					.unwrap();
+				}))
+			});
+			let mut budget = Allowance {
+				entries: 1,
+				bytes: 10,
+			};
+			let error = if single {
+				one(&t.0.join("data"), &mut budget).unwrap_err()
+			} else {
+				source(&t.0, false, &mut budget).unwrap_err()
+			};
+			assert!(error.contains("size changed during read"), "{error}");
+			assert_eq!(budget.bytes, if grow { 6 } else { 10 });
+		}
+	}
+}
+#[cfg(unix)]
+#[test]
+fn single_file_preserves_modes_and_refusals() {
+	use std::os::unix::{
+		ffi::OsStringExt,
+		fs::{PermissionsExt, symlink},
+	};
+	let t = Temp::new();
+	t.write("x", b"x");
+	fs::set_permissions(t.0.join("x"), fs::Permissions::from_mode(0o755)).unwrap();
+	assert!(
+		one(&t.0.join("x"), &mut Allowance::default())
+			.unwrap()
+			.executable
+	);
+	assert_eq!(
+		one(&t.0.join("x"), &mut Allowance::default()).unwrap(),
+		t.source().files[0]
+	);
+	symlink("x", t.0.join("link")).unwrap();
+	assert!(one(&t.0.join("link"), &mut Allowance::default()).is_err());
+	assert!(
+		Command::new("mkfifo")
+			.arg(t.0.join("fifo"))
+			.status()
+			.unwrap()
+			.success()
+	);
+	assert!(one(&t.0.join("fifo"), &mut Allowance::default()).is_err());
+	let name = std::ffi::OsString::from_vec(vec![255]);
+	fs::write(t.0.join(&name), b"x").unwrap();
+	assert!(
+		one(&t.0.join(name), &mut Allowance::default())
+			.unwrap_err()
+			.contains("non-Unicode")
+	);
+}

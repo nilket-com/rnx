@@ -8,5 +8,7 @@ mod input;
 mod inventory;
 mod manifest;
 #[cfg(test)]
+mod maps;
+#[cfg(test)]
 mod tests;
 mod wire;

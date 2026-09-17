@@ -46,7 +46,12 @@ rechecks inputs and the lock, copies and verifies the executable, and publishes
 receipt.json atomically. The receipt contains its version, the exact project-lock
 digest and the executable digest. Failed/interrupted builds publish no receipt.
 Run rechecks the lock pair, declarations, source and native contents, generated
-wrapper identity, receipt and executable before launch. These are trusted local
+wrapper identity, receipt and executable before launch. Identical derived source
+maps are compared and reused; missing or different regular maps are published
+from the lock. Executable verification still reads and hashes the whole file.
+The first 0059 optimisation reduced the measured tiny Polars project launch from
+about 155 ms to 95 ms while retaining full hashing; the faster metadata default
+is not implemented in this stage. These are trusted local
 projects; verify-then-execute is not atomic against hostile replacement.
 
 ## Inputs and build policy

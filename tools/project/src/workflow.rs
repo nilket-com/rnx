@@ -426,7 +426,7 @@ impl Project {
 		fs::create_dir_all(&maps).map_err(err)?;
 		let map_bytes = lock.sources.encode()?;
 		let map = maps.join(format!("{}.json", hash(&map_bytes)));
-		self.atomic(&map, &map_bytes)?;
+		crate::maps::ensure(&map, &map_bytes, || self.atomic(&map, &map_bytes))?;
 		let mut command = assembly::command(
 			&path,
 			&digest,

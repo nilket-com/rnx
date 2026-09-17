@@ -120,67 +120,7 @@ fn hash_files(root: &Path, paths: Vec<PathBuf>, allowance: &mut Allowance) -> Re
 	tree.update(b"rnx-tree-v1\0");
 	let mut files = vec![];
 	for (name, relative) in ordered {
-		components_no_links(root, &relative)?;
-		let path = root.join(relative);
-		let before = regular(&path)?;
-		if before.len() > allowance.bytes {
-			return Err(fail(&path, "fingerprint exceeds byte allowance"));
-		}
-		let mut options = fs::OpenOptions::new();
-		options.read(true);
-		#[cfg(unix)]
-		{
-			use std::os::unix::fs::OpenOptionsExt;
-			options.custom_flags(libc::O_NONBLOCK | libc::O_NOFOLLOW);
-		}
-		let mut file = options.open(&path).map_err(|e| fail(&path, e))?;
-		let opened = file.metadata().map_err(|e| fail(&path, e))?;
-		if !opened.is_file()
-			|| opened.len() != before.len()
-			|| executable(&opened) != executable(&before)
-		{
-			return Err(fail(&path, "file changed before read"));
-		}
-		tree.update((name.len() as u64).to_be_bytes());
-		tree.update(name.as_bytes());
-		tree.update([u8::from(executable(&opened))]);
-		tree.update(opened.len().to_be_bytes());
-		let mut content = Sha256::new();
-		let mut remaining = opened.len();
-		let mut buffer = [0u8; 16384];
-		while remaining > 0 {
-			let take = remaining.min(buffer.len() as u64) as usize;
-			let n = file.read(&mut buffer[..take]).map_err(|e| fail(&path, e))?;
-			if n == 0 {
-				return Err(fail(&path, "size changed during read"));
-			}
-			allowance.bytes -= n as u64;
-			remaining -= n as u64;
-			tree.update(&buffer[..n]);
-			content.update(&buffer[..n]);
-		}
-		// The detection byte is charged too; never read it beyond the global allowance.
-		if allowance.bytes == 0 {
-			if file.metadata().map_err(|e| fail(&path, e))?.len() != opened.len() {
-				return Err(fail(&path, "size changed during read"));
-			}
-		} else {
-			let n = file.read(&mut buffer[..1]).map_err(|e| fail(&path, e))?;
-			allowance.bytes -= n as u64;
-			if n != 0 {
-				return Err(fail(&path, "size changed during read"));
-			}
-		}
-		let after = file.metadata().map_err(|e| fail(&path, e))?;
-		if after.len() != opened.len() || executable(&after) != executable(&opened) {
-			return Err(fail(&path, "file changed during read"));
-		}
-		files.push(wire::File {
-			path: name,
-			executable: executable(&opened),
-			bytes: opened.len(),
-			sha256: format!("{:x}", content.finalize()),
-		});
+		files.push(hash_file(root, relative, name, allowance, Some(&mut tree))?);
 	}
 	Ok(Tree {
 		root: root.to_owned(),
@@ -188,6 +128,83 @@ fn hash_files(root: &Path, paths: Vec<PathBuf>, allowance: &mut Allowance) -> Re
 		files,
 	})
 }
+/// One bounded reader; tree callers additionally include bytes in their tree digest.
+fn hash_file(
+	root: &Path,
+	relative: PathBuf,
+	name: String,
+	allowance: &mut Allowance,
+	mut tree: Option<&mut Sha256>,
+) -> Result<wire::File, String> {
+	components_no_links(root, &relative)?;
+	let path = root.join(relative);
+	let before = regular(&path)?;
+	if before.len() > allowance.bytes {
+		return Err(fail(&path, "fingerprint exceeds byte allowance"));
+	}
+	let mut options = fs::OpenOptions::new();
+	options.read(true);
+	#[cfg(unix)]
+	{
+		use std::os::unix::fs::OpenOptionsExt;
+		options.custom_flags(libc::O_NONBLOCK | libc::O_NOFOLLOW);
+	}
+	let mut file = options.open(&path).map_err(|e| fail(&path, e))?;
+	let opened = file.metadata().map_err(|e| fail(&path, e))?;
+	if !opened.is_file()
+		|| opened.len() != before.len()
+		|| executable(&opened) != executable(&before)
+	{
+		return Err(fail(&path, "file changed before read"));
+	}
+	if let Some(tree) = tree.as_mut() {
+		tree.update((name.len() as u64).to_be_bytes());
+		tree.update(name.as_bytes());
+		tree.update([u8::from(executable(&opened))]);
+		tree.update(opened.len().to_be_bytes());
+	}
+	#[cfg(test)]
+	tests::after_open(&path);
+	let mut content = Sha256::new();
+	let mut remaining = opened.len();
+	let mut buffer = [0u8; 16384];
+	while remaining > 0 {
+		let take = remaining.min(buffer.len() as u64) as usize;
+		let n = file.read(&mut buffer[..take]).map_err(|e| fail(&path, e))?;
+		if n == 0 {
+			return Err(fail(&path, "size changed during read"));
+		}
+		allowance.bytes -= n as u64;
+		remaining -= n as u64;
+		if let Some(tree) = tree.as_mut() {
+			tree.update(&buffer[..n]);
+		}
+		content.update(&buffer[..n]);
+	}
+	// The detection byte is charged too; never read it beyond the global allowance.
+	if allowance.bytes == 0 {
+		if file.metadata().map_err(|e| fail(&path, e))?.len() != opened.len() {
+			return Err(fail(&path, "size changed during read"));
+		}
+	} else {
+		let n = file.read(&mut buffer[..1]).map_err(|e| fail(&path, e))?;
+		allowance.bytes -= n as u64;
+		if n != 0 {
+			return Err(fail(&path, "size changed during read"));
+		}
+	}
+	let after = file.metadata().map_err(|e| fail(&path, e))?;
+	if after.len() != opened.len() || executable(&after) != executable(&opened) {
+		return Err(fail(&path, "file changed during read"));
+	}
+	Ok(wire::File {
+		path: name,
+		executable: executable(&opened),
+		bytes: opened.len(),
+		sha256: format!("{:x}", content.finalize()),
+	})
+}
+
 fn root(path: &Path) -> Result<PathBuf, String> {
 	if !path.is_absolute() {
 		return Err(fail(path, "root must be absolute"));
@@ -242,9 +259,9 @@ pub(crate) fn one(path: &Path, allowance: &mut Allowance) -> Result<wire::File, 
 	allowance.entry()?;
 	let root = path.parent().ok_or("input has no parent")?;
 	let name = path.file_name().ok_or("input has no name")?;
-	Ok(hash_files(root, vec![PathBuf::from(name)], allowance)?
-		.files
-		.remove(0))
+	let relative = PathBuf::from(name);
+	let name = text(&relative)?;
+	hash_file(root, relative, name, allowance, None)
 }
 
 /// Git output is bounded independently from file content. Kill and reap on overflow.

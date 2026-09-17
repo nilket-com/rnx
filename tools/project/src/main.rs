@@ -7,6 +7,7 @@ mod handshake;
 mod input;
 mod inventory;
 mod manifest;
+mod maps;
 mod wire;
 mod workflow;
 fn main() {
