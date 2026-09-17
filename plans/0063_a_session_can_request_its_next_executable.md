@@ -2,7 +2,8 @@
 
 Status: accepted for implementation after the 2026-09-17 review, with the
 two-phase consent protocol below. Baseline: rnx `78c514d` / rnx-bench `ad0fb88`.
-The first gate is a transition/ownership prototype, before product integration.
+Gate 1's isolated transition/ownership prototype passes and is ready for review
+in `_ownership_evidence.md`. Product integration and gates 2–6 remain open.
 
 ## Context
 
