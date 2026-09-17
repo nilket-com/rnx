@@ -147,6 +147,9 @@ pub(crate) struct Lock {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "lowercase", deny_unknown_fields)]
 pub(crate) enum Assembly {
+	Shared {
+		identity: String,
+	},
 	Generated {
 		manifest_sha256: String,
 		main_sha256: String,
@@ -178,8 +181,23 @@ pub(crate) struct File {
 	pub sha256: String,
 }
 impl Lock {
+	pub fn shared(&self) -> Result<Option<crate::cache_identity::Identity>, String> {
+		match &self.assembly {
+			Assembly::Shared { identity } => {
+				crate::cache_identity::Identity::decode(identity.as_bytes()).map(Some)
+			}
+			_ => Ok(None),
+		}
+	}
 	pub fn validate(&self) -> Result<(), String> {
-		version(self.format)?;
+		if self.format
+			!= if matches!(self.assembly, Assembly::Shared { .. }) {
+				2
+			} else {
+				1
+			} {
+			return Err("unsupported lock format for assembly kind".into());
+		}
 		self.declarations.validate()?;
 		self.sources.validate()?;
 		if self.declarations.application.is_none() {
@@ -280,6 +298,14 @@ impl Lock {
 			}
 		}
 		match &self.assembly {
+			Assembly::Shared { identity } => {
+				let identity = crate::cache_identity::Identity::decode(identity.as_bytes())?;
+				if self.declarations.runtime.is_none()
+					|| self.inputs.native.as_ref() != Some(identity.native())
+				{
+					return Err("shared identity and native inventory disagree".into());
+				}
+			}
 			Assembly::Generated {
 				manifest_sha256,
 				main_sha256,

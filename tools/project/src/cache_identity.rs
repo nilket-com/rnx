@@ -160,6 +160,9 @@ impl Identity {
 		}
 		Ok(identity)
 	}
+	pub(crate) fn native(&self) -> &Inventory {
+		&self.document.native
+	}
 	pub(crate) fn context(&self) -> &Context {
 		&self.document.context
 	}

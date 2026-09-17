@@ -65,13 +65,69 @@ Cargo's own lockfile. Source and native inventories are separate, with package
 associations separated from shared tree hashes. No generated wrapper, receipt,
 source map or executable is written beside the manifest.
 
-Everything else is under `.rnx/`, which contains its own `.gitignore` with `*`.
-That keeps it ignored without modifying your repository's .gitignore. It holds
-assembly sources, Cargo's target cache, content-addressed executable artifacts
-and maps, the command lock and receipt.json. An executable override writes only
-rnx.lock and removes an obsolete generated-form rnx.Cargo.lock after publication.
-An override's first run verifies its locked binary hash and establishes a private
-receipt. Later runs use the same metadata/`--verify` policy; no Cargo is needed.
+Project-local state is under `.rnx/`, which contains its own `.gitignore` with
+`*`: command lock, derived source maps and receipt.json. New generated projects
+build their assembly, target tree and executable in the shared cache described
+below. Legacy format-1 projects keep those outputs under their own `.rnx/`.
+An executable override writes only rnx.lock and removes an obsolete generated-form
+rnx.Cargo.lock after publication. Its first launch verifies the locked binary and
+establishes a private version-2 receipt; no Cargo is needed.
+
+## Shared assemblies and existing projects
+
+An explicit `lock` now writes format 2 for generated projects. `build` reports
+`built shared assembly` or `attached shared assembly`, naming its key and artifact.
+Two projects with the same installed native dependencies and build context share
+that artifact; application scripts and source mounts stay project-specific.
+A ready hit skips compilation, but fully hashes the artifact before publishing
+the project's receipt. Launch never builds, attaches or repairs a missing cache.
+
+Existing format-1 generated locks remain local. Their version-1/2 receipts retain
+the prior migration and metadata-check rules. Launch and build do not upgrade
+those locks. Only an explicit relock selects the shared policy, after which an
+explicit build is required. The old local binary is never promoted into the
+cache: it was compiled at a different location. A valid existing shared entry may
+be reused instead of compiling again. Old local files are left in place.
+Format compatibility does not waive stale-input checks: updating a fingerprinted
+rnx checkout still requires relocking/rebuilding, just as before.
+
+To select a private root before locking:
+
+```sh
+export RNX_PROJECT_CACHE="$HOME/.cache/rnx/assemblies"
+rnx-project lock --manifest app/rnx.toml --offline
+rnx-project build --manifest app/rnx.toml --offline
+rnx-project session --manifest app/rnx.toml
+```
+
+Without that override, selection uses `$XDG_CACHE_HOME/rnx/assemblies`, then
+`$HOME/.cache/rnx/assemblies`; relative paths refuse. A user symlink to the root
+is allowed and canonicalized. That canonical root is part of the locked identity.
+An explicit different selection requires relock. Managed descendants refuse
+symlinks, special files and group/other-writable directories. Cargo's child gets
+a private umask so its target directories follow that policy too.
+
+Cargo resolves and builds from the cache, not the application's working directory.
+A project-local Cargo config or toolchain file outside that search chain refuses
+rather than being silently ignored. Canonical native paths, the locked graph,
+allowed external inputs and toolchain selection participate in the shared key.
+Moving a native package or the cache creates a different identity even when its
+source bytes are identical.
+
+The cache retains entire `entries/<key>/` directories: assembly sources, target
+outputs (including files embedded through OUT_DIR), digest-addressed artifacts
+and readiness. There is **no automatic eviction**. Disk use grows with distinct
+assemblies and includes full Cargo targets, not just the executable. Remove a
+whole entry only after all its sessions, kernels and other consumers have stopped;
+the tool does not track that condition. Missing entries require an explicit build.
+Never delete only a retained auxiliary build-output directory from a live entry.
+
+This is trusted, non-hermetic reuse. Build scripts and proc macros can observe
+unrecorded external state; a hit reuses their earlier output rather than rerunning
+them. Choose a fresh private root and relock/build when a fresh build is required.
+Auxiliary outputs are retained, not recursively authenticated on each launch.
+Shared startup and real Polars disk/attachment costs are measured in 0061 gate 5;
+this integration does not claim that attachment is instantaneous.
 
 The command lock is an OS advisory file lock, released even if a process dies.
 The two public files cannot be replaced with one filesystem rename. Publication
@@ -82,22 +138,26 @@ interruption between replacements can leave a mismatched pair, which build/run
 recover. A normal publication failure attempts to restore the old JSON first and then
 the old Cargo bytes. There is no claim of an atomic snapshot against an editor or git.
 
-Build removes an old receipt before attempting work. After Cargo succeeds it
-rechecks inputs and the lock, copies and verifies the executable, and publishes
-receipt.json atomically. The version-2 receipt contains the exact project-lock digest, executable digest
-and artifact metadata stamp. Build always fully hashes and verifies the installed
-artifact before publishing. Failed/interrupted builds publish no receipt.
-Run still rechecks the lock pair, declarations, source/native contents and
-generated wrapper identity on every launch. Identical derived maps are compared
-and reused; missing or different regular maps are published from the lock.
+Build removes an old receipt before attempting work. A shared build rechecks
+project and assembly inputs before attachment and publishes a version-3 receipt
+binding the project-lock digest, assembly key, executable digest and metadata
+stamp. A local build publishes version 2. The shared ready document is committed
+last under a per-key lock, after full artifact verification; a waiting builder
+re-inspects readiness rather than treating lock release as success. A failed
+project attachment can leave a valid shared entry without a project receipt.
 
-A valid old version-1 receipt is fully checked once and migrated before launch.
-A missing generated-build receipt asks for build. An override without a receipt
-can establish one by checking its already-locked digest. Malformed receipts
-refuse; default run never makes changed contents trusted by changing the digest.
-Receipt refresh is atomic and an interrupted or failed refresh does not publish
-partial metadata. A harmless touch or identical replacement costs one full check,
-then subsequent launches become fast again.
+All launch modes recheck lock pairs, declarations, source/native contents and
+generated wrapper identity. Shared launches additionally validate the small ready
+binding, but do not scan Cargo's target tree. Identical derived maps are compared
+and reused; only run publishes or reads them. Missing generated receipts require
+build even if a shared entry is already ready. Old local receipts are never
+interpreted as shared attachments.
+
+A valid local version-1 receipt is fully checked once and migrated before launch.
+Overrides without a usable receipt check their already-locked digest to establish
+one. Malformed receipts refuse; launch never makes changed contents trusted by
+changing the digest. Receipt refresh is atomic. A harmless touch or identical
+replacement costs one full check, then subsequent launches become fast again.
 
 This is trusted local build output, not a content-authentication boundary. The
 default can miss a same-size in-place edit if its mtime is restored or the
@@ -107,8 +167,9 @@ content check. Neither mode makes verify-then-execute atomic against concurrent
 replacement. Source edits, including same-size/restored-mtime edits, still use
 content fingerprints and are refused until the project is refreshed.
 
-On the measured small Polars application, the old project launch took about
-155 ms, the new default 29 ms, explicit `--verify` 95 ms, and generated-direct
+In the 0059 per-project measurements on the small Polars application, the old
+project launch took about
+155 ms, the metadata default 29 ms, explicit `--verify` 95 ms, and generated-direct
 11 ms. These are whole CLI runs on one pinned Linux host, not notebook timings
 or universal latency bounds. Native input checks remain about 17 ms. Legacy
 migration and metadata-mismatch refresh each took about 98 ms on this example;

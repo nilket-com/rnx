@@ -90,6 +90,9 @@ pub(crate) fn guard(root: &Path, stage: &Path, project: &Path) -> Result<(), Str
 			Err(e) => return Err(error(e)),
 		}
 	}
+	project_context(root, project)
+}
+pub(crate) fn project_context(root: &Path, project: &Path) -> Result<(), String> {
 	let cache_ancestors: Vec<_> = root.ancestors().collect();
 	for dir in project.ancestors().filter(|p| !cache_ancestors.contains(p)) {
 		for name in [

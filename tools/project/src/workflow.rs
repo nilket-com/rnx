@@ -1,3 +1,4 @@
+mod shared;
 use crate::artifact::{self, Receipt};
 use crate::{
 	assembly, commands,
@@ -94,7 +95,7 @@ impl Project {
 		let bytes = input::read(&self.base.join("rnx.lock"), input::DOCUMENT_LIMIT)
 			.map_err(|e| format!("{e}; run lock"))?;
 		let lock = Lock::decode(&bytes).map_err(|e| format!("invalid rnx.lock: {e}; run lock"))?;
-		if matches!(lock.assembly, Assembly::Generated { .. }) != lock.inputs.native.is_some() {
+		if !matches!(lock.assembly, Assembly::Executable { .. }) != lock.inputs.native.is_some() {
 			return Err("lock assembly and native inventory disagree; run lock".into());
 		}
 		if let Assembly::Generated {
@@ -105,6 +106,14 @@ impl Project {
 			if hash(&cargo) != *cargo_lock_sha256 {
 				return Err("lock pair mismatch; run lock (run/build never repair it)".into());
 			}
+		}
+		if let Some(identity) = lock.shared()? {
+			identity
+				.check_lock(&input::read(
+					&self.base.join("rnx.Cargo.lock"),
+					input::DOCUMENT_LIMIT,
+				)?)
+				.map_err(|e| format!("lock pair mismatch: {e}; run lock"))?;
 		}
 		Ok((lock, bytes))
 	}
@@ -172,6 +181,9 @@ impl Project {
 		if current != lock.declarations || Handoff::from_project(&self.manifest)? != lock.sources {
 			return Err("project declarations or source map changed; run lock".into());
 		}
+		if let Some(identity) = lock.shared()? {
+			return self.verify_shared(lock, &identity);
+		}
 		let metadata = self.metadata_for(lock)?;
 		if self.inputs(metadata.as_deref())? != lock.inputs {
 			return Err("project source or Cargo input changed; run lock".into());
@@ -190,6 +202,7 @@ impl Project {
 				}
 			}
 			Assembly::Executable { .. } => (),
+			Assembly::Shared { .. } => unreachable!(),
 		}
 		commands::check()
 	}
@@ -216,45 +229,17 @@ impl Project {
 				None,
 			)
 		} else {
-			self.generate()?;
-			preflight(&self.base, &self.stage)?;
-			// Resolution may update only the private Cargo lock. A published pair is
-			// untouched until both new documents and the post-resolution check are ready.
-			if let Ok(old) = input::read(&self.base.join("rnx.Cargo.lock"), input::DOCUMENT_LIMIT) {
-				fs::write(self.stage.join("Cargo.lock"), old).map_err(err)?;
-			}
-			let mut cmd = self.cargo("metadata", offline);
-			cmd.args(["--format-version", "1"]);
-			let metadata = commands::run(cmd, true)?;
-			let inputs = self.inputs(Some(&metadata))?;
-			let mut confirm = self.cargo("metadata", offline);
-			confirm.args(["--locked", "--format-version", "1"]);
-			if commands::run(confirm, true)? != metadata {
-				return Err("Cargo graph changed during lock; retry lock".into());
-			}
-			let cargo_bytes = input::read(&self.stage.join("Cargo.lock"), input::DOCUMENT_LIMIT)?;
-			let (rustc, cargo, target) = versions(&self.base)?;
-			let (manifest, main) = generate::wrapper(&declarations, &self.base)?;
-			(
-				inputs,
-				Assembly::Generated {
-					manifest_sha256: hash(manifest.as_bytes()),
-					main_sha256: hash(main.as_bytes()),
-					cargo_lock_sha256: hash(&cargo_bytes),
-					target,
-					profile: "release".into(),
-					features: vec!["project-sources".into()],
-					rustc,
-					cargo,
-				},
-				Some(cargo_bytes),
-			)
+			self.resolve_shared(&declarations, offline)?
 		};
 		if inputs.source != before_source {
 			return Err("source changed during lock; retry lock".into());
 		}
 		let lock = Lock {
-			format: 1,
+			format: if matches!(assembly, Assembly::Shared { .. }) {
+				2
+			} else {
+				1
+			},
 			declarations,
 			sources,
 			inputs,
@@ -323,6 +308,9 @@ impl Project {
 		}
 		let (lock, bytes) = self.read_lock()?;
 		self.verify_inputs(&lock)?;
+		if let Some(identity) = lock.shared()? {
+			return self.build_shared(&lock, &bytes, &identity, offline);
+		}
 		let Assembly::Generated {
 			target,
 			profile,
@@ -381,6 +369,7 @@ impl Project {
 			&receipt,
 			&wire::pretty(&Receipt {
 				format: 2,
+				assembly_key: None,
 				stamp: Some(checked.stamp()),
 				lock_sha256: hash(&bytes),
 				executable_sha256: digest,
@@ -403,11 +392,38 @@ impl Project {
 				input::DOCUMENT_LIMIT,
 			)?)?),
 		};
+		let identity = lock.shared()?;
+		if receipt.as_ref().is_some_and(|r| r.format == 3)
+			&& matches!(lock.assembly, Assembly::Generated { .. })
+		{
+			return Err("shared receipt cannot be used with a local lock; run build".into());
+		}
 		let (path, digest, stamp) = match &lock.assembly {
+			Assembly::Shared { .. } => {
+				let identity = identity.as_ref().unwrap();
+				let r = receipt
+					.as_ref()
+					.ok_or("missing receipt; run build to attach shared assembly")?;
+				if r.format != 3
+					|| r.lock_sha256 != lock_digest
+					|| r.assembly_key.as_deref() != Some(identity.key())
+				{
+					return Err("shared receipt does not match lock; run build".into());
+				}
+				let (path, digest) = crate::cache_entry::ready(identity)?;
+				if r.executable_sha256 != digest {
+					return Err("shared receipt does not match ready artifact; run build".into());
+				}
+				(path, digest, r.stamp.as_ref())
+			}
 			Assembly::Executable { path, sha256 } => {
 				let stamp = receipt
 					.as_ref()
-					.filter(|r| r.lock_sha256 == lock_digest && r.executable_sha256 == *sha256)
+					.filter(|r| {
+						r.format != 3
+							&& r.lock_sha256 == lock_digest
+							&& r.executable_sha256 == *sha256
+					})
 					.and_then(|r| r.stamp.as_ref());
 				(PathBuf::from(path), sha256.clone(), stamp)
 			}
@@ -430,7 +446,8 @@ impl Project {
 			self.atomic(
 				&receipt_path,
 				&wire::pretty(&Receipt {
-					format: 2,
+					format: if identity.is_some() { 3 } else { 2 },
+					assembly_key: identity.as_ref().map(|i| i.key().to_owned()),
 					lock_sha256: lock_digest,
 					executable_sha256: digest,
 					stamp: Some(checked.stamp()),

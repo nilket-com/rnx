@@ -77,6 +77,8 @@ impl Stamp {
 #[serde(deny_unknown_fields)]
 pub(crate) struct Receipt {
 	pub format: u32,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub assembly_key: Option<String>,
 	pub lock_sha256: String,
 	pub executable_sha256: String,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
@@ -93,9 +95,14 @@ impl Receipt {
 		if !digest_valid(&r.lock_sha256) || !digest_valid(&r.executable_sha256) {
 			return Err("invalid receipt digest".into());
 		}
+		if r.assembly_key.as_ref().is_some_and(|k| !digest_valid(k))
+			|| (r.format == 3) != r.assembly_key.is_some()
+		{
+			return Err("invalid receipt assembly binding".into());
+		}
 		match (r.format, &r.stamp) {
 			(1, None) => (),
-			(2, Some(s))
+			(2 | 3, Some(s))
 				if s.bytes <= fingerprint::BYTES && s.mtime_nanoseconds < 1_000_000_000 => {}
 			_ => return Err("invalid receipt version or stamp".into()),
 		}

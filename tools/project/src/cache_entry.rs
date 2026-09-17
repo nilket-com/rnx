@@ -127,7 +127,7 @@ fn version(program: &str, arg: &str, cwd: &Path) -> Result<String, String> {
 	command.arg(arg).current_dir(cwd);
 	String::from_utf8(commands::run(command, true)?).map_err(err)
 }
-fn environment(identity: &Identity) -> Result<(), String> {
+pub(crate) fn environment(identity: &Identity) -> Result<(), String> {
 	let c = identity.context();
 	for (key, _) in std::env::vars_os() {
 		let s = key.to_string_lossy();
@@ -276,6 +276,19 @@ pub(crate) fn acquire(
 				.arg(entry.join("target"));
 			if offline {
 				command.arg("--offline");
+			}
+			#[cfg(unix)]
+			{
+				use std::os::unix::process::CommandExt;
+				// Cargo creates descendants too. Set its mask in the child,
+				// not the host, so a user's group-writable umask cannot make
+				// tool-managed target directories fail the ownership policy.
+				unsafe {
+					command.pre_exec(|| {
+						libc::umask(0o077);
+						Ok(())
+					});
+				}
 			}
 			commands::run(command, false)?;
 			fault("after-build")?;
