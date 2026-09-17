@@ -4,6 +4,7 @@ use polars::prelude as p;
 use rnx::rune::{self, runtime::Vec as RuneVec};
 mod engine;
 mod files;
+mod preview;
 mod values;
 
 #[derive(rune::Any)]
@@ -102,6 +103,10 @@ fn sort(plan: &LazyFrame, names: rune::Value) -> Result<LazyFrame, String> {
 	))
 }
 #[rune::function(instance)]
+fn preview(frame: &DataFrame) -> Result<String, String> {
+	preview::render(&frame.0)
+}
+#[rune::function(instance)]
 fn write_parquet_new(frame: &DataFrame, path: &str) -> Result<(), String> {
 	let frame = frame.0.clone();
 	let path = path.to_owned();
@@ -141,6 +146,7 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.function_meta(add_protocol).map_err(err)?;
 	m.function_meta(sum).map_err(err)?;
 	m.function_meta(alias).map_err(err)?;
+	m.function_meta(preview).map_err(err)?;
 	m.function_meta(write_parquet_new).map_err(err)?;
 	#[cfg(feature = "test-support")]
 	m.function("engine_counts", engine::counts)
@@ -148,6 +154,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		.map_err(err)?;
 
 	Ok(vec![
+		(
+			"polars::DataFrame::preview".into(),
+			"preview() -> Result<String>: dimensions and bounded data; 10 rows, 8 columns, 80 scalars per name/cell, 8192 bytes",
+		),
 		(
 			"polars::read_csv".into(),
 			"read_csv(path, schema) -> Result<DataFrame>: strict local CSV; ordered (name, dtype) schema",

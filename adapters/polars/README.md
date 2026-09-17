@@ -1,8 +1,8 @@
 # rnx-polars
 
 A small synchronous Polars extension, staged through record 0058. Gate 2 covers
-CSV and Parquet; preview, project/notebook integration and performance gates
-remain open. It is an independent workspace and does not add Polars to stock rnx.
+CSV and Parquet; gate 3 adds bounded preview. Project/notebook integration
+and performance gates remain open. It is an independent workspace and does not add Polars to stock rnx.
 
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
@@ -23,6 +23,7 @@ pub fn main(_) {
         .group_by([polars::col("category")])?;
     let result = grouped.agg([polars::col("value").sum().alias("total")])?
         .sort(["category"])?.collect()?;
+    println!("{}", result.preview()?);
     result.write_parquet_new("tiny.parquet")?;
     let again = polars::read_parquet("tiny.parquet")?;
     0
@@ -30,8 +31,25 @@ pub fn main(_) {
 ```
 
 Run this in a fresh directory: both writes refuse existing paths. Expected rows
-are `("a", 2)` and `("🦀", 7)`, with string and i64 columns. Native frames are
-opaque; explicit bounded preview is the next gate.
+are `("a", 2)` and `("🦀", 7)`, with string and i64 columns. Native frames remain opaque unless you call `preview()` explicitly. It returns
+a string starting with the complete dimensions, for example:
+
+```text
+DataFrame: 2 rows × 2 columns
+"category": string | "total": i64
+"a" | 2
+"🦀" | 7
+```
+
+Preview inspects at most ten rows and eight columns. Each name/string cell is
+limited to eighty Unicode scalars; longer values get `…[truncated]` outside
+their quotes. It never formats the whole frame first. Row/column omissions are
+named below the dimensions. The returned string is at most 8192 UTF-8 bytes,
+including a reserved byte-limit marker; it can stop before the row limit.
+Strings are quoted, so `"null"` differs from null. Controls, quotes and backslashes
+are escaped; finite floats use round-tripping spelling. The layout is independent
+of terminal width and Polars formatting settings. `preview()` borrows the frame,
+does not collect, perform I/O or print, and can be called repeatedly.
 
 The four values are DataFrame, LazyFrame, LazyGroupBy and Expr. Receiver methods
 borrow: a frame, plan, expression, path, schema or expression array can be reused.

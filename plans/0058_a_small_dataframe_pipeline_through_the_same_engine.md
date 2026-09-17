@@ -1,7 +1,8 @@
 # rnx 0058: a small dataframe pipeline through the same engine
 
-Status: gate 1 accepted 2026-09-17. Gate 2's product adapter and CSV/Parquet
-contract are ready for review in `_files_evidence.md`; gates 3–6 remain open.
+Status: gates 1 and 2 accepted 2026-09-17. Gate 3's bounded preview is ready
+for review in `_preview_evidence.md`; gates 4–6 remain open.
+`_files_evidence.md` records the accepted CSV/Parquet contract.
 `_boundary_evidence.md` preserves the original current-thread failure and
 `_engine_thread_evidence.md` records its accepted adapter-side resolution.
 The fifty-eighth record follows the completed 0050–0057 extensibility sequence. It tests a small
