@@ -1,3 +1,4 @@
+use crate::artifact::{self, Receipt};
 use crate::{
 	assembly, commands,
 	fingerprint::Allowance,
@@ -5,7 +6,6 @@ use crate::{
 	manifest::Manifest,
 	wire::{self, Assembly, Handoff, Inputs, Lock},
 };
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
 	ffi::OsString,
@@ -19,13 +19,6 @@ fn hash(bytes: &[u8]) -> String {
 }
 fn err(e: impl std::fmt::Display) -> String {
 	e.to_string()
-}
-#[derive(Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Receipt {
-	format: u32,
-	lock_sha256: String,
-	executable_sha256: String,
 }
 struct Project {
 	manifest: PathBuf,
@@ -196,7 +189,7 @@ impl Project {
 					return Err("generated assembly changed; run lock".into());
 				}
 			}
-			Assembly::Executable { path, sha256 } => assembly::verify(Path::new(path), sha256)?,
+			Assembly::Executable { .. } => (),
 		}
 		commands::check()
 	}
@@ -383,10 +376,12 @@ impl Project {
 		File::open(&temp).and_then(|f| f.sync_all()).map_err(err)?;
 		fs::rename(temp, &artifact).map_err(err)?;
 		self.verify_inputs(&lock)?;
+		let checked = artifact::check(&artifact, &digest, None, true)?;
 		self.atomic(
 			&receipt,
 			&wire::pretty(&Receipt {
-				format: 1,
+				format: 2,
+				stamp: Some(checked.stamp()),
 				lock_sha256: hash(&bytes),
 				executable_sha256: digest,
 			})?,
@@ -394,46 +389,62 @@ impl Project {
 		eprintln!("built {}", artifact.display());
 		Ok(())
 	}
-	fn run(self, args: Vec<OsString>) -> Result<(), String> {
+	fn run(self, args: Vec<OsString>, verify: bool) -> Result<(), String> {
 		let (lock, bytes) = self.read_lock()?;
 		self.verify_inputs(&lock)?;
-		let (path, digest) = match &lock.assembly {
-			Assembly::Executable { path, sha256 } => (PathBuf::from(path), sha256.clone()),
+		let lock_digest = hash(&bytes);
+		let receipt_path = self.dot.join("receipt.json");
+		let receipt = match fs::symlink_metadata(&receipt_path) {
+			Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
+			Err(e) => return Err(err(e)),
+			Ok(m) if !m.is_file() => return Err("receipt is not a regular file".into()),
+			Ok(_) => Some(Receipt::decode(&input::read(
+				&receipt_path,
+				input::DOCUMENT_LIMIT,
+			)?)?),
+		};
+		let (path, digest, stamp) = match &lock.assembly {
+			Assembly::Executable { path, sha256 } => {
+				let stamp = receipt
+					.as_ref()
+					.filter(|r| r.lock_sha256 == lock_digest && r.executable_sha256 == *sha256)
+					.and_then(|r| r.stamp.as_ref());
+				(PathBuf::from(path), sha256.clone(), stamp)
+			}
 			Assembly::Generated { .. } => {
-				let receipt: Receipt = serde_json::from_slice(
-					&input::read(&self.dot.join("receipt.json"), input::DOCUMENT_LIMIT)
-						.map_err(|e| format!("{e}; run build"))?,
-				)
-				.map_err(|e| format!("invalid receipt: {e}; run build"))?;
-				if receipt.format != 1 || receipt.lock_sha256 != hash(&bytes) {
+				let r = receipt.as_ref().ok_or("missing receipt; run build")?;
+				if r.lock_sha256 != lock_digest {
 					return Err("build receipt does not match lock; run build".into());
 				}
-				if receipt.executable_sha256.len() != 64
-					|| !receipt
-						.executable_sha256
-						.bytes()
-						.all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
-				{
-					return Err("invalid executable digest; run build".into());
-				}
 				(
-					self.dot.join("artifacts").join(&receipt.executable_sha256),
-					receipt.executable_sha256,
+					self.dot.join("artifacts").join(&r.executable_sha256),
+					r.executable_sha256.clone(),
+					r.stamp.as_ref(),
 				)
 			}
 		};
+		let checked = artifact::check(&path, &digest, stamp, verify)?;
+		if stamp != Some(&checked.stamp()) {
+			fault("before-receipt-refresh")?;
+			checked.recheck()?;
+			self.atomic(
+				&receipt_path,
+				&wire::pretty(&Receipt {
+					format: 2,
+					lock_sha256: lock_digest,
+					executable_sha256: digest,
+					stamp: Some(checked.stamp()),
+				})?,
+			)?;
+		}
+
 		let maps = self.dot.join("maps");
 		fs::create_dir_all(&maps).map_err(err)?;
 		let map_bytes = lock.sources.encode()?;
 		let map = maps.join(format!("{}.json", hash(&map_bytes)));
 		crate::maps::ensure(&map, &map_bytes, || self.atomic(&map, &map_bytes))?;
-		let mut command = assembly::command(
-			&path,
-			&digest,
-			Some(&map),
-			Path::new(&lock.sources.entry),
-			&args,
-		)?;
+		let mut command =
+			assembly::command_checked(&checked, Some(&map), Path::new(&lock.sources.entry), &args)?;
 		commands::check()?;
 		// Advisory lock descriptors are close-on-exec; the script is not a project
 		// writer. The immutable map/artifact outlive this process without a parent.
@@ -546,6 +557,12 @@ fn fault(name: &str) -> Result<(), String> {
 	Ok(())
 }
 pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
+	if args.len() == 1 && matches!(args[0].to_str(), Some("--help" | "help")) {
+		println!(
+			"rnx-project lock|build|run --manifest FILE [-- script arguments]\nrun checks your sources, trusts your build output unless you ask it to verify.\nUse run --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run never builds."
+		);
+		return Ok(());
+	}
 	let command = args
 		.first()
 		.and_then(|a| a.to_str())
@@ -555,6 +572,7 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	}
 	let mut manifest = None;
 	let mut offline = false;
+	let mut verify = false;
 	let mut script = vec![];
 	let mut n = 1;
 	while n < args.len() {
@@ -564,6 +582,7 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 				manifest = Some(PathBuf::from(args.get(n).ok_or("--manifest needs a path")?));
 			}
 			Some("--offline") if command != "run" && !offline => offline = true,
+			Some("--verify") if command == "run" && !verify => verify = true,
 			Some("--") if command == "run" => {
 				script = args[n + 1..].to_vec();
 				break;
@@ -579,7 +598,7 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	match command {
 		"lock" => project.lock(offline),
 		"build" => project.build(offline),
-		"run" => project.run(script),
+		"run" => project.run(script, verify),
 		_ => unreachable!(),
 	}
 }

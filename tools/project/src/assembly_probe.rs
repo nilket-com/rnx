@@ -1,4 +1,5 @@
 //! Test-only adapter around private core functions, not the product CLI.
+mod artifact;
 mod assembly;
 mod fingerprint;
 mod generate;

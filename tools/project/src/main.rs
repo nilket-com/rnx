@@ -1,3 +1,4 @@
+mod artifact;
 mod assembly;
 mod commands;
 mod fingerprint;

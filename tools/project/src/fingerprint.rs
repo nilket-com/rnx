@@ -120,7 +120,7 @@ fn hash_files(root: &Path, paths: Vec<PathBuf>, allowance: &mut Allowance) -> Re
 	tree.update(b"rnx-tree-v1\0");
 	let mut files = vec![];
 	for (name, relative) in ordered {
-		files.push(hash_file(root, relative, name, allowance, Some(&mut tree))?);
+		files.push(hash_file(root, relative, name, allowance, Some(&mut tree))?.0);
 	}
 	Ok(Tree {
 		root: root.to_owned(),
@@ -135,7 +135,7 @@ fn hash_file(
 	name: String,
 	allowance: &mut Allowance,
 	mut tree: Option<&mut Sha256>,
-) -> Result<wire::File, String> {
+) -> Result<(wire::File, fs::Metadata, fs::Metadata), String> {
 	components_no_links(root, &relative)?;
 	let path = root.join(relative);
 	let before = regular(&path)?;
@@ -180,6 +180,8 @@ fn hash_file(
 			tree.update(&buffer[..n]);
 		}
 		content.update(&buffer[..n]);
+		#[cfg(feature = "test-support")]
+		crate::artifact::observed_read(&path, n);
 	}
 	// The detection byte is charged too; never read it beyond the global allowance.
 	if allowance.bytes == 0 {
@@ -197,12 +199,16 @@ fn hash_file(
 	if after.len() != opened.len() || executable(&after) != executable(&opened) {
 		return Err(fail(&path, "file changed during read"));
 	}
-	Ok(wire::File {
-		path: name,
-		executable: executable(&opened),
-		bytes: opened.len(),
-		sha256: format!("{:x}", content.finalize()),
-	})
+	Ok((
+		wire::File {
+			path: name,
+			executable: executable(&opened),
+			bytes: opened.len(),
+			sha256: format!("{:x}", content.finalize()),
+		},
+		opened,
+		after,
+	))
 }
 
 fn root(path: &Path) -> Result<PathBuf, String> {
@@ -256,6 +262,12 @@ pub(crate) fn source(
 	hash_files(&root, paths, allowance)
 }
 pub(crate) fn one(path: &Path, allowance: &mut Allowance) -> Result<wire::File, String> {
+	Ok(one_observed(path, allowance)?.0)
+}
+pub(crate) fn one_observed(
+	path: &Path,
+	allowance: &mut Allowance,
+) -> Result<(wire::File, fs::Metadata, fs::Metadata), String> {
 	allowance.entry()?;
 	let root = path.parent().ok_or("input has no parent")?;
 	let name = path.file_name().ok_or("input has no name")?;

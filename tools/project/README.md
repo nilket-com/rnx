@@ -8,12 +8,20 @@ cargo build --locked --release --manifest-path tools/project/Cargo.toml --bin rn
 rnx-project lock --manifest app/rnx.toml --offline
 rnx-project build --manifest app/rnx.toml --offline
 rnx-project run --manifest app/rnx.toml -- argument1 argument2
+rnx-project run --manifest app/rnx.toml --verify -- argument1 argument2
 ```
 
 `--manifest` is required; there is no upward search. Paths inside a manifest are
 relative to that manifest. Only lock resolves the Cargo graph. Build uses
 `--locked`, the release profile and the compiler's host target; run never invokes
 Cargo or rustc, builds anything, repairs a lock or requires a network connection.
+**Run checks your sources, trusts your build output unless you ask it to verify.**
+
+By default, matching artifact size, modification time, executable-bit state and
+Unix device/inode avoid rereading the executable. A mismatch triggers a full hash
+against the known digest; matching contents refresh the receipt, different
+contents refuse. `run --verify` always hashes the artifact. It is accepted once,
+in either order with `--manifest`, before `--`; lock/build do not accept it.
 Run passes everything after `--` as script arguments. Direct runner flags before
 `--` are not exposed by this first project CLI. Build chatter goes to stderr.
 
@@ -30,7 +38,8 @@ That keeps it ignored without modifying your repository's .gitignore. It holds
 assembly sources, Cargo's target cache, content-addressed executable artifacts
 and maps, the command lock and receipt.json. An executable override writes only
 rnx.lock and removes an obsolete generated-form rnx.Cargo.lock after publication.
-Override run verifies its locked binary hash and needs no receipt or Cargo.
+An override's first run verifies its locked binary hash and establishes a private
+receipt. Later runs use the same metadata/`--verify` policy; no Cargo is needed.
 
 The command lock is an OS advisory file lock, released even if a process dies.
 The two public files cannot be replaced with one filesystem rename. Publication
@@ -43,16 +52,35 @@ the old Cargo bytes. There is no claim of an atomic snapshot against an editor o
 
 Build removes an old receipt before attempting work. After Cargo succeeds it
 rechecks inputs and the lock, copies and verifies the executable, and publishes
-receipt.json atomically. The receipt contains its version, the exact project-lock
-digest and the executable digest. Failed/interrupted builds publish no receipt.
-Run rechecks the lock pair, declarations, source and native contents, generated
-wrapper identity, receipt and executable before launch. Identical derived source
-maps are compared and reused; missing or different regular maps are published
-from the lock. Executable verification still reads and hashes the whole file.
-The first 0059 optimisation reduced the measured tiny Polars project launch from
-about 155 ms to 95 ms while retaining full hashing; the faster metadata default
-is not implemented in this stage. These are trusted local
-projects; verify-then-execute is not atomic against hostile replacement.
+receipt.json atomically. The version-2 receipt contains the exact project-lock digest, executable digest
+and artifact metadata stamp. Build always fully hashes and verifies the installed
+artifact before publishing. Failed/interrupted builds publish no receipt.
+Run still rechecks the lock pair, declarations, source/native contents and
+generated wrapper identity on every launch. Identical derived maps are compared
+and reused; missing or different regular maps are published from the lock.
+
+A valid old version-1 receipt is fully checked once and migrated before launch.
+A missing generated-build receipt asks for build. An override without a receipt
+can establish one by checking its already-locked digest. Malformed receipts
+refuse; default run never makes changed contents trusted by changing the digest.
+Receipt refresh is atomic and an interrupted or failed refresh does not publish
+partial metadata. A harmless touch or identical replacement costs one full check,
+then subsequent launches become fast again.
+
+This is trusted local build output, not a content-authentication boundary. The
+default can miss a same-size in-place edit if its mtime is restored or the
+filesystem cannot distinguish the timestamps. Identity reuse or manipulated
+metadata/receipts can also defeat metadata checks. Use `--verify` for a full
+content check. Neither mode makes verify-then-execute atomic against concurrent
+replacement. Source edits, including same-size/restored-mtime edits, still use
+content fingerprints and are refused until the project is refreshed.
+
+On the measured small Polars application, the old project launch took about
+155 ms, the new default 29 ms, explicit `--verify` 95 ms, and generated-direct
+11 ms. These are whole CLI runs on one pinned Linux host, not notebook timings
+or universal latency bounds. Native input checks remain about 17 ms. Legacy
+migration and metadata-mismatch refresh each took about 98 ms on this example;
+they are separate first-use costs, not part of the warm default number.
 
 ## Inputs and build policy
 

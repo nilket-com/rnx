@@ -1,8 +1,9 @@
 # rnx 0059: a project run is an everyday launch
 
-Status: plan accepted 2026-09-17. Stage one (gates 1–2) is ready for review
-in `_stage_one_evidence.md`; gates 3–6 remain open. The attribution probe is
-accepted and pushed in rnx-bench 95dbf04.
+Status: plan and stage one accepted 2026-09-17, pushed at rnx 347acd8 and
+rnx-bench 9c058e7. Stage two (gates 3–6) is ready for Linux review in
+`_default_evidence.md`. `_stage_one_evidence.md` preserves the full-verification
+intermediate. The attribution probe is accepted at rnx-bench 95dbf04.
 The fifty-ninth record follows the accepted Polars application in 0058. Its
 customer is the person running an application, not the person running tests.
 

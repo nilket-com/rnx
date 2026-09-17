@@ -48,7 +48,16 @@ pub(crate) fn command(
 	entry: &Path,
 	args: &[OsString],
 ) -> Result<Command, String> {
-	verify(executable, expected)?;
+	let checked = crate::artifact::check(executable, expected, None, true)?;
+	command_checked(&checked, map, entry, args)
+}
+pub(crate) fn command_checked(
+	checked: &crate::artifact::Checked,
+	map: Option<&Path>,
+	entry: &Path,
+	args: &[OsString],
+) -> Result<Command, String> {
+	let executable = checked.path();
 	let mut command = Command::new(executable);
 	command.arg("run");
 	if let Some(path) = map {
