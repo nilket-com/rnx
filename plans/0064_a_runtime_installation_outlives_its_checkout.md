@@ -8,9 +8,11 @@ see [the publication evidence](0064_a_runtime_installation_outlives_its_checkout
 Gate 3's product discovery and ownership matrix are accepted on Linux;
 see [the discovery evidence](0064_a_runtime_installation_outlives_its_checkout_discovery_evidence.md).
 Gate 4's ordinary installed-runtime journeys and F3 repair matrix are accepted on Linux; see [the journey evidence](0064_a_runtime_installation_outlives_its_checkout_journey_evidence.md).
-Gate 5's measured installation, attachment and matched launch costs pass on Linux,
-ready for review; see [the cost evidence](0064_a_runtime_installation_outlives_its_checkout_cost_evidence.md).
-Gate 6 remains open, including the cosmetic fsck diagnostic-prefix follow-up.
+Gate 5's measured installation, attachment and matched launch costs are accepted on Linux; see [the cost evidence](0064_a_runtime_installation_outlives_its_checkout_cost_evidence.md).
+Gate 6's regression and fsck diagnostic correction pass on Linux, ready for review;
+see [the regression evidence](0064_a_runtime_installation_outlives_its_checkout_regression_evidence.md).
+Implementation is complete on Linux, pending gate 6 review; the platform and
+compatibility qualifications below remain.
 Baseline: rnx `1ecc35c` / rnx-bench `9aa378d`.
 0063 is accepted and closed on Linux. This record removes its source-checkout
 environment setup from ordinary stock `:dep` use. Native-inventory optimization

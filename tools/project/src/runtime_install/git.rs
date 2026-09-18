@@ -242,7 +242,18 @@ pub(super) fn administration_drift(root: &Path, drift: bool) -> Result<(), Strin
 	}
 	let mut c = command(root);
 	c.args(["fsck", "--full", "--no-reflogs"]);
-	run(c)?;
+	commands::run_bounded(c).map_err(|error| {
+		// The supervisor distinguishes a spawned command's failed exit from a
+		// spawn failure. Do not suggest installing Git to repair corrupt objects.
+		if error.starts_with("\"git\" failed:") {
+			format!("corrupt installed runtime at {}: {error}", root.display())
+		} else {
+			format!(
+				"cannot check installed runtime integrity at {}: {error}; Git is required (install Git if missing)",
+				root.display()
+			)
+		}
+	})?;
 	Ok(())
 }
 
