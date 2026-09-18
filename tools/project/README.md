@@ -295,12 +295,18 @@ including absence. Shared native roots are hashed once with each association kep
 
 On Unix, overlapping native roots can reuse file observations within a single
 inventory when they share a proven Git worktree. Each represented file is still
-charged to each root. An intervening repository, inherited `GIT_*` variable, or
-exhaustion of the 4096-entry descendant-discovery budget takes the independent
-path; an ignored build directory can therefore prevent reuse. No observation is
-cached across commands. Every command reads source contents anew, but this is not
-an atomic snapshot: a same-size edit with restored metadata after the shared read
-may be missed until the next command, as recorded in 0065.
+charged to each root. Repository boundaries on the child-root ancestry or paths
+to tracked files prevent reuse. Ignored build directories are not walked and do
+not prevent reuse. Any inherited `GIT_*` variable, including the common
+`GIT_EDITOR`, still selects independent per-root inventory and its higher cost;
+there is no whitelist yet.
+
+No observation is cached across commands. Every command reads source contents
+anew, but this is not an atomic snapshot. Shared Git administration and directory
+boundaries are rechecked once per enclosing observation before its first reuse;
+each child rechecks its own files. A same-size edit with restored metadata after
+the shared read, or a tracked addition after the shared index check, may be missed
+until the next command. Record 0065 demonstrates both observation windows.
 
 A native rnx path dependency covers the whole tracked repository, including plans
 and nested adapters. A plan edit therefore invalidates a project's build identity.

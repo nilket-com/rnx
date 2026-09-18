@@ -9,11 +9,12 @@ Gate 2's current-format workflows and matched format-only timing are accepted on
 Gate 3 is accepted on Linux; see
 [the migration evidence](0065_a_launch_checks_each_native_file_once_migration_evidence.md).
 Gate 4's isolated equivalence candidate is accepted on Linux; see [the nested evidence](0065_a_launch_checks_each_native_file_once_nested_evidence.md).
-Gate 5's first port stop is accepted; F2 restores the floor but still misses the
-first-adapter increment and is stopped for review; see
-[the directory evidence](0065_a_launch_checks_each_native_file_once_directory_evidence.md).
-The [original port evidence](0065_a_launch_checks_each_native_file_once_product_evidence.md)
-remains a preserved measurement baseline.
+Gate 5's first port and F2 stops are accepted and preserved in
+[the original port evidence](0065_a_launch_checks_each_native_file_once_product_evidence.md)
+and [the directory evidence](0065_a_launch_checks_each_native_file_once_directory_evidence.md).
+F3/F4 fixes ignored-build eligibility and repeats shared checks only once, but
+still misses the first-adapter gate; the new checkpoint is stopped for review with
+[phase attribution and scoped evidence](0065_a_launch_checks_each_native_file_once_scoped_evidence.md).
 Gate 5 remains open and gate 6 has not started. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
 0064 is closed on Linux. This record addresses native inventory after runtime
 installation; it does not introduce a persistent source-verification cache.
@@ -241,8 +242,12 @@ observation schedule. State the guarantee precisely: equality for quiescent inpu
 full content reads anew on every invocation, and refusal for changes observed by
 its validation checks. It is not identical detection of every concurrent edit at
 the time the old implementation would have done a second read. Recheck repository
-boundary/index identity and relevant file metadata before reusing observations;
-observed changes refuse rather than mix snapshots. A same-size edit with restored
+boundary/index identity once per enclosing observation before its first reuse,
+and each child's relevant file metadata before deriving that child; observed
+changes refuse rather than mix snapshots. Shared checks do not repeat for later
+children. A tracked addition after that shared index check can therefore be missed
+by a later child until the next invocation, even without restoring metadata; the
+F3/F4 checkpoint records this additional timed window. A same-size edit with restored
 metadata after the single validated read may be missed until the next invocation;
 the old later reread could have observed it. Gate 4 records that timed counterexample
 explicitly, alongside the existing post-final-read limitation, for review rather

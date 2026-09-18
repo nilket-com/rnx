@@ -460,13 +460,25 @@ fn nested_observations_end_after_each_call() {
 	let t = Temp::new();
 	t.write("base", b"runtime");
 	t.write("adapter/lib.rs", b"adapter");
+	t.write("second/lib.rs", b"second");
 	t.init();
-	let roots = vec![t.0.clone(), t.0.join("adapter")];
+	let roots = vec![t.0.clone(), t.0.join("adapter"), t.0.join("second")];
 	trace::take();
 	let first = many(roots.clone(), &mut Allowance::default()).unwrap();
 	let events = trace::take();
-	assert_eq!(events.iter().filter(|e| e.get("read").is_some()).count(), 2);
+	assert_eq!(events.iter().filter(|e| e.get("read").is_some()).count(), 3);
 	assert_eq!(events.iter().filter(|e| e.get("git").is_some()).count(), 3);
+	assert_eq!(
+		events
+			.iter()
+			.filter(|e| e.get("shared_check").is_some())
+			.count(),
+		1
+	);
+	assert_eq!(
+		events.iter().filter(|e| e.get("reuse").is_some()).count(),
+		2
+	);
 	assert_eq!(
 		first,
 		many(roots.clone(), &mut Allowance::default()).unwrap()
@@ -486,6 +498,6 @@ fn nested_observations_end_after_each_call() {
 			.iter()
 			.filter(|e| e.get("read").is_some())
 			.count(),
-		2
+		3
 	);
 }

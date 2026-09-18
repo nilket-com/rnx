@@ -42,11 +42,13 @@ pub(super) fn before_read(p: &Path) -> Result<(), String> {
 	if !ACTIVE.with(|a| a.get()) {
 		return Ok(());
 	}
+	#[cfg(feature = "test-support")]
+	let _clock = super::trace::phase("observation");
 	STATE.with(|s| {
 		let mut s = s.borrow_mut();
 		for dir in p.parent().unwrap().ancestors() {
 			// A directory's ancestors were observed on its first visit. Reuse
-			// rechecks the complete boundary map before deriving any child.
+			// rechecks the complete boundary map before deriving the first child.
 			if s.boundaries.contains_key(dir) {
 				break;
 			}
@@ -67,6 +69,8 @@ pub(super) fn after_read(p: &Path, m: &fs::Metadata) {
 	if !ACTIVE.with(|a| a.get()) {
 		return;
 	}
+	#[cfg(feature = "test-support")]
+	let _clock = super::trace::phase("observation");
 	STATE.with(|s| {
 		s.borrow_mut().files.insert(p.to_owned(), stamp(m));
 	});
@@ -80,16 +84,35 @@ struct Observation {
 	files: BTreeMap<PathBuf, Stamp>,
 	boundaries: BTreeMap<PathBuf, Option<Stamp>>,
 	eligible: bool,
+	shared_checked: bool,
 }
-fn check(items: impl IntoIterator<Item = (PathBuf, Option<Stamp>)>) -> Result<(), String> {
+fn check<'a>(
+	items: impl IntoIterator<Item = (&'a PathBuf, &'a Option<Stamp>)>,
+) -> Result<(), String> {
 	for (p, old) in items {
-		if observed(&p)? != old {
-			return Err(fail(&p, "observation changed before reuse"));
+		if observed(p)?.as_ref() != old.as_ref() {
+			return Err(fail(p, "observation changed before reuse"));
 		}
 	}
 	Ok(())
 }
+fn check_shared(parent: &mut Observation) -> Result<(), String> {
+	if !parent.shared_checked {
+		#[cfg(feature = "test-support")]
+		let _clock = super::trace::phase("shared_rechecks");
+		check(parent.admin.iter().map(|(p, s)| (p, s)))?;
+		check(parent.boundaries.iter())?;
+		parent.shared_checked = true;
+		#[cfg(feature = "test-support")]
+		super::trace::event(
+			serde_json::json!({"shared_check":parent.tree.root,"paths":parent.admin.len()+parent.boundaries.len()}),
+		);
+	}
+	Ok(())
+}
 fn independent(p: &Path, a: &mut Allowance, plain: bool) -> Result<Observation, String> {
+	#[cfg(feature = "test-support")]
+	let _clock = super::trace::phase("independent");
 	STATE.with(|s| *s.borrow_mut() = State::default());
 	let info = std::cell::RefCell::new(None);
 	let tree = native_using(p, a, |r, args, limit| {
@@ -158,19 +181,16 @@ fn independent(p: &Path, a: &mut Allowance, plain: bool) -> Result<Observation, 
 		files,
 		boundaries,
 		eligible,
+		shared_checked: false,
 	})
 }
-fn can_reuse(parent: &Observation, child: &Path) -> Result<bool, String> {
+fn can_reuse(parent: &mut Observation, child: &Path) -> Result<bool, String> {
+	#[cfg(feature = "test-support")]
+	let _clock = super::trace::phase("eligibility");
 	if !parent.eligible || child == parent.tree.root || !child.starts_with(&parent.tree.root) {
 		return Ok(false);
 	}
-	check(parent.admin.clone())?;
-	check(
-		parent
-			.boundaries
-			.iter()
-			.map(|(p, s)| (p.clone(), s.clone())),
-	)?;
+	check_shared(parent)?;
 	// Same discovery root follows from a checked enclosing --show-toplevel and
 	// no intervening .git entry; oracle independently verifies child discovery.
 	for dir in child.ancestors().take_while(|p| *p != parent.top) {
@@ -178,34 +198,9 @@ fn can_reuse(parent: &Observation, child: &Path) -> Result<bool, String> {
 			return Ok(false);
 		}
 	}
-	// Inspect descendants too, including ignored directories: a nested repository
-	// need not contain a file in the parent's index. This discovery is bounded;
-	// exhaustion or unusual entries means independent fallback, never refusal.
-	let mut pending = vec![child.to_path_buf()];
-	let mut budget = 4096usize;
-	while let Some(dir) = pending.pop() {
-		if observed(&dir.join(".git"))?.is_some() {
-			return Ok(false);
-		}
-		let Ok(entries) = fs::read_dir(&dir) else {
-			return Ok(false);
-		};
-		for entry in entries {
-			if budget == 0 {
-				return Ok(false);
-			}
-			budget -= 1;
-			let Ok(entry) = entry else { return Ok(false) };
-			let Ok(ty) = entry.file_type() else {
-				return Ok(false);
-			};
-			if ty.is_dir() {
-				pending.push(entry.path());
-			} else if !ty.is_file() {
-				return Ok(false);
-			}
-		}
-	}
+	// Do not traverse ignored descendants: independent Git inventory does not
+	// inspect them either. Non-ignored untracked repositories are refused by
+	// the parent's listing; repositories on represented paths are below.
 	for (p, m) in &parent.boundaries {
 		if p.starts_with(child) && p.file_name().is_some_and(|n| n == ".git") && m.is_some() {
 			return Ok(false);
@@ -214,13 +209,8 @@ fn can_reuse(parent: &Observation, child: &Path) -> Result<bool, String> {
 	Ok(true)
 }
 fn derive(parent: &Observation, child: &Path, a: &mut Allowance) -> Result<Tree, String> {
-	check(parent.admin.clone())?;
-	check(
-		parent
-			.boundaries
-			.iter()
-			.map(|(p, s)| (p.clone(), s.clone())),
-	)?;
+	#[cfg(feature = "test-support")]
+	let _clock = super::trace::phase("derivation_rechecks");
 	let mut files = vec![];
 	let prefix = child.strip_prefix(&parent.tree.root).unwrap();
 	let selected = parent
@@ -252,6 +242,8 @@ fn derive(parent: &Observation, child: &Path, a: &mut Allowance) -> Result<Tree,
 	if files.is_empty() {
 		return Err(fail(child, "native root has no tracked files"));
 	}
+	#[cfg(feature = "test-support")]
+	let _framing = super::trace::phase("framing");
 	let mut tree = blake3::Hasher::new();
 	tree.update(b"rnx-tree-v2\0");
 	for f in &files {
@@ -273,6 +265,8 @@ fn derive(parent: &Observation, child: &Path, a: &mut Allowance) -> Result<Tree,
 	})
 }
 pub(crate) fn many(roots: Vec<PathBuf>, a: &mut Allowance) -> Result<Vec<Tree>, String> {
+	#[cfg(feature = "test-support")]
+	let _profile = super::trace::profile();
 	struct Active;
 	impl Drop for Active {
 		fn drop(&mut self) {
@@ -289,6 +283,8 @@ pub(crate) fn many(roots: Vec<PathBuf>, a: &mut Allowance) -> Result<Vec<Tree>, 
 		return roots
 			.into_iter()
 			.map(|p| {
+				#[cfg(feature = "test-support")]
+				let _clock = super::trace::phase("independent");
 				let tree = native(&p, a)?;
 				#[cfg(feature = "test-support")]
 				super::trace::between(&p)?;
@@ -303,7 +299,7 @@ pub(crate) fn many(roots: Vec<PathBuf>, a: &mut Allowance) -> Result<Vec<Tree>, 
 	for p in roots {
 		let p = root(&p)?;
 		let mut reused = None;
-		for parent in &observations {
+		for parent in &mut observations {
 			if can_reuse(parent, &p)? {
 				reused = Some(derive(parent, &p, a)?);
 				break;
