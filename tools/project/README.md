@@ -322,8 +322,8 @@ startup before replacement. Already-installed names are a no-op. Use
 `:dep --offline polars` to forbid source downloads. This is a restart with binding
 loss, not dynamic loading; saved history is reloaded but never replayed.
 
-For a stock session, select the source checkout with `RNX_DEP_RUNTIME` and locate
-this tool through PATH or `RNX_PROJECT_TOOL`. A retained scratch project is created
+For a stock session, install a runtime as shown below and locate this tool through
+PATH or `RNX_PROJECT_TOOL`. `RNX_DEP_RUNTIME` remains an explicit override. A retained scratch project is created
 only after consent. Its successful replacement prints the quoted command to
 reopen it. Projects and scratch consumers reuse the same shared assembly when
 their native inputs match. The working directory stays the caller's directory.
@@ -348,8 +348,16 @@ Installation copies tracked working-tree bytes, including both shipped adapters,
 and builds an independent Git index. Dirty tracked edits are supported; untracked
 non-ignored files, conflicts, symlinks and escaping Cargo paths are refused.
 No source file is rewritten. Git, Rust/Cargo and native build tools remain needed
-for assembly. For the current `:dep` workflow, set `RNX_DEP_RUNTIME` to the installed
-source path printed by `runtime show`.
+for assembly. The installed index intentionally has an unborn HEAD: `git status`
+shows every file as added. No commit is needed to make it usable.
+
+A stock session's `:dep` uses this selected installation without an environment
+variable. `RNX_DEP_RUNTIME`, when present, is an explicit absolute-path override;
+an invalid override refuses rather than falling back. Project sessions always use
+their declared runtime. Before consent the notice identifies the runtime and its
+provenance. Preparation rechecks the selection and the installed source contents
+before creating a scratch. Changing the default does not retarget an old scratch.
+Discovery does not search the working directory and does not install anything.
 
 An identical reinstall validates and reselects the existing installation without
 changing its original provenance. A different snapshot remains beside earlier

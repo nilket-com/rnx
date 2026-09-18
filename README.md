@@ -293,8 +293,10 @@ Script output, colon-command output, and diagnostics do not get result markers.
 
 On Linux, `:dep polars` or `:dep polars postgres` prepares another executable
 and restarts this session after you consent. Put `rnx-project` on PATH (or set
-`RNX_PROJECT_TOOL` to its absolute path). A stock session also needs
-`export RNX_DEP_RUNTIME=/absolute/path/to/rnx` pointing at a source checkout.
+`RNX_PROJECT_TOOL` to its absolute path). For a stock session, first run
+`rnx-project runtime install --from /path/to/rnx` to retain a buildable source
+snapshot. `RNX_DEP_RUNTIME` remains an explicit override. The notice names the
+selected runtime before consent; changing the default does not change old projects.
 A session opened with `rnx-project session --manifest ...` edits that project;
 a stock session creates a retained scratch project under your user state directory.
 The replacement prints a command to reopen that scratch session later.

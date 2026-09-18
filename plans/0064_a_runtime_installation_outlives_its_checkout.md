@@ -3,9 +3,11 @@
 Status: accepted for implementation after the 2026-09-18 draft review, with
 F1 on runtime provenance and unchecked launcher/runtime skew folded in below.
 Gate 1 is accepted; see [the index evidence](0064_a_runtime_installation_outlives_its_checkout_index_evidence.md).
-Gate 2's product installer and publication matrix pass on Linux, ready for review;
+Gate 2's product installer and publication matrix are accepted on Linux;
 see [the publication evidence](0064_a_runtime_installation_outlives_its_checkout_publication_evidence.md).
-Gates 3–6 remain open; session discovery is unchanged.
+Gate 3's product discovery and ownership matrix pass on Linux, ready for review;
+see [the discovery evidence](0064_a_runtime_installation_outlives_its_checkout_discovery_evidence.md).
+Gates 4–6 remain open.
 Baseline: rnx `1ecc35c` / rnx-bench `9aa378d`.
 0063 is accepted and closed on Linux. This record removes its source-checkout
 environment setup from ordinary stock `:dep` use. Native-inventory optimization

@@ -101,6 +101,7 @@ struct Description {
 	entries: Vec<catalogue::Entry>,
 	scratch: bool,
 	offline: bool,
+	runtime: Option<crate::runtime_install::Selection>,
 }
 impl Description {
 	fn fields(&self) -> Result<protocol::Fields, String> {
@@ -128,6 +129,10 @@ impl Description {
 				"Online: Cargo may fetch sources."
 			}
 		);
+		if let Some(runtime) = &self.runtime {
+			notice.push_str(&runtime.notice);
+			notice.push('\n');
+		}
 		if self.candidate.added.iter().any(|n| n == "polars") {
 			notice.push_str("A first Polars build took about 100 seconds with registry sources cached; its retained shared entry is about 1.5 GB. A reusable entry avoids compilation.\n");
 		}
@@ -207,21 +212,18 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 		_ => return Err("invalid offline mode".into()),
 	};
 	let scratch = request[&2].is_empty();
+	let mut selection = None;
 	let (manifest, original) = if scratch {
 		if !request[&4].is_empty() {
 			return Err("custom executable needs a project association; open it through rnx-project session".into());
 		}
-		let runtime = PathBuf::from(
-			std::env::var_os("RNX_DEP_RUNTIME")
-				.ok_or("scratch runtime missing; export RNX_DEP_RUNTIME=/absolute/path/to/rnx")?,
-		);
-		if !runtime.is_absolute() {
-			return Err(
-				"RNX_DEP_RUNTIME must be absolute; export RNX_DEP_RUNTIME=/absolute/path/to/rnx"
-					.into(),
-			);
-		}
-		let runtime = runtime.canonicalize().map_err(err)?;
+		let runtime = {
+			let runtime = crate::runtime_install::Selection::discover()?;
+			let path = runtime.source.clone();
+			selection = Some(runtime);
+			path
+		};
+
 		let selected = scratch_path()?;
 		let manifest = match proposed {
 			Some(p)
@@ -271,6 +273,7 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 		entries,
 		scratch,
 		offline,
+		runtime: selection,
 	})
 }
 fn private_dir(path: &Path) -> Result<(), String> {
@@ -395,6 +398,9 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		}
 		if fresh.candidate.added.is_empty() {
 			return Ok(());
+		}
+		if let Some(runtime) = &fresh.runtime {
+			runtime.validate()?;
 		}
 		if fresh.scratch {
 			create_scratch(&fresh)?;

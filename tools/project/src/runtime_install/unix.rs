@@ -25,7 +25,7 @@ fn digest(s: &str) -> bool {
 fn identity(tree: &str) -> String {
 	hash(format!("rnx-installed-runtime-v1\n{tree}\n").as_bytes())
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct Installation {
 	pub format: u32,
@@ -170,6 +170,88 @@ fn validate(root: &Path, id: &str) -> Result<Installation, String> {
 		));
 	}
 	Ok(d)
+}
+const INSTALL_HELP: &str = "no runtime is installed; run rnx-project runtime install --from /path/to/rnx; or open an existing project with rnx-project session --manifest /path/to/rnx.toml";
+
+fn current() -> Result<(PathBuf, Installation), String> {
+	let root = storage::selected()?;
+	if !storage::exists(&root)? {
+		return Err(INSTALL_HELP.into());
+	}
+	storage::dir(&root)?;
+	if !storage::exists(&root.join("current.json"))? {
+		return Err(INSTALL_HELP.into());
+	}
+	let c: Current = serde_json::from_slice(&storage::read(&root.join("current.json"), DOCUMENT)?)
+		.map_err(err)?;
+	if c.format != 1 || !digest(&c.id) {
+		return Err("invalid current runtime document".into());
+	}
+	storage::dir(&root.join("entries"))?;
+	let entry = root.join("entries").join(&c.id);
+	if !storage::exists(&entry)? {
+		return Err(format!(
+			"selected runtime installation {} is missing; run rnx-project runtime install --from /path/to/rnx",
+			c.id
+		));
+	}
+	let d = metadata(&entry, &c.id)?;
+	storage::dir(&entry.join("source"))?;
+	Ok((root, d))
+}
+
+/// A description-time selection. No Git, writer lock, or mutation here.
+pub(crate) struct Selection {
+	pub source: PathBuf,
+	pub notice: String,
+	installed: Option<(PathBuf, Installation)>,
+}
+impl Selection {
+	pub(crate) fn discover() -> Result<Self, String> {
+		if let Some(path) = std::env::var_os("RNX_DEP_RUNTIME") {
+			let path = PathBuf::from(path);
+			if !path.is_absolute() || path.to_str().is_none() {
+				return Err("RNX_DEP_RUNTIME must be an absolute Unicode path; export RNX_DEP_RUNTIME=/absolute/path/to/rnx".into());
+			}
+			let source = path
+				.canonicalize()
+				.map_err(|e| format!("RNX_DEP_RUNTIME override {}: {e}", path.display()))?;
+			return Ok(Self {
+				notice: format!("Runtime: override {}", source.display()),
+				source,
+				installed: None,
+			});
+		}
+		let (root, d) = current()?;
+		let source = root.join("entries").join(&d.id).join("source");
+		let notice = format!(
+			"Runtime: installation {} at {} (installed from {}, {}, {}, {})",
+			d.id,
+			source.display(),
+			d.source_path.display(),
+			d.source_commit.as_deref().unwrap_or("no source commit"),
+			if d.dirty_tracked {
+				"dirty tracked snapshot"
+			} else {
+				"clean tracked snapshot"
+			},
+			d.installed_utc
+		);
+		Ok(Self {
+			source,
+			notice,
+			installed: Some((root, d)),
+		})
+	}
+	pub(crate) fn validate(&self) -> Result<(), String> {
+		if let Some((root, expected)) = &self.installed {
+			let found = validate(root, &expected.id)?;
+			if &found != expected {
+				return Err("runtime installation changed; request consent again".into());
+			}
+		}
+		Ok(())
+	}
 }
 struct Temp(PathBuf);
 impl Drop for Temp {
@@ -426,6 +508,9 @@ pub(crate) fn cli(args: &[OsString]) -> Result<(), String> {
 				.ok_or("installation ID must be a full lowercase SHA-256 digest")?;
 			commands::install_signals()?;
 			let root = storage::selected()?;
+			if !storage::exists(&root.join("entries").join(id))? {
+				return Err(format!("unknown installation ID: {id}"));
+			}
 			storage::dir(&root)?;
 			let _lock = storage::lock(&root)?;
 			storage::reclaim(&root)?;
@@ -441,17 +526,7 @@ pub(crate) fn cli(args: &[OsString]) -> Result<(), String> {
 			Ok(())
 		}
 		"show" if args.len() == 1 => {
-			let root = storage::selected()?;
-			storage::dir(&root)?;
-			let c: Current =
-				serde_json::from_slice(&storage::read(&root.join("current.json"), DOCUMENT)?)
-					.map_err(err)?;
-			if c.format != 1 || !digest(&c.id) {
-				return Err("invalid current runtime document".into());
-			}
-			storage::dir(&root.join("entries"))?;
-			let d = metadata(&root.join("entries").join(&c.id), &c.id)?;
-			storage::dir(&root.join("entries").join(&c.id).join("source"))?;
+			let (root, d) = current()?;
 			println!(
 				"Selected runtime {}\nSource: {}",
 				d.id,
