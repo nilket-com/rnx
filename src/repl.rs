@@ -386,13 +386,20 @@ pub fn run(
 					.readline("Continue? [y/N] ")
 					.is_ok_and(|line| matches!(line.trim(), "y" | "Y" | "yes"))
 			});
-			if let Err(error) = answer {
-				eprintln!(
-					"dependency preparation refused: {}",
-					crate::format::terminal_safe(&error)
-				);
+			match answer {
+				Ok(true) => {
+					println!("restart is beginning");
+					Outcome::Quit
+				}
+				Ok(false) => Outcome::Continue,
+				Err(error) => {
+					eprintln!(
+						"dependency preparation refused: {}",
+						crate::format::terminal_safe(&error)
+					);
+					Outcome::Continue
+				}
 			}
-			Outcome::Continue
 		} else {
 			handle(
 				&mut session,

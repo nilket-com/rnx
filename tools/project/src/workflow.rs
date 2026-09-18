@@ -1,5 +1,6 @@
 mod add;
 mod shared;
+mod startup;
 mod transition;
 use crate::artifact::{self, Receipt};
 use crate::{

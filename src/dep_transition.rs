@@ -6,11 +6,11 @@ pub(crate) fn installed(mut names: Vec<String>) {
 	INSTALLED.with(|v| *v.borrow_mut() = names);
 }
 #[cfg(not(unix))]
-pub(crate) fn prepare(_: &str, _: impl FnOnce() -> bool) -> Result<(), String> {
+pub(crate) fn prepare(_: &str, _: impl FnOnce() -> bool) -> Result<bool, String> {
 	Err("dependency transitions are not supported on this platform".into())
 }
 #[cfg(unix)]
-pub(crate) fn prepare(input: &str, consent: impl FnOnce() -> bool) -> Result<(), String> {
+pub(crate) fn prepare(input: &str, consent: impl FnOnce() -> bool) -> Result<bool, String> {
 	unix::prepare(input, consent)
 }
 #[cfg(unix)]
@@ -233,7 +233,7 @@ mod unix {
 			}
 		}
 	}
-	pub(super) fn prepare(input: &str, consent: impl FnOnce() -> bool) -> Result<(), String> {
+	pub(super) fn prepare(input: &str, consent: impl FnOnce() -> bool) -> Result<bool, String> {
 		if !std::io::stdin().is_terminal() || !std::io::stdout().is_terminal() {
 			return Err(":dep requires a terminal; use rnx-project add, lock, build and session --manifest FILE".into());
 		}
@@ -282,6 +282,7 @@ mod unix {
 				),
 				(4, installed),
 				(5, if offline { "offline" } else { "online" }.into()),
+				(6, flags().join("\n")),
 			]),
 		)?;
 		let (kind, description) = helper.receive()?;
@@ -303,17 +304,17 @@ mod unix {
 				.map_err(err)?;
 			helper.finish()?;
 			println!("already installed; session unchanged");
-			return Ok(());
+			return Ok(false);
 		}
 		println!("{}", crate::format::terminal_safe(&description[&2]));
-		if description[&5].is_empty() || !consent() {
+		if !consent() {
 			helper.send(3, &wire::Fields::new())?;
 			helper
 				.socket
 				.shutdown(std::net::Shutdown::Write)
 				.map_err(err)?;
 			helper.finish()?;
-			return Ok(());
+			return Ok(false);
 		}
 		helper.send(4, &wire::Fields::from([(1, description[&1].clone())]))?;
 		helper
@@ -321,11 +322,78 @@ mod unix {
 			.shutdown(std::net::Shutdown::Write)
 			.map_err(err)?;
 		let (kind, result) = helper.receive()?;
-		if kind != 8 {
-			return Err("unprobed replacement refused; startup gate not enabled".into());
+		if kind == 8 {
+			wire::exact(&result, &[1])?;
+			helper.finish()?;
+			return Err(result[&1].clone());
 		}
-		wire::exact(&result, &[1])?;
+		if kind != 5 {
+			return Err("expected checked replacement".into());
+		}
+		wire::exact(&result, &[1, 2, 3])?;
+		let capsule = wire::capsule(&result[&2])?;
+		if capsule[&6] != result[&1] || !PathBuf::from(&result[&1]).is_absolute() {
+			return Err("replacement association mismatch".into());
+		}
 		helper.finish()?;
-		Err(result[&1].clone())
+		helper.check()?;
+		let next = Replacement {
+			path: result[&1].clone(),
+			association: result[&2].clone(),
+			stamp: result[&3].clone(),
+			flags: flags(),
+		};
+		next.recheck()?;
+		NEXT.with(|v| *v.borrow_mut() = Some(next));
+		Ok(true)
+	}
+	pub(super) struct Replacement {
+		path: String,
+		association: String,
+		stamp: String,
+		flags: Vec<String>,
+	}
+	impl Replacement {
+		fn recheck(&self) -> Result<(), String> {
+			if wire::stamp(std::path::Path::new(&self.path))? != self.stamp {
+				return Err("artifact changed before dependency restart".into());
+			}
+			Ok(())
+		}
+	}
+	thread_local! {static NEXT:RefCell<Option<Replacement>>=const{RefCell::new(None)};}
+	fn flags() -> Vec<String> {
+		std::env::args()
+			.skip(1)
+			.take_while(|a| a == "--no-splash" || a.starts_with("--color="))
+			.collect()
+	}
+	pub(super) fn finish(result: crate::Result<()>) -> crate::Result<()> {
+		let next = NEXT.with(|v| v.borrow_mut().take());
+		result?;
+		if let Some(next) = next {
+			next.recheck()
+				.map_err(|e| format!("dependency restart failed after cleanup: {e}"))?;
+			let error = Command::new(&next.path)
+				.args(&next.flags)
+				.arg("repl")
+				.env_remove("RNX_INTERNAL_DEP_FD")
+				.env_remove("RNX_INTERNAL_STARTUP_FD")
+				.env("RNX_INTERNAL_SESSION_V1", next.association)
+				.exec();
+			return Err(format!("dependency restart exec failed after cleanup: {error}").into());
+		}
+		Ok(())
+	}
+}
+
+pub(crate) fn finish(result: crate::Result<()>) -> crate::Result<()> {
+	#[cfg(unix)]
+	{
+		unix::finish(result)
+	}
+	#[cfg(not(unix))]
+	{
+		result
 	}
 }

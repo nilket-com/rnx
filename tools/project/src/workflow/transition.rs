@@ -105,8 +105,23 @@ struct Description {
 impl Description {
 	fn fields(&self) -> Result<protocol::Fields, String> {
 		let mut notice = format!(
-			"Project: {}\n{}\n",
+			"{}: {}\nAdding: {}\nAlready declared: {}\n{}\n",
+			if self.scratch {
+				"New scratch project"
+			} else {
+				"Project"
+			},
 			self.manifest.display(),
+			if self.candidate.added.is_empty() {
+				"(none)".into()
+			} else {
+				self.candidate.added.join(", ")
+			},
+			if self.candidate.existing.is_empty() {
+				"(none)".into()
+			} else {
+				self.candidate.existing.join(", ")
+			},
 			if self.offline {
 				"Offline: Cargo may not fetch sources."
 			} else {
@@ -176,7 +191,15 @@ fn scratch_path() -> Result<PathBuf, String> {
 		.join("rnx.toml"))
 }
 fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Description, String> {
-	protocol::exact(request, &[1, 2, 3, 4, 5])?;
+	protocol::exact(
+		request,
+		if request.contains_key(&6) {
+			&[1, 2, 3, 4, 5, 6]
+		} else {
+			&[1, 2, 3, 4, 5]
+		},
+	)?;
+	super::startup::flags(request.get(&6).map(String::as_str).unwrap_or(""))?;
 	let entries = catalogue::select(&request[&1].lines().map(str::to_owned).collect::<Vec<_>>())?;
 	let offline = match request[&5].as_str() {
 		"offline" => true,
@@ -384,7 +407,7 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			validate_association(&p, &request[&2], &request[&3], &request[&4])?;
 		}
 		let mut phase = "author";
-		let prepare = (|| {
+		let prepare: Result<(), String> = (|| {
 			eprintln!("dependency phase: author");
 			fault("dep-author")?;
 			p.add(&fresh.entries)?;
@@ -400,11 +423,25 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			p.verify_inputs(&lock)?;
 			let (checked, digest) = p.checked_artifact(&lock, &bytes, false, true)?;
 			checked.recheck()?;
-			let _replacement = association(&p, &lock, &checked, &digest)?;
-			// Gate 2 cannot advertise readiness before gate 3's real startup
-			// proof exists. No version-only or unprobed success fallback.
 			phase = "startup check";
-			Err::<(),String>("startup checking is not enabled yet; prepared artifact retained; old session unchanged".into())
+			eprintln!("dependency phase: startup check");
+			super::startup::check(&checked, request.get(&6).map(String::as_str).unwrap_or(""))?;
+			commands::check()?;
+			p.verify_inputs(&lock)?;
+			let (again, again_bytes) = p.read_lock()?;
+			if again != lock || again_bytes != bytes {
+				return Err("lock changed during startup check".into());
+			}
+			checked.recheck()?;
+			let replacement = association(&p, &lock, &checked, &digest)?;
+			let stamp = protocol::stamp(checked.path())?;
+			checked.recheck()?;
+			protocol::write(
+				&mut socket,
+				5,
+				&protocol::Fields::from([(1, text(checked.path())?), (2, replacement), (3, stamp)]),
+			)?;
+			Ok(())
 		})();
 		prepare.map_err(|e|format!("{phase}: {e}; project files may have been published; retry with rnx-project lock/build/session --manifest {:?}",p.manifest))
 	})();

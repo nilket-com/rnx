@@ -6,6 +6,7 @@
 //! With the default `count-allocations` feature this library supplies the
 //! process's global allocator. The executable must not supply a second one.
 pub use rune;
+mod dep_startup;
 mod dep_transition;
 #[cfg(unix)]
 mod dep_wire;
@@ -129,9 +130,15 @@ Flags for `run`, before the file: --budget N, --debug-source.";
 /// across session resets. As with the stock executable, some dispatch paths
 /// exit the process; ordinary returns preserve Rust's `Termination` behavior.
 pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std::error::Error>> {
-	main_inner(extensions)
+	let probe = dep_startup::Probe::take()?;
+	let result = main_inner(extensions, probe.is_some());
+	if let Some(probe) = probe {
+		probe.finish(result)
+	} else {
+		dep_transition::finish(result)
+	}
 }
-fn main_inner(extensions: Extensions) -> Result<()> {
+fn main_inner(extensions: Extensions, startup: bool) -> Result<()> {
 	#[cfg(feature = "test-support")]
 	let _config_reads = config::ReadReport;
 	let mut args = match env::command_line(std::env::args_os()) {
@@ -165,6 +172,9 @@ fn main_inner(extensions: Extensions) -> Result<()> {
 		args.remove(0);
 	}
 
+	if startup && !(args.is_empty() || args.as_slice() == ["repl"]) {
+		return Err("startup probe requires session mode".into());
+	}
 	// Answered before a context exists, because neither needs one and the
 	// context is three quarters of what a trivial command costs: record 0030
 	// measured 4.2 ms for `version` against 0.56 ms for a binary that exits
@@ -226,7 +236,14 @@ fn main_inner(extensions: Extensions) -> Result<()> {
 	// HTTP uses the same lifecycle as extensions, even in the stock executable.
 	// Keep activation after version/help and pure settings evaluation.
 	let lifecycle = lifecycle::Lifecycle::new(true)?;
-	let result = serve(args, extensions, worker_transport, splash, &lifecycle);
+	let result = serve(
+		args,
+		extensions,
+		worker_transport,
+		splash,
+		&lifecycle,
+		startup,
+	);
 	lifecycle.close()?;
 	result
 }
@@ -236,6 +253,7 @@ fn serve(
 	worker_transport: Option<worker::Transport>,
 	splash: bool,
 	lifecycle: &lifecycle::Lifecycle,
+	startup: bool,
 ) -> Result<()> {
 	if args.is_empty() || args.first().is_some_and(|a| a == "repl") {
 		dep_transition::installed(extensions.names());
@@ -264,6 +282,21 @@ fn serve(
 			&mut context,
 			lifecycle,
 		));
+	}
+	if startup {
+		let mut session = session::Session::with_ceiling(context, repl::ceiling())?
+			.with_http(http.clone())
+			.with_lifecycle(lifecycle.clone());
+		crate::memory::record_baseline();
+		session.sample();
+		let result = session.eval("42").map_err(|e| e.presented())?;
+		let matched = result.as_integer::<i64>().ok() == Some(42);
+		drop(result);
+		session.close()?;
+		if !matched {
+			return Err("startup probe did not return 42".into());
+		}
+		return Ok(());
 	}
 	if let Some(transport) = worker_transport {
 		// Fatal transport errors are not script stderr or a successful cell.

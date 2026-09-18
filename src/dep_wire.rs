@@ -96,6 +96,30 @@ pub fn capsule(s: &str) -> Result<Fields, String> {
 	exact(&f, &[1, 2, 3, 4, 5, 6])?;
 	Ok(f)
 }
+/// The Unix part of the 0059 metadata policy, used only across private handover.
+#[cfg(unix)]
+pub fn stamp(path: &std::path::Path) -> Result<String, String> {
+	use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+	let f = std::fs::OpenOptions::new()
+		.read(true)
+		.custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+		.open(path)
+		.map_err(|e| e.to_string())?;
+	let m = f.metadata().map_err(|e| e.to_string())?;
+	if !m.is_file() || !(0..1_000_000_000).contains(&m.mtime_nsec()) {
+		return Err("invalid handover artifact metadata".into());
+	}
+	Ok(format!(
+		"{}:{}:{}:{}:{}:{}",
+		m.len(),
+		m.mtime(),
+		m.mtime_nsec(),
+		m.mode() & 0o111 != 0,
+		m.dev(),
+		m.ino()
+	))
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
