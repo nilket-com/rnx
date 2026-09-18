@@ -330,7 +330,14 @@ mod unix {
 		if kind != 5 {
 			return Err("expected checked replacement".into());
 		}
-		wire::exact(&result, &[1, 2, 3])?;
+		wire::exact(
+			&result,
+			if result.contains_key(&4) {
+				&[1, 2, 3, 4]
+			} else {
+				&[1, 2, 3]
+			},
+		)?;
 		let capsule = wire::capsule(&result[&2])?;
 		if capsule[&6] != result[&1] || !PathBuf::from(&result[&1]).is_absolute() {
 			return Err("replacement association mismatch".into());
@@ -341,6 +348,7 @@ mod unix {
 			path: result[&1].clone(),
 			association: result[&2].clone(),
 			stamp: result[&3].clone(),
+			reopen: result.get(&4).cloned(),
 			flags: flags(),
 		};
 		next.recheck()?;
@@ -351,6 +359,7 @@ mod unix {
 		path: String,
 		association: String,
 		stamp: String,
+		reopen: Option<String>,
 		flags: Vec<String>,
 	}
 	impl Replacement {
@@ -374,7 +383,15 @@ mod unix {
 		if let Some(next) = next {
 			next.recheck()
 				.map_err(|e| format!("dependency restart failed after cleanup: {e}"))?;
-			let error = Command::new(&next.path)
+			let mut command = Command::new(&next.path);
+			command.env_remove("RNX_INTERNAL_DEP_REOPEN_V1");
+			if let Some(reopen) = next.reopen {
+				command.env(
+					"RNX_INTERNAL_DEP_REOPEN_V1",
+					format!("{}\n{reopen}", std::process::id()),
+				);
+			}
+			let error = command
 				.args(&next.flags)
 				.arg("repl")
 				.env_remove("RNX_INTERNAL_DEP_FD")
@@ -395,5 +412,25 @@ pub(crate) fn finish(result: crate::Result<()>) -> crate::Result<()> {
 	#[cfg(not(unix))]
 	{
 		result
+	}
+}
+
+/// A one-process announcement after successful replacement initialization.
+/// Children inherit routing metadata, but cannot repeat their parent's notice.
+pub(crate) fn reopen_notice() {
+	let Ok(value) = std::env::var("RNX_INTERNAL_DEP_REOPEN_V1") else {
+		return;
+	};
+	if value.len() > 65536 {
+		return;
+	}
+	let Some((pid, command)) = value.split_once('\n') else {
+		return;
+	};
+	if pid.parse::<u32>().ok() == Some(std::process::id()) {
+		println!(
+			"Reopen this scratch session:\n  {}",
+			crate::format::terminal_safe(command)
+		);
 	}
 }

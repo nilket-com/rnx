@@ -351,6 +351,7 @@ pub fn run(
 		// Restoring history loads text only; nothing here evaluates it.
 		let _ = editor.load_history(path);
 	}
+	crate::dep_transition::reopen_notice();
 	let limits = Limits::default();
 	let inspect_limits = InspectLimits::default();
 	if splash {

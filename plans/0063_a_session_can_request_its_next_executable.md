@@ -5,8 +5,9 @@ two-phase consent protocol below. Baseline: rnx `78c514d` / rnx-bench `ad0fb88`.
 Gate 1's isolated transition/ownership prototype is accepted in
 `_ownership_evidence.md`. Gate 2's product preparation/cancellation checkpoint
 is accepted in `_preparation_evidence.md`. Gate 3's real startup probe and
-handover are ready for review in `_startup_evidence.md`; readiness now requires
-the settings-aware eval and cleanup proof. Gates 4–6 remain open.
+handover are accepted in `_startup_evidence.md`. Gate 4's real Polars/PostgreSQL
+journeys and scratch reopen command are ready for review in
+`_dogfood_evidence.md`. Gates 5–6 remain open.
 
 ## Context
 

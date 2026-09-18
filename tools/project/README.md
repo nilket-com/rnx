@@ -312,3 +312,21 @@ Test-support adds pause points for publication and post-build edits; they are
 absent from the ordinary executable. The assembly probe remains a test-only
 adapter over private functions, not a second product CLI. Full workflow fixtures
 are in rnx-bench/probes/project-workflow. No tool implementation module is public.
+
+## Requesting adapters from a live session
+
+A session opened through this tool retains its project association. Type
+`:dep polars postgres` to request catalogue adapters: the tool describes the
+change, asks for consent, then adds, locks, builds or attaches, and checks actual
+startup before replacement. Already-installed names are a no-op. Use
+`:dep --offline polars` to forbid source downloads. This is a restart with binding
+loss, not dynamic loading; saved history is reloaded but never replayed.
+
+For a stock session, select the source checkout with `RNX_DEP_RUNTIME` and locate
+this tool through PATH or `RNX_PROJECT_TOOL`. A retained scratch project is created
+only after consent. Its successful replacement prints the quoted command to
+reopen it. Projects and scratch consumers reuse the same shared assembly when
+their native inputs match. The working directory stays the caller's directory.
+A private startup probe executes builders before the replacement executes them
+again. Failed preparation preserves the old session, but project edits may remain;
+cleanup or exec failure after the restart announcement is terminal.

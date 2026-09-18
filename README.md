@@ -291,6 +291,27 @@ unsupported-terminal modes (`dumb`, `cons25`, `emacs`, case-insensitively)
 write prompts even for pipes, and now write numbered results there too.
 Script output, colon-command output, and diagnostics do not get result markers.
 
+On Linux, `:dep polars` or `:dep polars postgres` prepares another executable
+and restarts this session after you consent. Put `rnx-project` on PATH (or set
+`RNX_PROJECT_TOOL` to its absolute path). A stock session also needs
+`export RNX_DEP_RUNTIME=/absolute/path/to/rnx` pointing at a source checkout.
+A session opened with `rnx-project session --manifest ...` edits that project;
+a stock session creates a retained scratch project under your user state directory.
+The replacement prints a command to reopen that scratch session later.
+
+The notice lists the additions, existing declarations and build cost before
+asking. `:dep --offline polars` prevents Cargo from fetching sources. The first
+Polars build can take about 100 seconds with registry sources cached; another
+consumer of the same assembly attaches without compiling. A successful restart
+loses bindings and declarations, resets numbering, keeps your working directory,
+and reloads saved history without replaying it. Preparation failure leaves the
+old session usable, although authored project files can remain. Once
+`restart is beginning` is printed, cleanup or exec failure ends the process.
+Builders run once in the startup probe and again in the replacement, so external
+startup side effects can happen twice. Native extensions become available;
+mapped Rune sources still do not load at the prompt. Runtime installation without
+a source checkout is the next record after 0063.
+
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's
 parser says it is unfinished (two blank lines abandon it), values rendered

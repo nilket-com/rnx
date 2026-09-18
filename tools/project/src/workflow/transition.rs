@@ -436,11 +436,19 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			let replacement = association(&p, &lock, &checked, &digest)?;
 			let stamp = protocol::stamp(checked.path())?;
 			checked.recheck()?;
-			protocol::write(
-				&mut socket,
-				5,
-				&protocol::Fields::from([(1, text(checked.path())?), (2, replacement), (3, stamp)]),
-			)?;
+			let mut ready =
+				protocol::Fields::from([(1, text(checked.path())?), (2, replacement), (3, stamp)]);
+			if fresh.scratch {
+				ready.insert(
+					4,
+					format!(
+						"{} session --manifest {}",
+						super::add::shell_word(&std::env::current_exe().map_err(err)?)?,
+						super::add::shell_word(&p.manifest)?
+					),
+				);
+			}
+			protocol::write(&mut socket, 5, &ready)?;
 			Ok(())
 		})();
 		prepare.map_err(|e|format!("{phase}: {e}; project files may have been published; retry with rnx-project lock/build/session --manifest {:?}",p.manifest))

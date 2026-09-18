@@ -126,7 +126,7 @@ impl Temporary {
 		Ok(())
 	}
 }
-fn shell_word(path: &Path) -> Result<String, String> {
+pub(super) fn shell_word(path: &Path) -> Result<String, String> {
 	let s = path.to_str().ok_or("manifest path is not Unicode")?;
 	Ok(format!("'{}'", s.replace('\'', "'\\''")))
 }
