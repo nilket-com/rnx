@@ -376,3 +376,22 @@ can be selected later. After the selection rename, a sync failure reports that t
 selection may already have changed. Entries are retained whole; removal and automatic
 upgrades are not implemented. Metadata records source provenance and the installing
 tool's version and digest, but launcher/runtime compatibility is not checked.
+
+### Measured installation costs
+
+On the 0064 Linux host, a 420-file snapshot held 6.45 MB of source plus 1.99 MB
+of independent Git data. Its full installed directory occupied 11.47 MB including
+filesystem allocation and directories. Fresh-store installation medians were
+about 1.5 seconds in the pinned-core experiment. Compiled assemblies are separate:
+the retained Polars entry occupied about 1.72 GB, and Polars plus PostgreSQL about
+1.75 GB. New identities can retain additional whole entries; eviction is not yet
+implemented.
+
+Cold, offline builds with registry sources already cached took about 111–116
+seconds. Ready attachment, including full artifact hashing, took about 0.30–0.33
+seconds with compilation trapped. For the small `polars::lit(1).is_ok()` launch
+workload, installed projects took about 29 ms with Polars and 33 ms with both
+adapters, versus about 6 ms direct. The matched checkout projects were roughly
+1 ms faster. These are single-host observations, and launch overhead grows with
+the declared native inventory; there is no adapter-independent latency guarantee.
+Default source checks and explicit `--verify` retain their existing coverage.
