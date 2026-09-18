@@ -2,6 +2,9 @@
 
 Status: accepted for implementation after the 2026-09-18 draft review, with
 F1 on runtime provenance and unchecked launcher/runtime skew folded in below.
+Gate 1's isolated installed-source/index prototype passes on Linux and is ready
+for review; see [the evidence](0064_a_runtime_installation_outlives_its_checkout_index_evidence.md).
+Gates 2–6 remain open; no product implementation changed.
 Baseline: rnx `1ecc35c` / rnx-bench `9aa378d`.
 0063 is accepted and closed on Linux. This record removes its source-checkout
 environment setup from ordinary stock `:dep` use. Native-inventory optimization
