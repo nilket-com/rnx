@@ -27,6 +27,9 @@ pub struct Extensions {
 }
 
 impl Extensions {
+	pub(crate) fn names(&self) -> Vec<String> {
+		self.builders.iter().map(|e| e.name.to_owned()).collect()
+	}
 	/// No native extensions; this is the stock rnx executable.
 	pub fn none() -> Self {
 		Self {

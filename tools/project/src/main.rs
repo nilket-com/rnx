@@ -5,6 +5,7 @@ mod cache_identity;
 mod cache_storage;
 mod catalogue;
 mod commands;
+mod dep_wire;
 mod fingerprint;
 mod generate;
 mod graph;

@@ -5,6 +5,11 @@ use std::{
 	sync::atomic::{AtomicI32, Ordering},
 	time::Duration,
 };
+static DEADLINE: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+#[allow(dead_code)]
+pub(crate) fn preparation_deadline() {
+	let _ = DEADLINE.set(std::time::Instant::now() + Duration::from_secs(1800));
+}
 static INTERRUPTED: AtomicI32 = AtomicI32::new(0);
 #[cfg(unix)]
 extern "C" fn interrupt(signal: libc::c_int) {
@@ -39,7 +44,12 @@ pub(crate) fn signal_status() -> i32 {
 	128 + INTERRUPTED.load(Ordering::Relaxed)
 }
 pub(crate) fn check() -> Result<(), String> {
-	if interrupted() {
+	if DEADLINE
+		.get()
+		.is_some_and(|d| std::time::Instant::now() >= *d)
+	{
+		Err("preparation exceeded its 30-minute deadline".into())
+	} else if interrupted() {
 		Err("interrupted".into())
 	} else {
 		Ok(())
@@ -47,6 +57,9 @@ pub(crate) fn check() -> Result<(), String> {
 }
 pub(crate) fn run(mut command: Command, capture: bool) -> Result<Vec<u8>, String> {
 	check()?;
+	command
+		.env_remove("RNX_INTERNAL_DEP_FD")
+		.env_remove("RNX_INTERNAL_SESSION_V1");
 	command.stdin(Stdio::null()).stderr(Stdio::inherit());
 	if capture {
 		command.stdout(Stdio::piped());
@@ -83,11 +96,11 @@ pub(crate) fn run(mut command: Command, capture: bool) -> Result<Vec<u8>, String
 	};
 	let mut captured = None;
 	let result = loop {
-		if interrupted() {
+		if let Err(error) = check() {
 			kill();
 			let _ = child.kill();
 			let _ = child.wait();
-			break Err("interrupted".into());
+			break Err(error);
 		}
 		match child.try_wait() {
 			Ok(Some(status)) => {

@@ -6,6 +6,9 @@
 //! With the default `count-allocations` feature this library supplies the
 //! process's global allocator. The executable must not supply a second one.
 pub use rune;
+mod dep_transition;
+#[cfg(unix)]
+mod dep_wire;
 mod extensions;
 mod lifecycle;
 pub use extensions::Extensions;
@@ -234,6 +237,9 @@ fn serve(
 	splash: bool,
 	lifecycle: &lifecycle::Lifecycle,
 ) -> Result<()> {
+	if args.is_empty() || args.first().is_some_and(|a| a == "repl") {
+		dep_transition::installed(extensions.names());
+	}
 	let mut extensions = Some(extensions);
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = install_core(&mut context)?;

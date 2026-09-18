@@ -2,8 +2,10 @@
 
 Status: accepted for implementation after the 2026-09-17 review, with the
 two-phase consent protocol below. Baseline: rnx `78c514d` / rnx-bench `ad0fb88`.
-Gate 1's isolated transition/ownership prototype passes and is ready for review
-in `_ownership_evidence.md`. Product integration and gates 2–6 remain open.
+Gate 1's isolated transition/ownership prototype is accepted in
+`_ownership_evidence.md`. Gate 2's product preparation/cancellation checkpoint
+is ready for review in `_preparation_evidence.md`. It deliberately cannot report
+ready or restart before gate 3's real startup proof. Gates 3–6 remain open.
 
 ## Context
 

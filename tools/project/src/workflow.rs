@@ -1,5 +1,6 @@
 mod add;
 mod shared;
+mod transition;
 use crate::artifact::{self, Receipt};
 use crate::{
 	assembly, commands,
@@ -27,7 +28,7 @@ struct Project {
 	base: PathBuf,
 	dot: PathBuf,
 	stage: PathBuf,
-	_guard: File,
+	_guard: Option<File>,
 }
 impl Project {
 	fn open(path: &Path) -> Result<Self, String> {
@@ -74,7 +75,7 @@ impl Project {
 			base,
 			dot: dot.clone(),
 			stage: dot.join("assembly"),
-			_guard: guard,
+			_guard: Some(guard),
 		})
 	}
 	fn atomic(&self, destination: &Path, bytes: &[u8]) -> Result<(), String> {
@@ -379,10 +380,14 @@ impl Project {
 		eprintln!("built {}", artifact.display());
 		Ok(())
 	}
-	fn launch(self, mode: Launch, verify: bool) -> Result<(), String> {
-		let (lock, bytes) = self.read_lock()?;
-		self.verify_inputs(&lock)?;
-		let lock_digest = hash(&bytes);
+	fn checked_artifact(
+		&self,
+		lock: &Lock,
+		bytes: &[u8],
+		verify: bool,
+		refresh: bool,
+	) -> Result<(artifact::Checked, String), String> {
+		let lock_digest = hash(bytes);
 		let receipt_path = self.dot.join("receipt.json");
 		let receipt = match fs::symlink_metadata(&receipt_path) {
 			Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
@@ -441,7 +446,7 @@ impl Project {
 			}
 		};
 		let checked = artifact::check(&path, &digest, stamp, verify)?;
-		if stamp != Some(&checked.stamp()) {
+		if refresh && stamp != Some(&checked.stamp()) {
 			fault("before-receipt-refresh")?;
 			checked.recheck()?;
 			self.atomic(
@@ -450,11 +455,18 @@ impl Project {
 					format: if identity.is_some() { 3 } else { 2 },
 					assembly_key: identity.as_ref().map(|i| i.key().to_owned()),
 					lock_sha256: lock_digest,
-					executable_sha256: digest,
+					executable_sha256: digest.clone(),
 					stamp: Some(checked.stamp()),
 				})?,
 			)?;
 		}
+
+		Ok((checked, digest))
+	}
+	fn launch(self, mode: Launch, verify: bool) -> Result<(), String> {
+		let (lock, bytes) = self.read_lock()?;
+		self.verify_inputs(&lock)?;
+		let (checked, digest) = self.checked_artifact(&lock, &bytes, verify, true)?;
 
 		let mut command = match mode {
 			Launch::Run(args) => {
@@ -463,16 +475,27 @@ impl Project {
 				let map_bytes = lock.sources.encode()?;
 				let map = maps.join(format!("{}.json", hash(&map_bytes)));
 				crate::maps::ensure(&map, &map_bytes, || self.atomic(&map, &map_bytes))?;
-				assembly::command_checked(
+				let mut command = assembly::command_checked(
 					&checked,
 					Some(&map),
 					Path::new(&lock.sources.entry),
 					&args,
-				)?
+				)?;
+				command.env_remove(transition::CARRIER);
+				command
 			}
-			Launch::Session { flags } => assembly::interactive_checked(&checked, &flags, None),
+			Launch::Session { flags } => {
+				let mut command = assembly::interactive_checked(&checked, &flags, None);
+				command.env(
+					transition::CARRIER,
+					transition::association(&self, &lock, &checked, &digest)?,
+				);
+				command
+			}
 			Launch::Eval { flags, source } => {
-				assembly::interactive_checked(&checked, &flags, Some(&source))
+				let mut command = assembly::interactive_checked(&checked, &flags, Some(&source));
+				command.env_remove(transition::CARRIER);
+				command
 			}
 		};
 		commands::check()?;
@@ -599,6 +622,9 @@ enum Launch {
 }
 
 pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
+	if std::env::var_os("RNX_INTERNAL_DEP_FD").is_some() {
+		return transition::serve(args);
+	}
 	if args.first().and_then(|s| s.to_str()) == Some("adapters") {
 		if args.len() != 1 {
 			return Err("adapters takes no arguments".into());

@@ -49,7 +49,11 @@ impl rustyline::Prompt for NumberedPrompt {
 /// The session's commands and their one-line descriptions, which are what
 /// `:help` shows: the description lives with the command, not in a second
 /// catalogue.
-pub const COMMANDS: [(&str, &str); 8] = [
+pub const COMMANDS: [(&str, &str); 9] = [
+	(
+		":dep",
+		"prepare native dependencies and restart after confirmation",
+	),
 	(":quit", "(:q) end the session"),
 	(":clear", "clear the screen, keeping session state"),
 	(
@@ -376,14 +380,29 @@ pub fn run(
 		if let Some(path) = &history {
 			let _ = editor.append_history(path);
 		}
-		let outcome = handle(
-			&mut session,
-			&host,
-			&input,
-			&limits,
-			&inspect_limits,
-			&prompt,
-		);
+		let outcome = if input.split_whitespace().next() == Some(":dep") {
+			let answer = crate::dep_transition::prepare(&input, || {
+				editor
+					.readline("Continue? [y/N] ")
+					.is_ok_and(|line| matches!(line.trim(), "y" | "Y" | "yes"))
+			});
+			if let Err(error) = answer {
+				eprintln!(
+					"dependency preparation refused: {}",
+					crate::format::terminal_safe(&error)
+				);
+			}
+			Outcome::Continue
+		} else {
+			handle(
+				&mut session,
+				&host,
+				&input,
+				&limits,
+				&inspect_limits,
+				&prompt,
+			)
+		};
 		// The input buffer is disposable too, and the record excludes it from
 		// the sample, so it goes before the sample rather than at the end of
 		// the iteration.
