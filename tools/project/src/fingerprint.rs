@@ -146,6 +146,8 @@ fn hash_file(
 ) -> Result<(wire::File, fs::Metadata, fs::Metadata), String> {
 	components_no_links(root, &relative)?;
 	let path = root.join(relative);
+	#[cfg(unix)]
+	reuse::before_read(&path)?;
 	let before = regular(&path)?;
 	if before.len() > allowance.bytes {
 		return Err(fail(&path, "fingerprint exceeds byte allowance"));
@@ -173,6 +175,8 @@ fn hash_file(
 	}
 	#[cfg(test)]
 	tests::after_open(&path);
+	#[cfg(feature = "test-support")]
+	trace::event(serde_json::json!({"read":path}));
 	let mut content = blake3::Hasher::new();
 	let mut remaining = opened.len();
 	let mut buffer = [0u8; 16384];
@@ -204,6 +208,8 @@ fn hash_file(
 	if after.len() != opened.len() || executable(&after) != executable(&opened) {
 		return Err(fail(&path, "file changed during read"));
 	}
+	#[cfg(unix)]
+	reuse::after_read(&path, &after);
 	let digest = content.finalize();
 	if let Some(tree) = tree.as_mut() {
 		tree.update(digest.as_bytes());
@@ -287,6 +293,8 @@ pub(crate) fn one_observed(
 
 /// Git output is bounded independently from file content. Kill and reap on overflow.
 fn git(root: &Path, args: &[&str], limit: usize) -> Result<Vec<u8>, String> {
+	#[cfg(feature = "test-support")]
+	trace::event(serde_json::json!({"git":root,"args":args}));
 	let mut child = Command::new("git")
 		.arg("-C")
 		.arg(root)
@@ -386,3 +394,21 @@ pub(crate) fn native_using(
 pub(crate) mod legacy;
 #[cfg(test)]
 mod tests;
+
+#[cfg(unix)]
+mod reuse;
+#[cfg(feature = "test-support")]
+pub(crate) mod trace;
+pub(crate) fn many(roots: Vec<PathBuf>, allowance: &mut Allowance) -> Result<Vec<Tree>, String> {
+	#[cfg(unix)]
+	{
+		reuse::many(roots, allowance)
+	}
+	#[cfg(not(unix))]
+	{
+		roots
+			.into_iter()
+			.map(|root| native(&root, allowance))
+			.collect()
+	}
+}

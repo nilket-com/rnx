@@ -18,6 +18,47 @@ use std::{ffi::OsString, path::Path};
 fn run() -> Result<(), String> {
 	let args: Vec<OsString> = std::env::args_os().skip(1).collect();
 	match args.first().and_then(|a| a.to_str()) {
+		Some("nested-inventory") if args.len() == 2 => {
+			#[derive(serde::Deserialize)]
+			struct Config {
+				roots: Vec<std::path::PathBuf>,
+				candidate: bool,
+				entries: usize,
+				bytes: u64,
+				#[serde(default)]
+				repeat: bool,
+			}
+			let c: Config =
+				serde_json::from_slice(&std::fs::read(&args[1]).map_err(|e| e.to_string())?)
+					.map_err(|e| e.to_string())?;
+			let mut a = fingerprint::Allowance::bounded(c.entries, c.bytes);
+			let roots = c.roots.clone();
+			let answer = if c.candidate {
+				fingerprint::many(c.roots, &mut a)
+			} else {
+				c.roots
+					.into_iter()
+					.collect::<std::collections::BTreeSet<_>>()
+					.into_iter()
+					.map(|p| {
+						let tree = fingerprint::native(&p, &mut a)?;
+						fingerprint::trace::between(&p)?;
+						Ok(tree)
+					})
+					.collect::<Result<Vec<_>, String>>()
+			};
+			let repeated = if c.repeat {
+				Some(fingerprint::many(
+					roots,
+					&mut fingerprint::Allowance::bounded(c.entries, c.bytes),
+				))
+			} else {
+				None
+			};
+			println!("{}",serde_json::to_string(&serde_json::json!({"answer":answer,"repeated":repeated,"events":fingerprint::trace::take(),"remaining_bytes":a.remaining_bytes()})).map_err(|e|e.to_string())?);
+			Ok(())
+		}
+
 		Some(version @ ("fingerprint-v1" | "fingerprint-v2")) if args.len() == 5 => {
 			let mode = args[1].to_str().ok_or("mode is not Unicode")?;
 			let path = Path::new(&args[2]);

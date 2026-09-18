@@ -132,10 +132,7 @@ pub(crate) fn native(
 	if packages.windows(2).any(|p| p[0].id == p[1].id) {
 		return Err("duplicate Cargo package identity".into());
 	}
-	let mut trees = vec![];
-	for root in roots {
-		trees.push(fingerprint::native(&root, allowance)?);
-	}
+	let trees = fingerprint::many(roots.into_iter().collect(), allowance)?;
 	// Inspect all ancestor manifests, not just metadata.workspace_root (which is
 	// the generated wrapper's workspace). Explicit workspace redirects are followed.
 	let mut external = BTreeMap::new();

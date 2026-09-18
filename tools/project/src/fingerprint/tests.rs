@@ -434,3 +434,58 @@ fn duplicate_framed_names_refuse() {
 		.contains("duplicate")
 	);
 }
+
+#[cfg(all(unix, feature = "test-support"))]
+#[test]
+fn nested_observations_end_after_each_call() {
+	// The test runner may inherit even harmless GIT_PAGER. Production correctly
+	// falls back for every GIT_* variable; isolate this eligibility test without
+	// mutating the process environment shared by other tests.
+	let routing = std::env::vars_os()
+		.filter(|(k, _)| k.to_string_lossy().starts_with("GIT_"))
+		.collect::<Vec<_>>();
+	if !routing.is_empty() {
+		let mut child = Command::new(std::env::current_exe().unwrap());
+		child.args([
+			"fingerprint::tests::nested_observations_end_after_each_call",
+			"--exact",
+			"--test-threads=1",
+		]);
+		for (key, _) in routing {
+			child.env_remove(key);
+		}
+		assert!(child.status().unwrap().success());
+		return;
+	}
+	let t = Temp::new();
+	t.write("base", b"runtime");
+	t.write("adapter/lib.rs", b"adapter");
+	t.init();
+	let roots = vec![t.0.clone(), t.0.join("adapter")];
+	trace::take();
+	let first = many(roots.clone(), &mut Allowance::default()).unwrap();
+	let events = trace::take();
+	assert_eq!(events.iter().filter(|e| e.get("read").is_some()).count(), 2);
+	assert_eq!(events.iter().filter(|e| e.get("git").is_some()).count(), 3);
+	assert_eq!(
+		first,
+		many(roots.clone(), &mut Allowance::default()).unwrap()
+	);
+	let again = trace::take();
+	assert_eq!(events, again);
+	t.write("adapter/lib.rs", b"changed");
+	let changed = many(roots, &mut Allowance::default()).unwrap();
+	assert_ne!(first[0].blake3, changed[0].blake3);
+	assert_ne!(first[1].blake3, changed[1].blake3);
+	// A failed call cannot retain a partial observation either.
+	assert!(many(vec![t.0.clone()], &mut Allowance::bounded(1, 100)).is_err());
+	trace::take();
+	assert!(many(vec![t.0.clone()], &mut Allowance::default()).is_ok());
+	assert_eq!(
+		trace::take()
+			.iter()
+			.filter(|e| e.get("read").is_some())
+			.count(),
+		2
+	);
+}
