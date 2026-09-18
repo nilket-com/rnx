@@ -94,10 +94,36 @@ impl Project {
 			.map_err(err)?;
 		Ok(())
 	}
+	fn recovery(&self, reason: impl std::fmt::Display) -> String {
+		let commands = (|| {
+			let tool = add::shell_word(&std::env::current_exe().map_err(err)?)?;
+			let manifest = add::shell_word(&self.manifest)?;
+			Ok::<_, String>(format!(
+				"{tool} lock --manifest {manifest}\n{tool} build --manifest {manifest}"
+			))
+		})();
+		format!(
+			"{reason}; project {}\n{}\nRelocking retains old assemblies and runtimes; a new Polars assembly can use another approximately 1.5 GB.",
+			self.manifest.display(),
+			commands.unwrap_or_else(|e| format!("cannot render recovery commands: {e}"))
+		)
+	}
+	fn format_refusal(&self, kind: &str, bytes: &[u8], error: String) -> String {
+		// Inspect only the envelope of a refused document. This neither validates
+		// legacy content nor turns an unknown/corrupt document into a migration.
+		#[derive(serde::Deserialize)]
+		struct Envelope {
+			format: u32,
+		}
+		let version = serde_json::from_slice::<Envelope>(bytes)
+			.map(|e| format!(" (envelope format {})", e.format))
+			.unwrap_or_default();
+		self.recovery(format!("invalid or unsupported {kind}{version}: {error}"))
+	}
 	fn read_lock(&self) -> Result<(Lock, Vec<u8>), String> {
 		let bytes = input::read(&self.base.join("rnx.lock"), input::DOCUMENT_LIMIT)
-			.map_err(|e| format!("{e}; run lock"))?;
-		let lock = Lock::decode(&bytes).map_err(|e| format!("invalid rnx.lock: {e}; run lock"))?;
+			.map_err(|e| self.recovery(e))?;
+		let lock = Lock::decode(&bytes).map_err(|e| self.format_refusal("rnx.lock", &bytes, e))?;
 		if !matches!(lock.assembly, Assembly::Executable { .. }) != lock.inputs.native.is_some() {
 			return Err("lock assembly and native inventory disagree; run lock".into());
 		}
@@ -301,12 +327,34 @@ impl Project {
 		Ok(())
 	}
 	fn build(&self, offline: bool) -> Result<(), String> {
+		// Refusing an old or invalid lock must preserve the old receipt too.
+		let (lock, bytes) = self.read_lock()?;
 		let receipt = self.dot.join("receipt.json");
 		if receipt.exists() {
 			fs::remove_file(&receipt).map_err(err)?;
 		}
-		let (lock, bytes) = self.read_lock()?;
 		self.verify_inputs(&lock)?;
+		if let Assembly::Executable { path, blake3 } = &lock.assembly {
+			let checked = artifact::check(Path::new(path), blake3, None, true)?;
+			fault("after-build")?;
+			self.verify_inputs(&lock)?;
+			if self.read_lock()?.1 != bytes {
+				return Err("lock changed during build; no receipt published".into());
+			}
+			checked.recheck()?;
+			self.atomic(
+				&receipt,
+				&wire::pretty(&Receipt {
+					format: 4,
+					assembly_key: None,
+					lock_blake3: hash(&bytes),
+					executable_blake3: blake3.clone(),
+					stamp: Some(checked.stamp()),
+				})?,
+			)?;
+			eprintln!("verified {path}");
+			return Ok(());
+		}
 		if let Some(identity) = lock.shared()? {
 			return self.build_shared(&lock, &bytes, &identity, offline);
 		}
@@ -390,10 +438,13 @@ impl Project {
 			Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
 			Err(e) => return Err(err(e)),
 			Ok(m) if !m.is_file() => return Err("receipt is not a regular file".into()),
-			Ok(_) => Some(Receipt::decode(&input::read(
-				&receipt_path,
-				input::DOCUMENT_LIMIT,
-			)?)?),
+			Ok(_) => {
+				let bytes = input::read(&receipt_path, input::DOCUMENT_LIMIT)?;
+				Some(
+					Receipt::decode(&bytes)
+						.map_err(|e| self.format_refusal("receipt", &bytes, e))?,
+				)
+			}
 		};
 		let identity = lock.shared()?;
 		if receipt.as_ref().is_some_and(|r| r.assembly_key.is_some())
@@ -420,15 +471,16 @@ impl Project {
 				(path, digest, r.stamp.as_ref())
 			}
 			Assembly::Executable { path, blake3 } => {
-				let stamp = receipt
+				let r = receipt
 					.as_ref()
-					.filter(|r| {
-						r.assembly_key.is_none()
-							&& r.lock_blake3 == lock_digest
-							&& r.executable_blake3 == *blake3
-					})
-					.and_then(|r| r.stamp.as_ref());
-				(PathBuf::from(path), blake3.clone(), stamp)
+					.ok_or_else(|| self.recovery("missing override receipt"))?;
+				if r.assembly_key.is_some()
+					|| r.lock_blake3 != lock_digest
+					|| r.executable_blake3 != *blake3
+				{
+					return Err(self.recovery("override receipt does not match lock"));
+				}
+				(PathBuf::from(path), blake3.clone(), r.stamp.as_ref())
 			}
 			Assembly::Generated { .. } => {
 				let r = receipt.as_ref().ok_or("missing receipt; run build")?;

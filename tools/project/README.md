@@ -129,28 +129,40 @@ source map or executable is written beside the manifest.
 Project-local state is under `.rnx/`, which contains its own `.gitignore` with
 `*`: command lock, derived source maps and receipt.json. New generated projects
 build their assembly, target tree and executable in the shared cache described
-below. Legacy format-1 projects keep those outputs under their own `.rnx/`.
+below. Old local artifacts are retained under their project’s `.rnx/`.
 An executable override writes only rnx.lock and removes an obsolete generated-form
-rnx.Cargo.lock after publication. Its first launch verifies the locked binary and
-establishes a private version-2 receipt; no Cargo is needed.
+rnx.Cargo.lock after publication. Run `build` to verify the locked binary and publish receipt 4; no Cargo is
+needed for that override build. Launch refuses a missing or mismatched receipt.
 
 ## Shared assemblies and existing projects
 
-An explicit `lock` now writes format 2 for generated projects. `build` reports
+An explicit `lock` now writes format 3 for generated and override projects. `build` reports
 `built shared assembly` or `attached shared assembly`, naming its key and artifact.
 Two projects with the same installed native dependencies and build context share
 that artifact; application scripts and source mounts stay project-specific.
 A ready hit skips compilation, but fully hashes the artifact before publishing
 the project's receipt. Launch never builds, attaches or repairs a missing cache.
 
-Existing format-1 generated locks remain local. Their version-1/2 receipts retain
-the prior migration and metadata-check rules. Launch and build do not upgrade
-those locks. Only an explicit relock selects the shared policy, after which an
-explicit build is required. The old local binary is never promoted into the
-cache: it was compiled at a different location. A valid existing shared entry may
-be reused instead of compiling again. Old local files are left in place.
-Format compatibility does not waive stale-input checks: updating a fingerprinted
-rnx checkout still requires relocking/rebuilding, just as before.
+Locks 1–2 and receipts 1–3 are no longer accepted by this tool. A refusal names
+the manifest and prints shell-quoted commands using the current tool's path:
+
+```sh
+rnx-project lock --manifest path/to/rnx.toml
+rnx-project build --manifest path/to/rnx.toml
+```
+
+Refusing an old lock or receipt does not rewrite it, refresh its stamp or execute
+its artifact. Explicit lock and build publish the current formats. Overrides
+keep their declared executable path but also require both commands. A generated
+assembly receives a new BLAKE3 key and is built at that key's retained location;
+an old binary is never promoted, because its build location can affect behavior.
+A second consumer can attach to a ready entry under the new key without compiling.
+
+Relocking reclaims no disk space. Old local binaries, shared entries and runtime
+installations stay: older tools, live sessions and kernels can still reference
+them. A new Polars assembly can occupy another approximately 1.5 GB. Removal is
+the record immediately after 0065; a superseded key is not proof of no users.
+Installed-runtime migration is the separate gate 3 checkpoint of 0065.
 
 To select a private root before locking:
 
@@ -199,10 +211,12 @@ interruption between replacements can leave a mismatched pair, which build/run
 recover. A normal publication failure attempts to restore the old JSON first and then
 the old Cargo bytes. There is no claim of an atomic snapshot against an editor or git.
 
-Build removes an old receipt before attempting work. A shared build rechecks
-project and assembly inputs before attachment and publishes a version-3 receipt
+Build first validates the lock, preserving the receipt on a format refusal, then
+removes the old receipt before attempting work. A shared build rechecks
+project and assembly inputs before attachment and publishes a version-4 receipt
 binding the project-lock digest, assembly key, executable digest and metadata
-stamp. A local build publishes version 2. The shared ready document is committed
+stamp. Override build publishes version 4 without an assembly key. The shared
+ready document (version 2) is committed
 last under a per-key lock, after full artifact verification; a waiting builder
 re-inspects readiness rather than treating lock release as success. A failed
 project attachment can leave a valid shared entry without a project receipt.
@@ -214,9 +228,7 @@ and reused; only run publishes or reads them. Missing generated receipts require
 build even if a shared entry is already ready. Old local receipts are never
 interpreted as shared attachments.
 
-A valid local version-1 receipt is fully checked once and migrated before launch.
-Overrides without a usable receipt check their already-locked digest to establish
-one. Malformed receipts refuse; launch never makes changed contents trusted by
+Old receipts require explicit lock and build. Malformed receipts refuse; launch never makes changed contents trusted by
 changing the digest. Receipt refresh is atomic. A harmless touch or identical
 replacement costs one full check, then subsequent launches become fast again.
 
@@ -287,7 +299,9 @@ Manifests are capped at 1 MiB, JSON control files and captured tool output at
 16 MiB. Fingerprinting has a shared per-snapshot allowance of 100,000 entries and
 512 MiB; compilation retains its separate 8 MiB source allowance. Native Git
 inventory output also has a 16 MiB cap. Tree hashes use the record's versioned
-SHA-256 framing with sorted paths, content lengths, bytes and executable mode.
+single-core BLAKE3 framing: sorted names, executable mode, content lengths and
+raw per-file BLAKE3 digests. Each reader hashes content once, with the unchanged
+16 KiB buffer. Nested roots are still inventoried independently at this checkpoint.
 
 ## Platform and validation
 
