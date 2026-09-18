@@ -12,9 +12,11 @@ Gate 4's isolated equivalence candidate is accepted on Linux; see [the nested ev
 Gate 5's first port and F2 stops are accepted and preserved in
 [the original port evidence](0065_a_launch_checks_each_native_file_once_product_evidence.md)
 and [the directory evidence](0065_a_launch_checks_each_native_file_once_directory_evidence.md).
-F3/F4 fixes ignored-build eligibility and repeats shared checks only once, but
-still misses the first-adapter gate; the new checkpoint is stopped for review with
-[phase attribution and scoped evidence](0065_a_launch_checks_each_native_file_once_scoped_evidence.md).
+F3/F4's ignored-build eligibility and scoped-check stop is accepted; see
+[the scoped evidence](0065_a_launch_checks_each_native_file_once_scoped_evidence.md).
+F5 removes the path-map bookkeeping cost; five first-adapter comparisons pass,
+but one eval repeat misses the strict bound by 0.016205 ms. It is stopped for
+review with the unchanged matrix and [positional attribution](0065_a_launch_checks_each_native_file_once_position_evidence.md).
 Gate 5 remains open and gate 6 has not started. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
 0064 is closed on Linux. This record addresses native inventory after runtime
 installation; it does not introduce a persistent source-verification cache.

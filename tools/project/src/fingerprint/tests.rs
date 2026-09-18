@@ -461,12 +461,24 @@ fn nested_observations_end_after_each_call() {
 	t.write("base", b"runtime");
 	t.write("adapter/lib.rs", b"adapter");
 	t.write("second/lib.rs", b"second");
+	t.write("adapter/sub/深", b"nested");
+	t.write("adapter-other/lib.rs", b"sibling");
+	t.write("adapter.txt", b"before slash");
 	t.init();
 	let roots = vec![t.0.clone(), t.0.join("adapter"), t.0.join("second")];
 	trace::take();
 	let first = many(roots.clone(), &mut Allowance::default()).unwrap();
+	assert_eq!(
+		first[1]
+			.files
+			.iter()
+			.map(|f| f.path.as_str())
+			.collect::<Vec<_>>(),
+		["lib.rs", "sub/深"]
+	);
+	assert_eq!(first[2].files.len(), 1);
 	let events = trace::take();
-	assert_eq!(events.iter().filter(|e| e.get("read").is_some()).count(), 3);
+	assert_eq!(events.iter().filter(|e| e.get("read").is_some()).count(), 6);
 	assert_eq!(events.iter().filter(|e| e.get("git").is_some()).count(), 3);
 	assert_eq!(
 		events
@@ -498,6 +510,6 @@ fn nested_observations_end_after_each_call() {
 			.iter()
 			.filter(|e| e.get("read").is_some())
 			.count(),
-		3
+		6
 	);
 }

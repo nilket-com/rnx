@@ -299,7 +299,9 @@ charged to each root. Repository boundaries on the child-root ancestry or paths
 to tracked files prevent reuse. Ignored build directories are not walked and do
 not prevent reuse. Any inherited `GIT_*` variable, including the common
 `GIT_EDITOR`, still selects independent per-root inventory and its higher cost;
-there is no whitelist yet.
+there is no whitelist yet. In the measured eligible Git topology, three
+tool-issued Git calls create four Git processes because Git starts an internal
+child; call counts are not process counts.
 
 No observation is cached across commands. Every command reads source contents
 anew, but this is not an atomic snapshot. Shared Git administration and directory

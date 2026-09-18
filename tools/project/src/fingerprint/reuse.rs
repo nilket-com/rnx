@@ -1,6 +1,7 @@
 //! Invocation-local nested-root reuse, proved by record 0065 gate 4.
 use super::*;
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
+use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::MetadataExt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -31,8 +32,10 @@ fn observed(p: &Path) -> Result<Option<Stamp>, String> {
 }
 #[derive(Default)]
 struct State {
-	files: BTreeMap<PathBuf, Stamp>,
-	boundaries: BTreeMap<PathBuf, Option<Stamp>>,
+	last_directory: Vec<u8>,
+	directories: HashSet<Vec<u8>>,
+	files: Vec<Stamp>,
+	boundaries: Vec<(PathBuf, Option<Stamp>)>,
 }
 thread_local! { static ACTIVE:std::cell::Cell<bool>=const {std::cell::Cell::new(false)}; static STATE: std::cell::RefCell<State> = std::cell::RefCell::new(State::default()); }
 // Called by the bounded reader before opening each file, including all parent
@@ -46,18 +49,25 @@ pub(super) fn before_read(p: &Path) -> Result<(), String> {
 	let _clock = super::trace::phase("observation");
 	STATE.with(|s| {
 		let mut s = s.borrow_mut();
-		for dir in p.parent().unwrap().ancestors() {
+		let directory = p.parent().unwrap();
+		let bytes = directory.as_os_str().as_bytes();
+		if s.last_directory == bytes {
+			return Ok(());
+		}
+		s.last_directory.clear();
+		s.last_directory.extend_from_slice(bytes);
+		for dir in directory.ancestors() {
 			// A directory's ancestors were observed on its first visit. Reuse
 			// rechecks the complete boundary map before deriving the first child.
-			if s.boundaries.contains_key(dir) {
+			if !s.directories.insert(dir.as_os_str().as_bytes().to_vec()) {
 				break;
 			}
 			let directory = observed(dir)?;
 			let git_path = dir.join(".git");
 			let git_entry = observed(&git_path)?;
 			let boundary = git_entry.is_some();
-			s.boundaries.insert(dir.to_owned(), directory);
-			s.boundaries.insert(git_path, git_entry);
+			s.boundaries.push((dir.to_owned(), directory));
+			s.boundaries.push((git_path, git_entry));
 			if boundary {
 				break;
 			}
@@ -65,14 +75,15 @@ pub(super) fn before_read(p: &Path) -> Result<(), String> {
 		Ok(())
 	})
 }
-pub(super) fn after_read(p: &Path, m: &fs::Metadata) {
+pub(super) fn after_read(_p: &Path, m: &fs::Metadata) {
 	if !ACTIVE.with(|a| a.get()) {
 		return;
 	}
 	#[cfg(feature = "test-support")]
 	let _clock = super::trace::phase("observation");
 	STATE.with(|s| {
-		s.borrow_mut().files.insert(p.to_owned(), stamp(m));
+		// hash_files reads in the exact order retained by Tree::files.
+		s.borrow_mut().files.push(stamp(m));
 	});
 }
 struct Observation {
@@ -81,8 +92,8 @@ struct Observation {
 	gitdir: PathBuf,
 	index: PathBuf,
 	admin: Vec<(PathBuf, Option<Stamp>)>,
-	files: BTreeMap<PathBuf, Stamp>,
-	boundaries: BTreeMap<PathBuf, Option<Stamp>>,
+	files: Vec<Stamp>,
+	boundaries: Vec<(PathBuf, Option<Stamp>)>,
 	eligible: bool,
 	shared_checked: bool,
 }
@@ -101,7 +112,7 @@ fn check_shared(parent: &mut Observation) -> Result<(), String> {
 		#[cfg(feature = "test-support")]
 		let _clock = super::trace::phase("shared_rechecks");
 		check(parent.admin.iter().map(|(p, s)| (p, s)))?;
-		check(parent.boundaries.iter())?;
+		check(parent.boundaries.iter().map(|(p, s)| (p, s)))?;
 		parent.shared_checked = true;
 		#[cfg(feature = "test-support")]
 		super::trace::event(
@@ -172,6 +183,9 @@ fn independent(p: &Path, a: &mut Allowance, plain: bool) -> Result<Observation, 
 		let s = s.take();
 		(s.files, s.boundaries)
 	});
+	if files.len() != tree.files.len() {
+		return Err("missing validated file observation".into());
+	}
 	Ok(Observation {
 		tree,
 		top,
@@ -212,22 +226,22 @@ fn derive(parent: &Observation, child: &Path, a: &mut Allowance) -> Result<Tree,
 	#[cfg(feature = "test-support")]
 	let _clock = super::trace::phase("derivation_rechecks");
 	let mut files = vec![];
-	let prefix = child.strip_prefix(&parent.tree.root).unwrap();
-	let selected = parent
+	let prefix = format!("{}/", text(child.strip_prefix(&parent.tree.root).unwrap())?);
+	// Tree paths are sorted UTF-8 strings. The trailing slash separates a child
+	// from same-spelled siblings (a/ versus a-b/); its files form one range.
+	let start = parent
 		.tree
 		.files
-		.iter()
-		.filter_map(|f| Path::new(&f.path).strip_prefix(prefix).ok().map(|r| (f, r)))
-		.collect::<Vec<_>>();
-	for _ in &selected {
+		.partition_point(|f| f.path.as_str() < prefix.as_str());
+	let end = start + parent.tree.files[start..].partition_point(|f| f.path.starts_with(&prefix));
+	for _ in start..end {
 		a.entry()?;
 	}
-	for (f, relative) in selected {
+	for index in start..end {
+		let f = &parent.tree.files[index];
+		let relative = Path::new(&f.path[prefix.len()..]);
 		let p = parent.tree.root.join(&f.path);
-		let old = parent
-			.files
-			.get(&p)
-			.ok_or("missing validated file observation")?;
+		let old = &parent.files[index];
 		if observed(&p)?.as_ref() != Some(old) {
 			return Err(fail(&p, "file observation changed before reuse"));
 		}
