@@ -66,10 +66,22 @@ pub(super) fn is_old(bytes: &[u8]) -> bool {
 }
 pub(super) fn recovery(root: &Path, id: &str) -> String {
 	let source = root.join("entries").join(id).join("source");
-	let quote = |s: &str| format!("'{}'", s.replace('\'', "'\\''"));
+	let quote = |path: &Path| {
+		path.to_str()
+			.map(|s| format!("'{}'", s.replace('\'', "'\\''")))
+			.ok_or("non-Unicode recovery path".to_string())
+	};
+	let command = (|| {
+		let tool = std::env::current_exe().map_err(err)?;
+		Ok::<_, String>(format!(
+			"{} runtime install --from {}",
+			quote(&tool)?,
+			quote(&source)?
+		))
+	})();
 	format!(
-		"runtime installation {id} uses format 1; authenticate and reinstall with:\nrnx-project runtime install --from {}\nOld runtime and assembly entries are retained; migrating reclaims no disk space.",
-		quote(&source.to_string_lossy())
+		"runtime installation {id} uses format 1; authenticate and reinstall with:\n{}\nOld runtime and assembly entries are retained; migrating reclaims no disk space.",
+		command.unwrap_or_else(|e| format!("cannot render recovery command: {e}"))
 	)
 }
 pub(super) fn authenticate(root: &Path, id: &str, repair: bool) -> Result<Installation, String> {
