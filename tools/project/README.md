@@ -162,7 +162,26 @@ Relocking reclaims no disk space. Old local binaries, shared entries and runtime
 installations stay: older tools, live sessions and kernels can still reference
 them. A new Polars assembly can occupy another approximately 1.5 GB. Removal is
 the record immediately after 0065; a superseded key is not proof of no users.
-Installed-runtime migration is the separate gate 3 checkpoint of 0065.
+For an installed runtime from the SHA-256 format, `runtime show`, `runtime select`
+and stock `:dep` print the exact command for its retained source, for example:
+
+```sh
+rnx-project runtime install --from '/your/data/rnx/runtimes/entries/OLD_ID/source'
+```
+
+That explicit command authenticates the old source against its recorded SHA-256
+identity and checks its Git administration/objects before importing it under a
+new BLAKE3 ID. It works after the original checkout is gone. Corrupt content is
+refused; only validated Git permission drift may be tightened. The old entry and
+its provenance stay in place. The new document records the original source
+provenance, the new installing tool/time, and `migrated_from` outside its identity.
+Repeating the migration reselects the new entry without rewriting its provenance.
+
+Migrating the default does not retarget an existing project or scratch. An old
+project still names its old retained source; explicit relock/build uses that path
+with new identities. An older tool, live session, or kernelspec may keep using its
+old artifact and retained build outputs. Migration removes none of them. It is
+not a runtime-code upgrade or a launcher/runtime compatibility check.
 
 To select a private root before locking:
 

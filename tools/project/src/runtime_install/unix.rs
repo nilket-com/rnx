@@ -1,3 +1,4 @@
+mod legacy;
 use super::{
 	git, hooks, layout,
 	storage::{self, err},
@@ -127,7 +128,18 @@ fn metadata(entry: &Path, id: &str) -> Result<Installation, String> {
 	}
 	storage::dir(entry)?;
 	let p = entry.join("installation.json");
-	decode_installation(&storage::read(&p, DOCUMENT)?, id, &p)
+	let bytes = storage::read(&p, DOCUMENT)?;
+	if legacy::is_old(&bytes) {
+		legacy::decode(&bytes, id, &p)?;
+		return Err(legacy::recovery(
+			entry
+				.parent()
+				.and_then(Path::parent)
+				.ok_or("invalid installation path")?,
+			id,
+		));
+	}
+	decode_installation(&bytes, id, &p)
 }
 fn decode_installation(bytes: &[u8], id: &str, p: &Path) -> Result<Installation, String> {
 	let d: Installation =
@@ -204,7 +216,19 @@ fn current() -> Result<(PathBuf, Installation), String> {
 	if !storage::exists(&root.join("current.json"))? {
 		return Err(INSTALL_HELP.into());
 	}
-	let c = decode_current(&storage::read(&root.join("current.json"), DOCUMENT)?)?;
+	let bytes = storage::read(&root.join("current.json"), DOCUMENT)?;
+	if legacy::is_old(&bytes) {
+		let c: Current = serde_json::from_slice(&bytes).map_err(err)?;
+		if !digest(&c.id) {
+			return Err("invalid current runtime document".into());
+		}
+		let p = root.join("entries").join(&c.id).join("installation.json");
+		storage::dir(&root.join("entries"))?;
+		storage::dir(p.parent().unwrap())?;
+		legacy::decode(&storage::read(&p, DOCUMENT)?, &c.id, &p)?;
+		return Err(legacy::recovery(&root, &c.id));
+	}
+	let c = decode_current(&bytes)?;
 	storage::dir(&root.join("entries"))?;
 	let entry = root.join("entries").join(&c.id);
 	if !storage::exists(&entry)? {
@@ -409,19 +433,58 @@ fn install(source: &Path) -> Result<Installation, String> {
 		return Err("runtime source and store must not contain one another".into());
 	}
 	git::top(&source)?;
-	let before = git::inventory(&source)?;
-	layout::validate(&source, &before)?;
-	let id = identity(&before.blake3);
-	if own_installation && source != root.join("entries").join(&id).join("source") {
-		return Err("installed source does not match its containing identity".into());
+	let initial = if own_installation {
+		None
+	} else {
+		Some(git::inventory(&source)?)
+	};
+	if let Some(tree) = &initial {
+		layout::validate(&source, tree)?;
 	}
 	storage::create_root(&root)?;
 	let _lock = storage::lock(&root)?;
-	storage::reclaim(&root)?;
-	storage::mkdir(&root.join("entries"))?;
-	if git::inventory(&source)? != before {
+	let imported = if own_installation {
+		let old_id = source
+			.parent()
+			.and_then(Path::file_name)
+			.and_then(|s| s.to_str())
+			.ok_or("invalid installed source path")?;
+		let bytes = storage::read(
+			&source.parent().unwrap().join("installation.json"),
+			DOCUMENT,
+		)?;
+		if legacy::is_old(&bytes) {
+			Some(legacy::authenticate(&root, old_id, true)?)
+		} else {
+			validate_inner(&root, old_id, true)?;
+			None
+		}
+	} else {
+		None
+	};
+	let before = git::inventory(&source)?;
+	if initial.as_ref().is_some_and(|t| t != &before) {
 		return Err("source changed while waiting for installation lock".into());
 	}
+	layout::validate(&source, &before)?;
+	let id = identity(&before.blake3);
+	if own_installation
+		&& imported.is_none()
+		&& source != root.join("entries").join(&id).join("source")
+	{
+		return Err("installed source does not match its containing identity".into());
+	}
+	let authenticate_again = || -> Result<(), String> {
+		if let Some(old) = &imported
+			&& &legacy::authenticate(&root, &old.id, false)? != old
+		{
+			return Err("legacy installation changed during migration".into());
+		}
+		Ok(())
+	};
+	authenticate_again()?;
+	storage::reclaim(&root)?;
+	storage::mkdir(&root.join("entries"))?;
 	let entry = root.join("entries").join(&id);
 	let mut published = false;
 	let mut selected = false;
@@ -446,7 +509,11 @@ fn install(source: &Path) -> Result<Installation, String> {
 			}
 			layout::validate(&temp.0.join("source"), &copied)?;
 			git::administration(&temp.0.join("source"))?;
-			let (source_commit, dirty_tracked) = git::provenance(&source, &before)?;
+			let (source_commit, dirty_tracked) = if let Some(old) = &imported {
+				(old.source_commit.clone(), old.dirty_tracked)
+			} else {
+				git::provenance(&source, &before)?
+			};
 			if git::inventory(&source)? != before {
 				return Err("source changed during installation".into());
 			}
@@ -457,11 +524,16 @@ fn install(source: &Path) -> Result<Installation, String> {
 				files: before.files.len() as u64,
 				bytes: before.files.iter().map(|f| f.bytes).sum(),
 				layout: "rnx-shipped-v1".into(),
-				source_path: source.clone(),
+				source_path: imported
+					.as_ref()
+					.map_or_else(|| source.clone(), |old| old.source_path.clone()),
 				source_commit,
 				dirty_tracked,
 				installed_utc: utc()?,
-				migrated_from: None,
+				migrated_from: imported.as_ref().map(|old| Migration {
+					format: 1,
+					id: old.id.clone(),
+				}),
 				tool_version: env!("CARGO_PKG_VERSION").into(),
 				tool_blake3: fingerprint::one(
 					&std::env::current_exe().map_err(err)?,
@@ -474,6 +546,10 @@ fn install(source: &Path) -> Result<Installation, String> {
 			hooks::point("after-document")?;
 			storage::walk(&temp.0, true)?;
 			hooks::point("before-entry-rename")?;
+			authenticate_again()?;
+			if git::inventory(&source)? != before {
+				return Err("source changed before publication".into());
+			}
 			fs::rename(&temp.0, &entry).map_err(err)?;
 			published = true;
 			hooks::point("after-entry-rename")?;
@@ -485,6 +561,7 @@ fn install(source: &Path) -> Result<Installation, String> {
 		if git::inventory(&source)? != before {
 			return Err("source changed before selection".into());
 		}
+		authenticate_again()?;
 		select_inner(&root, &id, &mut selected)?;
 		Ok(doc)
 	})();

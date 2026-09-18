@@ -5,9 +5,10 @@ The removal record is explicitly next after this record closes; gate 3 includes
 a kernelspec referencing an old-key artifact among surviving consumers.
 Gate 1's reader/encoding checks are accepted on Linux; see
 [the encoding evidence](0065_a_launch_checks_each_native_file_once_encoding_evidence.md).
-Gate 2's current-format workflows and matched format-only timing pass on Linux,
-ready for review; see [the workflow evidence](0065_a_launch_checks_each_native_file_once_workflow_evidence.md).
-Gates 3–6 remain open. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
+Gate 2's current-format workflows and matched format-only timing are accepted on Linux; see [the workflow evidence](0065_a_launch_checks_each_native_file_once_workflow_evidence.md).
+Gate 3 passes on Linux, ready for review; see
+[the migration evidence](0065_a_launch_checks_each_native_file_once_migration_evidence.md).
+Gates 4–6 remain open. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
 0064 is closed on Linux. This record addresses native inventory after runtime
 installation; it does not introduce a persistent source-verification cache.
 
