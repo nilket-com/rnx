@@ -14,10 +14,17 @@ Gate 5's first port and F2 stops are accepted and preserved in
 and [the directory evidence](0065_a_launch_checks_each_native_file_once_directory_evidence.md).
 F3/F4's ignored-build eligibility and scoped-check stop is accepted; see
 [the scoped evidence](0065_a_launch_checks_each_native_file_once_scoped_evidence.md).
+Gate 5 is accepted with its one numerical miss retained as a qualification.
 F5 removes the path-map bookkeeping cost; five first-adapter comparisons pass,
-but one eval repeat misses the strict bound by 0.016205 ms. It is stopped for
-review with the unchanged matrix and [positional attribution](0065_a_launch_checks_each_native_file_once_position_evidence.md).
-Gate 5 remains open and gate 6 has not started. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
+but one eval repeat misses the unchanged strict bound by 0.016205 ms. The original
+journal, gate file and [positional attribution](0065_a_launch_checks_each_native_file_once_position_evidence.md) remain unchanged.
+Gate 6 passes on Linux, ready for review; see
+[the closing evidence](0065_a_launch_checks_each_native_file_once_regression_evidence.md).
+Its fresh six first-adapter comparisons pass, and it reports external-root,
+inherited-Git-variable and nested-repository slopes, path controls, full-hash
+attachment, final installed journeys and the full regression. Implementation is
+complete on Linux, pending gate 6 review, with the gate-5 miss and ownership,
+platform and migration qualifications retained. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
 0064 is closed on Linux. This record addresses native inventory after runtime
 installation; it does not introduce a persistent source-verification cache.
 
@@ -347,7 +354,7 @@ hashing content once makes a concurrently edited checkout an atomic snapshot.
 The measured stops and format-only/final checkpoints earn commits because their
 sources must remain reproducible. Incidental fixes fold into their checkpoint
 before push. Do not rewrite accepted baselines or describe predicted combined
-savings as observations. Next review is gate 2's current-format workflows and timing evidence. The record immediately
+savings as observations. Next review is gate 6's closing evidence. The record immediately
 after 0065 closes must decide removal of retained assemblies/runtimes, so the disk
 cost has an explicit next decision rather than an open-ended deferral. It must
 account for old tools, project references, sessions and kernels before deletion.

@@ -263,8 +263,8 @@ In the 0059 per-project measurements on the small Polars application, the old
 project launch took about
 155 ms, the metadata default 29 ms, explicit `--verify` 95 ms, and generated-direct
 11 ms. These are whole CLI runs on one pinned Linux host, not notebook timings
-or universal latency bounds. Native input checks remain about 17 ms. Legacy
-migration and metadata-mismatch refresh each took about 98 ms on this example;
+or universal latency bounds. At that 0059 checkpoint, native input checks were
+about 17 ms. Legacy migration and metadata-mismatch refresh each took about 98 ms on this example;
 they are separate first-use costs, not part of the warm default number.
 
 The 0061 shared-cache measurement used two different applications with the same
@@ -283,6 +283,32 @@ not latency promises. The complete retained entry occupied **1,570,058,240 bytes
 artifact. Two applications shared that one entry. Distinct assembly keys retain
 additional whole entries; there is no automatic eviction. Do not keep only the
 executable: trusted build scripts can make it depend on retained build outputs.
+
+The final 0065 measurement separates the runtime floor from adapter cost. These
+are milliseconds added by project run/eval/first prompt over the matching direct
+executable, summarized across two repeats on the same pinned Linux host:
+
+| Native layout | Runtime only | +1 adapter | +2 | +3 |
+|---|---:|---:|---:|---:|
+| Eligible nested roots | 12.3 | 13.1 | 13.4 | 13.7 |
+| External roots | 12.3 | 16.4 | 20.2 | 23.8 |
+| `GIT_EDITOR` exported | 12.4 | 16.7 | 20.5 | 24.3 |
+| Nested repositories | 12.3 | 16.4 | 19.7 | 23.1 |
+
+The constant runtime contains 443 files and about 7 MB, including both shipped
+adapters and a full-sized renamed PostgreSQL copy. Eligible reuse reads those
+443 files once even with a 14,000-entry ignored adapter build directory. External
+roots, repository boundaries and inherited Git variables retain independent
+checks. These are observed costs, not a universal latency bound. The accepted
+gate-5 first-adapter miss of 0.016205 ms stays recorded; all six closing comparisons
+passed. At two adapters, deeper paths added about 1.2 ms, while an equally long
+shallow path added about 0.3 ms.
+
+For the one-native measurement, full `--verify` eval took about 55.5 ms against
+95.4 ms at baseline. Full-hash attachment took about 170 ms against 265 ms, with
+compilation trapped. Ordinary launches still read source content every time;
+this work adds no persistent source-verification cache. Old assembly and runtime
+entries remain on disk for their existing consumers; removal is the next record.
 
 ## Inputs and build policy
 
@@ -337,7 +363,8 @@ Manifests are capped at 1 MiB, JSON control files and captured tool output at
 inventory output also has a 16 MiB cap. Tree hashes use the record's versioned
 single-core BLAKE3 framing: sorted names, executable mode, content lengths and
 raw per-file BLAKE3 digests. Each reader hashes content once, with the unchanged
-16 KiB buffer. Nested roots are still inventoried independently at this checkpoint.
+16 KiB buffer. Eligible nested roots reuse those observations within the current
+inventory; other roots take the independent path described above.
 
 ## Platform and validation
 
