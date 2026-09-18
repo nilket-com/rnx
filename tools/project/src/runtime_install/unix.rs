@@ -146,11 +146,15 @@ fn metadata(entry: &Path, id: &str) -> Result<Installation, String> {
 	Ok(d)
 }
 fn validate(root: &Path, id: &str) -> Result<Installation, String> {
+	validate_inner(root, id, false)
+}
+fn validate_inner(root: &Path, id: &str, repair: bool) -> Result<Installation, String> {
 	storage::dir(root)?;
 	storage::dir(&root.join("entries"))?;
 	let entry = root.join("entries").join(id);
 	let d = metadata(&entry, id)?;
-	storage::walk(&entry, false)?;
+	let admin = entry.join("source/.git");
+	storage::walk_admin(&entry, false, repair.then_some(admin.as_path()))?;
 	for e in fs::read_dir(&entry).map_err(err)? {
 		let e = e.map_err(err)?;
 		if e.file_name() != "source" && e.file_name() != "installation.json" {
@@ -158,7 +162,7 @@ fn validate(root: &Path, id: &str) -> Result<Installation, String> {
 		}
 	}
 	let source = entry.join("source");
-	git::administration(&source)?;
+	git::administration_drift(&source, repair)?;
 	let t = git::inventory(&source)?;
 	layout::validate(&source, &t)?;
 	if t.sha256 != d.tree_sha256
@@ -168,6 +172,10 @@ fn validate(root: &Path, id: &str) -> Result<Installation, String> {
 		return Err(format!(
 			"corrupt installed runtime {id}: source fingerprint differs"
 		));
+	}
+	if repair {
+		git::tighten(&source)?;
+		storage::walk(&entry, false)?;
 	}
 	Ok(d)
 }
@@ -352,7 +360,7 @@ fn copy(source: &Path, dest: &Path, tree: &fingerprint::Tree) -> Result<(), Stri
 	Ok(())
 }
 fn select_inner(root: &Path, id: &str, selected: &mut bool) -> Result<(), String> {
-	validate(root, id)?;
+	validate_inner(root, id, true)?;
 	// A corrupt current document may be replaced explicitly, but never a special file.
 	if storage::exists(&root.join("current.json"))? {
 		storage::read(&root.join("current.json"), DOCUMENT)?;
@@ -410,7 +418,7 @@ fn install(source: &Path) -> Result<Installation, String> {
 	let result = (|| {
 		let doc = if storage::exists(&entry)? {
 			published = true;
-			validate(&root, &id)?
+			validate_inner(&root, &id, true)?
 		} else {
 			let temp = Temp(storage::unique(&root, "stage")?);
 			fs::DirBuilder::new()

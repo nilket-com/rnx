@@ -178,8 +178,23 @@ pub(super) fn provenance(
 	Ok((Some(commit.into()), dirty))
 }
 pub(super) fn administration(root: &Path) -> Result<(), String> {
+	administration_drift(root, false)
+}
+pub(super) fn administration_drift(root: &Path, drift: bool) -> Result<(), String> {
 	let admin = root.join(".git");
-	storage::dir(&admin)?;
+	let directory = |p: &Path| {
+		if drift {
+			let m = std::fs::symlink_metadata(p).map_err(err)?;
+			storage::owned(&m, p)?;
+			if !m.is_dir() {
+				return Err("Git administration directory required".into());
+			}
+			Ok(())
+		} else {
+			storage::dir(p)
+		}
+	};
+	directory(&admin)?;
 	for e in std::fs::read_dir(&admin).map_err(err)? {
 		let e = e.map_err(err)?;
 		if !["HEAD", "config", "index", "objects", "refs"]
@@ -193,12 +208,13 @@ pub(super) fn administration(root: &Path) -> Result<(), String> {
 		}
 	}
 	for n in ["objects", "refs"] {
-		storage::dir(&admin.join(n))?;
+		directory(&admin.join(n))?;
 	}
 	for n in ["HEAD", "index"] {
-		storage::read(&admin.join(n), 16 * 1024 * 1024)?;
+		storage::read_admin(&admin.join(n), 16 * 1024 * 1024, drift)?;
 	}
-	let config = String::from_utf8(storage::read(&admin.join("config"), 65536)?).map_err(err)?;
+	let config = String::from_utf8(storage::read_admin(&admin.join("config"), 65536, drift)?)
+		.map_err(err)?;
 	let mut section = false;
 	for line in config.lines().map(str::trim).filter(|s| !s.is_empty()) {
 		if line == "[core]" {
@@ -227,5 +243,39 @@ pub(super) fn administration(root: &Path) -> Result<(), String> {
 	let mut c = command(root);
 	c.args(["fsck", "--full", "--no-reflogs"]);
 	run(c)?;
+	Ok(())
+}
+
+// Called only under the installation writer lock, after fsck and source identity.
+// No bytes/index entries are regenerated. A failure can leave some modes tighter.
+pub(super) fn tighten(root: &Path) -> Result<(), String> {
+	use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+	let mut paths = vec![root.join(".git")];
+	let mut count = 0;
+	while let Some(p) = paths.pop() {
+		commands::check()?;
+		count += 1;
+		if count > 400000 {
+			return Err("Git administration exceeds entry allowance".into());
+		}
+		let f = std::fs::OpenOptions::new()
+			.read(true)
+			.custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+			.open(&p)
+			.map_err(err)?;
+		let m = f.metadata().map_err(err)?;
+		storage::owned(&m, &p)?;
+		if m.is_dir() {
+			for e in std::fs::read_dir(&p).map_err(err)? {
+				paths.push(e.map_err(err)?.path());
+			}
+		}
+		let mode = m.permissions().mode();
+		if mode & 0o7077 != 0 {
+			f.set_permissions(std::fs::Permissions::from_mode(mode & 0o700))
+				.map_err(err)?;
+			f.sync_all().map_err(err)?;
+		}
+	}
 	Ok(())
 }

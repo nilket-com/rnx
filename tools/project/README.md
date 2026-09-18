@@ -349,7 +349,12 @@ and builds an independent Git index. Dirty tracked edits are supported; untracke
 non-ignored files, conflicts, symlinks and escaping Cargo paths are refused.
 No source file is rewritten. Git, Rust/Cargo and native build tools remain needed
 for assembly. The installed index intentionally has an unborn HEAD: `git status`
-shows every file as added. No commit is needed to make it usable.
+shows every file as added. No commit is needed to make it usable. Git-aware tools
+can rewrite index permissions under the host umask. Same-ID reinstall and
+`runtime select` repair Git-administration modes only after object integrity and
+source identity validate; corrupted content still refuses. Discovery and launch
+do not repair permissions. A failed repair can leave some modes tightened but
+does not select an unvalidated installation.
 
 A stock session's `:dep` uses this selected installation without an environment
 variable. `RNX_DEP_RUNTIME`, when present, is an explicit absolute-path override;

@@ -106,11 +106,31 @@ pub(super) fn regular(m: &fs::Metadata, p: &Path) -> Result<(), String> {
 	Ok(())
 }
 pub(super) fn read(p: &Path, limit: usize) -> Result<Vec<u8>, String> {
+	read_admin(p, limit, false)
+}
+pub(super) fn owned(m: &fs::Metadata, p: &Path) -> Result<(), String> {
+	if (!m.is_file() && !m.is_dir()) || m.uid() != unsafe { libc::geteuid() } {
+		return Err(format!(
+			"not an owned regular file or directory: {}",
+			p.display()
+		));
+	}
+	Ok(())
+}
+pub(super) fn read_admin(p: &Path, limit: usize, drift: bool) -> Result<Vec<u8>, String> {
 	let f = options()
 		.read(true)
 		.open(p)
 		.map_err(|e| format!("{}: {e}", p.display()))?;
-	regular(&f.metadata().map_err(err)?, p)?;
+	let m = f.metadata().map_err(err)?;
+	if drift {
+		owned(&m, p)?;
+		if !m.is_file() {
+			return Err("Git administration must be a regular file".into());
+		}
+	} else {
+		regular(&m, p)?;
+	}
 	let mut b = vec![];
 	f.take(limit as u64 + 1).read_to_end(&mut b).map_err(err)?;
 	if b.len() > limit {
@@ -158,6 +178,13 @@ pub(super) fn lock(root: &Path) -> Result<File, String> {
 // Applies to retained source AND generated administration. Directory entries are
 // charged too, so traversal itself cannot outgrow the file bound.
 pub(super) fn walk(root: &Path, sync_files: bool) -> Result<(u64, u64), String> {
+	walk_admin(root, sync_files, None)
+}
+pub(super) fn walk_admin(
+	root: &Path,
+	sync_files: bool,
+	admin: Option<&Path>,
+) -> Result<(u64, u64), String> {
 	dir(root)?;
 	let mut dirs = vec![root.to_owned()];
 	let mut ordered = vec![];
@@ -177,11 +204,19 @@ pub(super) fn walk(root: &Path, sync_files: bool) -> Result<(u64, u64), String> 
 				return Err("installed tree exceeds 400000 entries".into());
 			}
 			let m = fs::symlink_metadata(&p).map_err(err)?;
+			let drift = admin.is_some_and(|a| p.starts_with(a));
+			if drift {
+				owned(&m, &p)?;
+			}
 			if m.is_dir() {
-				dir(&p)?;
+				if !drift {
+					dir(&p)?;
+				}
 				dirs.push(p);
 			} else {
-				regular(&m, &p)?;
+				if !drift {
+					regular(&m, &p)?;
+				}
 				bytes = bytes
 					.checked_add(m.len())
 					.ok_or("installed byte overflow")?;

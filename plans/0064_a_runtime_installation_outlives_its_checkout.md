@@ -5,9 +5,11 @@ F1 on runtime provenance and unchecked launcher/runtime skew folded in below.
 Gate 1 is accepted; see [the index evidence](0064_a_runtime_installation_outlives_its_checkout_index_evidence.md).
 Gate 2's product installer and publication matrix are accepted on Linux;
 see [the publication evidence](0064_a_runtime_installation_outlives_its_checkout_publication_evidence.md).
-Gate 3's product discovery and ownership matrix pass on Linux, ready for review;
+Gate 3's product discovery and ownership matrix are accepted on Linux;
 see [the discovery evidence](0064_a_runtime_installation_outlives_its_checkout_discovery_evidence.md).
-Gates 4–6 remain open.
+Gate 4's ordinary installed-runtime journeys and F3 repair matrix pass on Linux,
+ready for review; see [the journey evidence](0064_a_runtime_installation_outlives_its_checkout_journey_evidence.md).
+Gates 5 and 6 remain open.
 Baseline: rnx `1ecc35c` / rnx-bench `9aa378d`.
 0063 is accepted and closed on Linux. This record removes its source-checkout
 environment setup from ordinary stock `:dep` use. Native-inventory optimization
@@ -155,6 +157,14 @@ its ID, source path, source size and prerequisites. Reinstalling identical
 content fully validates the retained entry and selects it, without rewriting it
 or replacing its original installation provenance with that of the latest caller.
 A corrupt retained entry refuses; do not overwrite it under the same identity.
+Gate 3 review finding F3 qualifies permission drift in Git administration:
+ordinary Git/editor inspection can replace the index under the host umask.
+Same-ID reinstall and select, under the writer lock, may inspect owned regular
+Git administration with drifted modes, then tighten those modes only after Git
+object integrity, layout and recorded source identity validate. No bytes or index
+entries are regenerated. Source-file permission checks remain strict, and read-only
+discovery/prepare do not repair. A repair error may leave some modes tightened,
+but corrupt content must cause refusal before any permission write.
 
 `rnx-project runtime show` prints the selected ID and canonical source path,
 and separately labels any RNX_DEP_RUNTIME override. It does no resolution,
