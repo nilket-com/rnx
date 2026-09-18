@@ -1,7 +1,16 @@
-//! Working-tree identity, not a sandbox or an atomic filesystem snapshot.
-#![allow(dead_code)] // Consumed by the lock/build workflow in the next gates.
-use crate::wire;
-
+//! Frozen v1 bounded reader, private to installation migration and conformance tests.
+#![allow(dead_code)] // Only migration and conformance targets use this frozen reader.
+mod wire {
+	#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+	#[serde(deny_unknown_fields)]
+	pub struct File {
+		pub path: String,
+		pub executable: bool,
+		pub bytes: u64,
+		pub sha256: String,
+	}
+}
+use sha2::{Digest, Sha256};
 use std::{
 	collections::BTreeMap,
 	fs,
@@ -57,7 +66,7 @@ impl Allowance {
 #[serde(deny_unknown_fields)]
 pub(crate) struct Tree {
 	pub root: PathBuf,
-	pub blake3: String,
+	pub sha256: String,
 	pub files: Vec<wire::File>,
 }
 fn fail(path: &Path, e: impl std::fmt::Display) -> String {
@@ -124,25 +133,25 @@ fn hash_files(root: &Path, paths: Vec<PathBuf>, allowance: &mut Allowance) -> Re
 			return Err("duplicate inventory path".into());
 		}
 	}
-	let mut tree = blake3::Hasher::new();
-	tree.update(b"rnx-tree-v2\0");
+	let mut tree = Sha256::new();
+	tree.update(b"rnx-tree-v1\0");
 	let mut files = vec![];
 	for (name, relative) in ordered {
 		files.push(hash_file(root, relative, name, allowance, Some(&mut tree))?.0);
 	}
 	Ok(Tree {
 		root: root.to_owned(),
-		blake3: tree.finalize().to_hex().to_string(),
+		sha256: format!("{:x}", tree.finalize()),
 		files,
 	})
 }
-/// One bounded content read; trees frame the resulting raw file digest.
+/// One bounded reader; tree callers additionally include bytes in their tree digest.
 fn hash_file(
 	root: &Path,
 	relative: PathBuf,
 	name: String,
 	allowance: &mut Allowance,
-	mut tree: Option<&mut blake3::Hasher>,
+	mut tree: Option<&mut Sha256>,
 ) -> Result<(wire::File, fs::Metadata, fs::Metadata), String> {
 	components_no_links(root, &relative)?;
 	let path = root.join(relative);
@@ -166,14 +175,14 @@ fn hash_file(
 		return Err(fail(&path, "file changed before read"));
 	}
 	if let Some(tree) = tree.as_mut() {
-		tree.update(&(name.len() as u64).to_be_bytes());
+		tree.update((name.len() as u64).to_be_bytes());
 		tree.update(name.as_bytes());
-		tree.update(&[u8::from(executable(&opened))]);
-		tree.update(&opened.len().to_be_bytes());
+		tree.update([u8::from(executable(&opened))]);
+		tree.update(opened.len().to_be_bytes());
 	}
 	#[cfg(test)]
-	tests::after_open(&path);
-	let mut content = blake3::Hasher::new();
+	super::tests::after_open(&path);
+	let mut content = Sha256::new();
 	let mut remaining = opened.len();
 	let mut buffer = [0u8; 16384];
 	while remaining > 0 {
@@ -184,6 +193,9 @@ fn hash_file(
 		}
 		allowance.bytes -= n as u64;
 		remaining -= n as u64;
+		if let Some(tree) = tree.as_mut() {
+			tree.update(&buffer[..n]);
+		}
 		content.update(&buffer[..n]);
 		#[cfg(feature = "test-support")]
 		crate::artifact::observed_read(&path, n);
@@ -204,16 +216,12 @@ fn hash_file(
 	if after.len() != opened.len() || executable(&after) != executable(&opened) {
 		return Err(fail(&path, "file changed during read"));
 	}
-	let digest = content.finalize();
-	if let Some(tree) = tree.as_mut() {
-		tree.update(digest.as_bytes());
-	}
 	Ok((
 		wire::File {
 			path: name,
 			executable: executable(&opened),
 			bytes: opened.len(),
-			blake3: digest.to_hex().to_string(),
+			sha256: format!("{:x}", content.finalize()),
 		},
 		opened,
 		after,
@@ -382,7 +390,3 @@ pub(crate) fn native_using(
 	}
 	hash_files(&root, paths, allowance)
 }
-
-pub(crate) mod legacy;
-#[cfg(test)]
-mod tests;

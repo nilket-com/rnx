@@ -151,9 +151,9 @@ pub(crate) enum Assembly {
 		identity: String,
 	},
 	Generated {
-		manifest_sha256: String,
-		main_sha256: String,
-		cargo_lock_sha256: String,
+		manifest_blake3: String,
+		main_blake3: String,
+		cargo_lock_blake3: String,
 		target: String,
 		profile: String,
 		features: Vec<String>,
@@ -162,7 +162,7 @@ pub(crate) enum Assembly {
 	},
 	Executable {
 		path: String,
-		sha256: String,
+		blake3: String,
 	},
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -178,7 +178,7 @@ pub(crate) struct File {
 	pub path: String,
 	pub executable: bool,
 	pub bytes: u64,
-	pub sha256: String,
+	pub blake3: String,
 }
 impl Lock {
 	pub fn shared(&self) -> Result<Option<crate::cache_identity::Identity>, String> {
@@ -190,13 +190,8 @@ impl Lock {
 		}
 	}
 	pub fn validate(&self) -> Result<(), String> {
-		if self.format
-			!= if matches!(self.assembly, Assembly::Shared { .. }) {
-				2
-			} else {
-				1
-			} {
-			return Err("unsupported lock format for assembly kind".into());
+		if self.format != 3 {
+			return Err("unsupported lock format (expected 3); run lock and build".into());
 		}
 		self.declarations.validate()?;
 		self.sources.validate()?;
@@ -214,7 +209,7 @@ impl Lock {
 				.map(|p| (1, p)),
 		) {
 			absolute(package.root.to_str().ok_or("non-Unicode root")?)?;
-			digest(&package.sha256)?;
+			digest(&package.blake3)?;
 			if !roots.insert((kind, &package.root)) {
 				return Err("duplicate package root".into());
 			}
@@ -233,7 +228,7 @@ impl Lock {
 				if !paths.insert(&file.path) {
 					return Err("duplicate inventory path".into());
 				}
-				digest(&file.sha256)?;
+				digest(&file.blake3)?;
 				files += 1;
 				bytes = bytes
 					.checked_add(file.bytes)
@@ -284,7 +279,7 @@ impl Lock {
 				continue;
 			}
 			if let Some(file) = &external.file {
-				digest(&file.sha256)?;
+				digest(&file.blake3)?;
 				if Some(std::ffi::OsStr::new(&file.path)) != external.path.file_name() {
 					return Err("external file path mismatch".into());
 				}
@@ -306,39 +301,15 @@ impl Lock {
 					return Err("shared identity and native inventory disagree".into());
 				}
 			}
-			Assembly::Generated {
-				manifest_sha256,
-				main_sha256,
-				cargo_lock_sha256,
-				target,
-				profile,
-				features,
-				rustc,
-				cargo,
-			} => {
-				if self.declarations.runtime.is_none() {
-					return Err("generated lock needs a runtime declaration".into());
-				}
-				for hash in [manifest_sha256, main_sha256, cargo_lock_sha256] {
-					digest(hash)?;
-				}
-				if [target, profile, rustc, cargo].iter().any(|s| s.is_empty()) {
-					return Err(
-						"generated lock needs target, profile and toolchain identities".into(),
-					);
-				}
-				if features.iter().any(|f| f.is_empty())
-					|| features.iter().collect::<BTreeSet<_>>().len() != features.len()
-				{
-					return Err("features must be nonempty and unique".into());
-				}
+			Assembly::Generated { .. } => {
+				return Err("local-generated locks are superseded; run lock and build".into());
 			}
-			Assembly::Executable { path, sha256 } => {
+			Assembly::Executable { path, blake3 } => {
 				if self.declarations.executable.is_none() {
 					return Err("override lock needs an executable declaration".into());
 				}
 				absolute(path)?;
-				digest(sha256)?;
+				digest(blake3)?;
 			}
 		}
 		Ok(())

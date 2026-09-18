@@ -23,7 +23,7 @@ struct Ready {
 	format: u32,
 	key: String,
 	identity: String,
-	executable_sha256: String,
+	executable_blake3: String,
 	artifact: String,
 }
 pub(crate) struct Entry {
@@ -196,17 +196,25 @@ pub(crate) fn ready(identity: &Identity) -> Result<(PathBuf, String), String> {
 	let path = entry.join("ready.json");
 	let bytes = read_managed(&path)
 		.map_err(|e| format!("cache ready {}: {e}; run build", path.display()))?;
-	let r: Ready = serde_json::from_slice(&bytes)
+	let (artifact, digest) = decode_ready(&bytes, identity, &path)?;
+	Ok((entry.join(artifact), digest))
+}
+fn decode_ready(
+	bytes: &[u8],
+	identity: &Identity,
+	path: &Path,
+) -> Result<(String, String), String> {
+	let r: Ready = serde_json::from_slice(bytes)
 		.map_err(|e| format!("cache ready {}: {e}", path.display()))?;
-	if r.format != 1
+	if r.format != 2
 		|| r.key != identity.key()
 		|| r.identity.as_bytes() != identity.bytes()
-		|| !artifact::digest_valid(&r.executable_sha256)
-		|| r.artifact != format!("artifacts/{}", r.executable_sha256)
+		|| !artifact::digest_valid(&r.executable_blake3)
+		|| r.artifact != format!("artifacts/{}", r.executable_blake3)
 	{
 		return Err(format!("cache ready binding invalid: {}", path.display()));
 	}
-	Ok((entry.join(r.artifact), r.executable_sha256))
+	Ok((r.artifact, r.executable_blake3))
 }
 /// `project_check` rechecks the locked project identity without compiling or
 /// publishing. It runs after waiting and after independent assembly publication.
@@ -303,7 +311,7 @@ pub(crate) fn acquire(
 			storage::private_directory(&entry.join("target"))?;
 			storage::private_directory(&entry.join("target/release"))?;
 			let expected =
-				fingerprint::one(&source, &mut fingerprint::Allowance::default())?.sha256;
+				fingerprint::one(&source, &mut fingerprint::Allowance::default())?.blake3;
 			let temporary = entry.join("artifacts/executable.new");
 			let mut from = options().read(true).open(&source).map_err(err)?;
 			regular(&from, &source)?;
@@ -333,10 +341,10 @@ pub(crate) fn acquire(
 			fault("before-ready")?;
 			validate(identity, &stage, project)?;
 			let ready = Ready {
-				format: 1,
+				format: 2,
 				key: identity.key().into(),
 				identity: String::from_utf8(identity.bytes().to_vec()).map_err(err)?,
-				executable_sha256: expected.clone(),
+				executable_blake3: expected.clone(),
 				artifact: format!("artifacts/{expected}"),
 			};
 			write_new(&entry.join("ready.new"), &wire::encode(&ready)?)?;
@@ -399,4 +407,36 @@ fn fault(name: &str) -> Result<(), String> {
 	}
 	let _ = name;
 	Ok(())
+}
+
+#[cfg(test)]
+mod encoding_tests {
+	use super::*;
+	#[test]
+	fn ready_format_and_artifact_binding_are_strict() {
+		let id = crate::cache_identity::fixture_identity();
+		let digest = blake3::hash(b"artifact").to_hex().to_string();
+		let doc = serde_json::json!({"format":2,"key":id.key(),
+            "identity":String::from_utf8(id.bytes().to_vec()).unwrap(),
+            "executable_blake3":digest,"artifact":format!("artifacts/{digest}")});
+		let path = Path::new("/fixture/ready.json");
+		assert!(decode_ready(&wire::encode(&doc).unwrap(), &id, path).is_ok());
+		for (key, value) in [
+			("format", serde_json::json!(1)),
+			("format", serde_json::json!(99)),
+			("key", serde_json::json!("a".repeat(64))),
+			("identity", serde_json::json!("{}")),
+			("executable_blake3", serde_json::json!("b".repeat(64))),
+			("artifact", serde_json::json!("../artifact")),
+			("executable_sha256", serde_json::json!(digest)),
+			("unknown", serde_json::json!(true)),
+		] {
+			let mut bad = doc.clone();
+			bad[key] = value;
+			assert!(
+				decode_ready(&wire::encode(&bad).unwrap(), &id, path).is_err(),
+				"{key}"
+			);
+		}
+	}
 }

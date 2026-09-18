@@ -183,8 +183,8 @@ pub(crate) fn native(
 				if handle.metadata().map_err(|e| error(&path, e))?.len() != file.bytes {
 					return Err(error(&path, "changed during audit"));
 				}
-				use sha2::{Digest, Sha256};
-				if format!("{:x}", Sha256::digest(&bytes)) != file.sha256 {
+
+				if blake3::hash(&bytes).to_hex().to_string() != file.blake3 {
 					return Err(error(&path, "changed during audit"));
 				}
 				let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");

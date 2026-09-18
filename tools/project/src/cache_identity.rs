@@ -3,7 +3,7 @@
 #![allow(dead_code)]
 use crate::{fingerprint, generate, input, inventory::Inventory, manifest::Manifest, wire};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
+
 use std::{
 	collections::BTreeSet,
 	path::{Component, Path, PathBuf},
@@ -30,7 +30,7 @@ struct Document {
 	context: Context,
 	manifest: String,
 	main: String,
-	cargo_lock_sha256: String,
+	cargo_lock_blake3: String,
 	native: Inventory,
 }
 /// Construction requires a live verified inventory. Decoding validates shape
@@ -42,7 +42,7 @@ pub(crate) struct Identity {
 	key: String,
 }
 fn digest(bytes: &[u8]) -> String {
-	format!("{:x}", Sha256::digest(bytes))
+	blake3::hash(bytes).to_hex().to_string()
 }
 fn valid_digest(s: &str) -> bool {
 	s.len() == 64
@@ -129,12 +129,12 @@ impl Identity {
 		native.external.sort_by(|a, b| a.path.cmp(&b.path));
 		let (manifest, main) = generate::canonical_wrapper(manifest, base)?;
 		Self::from_document(Document {
-			format: 1,
-			generator: 1,
+			format: 2,
+			generator: 2,
 			context,
 			manifest,
 			main,
-			cargo_lock_sha256: digest(cargo_lock),
+			cargo_lock_blake3: digest(cargo_lock),
 			native,
 		})
 	}
@@ -170,7 +170,7 @@ impl Identity {
 		(&self.document.manifest, &self.document.main)
 	}
 	pub(crate) fn check_lock(&self, bytes: &[u8]) -> Result<(), String> {
-		if digest(bytes) != self.document.cargo_lock_sha256 {
+		if digest(bytes) != self.document.cargo_lock_blake3 {
 			return Err("assembly Cargo lock mismatch".into());
 		}
 		Ok(())
@@ -222,7 +222,7 @@ fn strictly_sorted<T: Ord>(values: impl IntoIterator<Item = T>) -> Result<(), St
 }
 impl Document {
 	fn validate(&self) -> Result<(), String> {
-		if self.format != 1 || self.generator != 1 {
+		if self.format != 2 || self.generator != 2 {
 			return Err("unsupported assembly identity/generator version".into());
 		}
 		let c = &self.context;
@@ -250,7 +250,7 @@ impl Document {
 		for f in &c.features {
 			nonempty(f)?;
 		}
-		if !valid_digest(&self.cargo_lock_sha256) {
+		if !valid_digest(&self.cargo_lock_blake3) {
 			return Err("invalid Cargo lock digest".into());
 		}
 		let n = &self.native;
@@ -269,7 +269,7 @@ impl Document {
 		let mut bytes = 0u64;
 		let mut file = |f: &wire::File| -> Result<(), String> {
 			relative(&f.path)?;
-			if !valid_digest(&f.sha256) {
+			if !valid_digest(&f.blake3) {
 				return Err("invalid inventory digest".into());
 			}
 			entries += 1;
@@ -283,7 +283,7 @@ impl Document {
 		};
 		for t in &n.trees {
 			path(&t.root)?;
-			if !valid_digest(&t.sha256) {
+			if !valid_digest(&t.blake3) {
 				return Err("invalid native tree digest".into());
 			}
 			if c.cache_root.starts_with(&t.root) || t.root.starts_with(&c.cache_root) {
@@ -346,3 +346,8 @@ impl Document {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+pub(crate) fn fixture_identity() -> Identity {
+	Identity::from_document(tests::document()).unwrap()
+}

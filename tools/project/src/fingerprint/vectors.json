@@ -1,0 +1,61 @@
+[
+  {
+    "files": [],
+    "blake3": "85210ba55844d8205bf9bc8cd9d1ec3043705eac5bcd5773f4462b8727634c18"
+  },
+  {
+    "files": [
+      {
+        "path": "a",
+        "hex": "78",
+        "executable": false
+      }
+    ],
+    "blake3": "f5f576b8191d7d22afb2dcc2a073296dc8b37597569d1fe5e5f5e4df60c38f71"
+  },
+  {
+    "files": [
+      {
+        "path": "empty",
+        "hex": "",
+        "executable": false
+      }
+    ],
+    "blake3": "435645cce6329667c553b47b82007648e116ee1f8f61ee172cb326e6386c56f0"
+  },
+  {
+    "files": [
+      {
+        "path": "é/\"🙂",
+        "hex": "00ff0a",
+        "executable": true
+      },
+      {
+        "path": "A",
+        "hex": "6162",
+        "executable": false
+      }
+    ],
+    "blake3": "a8f1c8f348ed97400dc3af28059b23c505996657ed38e54b06d294ac43b81625"
+  },
+  {
+    "files": [
+      {
+        "path": "ab",
+        "hex": "63",
+        "executable": false
+      }
+    ],
+    "blake3": "bc734d7f4083e3fc631453a57ef40e499166a069758b2961eb6ecb73787cef88"
+  },
+  {
+    "files": [
+      {
+        "path": "a",
+        "hex": "6263",
+        "executable": false
+      }
+    ],
+    "blake3": "b01fa0a21010eb8ef0b0f6f8478a4d21ce5f24fc6c07822022427971413b6dc3"
+  }
+]

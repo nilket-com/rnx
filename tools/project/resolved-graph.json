@@ -18,10 +18,22 @@
     "license": "MIT OR Apache-2.0"
   },
   {
+    "name": "arrayvec",
+    "version": "0.7.8",
+    "source": "registry+https://github.com/rust-lang/crates.io-index",
+    "license": "MIT OR Apache-2.0"
+  },
+  {
     "name": "autocfg",
     "version": "1.5.1",
     "source": "registry+https://github.com/rust-lang/crates.io-index",
     "license": "Apache-2.0 OR MIT"
+  },
+  {
+    "name": "blake3",
+    "version": "1.8.7",
+    "source": "registry+https://github.com/rust-lang/crates.io-index",
+    "license": "CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception"
   },
   {
     "name": "block-buffer",
@@ -48,8 +60,20 @@
     "license": "MIT OR Apache-2.0"
   },
   {
+    "name": "constant_time_eq",
+    "version": "0.4.2",
+    "source": "registry+https://github.com/rust-lang/crates.io-index",
+    "license": "CC0-1.0 OR MIT-0 OR Apache-2.0"
+  },
+  {
     "name": "cpufeatures",
     "version": "0.2.17",
+    "source": "registry+https://github.com/rust-lang/crates.io-index",
+    "license": "MIT OR Apache-2.0"
+  },
+  {
+    "name": "cpufeatures",
+    "version": "0.3.1",
     "source": "registry+https://github.com/rust-lang/crates.io-index",
     "license": "MIT OR Apache-2.0"
   },

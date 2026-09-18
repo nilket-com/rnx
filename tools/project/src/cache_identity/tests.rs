@@ -2,12 +2,12 @@
 //! Real filesystem/Cargo projections are exercised by the external gate fixture.
 use super::*;
 use crate::inventory::{Association, External};
-fn document() -> Document {
+pub(super) fn document() -> Document {
 	let base = std::env::temp_dir().join("rnx-identity-shape");
 	let native = base.join("native");
 	Document {
-		format: 1,
-		generator: 1,
+		format: 2,
+		generator: 2,
 		context: Context {
 			cache_root: base.join("cache"),
 			cargo_home: base.join("cargo"),
@@ -24,7 +24,7 @@ fn document() -> Document {
 			toml::Value::String(native.to_str().unwrap().into())
 		),
 		main: "fn main(){rnx::main_with(rnx::Extensions::none())}".into(),
-		cargo_lock_sha256: "a".repeat(64),
+		cargo_lock_blake3: "a".repeat(64),
 		native: Inventory {
 			platform: "fixture-platform".into(),
 			packages: vec![Association {
@@ -35,12 +35,12 @@ fn document() -> Document {
 			}],
 			trees: vec![fingerprint::Tree {
 				root: native.clone(),
-				sha256: "b".repeat(64),
+				blake3: "b".repeat(64),
 				files: vec![wire::File {
 					path: "Cargo.toml".into(),
 					bytes: 0,
 					executable: false,
-					sha256: "c".repeat(64),
+					blake3: "c".repeat(64),
 				}],
 			}],
 			external: vec![External {
@@ -53,6 +53,7 @@ fn document() -> Document {
 #[test]
 fn persisted_identity_is_strict_and_canonical() {
 	let good = Identity::from_document(document()).unwrap();
+	assert_eq!(good.key(), blake3::hash(good.bytes()).to_hex().as_str());
 	let again = Identity::decode(good.bytes()).unwrap();
 	assert_eq!(good.key(), again.key());
 	assert_eq!(good.bytes(), again.bytes());
@@ -66,15 +67,15 @@ fn persisted_identity_is_strict_and_canonical() {
 	spaced.push(b'\n');
 	assert!(Identity::decode(&spaced).is_err());
 	let duplicate = String::from_utf8(good.bytes().to_vec()).unwrap().replacen(
-		"\"format\":1",
-		"\"format\":1,\"format\":1",
+		"\"format\":2",
+		"\"format\":2,\"format\":2",
 		1,
 	);
 	assert!(Identity::decode(duplicate.as_bytes()).is_err());
 	for mutate in [
-		|d: &mut Document| d.format = 2,
-		|d: &mut Document| d.generator = 2,
-		|d: &mut Document| d.cargo_lock_sha256 = "Z".repeat(64),
+		|d: &mut Document| d.format = 99,
+		|d: &mut Document| d.generator = 99,
+		|d: &mut Document| d.cargo_lock_blake3 = "Z".repeat(64),
 		|d: &mut Document| d.context.features.push("project-sources".into()),
 	] {
 		let mut d = document();
@@ -95,15 +96,15 @@ fn build_context_changes_cannot_reuse_a_key() {
 		|d| d.context.target = "another-target".into(),
 		|d| d.context.profile = "debug".into(),
 		|d| d.context.features.push("second-feature".into()),
-		|d| d.cargo_lock_sha256 = "d".repeat(64),
+		|d| d.cargo_lock_blake3 = "d".repeat(64),
 		|d| d.main.push_str("\n// different generated registration\n"),
-		|d| d.native.trees[0].sha256 = "e".repeat(64),
+		|d| d.native.trees[0].blake3 = "e".repeat(64),
 		|d| {
 			d.native.external[0].file = Some(wire::File {
 				path: "config.toml".into(),
 				bytes: 3,
 				executable: false,
-				sha256: "f".repeat(64),
+				blake3: "f".repeat(64),
 			})
 		},
 	];

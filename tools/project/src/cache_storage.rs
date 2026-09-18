@@ -1,7 +1,7 @@
 //! Checked managed cache paths and the Cargo context policy proven at gate one.
 #![allow(dead_code)]
 use crate::{input, inventory};
-use sha2::{Digest, Sha256};
+
 use std::{
 	fs,
 	path::{Path, PathBuf},
@@ -127,7 +127,7 @@ pub(crate) fn policy(inv: &inventory::Inventory) -> Result<(), String> {
 			continue;
 		}
 		let bytes = input::read(&external.path, input::MANIFEST_LIMIT)?;
-		if format!("{:x}", Sha256::digest(&bytes)) != file.sha256 {
+		if blake3::hash(&bytes).to_hex().to_string() != file.blake3 {
 			return Err("config changed".into());
 		}
 		let config: toml::Value =

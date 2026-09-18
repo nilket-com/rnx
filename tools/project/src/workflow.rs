@@ -10,7 +10,7 @@ use crate::{
 	manifest::Manifest,
 	wire::{self, Assembly, Handoff, Inputs, Lock},
 };
-use sha2::{Digest, Sha256};
+
 use std::{
 	ffi::OsString,
 	fs::{self, File, OpenOptions},
@@ -19,7 +19,7 @@ use std::{
 	process::Command,
 };
 fn hash(bytes: &[u8]) -> String {
-	format!("{:x}", Sha256::digest(bytes))
+	blake3::hash(bytes).to_hex().to_string()
 }
 fn err(e: impl std::fmt::Display) -> String {
 	e.to_string()
@@ -102,11 +102,11 @@ impl Project {
 			return Err("lock assembly and native inventory disagree; run lock".into());
 		}
 		if let Assembly::Generated {
-			cargo_lock_sha256, ..
+			cargo_lock_blake3, ..
 		} = &lock.assembly
 		{
 			let cargo = input::read(&self.base.join("rnx.Cargo.lock"), input::DOCUMENT_LIMIT)?;
-			if hash(&cargo) != *cargo_lock_sha256 {
+			if hash(&cargo) != *cargo_lock_blake3 {
 				return Err("lock pair mismatch; run lock (run/build never repair it)".into());
 			}
 		}
@@ -193,13 +193,13 @@ impl Project {
 		}
 		match &lock.assembly {
 			Assembly::Generated {
-				manifest_sha256,
-				main_sha256,
+				manifest_blake3,
+				main_blake3,
 				..
 			} => {
 				let (cargo, main) = generate::wrapper(&current, &self.base)?;
-				if hash(cargo.as_bytes()) != *manifest_sha256
-					|| hash(main.as_bytes()) != *main_sha256
+				if hash(cargo.as_bytes()) != *manifest_blake3
+					|| hash(main.as_bytes()) != *main_blake3
 				{
 					return Err("generated assembly changed; run lock".into());
 				}
@@ -216,7 +216,7 @@ impl Project {
 		let before_source = inventory::sources(&self.manifest, &mut Allowance::default())?;
 		let (inputs, assembly, cargo_bytes) = if let Some(executable) = &declarations.executable {
 			let path = self.base.join(&executable.path);
-			let sha256 = assembly::executable_hash(&path)?;
+			let blake3 = assembly::executable_hash(&path)?;
 			if !sources.mounts.is_empty() {
 				crate::handshake::check(&path)?;
 			}
@@ -227,7 +227,7 @@ impl Project {
 						.to_str()
 						.ok_or("executable path is not Unicode")?
 						.into(),
-					sha256,
+					blake3,
 				},
 				None,
 			)
@@ -238,11 +238,7 @@ impl Project {
 			return Err("source changed during lock; retry lock".into());
 		}
 		let lock = Lock {
-			format: if matches!(assembly, Assembly::Shared { .. }) {
-				2
-			} else {
-				1
-			},
+			format: 3,
 			declarations,
 			sources,
 			inputs,
@@ -371,11 +367,11 @@ impl Project {
 		self.atomic(
 			&receipt,
 			&wire::pretty(&Receipt {
-				format: 2,
+				format: 4,
 				assembly_key: None,
 				stamp: Some(checked.stamp()),
-				lock_sha256: hash(&bytes),
-				executable_sha256: digest,
+				lock_blake3: hash(&bytes),
+				executable_blake3: digest,
 			})?,
 		)?;
 		eprintln!("built {}", artifact.display());
@@ -400,7 +396,7 @@ impl Project {
 			)?)?),
 		};
 		let identity = lock.shared()?;
-		if receipt.as_ref().is_some_and(|r| r.format == 3)
+		if receipt.as_ref().is_some_and(|r| r.assembly_key.is_some())
 			&& matches!(lock.assembly, Assembly::Generated { .. })
 		{
 			return Err("shared receipt cannot be used with a local lock; run build".into());
@@ -411,37 +407,37 @@ impl Project {
 				let r = receipt
 					.as_ref()
 					.ok_or("missing receipt; run build to attach shared assembly")?;
-				if r.format != 3
-					|| r.lock_sha256 != lock_digest
+				if r.assembly_key.is_none()
+					|| r.lock_blake3 != lock_digest
 					|| r.assembly_key.as_deref() != Some(identity.key())
 				{
 					return Err("shared receipt does not match lock; run build".into());
 				}
 				let (path, digest) = crate::cache_entry::ready(identity)?;
-				if r.executable_sha256 != digest {
+				if r.executable_blake3 != digest {
 					return Err("shared receipt does not match ready artifact; run build".into());
 				}
 				(path, digest, r.stamp.as_ref())
 			}
-			Assembly::Executable { path, sha256 } => {
+			Assembly::Executable { path, blake3 } => {
 				let stamp = receipt
 					.as_ref()
 					.filter(|r| {
-						r.format != 3
-							&& r.lock_sha256 == lock_digest
-							&& r.executable_sha256 == *sha256
+						r.assembly_key.is_none()
+							&& r.lock_blake3 == lock_digest
+							&& r.executable_blake3 == *blake3
 					})
 					.and_then(|r| r.stamp.as_ref());
-				(PathBuf::from(path), sha256.clone(), stamp)
+				(PathBuf::from(path), blake3.clone(), stamp)
 			}
 			Assembly::Generated { .. } => {
 				let r = receipt.as_ref().ok_or("missing receipt; run build")?;
-				if r.lock_sha256 != lock_digest {
+				if r.lock_blake3 != lock_digest {
 					return Err("build receipt does not match lock; run build".into());
 				}
 				(
-					self.dot.join("artifacts").join(&r.executable_sha256),
-					r.executable_sha256.clone(),
+					self.dot.join("artifacts").join(&r.executable_blake3),
+					r.executable_blake3.clone(),
 					r.stamp.as_ref(),
 				)
 			}
@@ -453,10 +449,10 @@ impl Project {
 			self.atomic(
 				&receipt_path,
 				&wire::pretty(&Receipt {
-					format: if identity.is_some() { 3 } else { 2 },
+					format: 4,
 					assembly_key: identity.as_ref().map(|i| i.key().to_owned()),
-					lock_sha256: lock_digest,
-					executable_sha256: digest.clone(),
+					lock_blake3: lock_digest,
+					executable_blake3: digest.clone(),
 					stamp: Some(checked.stamp()),
 				})?,
 			)?;
@@ -547,7 +543,7 @@ fn config_policy(inputs: &inventory::Inventory) -> Result<(), String> {
 			continue;
 		}
 		let bytes = input::read(&file.path, input::MANIFEST_LIMIT)?;
-		if hash(&bytes) != file.file.as_ref().unwrap().sha256 {
+		if hash(&bytes) != file.file.as_ref().unwrap().blake3 {
 			return Err("Cargo configuration changed during audit".into());
 		}
 		let value: toml::Value =

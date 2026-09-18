@@ -51,23 +51,23 @@ fn versioned_encoding_and_changes() {
 	let t = Temp::new();
 	t.write("a", b"x");
 	let initial = t.source();
-	let mut expected = Sha256::new();
-	expected.update(b"rnx-tree-v1\0");
-	expected.update(1u64.to_be_bytes());
+	let mut expected = blake3::Hasher::new();
+	expected.update(b"rnx-tree-v2\0");
+	expected.update(&1u64.to_be_bytes());
 	expected.update(b"a");
-	expected.update([0]);
-	expected.update(1u64.to_be_bytes());
-	expected.update(b"x");
-	assert_eq!(initial.sha256, format!("{:x}", expected.finalize()));
+	expected.update(&[0]);
+	expected.update(&1u64.to_be_bytes());
+	expected.update(blake3::hash(b"x").as_bytes());
+	assert_eq!(initial.blake3, expected.finalize().to_hex().to_string());
 	t.write("a", b"y");
-	assert_ne!(initial.sha256, t.source().sha256);
+	assert_ne!(initial.blake3, t.source().blake3);
 	t.write("a", b"x");
 	t.write("b", b"");
-	assert_ne!(initial.sha256, t.source().sha256);
+	assert_ne!(initial.blake3, t.source().blake3);
 	fs::remove_file(t.0.join("b")).unwrap();
 	assert_eq!(initial, t.source());
 	fs::rename(t.0.join("a"), t.0.join("b")).unwrap();
-	assert_ne!(initial.sha256, t.source().sha256);
+	assert_ne!(initial.blake3, t.source().blake3);
 }
 #[test]
 fn source_exclusions_are_exact_and_scoped() {
@@ -82,13 +82,13 @@ fn source_exclusions_are_exact_and_scoped() {
 		before,
 		source(&t.0, true, &mut Allowance::default()).unwrap()
 	);
-	assert_ne!(before.sha256, t.source().sha256);
+	assert_ne!(before.blake3, t.source().blake3);
 	t.write("nested/rnx.lock", b"input");
 	assert_ne!(
-		before.sha256,
+		before.blake3,
 		source(&t.0, true, &mut Allowance::default())
 			.unwrap()
-			.sha256
+			.blake3
 	);
 }
 #[test]
@@ -100,7 +100,7 @@ fn native_working_tree_not_index_and_ignored_qualification() {
 	t.init();
 	let initial = t.native();
 	t.write("src.rs", b"new");
-	assert_ne!(initial.sha256, t.native().sha256);
+	assert_ne!(initial.blake3, t.native().blake3);
 	t.write("src.rs", b"old");
 	t.write("ignored", b"outside contract");
 	assert_eq!(initial, t.native());
@@ -111,7 +111,7 @@ fn native_working_tree_not_index_and_ignored_qualification() {
 			.contains("untracked")
 	);
 	t.git(&["add", "untracked"]);
-	assert_ne!(initial.sha256, t.native().sha256);
+	assert_ne!(initial.blake3, t.native().blake3);
 	fs::remove_file(t.0.join("src.rs")).unwrap();
 	assert!(native(&t.0, &mut Allowance::default()).is_err());
 }
@@ -172,7 +172,7 @@ fn modes_symlinks_special_and_non_unicode_refuse() {
 	t.write("x", b"a");
 	let old = t.source();
 	fs::set_permissions(t.0.join("x"), fs::Permissions::from_mode(0o755)).unwrap();
-	assert_ne!(old.sha256, t.source().sha256);
+	assert_ne!(old.blake3, t.source().blake3);
 	t.init();
 	symlink("x", t.0.join("link")).unwrap();
 	assert!(
@@ -354,5 +354,83 @@ fn single_file_preserves_modes_and_refusals() {
 		one(&t.0.join(name), &mut Allowance::default())
 			.unwrap_err()
 			.contains("non-Unicode")
+	);
+}
+
+#[cfg(unix)]
+#[test]
+fn independent_v2_vectors_and_order() {
+	use std::os::unix::fs::PermissionsExt;
+	let vectors: serde_json::Value = serde_json::from_str(include_str!("vectors.json")).unwrap();
+	for case in vectors.as_array().unwrap() {
+		let t = Temp::new();
+		for file in case["files"].as_array().unwrap().iter().rev() {
+			let hex = file["hex"].as_str().unwrap();
+			let bytes: Vec<_> = (0..hex.len())
+				.step_by(2)
+				.map(|i| u8::from_str_radix(&hex[i..i + 2], 16).unwrap())
+				.collect();
+			let name = file["path"].as_str().unwrap();
+			t.write(name, bytes);
+			fs::set_permissions(
+				t.0.join(name),
+				fs::Permissions::from_mode(if file["executable"].as_bool().unwrap() {
+					0o700
+				} else {
+					0o600
+				}),
+			)
+			.unwrap();
+		}
+		assert_eq!(t.source().blake3, case["blake3"].as_str().unwrap());
+	}
+}
+
+#[test]
+fn v1_and_v2_preserve_read_failures_and_accounting() {
+	let t = Temp::new();
+	for legacy in [false, true] {
+		for grow in [false, true] {
+			t.write("data", b"abc");
+			AFTER_OPEN.with(|h| {
+				*h.borrow_mut() = Some(Box::new(move |p| {
+					fs::write(
+						p,
+						if grow {
+							b"abcd".as_slice()
+						} else {
+							b"".as_slice()
+						},
+					)
+					.unwrap()
+				}))
+			});
+			let (error, bytes) = if legacy {
+				let mut a = super::legacy::Allowance::bounded(1, 10);
+				let e = super::legacy::one(&t.0.join("data"), &mut a).unwrap_err();
+				(e, a.remaining_bytes())
+			} else {
+				let mut a = Allowance::bounded(1, 10);
+				let e = one(&t.0.join("data"), &mut a).unwrap_err();
+				(e, a.remaining_bytes())
+			};
+			assert!(error.contains("size changed during read"), "{error}");
+			assert_eq!(bytes, if grow { 6 } else { 10 });
+		}
+	}
+}
+
+#[test]
+fn duplicate_framed_names_refuse() {
+	let t = Temp::new();
+	t.write("a", b"x");
+	assert!(
+		hash_files(
+			&t.0,
+			vec!["a".into(), "a".into()],
+			&mut Allowance::default()
+		)
+		.unwrap_err()
+		.contains("duplicate")
 	);
 }

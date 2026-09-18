@@ -31,7 +31,7 @@ pub(crate) fn prepare(manifest: &Path, stage: &Path) -> Result<(), String> {
 	Ok(())
 }
 pub(crate) fn executable_hash(path: &Path) -> Result<String, String> {
-	Ok(fingerprint::one(path, &mut fingerprint::Allowance::default())?.sha256)
+	Ok(fingerprint::one(path, &mut fingerprint::Allowance::default())?.blake3)
 }
 pub(crate) fn verify(path: &Path, expected: &str) -> Result<(), String> {
 	if executable_hash(path)? != expected {

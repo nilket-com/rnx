@@ -79,8 +79,8 @@ pub(crate) struct Receipt {
 	pub format: u32,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub assembly_key: Option<String>,
-	pub lock_sha256: String,
-	pub executable_sha256: String,
+	pub lock_blake3: String,
+	pub executable_blake3: String,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub stamp: Option<Stamp>,
 }
@@ -92,17 +92,14 @@ pub(crate) fn digest_valid(s: &str) -> bool {
 impl Receipt {
 	pub fn decode(bytes: &[u8]) -> Result<Self, String> {
 		let r: Self = serde_json::from_slice(bytes).map_err(|e| format!("invalid receipt: {e}"))?;
-		if !digest_valid(&r.lock_sha256) || !digest_valid(&r.executable_sha256) {
+		if !digest_valid(&r.lock_blake3) || !digest_valid(&r.executable_blake3) {
 			return Err("invalid receipt digest".into());
 		}
-		if r.assembly_key.as_ref().is_some_and(|k| !digest_valid(k))
-			|| (r.format == 3) != r.assembly_key.is_some()
-		{
+		if r.assembly_key.as_ref().is_some_and(|k| !digest_valid(k)) {
 			return Err("invalid receipt assembly binding".into());
 		}
 		match (r.format, &r.stamp) {
-			(1, None) => (),
-			(2 | 3, Some(s))
+			(4, Some(s))
 				if s.bytes <= fingerprint::BYTES && s.mtime_nanoseconds < 1_000_000_000 => {}
 			_ => return Err("invalid receipt version or stamp".into()),
 		}
@@ -169,7 +166,7 @@ pub(crate) fn check(
 		}
 		let (file, before, after) =
 			fingerprint::one_observed(path, &mut fingerprint::Allowance::default())?;
-		if file.sha256 != expected {
+		if file.blake3 != expected {
 			return Err("hash mismatch; run build (or relock an intended override)".into());
 		}
 		let before = Stamp::from_metadata(&before)?;
@@ -328,14 +325,16 @@ mod tests {
 		let digest = crate::assembly::executable_hash(&p).unwrap();
 		let stamp = check(&p, &digest, None, true).unwrap().stamp();
 		let legacy =
-			serde_json::json!({"format":1,"lock_sha256":digest,"executable_sha256":digest});
-		assert!(Receipt::decode(&serde_json::to_vec(&legacy).unwrap()).is_ok());
-		let current = serde_json::json!({"format":2,"lock_sha256":digest,"executable_sha256":digest,"stamp":stamp});
+			serde_json::json!({"format":1,"lock_blake3":digest,"executable_blake3":digest});
+		assert!(Receipt::decode(&serde_json::to_vec(&legacy).unwrap()).is_err());
+		let current = serde_json::json!({"format":4,"lock_blake3":digest,"executable_blake3":digest,"stamp":stamp});
 		assert!(Receipt::decode(&serde_json::to_vec(&current).unwrap()).is_ok());
 		for (key, value) in [
 			("format", serde_json::json!(99)),
 			("stamp", serde_json::Value::Null),
-			("lock_sha256", serde_json::json!("bad")),
+			("lock_blake3", serde_json::json!("bad")),
+			("lock_sha256", serde_json::json!(digest)),
+			("assembly_key", serde_json::json!("bad")),
 			("unexpected", serde_json::json!(true)),
 		] {
 			let mut bad = current.clone();

@@ -44,8 +44,11 @@ fn handoff(root: &Path) -> Handoff {
 }
 fn lock(root: &Path) -> Lock {
 	Lock {
-		format: 1,
-		declarations: app(),
+		format: 3,
+		declarations: Manifest::parse(
+			b"format=1\n[application]\nentry='main.rn'\n[executable]\npath='binary'\n",
+		)
+		.unwrap(),
 		sources: handoff(root),
 		inputs: wire::Inputs {
 			source: crate::inventory::Sources {
@@ -55,15 +58,9 @@ fn lock(root: &Path) -> Lock {
 			},
 			native: None,
 		},
-		assembly: Assembly::Generated {
-			manifest_sha256: "a".repeat(64),
-			main_sha256: "b".repeat(64),
-			cargo_lock_sha256: "c".repeat(64),
-			target: "test-target".into(),
-			profile: "release".into(),
-			features: vec!["project-sources".into()],
-			rustc: "rustc test".into(),
-			cargo: "cargo test".into(),
+		assembly: Assembly::Executable {
+			path: root.join("binary").to_str().unwrap().into(),
+			blake3: "a".repeat(64),
 		},
 	}
 }
@@ -225,14 +222,15 @@ fn locks_are_strict_documents_not_verified_content() {
 	bad.format = 2;
 	assert!(bad.encode().is_err());
 	let mut bad = doc.clone();
-	if let Assembly::Generated { main_sha256, .. } = &mut bad.assembly {
-		*main_sha256 = "not-a-hash".into();
+	if let Assembly::Executable { blake3, .. } = &mut bad.assembly {
+		*blake3 = "not-a-hash".into();
 	}
 	assert!(bad.encode().is_err());
 	let mut bad = doc.clone();
+	bad.declarations = app();
 	bad.assembly = Assembly::Executable {
 		path: t.0.join("binary").to_str().unwrap().into(),
-		sha256: "a".repeat(64),
+		blake3: "a".repeat(64),
 	};
 	assert!(bad.encode().is_err());
 	let mut over = bytes;
@@ -262,12 +260,12 @@ fn inventory_limits_paths_and_hashes() {
 	let mut doc = lock(&t.0);
 	doc.inputs.source.trees.push(crate::fingerprint::Tree {
 		root: t.0.clone(),
-		sha256: "d".repeat(64),
+		blake3: "d".repeat(64),
 		files: vec![wire::File {
 			path: "src/lib.rs".into(),
 			executable: false,
 			bytes: 512 * 1024 * 1024,
-			sha256: "e".repeat(64),
+			blake3: "e".repeat(64),
 		}],
 	});
 	assert!(doc.validate().is_ok());
@@ -283,7 +281,7 @@ fn inventory_limits_paths_and_hashes() {
 			path: format!("f{n}"),
 			executable: false,
 			bytes: 0,
-			sha256: "f".repeat(64),
+			blake3: "f".repeat(64),
 		})
 		.collect();
 	assert!(doc.validate().is_ok());
@@ -291,7 +289,7 @@ fn inventory_limits_paths_and_hashes() {
 		path: "extra".into(),
 		executable: false,
 		bytes: 0,
-		sha256: "f".repeat(64),
+		blake3: "f".repeat(64),
 	});
 	assert!(doc.validate().is_err());
 }
@@ -448,4 +446,30 @@ fn assembly_stages_without_overwriting_and_verifies_before_launch() {
 	.err()
 	.unwrap();
 	assert!(error.contains("hash mismatch"), "{error}");
+}
+
+#[test]
+fn shared_lock_current_schema_and_legacy_names() {
+	let t = Tree::new();
+	let identity = crate::cache_identity::fixture_identity();
+	let mut doc = lock(&t.0);
+	doc.declarations = app();
+	doc.inputs.native = Some(identity.native().clone());
+	doc.assembly = Assembly::Shared {
+		identity: String::from_utf8(identity.bytes().to_vec()).unwrap(),
+	};
+	assert!(doc.encode().is_ok());
+	for version in [1, 2, 4, 99] {
+		let mut bad = doc.clone();
+		bad.format = version;
+		assert!(bad.encode().is_err());
+	}
+	let text = String::from_utf8(doc.encode().unwrap()).unwrap();
+	assert!(Lock::decode(text.replace("blake3", "sha256").as_bytes()).is_err());
+	let mut value = serde_json::to_value(&doc).unwrap();
+	value["inputs"]["native"]["trees"][0]["sha256"] = "a".repeat(64).into();
+	assert!(Lock::decode(&serde_json::to_vec(&value).unwrap()).is_err());
+	// The pre-existing source-map and user manifest formats do not move.
+	assert_eq!(doc.sources.format, 1);
+	assert_eq!(doc.declarations.format, 1);
 }

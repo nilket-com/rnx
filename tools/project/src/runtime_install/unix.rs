@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{commands, fingerprint};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
+
 use std::{
 	ffi::OsString,
 	fs,
@@ -15,7 +15,7 @@ use std::{
 };
 const DOCUMENT: usize = 65536;
 fn hash(b: &[u8]) -> String {
-	format!("{:x}", Sha256::digest(b))
+	blake3::hash(b).to_hex().to_string()
 }
 fn digest(s: &str) -> bool {
 	s.len() == 64
@@ -23,14 +23,14 @@ fn digest(s: &str) -> bool {
 			.all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
 }
 fn identity(tree: &str) -> String {
-	hash(format!("rnx-installed-runtime-v1\n{tree}\n").as_bytes())
+	hash(format!("rnx-installed-runtime-v2\n{tree}\n").as_bytes())
 }
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct Installation {
 	pub format: u32,
 	pub id: String,
-	pub tree_sha256: String,
+	pub tree_blake3: String,
 	pub files: u64,
 	pub bytes: u64,
 	pub layout: String,
@@ -39,7 +39,15 @@ pub(super) struct Installation {
 	pub dirty_tracked: bool,
 	pub installed_utc: String,
 	pub tool_version: String,
-	pub tool_sha256: String,
+	pub tool_blake3: String,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub migrated_from: Option<Migration>,
+}
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct Migration {
+	pub format: u32,
+	pub id: String,
 }
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -115,23 +123,29 @@ fn timestamp(s: &str) -> bool {
 }
 fn metadata(entry: &Path, id: &str) -> Result<Installation, String> {
 	if !digest(id) {
-		return Err("installation ID must be a full lowercase SHA-256 digest".into());
+		return Err("installation ID must be a full lowercase BLAKE3 digest".into());
 	}
 	storage::dir(entry)?;
 	let p = entry.join("installation.json");
-	let d: Installation = serde_json::from_slice(&storage::read(&p, DOCUMENT)?)
-		.map_err(|e| format!("{}: {e}", p.display()))?;
-	if d.format != 1
+	decode_installation(&storage::read(&p, DOCUMENT)?, id, &p)
+}
+fn decode_installation(bytes: &[u8], id: &str, p: &Path) -> Result<Installation, String> {
+	let d: Installation =
+		serde_json::from_slice(bytes).map_err(|e| format!("{}: {e}", p.display()))?;
+	if d.format != 2
 		|| d.layout != "rnx-shipped-v1"
 		|| d.id != id
-		|| !digest(&d.tree_sha256)
-		|| identity(&d.tree_sha256) != d.id
-		|| !digest(&d.tool_sha256)
+		|| !digest(&d.tree_blake3)
+		|| identity(&d.tree_blake3) != d.id
+		|| !digest(&d.tool_blake3)
 		|| d.files == 0
 		|| d.files > 100000
 		|| d.bytes > 512 * 1024 * 1024
 		|| !d.source_path.is_absolute()
 		|| d.source_path.to_str().is_none()
+		|| d.migrated_from
+			.as_ref()
+			.is_some_and(|m| m.format != 1 || !digest(&m.id))
 		|| d.tool_version.is_empty()
 		|| !timestamp(&d.installed_utc)
 		|| d.source_commit.as_ref().is_some_and(|c| {
@@ -165,7 +179,7 @@ fn validate_inner(root: &Path, id: &str, repair: bool) -> Result<Installation, S
 	git::administration_drift(&source, repair)?;
 	let t = git::inventory(&source)?;
 	layout::validate(&source, &t)?;
-	if t.sha256 != d.tree_sha256
+	if t.blake3 != d.tree_blake3
 		|| t.files.len() as u64 != d.files
 		|| t.files.iter().map(|f| f.bytes).sum::<u64>() != d.bytes
 	{
@@ -190,11 +204,7 @@ fn current() -> Result<(PathBuf, Installation), String> {
 	if !storage::exists(&root.join("current.json"))? {
 		return Err(INSTALL_HELP.into());
 	}
-	let c: Current = serde_json::from_slice(&storage::read(&root.join("current.json"), DOCUMENT)?)
-		.map_err(err)?;
-	if c.format != 1 || !digest(&c.id) {
-		return Err("invalid current runtime document".into());
-	}
+	let c = decode_current(&storage::read(&root.join("current.json"), DOCUMENT)?)?;
 	storage::dir(&root.join("entries"))?;
 	let entry = root.join("entries").join(&c.id);
 	if !storage::exists(&entry)? {
@@ -322,7 +332,7 @@ fn copy(source: &Path, dest: &Path, tree: &fingerprint::Tree) -> Result<(), Stri
 			0o600
 		}))
 		.map_err(err)?;
-		let mut content = Sha256::new();
+		let mut content = blake3::Hasher::new();
 		let mut n = 0u64;
 		let mut buffer = [0u8; 16384];
 		loop {
@@ -349,7 +359,7 @@ fn copy(source: &Path, dest: &Path, tree: &fingerprint::Tree) -> Result<(), Stri
 		}
 		let after = f.metadata().map_err(err)?;
 		if n != file.bytes
-			|| format!("{:x}", content.finalize()) != file.sha256
+			|| content.finalize().to_hex().to_string() != file.blake3
 			|| after.len() != before.len()
 			|| after.mode() & 0o111 != before.mode() & 0o111
 		{
@@ -370,7 +380,7 @@ fn select_inner(root: &Path, id: &str, selected: &mut bool) -> Result<(), String
 	storage::write(
 		&tmp.0,
 		&json(&Current {
-			format: 1,
+			format: 2,
 			id: id.into(),
 		})?,
 	)?;
@@ -401,7 +411,7 @@ fn install(source: &Path) -> Result<Installation, String> {
 	git::top(&source)?;
 	let before = git::inventory(&source)?;
 	layout::validate(&source, &before)?;
-	let id = identity(&before.sha256);
+	let id = identity(&before.blake3);
 	if own_installation && source != root.join("entries").join(&id).join("source") {
 		return Err("installed source does not match its containing identity".into());
 	}
@@ -431,7 +441,7 @@ fn install(source: &Path) -> Result<Installation, String> {
 			git::index(&temp.0.join("source"), &before)?;
 			hooks::point("after-index")?;
 			let copied = git::inventory(&temp.0.join("source"))?;
-			if copied.sha256 != before.sha256 || copied.files != before.files {
+			if copied.blake3 != before.blake3 || copied.files != before.files {
 				return Err("installed copy differs from source fingerprint".into());
 			}
 			layout::validate(&temp.0.join("source"), &copied)?;
@@ -441,9 +451,9 @@ fn install(source: &Path) -> Result<Installation, String> {
 				return Err("source changed during installation".into());
 			}
 			let doc = Installation {
-				format: 1,
+				format: 2,
 				id: id.clone(),
-				tree_sha256: before.sha256.clone(),
+				tree_blake3: before.blake3.clone(),
 				files: before.files.len() as u64,
 				bytes: before.files.iter().map(|f| f.bytes).sum(),
 				layout: "rnx-shipped-v1".into(),
@@ -451,12 +461,13 @@ fn install(source: &Path) -> Result<Installation, String> {
 				source_commit,
 				dirty_tracked,
 				installed_utc: utc()?,
+				migrated_from: None,
 				tool_version: env!("CARGO_PKG_VERSION").into(),
-				tool_sha256: fingerprint::one(
+				tool_blake3: fingerprint::one(
 					&std::env::current_exe().map_err(err)?,
 					&mut fingerprint::Allowance::default(),
 				)?
-				.sha256,
+				.blake3,
 			};
 			hooks::point("before-document")?;
 			storage::write(&temp.0.join("installation.json"), &json(&doc)?)?;
@@ -513,7 +524,7 @@ pub(crate) fn cli(args: &[OsString]) -> Result<(), String> {
 			let id = args[1]
 				.to_str()
 				.filter(|s| digest(s))
-				.ok_or("installation ID must be a full lowercase SHA-256 digest")?;
+				.ok_or("installation ID must be a full lowercase BLAKE3 digest")?;
 			commands::install_signals()?;
 			let root = storage::selected()?;
 			if !storage::exists(&root.join("entries").join(id))? {
@@ -546,5 +557,60 @@ pub(crate) fn cli(args: &[OsString]) -> Result<(), String> {
 			Ok(())
 		}
 		_ => Err("expected runtime install --from PATH, show, or select ID".into()),
+	}
+}
+
+fn decode_current(bytes: &[u8]) -> Result<Current, String> {
+	let c: Current = serde_json::from_slice(bytes).map_err(err)?;
+	if c.format != 2 || !digest(&c.id) {
+		return Err("invalid current runtime document".into());
+	}
+	Ok(c)
+}
+#[cfg(test)]
+mod encoding_tests {
+	use super::*;
+	#[test]
+	fn installation_and_selection_formats_are_strict() {
+		let tree = blake3::hash(b"tree").to_hex().to_string();
+		let id = identity(&tree);
+		let doc = serde_json::json!({"format":2,"id":id,"tree_blake3":tree,
+            "files":1,"bytes":1,"layout":"rnx-shipped-v1","source_path":"/fixture/source",
+            "source_commit":null,"dirty_tracked":true,"installed_utc":"2026-09-18T00:00:00Z",
+            "tool_version":"fixture","tool_blake3":blake3::hash(b"tool").to_hex().to_string()});
+		let path = Path::new("/fixture/installation.json");
+		assert!(decode_installation(&json(&doc).unwrap(), &id, path).is_ok());
+		for (key, value) in [
+			("format", serde_json::json!(1)),
+			("format", serde_json::json!(99)),
+			("tree_sha256", serde_json::json!("a".repeat(64))),
+			("tree_blake3", serde_json::json!("a".repeat(64))),
+			("tool_blake3", serde_json::json!("bad")),
+			("unknown", serde_json::json!(true)),
+		] {
+			let mut bad = doc.clone();
+			bad[key] = value;
+			assert!(
+				decode_installation(&json(&bad).unwrap(), &id, path).is_err(),
+				"{key}"
+			);
+		}
+		let mut migrated = doc.clone();
+		migrated["migrated_from"] = serde_json::json!({"format":1,"id":"a".repeat(64)});
+		assert!(decode_installation(&json(&migrated).unwrap(), &id, path).is_ok());
+		migrated["migrated_from"]["format"] = serde_json::json!(2);
+		assert!(decode_installation(&json(&migrated).unwrap(), &id, path).is_err());
+		let current = serde_json::json!({"format":2,"id":id});
+		assert!(decode_current(&json(&current).unwrap()).is_ok());
+		for (key, value) in [
+			("format", serde_json::json!(1)),
+			("format", serde_json::json!(99)),
+			("id", serde_json::json!("../x")),
+			("unknown", serde_json::json!(true)),
+		] {
+			let mut bad = current.clone();
+			bad[key] = value;
+			assert!(decode_current(&json(&bad).unwrap()).is_err());
+		}
 	}
 }

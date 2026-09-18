@@ -18,6 +18,39 @@ use std::{ffi::OsString, path::Path};
 fn run() -> Result<(), String> {
 	let args: Vec<OsString> = std::env::args_os().skip(1).collect();
 	match args.first().and_then(|a| a.to_str()) {
+		Some(version @ ("fingerprint-v1" | "fingerprint-v2")) if args.len() == 5 => {
+			let mode = args[1].to_str().ok_or("mode is not Unicode")?;
+			let path = Path::new(&args[2]);
+			let entries = args[3]
+				.to_str()
+				.ok_or("entries")?
+				.parse()
+				.map_err(|_| "entries")?;
+			let bytes = args[4]
+				.to_str()
+				.ok_or("bytes")?
+				.parse()
+				.map_err(|_| "bytes")?;
+			macro_rules! fingerprint {
+				($m:path) => {{
+					use $m as f;
+					let mut allowance = f::Allowance::bounded(entries, bytes);
+					match mode {
+						"source" => wire::encode(&f::source(path, false, &mut allowance)?)?,
+						"native" => wire::encode(&f::native(path, &mut allowance)?)?,
+						"one" => wire::encode(&f::one(path, &mut allowance)?)?,
+						_ => return Err("fingerprint mode".into()),
+					}
+				}};
+			}
+			let result = if version == "fingerprint-v1" {
+				fingerprint!(crate::fingerprint::legacy)
+			} else {
+				fingerprint!(crate::fingerprint)
+			};
+			println!("{}", String::from_utf8(result).map_err(|e| e.to_string())?);
+			Ok(())
+		}
 		Some("prepare") if args.len() == 3 => {
 			assembly::prepare(Path::new(&args[1]), Path::new(&args[2]))
 		}

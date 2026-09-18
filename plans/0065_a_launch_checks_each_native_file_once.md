@@ -2,7 +2,10 @@
 
 Status: accepted for implementation after the 2026-09-18 draft review.
 The removal record is explicitly next after this record closes; gate 3 includes
-a kernelspec referencing an old-key artifact among surviving consumers. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
+a kernelspec referencing an old-key artifact among surviving consumers.
+Gate 1's reader/encoding checks pass on Linux, ready for review; see
+[the encoding evidence](0065_a_launch_checks_each_native_file_once_encoding_evidence.md).
+Gates 2–6 remain open. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
 0064 is closed on Linux. This record addresses native inventory after runtime
 installation; it does not introduce a persistent source-verification cache.
 

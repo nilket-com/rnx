@@ -229,10 +229,10 @@ impl Project {
 		self.atomic(
 			&self.dot.join("receipt.json"),
 			&wire::pretty(&Receipt {
-				format: 3,
+				format: 4,
 				assembly_key: Some(identity.key().into()),
-				lock_sha256: hash(bytes),
-				executable_sha256: entry.digest.clone(),
+				lock_blake3: hash(bytes),
+				executable_blake3: entry.digest.clone(),
 				stamp: Some(entry.artifact.stamp()),
 			})?,
 		)?;
