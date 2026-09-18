@@ -409,14 +409,20 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		let mut phase = "author";
 		let prepare: Result<(), String> = (|| {
 			eprintln!("dependency phase: author");
+			#[cfg(feature = "test-support")]
+			protocol::trace("tool-author");
 			fault("dep-author")?;
 			p.add(&fresh.entries)?;
 			phase = "resolve";
 			eprintln!("dependency phase: resolve");
+			#[cfg(feature = "test-support")]
+			protocol::trace("tool-resolve");
 			fault("dep-resolve")?;
 			p.lock(fresh.offline)?;
 			phase = "build/attach";
 			eprintln!("dependency phase: build/attach");
+			#[cfg(feature = "test-support")]
+			protocol::trace("tool-build");
 			fault("dep-build")?;
 			p.build(fresh.offline)?;
 			let (lock, bytes) = p.read_lock()?;
@@ -425,6 +431,8 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			checked.recheck()?;
 			phase = "startup check";
 			eprintln!("dependency phase: startup check");
+			#[cfg(feature = "test-support")]
+			protocol::trace("tool-probe");
 			super::startup::check(&checked, request.get(&6).map(String::as_str).unwrap_or(""))?;
 			commands::check()?;
 			p.verify_inputs(&lock)?;
@@ -448,6 +456,8 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 					),
 				);
 			}
+			#[cfg(feature = "test-support")]
+			protocol::trace("tool-ready");
 			protocol::write(&mut socket, 5, &ready)?;
 			Ok(())
 		})();

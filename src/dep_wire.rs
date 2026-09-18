@@ -120,6 +120,34 @@ pub fn stamp(path: &std::path::Path) -> Result<String, String> {
 	))
 }
 
+/// Fixture-only, comparable monotonic timestamps across the transition processes.
+#[cfg(all(unix, feature = "test-support"))]
+pub fn trace(name: &str) {
+	use std::io::Write;
+	let Some(path) = std::env::var_os("RNX_DEP_TIMELINE") else {
+		return;
+	};
+	let mut ts = libc::timespec {
+		tv_sec: 0,
+		tv_nsec: 0,
+	};
+	if unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut ts) } != 0 {
+		return;
+	}
+	if let Ok(mut f) = std::fs::OpenOptions::new()
+		.create(true)
+		.append(true)
+		.open(path)
+	{
+		let _ = writeln!(
+			f,
+			"{}\t{}\t{name}",
+			ts.tv_sec as u128 * 1_000_000_000 + ts.tv_nsec as u128,
+			std::process::id()
+		);
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;

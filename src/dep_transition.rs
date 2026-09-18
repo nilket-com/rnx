@@ -343,6 +343,8 @@ mod unix {
 			return Err("replacement association mismatch".into());
 		}
 		helper.finish()?;
+		#[cfg(feature = "test-support")]
+		point("before-commit", &result[&1])?;
 		helper.check()?;
 		let next = Replacement {
 			path: result[&1].clone(),
@@ -352,6 +354,8 @@ mod unix {
 			flags: flags(),
 		};
 		next.recheck()?;
+		#[cfg(feature = "test-support")]
+		wire::trace("cleanup-begin");
 		NEXT.with(|v| *v.borrow_mut() = Some(next));
 		Ok(true)
 	}
@@ -377,12 +381,37 @@ mod unix {
 			.take_while(|a| a == "--no-splash" || a.starts_with("--color="))
 			.collect()
 	}
+	#[cfg(feature = "test-support")]
+	fn point(name: &str, artifact: &str) -> Result<(), String> {
+		wire::trace(name);
+		if std::env::var("RNX_DEP_PAUSE").as_deref() != Ok(name) {
+			return Ok(());
+		}
+		let marker = std::env::var("RNX_DEP_MARKER").map_err(err)?;
+		let release = std::env::var("RNX_DEP_RELEASE").map_err(err)?;
+		std::fs::write(marker, artifact).map_err(err)?;
+		let deadline = Instant::now() + Duration::from_secs(30);
+		while !std::path::Path::new(&release).exists() {
+			if name == "before-commit" && crate::host::interrupted() {
+				break;
+			}
+			if Instant::now() >= deadline {
+				return Err("fixture transition pause deadline".into());
+			}
+			std::thread::sleep(Duration::from_millis(5));
+		}
+		Ok(())
+	}
 	pub(super) fn finish(result: crate::Result<()>) -> crate::Result<()> {
 		let next = NEXT.with(|v| v.borrow_mut().take());
 		result?;
 		if let Some(next) = next {
+			#[cfg(feature = "test-support")]
+			point("after-cleanup", &next.path)?;
 			next.recheck()
 				.map_err(|e| format!("dependency restart failed after cleanup: {e}"))?;
+			#[cfg(feature = "test-support")]
+			point("before-exec", &next.path)?;
 			let mut command = Command::new(&next.path);
 			command.env_remove("RNX_INTERNAL_DEP_REOPEN_V1");
 			if let Some(reopen) = next.reopen {

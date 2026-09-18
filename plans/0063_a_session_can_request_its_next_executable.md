@@ -6,8 +6,11 @@ Gate 1's isolated transition/ownership prototype is accepted in
 `_ownership_evidence.md`. Gate 2's product preparation/cancellation checkpoint
 is accepted in `_preparation_evidence.md`. Gate 3's real startup probe and
 handover are accepted in `_startup_evidence.md`. Gate 4's real Polars/PostgreSQL
-journeys and scratch reopen command are ready for review in
-`_dogfood_evidence.md`. Gates 5–6 remain open.
+journeys and scratch reopen command are accepted in `_dogfood_evidence.md`.
+Gates 5–6 are implemented and ready for review in `_commit_evidence.md` and
+`_acceptance_evidence.md`: adversarial commitment/lifecycle, full regression and
+matched everyday costs. Linux execution only; Windows type-checks are recorded
+without claiming transition execution. Runtime installation is the next record.
 
 ## Context
 
