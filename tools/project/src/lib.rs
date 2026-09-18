@@ -17,6 +17,7 @@ mod inventory;
 mod manifest;
 #[cfg(test)]
 mod maps;
+mod runtime_install;
 #[cfg(test)]
 mod tests;
 mod wire;

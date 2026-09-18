@@ -330,3 +330,36 @@ their native inputs match. The working directory stays the caller's directory.
 A private startup probe executes builders before the replacement executes them
 again. Failed preparation preserves the old session, but project edits may remain;
 cleanup or exec failure after the restart announcement is terminal.
+
+## Retained runtime sources
+
+Install a complete local runtime snapshot before removing its checkout:
+
+```sh
+rnx-project runtime install --from /path/to/rnx
+rnx-project runtime show
+rnx-project runtime select FULL_INSTALLATION_ID
+```
+
+The store is `$XDG_DATA_HOME/rnx/runtimes`, or
+`$HOME/.local/share/rnx/runtimes`. A symlink to the store is allowed; managed
+paths below its canonical root must be private owned directories/regular files.
+Installation copies tracked working-tree bytes, including both shipped adapters,
+and builds an independent Git index. Dirty tracked edits are supported; untracked
+non-ignored files, conflicts, symlinks and escaping Cargo paths are refused.
+No source file is rewritten. Git, Rust/Cargo and native build tools remain needed
+for assembly. For the current `:dep` workflow, set `RNX_DEP_RUNTIME` to the installed
+source path printed by `runtime show`.
+
+An identical reinstall validates and reselects the existing installation without
+changing its original provenance. A different snapshot remains beside earlier
+ones. Selecting a default does not alter existing projects or scratch sessions.
+Canonical native paths are build inputs, so installing elsewhere gives a different
+assembly identity and can require a fresh build. This does not make builds hermetic.
+
+A failed copy/index step preserves the default. If entry publication succeeds but
+selection fails, the tool reports **installed but not selected**; the retained ID
+can be selected later. After the selection rename, a sync failure reports that the
+selection may already have changed. Entries are retained whole; removal and automatic
+upgrades are not implemented. Metadata records source provenance and the installing
+tool's version and digest, but launcher/runtime compatibility is not checked.

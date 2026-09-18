@@ -2,9 +2,10 @@
 
 Status: accepted for implementation after the 2026-09-18 draft review, with
 F1 on runtime provenance and unchecked launcher/runtime skew folded in below.
-Gate 1's isolated installed-source/index prototype passes on Linux and is ready
-for review; see [the evidence](0064_a_runtime_installation_outlives_its_checkout_index_evidence.md).
-Gates 2–6 remain open; no product implementation changed.
+Gate 1 is accepted; see [the index evidence](0064_a_runtime_installation_outlives_its_checkout_index_evidence.md).
+Gate 2's product installer and publication matrix pass on Linux, ready for review;
+see [the publication evidence](0064_a_runtime_installation_outlives_its_checkout_publication_evidence.md).
+Gates 3–6 remain open; session discovery is unchanged.
 Baseline: rnx `1ecc35c` / rnx-bench `9aa378d`.
 0063 is accepted and closed on Linux. This record removes its source-checkout
 environment setup from ordinary stock `:dep` use. Native-inventory optimization
@@ -168,7 +169,8 @@ Serialize writers with one owned advisory installation lock outside entries;
 waiters honor interruption and re-examine state after acquiring it. Stage under
 the same canonical store, with exclusive names. Never write into the source.
 Bound retained logical source plus generated Git administration to 2 GiB and
-400,000 files; these are new installer bounds, not larger source allowances.
+400,000 filesystem entries (directories are charged too, bounding traversal);
+these are new installer bounds, not larger source allowances.
 All Git subprocess output is bounded and its children are owned, cancelled and
 reaped through the tool's subprocess mechanism. No Git child inherits the
 installation lock across exec. Check cancellation between bounded copy steps.

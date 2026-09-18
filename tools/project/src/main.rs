@@ -14,6 +14,7 @@ mod input;
 mod inventory;
 mod manifest;
 mod maps;
+mod runtime_install;
 mod wire;
 mod workflow;
 fn main() {

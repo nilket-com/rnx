@@ -26,6 +26,14 @@ impl Default for Allowance {
 	}
 }
 impl Allowance {
+	/// Installer test allowances can be reduced without changing production bounds.
+	pub(crate) fn bounded(entries: usize, bytes: u64) -> Self {
+		Self {
+			entries: entries.min(ENTRIES),
+			bytes: bytes.min(BYTES),
+		}
+	}
+
 	pub(crate) fn remaining_bytes(&self) -> u64 {
 		self.bytes
 	}
@@ -311,6 +319,14 @@ fn git(root: &Path, args: &[&str], limit: usize) -> Result<Vec<u8>, String> {
 	Ok(bytes)
 }
 pub(crate) fn native(path: &Path, allowance: &mut Allowance) -> Result<Tree, String> {
+	native_using(path, allowance, git)
+}
+/// Same inventory and encoding, with installer-owned Git supervision/configuration.
+pub(crate) fn native_using(
+	path: &Path,
+	allowance: &mut Allowance,
+	git: impl Fn(&Path, &[&str], usize) -> Result<Vec<u8>, String>,
+) -> Result<Tree, String> {
 	let root = root(path)?;
 	if !git(
 		&root,

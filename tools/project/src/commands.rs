@@ -55,12 +55,24 @@ pub(crate) fn check() -> Result<(), String> {
 		Ok(())
 	}
 }
-pub(crate) fn run(mut command: Command, capture: bool) -> Result<Vec<u8>, String> {
+pub(crate) fn run(command: Command, capture: bool) -> Result<Vec<u8>, String> {
+	run_inner(command, capture, false)
+}
+/// Installer Git must bound stderr too; ordinary Cargo output keeps its existing stream.
+#[allow(dead_code)]
+pub(crate) fn run_bounded(command: Command) -> Result<Vec<u8>, String> {
+	run_inner(command, true, true)
+}
+fn run_inner(mut command: Command, capture: bool, bounded_stderr: bool) -> Result<Vec<u8>, String> {
 	check()?;
 	command
 		.env_remove("RNX_INTERNAL_DEP_FD")
 		.env_remove("RNX_INTERNAL_SESSION_V1");
-	command.stdin(Stdio::null()).stderr(Stdio::inherit());
+	command.stdin(Stdio::null()).stderr(if bounded_stderr {
+		Stdio::piped()
+	} else {
+		Stdio::inherit()
+	});
 	if capture {
 		command.stdout(Stdio::piped());
 	} else {
@@ -88,6 +100,20 @@ pub(crate) fn run(mut command: Command, capture: bool) -> Result<Vec<u8>, String
 			Ok(bytes)
 		})
 	});
+	let mut errors = child.stderr.take().map(|stderr| {
+		std::thread::spawn(move || {
+			let mut bytes = vec![];
+			stderr
+				.take(crate::input::DOCUMENT_LIMIT as u64 + 1)
+				.read_to_end(&mut bytes)
+				.map_err(|e| e.to_string())?;
+			if bytes.len() > crate::input::DOCUMENT_LIMIT {
+				return Err("command stderr exceeds 16 MiB".into());
+			}
+			Ok(bytes)
+		})
+	});
+	let mut error_bytes = vec![];
 	let kill = || {
 		#[cfg(unix)]
 		unsafe {
@@ -137,13 +163,40 @@ pub(crate) fn run(mut command: Command, capture: bool) -> Result<Vec<u8>, String
 			}
 		}
 
+		if errors.as_ref().is_some_and(|r| r.is_finished()) {
+			match errors
+				.take()
+				.unwrap()
+				.join()
+				.unwrap_or_else(|_| Err("command stderr reader panicked".into()))
+			{
+				Ok(bytes) => error_bytes = bytes,
+				Err(e) => {
+					kill();
+					let _ = child.kill();
+					let _ = child.wait();
+					break Err(e);
+				}
+			}
+		}
 		std::thread::sleep(Duration::from_millis(10));
 	};
 	let output = match reader {
 		Some(r) => r.join().map_err(|_| "command output reader panicked")?,
 		None => Ok(captured.unwrap_or_default()),
 	};
-	result?;
+	if let Some(reader) = errors {
+		error_bytes = reader
+			.join()
+			.map_err(|_| "command stderr reader panicked")??;
+	}
+	result.map_err(|e| {
+		if error_bytes.is_empty() {
+			e
+		} else {
+			format!("{e}: {}", String::from_utf8_lossy(&error_bytes))
+		}
+	})?;
 	check()?;
 	output
 }
