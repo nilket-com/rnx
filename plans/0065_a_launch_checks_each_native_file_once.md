@@ -9,9 +9,11 @@ Gate 2's current-format workflows and matched format-only timing are accepted on
 Gate 3 is accepted on Linux; see
 [the migration evidence](0065_a_launch_checks_each_native_file_once_migration_evidence.md).
 Gate 4's isolated equivalence candidate is accepted on Linux; see [the nested evidence](0065_a_launch_checks_each_native_file_once_nested_evidence.md).
-Gate 5 is stopped for review: the port passes equivalence and the adapter
-increment bound, but misses the required zero-adapter floor improvement; see
-[the product evidence](0065_a_launch_checks_each_native_file_once_product_evidence.md).
+Gate 5's first port stop is accepted; F2 restores the floor but still misses the
+first-adapter increment and is stopped for review; see
+[the directory evidence](0065_a_launch_checks_each_native_file_once_directory_evidence.md).
+The [original port evidence](0065_a_launch_checks_each_native_file_once_product_evidence.md)
+remains a preserved measurement baseline.
 Gate 5 remains open and gate 6 has not started. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
 0064 is closed on Linux. This record addresses native inventory after runtime
 installation; it does not introduce a persistent source-verification cache.

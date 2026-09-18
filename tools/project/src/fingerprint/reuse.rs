@@ -45,17 +45,18 @@ pub(super) fn before_read(p: &Path) -> Result<(), String> {
 	STATE.with(|s| {
 		let mut s = s.borrow_mut();
 		for dir in p.parent().unwrap().ancestors() {
-			for q in [dir.to_path_buf(), dir.join(".git")] {
-				let value = observed(&q)?;
-				if let Some(old) = s.boundaries.get(&q) {
-					if old != &value {
-						return Err(fail(&q, "boundary changed during observation"));
-					}
-				} else {
-					s.boundaries.insert(q, value);
-				}
+			// A directory's ancestors were observed on its first visit. Reuse
+			// rechecks the complete boundary map before deriving any child.
+			if s.boundaries.contains_key(dir) {
+				break;
 			}
-			if observed(&dir.join(".git"))?.is_some() {
+			let directory = observed(dir)?;
+			let git_path = dir.join(".git");
+			let git_entry = observed(&git_path)?;
+			let boundary = git_entry.is_some();
+			s.boundaries.insert(dir.to_owned(), directory);
+			s.boundaries.insert(git_path, git_entry);
+			if boundary {
 				break;
 			}
 		}
@@ -279,10 +280,24 @@ pub(crate) fn many(roots: Vec<PathBuf>, a: &mut Allowance) -> Result<Vec<Tree>, 
 			STATE.with(|s| *s.borrow_mut() = State::default());
 		}
 	}
-	ACTIVE.with(|a| a.set(true));
-	let _active = Active;
-	let plain = std::env::vars_os().any(|(k, _)| k.to_string_lossy().starts_with("GIT_"));
 	let roots = roots.into_iter().collect::<BTreeSet<_>>();
+	let nested = roots
+		.iter()
+		.any(|p| p.ancestors().skip(1).any(|a| roots.contains(a)));
+	let _active = Active;
+	if !nested {
+		return roots
+			.into_iter()
+			.map(|p| {
+				let tree = native(&p, a)?;
+				#[cfg(feature = "test-support")]
+				super::trace::between(&p)?;
+				Ok(tree)
+			})
+			.collect();
+	}
+	ACTIVE.with(|a| a.set(true));
+	let plain = std::env::vars_os().any(|(k, _)| k.to_string_lossy().starts_with("GIT_"));
 	let mut observations = vec![];
 	let mut trees = vec![];
 	for p in roots {
