@@ -18,6 +18,41 @@ original feasibility spike and its outcome are in
 the published package — record 0026 says why — so these point there, where
 they work from either copy.
 
+## Install and try an adapter
+
+Install the tested Git revision with Cargo. Rust, Git and native build tools
+are required:
+
+```sh
+cargo install --git https://github.com/nilket-com/rnx \
+  --rev 7ae886305aea33312a061cbafbebbb49ff8bc8c4 rnx --locked
+rnx
+```
+
+At the prompt, enter `:dep polars` and answer the preparation notice. Cargo fetches
+and builds the adapter, then rnx restarts the session with Polars available:
+
+```text
+[1] > :dep polars
+...
+Continue? [y/N] y
+...
+[1] > polars::lit(42).is_ok()
+[1] true
+```
+
+This installs one executable. No companion program, runtime installation or
+source-checkout environment variable is needed. The first adapter build can take
+a few minutes; later sessions reuse its assembly. Restart loses bindings but
+keeps history. The printed command reopens the retained scratch project.
+A notebook can use the assembled executable as its worker.
+
+Cargo owns the fetched sources. Ordinary project launches trust that checkout;
+`--verify`, lock, build and attachment check its contents. Developer path overrides
+still check source contents on every launch. See the
+[project tool guide](https://github.com/nilket-com/rnx/blob/main/tools/project/README.md)
+for declarations, verification, cache removal and explicit runtime overrides.
+
 ## Reproduce
 
 This is an independent, unpublished Cargo package pinned to Rune 0.14.2, with

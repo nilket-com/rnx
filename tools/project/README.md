@@ -4,8 +4,22 @@ Local source packages and native extensions, dispatched by the stock `rnx`
 executable. The implementation remains a separate Cargo workspace with no runner
 dependency. Defaults-off runner consumers omit management and its dependencies.
 
+For first use, install one binary and open its session:
+
 ```sh
-cargo install --path . --locked
+cargo install --git https://github.com/nilket-com/rnx \
+  --rev 7ae886305aea33312a061cbafbebbb49ff8bc8c4 rnx --locked
+rnx
+```
+
+At the prompt enter `:dep polars` and consent. Cargo, Rust, Git and native build
+tools must be on PATH. There is no companion install or default runtime-store
+setup. A cold build takes minutes; a cached assembly avoids compilation. The
+restart clears bindings, retains history and prints a scratch reopen command.
+
+For a project whose manifest you already have:
+
+```sh
 rnx project lock --manifest app/rnx.toml --offline
 rnx project build --manifest app/rnx.toml --offline
 rnx project session --manifest app/rnx.toml
