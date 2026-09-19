@@ -132,15 +132,46 @@ pub(crate) fn policy(inv: &inventory::Inventory) -> Result<(), String> {
 		}
 		let config: toml::Value =
 			toml::from_str(std::str::from_utf8(&bytes).map_err(error)?).map_err(error)?;
-		for key in config.as_table().ok_or("config is not a table")?.keys() {
-			if !matches!(
-				key.as_str(),
-				"http" | "net" | "registry" | "registries" | "term"
-			) {
-				return Err(format!(
-					"unsupported Cargo configuration key {key} in {}",
-					external.path.display()
-				));
+		config_policy(&config, &external.path)?;
+	}
+	Ok(())
+}
+
+/// Only the explicitly modelled native linker configuration is admitted.
+/// The caller authenticates the config bytes against the input inventory.
+pub(crate) fn config_policy(config: &toml::Value, path: &Path) -> Result<(), String> {
+	let refuse = |key: &str| {
+		format!(
+			"unsupported Cargo configuration key {key} in {}; remove the unsupported setting before retrying; project-local Cargo config is not a workaround",
+			path.display()
+		)
+	};
+	for (key, value) in config.as_table().ok_or("Cargo config must be a table")? {
+		if matches!(
+			key.as_str(),
+			"http" | "net" | "registry" | "registries" | "term"
+		) {
+			continue;
+		}
+		if key != "target" {
+			return Err(refuse(key));
+		}
+		for (target, settings) in value.as_table().ok_or_else(|| refuse("target"))? {
+			let prefix = format!("target.{target}");
+			if target != "x86_64-unknown-linux-gnu" {
+				return Err(refuse(&prefix));
+			}
+			for (name, value) in settings.as_table().ok_or_else(|| refuse(&prefix))? {
+				let valid = match name.as_str() {
+					"linker" => value.as_str().is_some_and(|s| !s.is_empty()),
+					"rustflags" => value
+						.as_array()
+						.is_some_and(|a| a.iter().all(|v| v.as_str().is_some())),
+					_ => false,
+				};
+				if !valid {
+					return Err(refuse(&format!("{prefix}.{name}")));
+				}
 			}
 		}
 	}
@@ -162,4 +193,38 @@ pub(crate) fn directory(path: &Path) -> Result<(), String> {
 		Err(e) => return Err(error(e)),
 	}
 	private_directory(path)
+}
+
+#[cfg(test)]
+mod config_tests {
+	use super::*;
+	#[test]
+	fn admits_slim_linker_config_and_refuses_unmodelled_settings() {
+		let slim = "[target.x86_64-unknown-linux-gnu]\nlinker = \"clang\"\nrustflags = [\"-C\", \"link-arg=-fuse-ld=mold\"]\n";
+		let check =
+			|s: &str| config_policy(&toml::from_str(s).unwrap(), Path::new("/cargo/config.toml"));
+		check(slim).unwrap();
+		for extra in [
+			"[patch.crates-io]\n",
+			"[build]\n",
+			"[env]\n",
+			"[alias]\n",
+			"[profile.dev]\n",
+			"[source.crates-io]\n",
+			"[unstable]\n",
+			"[target.aarch64-unknown-linux-gnu]\n",
+		] {
+			let error = check(&format!("{slim}{extra}")).unwrap_err();
+			assert!(error.contains("/cargo/config.toml"));
+			assert!(error.contains("project-local Cargo config is not a workaround"));
+		}
+		for fields in [
+			"runner = 'x'",
+			"linker = 3",
+			"rustflags = ['-C', 3]",
+			"rustflags = '-C opt-level=2'",
+		] {
+			assert!(check(&format!("[target.x86_64-unknown-linux-gnu]\n{fields}")).is_err());
+		}
+	}
 }

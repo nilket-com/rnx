@@ -618,18 +618,7 @@ fn config_policy(inputs: &inventory::Inventory) -> Result<(), String> {
 		}
 		let value: toml::Value =
 			toml::from_str(std::str::from_utf8(&bytes).map_err(err)?).map_err(err)?;
-		let table = value.as_table().ok_or("Cargo config must be a table")?;
-		for key in table.keys() {
-			if !matches!(
-				key.as_str(),
-				"http" | "net" | "registry" | "registries" | "term"
-			) {
-				return Err(format!(
-					"unsupported Cargo configuration key {key} in {}",
-					file.path.display()
-				));
-			}
-		}
+		crate::cache_storage::config_policy(&value, &file.path)?;
 	}
 	Ok(())
 }

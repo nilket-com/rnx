@@ -612,7 +612,7 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 				crate::entry::recovery(&p.manifest).unwrap_or_else(|e| e),
 				fresh
 					.git
-					.map(|c| format!("\n{}", c.override_help()))
+					.map(|c| c.acquisition_help(&e))
 					.unwrap_or_default()
 			)
 		})

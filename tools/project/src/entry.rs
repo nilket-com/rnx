@@ -78,6 +78,13 @@ impl Coordinates {
 			quote(p).unwrap_or_default()
 		)
 	}
+	pub(crate) fn acquisition_help(self, error: &str) -> String {
+		if error.starts_with("Cargo Git acquisition failed:") {
+			format!("\n{}", self.override_help())
+		} else {
+			String::new()
+		}
+	}
 	pub(crate) fn notice(self) -> Result<String, String> {
 		if !matches!(self.state, "acquired" | "unverified")
 			|| self.revision.len() != 40
@@ -108,6 +115,27 @@ impl Coordinates {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn checkout_hint_is_only_for_acquisition_failure() {
+		let c = Coordinates {
+			url: "https://example.invalid/rnx",
+			revision: "0123456789012345678901234567890123456789",
+			state: "unverified",
+			source_hint: "",
+		};
+		for error in [
+			"unsupported Cargo configuration key patch in /cargo/config.toml",
+			"startup probe failed",
+			"build failed",
+		] {
+			assert!(c.acquisition_help(error).is_empty());
+		}
+		assert!(
+			c.acquisition_help("Cargo Git acquisition failed: revision missing")
+				.contains("export RNX_DEP_RUNTIME=")
+		);
+	}
+
 	#[test]
 	fn coordinates_gate_dirty_not_unverified_and_restore_frontend() {
 		let clean = Coordinates {

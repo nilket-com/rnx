@@ -343,7 +343,8 @@ impl Project {
 				cmd.arg("--offline");
 			}
 			let observation = git_inventory::acquisition::Observation::begin(&home)?;
-			let graph = commands::run(cmd, true)?;
+			let graph = commands::run(cmd, true)
+				.map_err(|e| format!("Cargo Git acquisition failed: {e}"))?;
 			observation.report(&git_inventory::packages(&graph)?)?;
 			Ok(graph)
 		};

@@ -336,6 +336,22 @@ whole entry only after all its sessions, kernels and other consumers have stoppe
 the tool does not track that condition. Missing entries require an explicit build.
 Never delete only a retained auxiliary build-output directory from a live entry.
 
+The Cargo config audit permits `http`, `net`, `registry`, `registries` and
+`term`, plus `linker` (a nonempty string) and `rustflags` (an array of strings)
+under `[target.x86_64-unknown-linux-gnu]`. For example:
+
+```toml
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+```
+
+The config bytes remain part of the assembly identity; changing them requires
+relocking and building. External compiler and linker binaries are not
+fingerprinted, including those selected by this config. Other target keys,
+`build`, `env`, `profile`, `alias`, `source`, `patch`, `paths` and `unstable`
+remain unsupported. Project-local Cargo config is not a workaround.
+
 This is trusted, non-hermetic reuse. Build scripts and proc macros can observe
 unrecorded external state; a hit reuses their earlier output rather than rerunning
 them. Choose a fresh private root and relock/build when a fresh build is required.
