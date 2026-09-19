@@ -27,6 +27,69 @@ in either order with `--manifest`, before `--`; lock/build do not accept it.
 Run passes everything after `--` as script arguments. Direct runner flags before
 `--` are not exposed by this first project CLI. Build chatter goes to stderr.
 
+## Inspect and remove retained storage (Linux)
+
+List before choosing a full entry ID. Optionally name projects to see their
+recorded references; repeat `--manifest` for each project you want checked.
+
+```sh
+rnx-project cache list --manifest app/rnx.toml
+rnx-project runtime list --manifest app/rnx.toml
+rnx-project cache remove "$ID" --dry-run --manifest app/rnx.toml
+```
+
+Listings and dry runs print bounded, sorted JSON with paths, pending entries,
+logical sizes and allocated-byte estimates. They take no writer lock and do not
+refresh receipts, hash artifacts, invoke Git/Cargo, or change project files.
+Annotations read only the named manifests, locks and receipts. They describe
+recorded paths, not authenticated or fresh builds. Missing, unsupported, corrupt
+or observably changed project documents are marked indeterminate and return a
+nonzero status. Local and override artifacts are distinguished from shared
+entries. **Only the manifests named are checked; other consumers may exist.**
+No search, reference registry or lifetime lease makes an unannotated entry safe
+to remove. Allocated bytes are estimates, not promised reclaimed space.
+
+Stop every consumer of the entry first: older tools and surviving build children,
+direct executions, sessions, servers and notebook kernels. Update or abandon
+projects and kernelspecs that still name it. Removing a runtime may delete the
+only remaining source copy. Then acknowledge that quiescence explicitly:
+
+```sh
+rnx-project cache remove "$ID" --quiescent
+rnx-project runtime remove "$RUNTIME_ID" --dry-run
+rnx-project runtime remove "$RUNTIME_ID" --quiescent
+```
+
+Removal accepts one full lowercase 64-character hexadecimal ID, never a prefix
+or a version sweep. The selected runtime is protected; select or install a
+replacement first. An unreadable selection refuses. Busy build/install writers
+also refuse, but their locks do not represent running consumers. `--manifest`
+is accepted only for list and dry-run; it never authorizes deletion.
+
+After a complete preflight, removal renames the whole entry to `removing/ID`
+before deleting any contents. Interruption after that point may leave pending
+data; the error prints the exact command to resume. Resume acts only on pending
+data, preserving a new visible entry rebuilt under the same ID:
+
+```sh
+rnx-project cache remove "$ID" --resume --dry-run
+rnx-project cache remove "$ID" --resume --quiescent
+```
+
+The same options apply to runtime removal. Lock files remain in place. Internal
+symlinks are unlinked as leaves; control-path symlinks, special files and mount
+crossings refuse. Linux must support the guarded `openat2` operations; there is
+no path-based fallback. Other platforms refuse maintenance before writing.
+
+An absolute `--root PATH` overrides the store for these maintenance commands
+only. Otherwise cache selection uses `RNX_PROJECT_CACHE`, then `XDG_CACHE_HOME`,
+then `HOME`; runtimes use `XDG_DATA_HOME`, then `HOME`, as for builds/installation.
+The user's root symlink is canonicalized; managed paths below it are guarded.
+An invalid selected root never falls back. Missing roots are reported without
+creation. Unknown entry documents remain owned data that can be inspected and
+removed; this is not an authentication or repair command. There is no automatic
+pruning or deletion of local project/scratch directories.
+
 ## Open the project's prompt
 
 After the explicit lock and build above, `session` opens the assembled executable's

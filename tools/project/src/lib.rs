@@ -21,3 +21,6 @@ mod runtime_install;
 #[cfg(test)]
 mod tests;
 mod wire;
+
+#[cfg(test)]
+mod maintenance;

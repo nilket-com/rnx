@@ -1,19 +1,10 @@
 # rnx 0066: removal is an explicit ownership decision
 
-Status: accepted for implementation after draft review, with F1 on explicit
-manifest-reference annotations folded in below. No product removal command or storage
-mutation is implemented.
-Gate 1 is ready for review in an isolated candidate; see
-[the ownership and filesystem evidence](0066_removal_is_an_explicit_ownership_decision_ownership_evidence.md).
-Unprivileged bubblewrap supplies the real bind/tmpfs controls that close
-[the preserved mount-prerequisite stop](0066_removal_is_an_explicit_ownership_decision_mount_evidence.md).
-No product removal code is implemented. Gate 1 awaits acceptance; gates 2–4
-remain open.
-Baseline: rnx `d7d8b0d`, rnx-bench `a0dd0bf`. Record 0065 is accepted and closed
-on Linux, with its numerical qualification retained. This is its promised next
-record: reclaim retained assembly and runtime storage without calling a changed
-identity proof of disuse. Git-variable filtering, path depth and launcher/runtime
-compatibility remain separate follow-ups.
+Status: gate 1 accepted and pushed at `bafa2a0` (bench `94539e1`).
+Gate 2 is implemented and ready for review; see
+[command and interruption evidence](0066_removal_is_an_explicit_ownership_decision_commands_evidence.md).
+The accepted [ownership evidence](0066_removal_is_an_explicit_ownership_decision_ownership_evidence.md)
+retains the namespace stop and its bubblewrap resolution. Gates 3–4 remain open.
 
 ## Context
 

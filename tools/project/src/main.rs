@@ -12,6 +12,7 @@ mod graph;
 mod handshake;
 mod input;
 mod inventory;
+mod maintenance;
 mod manifest;
 mod maps;
 mod runtime_install;
