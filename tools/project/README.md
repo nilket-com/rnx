@@ -90,6 +90,16 @@ creation. Unknown entry documents remain owned data that can be inspected and
 removed; this is not an authentication or repair command. There is no automatic
 pruning or deletion of local project/scratch directories.
 
+In the Linux closing run, a whole copied Polars entry had 3,745 filesystem nodes:
+listing took about 20 ms and removal about 0.59 s, freeing about 1.60 GiB.
+A combined entry had 3,905 nodes; after interruption, resume took about 0.60 s.
+The installed-runtime copy freed about 11 MiB in 0.24 s. These are single-host
+observations on copies, not a speed or exact-space guarantee; the
+[closing evidence](https://github.com/nilket-com/rnx/blob/main/plans/0066_removal_is_an_explicit_ownership_decision_closing_evidence.md)
+separates node counts, logical/allocated estimates, wall time and measured free
+space, including the bytes already deleted before resume.
+
+
 ## Open the project's prompt
 
 After the explicit lock and build above, `session` opens the assembled executable's

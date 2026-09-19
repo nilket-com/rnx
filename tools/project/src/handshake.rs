@@ -2,6 +2,19 @@
 #![allow(dead_code)]
 use std::{path::Path, process::Stdio, time::Duration};
 use tokio::io::AsyncReadExt;
+async fn read(stream: impl tokio::io::AsyncRead + Unpin) -> Result<Vec<u8>, String> {
+	let mut bytes = vec![];
+	stream
+		.take(4097)
+		.read_to_end(&mut bytes)
+		.await
+		.map_err(|e| e.to_string())?;
+	if bytes.len() > 4096 {
+		return Err("capability stream exceeds 4096 bytes".into());
+	}
+	Ok(bytes)
+}
+
 pub(crate) fn check(executable: &Path) -> Result<(), String> {
 	let result = || -> Result<(), String> {
 		let runtime = tokio::runtime::Builder::new_current_thread()
@@ -19,18 +32,7 @@ pub(crate) fn check(executable: &Path) -> Result<(), String> {
 				.map_err(|e| e.to_string())?;
 			let stdout = child.stdout.take().ok_or("missing handshake stdout")?;
 			let stderr = child.stderr.take().ok_or("missing handshake stderr")?;
-			async fn read(stream: impl tokio::io::AsyncRead + Unpin) -> Result<Vec<u8>, String> {
-				let mut bytes = vec![];
-				stream
-					.take(4097)
-					.read_to_end(&mut bytes)
-					.await
-					.map_err(|e| e.to_string())?;
-				if bytes.len() > 4096 {
-					return Err("capability stream exceeds 4096 bytes".into());
-				}
-				Ok(bytes)
-			}
+
 			let result = tokio::time::timeout(Duration::from_secs(1), async {
 				let (stdout, stderr, status) =
 					tokio::try_join!(read(stdout), read(stderr), async {
@@ -66,4 +68,25 @@ pub(crate) fn check(executable: &Path) -> Result<(), String> {
 		})
 	};
 	result().map_err(|e| format!("executable {}: {e}", executable.display()))
+}
+
+#[cfg(test)]
+mod tests {
+	#[test]
+	fn capability_stream_limit_is_independent_of_process_scheduling() {
+		let runtime = tokio::runtime::Builder::new_current_thread()
+			.build()
+			.unwrap();
+		runtime.block_on(async {
+			let boundary = vec![b' '; 4096];
+			assert_eq!(super::read(boundary.as_slice()).await.unwrap(), boundary);
+			let excess = vec![b'x'; 8192];
+			let mut stream = excess.as_slice();
+			assert_eq!(
+				super::read(&mut stream).await.unwrap_err(),
+				"capability stream exceeds 4096 bytes"
+			);
+			assert_eq!(stream.len(), 8192 - 4097);
+		});
+	}
 }

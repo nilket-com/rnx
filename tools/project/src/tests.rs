@@ -325,11 +325,14 @@ fn capability_refuses_bad_replies_and_retires_timed_out_child() {
 	assert!(crate::handshake::check(&script).is_ok());
 	set("printf '%s' '{\"format\":1}'; printf '%4084s' ''");
 	assert!(crate::handshake::check(&script).is_ok());
+	// The stream boundary is checked without a subprocess deadline in
+	// handshake::tests. Under host load this subprocess may legitimately hit
+	// its production deadline first; either refusal must still retire it.
 	set("printf '%s' '{\"format\":1}'; printf '%4085s' ''");
 	assert!(
 		crate::handshake::check(&script)
 			.unwrap_err()
-			.contains("4096")
+			.contains("executable")
 	);
 	for body in [
 		"printf '%s' '{\"format\":2}'",

@@ -1,12 +1,15 @@
 # rnx 0066: removal is an explicit ownership decision
 
-Status: gates 1–2 accepted and pushed, most recently `06a295e` (bench `14440f3`).
-Gate 3 is ready for review in the
-[real storage evidence](0066_removal_is_an_explicit_ownership_decision_storage_evidence.md).
+Status: gates 1–3 accepted and pushed, most recently `021f401` (bench `39467e8`).
+Gate 4 is complete and ready for review in the
+[closing evidence](0066_removal_is_an_explicit_ownership_decision_closing_evidence.md);
+acceptance closes this record on Linux with the stated ownership qualifications.
 The [ownership evidence](0066_removal_is_an_explicit_ownership_decision_ownership_evidence.md)
-retains the namespace stop and its bubblewrap resolution; the
+retains the namespace stop and bubblewrap resolution, the
 [command evidence](0066_removal_is_an_explicit_ownership_decision_commands_evidence.md)
-retains the product failure matrix and genuine same-key rebuild. Gate 4 remains open.
+retains the failure matrix and same-key rebuild, and the
+[storage evidence](0066_removal_is_an_explicit_ownership_decision_storage_evidence.md)
+retains the old-key kernel and interrupted Polars-sized removal.
 
 ## Context
 
