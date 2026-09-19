@@ -21,6 +21,8 @@ struct Dependency {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	package: Option<String>,
 	path: String,
+	#[serde(rename = "default-features")]
+	default_features: bool,
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	features: Vec<String>,
 }
@@ -40,8 +42,9 @@ pub(crate) fn wrapper(manifest: &Manifest, base: &Path) -> Result<(String, Strin
 		"rnx".into(),
 		Dependency {
 			package: None,
+			default_features: false,
 			path: path(&runtime.path)?,
-			features: vec!["project-sources".into()],
+			features: vec!["count-allocations".into(), "project-sources".into()],
 		},
 	)]);
 	let mut main = "fn main() -> Result<(), Box<dyn std::error::Error>> {\n    rnx::main_with(rnx::Extensions::none()".to_owned();
@@ -51,6 +54,7 @@ pub(crate) fn wrapper(manifest: &Manifest, base: &Path) -> Result<(String, Strin
 			alias.clone(),
 			Dependency {
 				package: Some(native.package.clone()),
+				default_features: true,
 				path: path(&native.path)?,
 				features: vec![],
 			},

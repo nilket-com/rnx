@@ -47,7 +47,7 @@ for target in "${targets[@]}"; do
 	# status worth reading — `grep -v` answers 1 for "nothing matched", which
 	# is indistinguishable from an error and was previously swallowed by
 	# `|| true`.
-	awk '{ sub(/ \(\*\)$/, ""); if ($0 != "" && $0 !~ /^rnx v0\.0\.0/) print }' \
+	awk '{ sub(/ \(\*\)$/, ""); if ($0 != "" && $0 !~ /^rnx(-project)? v0\.0\.0/) print }' \
 		"$work/tree" >"$work/filtered" || fail "cannot read the tree for $target"
 	# **This target's** output, not the union. Checking the union passes as
 	# soon as one target has contributed, so a second target that answered

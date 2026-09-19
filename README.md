@@ -75,7 +75,7 @@ An exact mount loads its root's `mod.rn`; descendants use the layout above,
 with the longest mounted prefix winning and no fallback to a local file.
 No map is read by eval, sessions, notebooks, config or the server entry.
 This is explicit file selection, not package-lock verification or a sandbox.
-The separate project tool's lock/build/run commands are still under development.
+Project commands are available under `rnx project`; see the [project guide](https://github.com/nilket-com/rnx/blob/main/tools/project/README.md).
 
 The entry and loaded modules share a new **8 MiB source allowance**, measured
 in bytes. Reads stop at the remaining allowance plus one detection byte,
@@ -291,15 +291,24 @@ unsupported-terminal modes (`dumb`, `cons25`, `emacs`, case-insensitively)
 write prompts even for pipes, and now write numbered results there too.
 Script output, colon-command output, and diagnostics do not get result markers.
 
-On Linux, `:dep polars` or `:dep polars postgres` prepares another executable
-and restarts this session after you consent. Put `rnx-project` on PATH (or set
-`RNX_PROJECT_TOOL` to its absolute path). For a stock session, first run
-`rnx-project runtime install --from /path/to/rnx` to retain a buildable source
-snapshot. `RNX_DEP_RUNTIME` remains an explicit override. The notice names the
-selected runtime before consent; changing the default does not change old projects.
-A session opened with `rnx-project session --manifest ...` edits that project;
-a stock session creates a retained scratch project under your user state directory.
-The replacement prints a command to reopen that scratch session later.
+On Linux, the stock executable now includes the project manager:
+`rnx project lock|build|run|session|eval`, `rnx runtime ...`, and `rnx cache ...`.
+Ordinary `rnx repl` and `rnx eval` retain their runner meanings. Management
+runs before any runner context or settings are loaded. Generated applications
+omit management and delegate dependency preparation to their associated manager,
+or an explicit `RNX_PROJECT_TOOL`, or a capable stock `rnx` on PATH.
+
+Record 0067 is staged: the command and session boundary is implemented; Git-source
+acquisition is the next gate. A clean stock build describes its recorded Git
+revision without fetching, but consenting to that default currently refuses
+before writing a scratch project. Dirty or unknown builds print a path-override
+recovery. Existing path projects and `RNX_DEP_RUNTIME=/absolute/path/to/rnx`
+work through the full build, probe and restart. A selected runtime is no longer
+an implicit stock default; `rnx runtime show` prints its explicit override.
+
+A session opened with `rnx project session --manifest ...` edits that project;
+a stock session creates a retained scratch project only after consent. The
+replacement prints an absolute, shell-quoted command to reopen it later.
 
 The notice lists the additions, existing declarations and build cost before
 asking. `:dep --offline polars` prevents Cargo from fetching sources. The first
@@ -311,8 +320,7 @@ old session usable, although authored project files can remain. Once
 `restart is beginning` is printed, cleanup or exec failure ends the process.
 Builders run once in the startup probe and again in the replacement, so external
 startup side effects can happen twice. Native extensions become available;
-mapped Rune sources still do not load at the prompt. Runtime installation without
-a source checkout is the next record after 0063.
+mapped Rune sources still do not load at the prompt.
 
 `rnx repl` is a line-edited session: history with the arrow keys and
 incremental search, an input that continues on the next line while Rune's

@@ -184,7 +184,10 @@ impl Project {
 			println!("already present: {name}");
 		}
 		println!(
-			"Next:\n  rnx-project lock --manifest {word}\n  rnx-project build --manifest {word}\n  rnx-project session --manifest {word}"
+			"Next:\n  {} lock --manifest {word}\n  {} build --manifest {word}\n  {} session --manifest {word}",
+			crate::entry::project_prefix()?,
+			crate::entry::project_prefix()?,
+			crate::entry::project_prefix()?
 		);
 		Ok(())
 	}

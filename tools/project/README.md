@@ -1,17 +1,30 @@
-# rnx-project
+# rnx project
 
-Local source packages and compiled native extensions for rnx. This is a separate
-Cargo workspace; none of its dependencies enters stock rnx's default graph.
+Local source packages and native extensions, dispatched by the stock `rnx`
+executable. The implementation remains a separate Cargo workspace with no runner
+dependency. Defaults-off runner consumers omit management and its dependencies.
 
 ```sh
-cargo build --locked --release --manifest-path tools/project/Cargo.toml --bin rnx-project
-rnx-project lock --manifest app/rnx.toml --offline
-rnx-project build --manifest app/rnx.toml --offline
-rnx-project session --manifest app/rnx.toml
-rnx-project eval --manifest app/rnx.toml -- '1 + 1'
-rnx-project run --manifest app/rnx.toml -- argument1 argument2
-rnx-project run --manifest app/rnx.toml --verify -- argument1 argument2
+cargo install --path . --locked
+rnx project lock --manifest app/rnx.toml --offline
+rnx project build --manifest app/rnx.toml --offline
+rnx project session --manifest app/rnx.toml
+rnx project eval --manifest app/rnx.toml -- '1 + 1'
+rnx project run --manifest app/rnx.toml -- argument1 argument2
+rnx project run --manifest app/rnx.toml --verify -- argument1 argument2
 ```
+
+This is an unpublished Git/source distribution. `cargo package` refuses the
+unpublished internal path dependency; no registry package is claimed. A separately
+built `rnx-project` compatibility executable uses the same implementation with
+the old argument grammar (`rnx-project lock`, `rnx-project runtime`, and so on).
+It is not required beside stock `rnx` and is not a shell forwarding wrapper.
+
+0067 gate 2 provides command dispatch and session delegation. Git default notices
+are live, but acquisition is staged for gate 3: consent currently refuses before
+fetching or writing scratch state. Path projects and the explicit path override
+already run the complete transition. Clean known revisions reach consent;
+dirty/unknown coordinates refuse with an override instruction.
 
 `--manifest` is required; there is no upward search. Paths inside a manifest are
 relative to that manifest. Only lock resolves the Cargo graph. Build uses
@@ -33,9 +46,9 @@ List before choosing a full entry ID. Optionally name projects to see their
 recorded references; repeat `--manifest` for each project you want checked.
 
 ```sh
-rnx-project cache list --manifest app/rnx.toml
-rnx-project runtime list --manifest app/rnx.toml
-rnx-project cache remove "$ID" --dry-run --manifest app/rnx.toml
+rnx cache list --manifest app/rnx.toml
+rnx runtime list --manifest app/rnx.toml
+rnx cache remove "$ID" --dry-run --manifest app/rnx.toml
 ```
 
 Listings and dry runs print bounded, sorted JSON with paths, pending entries,
@@ -55,9 +68,9 @@ projects and kernelspecs that still name it. Removing a runtime may delete the
 only remaining source copy. Then acknowledge that quiescence explicitly:
 
 ```sh
-rnx-project cache remove "$ID" --quiescent
-rnx-project runtime remove "$RUNTIME_ID" --dry-run
-rnx-project runtime remove "$RUNTIME_ID" --quiescent
+rnx cache remove "$ID" --quiescent
+rnx runtime remove "$RUNTIME_ID" --dry-run
+rnx runtime remove "$RUNTIME_ID" --quiescent
 ```
 
 Removal accepts one full lowercase 64-character hexadecimal ID, never a prefix
@@ -72,8 +85,8 @@ data; the error prints the exact command to resume. Resume acts only on pending
 data, preserving a new visible entry rebuilt under the same ID:
 
 ```sh
-rnx-project cache remove "$ID" --resume --dry-run
-rnx-project cache remove "$ID" --resume --quiescent
+rnx cache remove "$ID" --resume --dry-run
+rnx cache remove "$ID" --resume --quiescent
 ```
 
 The same options apply to runtime removal. Lock files remain in place. Internal
@@ -110,8 +123,8 @@ remain unavailable in eval and sessions. Source dependencies are still checked
 for changes even though these modes do not use a source map.
 
 ```sh
-rnx-project session --manifest app/rnx.toml --no-splash --color=never
-rnx-project eval --verify --manifest app/rnx.toml -- '1 + 1'
+rnx project session --manifest app/rnx.toml --no-splash --color=never
+rnx project eval --verify --manifest app/rnx.toml -- '1 + 1'
 ```
 
 Session and eval accept `--verify` and `--color=auto|always|never` once, before
@@ -135,7 +148,7 @@ change an already-running session.
 The tool ships a small catalogue of adapter declarations:
 
 ```text
-$ rnx-project adapters
+$ rnx project adapters
 NAME      PACKAGE       HOOK       PATH BELOW RUNTIME
 polars    rnx-polars    plain      adapters/polars
 postgres  rnx-postgres  lifecycle  adapters/postgres
@@ -145,10 +158,10 @@ In an existing application with a `[runtime]` path, add a name, then explicitly
 lock, build and open the new executable:
 
 ```sh
-rnx-project add --manifest app/rnx.toml polars
-rnx-project lock --manifest app/rnx.toml --offline
-rnx-project build --manifest app/rnx.toml --offline
-rnx-project session --manifest app/rnx.toml
+rnx project add --manifest app/rnx.toml polars
+rnx project lock --manifest app/rnx.toml --offline
+rnx project build --manifest app/rnx.toml --offline
+rnx project session --manifest app/rnx.toml
 ```
 
 Use `--offline` only when the needed Cargo dependency sources are already cached;
@@ -220,8 +233,8 @@ Locks 1–2 and receipts 1–3 are no longer accepted by this tool. A refusal na
 the manifest and prints shell-quoted commands using the current tool's path:
 
 ```sh
-rnx-project lock --manifest path/to/rnx.toml
-rnx-project build --manifest path/to/rnx.toml
+rnx project lock --manifest path/to/rnx.toml
+rnx project build --manifest path/to/rnx.toml
 ```
 
 Refusing an old lock or receipt does not rewrite it, refresh its stamp or execute
@@ -239,7 +252,7 @@ For an installed runtime from the SHA-256 format, `runtime show`, `runtime selec
 and stock `:dep` print the exact command for its retained source, for example:
 
 ```sh
-rnx-project runtime install --from '/your/data/rnx/runtimes/entries/OLD_ID/source'
+rnx runtime install --from '/your/data/rnx/runtimes/entries/OLD_ID/source'
 ```
 
 That explicit command authenticates the old source against its recorded SHA-256
@@ -260,9 +273,9 @@ To select a private root before locking:
 
 ```sh
 export RNX_PROJECT_CACHE="$HOME/.cache/rnx/assemblies"
-rnx-project lock --manifest app/rnx.toml --offline
-rnx-project build --manifest app/rnx.toml --offline
-rnx-project session --manifest app/rnx.toml
+rnx project lock --manifest app/rnx.toml --offline
+rnx project build --manifest app/rnx.toml --offline
+rnx project session --manifest app/rnx.toml
 ```
 
 Without that override, selection uses `$XDG_CACHE_HOME/rnx/assemblies`, then
@@ -472,8 +485,11 @@ startup before replacement. Already-installed names are a no-op. Use
 `:dep --offline polars` to forbid source downloads. This is a restart with binding
 loss, not dynamic loading; saved history is reloaded but never replayed.
 
-For a stock session, install a runtime as shown below and locate this tool through
-PATH or `RNX_PROJECT_TOOL`. `RNX_DEP_RUNTIME` remains an explicit override. A retained scratch project is created
+A stock session delegates to its own executable. Associated sessions use their
+recorded manager. An unassociated assembled session uses `RNX_PROJECT_TOOL` when
+set, otherwise a stock `rnx` on PATH after a bounded capability check. Invalid
+explicit overrides refuse without fallback. `RNX_DEP_RUNTIME` selects a path
+runtime; it never silently replaces an associated project. A retained scratch project is created
 only after consent. Its successful replacement prints the quoted command to
 reopen it. Projects and scratch consumers reuse the same shared assembly when
 their native inputs match. The working directory stays the caller's directory.
@@ -486,9 +502,9 @@ cleanup or exec failure after the restart announcement is terminal.
 Install a complete local runtime snapshot before removing its checkout:
 
 ```sh
-rnx-project runtime install --from /path/to/rnx
-rnx-project runtime show
-rnx-project runtime select FULL_INSTALLATION_ID
+rnx runtime install --from /path/to/rnx
+rnx runtime show
+rnx runtime select FULL_INSTALLATION_ID
 ```
 
 The store is `$XDG_DATA_HOME/rnx/runtimes`, or
@@ -506,8 +522,10 @@ source identity validate; corrupted content still refuses. Discovery and launch
 do not repair permissions. A failed repair can leave some modes tightened but
 does not select an unvalidated installation.
 
-A stock session's `:dep` uses this selected installation without an environment
-variable. `RNX_DEP_RUNTIME`, when present, is an explicit absolute-path override;
+Stock `:dep` defaults to the manager's recorded Git revision and does not consult
+this store. Install, select and show print the exact `RNX_DEP_RUNTIME` export
+needed to use an installation explicitly. Selection still serves older tools and
+the compatibility entrypoint. `RNX_DEP_RUNTIME` is an absolute-path override;
 an invalid override refuses rather than falling back. Project sessions always use
 their declared runtime. Before consent the notice identifies the runtime and its
 provenance. Preparation rechecks the selection and the installed source contents

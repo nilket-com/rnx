@@ -184,3 +184,45 @@ pub(crate) fn author(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Can
 		existing,
 	})
 }
+
+/// Describe-only authoring for the Git workflow staged in 0067 gate 3. No I/O.
+pub(crate) fn git_candidate(
+	mut bytes: Vec<u8>,
+	entries: &[Entry],
+	url: &str,
+	rev: &str,
+) -> Candidate {
+	for e in entries {
+		bytes.extend_from_slice(
+			format!(
+				"\n[native.{}]\ngit = {}\nrev = {}\npackage = {}\nbuilder = \"build\"\nhook = \"{}\"\n",
+				e.name,
+				toml::Value::String(url.into()),
+				toml::Value::String(rev.into()),
+				toml::Value::String(e.package.into()),
+				match e.hook {
+					Hook::Plain => "plain",
+					Hook::Lifecycle => "lifecycle",
+				}
+			)
+			.as_bytes(),
+		);
+	}
+	Candidate {
+		bytes,
+		added: entries.iter().map(|e| e.name.into()).collect(),
+		existing: vec![],
+	}
+}
+
+/// Validate a diagnostic hint using the same shipped layouts as add, without Git.
+pub(crate) fn supported_runtime(path: &Path) -> bool {
+	let Some(path) = path.to_str() else {
+		return false;
+	};
+	let raw = format!(
+		"format=1\n[application]\nentry=\"entry.rn\"\n[runtime]\npath={}\n",
+		toml::Value::String(path.into())
+	);
+	author(raw.into_bytes(), Path::new("/"), &ENTRIES).is_ok()
+}

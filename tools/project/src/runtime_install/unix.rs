@@ -205,16 +205,33 @@ fn validate_inner(root: &Path, id: &str, repair: bool) -> Result<Installation, S
 	}
 	Ok(d)
 }
-const INSTALL_HELP: &str = "no runtime is installed; run rnx-project runtime install --from /path/to/rnx; or open an existing project with rnx-project session --manifest /path/to/rnx.toml";
+fn install_help() -> String {
+	let tool = std::env::current_exe()
+		.map_err(err)
+		.and_then(|p| crate::entry::quote(&p))
+		.unwrap_or_else(|_| "rnx".into());
+	let project = crate::entry::project_prefix().unwrap_or_else(|_| "rnx project".into());
+	format!(
+		"no runtime is installed; run {tool} runtime install --from '/path/to/rnx'; or open an existing project with {project} session --manifest '/path/to/rnx.toml'"
+	)
+}
+fn override_notice(root: &Path, id: &str) -> Result<(), String> {
+	let source = root.join("entries").join(id).join("source");
+	println!(
+		"To use this source explicitly with the stock dependency workflow:\nexport RNX_DEP_RUNTIME={}\nStore selection alone does not override the stock Git default.",
+		crate::entry::quote(&source)?
+	);
+	Ok(())
+}
 
 fn current() -> Result<(PathBuf, Installation), String> {
 	let root = storage::selected()?;
 	if !storage::exists(&root)? {
-		return Err(INSTALL_HELP.into());
+		return Err(install_help());
 	}
 	storage::dir(&root)?;
 	if !storage::exists(&root.join("current.json"))? {
-		return Err(INSTALL_HELP.into());
+		return Err(install_help());
 	}
 	let bytes = storage::read(&root.join("current.json"), DOCUMENT)?;
 	if legacy::is_old(&bytes) {
@@ -233,8 +250,9 @@ fn current() -> Result<(PathBuf, Installation), String> {
 	let entry = root.join("entries").join(&c.id);
 	if !storage::exists(&entry)? {
 		return Err(format!(
-			"selected runtime installation {} is missing; run rnx-project runtime install --from /path/to/rnx",
-			c.id
+			"selected runtime installation {} is missing; {}",
+			c.id,
+			install_help()
 		));
 	}
 	let d = metadata(&entry, &c.id)?;
@@ -595,6 +613,7 @@ pub(crate) fn cli(args: &[OsString]) -> Result<(), String> {
 				d.files,
 				d.bytes
 			);
+			override_notice(&storage::selected()?, &d.id)?;
 			Ok(())
 		}
 		"select" if args.len() == 2 => {
@@ -619,6 +638,7 @@ pub(crate) fn cli(args: &[OsString]) -> Result<(), String> {
 				}
 			})?;
 			println!("Selected runtime {id}");
+			override_notice(&root, id)?;
 			Ok(())
 		}
 		"show" if args.len() == 1 => {
@@ -628,6 +648,7 @@ pub(crate) fn cli(args: &[OsString]) -> Result<(), String> {
 				d.id,
 				root.join("entries").join(&d.id).join("source").display()
 			);
+			override_notice(&root, &d.id)?;
 			if let Some(p) = std::env::var_os("RNX_DEP_RUNTIME") {
 				println!("RNX_DEP_RUNTIME override: {:?}", p);
 			}

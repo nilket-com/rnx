@@ -102,6 +102,7 @@ struct Description {
 	scratch: bool,
 	offline: bool,
 	runtime: Option<crate::runtime_install::Selection>,
+	git: Option<crate::entry::Coordinates>,
 }
 impl Description {
 	fn fields(&self) -> Result<protocol::Fields, String> {
@@ -131,6 +132,10 @@ impl Description {
 		);
 		if let Some(runtime) = &self.runtime {
 			notice.push_str(&runtime.notice);
+			notice.push('\n');
+		}
+		if let Some(git) = self.git {
+			notice.push_str(&git.notice()?);
 			notice.push('\n');
 		}
 		if self.candidate.added.iter().any(|n| n == "polars") {
@@ -213,15 +218,21 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 	};
 	let scratch = request[&2].is_empty();
 	let mut selection = None;
+	let mut git = None;
 	let (manifest, original) = if scratch {
 		if !request[&4].is_empty() {
-			return Err("custom executable needs a project association; open it through rnx-project session".into());
+			return Err("custom executable needs a project association; open it through rnx project session".into());
 		}
-		let runtime = {
+		let runtime = if crate::entry::stock() && std::env::var_os("RNX_DEP_RUNTIME").is_none() {
+			let coordinate = crate::entry::coordinates().ok_or("missing stock coordinates")?;
+			coordinate.notice()?;
+			git = Some(coordinate);
+			None
+		} else {
 			let runtime = crate::runtime_install::Selection::discover()?;
 			let path = runtime.source.clone();
 			selection = Some(runtime);
-			path
+			Some(path)
 		};
 
 		let selected = scratch_path()?;
@@ -236,7 +247,10 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 			None => selected,
 		};
 		let parent = manifest.parent().unwrap();
-		if parent.starts_with(&runtime) || runtime.starts_with(parent) {
+		if runtime
+			.as_ref()
+			.is_some_and(|r| parent.starts_with(r) || r.starts_with(parent))
+		{
 			return Err("scratch and native root must not contain one another".into());
 		}
 		if fs::symlink_metadata(parent).is_ok() {
@@ -244,10 +258,18 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 				"proposed scratch directory is already occupied; request a new description".into(),
 			);
 		}
-		let raw = format!(
-			"format = 1\n[application]\nentry = \"entry.rn\"\n[runtime]\npath = {}\n",
-			toml::Value::String(text(&runtime)?)
-		);
+		let raw = if let Some(git) = git {
+			format!(
+				"format = 2\n[application]\nentry = \"entry.rn\"\n[runtime]\ngit = {}\nrev = {}\n",
+				toml::Value::String(git.url.into()),
+				toml::Value::String(git.revision.into())
+			)
+		} else {
+			format!(
+				"format = 1\n[application]\nentry = \"entry.rn\"\n[runtime]\npath = {}\n",
+				toml::Value::String(text(runtime.as_ref().unwrap())?)
+			)
+		};
 		(manifest, raw.into_bytes())
 	} else {
 		let a = protocol::capsule(&request[&2])?;
@@ -265,7 +287,11 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 		let raw = input::read(&p.manifest, input::MANIFEST_LIMIT)?;
 		(p.manifest, raw)
 	};
-	let candidate = catalogue::author(original.clone(), manifest.parent().unwrap(), &entries)?;
+	let candidate = if let Some(git) = git {
+		catalogue::git_candidate(original.clone(), &entries, git.url, git.revision)
+	} else {
+		catalogue::author(original.clone(), manifest.parent().unwrap(), &entries)?
+	};
 	Ok(Description {
 		manifest,
 		original,
@@ -274,6 +300,7 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 		scratch,
 		offline,
 		runtime: selection,
+		git,
 	})
 }
 fn private_dir(path: &Path) -> Result<(), String> {
@@ -344,7 +371,8 @@ fn create_scratch(d: &Description) -> Result<(), String> {
 pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 	use std::os::fd::{AsRawFd, FromRawFd};
 	use std::os::unix::net::UnixStream;
-	if !args.is_empty() {
+	let capability = args.len() == 1 && args[0] == "management-version";
+	if !args.is_empty() && !capability {
 		return Err("private transition takes no arguments".into());
 	}
 	let fd = std::env::var("RNX_INTERNAL_DEP_FD")
@@ -352,6 +380,9 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		.parse::<i32>()
 		.map_err(err)?;
 	if fd < 3 {
+		return Err("invalid transition descriptor".into());
+	}
+	if unsafe { libc::fcntl(fd, libc::F_GETFD) } < 0 {
 		return Err("invalid transition descriptor".into());
 	}
 	let mut socket = unsafe { UnixStream::from_raw_fd(fd) };
@@ -364,6 +395,17 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 	socket
 		.set_write_timeout(Some(std::time::Duration::from_secs(5)))
 		.map_err(err)?;
+	if capability {
+		socket
+			.set_read_timeout(Some(std::time::Duration::from_secs(5)))
+			.map_err(err)?;
+		let (kind, fields) = protocol::read(&mut socket)?;
+		if kind != 6 {
+			return Err("expected management capability request".into());
+		}
+		protocol::exact(&fields, &[])?;
+		return protocol::write(&mut socket, 6, &protocol::Fields::from([(1, "1".into())]));
+	}
 	commands::install_signals()?;
 	commands::preparation_deadline();
 	let outcome = (|| {
@@ -398,6 +440,12 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		}
 		if fresh.candidate.added.is_empty() {
 			return Ok(());
+		}
+		if let Some(git) = fresh.git {
+			return Err(format!(
+				"Git-source preparation is not enabled in this checkpoint (0067 gate 3); no sources fetched or scratch written.\n{}",
+				git.override_help()
+			));
 		}
 		if let Some(runtime) = &fresh.runtime {
 			runtime.validate()?;
@@ -457,7 +505,7 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 					4,
 					format!(
 						"{} session --manifest {}",
-						super::add::shell_word(&std::env::current_exe().map_err(err)?)?,
+						crate::entry::project_prefix()?,
 						super::add::shell_word(&p.manifest)?
 					),
 				);
@@ -467,7 +515,12 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			protocol::write(&mut socket, 5, &ready)?;
 			Ok(())
 		})();
-		prepare.map_err(|e|format!("{phase}: {e}; project files may have been published; retry with rnx-project lock/build/session --manifest {:?}",p.manifest))
+		prepare.map_err(|e| {
+			format!(
+				"{phase}: {e}; project files may have been published; retry with:\n{}",
+				crate::entry::recovery(&p.manifest).unwrap_or_else(|e| e)
+			)
+		})
 	})();
 	if let Err(e) = outcome {
 		protocol::write(&mut socket, 8, &protocol::Fields::from([(1, e)]))?;

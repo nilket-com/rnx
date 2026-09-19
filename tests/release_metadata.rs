@@ -205,7 +205,7 @@ fn the_usage_names_it() {
 /// manifest's and do not differ by platform.
 #[cfg(unix)]
 #[test]
-fn the_packaged_manifest_makes_the_same_claims() {
+fn the_distribution_manifest_keeps_its_claims_or_refuses_the_unpublished_boundary() {
 	let here = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
 	// A copy that is already the packaged one cannot package itself: Cargo
 	// refuses a source tree containing `Cargo.toml.orig`, which every
@@ -221,7 +221,14 @@ fn the_packaged_manifest_makes_the_same_claims() {
 	}
 	let root = here;
 	let version = field(MANIFEST, "version").expect("a version");
-	let unpacked = unpack_the_package(root, "manifest");
+	let Some(unpacked) = unpack_the_package(root, "manifest") else {
+		the_claims_hold(
+			MANIFEST,
+			"Git/source installation only; private management crate is unpublished",
+		);
+		the_front_page_works_from_here(root, MANIFEST);
+		return;
+	};
 
 	let inside = unpacked.join(format!("rnx-{version}/Cargo.toml"));
 	let manifest = std::fs::read_to_string(&inside).expect("the packaged manifest");
@@ -302,7 +309,7 @@ fn the_third_party_notices_describe_the_dependencies_that_exist() {
 /// the package a binary is built from.
 #[cfg(unix)]
 #[test]
-fn the_notices_ship_with_the_package() {
+fn the_notices_are_selected_for_distribution_and_match_any_available_archive() {
 	let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
 	// Which copy this runs in decides how to ask. Inside an extracted package
 	// Cargo refuses to package again — `Cargo.toml.orig` is a reserved name —
@@ -368,7 +375,9 @@ fn the_notices_ship_with_the_package() {
 
 	// And what ships is what was validated, compared whole rather than
 	// sampled.
-	let unpacked = unpack_the_package(root, "notices");
+	let Some(unpacked) = unpack_the_package(root, "notices") else {
+		return;
+	};
 	let version = field(MANIFEST, "version").expect("a version");
 	let inside = unpacked.join(format!("rnx-{version}/THIRD-PARTY-NOTICES.md"));
 	let packaged = std::fs::read(&inside).expect("the packaged notices");
@@ -541,7 +550,7 @@ fn every_fetched_licence_matches_its_recorded_digest() {
 /// directory of its own keeps this out of the build lock the harness already
 /// holds, and `tag` keeps two gates from unpacking over each other.
 #[cfg(unix)]
-fn unpack_the_package(root: &std::path::Path, tag: &str) -> std::path::PathBuf {
+fn unpack_the_package(root: &std::path::Path, tag: &str) -> Option<std::path::PathBuf> {
 	let into = root.join(format!("target/package-gate-{tag}"));
 	let packaged = Command::new(std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()))
 		.args([
@@ -556,6 +565,20 @@ fn unpack_the_package(root: &std::path::Path, tag: &str) -> std::path::PathBuf {
 		.current_dir(root)
 		.output()
 		.expect("cargo package");
+	// 0067 intentionally supports Git/source installation, not a registry
+	// archive containing an unpublished internal path dependency. Keep this
+	// an exact, tested refusal; every other packaging failure still fails.
+	if !packaged.status.success() && MANIFEST.contains("rnx-project = { path = \"tools/project\"") {
+		let error = String::from_utf8_lossy(&packaged.stderr);
+		assert!(
+			error.contains("dependency `rnx-project` does not specify a version"),
+			"{error}"
+		);
+		assert!(MANIFEST.contains("publish = false"));
+		let internal = std::fs::read_to_string(root.join("tools/project/Cargo.toml")).unwrap();
+		assert!(internal.contains("publish = false"));
+		return None;
+	}
 	assert!(
 		packaged.status.success(),
 		"cargo package failed:\n{}",
@@ -580,7 +603,7 @@ fn unpack_the_package(root: &std::path::Path, tag: &str) -> std::path::PathBuf {
 		"tar failed:\n{}",
 		String::from_utf8_lossy(&untarred.stderr)
 	);
-	unpacked
+	Some(unpacked)
 }
 
 /// A request that fails is not a file that is absent.
@@ -751,15 +774,20 @@ fn scratch_repository(tag: &str) -> std::path::PathBuf {
 	for item in [
 		"Cargo.toml",
 		"Cargo.lock",
+		"build.rs",
 		"src",
+		"tools/project/Cargo.toml",
+		"tools/project/src",
 		"scripts",
 		"third-party",
 		"THIRD-PARTY-NOTICES.md",
 	] {
+		let destination = into.join(item);
+		std::fs::create_dir_all(destination.parent().unwrap()).expect("scratch parent");
 		let copied = Command::new("cp")
 			.arg("-r")
 			.arg(root.join(item))
-			.arg(&into)
+			.arg(&destination)
 			.status()
 			.expect("cp");
 		assert!(

@@ -50,10 +50,11 @@ mod unix {
 		done: bool,
 	}
 	impl Helper {
-		fn spawn(tool: PathBuf) -> Result<Self, String> {
+		fn spawn(tool: &std::path::Path, args: &[&str]) -> Result<Self, String> {
 			let (parent, child) = UnixStream::pair().map_err(err)?;
 			let fd = child.as_raw_fd();
 			let mut command = Command::new(tool);
+			command.args(args);
 			command
 				.env("RNX_INTERNAL_DEP_FD", fd.to_string())
 				.stdin(Stdio::null())
@@ -68,7 +69,9 @@ mod unix {
 					Ok(())
 				});
 			}
-			let spawned = command.spawn().map_err(err)?;
+			let spawned = command
+				.spawn()
+				.map_err(|e| format!("dependency manager {}: {e}", tool.display()))?;
 			drop(child);
 			let mut h = Self {
 				child: spawned,
@@ -235,21 +238,28 @@ mod unix {
 	}
 	pub(super) fn prepare(input: &str, consent: impl FnOnce() -> bool) -> Result<bool, String> {
 		if !std::io::stdin().is_terminal() || !std::io::stdout().is_terminal() {
-			return Err(":dep requires a terminal; use rnx-project add, lock, build and session --manifest FILE".into());
+			return Err(":dep requires a terminal; use rnx project add, lock, build and session --manifest FILE".into());
 		}
 		let association = std::env::var("RNX_INTERNAL_SESSION_V1").unwrap_or_default();
 		let installed = INSTALLED.with(|v| v.borrow().join("\n"));
-		let tool = if !association.is_empty() {
-			PathBuf::from(&wire::capsule(&association)?[&2])
+		#[cfg(feature = "stock-management")]
+		let self_manager = rnx_project::is_stock_runner();
+		#[cfg(not(feature = "stock-management"))]
+		let self_manager = false;
+		let (tool, capability) = if !association.is_empty() {
+			(PathBuf::from(&wire::capsule(&association)?[&2]), false)
+		} else if self_manager {
+			(std::env::current_exe().map_err(err)?, false)
 		} else if let Some(path) = std::env::var_os("RNX_PROJECT_TOOL") {
-			PathBuf::from(path)
+			(PathBuf::from(path), true)
 		} else {
-			std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default())
-				.map(|p| p.join("rnx-project"))
+			let path = std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default())
+				.map(|p| p.join("rnx"))
 				.find(|p| p.is_file())
-				.ok_or("cannot locate rnx-project; set RNX_PROJECT_TOOL to its absolute path")?
-				.canonicalize()
-				.map_err(err)?
+				.ok_or(
+					"cannot locate installed rnx management command; set RNX_PROJECT_TOOL to its absolute path",
+				)?;
+			(path.canonicalize().map_err(err)?, true)
 		};
 		if !tool.is_absolute() {
 			return Err("RNX_PROJECT_TOOL must be absolute".into());
@@ -266,7 +276,23 @@ mod unix {
 			}
 		}
 		crate::host::clear_interrupt();
-		let mut helper = Helper::spawn(tool)?;
+		if capability {
+			let mut probe = Helper::spawn(&tool, &["management-version"])?;
+			probe.send(6, &wire::Fields::new())?;
+			probe
+				.socket
+				.shutdown(std::net::Shutdown::Write)
+				.map_err(err)?;
+			let (kind, fields) = probe.receive()?;
+			if kind != 6 || fields != wire::Fields::from([(1, "1".into())]) {
+				return Err(format!(
+					"{} does not support dependency management",
+					tool.display()
+				));
+			}
+			probe.finish()?;
+		}
+		let mut helper = Helper::spawn(&tool, &[])?;
 		helper.send(
 			1,
 			&wire::Fields::from([

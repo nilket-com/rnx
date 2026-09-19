@@ -96,7 +96,7 @@ impl Project {
 	}
 	fn recovery(&self, reason: impl std::fmt::Display) -> String {
 		let commands = (|| {
-			let tool = add::shell_word(&std::env::current_exe().map_err(err)?)?;
+			let tool = crate::entry::project_prefix()?;
 			let manifest = add::shell_word(&self.manifest)?;
 			Ok::<_, String>(format!(
 				"{tool} lock --manifest {manifest}\n{tool} build --manifest {manifest}"
@@ -674,6 +674,13 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	if std::env::var_os("RNX_INTERNAL_DEP_FD").is_some() {
 		return transition::serve(args);
 	}
+	if args.first().and_then(|s| s.to_str()) == Some("management-version") {
+		if args.len() != 1 {
+			return Err("management-version takes no arguments".into());
+		}
+		println!("{{\"format\":1}}");
+		return Ok(());
+	}
 	if args.first().and_then(|s| s.to_str()) == Some("cache")
 		|| (args.first().and_then(|s| s.to_str()) == Some("runtime")
 			&& matches!(
@@ -713,8 +720,18 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 		return Project::open(&manifest)?.add(&entries);
 	}
 	if args.len() == 1 && matches!(args[0].to_str(), Some("--help" | "help")) {
+		let help = String::from(
+			"rnx-project cache|runtime list [--root PATH] [--manifest FILE]...\nrnx-project cache|runtime remove ID [--root PATH] [--dry-run [--manifest FILE]...] [--resume] [--quiescent]\nRemoval requires stopping all consumers; named manifests are not a complete reference inventory.\nrnx-project runtime install --from PATH\nrnx-project runtime show\nrnx-project runtime select ID\nrnx-project adapters\nrnx-project add --manifest FILE NAME [NAME...]\nrnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build.",
+		);
 		println!(
-			"rnx-project cache|runtime list [--root PATH] [--manifest FILE]...\nrnx-project cache|runtime remove ID [--root PATH] [--dry-run [--manifest FILE]...] [--resume] [--quiescent]\nRemoval requires stopping all consumers; named manifests are not a complete reference inventory.\nrnx-project runtime install --from PATH\nrnx-project runtime show\nrnx-project runtime select ID\nrnx-project adapters\nrnx-project add --manifest FILE NAME [NAME...]\nrnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build."
+			"{}",
+			if crate::entry::stock() {
+				help.replace("rnx-project", "rnx project")
+					.replace("rnx project runtime", "rnx runtime")
+					.replace("rnx project cache", "rnx cache")
+			} else {
+				help
+			}
 		);
 		return Ok(());
 	}
