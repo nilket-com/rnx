@@ -1,12 +1,14 @@
 # rnx 0066: removal is an explicit ownership decision
 
 Status: accepted for implementation after draft review, with F1 on explicit
-manifest-reference annotations folded in below. No removal command or storage
+manifest-reference annotations folded in below. No product removal command or storage
 mutation is implemented.
-Gate 1 is stopped at its unprivileged mount prerequisite; see
-[the recorded stop](0066_removal_is_an_explicit_ownership_decision_mount_evidence.md).
-The mount child cannot establish its UID mapping on this host. Ownership and
-filesystem prototype checks remain unrun; gates 1–4 remain open.
+Gate 1 is ready for review in an isolated candidate; see
+[the ownership and filesystem evidence](0066_removal_is_an_explicit_ownership_decision_ownership_evidence.md).
+Unprivileged bubblewrap supplies the real bind/tmpfs controls that close
+[the preserved mount-prerequisite stop](0066_removal_is_an_explicit_ownership_decision_mount_evidence.md).
+No product removal code is implemented. Gate 1 awaits acceptance; gates 2–4
+remain open.
 Baseline: rnx `d7d8b0d`, rnx-bench `a0dd0bf`. Record 0065 is accepted and closed
 on Linux, with its numerical qualification retained. This is its promised next
 record: reclaim retained assembly and runtime storage without calling a changed
