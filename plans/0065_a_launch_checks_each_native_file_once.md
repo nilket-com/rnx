@@ -1,6 +1,6 @@
 # rnx 0065: a launch checks each native file once
 
-Status: accepted for implementation after the 2026-09-18 draft review.
+Status: accepted and closed on Linux, with the gate-5 numerical qualification retained.
 The removal record is explicitly next after this record closes; gate 3 includes
 a kernelspec referencing an old-key artifact among surviving consumers.
 Gate 1's reader/encoding checks are accepted on Linux; see
@@ -18,12 +18,12 @@ Gate 5 is accepted with its one numerical miss retained as a qualification.
 F5 removes the path-map bookkeeping cost; five first-adapter comparisons pass,
 but one eval repeat misses the unchanged strict bound by 0.016205 ms. The original
 journal, gate file and [positional attribution](0065_a_launch_checks_each_native_file_once_position_evidence.md) remain unchanged.
-Gate 6 passes on Linux, ready for review; see
+Gate 6 is accepted on Linux; see
 [the closing evidence](0065_a_launch_checks_each_native_file_once_regression_evidence.md).
 Its fresh six first-adapter comparisons pass, and it reports external-root,
 inherited-Git-variable and nested-repository slopes, path controls, full-hash
 attachment, final installed journeys and the full regression. Implementation is
-complete on Linux, pending gate 6 review, with the gate-5 miss and ownership,
+complete and the record is closed on Linux, with the gate-5 miss and ownership,
 platform and migration qualifications retained. Baseline: rnx `7cd3205`, rnx-bench `921ffe3`.
 0064 is closed on Linux. This record addresses native inventory after runtime
 installation; it does not introduce a persistent source-verification cache.
@@ -354,7 +354,7 @@ hashing content once makes a concurrently edited checkout an atomic snapshot.
 The measured stops and format-only/final checkpoints earn commits because their
 sources must remain reproducible. Incidental fixes fold into their checkpoint
 before push. Do not rewrite accepted baselines or describe predicted combined
-savings as observations. Next review is gate 6's closing evidence. The record immediately
+savings as observations. The next record is [0066](0066_removal_is_an_explicit_ownership_decision.md). The record immediately
 after 0065 closes must decide removal of retained assemblies/runtimes, so the disk
 cost has an explicit next decision rather than an open-ended deferral. It must
 account for old tools, project references, sessions and kernels before deletion.
