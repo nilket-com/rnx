@@ -4,7 +4,8 @@ Status: accepted for implementation after the revised draft review, with F1
 allowing clean known-revision builds to proceed through consent without prior
 acquisition evidence. The accepted Cargo Git source probe is bench `edd1383`.
 This replaces the unimplemented payload design in the unpushed plan commit.
-No product implementation gates are accepted.
+Gate 1 has an isolated prototype and evidence ready for review; no product
+implementation gate is accepted. See [gate 1 evidence](0067_command_boundary_and_coordinates_evidence.md).
 Baseline: rnx `94f5f3f`, rnx-bench `e628c97`; 0066 is closed on Linux.
 
 ## Context
