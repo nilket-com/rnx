@@ -1,9 +1,9 @@
 # rnx 0066: removal is an explicit ownership decision
 
-Status: gates 1–3 accepted and pushed, most recently `021f401` (bench `39467e8`).
-Gate 4 is complete and ready for review in the
-[closing evidence](0066_removal_is_an_explicit_ownership_decision_closing_evidence.md);
-acceptance closes this record on Linux with the stated ownership qualifications.
+Status: closed on Linux; gates 1–4 accepted and pushed, most recently
+`94f5f3f` (bench `e628c97`). The
+[closing evidence](0066_removal_is_an_explicit_ownership_decision_closing_evidence.md)
+retains the costs and regression results with the stated ownership qualifications.
 The [ownership evidence](0066_removal_is_an_explicit_ownership_decision_ownership_evidence.md)
 retains the namespace stop and bubblewrap resolution, the
 [command evidence](0066_removal_is_an_explicit_ownership_decision_commands_evidence.md)
