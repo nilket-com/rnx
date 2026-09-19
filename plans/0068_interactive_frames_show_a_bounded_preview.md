@@ -4,6 +4,9 @@ Status: accepted for the isolated gate 1 prototype after draft review. Gate 1
 must settle the native presentation registration seam before any product public
 API or generated wrapper changes. 0067 is closed on Linux. Its clang/mold
 follow-up is rnx `1f497de`, bench `3d2a2f9`.
+Gate 1 is stopped at a source-compatibility finding in the exploratory generic
+builder return type; see [the registration evidence](0068_registration_stop_evidence.md).
+An additive builder and generated-wrapper decision is pending review.
 
 ## Problem and user journey
 
