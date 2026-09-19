@@ -4,8 +4,7 @@ Status: accepted for implementation after the revised draft review, with F1
 allowing clean known-revision builds to proceed through consent without prior
 acquisition evidence. The accepted Cargo Git source probe is bench `edd1383`.
 This replaces the unimplemented payload design in the unpushed plan commit.
-Gates 1–4 are accepted. Gate 5 (costs and regression) is complete and ready
-for closing review on Linux with the recorded qualifications. See [gate 1 evidence](0067_command_boundary_and_coordinates_evidence.md),
+Gates 1–5 are accepted; 0067 is closed on Linux with its recorded qualifications. See [gate 1 evidence](0067_command_boundary_and_coordinates_evidence.md),
 [gate 2 evidence](0067_management_and_session_protocol_evidence.md),
 [gate 3 evidence](0067_git_source_workflow_evidence.md),
 [gate 4 evidence](0067_one_install_journey_evidence.md), and
