@@ -7,8 +7,9 @@ follow-up is rnx `1f497de`, bench `3d2a2f9`.
 Gate 1 continues after the accepted source-compatibility stop in the exploratory
 generic builder return type; see [the registration evidence](0068_registration_stop_evidence.md).
 Presentation is now a separate capability, independent of the lifecycle hook,
-as specified in decision 2. The replacement prototype and schema vectors remain
-to be demonstrated; gate 1 has not passed.
+as specified in decision 2. The replacement prototype passes and is ready for
+review; see [the presentation seam evidence](0068_presentation_seam_evidence.md).
+Gate 2 ports it into the product.
 
 ## Problem and user journey
 
