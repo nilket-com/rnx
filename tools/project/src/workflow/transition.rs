@@ -249,7 +249,7 @@ fn scratch_path() -> Result<PathBuf, String> {
 	let base = state_root()?.join("rnx/sessions");
 	for p in [base.parent().unwrap(), base.as_path()] {
 		match fs::symlink_metadata(p) {
-			Ok(_) => crate::cache_storage::private_directory(p)?,
+			Ok(_) => scratch_directory(p, false)?,
 			Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
 			Err(e) => return Err(err(e)),
 		}
@@ -361,9 +361,47 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 		git,
 	})
 }
+// Describe may accept repairable permissions, but must never change them.
+// Repair is scoped to scratch preparation, not shared cache/runtime storage.
+fn scratch_directory(path: &Path, repair: bool) -> Result<(), String> {
+	#[cfg(unix)]
+	{
+		use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
+		let directory = OpenOptions::new()
+			.read(true)
+			.custom_flags(libc::O_NOFOLLOW | libc::O_DIRECTORY | libc::O_NONBLOCK)
+			.open(path)
+			.map_err(|e| format!("scratch directory {}: {e}", path.display()))?;
+		let metadata = directory.metadata().map_err(err)?;
+		if metadata.uid() != unsafe { libc::geteuid() } {
+			return Err(format!(
+				"scratch directory is not owned by the current user: {}",
+				path.display()
+			));
+		}
+		if repair && metadata.mode() & 0o077 != 0 {
+			directory
+				.set_permissions(fs::Permissions::from_mode(metadata.mode() & !0o077))
+				.map_err(|e| {
+					format!(
+						"cannot make scratch directory private: {}: {e}; run chmod go-rwx {}",
+						path.display(),
+						crate::entry::quote(path).unwrap_or_else(|_| "<directory>".into())
+					)
+				})?;
+			eprintln!("made scratch directory private: {}", path.display());
+		}
+		Ok(())
+	}
+	#[cfg(not(unix))]
+	{
+		let _ = repair;
+		crate::cache_storage::private_directory(path)
+	}
+}
 fn private_dir(path: &Path) -> Result<(), String> {
 	match fs::symlink_metadata(path) {
-		Ok(_) => crate::cache_storage::private_directory(path),
+		Ok(_) => scratch_directory(path, true),
 		Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
 			if let Some(parent) = path.parent() {
 				private_dir(parent)?;
@@ -604,5 +642,42 @@ impl Project {
 			let association = association(self, &lock, &checked, &digest)?;
 			Ok((checked, digest, bytes, association))
 		}
+	}
+}
+
+#[cfg(all(test, unix))]
+mod scratch_directory_tests {
+	use super::*;
+	use std::os::unix::fs::{MetadataExt, PermissionsExt, symlink};
+
+	#[test]
+	fn legacy_history_parent_is_repaired_only_during_preparation() {
+		let root =
+			std::env::temp_dir().join(format!("rnx-scratch-permissions-{}", std::process::id()));
+		fs::create_dir(&root).unwrap();
+		let parent = root.join("rnx");
+		fs::create_dir(&parent).unwrap();
+		fs::set_permissions(&parent, fs::Permissions::from_mode(0o775)).unwrap();
+		fs::write(parent.join("history"), "40 + 2\n").unwrap();
+		let before = fs::metadata(&parent).unwrap();
+		scratch_directory(&parent, false).unwrap();
+		assert_eq!(fs::metadata(&parent).unwrap().mode(), before.mode());
+		assert!(!parent.join("sessions").exists());
+		private_dir(&parent).unwrap();
+		private_dir(&parent.join("sessions")).unwrap();
+		let after = fs::metadata(&parent).unwrap();
+		assert_eq!(after.mode() & 0o777, 0o700);
+		assert_eq!(after.ino(), before.ino());
+		assert_eq!(
+			fs::read_to_string(parent.join("history")).unwrap(),
+			"40 + 2\n"
+		);
+		let link = root.join("link");
+		symlink(&parent, &link).unwrap();
+		for repair in [false, true] {
+			assert!(scratch_directory(&link, repair).is_err());
+			assert!(scratch_directory(&parent.join("history"), repair).is_err());
+		}
+		fs::remove_dir_all(root).unwrap();
 	}
 }

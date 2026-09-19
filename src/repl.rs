@@ -346,7 +346,14 @@ pub fn run(
 	let history = history_path();
 	if let Some(path) = &history {
 		if let Some(dir) = path.parent() {
-			let _ = std::fs::create_dir_all(dir);
+			let mut directories = std::fs::DirBuilder::new();
+			directories.recursive(true);
+			#[cfg(unix)]
+			{
+				use std::os::unix::fs::DirBuilderExt;
+				directories.mode(0o700);
+			}
+			let _ = directories.create(dir);
 		}
 		// Restoring history loads text only; nothing here evaluates it.
 		let _ = editor.load_history(path);

@@ -529,6 +529,11 @@ runtime; it never silently replaces an associated project. A retained scratch pr
 only after consent. Its successful replacement prints the quoted command to
 reopen it. Projects and scratch consumers reuse the same shared assembly when
 their native inputs match. The working directory stays the caller's directory.
+On Unix, scratch preparation makes existing user-owned `rnx` and `rnx/sessions`
+state directories private, reporting any permission repair. This accommodates
+history directories created by older runners under a permissive umask. Describe
+and decline change no permissions; symlinks and directories owned by another
+user still refuse. New history directories are created with mode `0700`.
 A private startup probe executes builders before the replacement executes them
 again. Failed preparation preserves the old session, but project edits may remain;
 cleanup or exec failure after the restart announcement is terminal.

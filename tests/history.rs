@@ -167,6 +167,17 @@ fn history_is_written_under_the_platforms_state_directory() {
 			&state.join("rnx").join("history"),
 			&format!("the history under {STATE_VAR}"),
 		));
+		#[cfg(unix)]
+		{
+			use std::os::unix::fs::PermissionsExt;
+			let mode = std::fs::metadata(state.join("rnx"))
+				.unwrap()
+				.permissions()
+				.mode();
+			if mode & 0o077 != 0 {
+				trouble.push(format!("history directory is not private: {mode:o}"));
+			}
+		}
 		// The fallback must not have been what answered.
 		if home.join(".local").exists() {
 			trouble.push("history was written under HOME as well".to_owned());
