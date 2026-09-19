@@ -24,6 +24,47 @@ pub(super) fn association(
 	checked: &artifact::Checked,
 	digest: &str,
 ) -> Result<String, String> {
+	association_values(
+		p,
+		recipe(&lock.declarations)?,
+		roster(&lock.declarations),
+		checked,
+		digest,
+	)
+}
+pub(super) fn git_association(
+	p: &Project,
+	lock: &crate::schemas::Lock,
+	checked: &artifact::Checked,
+	digest: &str,
+) -> Result<String, String> {
+	association_values(
+		p,
+		git_recipe(&lock.declarations)?,
+		lock.declarations
+			.native
+			.keys()
+			.cloned()
+			.collect::<Vec<_>>()
+			.join("\n"),
+		checked,
+		digest,
+	)
+}
+fn git_recipe(m: &crate::schemas::Declaration) -> Result<String, String> {
+	Ok(hash(&wire::encode(&(
+		&m.runtime,
+		&m.executable,
+		&m.native,
+	))?))
+}
+fn association_values(
+	p: &Project,
+	recipe: String,
+	roster: String,
+	checked: &artifact::Checked,
+	digest: &str,
+) -> Result<String, String> {
 	let fields = protocol::Fields::from([
 		(1, text(&p.manifest)?),
 		(
@@ -35,8 +76,8 @@ pub(super) fn association(
 					.map_err(err)?,
 			)?,
 		),
-		(3, recipe(&lock.declarations)?),
-		(4, roster(&lock.declarations)),
+		(3, recipe),
+		(4, roster),
 		(5, digest.into()),
 		(6, text(checked.path())?),
 	]);
@@ -69,22 +110,43 @@ fn validate_association(
 	installed: &str,
 ) -> Result<(), String> {
 	let a = protocol::capsule(capsule)?;
-	let (lock, bytes) = p.read_lock()?;
-	let current = Manifest::read(&p.manifest)?;
-	if a[&1] != text(&p.manifest)?
-		|| a[&3] != recipe(&current)?
-		|| a[&3] != recipe(&lock.declarations)?
-	{
+	let (current, locked, roster, checked, digest) = if p.new_lock()? {
+		let (lock, bytes) = p.read_git_lock()?;
+		let current = crate::schemas::Declaration::read(&p.manifest)?;
+		let (checked, digest) = p.git_checked_artifact(&lock, &bytes, false, false)?;
+		(
+			git_recipe(&current)?,
+			git_recipe(&lock.declarations)?,
+			current
+				.native
+				.keys()
+				.cloned()
+				.collect::<Vec<_>>()
+				.join("\n"),
+			checked,
+			digest,
+		)
+	} else {
+		let (lock, bytes) = p.read_lock()?;
+		let current = Manifest::read(&p.manifest)?;
+		let (checked, digest) = p.checked_artifact(&lock, &bytes, false, false)?;
+		(
+			recipe(&current)?,
+			recipe(&lock.declarations)?,
+			roster(&current),
+			checked,
+			digest,
+		)
+	};
+	if a[&1] != text(&p.manifest)? || a[&3] != current || a[&3] != locked {
 		return Err("session association declarations changed; reopen the project session".into());
 	}
-	if a[&4] != installed || a[&4] != roster(&current) {
+	if a[&4] != installed || a[&4] != roster {
 		return Err(
 			"session association extension roster mismatch; reopen the project session".into(),
 		);
 	}
-	// Source bytes may be stale; preparation resolves them. The lock pair,
-	// receipt binding, ready document and artifact still have to be valid.
-	let (checked, digest) = p.checked_artifact(&lock, &bytes, false, false)?;
+
 	if a[&5] != digest
 		|| a[&6] != text(checked.path())?
 		|| Path::new(executable).canonicalize().map_err(err)?
@@ -287,11 +349,7 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 		let raw = input::read(&p.manifest, input::MANIFEST_LIMIT)?;
 		(p.manifest, raw)
 	};
-	let candidate = if let Some(git) = git {
-		catalogue::git_candidate(original.clone(), &entries, git.url, git.revision)
-	} else {
-		catalogue::author(original.clone(), manifest.parent().unwrap(), &entries)?
-	};
+	let candidate = catalogue::author(original.clone(), manifest.parent().unwrap(), &entries)?;
 	Ok(Description {
 		manifest,
 		original,
@@ -441,12 +499,6 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		if fresh.candidate.added.is_empty() {
 			return Ok(());
 		}
-		if let Some(git) = fresh.git {
-			return Err(format!(
-				"Git-source preparation is not enabled in this checkpoint (0067 gate 3); no sources fetched or scratch written.\n{}",
-				git.override_help()
-			));
-		}
 		if let Some(runtime) = &fresh.runtime {
 			runtime.validate()?;
 		}
@@ -479,9 +531,7 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			protocol::trace("tool-build");
 			fault("dep-build")?;
 			p.build(fresh.offline)?;
-			let (lock, bytes) = p.read_lock()?;
-			p.verify_inputs(&lock)?;
-			let (checked, digest) = p.checked_artifact(&lock, &bytes, false, true)?;
+			let (checked, digest, bytes, replacement) = p.prepared_session()?;
 			checked.recheck()?;
 			phase = "startup check";
 			eprintln!("dependency phase: startup check");
@@ -489,13 +539,16 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			protocol::trace("tool-probe");
 			super::startup::check(&checked, request.get(&6).map(String::as_str).unwrap_or(""))?;
 			commands::check()?;
-			p.verify_inputs(&lock)?;
-			let (again, again_bytes) = p.read_lock()?;
-			if again != lock || again_bytes != bytes {
-				return Err("lock changed during startup check".into());
+			let (again, again_digest, again_bytes, again_association) = p.prepared_session()?;
+			if bytes != again_bytes
+				|| digest != again_digest
+				|| replacement != again_association
+				|| again.path() != checked.path()
+			{
+				return Err("lock or artifact changed during startup check".into());
 			}
 			checked.recheck()?;
-			let replacement = association(&p, &lock, &checked, &digest)?;
+
 			let stamp = protocol::stamp(checked.path())?;
 			checked.recheck()?;
 			let mut ready =
@@ -517,8 +570,12 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		})();
 		prepare.map_err(|e| {
 			format!(
-				"{phase}: {e}; project files may have been published; retry with:\n{}",
-				crate::entry::recovery(&p.manifest).unwrap_or_else(|e| e)
+				"{phase}: {e}; project files may have been published; retry with:\n{}{}",
+				crate::entry::recovery(&p.manifest).unwrap_or_else(|e| e),
+				fresh
+					.git
+					.map(|c| format!("\n{}", c.override_help()))
+					.unwrap_or_default()
 			)
 		})
 	})();
@@ -530,4 +587,22 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 #[cfg(not(unix))]
 pub(super) fn serve(_: Vec<OsString>) -> Result<(), String> {
 	Err("dependency transitions require Unix supervision".into())
+}
+
+impl Project {
+	fn prepared_session(&self) -> Result<(artifact::Checked, String, Vec<u8>, String), String> {
+		if self.new_lock()? {
+			let (lock, bytes) = self.read_git_lock()?;
+			self.git_verify_inputs(&lock, true)?;
+			let (checked, digest) = self.git_checked_artifact(&lock, &bytes, false, true)?;
+			let association = git_association(self, &lock, &checked, &digest)?;
+			Ok((checked, digest, bytes, association))
+		} else {
+			let (lock, bytes) = self.read_lock()?;
+			self.verify_inputs(&lock)?;
+			let (checked, digest) = self.checked_artifact(&lock, &bytes, false, true)?;
+			let association = association(self, &lock, &checked, &digest)?;
+			Ok((checked, digest, bytes, association))
+		}
+	}
 }

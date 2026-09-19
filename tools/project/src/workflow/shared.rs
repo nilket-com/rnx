@@ -6,13 +6,13 @@ use crate::{
 	cache_storage as storage,
 };
 
-struct Resolver(PathBuf);
+pub(super) struct Resolver(pub(super) PathBuf);
 impl Drop for Resolver {
 	fn drop(&mut self) {
 		let _ = fs::remove_dir_all(&self.0);
 	}
 }
-fn selected_root() -> Result<PathBuf, String> {
+pub(super) fn selected_root() -> Result<PathBuf, String> {
 	let root = if let Some(p) = std::env::var_os("RNX_PROJECT_CACHE") {
 		PathBuf::from(p)
 	} else if let Some(p) = std::env::var_os("XDG_CACHE_HOME") {
@@ -34,7 +34,7 @@ fn selected_root() -> Result<PathBuf, String> {
 	builder.create(&root).map_err(err)?;
 	storage::root(&root)
 }
-fn resolver(root: &Path) -> Result<Resolver, String> {
+pub(super) fn resolver(root: &Path) -> Result<Resolver, String> {
 	storage::directory(&root.join("resolve"))?;
 	for n in 0..1000 {
 		let dir = root
@@ -56,7 +56,11 @@ fn resolver(root: &Path) -> Result<Resolver, String> {
 	}
 	Err("cannot allocate private cache resolver".into())
 }
-fn compatible_layout(root: &Path, inputs: &Inputs, project: &Path) -> Result<(), String> {
+pub(super) fn compatible_layout(
+	root: &Path,
+	inputs: &Inputs,
+	project: &Path,
+) -> Result<(), String> {
 	for tree in inputs
 		.source
 		.trees
@@ -116,8 +120,7 @@ impl Project {
 		if self.shared_inputs(&metadata, &stage, &c.cache_root, &c.cargo_home)? != lock.inputs {
 			return Err("project source or Cargo input changed; run lock".into());
 		}
-		let (manifest, main) = generate::canonical_wrapper(&lock.declarations, &self.base)?;
-		if identity.wrapper() != (manifest.as_str(), main.as_str()) {
+		if !generate::retained_wrapper(&lock.declarations, &self.base, identity.wrapper())? {
 			return Err("generated shared assembly changed; run lock".into());
 		}
 		commands::check()

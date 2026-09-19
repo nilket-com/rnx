@@ -8,16 +8,33 @@ mod cache_storage;
 mod commands;
 mod fingerprint;
 mod generate;
+mod git_inventory;
 mod graph;
 mod handshake;
 mod input;
 mod inventory;
 mod manifest;
+mod new_identity;
+mod schemas;
 mod wire;
 use std::{ffi::OsString, path::Path};
 fn run() -> Result<(), String> {
 	let args: Vec<OsString> = std::env::args_os().skip(1).collect();
 	match args.first().and_then(|a| a.to_str()) {
+		Some("schema") if args.len() == 4 => {
+			let bytes = input::read(Path::new(&args[2]), input::DOCUMENT_LIMIT)?;
+			let output = schemas::validate_vector(args[1].to_str().ok_or("schema name")?, &bytes)?;
+			std::fs::write(&args[3], &output).map_err(|e| e.to_string())?;
+			println!("{}", blake3::hash(&output));
+			Ok(())
+		}
+		Some("git-verify") if args.len() == 2 => {
+			let packages: Vec<schemas::GitPackage> =
+				serde_json::from_slice(&input::read(Path::new(&args[1]), input::DOCUMENT_LIMIT)?)
+					.map_err(|e| e.to_string())?;
+			git_inventory::verify(&packages)
+		}
+
 		Some("nested-inventory") if args.len() == 2 => {
 			#[derive(serde::Deserialize)]
 			struct Config {

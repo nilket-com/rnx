@@ -4,9 +4,10 @@ Status: accepted for implementation after the revised draft review, with F1
 allowing clean known-revision builds to proceed through consent without prior
 acquisition evidence. The accepted Cargo Git source probe is bench `edd1383`.
 This replaces the unimplemented payload design in the unpushed plan commit.
-Gate 1 is accepted. Gate 2 is implemented and ready for review; gates 3–6
-remain open. See [gate 1 evidence](0067_command_boundary_and_coordinates_evidence.md)
-and [gate 2 evidence](0067_management_and_session_protocol_evidence.md).
+Gates 1 and 2 are accepted. Gate 3 is implemented and ready for review;
+gates 4–6 remain open. See [gate 1 evidence](0067_command_boundary_and_coordinates_evidence.md),
+[gate 2 evidence](0067_management_and_session_protocol_evidence.md), and
+[gate 3 evidence](0067_git_source_workflow_evidence.md).
 Baseline: rnx `94f5f3f`, rnx-bench `e628c97`; 0066 is closed on Linux.
 
 ## Context
@@ -255,8 +256,19 @@ Keep ignored-output limitations explicit, as with today's path inventory. No
 blanket exemption for extra files or arbitrary `.cargo*` paths.
 
 Recheck source inputs after compilation before publishing readiness/receipts.
-On a mismatch refuse rather than accepting new bytes under the old revision or
-silently repairing Cargo's checkout. Missing/corrupt referenced objects refuse.
+Verification never repairs a checkout or accepts new bytes under the old revision.
+Build, attachment and `--verify` refuse mismatches and name the project's lock
+command as recovery. Missing/corrupt referenced objects refuse.
+
+Explicit lock owns acquisition. Cargo may reset its checkout when HEAD differs
+or its completion marker is absent, discarding edits inside that Cargo-owned
+checkout. Lock observes those transport states for reporting only, reports a
+reacquired checkout, and authenticates the resulting bytes **after Cargo**, before
+publishing either lock file. A mismatch remaining after acquisition still refuses;
+Cargo's success is not authentication. The observer performs no pre-acquisition
+content verification and is not used by build, attachment or launch. A checkout
+Cargo considers fresh can retain an edit: lock then refuses too, and the user
+must restore the checkout before retrying. No rnx verification step resets it.
 The 90 ms whole-database fsck is not required on every operation: the gate proves
 the narrower verifier's object/content checks and does not call them a full
 history fsck. `--verify` also fully hashes the executable as before. This is

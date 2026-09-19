@@ -20,17 +20,39 @@ built `rnx-project` compatibility executable uses the same implementation with
 the old argument grammar (`rnx-project lock`, `rnx-project runtime`, and so on).
 It is not required beside stock `rnx` and is not a shell forwarding wrapper.
 
-0067 gate 2 provides command dispatch and session delegation. Git default notices
-are live, but acquisition is staged for gate 3: consent currently refuses before
-fetching or writing scratch state. Path projects and the explicit path override
-already run the complete transition. Clean known revisions reach consent;
-dirty/unknown coordinates refuse with an override instruction.
+Git declarations now support the complete dependency transition. A clean stock
+binary with known repository coordinates can acquire its own revision through
+Cargo after consent; dirty/unknown builds print an explicit path override.
+No default runtime installation or companion executable is needed.
+
+A format-2 manifest declares exactly one of `path` or `git` plus a full `rev`
+for each runtime/native package. `rnx project add` uses the runtime's source form.
+Format-1 path manifests and their existing lock/receipt/cache formats keep their
+original readers and content checks. Relocking never promotes an old artifact.
+
+For Git sources, ordinary launch trusts Cargo's checkout at the recorded URL and
+revision: it reads no native source contents and invokes neither Git nor Cargo.
+Editing bytes inside that checkout can go unnoticed until an explicit check.
+Lock, build, attachment and `--verify` authenticate raw Git objects, working-tree
+bytes, executable bits and tracked paths, without filters. Only the root regular,
+bounded `.cargo-ok` marker is exempt as transport bookkeeping; ignored build
+outputs retain the path inventory's limitations. Path dependencies still receive
+full content checks on every launch, including in mixed projects.
+
+**Lock may reset Cargo's Git checkout and discard edits made inside it.** Cargo
+owns acquisition: a different HEAD or missing completion marker can cause Cargo
+to recreate the checkout. Lock reports that reset and verifies the resulting
+bytes against the resolved revision before publishing the lock pair. Build,
+attachment and `--verify` never repair source content. Their refusal prints the
+project's lock/build recovery commands. If Cargo considers an edited checkout
+fresh, lock also refuses; restore those edits before retrying. No verification
+step silently rewrites bytes to make its check pass.
 
 `--manifest` is required; there is no upward search. Paths inside a manifest are
 relative to that manifest. Only lock resolves the Cargo graph. Build uses
 `--locked`, the release profile and the compiler's host target; run never invokes
 Cargo or rustc, builds anything, repairs a lock or requires a network connection.
-**Launch checks your sources, trusts your build output unless you ask it to verify.**
+**Launch checks your Rune and path sources, trusts Cargo’s Git checkout and your build output unless you ask it to verify.**
 
 By default, matching artifact size, modification time, executable-bit state and
 Unix device/inode avoid rereading the executable. A mismatch triggers a full hash

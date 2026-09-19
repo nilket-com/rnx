@@ -631,7 +631,8 @@ fn metadata(entry: &File, kind: &str, key: &str, budget: &mut Budget) -> Result<
 	};
 	match bounded_document(entry, n, limit, budget) {
 		Ok(Some(v)) => {
-			let known = matches!(v["format"].as_u64(), Some(1 | 2));
+			let known = matches!(v["format"].as_u64(), Some(1 | 2))
+				|| (kind == "cache" && v["format"] == 3);
 			let id = v[if kind == "cache" { "key" } else { "id" }].as_str() == Some(key);
 			let suffix = if v["format"] == 1 { "sha256" } else { "blake3" };
 			let shape = if kind == "cache" {

@@ -2,10 +2,7 @@
 //! Callers hold their project lock first and keep the returned entry lease until
 //! their receipt is published. Readiness is always re-read after acquiring a key.
 #![allow(dead_code)]
-use crate::{
-	artifact, cache_identity::Identity, cache_storage as storage, commands, fingerprint, input,
-	wire,
-};
+use crate::{artifact, cache_storage as storage, commands, fingerprint, input, wire};
 use serde::{Deserialize, Serialize};
 use std::{
 	fs::{self, File, OpenOptions},
@@ -14,6 +11,44 @@ use std::{
 	process::Command,
 	time::Duration,
 };
+pub(crate) trait Identity {
+	fn context(&self) -> &crate::cache_identity::Context;
+	fn wrapper(&self) -> (&str, &str);
+	fn key(&self) -> &str;
+	fn bytes(&self) -> &[u8];
+	fn check_lock(&self, bytes: &[u8]) -> Result<(), String>;
+	fn revalidate(&self, stage: &Path) -> Result<(), String>;
+	fn ready_format(&self) -> u32;
+}
+macro_rules! identity {
+	($ty:ty,$format:expr) => {
+		impl Identity for $ty {
+			fn context(&self) -> &crate::cache_identity::Context {
+				self.context()
+			}
+			fn wrapper(&self) -> (&str, &str) {
+				self.wrapper()
+			}
+			fn key(&self) -> &str {
+				self.key()
+			}
+			fn bytes(&self) -> &[u8] {
+				self.bytes()
+			}
+			fn check_lock(&self, bytes: &[u8]) -> Result<(), String> {
+				self.check_lock(bytes)
+			}
+			fn revalidate(&self, stage: &Path) -> Result<(), String> {
+				self.revalidate(stage)
+			}
+			fn ready_format(&self) -> u32 {
+				$format
+			}
+		}
+	};
+}
+identity!(crate::cache_identity::Identity, 2);
+identity!(crate::new_identity::Identity, 3);
 fn err(e: impl std::fmt::Display) -> String {
 	e.to_string()
 }
@@ -127,7 +162,7 @@ fn version(program: &str, arg: &str, cwd: &Path) -> Result<String, String> {
 	command.arg(arg).current_dir(cwd);
 	String::from_utf8(commands::run(command, true)?).map_err(err)
 }
-pub(crate) fn environment(identity: &Identity) -> Result<(), String> {
+pub(crate) fn environment(identity: &impl Identity) -> Result<(), String> {
 	let c = identity.context();
 	for (key, _) in std::env::vars_os() {
 		let s = key.to_string_lossy();
@@ -167,7 +202,7 @@ pub(crate) fn environment(identity: &Identity) -> Result<(), String> {
 	}
 	Ok(())
 }
-fn validate(identity: &Identity, stage: &Path, project: &Path) -> Result<(), String> {
+fn validate(identity: &impl Identity, stage: &Path, project: &Path) -> Result<(), String> {
 	storage::guard(&identity.context().cache_root, stage, project)?;
 	environment(identity)?;
 	identity.revalidate(stage)?;
@@ -184,7 +219,7 @@ fn validate(identity: &Identity, stage: &Path, project: &Path) -> Result<(), Str
 }
 /// Bounded readiness and fixed-path validation, also used by future launch code.
 /// This never compiles, populates a directory, or repairs a published entry.
-pub(crate) fn ready(identity: &Identity) -> Result<(PathBuf, String), String> {
+pub(crate) fn ready(identity: &impl Identity) -> Result<(PathBuf, String), String> {
 	let root = &identity.context().cache_root;
 	if storage::root(root)? != *root {
 		return Err("locked cache root moved; run lock".into());
@@ -201,12 +236,12 @@ pub(crate) fn ready(identity: &Identity) -> Result<(PathBuf, String), String> {
 }
 fn decode_ready(
 	bytes: &[u8],
-	identity: &Identity,
+	identity: &impl Identity,
 	path: &Path,
 ) -> Result<(String, String), String> {
 	let r: Ready = serde_json::from_slice(bytes)
 		.map_err(|e| format!("cache ready {}: {e}", path.display()))?;
-	if r.format != 2
+	if r.format != identity.ready_format()
 		|| r.key != identity.key()
 		|| r.identity.as_bytes() != identity.bytes()
 		|| !artifact::digest_valid(&r.executable_blake3)
@@ -220,7 +255,7 @@ fn decode_ready(
 /// publishing. It runs after waiting and after independent assembly publication.
 /// Gate four supplies the product's lock/source verification and receipt writer.
 pub(crate) fn acquire(
-	identity: &Identity,
+	identity: &impl Identity,
 	cargo_lock: &[u8],
 	project: &Path,
 	offline: bool,
@@ -341,7 +376,7 @@ pub(crate) fn acquire(
 			fault("before-ready")?;
 			validate(identity, &stage, project)?;
 			let ready = Ready {
-				format: 2,
+				format: identity.ready_format(),
 				key: identity.key().into(),
 				identity: String::from_utf8(identity.bytes().to_vec()).map_err(err)?,
 				executable_blake3: expected.clone(),

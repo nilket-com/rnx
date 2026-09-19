@@ -298,13 +298,21 @@ runs before any runner context or settings are loaded. Generated applications
 omit management and delegate dependency preparation to their associated manager,
 or an explicit `RNX_PROJECT_TOOL`, or a capable stock `rnx` on PATH.
 
-Record 0067 is staged: the command and session boundary is implemented; Git-source
-acquisition is the next gate. A clean stock build describes its recorded Git
-revision without fetching, but consenting to that default currently refuses
-before writing a scratch project. Dirty or unknown builds print a path-override
-recovery. Existing path projects and `RNX_DEP_RUNTIME=/absolute/path/to/rnx`
-work through the full build, probe and restart. A selected runtime is no longer
-an implicit stock default; `rnx runtime show` prints its explicit override.
+A clean stock build with known Git coordinates describes its revision without
+fetching. After consent, `:dep polars` uses Cargo to acquire that revision, builds
+or attaches to its assembly, probes startup and restarts the session. No runtime
+installation or companion program is required. Dirty or unknown builds print a
+path-override recovery. Existing path projects and
+`RNX_DEP_RUNTIME=/absolute/path/to/rnx` retain their content checks. A selected
+runtime is not an implicit stock default; `rnx runtime show` prints its explicit
+override. Gate 3 exercises this with a private fixture origin; record 0067's
+published-origin first-use and matched timing gates are still pending.
+
+Ordinary Git-project launches trust Cargo's checkout. Lock, build, attachment and
+`--verify` check its bytes against raw Git objects. Explicit lock may let Cargo
+reset its checkout, discarding edits inside it; resets are reported and the
+result is verified before publishing the lock. The other checks refuse edits
+without repairing them.
 
 A session opened with `rnx project session --manifest ...` edits that project;
 a stock session creates a retained scratch project only after consent. The

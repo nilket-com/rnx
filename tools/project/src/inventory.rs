@@ -77,6 +77,30 @@ pub(crate) fn native(
 	cargo_home: &Path,
 	allowance: &mut Allowance,
 ) -> Result<Inventory, String> {
+	native_partitioned(
+		metadata,
+		generated_root,
+		invocation_dir,
+		cargo_home,
+		allowance,
+		&[],
+		&[],
+		&[],
+	)
+}
+/// The caller authenticates Git-owned files on full checks. Everyday replay
+/// excludes those reads but retains all external candidates and redirects.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn native_partitioned(
+	metadata: &[u8],
+	generated_root: &Path,
+	invocation_dir: &Path,
+	cargo_home: &Path,
+	allowance: &mut Allowance,
+	git_manifests: &[PathBuf],
+	skip: &[PathBuf],
+	recorded: &[External],
+) -> Result<Inventory, String> {
 	if metadata.len() > input::DOCUMENT_LIMIT {
 		return Err("Cargo metadata exceeds 16 MiB".into());
 	}
@@ -90,6 +114,13 @@ pub(crate) fn native(
 	let mut roots = BTreeSet::new();
 	let mut candidates = BTreeSet::new();
 	ancestors(invocation_dir, &mut candidates);
+	for manifest in git_manifests {
+		ancestors(
+			manifest.parent().ok_or("Git manifest has no parent")?,
+			&mut candidates,
+		);
+	}
+	candidates.extend(recorded.iter().map(|e| e.path.clone()));
 	candidates.insert(cargo_home.join("config"));
 	candidates.insert(cargo_home.join("config.toml"));
 	// Root workspace can lie outside the package's ancestors through package.workspace.
@@ -137,7 +168,7 @@ pub(crate) fn native(
 	// the generated wrapper's workspace). Explicit workspace redirects are followed.
 	let mut external = BTreeMap::new();
 	while let Some(path) = candidates.pop_first() {
-		if path.starts_with(generated_root) {
+		if path.starts_with(generated_root) || skip.iter().any(|root| path.starts_with(root)) {
 			continue;
 		}
 		if external.contains_key(&path) {
@@ -251,7 +282,7 @@ pub(crate) fn sources(app: &Path, allowance: &mut Allowance) -> Result<Sources, 
 	let mut packages = vec![];
 	let mut application_root = None;
 	crate::graph::expand(&app, |path| {
-		let manifest = crate::manifest::Manifest::read(path)?;
+		let manifest = crate::schemas::graph_read(path)?;
 		if path == app && manifest.application.is_none() {
 			return Err("entry must be an application".into());
 		}

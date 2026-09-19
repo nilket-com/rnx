@@ -56,23 +56,38 @@ pub(crate) fn check() -> Result<(), String> {
 	}
 }
 pub(crate) fn run(command: Command, capture: bool) -> Result<Vec<u8>, String> {
-	run_inner(command, capture, false)
+	run_inner(command, capture, false, None, crate::input::DOCUMENT_LIMIT)
 }
 /// Installer Git must bound stderr too; ordinary Cargo output keeps its existing stream.
 #[allow(dead_code)]
 pub(crate) fn run_bounded(command: Command) -> Result<Vec<u8>, String> {
-	run_inner(command, true, true)
+	run_inner(command, true, true, None, crate::input::DOCUMENT_LIMIT)
 }
-fn run_inner(mut command: Command, capture: bool, bounded_stderr: bool) -> Result<Vec<u8>, String> {
+pub(crate) fn run_input(command: Command, input: Vec<u8>, limit: usize) -> Result<Vec<u8>, String> {
+	run_inner(command, true, true, Some(input), limit)
+}
+fn run_inner(
+	mut command: Command,
+	capture: bool,
+	bounded_stderr: bool,
+	input: Option<Vec<u8>>,
+	limit: usize,
+) -> Result<Vec<u8>, String> {
 	check()?;
 	command
 		.env_remove("RNX_INTERNAL_DEP_FD")
 		.env_remove("RNX_INTERNAL_SESSION_V1");
-	command.stdin(Stdio::null()).stderr(if bounded_stderr {
-		Stdio::piped()
-	} else {
-		Stdio::inherit()
-	});
+	command
+		.stdin(if input.is_some() {
+			Stdio::piped()
+		} else {
+			Stdio::null()
+		})
+		.stderr(if bounded_stderr {
+			Stdio::piped()
+		} else {
+			Stdio::inherit()
+		});
 	if capture {
 		command.stdout(Stdio::piped());
 	} else {
@@ -85,17 +100,24 @@ fn run_inner(mut command: Command, capture: bool, bounded_stderr: bool) -> Resul
 	}
 	let label = format!("{:?}", command.get_program());
 	let mut child = command.spawn().map_err(|e| format!("{label}: {e}"))?;
+	let writer = input.map(|bytes| {
+		let mut stdin = child.stdin.take().unwrap();
+		std::thread::spawn(move || {
+			use std::io::Write;
+			stdin.write_all(&bytes).map_err(|e| e.to_string())
+		})
+	});
 	#[cfg(unix)]
 	let pid = child.id();
 	let mut reader = child.stdout.take().map(|stdout| {
 		std::thread::spawn(move || {
 			let mut bytes = vec![];
 			stdout
-				.take(crate::input::DOCUMENT_LIMIT as u64 + 1)
+				.take(limit as u64 + 1)
 				.read_to_end(&mut bytes)
 				.map_err(|e| e.to_string())?;
-			if bytes.len() > crate::input::DOCUMENT_LIMIT {
-				return Err("command output exceeds 16 MiB".into());
+			if bytes.len() > limit {
+				return Err("command output exceeds allowance".into());
 			}
 			Ok(bytes)
 		})
@@ -190,6 +212,13 @@ fn run_inner(mut command: Command, capture: bool, bounded_stderr: bool) -> Resul
 			.join()
 			.map_err(|_| "command stderr reader panicked")??;
 	}
+	let written = writer
+		.map(|w| {
+			w.join()
+				.map_err(|_| "command input writer panicked".to_owned())
+				.and_then(|r| r)
+		})
+		.transpose();
 	result.map_err(|e| {
 		if error_bytes.is_empty() {
 			e
@@ -197,6 +226,7 @@ fn run_inner(mut command: Command, capture: bool, bounded_stderr: bool) -> Resul
 			format!("{e}: {}", String::from_utf8_lossy(&error_bytes))
 		}
 	})?;
+	written?;
 	check()?;
 	output
 }

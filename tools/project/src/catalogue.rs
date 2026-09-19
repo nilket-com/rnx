@@ -86,6 +86,11 @@ pub(crate) struct Candidate {
 	pub existing: Vec<String>,
 }
 pub(crate) fn author(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Candidate, String> {
+	let value: toml::Value =
+		toml::from_str(std::str::from_utf8(&raw).map_err(error)?).map_err(error)?;
+	if value.get("format").and_then(toml::Value::as_integer) == Some(2) {
+		return author_git(raw, base, entries);
+	}
 	let original = Manifest::parse(&raw)?;
 	let runtime = original
 		.runtime
@@ -185,34 +190,99 @@ pub(crate) fn author(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Can
 	})
 }
 
-/// Describe-only authoring for the Git workflow staged in 0067 gate 3. No I/O.
-pub(crate) fn git_candidate(
-	mut bytes: Vec<u8>,
-	entries: &[Entry],
-	url: &str,
-	rev: &str,
-) -> Candidate {
+/// Author coordinates without acquisition. Consent and lock own the first fetch.
+fn author_git(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Candidate, String> {
+	use crate::schemas::{Declaration, Native};
+	let original = Declaration::parse(&raw)?;
+	let runtime = original.runtime.as_ref().ok_or("add requires a runtime")?;
+	let mut additions = BTreeMap::new();
+	let mut existing = Vec::new();
+	let path_natives = if let Some(path) = &runtime.path {
+		let mut m = original.graph_manifest();
+		m.executable = None;
+		m.runtime = Some(crate::manifest::Location { path: path.clone() });
+		let candidate = author(
+			toml::to_string(&m).map_err(error)?.into_bytes(),
+			base,
+			entries,
+		)?;
+		Some(Manifest::parse(&candidate.bytes)?.native)
+	} else {
+		None
+	};
 	for e in entries {
-		bytes.extend_from_slice(
-			format!(
-				"\n[native.{}]\ngit = {}\nrev = {}\npackage = {}\nbuilder = \"build\"\nhook = \"{}\"\n",
-				e.name,
-				toml::Value::String(url.into()),
-				toml::Value::String(rev.into()),
-				toml::Value::String(e.package.into()),
-				match e.hook {
-					Hook::Plain => "plain",
-					Hook::Lifecycle => "lifecycle",
-				}
-			)
-			.as_bytes(),
-		);
+		let n = if let Some(n) = path_natives.as_ref().and_then(|n| n.get(e.name)) {
+			Native {
+				path: Some(n.path.clone()),
+				git: None,
+				rev: None,
+				package: n.package.clone(),
+				builder: n.builder.clone(),
+				hook: n.hook,
+			}
+		} else {
+			Native {
+				path: None,
+				git: runtime.git.clone(),
+				rev: runtime.rev.clone(),
+				package: e.package.into(),
+				builder: "build".into(),
+				hook: e.hook,
+			}
+		};
+		if let Some(old) = original.native.get(e.name) {
+			let mut comparison = old.clone();
+			let mut expected = n.clone();
+			if let (Some(a), Some(b)) = (&old.path, &n.path) {
+				comparison.path = Some(
+					canonical(&base.join(a))?
+						.to_str()
+						.ok_or("non-Unicode path")?
+						.into(),
+				);
+				expected.path = Some(
+					canonical(&base.join(b))?
+						.to_str()
+						.ok_or("non-Unicode path")?
+						.into(),
+				);
+			}
+			if comparison != expected {
+				return Err(format!(
+					"native namespace {} already has a different declaration",
+					e.name
+				));
+			}
+			existing.push(e.name.into());
+		} else {
+			additions.insert(e.name.to_owned(), n);
+		}
 	}
-	Candidate {
-		bytes,
-		added: entries.iter().map(|e| e.name.into()).collect(),
-		existing: vec![],
+	#[derive(serde::Serialize)]
+	struct Tables<'a> {
+		native: &'a BTreeMap<String, Native>,
 	}
+	let mut candidate = String::from_utf8(raw).map_err(error)?;
+	if !additions.is_empty() {
+		let append = toml::to_string(&Tables { native: &additions }).map_err(error)?;
+		if candidate.len() + 2 + append.len() > input::MANIFEST_LIMIT {
+			return Err("candidate manifest allowance".into());
+		}
+		candidate.push_str("\n\n");
+		candidate.push_str(&append);
+	}
+	let parsed = Declaration::parse(candidate.as_bytes())
+		.map_err(|e| format!("cannot append native tables; use explicit table layout: {e}"))?;
+	let mut expected = original;
+	expected.native.extend(additions.clone());
+	if parsed != expected {
+		return Err("append changed unrelated manifest meaning".into());
+	}
+	Ok(Candidate {
+		bytes: candidate.into_bytes(),
+		added: additions.into_keys().collect(),
+		existing,
+	})
 }
 
 /// Validate a diagnostic hint using the same shipped layouts as add, without Git.

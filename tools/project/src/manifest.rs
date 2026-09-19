@@ -225,7 +225,7 @@ impl Manifest {
 }
 pub(crate) fn resolve(path: &Path) -> Result<(Manifest, PathBuf, Vec<graph::Mount>), String> {
 	let path = path.canonicalize().map_err(|e| e.to_string())?;
-	let app = Manifest::read(&path)?;
+	let app = crate::schemas::graph_read(&path)?;
 	let entry = path.parent().unwrap().join(
 		&app.application
 			.as_ref()
@@ -236,7 +236,7 @@ pub(crate) fn resolve(path: &Path) -> Result<(Manifest, PathBuf, Vec<graph::Moun
 		let manifest = if p == path {
 			app.clone()
 		} else {
-			let m = Manifest::read(p)?;
+			let m = crate::schemas::graph_read(p)?;
 			if m.source.is_none() {
 				return Err(format!(
 					"dependency {} is not a source package",

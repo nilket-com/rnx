@@ -1,4 +1,5 @@
 mod add;
+mod git_sources;
 mod shared;
 mod startup;
 mod transition;
@@ -236,6 +237,9 @@ impl Project {
 		commands::check()
 	}
 	fn lock(&self, offline: bool) -> Result<(), String> {
+		if self.new_manifest()? {
+			return self.git_lock(offline);
+		}
 		let declarations = Manifest::read(&self.manifest)?;
 		let sources = Handoff::from_project(&self.manifest)?;
 		self.layout(&sources)?;
@@ -273,6 +277,17 @@ impl Project {
 		self.verify_inputs(&lock)?;
 		lock.validate()?;
 		let bytes = wire::pretty(&lock)?;
+		self.publish_pair(&bytes, cargo_bytes.as_deref())?;
+
+		if matches!(lock.assembly, Assembly::Executable { .. })
+			&& self.base.join("rnx.Cargo.lock").exists()
+		{
+			fs::remove_file(self.base.join("rnx.Cargo.lock")).map_err(err)?;
+		}
+		eprintln!("locked {}", self.manifest.display());
+		Ok(())
+	}
+	fn publish_pair(&self, bytes: &[u8], cargo_bytes: Option<&[u8]>) -> Result<(), String> {
 		// Cargo first, JSON last: rnx.lock is the commit marker for the pair. A
 		// crash between renames is a detectable mismatch, never an accepted new lock
 		// paired with old Cargo bytes. Keep the old pair privately for normal errors.
@@ -293,7 +308,7 @@ impl Project {
 				self.atomic(&cargo_path, cargo)?;
 			}
 			fault("after-cargo-publication")?;
-			self.atomic(&project_path, &bytes)?;
+			self.atomic(&project_path, bytes)?;
 			fault("after-json-publication")
 		};
 		if let Err(e) = publish() {
@@ -320,13 +335,13 @@ impl Project {
 			return Err(e);
 		}
 
-		if matches!(lock.assembly, Assembly::Executable { .. }) && cargo_path.exists() {
-			fs::remove_file(cargo_path).map_err(err)?;
-		}
-		eprintln!("locked {}", self.manifest.display());
 		Ok(())
 	}
+
 	fn build(&self, offline: bool) -> Result<(), String> {
+		if self.new_lock()? {
+			return self.git_build(offline);
+		}
 		// Refusing an old or invalid lock must preserve the old receipt too.
 		let (lock, bytes) = self.read_lock()?;
 		let receipt = self.dot.join("receipt.json");
@@ -513,6 +528,9 @@ impl Project {
 		Ok((checked, digest))
 	}
 	fn launch(self, mode: Launch, verify: bool) -> Result<(), String> {
+		if self.new_lock()? {
+			return self.git_launch(mode, verify);
+		}
 		let (lock, bytes) = self.read_lock()?;
 		self.verify_inputs(&lock)?;
 		let (checked, digest) = self.checked_artifact(&lock, &bytes, verify, true)?;

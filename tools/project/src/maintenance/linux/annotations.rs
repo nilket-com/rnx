@@ -67,12 +67,14 @@ fn digest(v: &Value, key: &str) -> Result<()> {
 }
 fn one(manifest: &Path, kind: &str, budget: &mut Budget) -> Result<Value> {
 	let mut seen = vec![];
-	crate::manifest::Manifest::parse(&read(
-		manifest,
-		crate::input::MANIFEST_LIMIT,
-		budget,
-		&mut seen,
-	)?)?;
+	let manifest_bytes = read(manifest, crate::input::MANIFEST_LIMIT, budget, &mut seen)?;
+	let envelope: toml::Value =
+		toml::from_str(std::str::from_utf8(&manifest_bytes).map_err(error)?).map_err(error)?;
+	if envelope.get("format").and_then(toml::Value::as_integer) == Some(2) {
+		crate::schemas::Declaration::parse(&manifest_bytes)?;
+	} else {
+		crate::manifest::Manifest::parse(&manifest_bytes)?;
+	}
 	let base = manifest.parent().ok_or("manifest has no parent")?;
 	let lock = documents::decode(
 		&read(
@@ -93,11 +95,11 @@ fn one(manifest: &Path, kind: &str, budget: &mut Budget) -> Result<Value> {
 		budget,
 	)?;
 	if lock.as_object().is_none_or(|o| {
-		o.len() != 5
+		o.len() != if lock["format"] == 4 { 6 } else { 5 }
 			|| o.keys().any(|k| {
 				!matches!(
 					k.as_str(),
-					"format" | "declarations" | "sources" | "inputs" | "assembly"
+					"format" | "declarations" | "sources" | "inputs" | "assembly" | "git"
 				)
 			})
 	}) {
@@ -119,22 +121,31 @@ fn one(manifest: &Path, kind: &str, budget: &mut Budget) -> Result<Value> {
 	}
 	let lf = lock["format"]
 		.as_u64()
-		.filter(|v| matches!(v, 1..=3))
+		.filter(|v| matches!(v, 1..=4))
 		.ok_or("unsupported project lock format")?;
 	let rf = receipt["format"]
 		.as_u64()
-		.filter(|v| matches!(v, 1..=4))
+		.filter(|v| matches!(v, 1..=5))
 		.ok_or("unsupported receipt format")?;
-	if (lf == 3) != (rf == 4) {
+	if (lf == 4 && rf != 5) || (lf != 4 && rf == 5) || (lf == 3) != (rf == 4) {
 		return Err("lock and receipt formats disagree".into());
 	}
-	let suffix = if rf == 4 { "blake3" } else { "sha256" };
+	let suffix = if rf >= 4 { "blake3" } else { "sha256" };
 	digest(&receipt, &format!("lock_{suffix}"))?;
 	digest(&receipt, &format!("executable_{suffix}"))?;
 	// Validate declaration syntax only. No dependency manifest or source is read.
-	let declarations: crate::manifest::Manifest =
-		serde_json::from_value(lock["declarations"].clone()).map_err(error)?;
-	declarations.validate()?;
+	let has_runtime = if lf == 4 {
+		let d: crate::schemas::Declaration =
+			serde_json::from_value(lock["declarations"].clone()).map_err(error)?;
+		d.validate()?;
+		d.runtime.is_some()
+	} else {
+		let d: crate::manifest::Manifest =
+			serde_json::from_value(lock["declarations"].clone()).map_err(error)?;
+		d.validate()?;
+		d.runtime.is_some()
+	};
+
 	if lock["sources"].as_object().is_none() || lock["inputs"].as_object().is_none() {
 		return Err("malformed project lock envelope".into());
 	}
@@ -177,9 +188,21 @@ fn one(manifest: &Path, kind: &str, budget: &mut Budget) -> Result<Value> {
 			return Err("format-1 lock cannot name a shared entry".into());
 		}
 		let i = documents::decode(string(assembly, "identity")?.as_bytes(), budget)?;
-		if i["format"].as_u64() != Some(if lf == 3 { 2 } else { 1 })
-			|| i["generator"].as_u64() != Some(if lf == 3 { 2 } else { 1 })
-		{
+		if i["format"].as_u64()
+			!= Some(if lf == 4 {
+				3
+			} else if lf == 3 {
+				2
+			} else {
+				1
+			}) || i["generator"].as_u64()
+			!= Some(if lf == 4 {
+				3
+			} else if lf == 3 {
+				2
+			} else {
+				1
+			}) {
 			return Err("unsupported assembly identity format or generator".into());
 		}
 		path(&i["context"], "cache_root")?;
@@ -215,8 +238,10 @@ fn one(manifest: &Path, kind: &str, budget: &mut Budget) -> Result<Value> {
 		} else {
 			json!({"kind":"project-local artifact","path":base.join(".rnx/artifacts").join(string(&receipt,&format!("executable_{suffix}"))?)})
 		}
-	} else if declarations.runtime.is_none() {
+	} else if !has_runtime {
 		json!({"kind":"executable override","path":path(assembly,"path")?})
+	} else if lf == 4 && lock["declarations"]["runtime"]["git"].is_string() {
+		json!({"kind":"Cargo Git runtime","git":lock["declarations"]["runtime"]["git"],"rev":lock["declarations"]["runtime"]["rev"]})
 	} else {
 		let packages = lock["inputs"]["native"]["packages"]
 			.as_array()

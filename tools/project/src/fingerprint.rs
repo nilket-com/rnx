@@ -45,7 +45,7 @@ impl Allowance {
 		Ok(())
 	}
 
-	fn entry(&mut self) -> Result<(), String> {
+	pub(crate) fn entry(&mut self) -> Result<(), String> {
 		self.entries = self
 			.entries
 			.checked_sub(1)

@@ -9,6 +9,7 @@ mod commands;
 mod dep_wire;
 mod fingerprint;
 mod generate;
+mod git_inventory;
 mod graph;
 mod handshake;
 mod input;
@@ -16,7 +17,9 @@ mod inventory;
 mod maintenance;
 mod manifest;
 mod maps;
+mod new_identity;
 mod runtime_install;
+mod schemas;
 mod wire;
 mod workflow;
 
