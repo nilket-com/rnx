@@ -1,10 +1,12 @@
 # rnx 0066: removal is an explicit ownership decision
 
-Status: gate 1 accepted and pushed at `bafa2a0` (bench `94539e1`).
-Gate 2 is implemented and ready for review; see
-[command and interruption evidence](0066_removal_is_an_explicit_ownership_decision_commands_evidence.md).
-The accepted [ownership evidence](0066_removal_is_an_explicit_ownership_decision_ownership_evidence.md)
-retains the namespace stop and its bubblewrap resolution. Gates 3–4 remain open.
+Status: gates 1–2 accepted and pushed, most recently `06a295e` (bench `14440f3`).
+Gate 3 is ready for review in the
+[real storage evidence](0066_removal_is_an_explicit_ownership_decision_storage_evidence.md).
+The [ownership evidence](0066_removal_is_an_explicit_ownership_decision_ownership_evidence.md)
+retains the namespace stop and its bubblewrap resolution; the
+[command evidence](0066_removal_is_an_explicit_ownership_decision_commands_evidence.md)
+retains the product failure matrix and genuine same-key rebuild. Gate 4 remains open.
 
 ## Context
 
@@ -326,7 +328,11 @@ rewritten by removal.
    serially, notices, fresh default selfcheck and normalized graph. Root source,
    Cargo files, API, kernel, adapters and server remain unchanged. Linux execution
    only, with other platforms refusing maintenance before writes. README includes
-   real reclamation and retained-reference consequences before acceptance.
+   real reclamation and retained-reference consequences before acceptance. The gate-2
+   review also carries the recurring loaded-host flake in
+   `capability_refuses_bad_replies_and_retires_timed_out_child`: give oversized
+   reply validation deterministic coverage without changing the bounded production
+   handshake, while retaining the real child-timeout and retirement check.
 
 ## Guardrails and later work
 
