@@ -4,9 +4,11 @@ Status: accepted for the isolated gate 1 prototype after draft review. Gate 1
 must settle the native presentation registration seam before any product public
 API or generated wrapper changes. 0067 is closed on Linux. Its clang/mold
 follow-up is rnx `1f497de`, bench `3d2a2f9`.
-Gate 1 is stopped at a source-compatibility finding in the exploratory generic
-builder return type; see [the registration evidence](0068_registration_stop_evidence.md).
-An additive builder and generated-wrapper decision is pending review.
+Gate 1 continues after the accepted source-compatibility stop in the exploratory
+generic builder return type; see [the registration evidence](0068_registration_stop_evidence.md).
+Presentation is now a separate capability, independent of the lifecycle hook,
+as specified in decision 2. The replacement prototype and schema vectors remain
+to be demonstrated; gate 1 has not passed.
 
 ## Problem and user journey
 
@@ -78,14 +80,52 @@ document that obligation and prove it for the shipped presenter. Output-byte
 checks alone are not a work bound. Preserve the generic renderer's no-protocol
 contract rather than silently redefining it.
 
-Gate 1 must demonstrate a viable registration seam through a real generated
-application and a runner-only embedding consumer. Prefer an additive API that
-keeps existing builders, main_with and manifests usable unchanged. Do not solve
-the integration with global state or type-name guessing. If a new builder form,
-manifest hook, generator version or identity migration is required, stop with
-that concrete proposal for review before porting it into the product. The draft
-does not assume that the current Module-only builder can register context-owned
-callbacks without additional plumbing.
+Keep `Extensions::with` and `with_lifecycle` byte-for-byte unchanged. Add a
+separate opt-in entry, provisionally `Extensions::present(name, registrar_fn)`,
+alongside the existing builder call. The adapter exports a second function,
+provisionally `rnx_polars::present`. Registration is lazy: adding the capability
+to Extensions does not run it. Invoke it during serving-context construction,
+after its named module builder succeeds, and retain the registry with that
+context. It must be equally usable with plain and lifecycle builders. Reject
+missing module associations and duplicate type registrations with named errors.
+A registration failure follows context construction's existing failure policy;
+it must not leave a usable partially registered context.
+
+For declarations, add optional `presentation = true`, independent of `hook`.
+Absence means false. The generated wrapper keeps the existing `.with(...)` or
+`.with_lifecycle(...)` call and, when requested, emits a separate
+`.present(name, native_alias::present)` call. A boolean capability uses the
+adapter's conventional exported `present` function; it does not overload the
+builder name or introduce presentation/lifecycle_presentation hook variants.
+The catalogue enables this for newly authored Polars declarations. It does not
+rewrite existing declarations or reinterpret old locks. An existing project
+opts in by editing its declaration and relocking/building; unchanged manifests
+retain their existing generated wrapper.
+
+The readers deny unknown fields: old tools refuse a declaration carrying
+`presentation`, rather than ignoring it. Gate 1 must fix the declaration-format
+choice with vectors for both path and Git declarations: omitted, false and true,
+invalid types, unknown fields, and independent plain/lifecycle combinations.
+Prefer omission of false when serializing so legacy declarations and envelopes
+retain their bytes. Demonstrate this rather than assuming it. Decide whether a
+format bump is necessary from the real readers, including retained lock readers;
+record any required migration before porting the product. An old-reader refusal
+must identify the unsupported field or format and the required newer tool.
+
+Enabling presentation changes the generated wrapper bytes and therefore the
+assembly key: an opted-in Polars project relocks and builds a new assembly once.
+It cannot attach to the old plain artifact. Keep every other assembly identity
+input and verification policy intact. Do not infer a global identity-version
+bump merely from an optional new declaration; prove unchanged-input compatibility
+and changed-input separation with the actual generator and identity code.
+
+Gate 1 must demonstrate this seam through a real generated application and a
+runner-only embedding consumer. The failure-only and panic-only builders from
+the stop must compile without annotations. A runner-only consumer does not opt
+into registration unless it calls the new API; prove no new dependency or startup
+initialization cost. No global state or type-name guessing. Any further public
+API, generator-version or migration change beyond this capability needs a
+concrete reviewed decision before the product port.
 
 ### 3. Explicit formatting uses the same preview
 
@@ -136,11 +176,17 @@ that classification question is tracked separately from this record.
 
 Use isolated source with a recoverable patch. Demonstrate the presentation seam
 with a tiny native type and then DataFrame through the generated application.
-Prove type identity matching, context ownership, unchanged existing builders,
+Prove type identity matching, context ownership, unchanged existing builders
+(including the exact error-only and panic-only closures that exposed the stop),
 runner-only dependency isolation, and no VM formatting protocol calls on the
-automatic path. A side-effecting DEBUG_FMT/DISPLAY_FMT counter remains zero for
+automatic path. Include a lifecycle builder with a presenter to prove the two
+capabilities compose independently. Run the declaration and retained-envelope
+vectors from decision 2 through real readers, then compare generated wrapper
+bytes and assembly identities for omitted, false and true presentation. A side-effecting DEBUG_FMT/DISPLAY_FMT counter remains zero for
 automatic results and increments only for explicit formatting. Show no callback
-for unrelated types, strings, nested frames, :vars or settings. Settle any API or
+for unrelated types, strings, nested frames, :vars or settings. Prove real Polars registration and explicit DISPLAY_FMT, escaping and limits,
+registry survival across reset, retirement through handover and context teardown,
+and the worker path. Settle the declaration format and any remaining API or
 wrapper/identity change here before implementation, with a reviewable decision.
 
 ### Gate 2 — bounded DataFrame presentation and explicit formatting
