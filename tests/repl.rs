@@ -1296,7 +1296,8 @@ fn gate_0068_a_presented_value_at_the_prompt() {
 	t.prompt();
 	t.send("let v = rnx_test::test_presented(3);\r");
 	t.prompt();
-	// Suppressed by the semicolon: no presentation and no number spent.
+	// Suppressed by the semicolon: no presentation; the input number is spent
+	// as for any statement, so the next result is [2].
 	assert!(!clean(&t.seen).contains("Presented with"));
 	t.send("v\r");
 	t.expect("[2] Presented with 3 rows\n");

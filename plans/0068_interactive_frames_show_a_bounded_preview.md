@@ -11,7 +11,9 @@ as specified in decision 2. The replacement prototype passes and is ready for
 review; see [the presentation seam evidence](0068_presentation_seam_evidence.md).
 Gate 1 was accepted after three reviews. Gate 2 ported it into the product
 with the product-level matrix; see [the product port evidence](0068_product_port_evidence.md).
-Gates 3 and 4 remain.
+Gate 3 ran the journey at a real prompt and through a real kernel; see
+[the interactive journey evidence](0068_interactive_journey_evidence.md).
+Gate 4 remains.
 
 ## Problem and user journey
 

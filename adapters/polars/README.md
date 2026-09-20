@@ -51,13 +51,14 @@ are escaped; finite floats use round-tripping spelling. The layout is independen
 of terminal width and Polars formatting settings. `preview()` borrows the frame,
 does not collect, perform I/O or print, and can be called repeatedly.
 
-In a session or notebook whose application registered the presenter — a
-declaration with `presentation = true`, which `rnx project add polars` and
-`:dep polars` write — a bare top-level `DataFrame` result shows this same text,
-and `format!("{frame}")` returns it. A frame inside a vector, tuple or `Result`
-stays opaque, as do LazyFrame, LazyGroupBy and Expr; showing a plan never runs
-it. Without the presenter, frames are opaque and `preview()` is the way to see
-them.
+`format!("{frame}")` and `println!("{frame}")` return this same text wherever
+the adapter is installed: the display protocol comes with the module, not with
+the presenter. In a session or notebook whose application also registered the
+presenter — a declaration with `presentation = true`, which `rnx project add
+polars` and `:dep polars` write — a bare top-level `DataFrame` result shows it
+too. A frame inside a vector, tuple or `Result` stays opaque, as do LazyFrame,
+LazyGroupBy and Expr; showing a plan never runs it. Without the presenter a
+bare frame is opaque and `preview()` or `format!` is the way to see it.
 
 The four values are DataFrame, LazyFrame, LazyGroupBy and Expr. Receiver methods
 borrow: a frame, plan, expression, path, schema or expression array can be reused.
