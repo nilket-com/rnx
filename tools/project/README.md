@@ -150,10 +150,10 @@ space, including the bytes already deleted before resume.
 
 ### The shared build directory
 
-Record 0069: assemblies whose runtime and every native are Git declarations
-carrying `shared_build = true` compile in one directory per cache root and
-build context, `<root>/build/<key>`, so a second assembly over the same
-natives compiles only its own wrapper. `rnx cache list` shows it as
+Record 0069: an assembly whose runtime is a Git declaration and whose
+natives are all Git declarations carrying `shared_build = true` compiles in
+one directory per cache root and build context, `<root>/build/<key>`, so a
+second assembly over the same natives compiles only its own wrapper. `rnx cache list` shows it as
 `build-<key>` with its size and the number of local entries whose ready
 document names it (what the tool recorded, not every consumer). Removing an
 entry never touches it. `rnx cache remove build-<key> --quiescent` removes
