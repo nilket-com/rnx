@@ -1,12 +1,18 @@
 # rnx 0069: assemblies share compilation
 
-Status: accepted after three drafts. Gate 1 accepted, see
+Status: gate 4 accepted on nano 2026-09-20; closes on Linux when the user's
+slim journey confirms the second wait. Gate 4 measured a second assembly over
+the same natives at 5 s against 115 s, Polars + PostgreSQL at 40 s against
+116 s, no startup change, and half the storage; see
+[the costs and regression evidence](0069_costs_and_regression_evidence.md).
+Originally: accepted after three drafts. Gate 1 accepted, see
 [the wrapper identity evidence](0069_wrapper_identity_evidence.md) (note its
 numbering correction: generator 4, Git identity format 4). Gate 2 ported it
 and added the shared directory; see
 [the shared directory evidence](0069_shared_directory_evidence.md). Gate 3
 ran the lifetime sequences and wrote the catalogue declarations; see
-[the lifetime evidence](0069_lifetime_evidence.md). Gate 4 remains.
+[the lifetime evidence](0069_lifetime_evidence.md). Gate 4's nano evidence is
+accepted; the slim journey closes the record.
 Originally: second draft after review. Built on the accepted probe, [the shared
 compilation probe evidence](0069_shared_compilation_probe_evidence.md)
 (rnx `4799d52`, bench `8997902`). 0068 is closed on Linux. The first draft
