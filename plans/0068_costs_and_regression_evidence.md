@@ -51,16 +51,18 @@ in 0.93 ms; `big.csv` (200,000 × 12, 15.5 MB) in 95 ms, once.
 Derived: presenting the small frame costs 0.06–0.07 ms over suppressing
 it, the large frame 0.15 ms — twice the small one because it renders 80
 cells of wider integers to 569 bytes against 20 cells to 227, not because it
-has 40,000 times the rows; the explicit preview costs the same as the
-automatic one within 0.02 ms; collecting the filter costs 0.47 ms and
+has 40,000 times the rows; the explicit preview costs a few hundredths of
+a millisecond more than the automatic one (0.01–0.03 ms across the repeats); collecting the filter costs 0.47 ms and
 presenting its 116,666-row result 0.24 ms more, separately. No work
 proportional to the frame appears anywhere, which is the stop condition
 this gate names.
 
 Spawn to first prompt, PTY create-to-prompt, 100 samples × two repeats each,
 interleaved: the presenting application 5.02 / 5.02 ms, the same
-application without the field 5.01 / 5.02 ms — registration costs 0.01 ms
-and 0.001 ms in the two repeats.
+application without the field 5.01 / 5.02 ms. The difference (0.01 ms and
+0.001 ms) is within the run-to-run noise of the measurement: registration
+is not distinguishable from zero at the prompt, which is the claim, not an
+isolated measurement of the registrar's work.
 
 ## Regression (`regression.json`, logs)
 
