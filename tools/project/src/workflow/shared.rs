@@ -160,6 +160,14 @@ impl Project {
 		fs::write(stage.join("src/main.rs"), &main).map_err(err)?;
 		if let Ok(old) = input::read(&self.base.join("rnx.Cargo.lock"), input::DOCUMENT_LIMIT) {
 			fs::write(stage.join("Cargo.lock"), old).map_err(err)?;
+		} else if let Some(runtime) = &declarations.runtime
+			&& let Ok(seed) = input::read(
+				&self.base.join(&runtime.path).join("Cargo.lock"),
+				input::DOCUMENT_LIMIT,
+			) {
+			// Record 0069, decision 4: a first resolution starts from the
+			// runtime's own lock, as a preference Cargo keeps where it can.
+			fs::write(stage.join("Cargo.lock"), seed).map_err(err)?;
 		}
 		let metadata = |locked: bool| -> Result<Vec<u8>, String> {
 			storage::guard(&root, &stage, &self.base)?;
@@ -191,6 +199,8 @@ impl Project {
 			target,
 			profile: "release".into(),
 			features: vec!["project-sources".into()],
+			// Path assemblies keep the retained identity format: no build kind.
+			build: None,
 		};
 		let identity = Identity::create(
 			declarations,

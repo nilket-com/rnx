@@ -58,6 +58,8 @@ pub(crate) struct Native {
 	pub hook: manifest::Hook,
 	#[serde(default, skip_serializing_if = "std::ops::Not::not")]
 	pub presentation: bool,
+	#[serde(default, skip_serializing_if = "std::ops::Not::not")]
+	pub shared_build: bool,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -103,6 +105,9 @@ impl Declaration {
 			v["native"][name] = serde_json::json!({"path":n.path.as_deref().unwrap_or("/probe/git"),"package":n.package,"builder":n.builder,"hook":n.hook});
 			if n.presentation {
 				v["native"][name]["presentation"] = true.into();
+			}
+			if n.shared_build {
+				v["native"][name]["shared_build"] = true.into();
 			}
 		}
 		let old: manifest::Manifest = serde_json::from_value(v).map_err(|e| e.to_string())?;

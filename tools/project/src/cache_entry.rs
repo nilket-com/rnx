@@ -13,6 +13,8 @@ use std::{
 };
 pub(crate) trait Identity {
 	fn context(&self) -> &crate::cache_identity::Context;
+	/// Package names of the assembly's natives, for refusals.
+	fn natives(&self) -> Vec<String>;
 	fn wrapper(&self) -> (&str, &str);
 	fn key(&self) -> &str;
 	fn bytes(&self) -> &[u8];
@@ -25,6 +27,14 @@ macro_rules! identity {
 		impl Identity for $ty {
 			fn context(&self) -> &crate::cache_identity::Context {
 				self.context()
+			}
+			fn natives(&self) -> Vec<String> {
+				self.native()
+					.packages
+					.iter()
+					.map(|p| p.name.clone())
+					.chain(self.git_names())
+					.collect()
 			}
 			fn wrapper(&self) -> (&str, &str) {
 				self.wrapper()
@@ -102,6 +112,61 @@ fn exists(path: &Path) -> Result<bool, String> {
 		Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
 		Err(e) => Err(err(e)),
 	}
+}
+/// Record 0069: a builder's shared hold on the build directory's coordination
+/// lock, at a stable path outside the removable directory. Removal takes the
+/// same lock exclusively and refuses while any builder holds it; a builder
+/// arriving during a removal waits for it to finish.
+fn lock_shared(path: &Path) -> Result<File, String> {
+	let f = options()
+		.read(true)
+		.write(true)
+		.create(true)
+		.open(path)
+		.map_err(err)?;
+	regular(&f, path)?;
+	loop {
+		commands::check()?;
+		match f.try_lock_shared() {
+			Ok(()) => return Ok(f),
+			Err(std::fs::TryLockError::WouldBlock) => {
+				std::thread::sleep(Duration::from_millis(10));
+			}
+			Err(e) => return Err(format!("build directory lock {}: {e}", path.display())),
+		}
+	}
+}
+/// The shared build directory an identity recorded, if any: `<root>/build/<key>`.
+pub(crate) fn shared_build_directory(identity: &impl Identity) -> Option<PathBuf> {
+	match &identity.context().build {
+		Some(crate::cache_identity::Build::Shared { key }) => {
+			Some(identity.context().cache_root.join("build").join(key))
+		}
+		_ => None,
+	}
+}
+/// The executable scan of decision 3: an executable published from a shared
+/// build must not hold the directory's path. It finds `env!("OUT_DIR")`
+/// readers and code generated into the directory; it cannot find a reader
+/// that learns the path at runtime, which the declaration covers.
+fn references(executable: &Path, directory: &Path) -> Result<bool, String> {
+	let needle = directory.as_os_str().as_encoded_bytes();
+	let mut f = options().read(true).open(executable).map_err(err)?;
+	regular(&f, executable)?;
+	let mut bytes = Vec::new();
+	(&mut f)
+		.take(fingerprint::BYTES + 1)
+		.read_to_end(&mut bytes)
+		.map_err(err)?;
+	if bytes.len() as u64 > fingerprint::BYTES {
+		return Err("artifact exceeds byte allowance".into());
+	}
+	let first = needle[0];
+	Ok(bytes
+		.iter()
+		.enumerate()
+		.filter(|(_, b)| **b == first)
+		.any(|(i, _)| bytes[i..].starts_with(needle)))
 }
 fn lock(path: &Path) -> Result<File, String> {
 	let f = options()
@@ -312,11 +377,34 @@ pub(crate) fn acquire(
 			sync_dir(&stage)?;
 			fault("before-build")?;
 			validate(identity, &stage, project)?;
+			// Record 0069: a declared assembly compiles in the root's shared
+			// build directory, holding its coordination lock from here until
+			// publication; the final artifact still lands in the entry.
+			let shared = shared_build_directory(identity);
+			let _build_lock = match &shared {
+				Some(dir) => {
+					storage::directory(&root.join("build"))?;
+					storage::directory(dir)?;
+					Some(lock_shared(&root.join("locks").join(format!(
+						"build-{}.lock",
+						dir.file_name().unwrap().to_string_lossy()
+					)))?)
+				}
+				None => None,
+			};
 			let mut command = Command::new("cargo");
 			command
 				.current_dir(&stage)
 				.args(["build", "--locked", "--release", "--target-dir"])
 				.arg(entry.join("target"));
+			if let Some(dir) = &shared {
+				command.arg("--config").arg(format!(
+					"build.build-dir={}",
+					toml::Value::String(
+						dir.to_str().ok_or("build directory is not Unicode")?.into()
+					)
+				));
+			}
 			if offline {
 				command.arg("--offline");
 			}
@@ -342,9 +430,28 @@ pub(crate) fn acquire(
 			{
 				return Err("generated assembly inputs changed during build".into());
 			}
-			let source = entry.join("target/release/rnx-project-app");
+			// The executable carries the wrapper's package name: the placeholder
+			// for retained generator-two and -three wrappers, the digest name
+			// from generator four.
+			let source = entry
+				.join("target/release")
+				.join(crate::generate::executable_name(manifest)?);
 			storage::private_directory(&entry.join("target"))?;
 			storage::private_directory(&entry.join("target/release"))?;
+			if let Some(dir) = &shared
+				&& references(&source, dir)?
+			{
+				return Err(format!(
+					"shared build refused: the executable references the shared build directory {}; nothing was published. A native in this assembly reads retained build output at runtime; drop `shared_build = true` from its declaration ({}) and lock again",
+					dir.display(),
+					identity
+						.natives()
+						.into_iter()
+						.filter(|n| n != "rnx")
+						.collect::<Vec<_>>()
+						.join(", ")
+				));
+			}
 			let expected =
 				fingerprint::one(&source, &mut fingerprint::Allowance::default())?.blake3;
 			let temporary = entry.join("artifacts/executable.new");
@@ -473,5 +580,96 @@ mod encoding_tests {
 				"{key}"
 			);
 		}
+	}
+}
+
+#[cfg(test)]
+mod shared_build_tests {
+	use super::*;
+	fn temp(tag: &str) -> PathBuf {
+		let d = std::env::temp_dir().join(format!("rnx-shared-build-{}-{tag}", std::process::id()));
+		let _ = fs::remove_dir_all(&d);
+		fs::create_dir_all(&d).unwrap();
+		d
+	}
+	/// Written as the tool writes its own files: private, so `regular` admits them.
+	fn write(path: &Path, bytes: &[u8]) {
+		let _ = fs::remove_file(path);
+		let mut f = options().write(true).create_new(true).open(path).unwrap();
+		#[cfg(unix)]
+		{
+			use std::os::unix::fs::PermissionsExt;
+			f.set_permissions(fs::Permissions::from_mode(0o600))
+				.unwrap();
+		}
+		f.write_all(bytes).unwrap();
+	}
+	/// The scan finds the directory's path anywhere in the executable and
+	/// nothing else; a prefix or a different directory is not a reference.
+	#[test]
+	fn the_scan_finds_the_shared_directory_path_and_only_that() {
+		let d = temp("scan");
+		let dir = d.join("build").join("k");
+		let exe = d.join("exe");
+		write(
+			&exe,
+			&[
+				b"ELF junk ".as_slice(),
+				dir.as_os_str().as_encoded_bytes(),
+				b"/out/retained.txt\0more",
+			]
+			.concat(),
+		);
+		assert!(references(&exe, &dir).unwrap());
+		write(
+			&exe,
+			&[
+				b"ELF junk ".as_slice(),
+				d.join("build").join("j").as_os_str().as_encoded_bytes(),
+				b"\0",
+			]
+			.concat(),
+		);
+		assert!(!references(&exe, &dir).unwrap());
+		write(&exe, b"no path at all");
+		assert!(!references(&exe, &dir).unwrap());
+		// The needle's first byte appearing alone does not match.
+		write(&exe, b"/////");
+		assert!(!references(&exe, &dir).unwrap());
+	}
+	/// A builder's shared hold blocks an exclusive taker, and two builders
+	/// hold together; releasing the last holder frees the exclusive taker.
+	#[test]
+	fn builders_share_the_coordination_lock_and_exclude_removal() {
+		let d = temp("lock");
+		let path = d.join("build-k.lock");
+		let a = lock_shared(&path).unwrap();
+		let b = lock_shared(&path).unwrap();
+		let remover = options().read(true).write(true).open(&path).unwrap();
+		assert!(matches!(
+			remover.try_lock(),
+			Err(std::fs::TryLockError::WouldBlock)
+		));
+		drop(a);
+		assert!(matches!(
+			remover.try_lock(),
+			Err(std::fs::TryLockError::WouldBlock)
+		));
+		drop(b);
+		assert!(remover.try_lock().is_ok());
+	}
+	#[test]
+	fn the_shared_directory_follows_the_recorded_build_kind() {
+		let private = crate::new_identity::fixture(crate::cache_identity::Build::Private);
+		assert!(shared_build_directory(&private).is_none());
+		let key = "e".repeat(64);
+		let shared =
+			crate::new_identity::fixture(crate::cache_identity::Build::Shared { key: key.clone() });
+		assert_eq!(
+			shared_build_directory(&shared).unwrap(),
+			shared.context().cache_root.join("build").join(key)
+		);
+		let retained = crate::cache_identity::fixture_identity();
+		assert!(shared_build_directory(&retained).is_none());
 	}
 }

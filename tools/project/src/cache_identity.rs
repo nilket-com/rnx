@@ -5,7 +5,7 @@ use crate::{fingerprint, generate, input, inventory::Inventory, manifest::Manife
 use serde::{Deserialize, Serialize};
 
 use std::{
-	collections::BTreeSet,
+	collections::{BTreeMap, BTreeSet},
 	path::{Component, Path, PathBuf},
 };
 
@@ -21,6 +21,143 @@ pub(crate) struct Context {
 	pub target: String,
 	pub profile: String,
 	pub features: Vec<String>,
+	/// Record 0069: where the assembly compiles. Absent in identities that
+	/// predate sharing (formats 2 and 3), which keeps their bytes canonical;
+	/// required from Git-source identity format 4.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub build: Option<Build>,
+}
+/// The build directory an assembly is compiled in, fixed at lock time.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "lowercase", deny_unknown_fields)]
+pub(crate) enum Build {
+	/// The entry's own target directory (every path-source assembly).
+	Private,
+	/// The cache root's shared build directory for this key.
+	Shared { key: String },
+}
+impl Build {
+	pub(crate) fn validate(&self) -> Result<(), String> {
+		match self {
+			Build::Private => Ok(()),
+			Build::Shared { key } if valid_digest(key) => Ok(()),
+			Build::Shared { .. } => Err("invalid shared build key".into()),
+		}
+	}
+}
+/// The shared build directory's key: BLAKE3 over a framed preimage with a
+/// domain tag of everything that must not differ between two assemblies
+/// sharing Cargo units — toolchain, target, profile, features, the canonical
+/// cache root and Cargo home, and the admitted Cargo configuration values.
+/// Package identities and per-unit features are left to Cargo's own
+/// fingerprints inside the directory.
+pub(crate) fn build_key(context: &Context, settings: &[String]) -> String {
+	let mut hasher = blake3::Hasher::new();
+	let mut frame = |part: &str| {
+		hasher.update(&(part.len() as u64).to_le_bytes());
+		hasher.update(part.as_bytes());
+	};
+	frame("rnx-build-key-1");
+	frame(&context.rustc);
+	frame(&context.cargo);
+	frame(&context.target);
+	frame(&context.profile);
+	frame(&context.features.len().to_string());
+	for f in &context.features {
+		frame(f);
+	}
+	frame(&context.cache_root.to_string_lossy());
+	frame(&context.cargo_home.to_string_lossy());
+	frame(&settings.len().to_string());
+	for s in settings {
+		frame(s);
+	}
+	hasher.finalize().to_hex().to_string()
+}
+/// The admitted Cargo configuration (0067: only `target.<triple>.linker`
+/// and `rustflags`) as the *effective* values Cargo would merge from the
+/// inventory's authenticated configuration files: the linker from the
+/// highest-precedence file that sets it, and `rustflags` joined in
+/// ascending precedence, higher-precedence items later, as Cargo joins
+/// arrays. Precedence follows Cargo's search: a file deeper in the build
+/// directory's ancestry outranks a shallower one; Cargo home's own file is
+/// the lowest. In one directory Cargo reads `config` *instead of*
+/// `config.toml` when both exist, so the masked file contributes nothing.
+/// Two arrangements with the same effective values share a key; swapping
+/// which file sets the linker changes it.
+pub(crate) fn admitted_settings(
+	context: &Context,
+	inventory: &Inventory,
+) -> Result<Vec<String>, String> {
+	let mut files = Vec::new();
+	for external in &inventory.external {
+		let Some(file) = &external.file else { continue };
+		let name = external.path.file_name().and_then(|s| s.to_str());
+		if !matches!(name, Some("config" | "config.toml")) {
+			continue;
+		}
+		let bytes = input::read(&external.path, input::MANIFEST_LIMIT)?;
+		if digest(&bytes) != file.blake3 {
+			return Err("Cargo configuration changed".into());
+		}
+		let config: toml::Value =
+			toml::from_str(std::str::from_utf8(&bytes).map_err(|e| e.to_string())?)
+				.map_err(|e| e.to_string())?;
+		crate::cache_storage::config_policy(&config, &external.path)?;
+		let in_home = external.path.parent() == Some(context.cargo_home.as_path());
+		let precedence = (
+			if in_home {
+				0
+			} else {
+				1 + external.path.components().count()
+			},
+			u8::from(name == Some("config")),
+		);
+		files.push((precedence, external.path.clone(), config));
+	}
+	// One file per directory: `config` masks a sibling `config.toml`.
+	let masked: BTreeSet<PathBuf> = files
+		.iter()
+		.filter(|(p, _, _)| p.1 == 1)
+		.filter_map(|(_, path, _)| Some(path.parent()?.join("config.toml")))
+		.collect();
+	files.retain(|(_, path, _)| !masked.contains(path));
+	files.sort_by(|a, b| (&a.0, &a.1).cmp(&(&b.0, &b.1)));
+	let mut linker: BTreeMap<String, String> = BTreeMap::new();
+	let mut rustflags: BTreeMap<String, Vec<toml::Value>> = BTreeMap::new();
+	for (_, _, config) in &files {
+		let Some(targets) = config.get("target").and_then(|v| v.as_table()) else {
+			continue;
+		};
+		for (triple, settings) in targets {
+			let Some(settings) = settings.as_table() else {
+				continue;
+			};
+			if let Some(v) = settings.get("linker").and_then(|v| v.as_str()) {
+				linker.insert(triple.clone(), v.to_owned());
+			}
+			if let Some(a) = settings.get("rustflags").and_then(|v| v.as_array()) {
+				rustflags
+					.entry(triple.clone())
+					.or_default()
+					.extend(a.iter().cloned());
+			}
+		}
+	}
+	let mut out = Vec::new();
+	for (triple, value) in &linker {
+		out.push(format!(
+			"target.{triple}.linker={}",
+			String::from_utf8(wire::encode(value)?).map_err(|e| e.to_string())?
+		));
+	}
+	for (triple, values) in &rustflags {
+		out.push(format!(
+			"target.{triple}.rustflags={}",
+			String::from_utf8(wire::encode(values)?).map_err(|e| e.to_string())?
+		));
+	}
+	Ok(out)
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -209,6 +346,9 @@ impl Identity {
 	pub(crate) fn bytes(&self) -> &[u8] {
 		&self.bytes
 	}
+	pub(crate) fn git_names(&self) -> Vec<String> {
+		Vec::new()
+	}
 }
 fn strictly_sorted<T: Ord>(values: impl IntoIterator<Item = T>) -> Result<(), String> {
 	let mut previous = None;
@@ -226,6 +366,9 @@ impl Document {
 			return Err("unsupported assembly identity/generator version".into());
 		}
 		let c = &self.context;
+		if c.build.is_some() {
+			return Err("path assembly identity carries a build kind".into());
+		}
 		for p in [&c.cache_root, &c.cargo_home] {
 			path(p)?;
 		}

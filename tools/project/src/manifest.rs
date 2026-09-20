@@ -49,6 +49,11 @@ pub(crate) struct Native {
 	/// `present` registrar. Omitted when false so existing bytes are kept.
 	#[serde(default, skip_serializing_if = "std::ops::Not::not")]
 	pub presentation: bool,
+	/// Record 0069: the adapter author's statement that nothing in this
+	/// native's dependency graph reads retained build output at runtime, so
+	/// its assembly may build in the shared directory. Omitted when false.
+	#[serde(default, skip_serializing_if = "std::ops::Not::not")]
+	pub shared_build: bool,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]

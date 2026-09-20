@@ -152,6 +152,7 @@ pub(crate) fn author(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Can
 			builder: "build".into(),
 			hook,
 			presentation: entry.presentation,
+			shared_build: false,
 		};
 		if let Some(old) = original.native.get(&name) {
 			if canonical(&base.join(&old.path))? != adapter
@@ -226,6 +227,7 @@ fn author_git(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Candidate,
 				builder: n.builder.clone(),
 				hook: n.hook,
 				presentation: n.presentation,
+				shared_build: n.shared_build,
 			}
 		} else {
 			Native {
@@ -236,6 +238,9 @@ fn author_git(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Candidate,
 				builder: "build".into(),
 				hook: e.hook,
 				presentation: e.presentation,
+				// Record 0069 writes this only after gate 3 has shown the
+				// adapter's executables hold no reference to shared storage.
+				shared_build: false,
 			}
 		};
 		if let Some(old) = original.native.get(e.name) {
@@ -244,6 +249,7 @@ fn author_git(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Candidate,
 			// An existing declaration keeps its own presentation choice; the
 			// catalogue never rewrites it (record 0068).
 			expected.presentation = old.presentation;
+			expected.shared_build = old.shared_build;
 			if let (Some(a), Some(b)) = (&old.path, &n.path) {
 				comparison.path = Some(
 					canonical(&base.join(a))?

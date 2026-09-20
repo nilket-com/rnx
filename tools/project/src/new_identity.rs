@@ -116,10 +116,13 @@ impl Identity {
 		native.trees.sort_by(|a, b| a.root.cmp(&b.root));
 		native.packages.sort_by(|a, b| a.id.cmp(&b.id));
 		native.external.sort_by(|a, b| a.path.cmp(&b.path));
+		if context.build.is_none() {
+			return Err("Git-source assembly identity requires a build kind".into());
+		}
 		let (manifest, main) = crate::generate::git_wrapper(manifest, base)?;
 		Self::from_document(Document {
-			format: 3,
-			generator: 3,
+			format: 4,
+			generator: 4,
 			context,
 			manifest,
 			main,
@@ -153,6 +156,9 @@ impl Identity {
 		}
 		Ok(identity)
 	}
+	pub(crate) fn git_names(&self) -> Vec<String> {
+		self.document.git.iter().map(|g| g.name.clone()).collect()
+	}
 	pub(crate) fn git(&self) -> &[crate::schemas::GitPackage] {
 		&self.document.git
 	}
@@ -161,6 +167,10 @@ impl Identity {
 	}
 	pub(crate) fn context(&self) -> &Context {
 		&self.document.context
+	}
+	/// Which wrapper recipe this identity recorded (decision 5 of 0069).
+	pub(crate) fn generator(&self) -> u32 {
+		self.document.generator
 	}
 	pub(crate) fn wrapper(&self) -> (&str, &str) {
 		(&self.document.manifest, &self.document.main)
@@ -210,8 +220,24 @@ fn strictly_sorted<T: Ord>(values: impl IntoIterator<Item = T>) -> Result<(), St
 }
 impl Document {
 	fn validate(&self) -> Result<(), String> {
-		if self.format != 3 || self.generator != 3 {
-			return Err("unsupported assembly identity/generator version".into());
+		// Format 3 predates sharing: no build kind, placeholder wrapper name.
+		// Format 4 records the build kind and names the wrapper by digest.
+		match (self.format, self.generator, &self.context.build) {
+			(3, 3, None) => {}
+			(4, 4, Some(build)) => {
+				build.validate()?;
+				// The recorded name must be the digest of the recorded wrapper.
+				let name = crate::generate::executable_name(&self.manifest)?;
+				let placeholder = self.manifest.replacen(
+					&format!("name = {name:?}"),
+					&format!("name = {:?}", crate::generate::PLACEHOLDER),
+					1,
+				);
+				if name != crate::generate::wrapper_name(&placeholder, &self.main) {
+					return Err("generator-four wrapper name does not match its content".into());
+				}
+			}
+			_ => return Err("unsupported assembly identity/generator version".into()),
 		}
 		let c = &self.context;
 		for p in [&c.cache_root, &c.cargo_home] {
@@ -396,4 +422,160 @@ pub(crate) fn canonical(bytes: &[u8]) -> Result<Vec<u8>, String> {
 	}
 	let d = serde_json::from_slice(bytes).map_err(|e| format!("identity: {e}"))?;
 	Ok(Identity::from_document(d)?.bytes)
+}
+
+#[cfg(test)]
+pub(crate) fn fixture(build: crate::cache_identity::Build) -> Identity {
+	Identity::from_document(format_tests::current(build)).unwrap()
+}
+
+#[cfg(test)]
+mod format_tests {
+	use super::*;
+	use crate::cache_identity::Build;
+	/// A retained format-three document: placeholder wrapper, no build kind.
+	fn retained() -> Document {
+		let base = std::env::temp_dir().join("rnx-identity-shape");
+		let native = base.join("native");
+		let manifest = format!(
+			"[package]\nname = \"rnx-project-app\"\n\n[dependencies.rnx]\npath = {}\n",
+			toml::Value::String(native.to_str().unwrap().into())
+		);
+		Document {
+			format: 3,
+			generator: 3,
+			context: Context {
+				cache_root: base.join("cache"),
+				cargo_home: base.join("cargo"),
+				rustup_home: None,
+				rustup_toolchain: None,
+				rustc: "rustc fixture".into(),
+				cargo: "cargo fixture".into(),
+				target: "fixture-target".into(),
+				profile: "release".into(),
+				features: vec!["project-sources".into()],
+				build: None,
+			},
+			manifest,
+			main: "fn main() { rnx::main_with(rnx::Extensions::none()) }\n".into(),
+			cargo_lock_blake3: "a".repeat(64),
+			native: Inventory {
+				platform: "fixture-platform".into(),
+				packages: vec![crate::inventory::Association {
+					id: "fixture-package-id".into(),
+					name: "rnx".into(),
+					manifest: native.join("Cargo.toml"),
+					root: native.clone(),
+				}],
+				trees: vec![fingerprint::Tree {
+					root: native.clone(),
+					blake3: "b".repeat(64),
+					files: vec![wire::File {
+						path: "Cargo.toml".into(),
+						bytes: 0,
+						executable: false,
+						blake3: "c".repeat(64),
+					}],
+				}],
+				external: vec![],
+			},
+			git: vec![],
+		}
+	}
+	/// The same wrapper as generator four names it.
+	pub(super) fn current(build: Build) -> Document {
+		let mut d = retained();
+		d.format = 4;
+		d.generator = 4;
+		d.context.build = Some(build);
+		let name = crate::generate::wrapper_name(&d.manifest, &d.main);
+		d.manifest =
+			d.manifest
+				.replacen("name = \"rnx-project-app\"", &format!("name = {name:?}"), 1);
+		d
+	}
+	#[test]
+	fn retained_format_three_still_decodes_without_a_build_kind() {
+		let old = Identity::from_document(retained()).unwrap();
+		let again = Identity::decode(old.bytes()).unwrap();
+		assert_eq!(old.key(), again.key());
+		assert!(old.context().build.is_none());
+		assert!(!String::from_utf8_lossy(old.bytes()).contains("\"build\""));
+		assert_eq!(
+			crate::generate::executable_name(old.wrapper().0).unwrap(),
+			"rnx-project-app"
+		);
+	}
+	#[test]
+	fn format_four_requires_a_valid_build_kind_and_the_digest_name() {
+		for build in [
+			Build::Private,
+			Build::Shared {
+				key: "d".repeat(64),
+			},
+		] {
+			let good = Identity::from_document(current(build.clone())).unwrap();
+			let again = Identity::decode(good.bytes()).unwrap();
+			assert_eq!(good.key(), again.key());
+			assert_eq!(again.context().build.as_ref(), Some(&build));
+			let name = crate::generate::executable_name(good.wrapper().0).unwrap();
+			assert!(name.starts_with("rnx-app-") && name.len() == 72);
+		}
+		let mut d = current(Build::Private);
+		d.context.build = None;
+		assert!(
+			Identity::from_document(d).is_err(),
+			"format four without a build kind"
+		);
+		let mut d = retained();
+		d.context.build = Some(Build::Private);
+		assert!(
+			Identity::from_document(d).is_err(),
+			"format three with a build kind"
+		);
+		for (format, generator) in [(3, 4), (4, 3), (5, 5)] {
+			let mut d = current(Build::Private);
+			d.format = format;
+			d.generator = generator;
+			assert!(Identity::from_document(d).is_err(), "{format}/{generator}");
+		}
+		let mut d = current(Build::Private);
+		d.main.push('\n');
+		assert!(
+			Identity::from_document(d).is_err(),
+			"name must match the wrapper content"
+		);
+		let mut d = current(Build::Private);
+		d.manifest = d.manifest.replacen("rnx-app-", "rnx-app-0", 1);
+		assert!(Identity::from_document(d).is_err(), "a tampered name");
+		let d = current(Build::Shared {
+			key: "not-hex".into(),
+		});
+		assert!(
+			Identity::from_document(d).is_err(),
+			"a malformed shared key"
+		);
+	}
+	#[test]
+	fn equal_wrappers_share_a_name_and_a_one_call_difference_does_not() {
+		let a = current(Build::Private);
+		let mut b = current(Build::Private);
+		b.main = b.main.replace(
+			"rnx::Extensions::none()",
+			"rnx::Extensions::none().with(\"x\", x::build)",
+		);
+		let b_name = crate::generate::wrapper_name(&retained().manifest, &b.main);
+		b.manifest = retained().manifest.replacen(
+			"name = \"rnx-project-app\"",
+			&format!("name = {b_name:?}"),
+			1,
+		);
+		let a = Identity::from_document(a).unwrap();
+		let b = Identity::from_document(b).unwrap();
+		assert_ne!(
+			crate::generate::executable_name(a.wrapper().0).unwrap(),
+			crate::generate::executable_name(b.wrapper().0).unwrap()
+		);
+		assert_ne!(a.key(), b.key());
+	}
 }

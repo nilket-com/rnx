@@ -10,6 +10,8 @@ struct Args {
 	root: PathBuf,
 	kind: String,
 	id: Option<String>,
+	/// Record 0069: the id named a shared build directory (`build-<key>`).
+	build: bool,
 	list: bool,
 	dry: bool,
 	resume: bool,
@@ -69,21 +71,31 @@ fn parse(args: &[OsString]) -> Result<Args, String> {
 	if !list && action != "remove" {
 		return Err("expected list or remove".into());
 	}
+	let mut build = false;
 	let id = if list {
 		None
 	} else {
-		Some(
-			it.next()
-				.and_then(|s| s.to_str())
-				.filter(|s| valid_id(s))
-				.ok_or("remove requires one full 64-character lowercase hexadecimal ID")?
-				.to_owned(),
-		)
+		let raw = it
+			.next()
+			.and_then(|s| s.to_str())
+			.ok_or("remove requires one full 64-character lowercase hexadecimal ID, or build-<ID> for a shared build directory")?;
+		let id = match raw.strip_prefix("build-") {
+			Some(key) if kind == "cache" => {
+				build = true;
+				key
+			}
+			_ => raw,
+		};
+		if !valid_id(id) {
+			return Err("remove requires one full 64-character lowercase hexadecimal ID, or build-<ID> for a shared build directory".into());
+		}
+		Some(id.to_owned())
 	};
 	let mut out = Args {
 		root: PathBuf::new(),
 		kind,
 		id,
+		build,
 		list,
 		dry: false,
 		resume: false,
@@ -136,12 +148,23 @@ fn parse(args: &[OsString]) -> Result<Args, String> {
 			"removal requires --quiescent: stop all consumers, including older tools, surviving build children, direct executions, sessions, servers and kernels; retained references may break and runtime source may be lost. Inspect first:\n{} {} remove {} --root {} --dry-run{}",
 			shell(&std::env::current_exe().map_err(|e| e.to_string())?),
 			out.kind,
-			out.id.as_ref().unwrap(),
+			out.display_id(),
 			shell(&out.root),
 			if out.resume { " --resume" } else { "" }
 		));
 	}
 	Ok(out)
+}
+impl Args {
+	/// The id as the user names it: `build-<key>` for a shared build directory.
+	fn display_id(&self) -> String {
+		let id = self.id.clone().unwrap_or_default();
+		if self.build {
+			format!("build-{id}")
+		} else {
+			id
+		}
+	}
 }
 fn shell(p: &std::path::Path) -> String {
 	format!("'{}'", p.to_string_lossy().replace('\'', "'\\''"))
@@ -163,6 +186,70 @@ mod tests {
 	use super::*;
 	fn args(s: &[&str]) -> Vec<OsString> {
 		s.iter().map(OsString::from).collect()
+	}
+	#[test]
+	fn a_shared_build_directory_is_named_build_key_for_the_cache_only() {
+		let key = "b".repeat(64);
+		let a = parse(&args(&[
+			"cache",
+			"remove",
+			&format!("build-{key}"),
+			"--root",
+			"/r",
+			"--quiescent",
+		]))
+		.unwrap();
+		assert!(
+			a.build
+				&& a.id.as_deref() == Some(key.as_str())
+				&& a.display_id() == format!("build-{key}")
+		);
+		let plain = parse(&args(&[
+			"cache",
+			"remove",
+			&key,
+			"--root",
+			"/r",
+			"--quiescent",
+		]))
+		.unwrap();
+		assert!(!plain.build && plain.display_id() == key);
+		assert!(
+			parse(&args(&[
+				"runtime",
+				"remove",
+				&format!("build-{key}"),
+				"--root",
+				"/r",
+				"--quiescent"
+			]))
+			.is_err()
+		);
+		assert!(
+			parse(&args(&[
+				"cache",
+				"remove",
+				"build-abc",
+				"--root",
+				"/r",
+				"--quiescent"
+			]))
+			.is_err()
+		);
+		let refused = match parse(&args(&[
+			"cache",
+			"remove",
+			&format!("build-{key}"),
+			"--root",
+			"/r",
+		])) {
+			Err(e) => e,
+			Ok(_) => panic!("removal without --quiescent must refuse"),
+		};
+		assert!(
+			refused.contains("--quiescent") && refused.contains(&format!("build-{key}")),
+			"{refused}"
+		);
 	}
 	#[test]
 	fn maintenance_refuses_ambiguous_or_mutating_annotations_before_open() {

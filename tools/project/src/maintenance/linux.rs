@@ -397,13 +397,16 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 		for n in names(&root, &mut budget)? {
 			if !matches!(
 				n.to_str(),
-				Some("entries" | "removing" | "locks" | "install.lock" | "current.json")
+				Some("entries" | "removing" | "locks" | "install.lock" | "current.json" | "build")
 			) {
 				budget.reserve(n.len() as u64 + 128)?;
 				unknown.push(format!("{n:?}"));
 			}
 		}
-		for location in ["entries", "removing"] {
+		for location in ["entries", "removing", "build"] {
+			if location == "build" && a.kind != "cache" {
+				continue;
+			}
 			if stat(&root, OsStr::new(location))?.is_none() {
 				continue;
 			}
@@ -414,9 +417,20 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 				&mut budget,
 				Some(hooks::limit("RNX_REMOVE_ENTRY_LIMIT", 10_000) - total),
 			)? {
-				let Some(key) = n.to_str().filter(|v| valid_id(v)) else {
-					unknown.push(format!("{location}/{n:?}"));
-					continue;
+				let (key, pending_build) = match n.to_str() {
+					Some(v) if valid_id(v) => (v, false),
+					Some(v)
+						if location == "removing"
+							&& a.kind == "cache" && v
+							.strip_prefix("build-")
+							.is_some_and(valid_id) =>
+					{
+						(v.strip_prefix("build-").unwrap(), true)
+					}
+					_ => {
+						unknown.push(format!("{location}/{n:?}"));
+						continue;
+					}
 				};
 				if total == hooks::limit("RNX_REMOVE_ENTRY_LIMIT", 10_000) {
 					return Err("listing exceeds entry allowance".into());
@@ -429,9 +443,18 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 				budget.charge(0)?;
 				budget.account(&stat(&dir, &n)?.ok_or("entry disappeared")?)?;
 				walk(&entry, &mut budget, 0, false, &mut 0)?;
-				let metadata = metadata(&entry, &a.kind, key, &mut budget)?;
+				let metadata = if location == "build" || pending_build {
+					build_metadata(&entries, key, &mut budget)?
+				} else {
+					metadata(&entry, &a.kind, key, &mut budget)?
+				};
+				let id = if location == "build" || pending_build {
+					format!("build-{key}")
+				} else {
+					key.to_owned()
+				};
 				budget.reserve(4096 + a.root.as_os_str().len() as u64 * 2)?;
-				records.push(json!({"id":key,"location":location,"path":a.root.join(location).join(key),"selected":current.as_deref()==Some(key),"nodes":budget.nodes-before.0,"files":budget.files-before.1,"logical":budget.logical-before.2,"allocated_estimate":budget.allocated-before.3,"metadata":metadata}));
+				records.push(json!({"id":id,"location":location,"path":a.root.join(location).join(&n),"selected":current.as_deref()==Some(key),"nodes":budget.nodes-before.0,"files":budget.files-before.1,"logical":budget.logical-before.2,"allocated_estimate":budget.allocated-before.3,"metadata":metadata}));
 			}
 		}
 		return report(
@@ -444,15 +467,42 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 	}
 
 	let key = a.id.as_ref().unwrap();
-	let key_os = OsStr::new(key);
-	let location = if a.resume { "removing" } else { "entries" };
+	// Record 0069: a shared build directory keeps its kind through the
+	// pending name, so every later spelling — listing, resume — reaches
+	// it as `build-<key>` and takes the build directory's own lock.
+	let pending_name = if a.build {
+		format!("build-{key}")
+	} else {
+		key.clone()
+	};
+	let pending_os = OsStr::new(&pending_name);
+	let key_os = if a.resume {
+		pending_os
+	} else {
+		OsStr::new(key)
+	};
+	let location = if a.resume {
+		"removing"
+	} else if a.build {
+		"build"
+	} else {
+		"entries"
+	};
 	let _lock = if a.dry {
 		None
 	} else {
+		// Record 0069: a shared build directory's coordination lock is
+		// `locks/build-<key>.lock`, held shared by every builder from before
+		// Cargo until publication; removal takes it exclusively and refuses
+		// while any builder holds it.
 		let (parent, n, flags, mode) = if let Some(p) = &lock_parent {
 			(
 				p,
-				format!("{key}.lock"),
+				if a.build {
+					format!("build-{key}.lock")
+				} else {
+					format!("{key}.lock")
+				},
 				libc::O_RDWR | libc::O_CREAT,
 				0o600,
 			)
@@ -461,8 +511,13 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 		};
 		let f = open(parent, OsStr::new(&n), flags, mode)?;
 		private(&f, false)?;
-		f.try_lock()
-			.map_err(|e| format!("busy or invalid writer lock for {key} at {:?}: {e}", a.root))?;
+		f.try_lock().map_err(|e| {
+			if a.build {
+				format!("busy: a builder holds the shared build directory build-{key} at {:?}: {e}; wait for every build to finish, then retry", a.root)
+			} else {
+				format!("busy or invalid writer lock for {key} at {:?}: {e}", a.root)
+			}
+		})?;
 
 		Some(f)
 	};
@@ -475,7 +530,7 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 	if !a.resume && stat(&root, OsStr::new("removing"))?.is_some() {
 		let d = directory(&root, OsStr::new("removing"))?;
 		private(&d, true)?;
-		if stat(&d, key_os)?.is_some() {
+		if stat(&d, pending_os)?.is_some() {
 			return Err(format!(
 				"pending removal exists; resume explicitly:\n{}",
 				resume_command(&a, key)?
@@ -498,7 +553,10 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 	private(&parent, true)?;
 	let target = directory(&parent, key_os)?;
 	private(&target, true)?;
-	let path = a.root.join(location).join(key);
+	// The target's actual component: `build-<key>` under `removing/` for a
+	// pending build directory, so containment and reporting name what is
+	// really removed.
+	let path = a.root.join(location).join(key_os);
 	for own in [
 		std::env::current_dir().map_err(error)?,
 		std::env::current_exe().map_err(error)?,
@@ -513,9 +571,13 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 	walk(&target, &mut budget, 0, false, &mut 0)?;
 	if a.dry {
 		let refs = annotations::inspect(&a, &mut budget)?;
-		let metadata = metadata(&target, &a.kind, key, &mut budget)?;
+		let metadata = if a.build {
+			build_metadata(&entries, key, &mut budget)?
+		} else {
+			metadata(&target, &a.kind, key, &mut budget)?
+		};
 		return report(
-			json!({"root":a.root,"dry_run":true,"entries":[{"id":key,"location":location,"path":path,"nodes":budget.nodes,"files":budget.files,"logical":budget.logical,"allocated_estimate":budget.allocated,"metadata":metadata}],"writer":"not reserved"}),
+			json!({"root":a.root,"dry_run":true,"entries":[{"id":a.display_id(),"location":location,"path":path,"nodes":budget.nodes,"files":budget.files,"logical":budget.logical,"allocated_estimate":budget.allocated,"metadata":metadata}],"writer":"not reserved"}),
 			refs,
 			&a,
 			&mut budget,
@@ -539,13 +601,14 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 			sync(&root)?;
 			hooks::point("after-root-sync")?;
 			let key_c = name(key_os)?;
+			let pending_c = name(pending_os)?;
 			if unsafe {
 				libc::syscall(
 					libc::SYS_renameat2,
-					entries.as_raw_fd(),
+					parent.as_raw_fd(),
 					key_c.as_ptr(),
 					pending.as_raw_fd(),
-					key_c.as_ptr(),
+					pending_c.as_ptr(),
 					libc::RENAME_NOREPLACE,
 				)
 			} != 0
@@ -554,18 +617,18 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 			}
 			committed = true;
 			emit(
-				&json!({"committed":true,"pending":a.root.join("removing").join(key),"resume_command":command}),
+				&json!({"committed":true,"pending":a.root.join("removing").join(&pending_name),"resume_command":command}),
 				&mut budget,
 			)?;
 			std::io::stdout().flush().map_err(error)?;
-			let moved = directory(&pending, key_os)?;
+			let moved = directory(&pending, pending_os)?;
 			let m = moved.metadata().map_err(error)?;
 			if m.dev() != initial.dev() || m.ino() != initial.ino() {
 				return Err("target identity changed after rename".into());
 			}
 			hooks::point("after-rename")?;
 			hooks::point("before-entries-sync")?;
-			sync(&entries)?;
+			sync(&parent)?;
 			hooks::point("after-entries-sync")?;
 			hooks::point("before-pending-sync")?;
 			sync(&pending)?;
@@ -581,14 +644,14 @@ pub(super) fn run(mut a: Args) -> Result<()> {
 		walk(&target, &mut deletion, 0, true, &mut deleted)?;
 		same(
 			&target,
-			&stat(&pending, key_os)?.ok_or("pending entry disappeared")?,
+			&stat(&pending, pending_os)?.ok_or("pending entry disappeared")?,
 		)?;
-		unlink(&pending, key_os, true)?;
+		unlink(&pending, pending_os, true)?;
 		hooks::point("before-final-sync")?;
 		sync(&pending)?;
 		hooks::point("after-final-sync")?;
 		emit(
-			&json!({"removed":key,"location":location,"deleted_leaves":deleted,"logical_before":budget.logical,"allocated_estimate_before":budget.allocated}),
+			&json!({"removed":a.display_id(),"location":location,"deleted_leaves":deleted,"logical_before":budget.logical,"allocated_estimate_before":budget.allocated}),
 			&mut budget,
 		)?;
 		Ok(())
@@ -619,9 +682,56 @@ fn resume_command(a: &Args, key: &str) -> Result<String> {
 		"{} {} remove {} --root {} --resume --quiescent",
 		quote(std::env::current_exe().map_err(error)?.as_os_str()),
 		a.kind,
-		key,
+		if a.build {
+			format!("build-{key}")
+		} else {
+			key.to_owned()
+		},
 		quote(a.root.as_os_str())
 	))
+}
+/// Record 0069: what the tool recorded about a shared build directory — the
+/// local entries whose ready document names its key. Not a discovery of
+/// every consumer: only what this root's ready documents say.
+fn build_metadata(entries: &File, key: &str, budget: &mut Budget) -> Result<Value> {
+	let mut referencing = 0u64;
+	let mut unreadable = 0u64;
+	for n in names_capped(
+		entries,
+		budget,
+		Some(hooks::limit("RNX_REMOVE_ENTRY_LIMIT", 10_000)),
+	)? {
+		let Some(id) = n.to_str().filter(|v| valid_id(v)) else {
+			continue;
+		};
+		let _ = id;
+		let entry = match directory(entries, &n) {
+			Ok(d) => d,
+			Err(_) => {
+				unreadable += 1;
+				continue;
+			}
+		};
+		match bounded_document(&entry, "ready.json", crate::input::DOCUMENT_LIMIT, budget) {
+			Ok(Some(v)) => {
+				let identity: Option<Value> = v["identity"]
+					.as_str()
+					.and_then(|s| serde_json::from_str(s).ok());
+				if identity
+					.as_ref()
+					.and_then(|i| i["context"]["build"]["key"].as_str())
+					== Some(key)
+				{
+					referencing += 1;
+				}
+			}
+			Ok(None) => {}
+			Err(_) => unreadable += 1,
+		}
+	}
+	Ok(
+		json!({"status":"shared build directory","kind":"build","key":key,"referencing_entries":referencing,"unreadable_entries":unreadable,"scope":"local entries whose ready document names this key; not every consumer"}),
+	)
 }
 fn metadata(entry: &File, kind: &str, key: &str, budget: &mut Budget) -> Result<Value> {
 	let (n, limit) = if kind == "cache" {

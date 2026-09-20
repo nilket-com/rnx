@@ -2,7 +2,7 @@
 use super::*;
 use crate::{
 	cache_entry,
-	cache_identity::Context,
+	cache_identity::{self, Context},
 	cache_storage as storage, git_inventory,
 	new_identity::Identity,
 	schemas::{Assembly, Declaration, Lock, Receipt},
@@ -52,7 +52,11 @@ impl Project {
 			let stage = c.cache_root.join("entries").join(i.key()).join("assembly");
 			i.verify(&stage, full).map_err(|e| self.recovery(e))?;
 			shared::compatible_layout(&c.cache_root, &lock.inputs, &self.base)?;
-			let (manifest, main) = generate::git_wrapper(&lock.declarations, &self.base)?;
+			// The recipe the lock recorded, not the one a newer tool would
+			// write: a retained generator-three lock keeps launching and
+			// rebuilding its placeholder-named wrapper.
+			let (manifest, main) =
+				generate::git_wrapper_for(i.generator(), &lock.declarations, &self.base)?;
 			if i.wrapper() != (manifest.as_str(), main.as_str()) {
 				return Err("generated shared assembly changed; run lock".into());
 			}
@@ -328,9 +332,14 @@ impl Project {
 		let (manifest, main) = generate::git_wrapper(declarations, &self.base)?;
 		fs::write(stage.join("Cargo.toml"), &manifest).map_err(err)?;
 		fs::write(stage.join("src/main.rs"), &main).map_err(err)?;
-		if let Ok(old) = input::read(&self.base.join("rnx.Cargo.lock"), input::DOCUMENT_LIMIT) {
-			fs::write(stage.join("Cargo.lock"), old).map_err(err)?;
-		}
+		let seeded_by_project =
+			match input::read(&self.base.join("rnx.Cargo.lock"), input::DOCUMENT_LIMIT) {
+				Ok(old) => {
+					fs::write(stage.join("Cargo.lock"), old).map_err(err)?;
+					true
+				}
+				Err(_) => false,
+			};
 		let metadata = |locked: bool| -> Result<Vec<u8>, String> {
 			storage::guard(&root, &stage, &self.base)?;
 			let mut cmd = Command::new("cargo");
@@ -348,7 +357,16 @@ impl Project {
 			observation.report(&git_inventory::packages(&graph)?)?;
 			Ok(graph)
 		};
-		let graph = metadata(false)?;
+		let mut graph = metadata(false)?;
+		// Record 0069, decision 4: a project without a previous lock starts
+		// from the runtime's own Cargo.lock, so assemblies under one root and
+		// runtime revision resolve alike where their constraints allow. The
+		// first pass acquired the checkout that holds it; the second resolves
+		// with it. A preference only: the lock digest identifies the result.
+		if !seeded_by_project && let Some(seed) = runtime_lock(&graph)? {
+			fs::write(stage.join("Cargo.lock"), seed).map_err(err)?;
+			graph = metadata(false)?;
+		}
 		let source = inventory::sources(&self.manifest, &mut Allowance::default())?;
 		let (native, git) =
 			git_inventory::resolve(&graph, &stage, &root, &home, &mut Allowance::default())?;
@@ -362,7 +380,7 @@ impl Project {
 		}
 		let lock = input::read(&stage.join("Cargo.lock"), input::DOCUMENT_LIMIT)?;
 		let (rustc, cargo, target) = versions(&stage)?;
-		let context = Context {
+		let mut context = Context {
 			cache_root: root,
 			cargo_home: home,
 			rustup_home: std::env::var_os("RUSTUP_HOME").map(PathBuf::from),
@@ -372,7 +390,19 @@ impl Project {
 			target,
 			profile: "release".into(),
 			features: vec!["project-sources".into()],
+			build: None,
 		};
+		// Record 0069, one eligibility rule, decided here and nowhere else: a
+		// Git runtime, every native Git, every native declaring shared_build.
+		context.build = Some(if shared_build_eligible(declarations) {
+			let settings =
+				cache_identity::admitted_settings(&context, inputs.native.as_ref().unwrap())?;
+			cache_identity::Build::Shared {
+				key: cache_identity::build_key(&context, &settings),
+			}
+		} else {
+			cache_identity::Build::Private
+		});
 		let identity = Identity::create(
 			declarations,
 			&self.base,
@@ -389,5 +419,96 @@ impl Project {
 			},
 			Some(lock),
 		))
+	}
+}
+
+/// Record 0069's one eligibility rule: a Git runtime, every native a Git
+/// declaration, every native declaring `shared_build`. A path native with the
+/// declaration disqualifies; a Git runtime with no natives qualifies.
+pub(crate) fn shared_build_eligible(declarations: &Declaration) -> bool {
+	declarations
+		.runtime
+		.as_ref()
+		.is_some_and(|r| r.git.is_some())
+		&& declarations
+			.native
+			.values()
+			.all(|n| n.git.is_some() && n.shared_build)
+}
+
+/// The runtime's `Cargo.lock` from the checkout Cargo acquired for the `rnx`
+/// package of a metadata graph, when it has one.
+fn runtime_lock(graph: &[u8]) -> Result<Option<Vec<u8>>, String> {
+	#[derive(serde::Deserialize)]
+	struct Package {
+		name: String,
+		source: Option<String>,
+		manifest_path: PathBuf,
+	}
+	#[derive(serde::Deserialize)]
+	struct Metadata {
+		packages: Vec<Package>,
+	}
+	let metadata: Metadata =
+		serde_json::from_slice(graph).map_err(|e| format!("Cargo metadata: {e}"))?;
+	let Some(runtime) = metadata
+		.packages
+		.iter()
+		.find(|p| p.name == "rnx" && p.source.as_deref().is_some_and(|s| s.starts_with("git+")))
+	else {
+		return Ok(None);
+	};
+	let path = runtime
+		.manifest_path
+		.parent()
+		.ok_or("runtime manifest has no parent")?
+		.join("Cargo.lock");
+	match input::read(&path, input::DOCUMENT_LIMIT) {
+		Ok(bytes) => Ok(Some(bytes)),
+		Err(_) => Ok(None),
+	}
+}
+
+#[cfg(test)]
+mod eligibility_tests {
+	use super::*;
+	use crate::schemas::{Declaration, Native};
+	fn declaration(runtime_git: bool, natives: &[(bool, bool)]) -> Declaration {
+		let mut d: Declaration = serde_json::from_value(serde_json::json!({
+			"format": 2, "application": {"entry": "main.rn"},
+			"runtime": if runtime_git { serde_json::json!({"git": "https://example.invalid/rnx", "rev": "0123456789abcdef0123456789abcdef01234567"}) } else { serde_json::json!({"path": "../rnx"}) },
+		}))
+		.unwrap();
+		for (i, (git, shared)) in natives.iter().enumerate() {
+			d.native.insert(
+				format!("n{i}"),
+				Native {
+					path: (!git).then(|| "../adapter".into()),
+					git: git.then(|| "https://example.invalid/rnx".into()),
+					rev: git.then(|| "0123456789abcdef0123456789abcdef01234567".into()),
+					package: "rnx-n".into(),
+					builder: "build".into(),
+					hook: crate::manifest::Hook::Plain,
+					presentation: false,
+					shared_build: *shared,
+				},
+			);
+		}
+		d
+	}
+	#[test]
+	fn one_rule_git_runtime_git_natives_all_declared() {
+		assert!(shared_build_eligible(&declaration(
+			true,
+			&[(true, true), (true, true)]
+		)));
+		assert!(shared_build_eligible(&declaration(true, &[])));
+		assert!(!shared_build_eligible(&declaration(
+			true,
+			&[(true, true), (true, false)]
+		)));
+		assert!(!shared_build_eligible(&declaration(true, &[(false, true)])));
+		assert!(!shared_build_eligible(&declaration(false, &[(true, true)])));
+		assert!(!shared_build_eligible(&declaration(false, &[])));
 	}
 }
