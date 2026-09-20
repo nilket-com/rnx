@@ -45,6 +45,10 @@ pub(crate) struct Native {
 	pub package: String,
 	pub builder: String,
 	pub hook: Hook,
+	/// Record 0068: the generated wrapper also calls the adapter's exported
+	/// `present` registrar. Omitted when false so existing bytes are kept.
+	#[serde(default, skip_serializing_if = "std::ops::Not::not")]
+	pub presentation: bool,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]

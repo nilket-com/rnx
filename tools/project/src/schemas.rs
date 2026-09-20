@@ -56,6 +56,8 @@ pub(crate) struct Native {
 	pub package: String,
 	pub builder: String,
 	pub hook: manifest::Hook,
+	#[serde(default, skip_serializing_if = "std::ops::Not::not")]
+	pub presentation: bool,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -99,6 +101,9 @@ impl Declaration {
 		}
 		for (name, n) in &self.native {
 			v["native"][name] = serde_json::json!({"path":n.path.as_deref().unwrap_or("/probe/git"),"package":n.package,"builder":n.builder,"hook":n.hook});
+			if n.presentation {
+				v["native"][name]["presentation"] = true.into();
+			}
 		}
 		let old: manifest::Manifest = serde_json::from_value(v).map_err(|e| e.to_string())?;
 		old.validate()

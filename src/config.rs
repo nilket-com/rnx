@@ -150,7 +150,7 @@ pub fn load() -> Settings {
 		}
 	}
 }
-fn evaluate(source: &str) -> Result<(Settings, Vec<String>), String> {
+pub(crate) fn evaluate(source: &str) -> Result<(Settings, Vec<String>), String> {
 	use rune::ast::Spanned;
 	// A fixed synchronous wrapper: helper items may be written inside it.
 	let wrapped = format!("pub fn main() {{\n{source}\n}}");

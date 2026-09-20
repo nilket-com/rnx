@@ -106,6 +106,22 @@ fn sort(plan: &LazyFrame, names: rune::Value) -> Result<LazyFrame, String> {
 fn preview(frame: &DataFrame) -> Result<String, String> {
 	preview::render(&frame.0)
 }
+/// Explicit `format!("{frame}")` shows the same bounded preview.
+#[rune::function(instance, protocol = DISPLAY_FMT)]
+fn display_fmt(frame: &DataFrame, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {
+	use rune::alloc::fmt::TryWrite;
+	match preview::render(&frame.0) {
+		Ok(text) => rune::vm_write!(f, "{text}"),
+		Err(e) => rune::vm_write!(f, "<polars::DataFrame: preview unavailable: {e}>"),
+	}
+}
+/// Record 0068: register the session presenter for `DataFrame`. Lazy plans,
+/// group-bys and expressions stay opaque; presenting one must never run it.
+pub fn present(presenters: &mut rnx::Presenters) -> Result<(), String> {
+	presenters.register::<DataFrame>(|frame, out| {
+		preview::render_into(&frame.0, &mut |token| out.push(token)).map(|_| ())
+	})
+}
 #[rune::function(instance)]
 fn write_parquet_new(frame: &DataFrame, path: &str) -> Result<(), String> {
 	let frame = frame.0.clone();
@@ -158,6 +174,7 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.function_meta(sum).map_err(err)?;
 	m.function_meta(alias).map_err(err)?;
 	m.function_meta(preview).map_err(err)?;
+	m.function_meta(display_fmt).map_err(err)?;
 	m.function_meta(write_parquet_new).map_err(err)?;
 	#[cfg(feature = "test-support")]
 	m.function("engine_counts", engine::counts)

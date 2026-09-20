@@ -9,6 +9,17 @@ publish = false
 [features]
 test-support = ["dep:tokio"]
 
+# Record 0068: the presentation matrix drives a wrapper-shaped binary as a
+# notebook worker. Neither exists in an ordinary build.
+[[bin]]
+name = "rnx-polars-fixture"
+path = "src/bin/fixture.rs"
+required-features = ["test-support"]
+
+[[test]]
+name = "presentation"
+required-features = ["test-support"]
+
 [dependencies]
 rnx = { path = "../..", default-features = false, features = ["count-allocations"] }
 polars = { version = "=0.55.2", default-features = false, features = ["lazy", "csv", "parquet"] }

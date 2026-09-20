@@ -9,7 +9,9 @@ generic builder return type; see [the registration evidence](0068_registration_s
 Presentation is now a separate capability, independent of the lifecycle hook,
 as specified in decision 2. The replacement prototype passes and is ready for
 review; see [the presentation seam evidence](0068_presentation_seam_evidence.md).
-Gate 2 ports it into the product.
+Gate 1 was accepted after three reviews. Gate 2 ported it into the product
+with the product-level matrix; see [the product port evidence](0068_product_port_evidence.md).
+Gates 3 and 4 remain.
 
 ## Problem and user journey
 

@@ -292,12 +292,22 @@ fn handle(
 	let number = session.next_number();
 	match session.eval(input) {
 		Ok(value) => {
-			let text = render_styled(
-				&value,
-				Some(&session.fields()),
-				limits,
-				presentation::stdout(),
-			);
+			let text = match session.present(&value, limits.total_bytes) {
+				// Record 0068: a registered presenter wins for a top-level
+				// native result. Its output is escaped and bounded here, not
+				// trusted; a failure keeps the evaluation and says so.
+				Some(outcome) => crate::present::finish(
+					outcome,
+					&crate::format::render(&value, None, limits),
+					limits.total_bytes,
+				),
+				None => render_styled(
+					&value,
+					Some(&session.fields()),
+					limits,
+					presentation::stdout(),
+				),
+			};
 			if !crate::runner::is_unit(&value) {
 				if prompt.shown.get() {
 					let marker = format!("[{number}] ");
@@ -328,6 +338,7 @@ pub fn run(
 	http: crate::http::State,
 	splash: bool,
 	lifecycle: crate::lifecycle::Lifecycle,
+	presenters: crate::present::Presenters,
 ) -> crate::Result<()> {
 	let _title = crate::terminal::Title::new("rnx");
 	let config = Config::builder()
@@ -338,7 +349,8 @@ pub fn run(
 	let mut editor: Editor<RnxHelper, FileHistory> = Editor::with_config(config)?;
 	let mut session = Session::with_ceiling(context, ceiling())?
 		.with_http(http)
-		.with_lifecycle(lifecycle);
+		.with_lifecycle(lifecycle)
+		.with_presenters(presenters);
 	let names = Rc::new(RefCell::new(snapshot(&session, &host)));
 	editor.set_helper(Some(RnxHelper {
 		names: names.clone(),

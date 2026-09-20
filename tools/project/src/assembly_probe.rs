@@ -28,6 +28,25 @@ fn run() -> Result<(), String> {
 			println!("{}", blake3::hash(&output));
 			Ok(())
 		}
+		// Record 0068 gate 1: print the generated wrapper for a manifest, so a
+		// fixture can compare bytes with and without `presentation`.
+		Some("wrapper") if args.len() == 3 => {
+			let path = Path::new(&args[1]);
+			let base = Path::new(&args[2]);
+			let bytes = input::read(path, input::MANIFEST_LIMIT)?;
+			let v: toml::Value =
+				toml::from_str(std::str::from_utf8(&bytes).map_err(|e| e.to_string())?)
+					.map_err(|e| e.to_string())?;
+			let (cargo, main) = if v.get("format").and_then(toml::Value::as_integer) == Some(2) {
+				generate::git_wrapper(&schemas::Declaration::parse(&bytes)?, base)?
+			} else {
+				generate::wrapper(&manifest::Manifest::parse(&bytes)?, base)?
+			};
+			print!("{main}");
+			println!("---");
+			print!("{cargo}");
+			Ok(())
+		}
 		Some("git-verify") if args.len() == 2 => {
 			let packages: Vec<schemas::GitPackage> =
 				serde_json::from_slice(&input::read(Path::new(&args[1]), input::DOCUMENT_LIMIT)?)

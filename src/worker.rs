@@ -164,11 +164,13 @@ pub fn run(
 	context: rune::Context,
 	http: crate::http::State,
 	lifecycle: crate::lifecycle::Lifecycle,
+	presenters: crate::present::Presenters,
 ) -> io::Result<()> {
 	let mut session = Session::with_ceiling(context, crate::repl::ceiling())
 		.map_err(|e| io::Error::other(e.to_string()))?
 		.with_http(http)
-		.with_lifecycle(lifecycle);
+		.with_lifecycle(lifecycle)
+		.with_presenters(presenters);
 	crate::memory::record_baseline();
 	session.sample();
 	transport.send(json!({"type":"ready","protocol":1,"rnx":crate::VERSION,"rune":crate::RUNE_VERSION,
@@ -219,11 +221,16 @@ pub fn run(
 			})?;
 			match result {
 				Ok(value) if !crate::runner::is_unit(&value) => {
-					reply["text_plain"] = json!(crate::format::render(
-						&value,
-						Some(&session.fields()),
-						&crate::format::Limits::default()
-					));
+					let limits = crate::format::Limits::default();
+					let text = match session.present(&value, limits.total_bytes) {
+						Some(outcome) => crate::present::finish(
+							outcome,
+							&crate::format::render(&value, None, &limits),
+							limits.total_bytes,
+						),
+						None => crate::format::render(&value, Some(&session.fields()), &limits),
+					};
+					reply["text_plain"] = json!(text);
 					reply["render_bounded"] = json!(true);
 				}
 				Ok(_) => {}

@@ -31,7 +31,7 @@ pub fn main(_) {
 ```
 
 Run this in a fresh directory: both writes refuse existing paths. Expected rows
-are `("a", 2)` and `("🦀", 7)`, with string and i64 columns. Native frames remain opaque unless you call `preview()` explicitly. It returns
+are `("a", 2)` and `("🦀", 7)`, with string and i64 columns. `preview()` returns
 a string starting with the complete dimensions, for example:
 
 ```text
@@ -50,6 +50,14 @@ Strings are quoted, so `"null"` differs from null. Controls, quotes and backslas
 are escaped; finite floats use round-tripping spelling. The layout is independent
 of terminal width and Polars formatting settings. `preview()` borrows the frame,
 does not collect, perform I/O or print, and can be called repeatedly.
+
+In a session or notebook whose application registered the presenter — a
+declaration with `presentation = true`, which `rnx project add polars` and
+`:dep polars` write — a bare top-level `DataFrame` result shows this same text,
+and `format!("{frame}")` returns it. A frame inside a vector, tuple or `Result`
+stays opaque, as do LazyFrame, LazyGroupBy and Expr; showing a plan never runs
+it. Without the presenter, frames are opaque and `preview()` is the way to see
+them.
 
 The four values are DataFrame, LazyFrame, LazyGroupBy and Expr. Receiver methods
 borrow: a frame, plan, expression, path, schema or expression array can be reused.
@@ -145,9 +153,10 @@ For Jupyter, install the **generated executable** from `.rnx/artifacts/` with
 `rnx-polars` executable). Do not point the kernel at rnx-project: the kernel
 needs a worker executable, not the project's command dispatcher. The Jupyter
 CLI must be on PATH. Restart drops notebook bindings while the new worker keeps
-the compiled-in adapter. Use `println!("{}", frame.preview()?)` for text output;
-a bare frame stays opaque. Mapped source packages are not supplied to notebook
-cells by this record.
+the compiled-in adapter. A cell whose value is a bare frame shows its preview
+as `text/plain` when the application registered the presenter;
+`println!("{}", frame.preview()?)` works either way. Mapped source packages are
+not supplied to notebook cells by this record.
 
 The gate 4 fixture uses a private kernelspec directory and does not install into
 the user's Jupyter registry. Its test-support builder marker

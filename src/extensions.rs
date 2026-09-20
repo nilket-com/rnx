@@ -14,6 +14,16 @@ struct Extension {
 	name: &'static str,
 	build: Builder,
 }
+type Registrar = Box<dyn FnOnce(&mut crate::present::Presenters) -> Result<(), String>>;
+struct Presentation {
+	name: &'static str,
+	register: Registrar,
+}
+/// What installation produced: help entries and the context's presenters.
+pub(crate) struct Installed {
+	pub functions: Vec<HostFunction>,
+	pub presenters: crate::present::Presenters,
+}
 
 /// Ordered, lazy builders for trusted native modules.
 ///
@@ -24,6 +34,7 @@ struct Extension {
 /// Only an ordinary panic unwinding through the builder call is converted.
 pub struct Extensions {
 	builders: Vec<Extension>,
+	presentations: Vec<Presentation>,
 }
 
 impl Extensions {
@@ -34,6 +45,7 @@ impl Extensions {
 	pub fn none() -> Self {
 		Self {
 			builders: Vec::new(),
+			presentations: Vec::new(),
 		}
 	}
 
@@ -64,6 +76,22 @@ impl Extensions {
 		});
 		self
 	}
+
+	/// Record 0068: append a presentation registrar for the extension `name`
+	/// without running it. It runs during installation, after the named
+	/// builder succeeded, and may register one presenter per native type.
+	/// A registrar for a name with no builder is refused at installation.
+	pub fn present(
+		mut self,
+		name: &'static str,
+		register: impl FnOnce(&mut crate::present::Presenters) -> Result<(), String> + 'static,
+	) -> Self {
+		self.presentations.push(Presentation {
+			name,
+			register: Box::new(register),
+		});
+		self
+	}
 	#[cfg(test)]
 	pub(crate) fn lifecycle(&self) -> Result<crate::lifecycle::Lifecycle, String> {
 		crate::lifecycle::Lifecycle::new(true)
@@ -71,13 +99,13 @@ impl Extensions {
 	#[cfg(test)]
 	pub(crate) fn install(self, context: &mut Context) -> Result<Vec<HostFunction>, String> {
 		let lifecycle = self.lifecycle()?;
-		self.install_with(context, &lifecycle)
+		Ok(self.install_with(context, &lifecycle)?.functions)
 	}
 	pub(crate) fn install_with(
 		self,
 		context: &mut Context,
 		lifecycle: &crate::lifecycle::Lifecycle,
-	) -> Result<Vec<HostFunction>, String> {
+	) -> Result<Installed, String> {
 		let mut installed = Vec::new();
 		let mut functions = Vec::new();
 		for extension in self.builders {
@@ -123,7 +151,21 @@ impl Extensions {
 					.map(|(path, doc)| HostFunction { path, doc }),
 			);
 		}
-		Ok(functions)
+		let mut presenters = crate::present::Presenters::default();
+		for presentation in self.presentations {
+			let name = presentation.name;
+			let failure =
+				|reason| format!("presentation for `{name}` could not be installed: {reason}");
+			if !installed.contains(&name) {
+				return Err(failure("no extension of that name was installed".into()));
+			}
+			presenters.set_owner(name);
+			build_catching(|| (presentation.register)(&mut presenters)).map_err(&failure)?;
+		}
+		Ok(Installed {
+			functions,
+			presenters,
+		})
 	}
 }
 

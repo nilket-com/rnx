@@ -314,11 +314,32 @@ pub struct Session {
 	runtime: super::execute::Runtime,
 	http: crate::http::State,
 	lifecycle: crate::lifecycle::Lifecycle,
+	/// Record 0068: native presenters owned with this context. Reset keeps
+	/// them, as it keeps the installed extensions; dropping the session drops
+	/// them with the context.
+	presenters: crate::present::Presenters,
 }
 impl Session {
 	pub fn with_lifecycle(mut self, lifecycle: crate::lifecycle::Lifecycle) -> Self {
 		self.lifecycle = lifecycle;
 		self
+	}
+	pub fn with_presenters(mut self, presenters: crate::present::Presenters) -> Self {
+		self.presenters = presenters;
+		self
+	}
+	/// Present a top-level result through its native presenter, if one is
+	/// registered for its concrete type. Never runs script code.
+	pub fn present(
+		&self,
+		value: &Value,
+		limit: usize,
+	) -> Option<std::result::Result<String, String>> {
+		self.presenters.present(value, limit)
+	}
+	#[cfg(test)]
+	pub(crate) fn presenter_count(&self) -> usize {
+		self.presenters.len()
 	}
 	pub fn lifecycle_failed(&self) -> bool {
 		self.lifecycle.failed()
@@ -353,6 +374,7 @@ impl Session {
 			runtime: super::execute::Runtime::new()?,
 			http: crate::http::State::default(),
 			lifecycle: crate::lifecycle::Lifecycle::default(),
+			presenters: crate::present::Presenters::default(),
 		})
 	}
 	/// Next admitted input's display position. Refusals before admission do

@@ -174,8 +174,9 @@ They inherit your working directory: relative CSV and Parquet paths refer to
 where you launched the command, not the manifest directory. Session loads your
 usual rnx settings; eval does not. The executable owns the terminal, history,
 signals and exit status, with no proxy process. Reset clears bindings and retains
-extensions. Use a frame's `preview()` for bounded display; bare frames remain
-opaque. Opening a session releases the project command lock, and verification
+extensions. A declaration with `presentation = true` shows a bare top-level
+frame as its bounded preview; a frame inside a container, or any frame where
+the field is absent, stays opaque and `preview()` gives the same text. Opening a session releases the project command lock, and verification
 runs once before launch, not again between inputs. Rebuilding a project does not
 change an already-running session.
 
@@ -213,8 +214,13 @@ compilation and startup remain separate checks. A prebuilt executable override
 or a source-only manifest cannot gain adapters with add.
 
 For `[runtime] path = "../rnx"`, add writes a normal `[native.polars]` table with
-`path = "../rnx/adapters/polars"`, package, builder and hook. Relative paths stay
-relative, absolute paths stay absolute. No catalogue selector remains in your
+`path = "../rnx/adapters/polars"`, package, builder and hook, and for Polars
+`presentation = true`, which makes a bare top-level frame show its bounded
+preview in a session or notebook (the adapter's exported `present` function
+registers it; the wrapper calls `.present(name, ...)` beside the builder call).
+The field is optional and defaults to false; an existing declaration keeps its
+choice, and enabling it changes the generated wrapper, so the project relocks
+and builds once. Relative paths stay relative, absolute paths stay absolute. No catalogue selector remains in your
 manifest or lock, so future catalogue changes cannot reinterpret it. Moving a
 relative source layout still requires relocking its canonical build identity.
 

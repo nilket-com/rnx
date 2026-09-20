@@ -305,10 +305,11 @@ mod host_source_tests {
 			.into_iter()
 			.map(|f| f.path)
 			.collect();
-		// Seven core functions in domain modules, plus four test-support probes.
+		// Seven core functions in domain modules, plus seven test-support
+		// probes (four fixtures and the three presented values of 0068).
 		assert_eq!(
 			registered.len(),
-			7 + 4 * usize::from(cfg!(feature = "test-support"))
+			7 + 7 * usize::from(cfg!(feature = "test-support"))
 		);
 		let names = super::Names {
 			host: registered.clone(),

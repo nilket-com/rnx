@@ -12,8 +12,10 @@ mod dep_transition;
 mod dep_wire;
 mod extensions;
 mod lifecycle;
+pub mod present;
 pub use extensions::Extensions;
 pub use lifecycle::Scope;
+pub use present::{Output, Presenters};
 
 use rune::runtime::Value;
 use rune::{Context, Source, Sources, Vm};
@@ -276,12 +278,13 @@ fn serve(
 		|| args
 			.first()
 			.is_some_and(|arg| matches!(arg.as_str(), "repl" | "eval" | "worker"));
+	let mut presenters = present::Presenters::default();
 	if serves_without_run {
-		host_functions.extend(install_extensions(
-			extensions.take().unwrap(),
-			&mut context,
-			lifecycle,
-		));
+		let installed = install_extensions(extensions.take().unwrap(), &mut context, lifecycle);
+		host_functions.extend(installed.functions);
+		presenters = installed.presenters;
+		#[cfg(feature = "test-support")]
+		rnx_test::present(&mut presenters)?;
 	}
 	if startup {
 		let mut session = session::Session::with_ceiling(context, repl::ceiling())?
@@ -300,7 +303,7 @@ fn serve(
 	}
 	if let Some(transport) = worker_transport {
 		// Fatal transport errors are not script stderr or a successful cell.
-		if worker::run(transport, context, http, lifecycle.clone()).is_err() {
+		if worker::run(transport, context, http, lifecycle.clone(), presenters).is_err() {
 			terminal::exit(1);
 		}
 		return Ok(());
@@ -371,7 +374,14 @@ fn serve(
 	// A session is what someone typing `rnx` almost always wants, and it works
 	// whether standard input is a terminal or a pipe.
 	if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
-		return repl::run(context, host_functions, http, splash, lifecycle.clone());
+		return repl::run(
+			context,
+			host_functions,
+			http,
+			splash,
+			lifecycle.clone(),
+			presenters,
+		);
 	}
 	if args.first().is_some_and(|s| s == "run") {
 		// Flags are read only before the script path. Everything after the
@@ -549,9 +559,9 @@ fn install_extensions(
 	extensions: Extensions,
 	context: &mut Context,
 	lifecycle: &lifecycle::Lifecycle,
-) -> Vec<host::HostFunction> {
+) -> extensions::Installed {
 	match extensions.install_with(context, lifecycle) {
-		Ok(functions) => functions,
+		Ok(installed) => installed,
 		Err(message) => {
 			eprintln!("error: {}", format::terminal_safe(&message));
 			terminal::exit(1);
@@ -582,6 +592,9 @@ mod namespace_tests {
 			"rnx_test::test_pending",
 			"rnx_test::test_allocation_peak",
 			"rnx_test::test_reset_allocation_peak",
+			"rnx_test::test_presented",
+			"rnx_test::test_broken",
+			"rnx_test::test_loud",
 		]);
 		expected.sort();
 		assert_eq!(names, expected);

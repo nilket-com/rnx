@@ -6,26 +6,41 @@ const SCALARS: usize = 80;
 const BYTES: usize = 8192;
 const OMITTED: &str = "\n[preview byte limit; remainder omitted]\n";
 
-struct Output {
-	text: String,
+/// The adapter's own byte accounting over any sink: at most `BYTES` bytes
+/// of whole tokens, then the omission marker, then nothing. Both the explicit
+/// `preview()` string and the session presenter go through this, so their
+/// text is identical when the outer budget is sufficient.
+struct Capped<'a> {
+	written: usize,
+	stopped: bool,
+	sink: &'a mut dyn FnMut(&str) -> bool,
 }
-impl Output {
-	fn new() -> Self {
+impl<'a> Capped<'a> {
+	fn new(sink: &'a mut dyn FnMut(&str) -> bool) -> Self {
 		Self {
-			text: String::new(),
+			written: 0,
+			stopped: false,
+			sink,
 		}
 	}
 	// Whole bounded tokens only; reserve the final marker before every append.
 	fn push(&mut self, token: &str) -> bool {
-		if token.len() > BYTES - OMITTED.len() - self.text.len() {
+		if self.stopped {
 			return false;
 		}
-		self.text.push_str(token);
-		true
-	}
-	fn truncated(mut self) -> String {
-		self.text.push_str(OMITTED);
-		self.text
+		if token.len() > BYTES - OMITTED.len() - self.written {
+			self.stopped = true;
+			(self.sink)(OMITTED);
+			return false;
+		}
+		self.written += token.len();
+		if (self.sink)(token) {
+			true
+		} else {
+			// The outer sink is full; it has appended its own marker.
+			self.stopped = true;
+			false
+		}
 	}
 }
 
@@ -75,12 +90,29 @@ fn cell(value: p::AnyValue<'_>) -> Result<String, String> {
 		_ => return Err("polars preview: unsupported cell dtype".into()),
 	})
 }
+/// Render into a fresh string: the explicit `preview()`.
 pub(crate) fn render(frame: &p::DataFrame) -> Result<String, String> {
-	let mut out = Output::new();
+	let mut text = String::new();
+	render_into(frame, &mut |token| {
+		text.push_str(token);
+		true
+	})?;
+	Ok(text)
+}
+/// Render into any sink under the adapter's `BYTES` cap and omission marker.
+/// The sink returns `false` when it is full (the session presenter's outer
+/// budget); rendering then stops and `Ok(false)` says the output is partial.
+/// Only structurally bounded slices are visited: at most `ROWS` rows and
+/// `COLUMNS` columns, each scalar cut at `SCALARS`.
+pub(crate) fn render_into(
+	frame: &p::DataFrame,
+	sink: &mut dyn FnMut(&str) -> bool,
+) -> Result<bool, String> {
+	let mut out = Capped::new(sink);
 	macro_rules! append {
 		($token:expr) => {
 			if !out.push($token) {
-				return Ok(out.truncated());
+				return Ok(false);
 			}
 		};
 	}
@@ -117,7 +149,7 @@ pub(crate) fn render(frame: &p::DataFrame) -> Result<String, String> {
 		}
 		append!("\n");
 	}
-	Ok(out.text)
+	Ok(true)
 }
 
 #[cfg(test)]
@@ -175,15 +207,118 @@ mod tests {
 	}
 	#[test]
 	fn total_byte_boundary_and_complete_tokens() {
-		let mut out = Output::new();
+		let mut text = String::new();
+		let mut sink = |t: &str| {
+			text.push_str(t);
+			true
+		};
+		let mut out = Capped::new(&mut sink);
 		assert!(out.push(&"x".repeat(BYTES - OMITTED.len())));
 		assert!(!out.push("x"));
-		assert_eq!(out.truncated().len(), BYTES);
-		let text = render(&strings(11, 9, "🦀", &"\u{1b}".repeat(100))).unwrap();
+		assert!(!out.push("y"));
+		assert_eq!(text.len(), BYTES);
+		assert!(text.ends_with(OMITTED));
+		let big = strings(10, 8, "column", &"\u{1b}".repeat(80));
+		let text = render(&big).unwrap();
 		assert!(text.len() <= BYTES && text.ends_with(OMITTED));
 		assert!(!text.contains('\u{1b}'));
-		// Each entire escaped cell is admitted or rejected, never sliced.
-		assert_eq!(text.matches("\\u{1b}").count() % 80, 0);
+	}
+	#[test]
+	fn a_presenter_sink_gets_the_same_bounded_text_as_the_explicit_preview() {
+		// A frame that exhausts the adapter cap: ten rows, eight columns, eighty
+		// crab scalars per cell (the reviewer's counterexample).
+		let big = strings(10, 8, "column", &"🦀".repeat(80));
+		let explicit = render(&big).unwrap();
+		assert!(explicit.len() < BYTES && explicit.ends_with(OMITTED));
+		let mut automatic = String::new();
+		let complete = render_into(&big, &mut |t| {
+			automatic.push_str(t);
+			true
+		})
+		.unwrap();
+		assert!(!complete);
+		assert_eq!(automatic, explicit);
+		// A smaller outer sink truncates earlier and keeps its own marker.
+		let mut small = String::new();
+		let complete = render_into(&big, &mut |t| {
+			if small.len() + t.len() > 500 {
+				small.push_str("<outer>");
+				false
+			} else {
+				small.push_str(t);
+				true
+			}
+		})
+		.unwrap();
+		assert!(!complete && small.ends_with("<outer>") && small.len() <= 500 + "<outer>".len());
+		assert!(!small.contains(OMITTED));
+	}
+	/// The work behind a presentation is structural, not proportional to
+	/// the frame: the sink sees the same token count for 200,000 rows by 40
+	/// columns as for 10 by 8, exactly ROWS × COLUMNS cells are inspected,
+	/// and each string scalar is cut at SCALARS characters before it is
+	/// pushed. Output bytes are bounded separately by the cap.
+	#[test]
+	fn inspection_is_bounded_by_structure_not_frame_size() {
+		fn tokens(frame: &p::DataFrame) -> (usize, usize, usize) {
+			let (mut count, mut cells, mut bytes) = (0, 0, 0);
+			render_into(frame, &mut |t| {
+				count += 1;
+				bytes += t.len();
+				if t.starts_with("\"cell") {
+					cells += 1;
+				}
+				true
+			})
+			.unwrap();
+			(count, cells, bytes)
+		}
+		let small = tokens(&strings(10, 8, "column", "cell"));
+		let huge = tokens(&strings(200_000, 40, "column", "cell"));
+		// One more token for the omission line and a longer title: nothing
+		// else grows with the frame.
+		assert_eq!(huge.1, ROWS * COLUMNS);
+		assert_eq!(
+			(huge.0, huge.1),
+			(small.0 + 1, small.1),
+			"{small:?} {huge:?}"
+		);
+		assert!(huge.2 - small.2 < 100, "{small:?} {huge:?}");
+		// Long scalars: at most SCALARS characters of each of the ROWS ×
+		// COLUMNS visited cells reach the sink, whatever their length.
+		let long = strings(12, 9, "column", &"🦀".repeat(5_000));
+		let mut scalars = 0;
+		let mut pushed = 0;
+		let mut bytes = 0;
+		let complete = render_into(&long, &mut |t| {
+			pushed += 1;
+			bytes += t.len();
+			let count = t.matches('🦀').count();
+			assert!(count <= SCALARS, "{count} scalars in one token");
+			scalars += count;
+			true
+		})
+		.unwrap();
+		// The byte cap stops this frame long before its 80 cells; the count
+		// of scalars that reached the sink is bounded by both limits.
+		assert!(!complete && bytes <= BYTES);
+		assert!(
+			scalars <= ROWS * COLUMNS * SCALARS && pushed <= small.0 + 1,
+			"{scalars} {pushed}"
+		);
+	}
+	/// Rendering reads the frame and changes nothing: the same text on
+	/// every call, and the frame equal to its clone afterwards.
+	#[test]
+	fn rendering_is_deterministic_and_leaves_the_frame_unchanged() {
+		let frame = strings(11, 9, "column", "cell");
+		let copy = frame.clone();
+		let first = render(&frame).unwrap();
+		for _ in 0..10 {
+			assert_eq!(render(&frame).unwrap(), first);
+		}
+		assert!(frame.equals_missing(&copy));
+		assert_eq!(frame.shape(), (11, 9));
 	}
 	#[test]
 	fn null_strings_and_numeric_spelling() {

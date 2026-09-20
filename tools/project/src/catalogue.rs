@@ -37,17 +37,22 @@ pub(crate) struct Entry {
 	pub name: &'static str,
 	package: &'static str,
 	hook: Hook,
+	/// Record 0068: newly authored declarations request the adapter's
+	/// session presenter. Existing declarations are never rewritten.
+	presentation: bool,
 }
 const ENTRIES: [Entry; 2] = [
 	Entry {
 		name: "polars",
 		package: "rnx-polars",
 		hook: Hook::Plain,
+		presentation: true,
 	},
 	Entry {
 		name: "postgres",
 		package: "rnx-postgres",
 		hook: Hook::Lifecycle,
+		presentation: false,
 	},
 ];
 pub(crate) fn listing() -> String {
@@ -146,6 +151,7 @@ pub(crate) fn author(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Can
 			package: package.into(),
 			builder: "build".into(),
 			hook,
+			presentation: entry.presentation,
 		};
 		if let Some(old) = original.native.get(&name) {
 			if canonical(&base.join(&old.path))? != adapter
@@ -219,6 +225,7 @@ fn author_git(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Candidate,
 				package: n.package.clone(),
 				builder: n.builder.clone(),
 				hook: n.hook,
+				presentation: n.presentation,
 			}
 		} else {
 			Native {
@@ -228,11 +235,15 @@ fn author_git(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Candidate,
 				package: e.package.into(),
 				builder: "build".into(),
 				hook: e.hook,
+				presentation: e.presentation,
 			}
 		};
 		if let Some(old) = original.native.get(e.name) {
 			let mut comparison = old.clone();
 			let mut expected = n.clone();
+			// An existing declaration keeps its own presentation choice; the
+			// catalogue never rewrites it (record 0068).
+			expected.presentation = old.presentation;
 			if let (Some(a), Some(b)) = (&old.path, &n.path) {
 				comparison.path = Some(
 					canonical(&base.join(a))?

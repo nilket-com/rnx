@@ -76,6 +76,9 @@ fn wrapper_style(
 			Hook::Lifecycle => "with_lifecycle",
 		};
 		main += &format!(".{hook}({name:?}, {alias}::{})", native.builder);
+		if native.presentation {
+			main += &format!(".present({name:?}, {alias}::present)");
+		}
 	}
 	main += ")\n}\n";
 	let cargo = Cargo {
@@ -155,6 +158,7 @@ pub(crate) fn git_wrapper(
 					package: n.package.clone(),
 					builder: n.builder.clone(),
 					hook: n.hook,
+					presentation: n.presentation,
 				},
 			)
 		})

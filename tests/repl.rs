@@ -1285,3 +1285,76 @@ fn editing_ctrl_c_preserves_a_started_http_request() {
 	terminal.send(":q\n");
 	server.join().unwrap();
 }
+
+/// Record 0068: a top-level native value with a presenter shows its
+/// presentation; everything the record leaves alone stays as it was.
+#[test]
+#[cfg(feature = "test-support")]
+fn gate_0068_a_presented_value_at_the_prompt() {
+	let history = history_file("presentation");
+	let mut t = Terminal::spawn_with(&history, &[("NO_COLOR", "1")]);
+	t.prompt();
+	t.send("let v = rnx_test::test_presented(3);\r");
+	t.prompt();
+	// Suppressed by the semicolon: no presentation and no number spent.
+	assert!(!clean(&t.seen).contains("Presented with"));
+	t.send("v\r");
+	t.expect("[2] Presented with 3 rows\n");
+	t.prompt();
+	// Containers, tuples and results keep the generic rendering.
+	t.send("[v]\r");
+	t.expect("[3] [<::rnx_test::Presented>]\n");
+	t.prompt();
+	t.send("(1, v)\r");
+	t.expect("[4] (1, <::rnx_test::Presented>)\n");
+	t.prompt();
+	t.send("Ok(v)\r");
+	t.expect("[5] Ok(<::rnx_test::Presented>)\n");
+	t.prompt();
+	// A failing presenter: the evaluation stands, the number is spent once,
+	// the error is escaped and bounded, and prior bindings remain usable.
+	t.send("let b = rnx_test::test_broken(); b\r");
+	t.expect("[6] <::rnx_test::Broken> (preview unavailable: \\u{1b}[31mbroken\\u{1b}[0m ");
+	t.prompt();
+	let shown = clean(&t.seen);
+	assert!(
+		!shown.contains("\u{1b}[31m"),
+		"raw control reached the terminal"
+	);
+	assert!(
+		shown.len() < 40_000,
+		"unbounded error text: {} bytes",
+		shown.len()
+	);
+	t.send("v\r");
+	t.expect("[7] Presented with 3 rows\n");
+	t.prompt();
+	// A presenter that never stops pushing is cut at the budget; the OSC
+	// sequence it emits is escaped, never interpreted.
+	t.send("rnx_test::test_loud()\r");
+	t.expect("[8] \\u{1b}]0;title\\u{7}");
+	t.prompt();
+	let shown = clean(&t.seen);
+	assert!(
+		!shown.contains("\u{1b}]0;title"),
+		"raw OSC reached the terminal"
+	);
+	assert!(
+		shown.len() < 40_000,
+		"unbounded presenter text: {} bytes",
+		shown.len()
+	);
+	// :vars keeps its own policy: type labels, not presentations.
+	t.send(":vars\r");
+	t.expect("v");
+	t.prompt();
+	assert!(!t.pending().contains("Presented with"));
+	// :reset keeps the registry.
+	t.send(":reset\r");
+	t.prompt();
+	t.send("rnx_test::test_presented(9)\r");
+	t.expect("[1] Presented with 9 rows\n");
+	t.prompt();
+	t.send(":quit\r");
+	t.wait_exit();
+}
