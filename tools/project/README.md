@@ -148,6 +148,28 @@ observations on copies, not a speed or exact-space guarantee; the
 separates node counts, logical/allocated estimates, wall time and measured free
 space, including the bytes already deleted before resume.
 
+### The shared build directory
+
+Record 0069: assemblies whose runtime and every native are Git declarations
+carrying `shared_build = true` compile in one directory per cache root and
+build context, `<root>/build/<key>`, so a second assembly over the same
+natives compiles only its own wrapper. `rnx cache list` shows it as
+`build-<key>` with its size and the number of local entries whose ready
+document names it (what the tool recorded, not every consumer). Removing an
+entry never touches it. `rnx cache remove build-<key> --quiescent` removes
+it through the same rename-then-delete path; it refuses `busy` while any
+build holds the directory's coordination lock (`locks/build-<key>.lock`),
+and an interrupted removal is listed and resumed under the same name. The
+shared directory is Cargo's intermediate output, and Cargo may rewrite a
+build script's output there when its declared inputs change; an executable
+that reads such output at runtime must not be built in it, which is what
+the declaration promises (see "Add a known adapter"). Where that promise is
+kept, executables published from shared builds hold no reference to the
+directory and removing it breaks none of them; the tool refuses publication
+of an executable that holds the directory's path, but cannot detect a reader
+that learns the path another way, so the guarantee rests on the declaration,
+not on the scan.
+
 
 ## Open the project's prompt
 
@@ -223,6 +245,19 @@ choice, and enabling it changes the generated wrapper, so the project relocks
 and builds once. Relative paths stay relative, absolute paths stay absolute. No catalogue selector remains in your
 manifest or lock, so future catalogue changes cannot reinterpret it. Moving a
 relative source layout still requires relocking its canonical build identity.
+
+For a Git runtime (`[runtime] git = …, rev = …`, the form `:dep` writes), add
+also writes `shared_build = true` for both catalogue adapters: the
+maintainers' statement that nothing in the adapter's dependency graph reads
+retained build output at runtime, so the assembly may compile in the shared
+build directory (record 0069). An assembly shares only when its runtime and
+every native are Git declarations and every native carries the field; a path
+declaration keeps a private directory whatever it declares. The field is
+optional, defaults to false, and is left alone on an existing declaration.
+An adapter author who declares it for a graph that does read retained
+output breaks their own executables when that output is rewritten or
+removed; the tool refuses the detectable case (an executable that holds the
+directory's path) and names the declaration to drop.
 
 Add preserves existing text and appends missing tables in name order. An
 equivalent existing declaration is a no-op that does not touch the manifest;

@@ -118,3 +118,16 @@ the full cross-check is blocked in the inherited ring build by missing `lib.exe`
 `scripts/third-party-notices.py --check` verifies the independent dependency
 inventory and texts, including checked provenance for missing crate-package
 texts. The pre-existing missing syntree text remains explicitly listed.
+
+## Shared compilation
+
+Record 0069: a Git declaration of this adapter written by `rnx project add`
+or `:dep` carries `shared_build = true`, the maintainers' statement that
+nothing in its dependency graph reads retained build output (`OUT_DIR`) at
+runtime, so its assemblies compile in the cache's shared build directory.
+The record's gate 3 exercised the PostgreSQL executable published from a shared
+build through later builds in the same directory, a build script re-run there,
+and the directory's removal. A fork of this adapter that adds such a reader
+must drop the declaration; the tool refuses publication when the executable
+holds the directory's path, and cannot see a reader that learns the path
+another way.

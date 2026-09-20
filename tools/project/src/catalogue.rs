@@ -40,6 +40,13 @@ pub(crate) struct Entry {
 	/// Record 0068: newly authored declarations request the adapter's
 	/// session presenter. Existing declarations are never rewritten.
 	presentation: bool,
+	/// Record 0069: the maintainers' statement, for a newly authored Git
+	/// declaration, that nothing in the adapter's dependency graph reads
+	/// retained build output at runtime, so its assembly may compile in the
+	/// shared build directory. Backed by gate 3's lifetime evidence for the
+	/// adapter's executables on the supported toolchain; existing
+	/// declarations are never rewritten.
+	shared_build: bool,
 }
 const ENTRIES: [Entry; 2] = [
 	Entry {
@@ -47,12 +54,14 @@ const ENTRIES: [Entry; 2] = [
 		package: "rnx-polars",
 		hook: Hook::Plain,
 		presentation: true,
+		shared_build: true,
 	},
 	Entry {
 		name: "postgres",
 		package: "rnx-postgres",
 		hook: Hook::Lifecycle,
 		presentation: false,
+		shared_build: true,
 	},
 ];
 pub(crate) fn listing() -> String {
@@ -238,9 +247,8 @@ fn author_git(raw: Vec<u8>, base: &Path, entries: &[Entry]) -> Result<Candidate,
 				builder: "build".into(),
 				hook: e.hook,
 				presentation: e.presentation,
-				// Record 0069 writes this only after gate 3 has shown the
-				// adapter's executables hold no reference to shared storage.
-				shared_build: false,
+				// A Git declaration only: path declarations never share.
+				shared_build: e.shared_build,
 			}
 		};
 		if let Some(old) = original.native.get(e.name) {
@@ -312,4 +320,38 @@ pub(crate) fn supported_runtime(path: &Path) -> bool {
 		toml::Value::String(path.into())
 	);
 	author(raw.into_bytes(), Path::new("/"), &ENTRIES).is_ok()
+}
+
+#[cfg(test)]
+mod shared_build_tests {
+	use super::*;
+	const GIT: &str = "format = 2\n[application]\nentry = \"main.rn\"\n[runtime]\ngit = \"https://example.invalid/rnx\"\nrev = \"0123456789abcdef0123456789abcdef01234567\"\n";
+	/// Record 0069: a newly authored Git declaration carries the maintainers'
+	/// `shared_build = true` for both catalogue adapters; an existing
+	/// declaration without it is left alone, and one with it is accepted.
+	#[test]
+	fn git_authoring_writes_the_declaration_and_keeps_existing_choices() {
+		let c = author(GIT.into(), Path::new("/"), &ENTRIES).unwrap();
+		let text = String::from_utf8(c.bytes).unwrap();
+		let d = crate::schemas::Declaration::parse(text.as_bytes()).unwrap();
+		assert!(d.native["polars"].shared_build && d.native["postgres"].shared_build);
+		assert!(d.native["polars"].presentation && !d.native["postgres"].presentation);
+		assert_eq!(text.matches("shared_build = true").count(), 2);
+		let old = format!(
+			"{GIT}\n[native.polars]\ngit = \"https://example.invalid/rnx\"\nrev = \"0123456789abcdef0123456789abcdef01234567\"\npackage = \"rnx-polars\"\nbuilder = \"build\"\nhook = \"plain\"\npresentation = true\n"
+		);
+		let c = author(old.clone().into(), Path::new("/"), &ENTRIES[..1]).unwrap();
+		assert_eq!(c.existing, vec!["polars".to_string()]);
+		assert_eq!(
+			String::from_utf8(c.bytes).unwrap(),
+			old,
+			"an undeclared existing declaration is not rewritten"
+		);
+		let declared = old.replace(
+			"presentation = true\n",
+			"presentation = true\nshared_build = true\n",
+		);
+		let c = author(declared.clone().into(), Path::new("/"), &ENTRIES[..1]).unwrap();
+		assert_eq!(String::from_utf8(c.bytes).unwrap(), declared);
+	}
 }

@@ -212,3 +212,16 @@ frame while Polars pool threads persist. SIGINT during collect cannot stop the
 native call. A file that finishes in the same poll can retain successful
 completion; an ensuing await observes the signal after collect returns. The
 observed roughly 312 ms signal-to-exit interval is not a cancellation bound.
+
+## Shared compilation
+
+Record 0069: a Git declaration of this adapter written by `rnx project add`
+or `:dep` carries `shared_build = true`, the maintainers' statement that
+nothing in its dependency graph reads retained build output (`OUT_DIR`) at
+runtime, so its assemblies compile in the cache's shared build directory.
+The record's gate 3 exercised the Polars executable published from a shared
+build through later builds in the same directory, a build script re-run there,
+and the directory's removal. A fork of this adapter that adds such a reader
+must drop the declaration; the tool refuses publication when the executable
+holds the directory's path, and cannot see a reader that learns the path
+another way.
