@@ -1,6 +1,9 @@
 # rnx 0069: assemblies share compilation
 
-Status: second draft after review. Built on the accepted probe, [the shared
+Status: accepted after three drafts; gate 1 prototype ready for review, see
+[the wrapper identity evidence](0069_wrapper_identity_evidence.md) (note its
+numbering correction: generator 4, Git identity format 4).
+Originally: second draft after review. Built on the accepted probe, [the shared
 compilation probe evidence](0069_shared_compilation_probe_evidence.md)
 (rnx `4799d52`, bench `8997902`). 0068 is closed on Linux. The first draft
 claimed retained-output preservation by construction of source identity; the
