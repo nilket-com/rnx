@@ -90,10 +90,14 @@ fingerprints inside the directory, which is what they are for. A different
 toolchain, target, profile, feature set or admitted configuration is a
 different directory.
 
-An assembly builds in the shared directory when its runtime is a Git-source
-declaration and every native declaration carries `shared_build = true`
-(decision 3) — the stock `:dep` world, where the catalogue writes it. It
-builds with `--config build.build-dir=<that directory>` while keeping its
+One eligibility rule, applied at lock time and nowhere else: an assembly
+builds in the shared directory when its runtime is a Git-source declaration,
+every native is a Git-source declaration, and every native carries
+`shared_build = true` (decision 3) — the stock `:dep` world, where the
+catalogue writes it. A path native with `shared_build = true` makes the
+assembly private (the declaration is accepted and recorded, and the path
+disqualifies, as it would without it); an assembly with a Git runtime and no
+natives is shared, since only the runtime's graph is in it. It builds with `--config build.build-dir=<that directory>` while keeping its
 own `--target-dir` for the final artifact, publication and receipts exactly
 as today. The user's `CARGO_*` overrides stay refused: the setting is passed
 by the tool on its own command line, never read from the environment or
@@ -130,10 +134,16 @@ executables neither change when the shared directory is rebuilt into nor
 break when it is removed. Absent or false means private, which is today.
 The declaration is optional and serialized only when true, so existing
 declarations, locks and envelopes keep their bytes; old readers refuse the
-field by name as they refuse `presentation` (0068). The catalogue writes it
-for `polars` and `postgres` once gate 3 has shown their executables hold no
-reference to the shared directory on this toolchain, and it leaves existing
-declarations alone.
+field by name as they refuse `presentation` (0068). The runtime's own
+dependency graph is vouched for by the record, not by a declaration: gate 3
+shows that a runtime-only shared executable holds no reference and survives
+the rewrite and removal sequence, and that evidence is what makes the
+zero-native case eligible; a runtime revision that changed that would need
+its own record. The catalogue writes the declaration for `polars` and for
+`postgres` only after gate 3 has shown, separately, that a Polars
+executable, a PostgreSQL executable and the combined executable hold no
+reference to the shared directory on this toolchain and survive the same
+sequence; it leaves existing declarations alone.
 
 Trust follows the existing line: a build script is trusted Rust, and so is
 this statement about the graph it builds. The tool enforces what it can
@@ -246,9 +256,12 @@ counterexample — a reader that learns its path from runtime configuration —
 with a false declaration: the scan cannot see it, the record's expected
 result is that the declaration is the breach, and the gate records the
 observed rewrite as the documented consequence, not as a product defect. A
-Polars executable from a declared shared build holds no reference and runs
-unchanged after the same sequence, which is the evidence the catalogue's
-declaration for Polars rests on. `rnx cache list` shows the shared
+runtime-only executable, a Polars executable, a PostgreSQL executable and
+the combined executable from declared shared builds each hold no reference
+and run unchanged after the same sequence (a PostgreSQL query against the
+0055 fixture cluster, not only a symbol check), which is the evidence the
+zero-native rule and both catalogue declarations rest on; either declaration
+is withheld if its executable fails this. `rnx cache list` shows the shared
 directory with its scoped count; entry removal leaves it; `remove
 build-<key>` refuses while a builder holds the lock, refuses without
 `--quiescent`, removes with it through rename-then-delete; a removal killed
