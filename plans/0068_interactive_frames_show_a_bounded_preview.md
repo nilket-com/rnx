@@ -1,6 +1,9 @@
 # rnx 0068: interactive frames show a bounded preview
 
-Status: accepted for the isolated gate 1 prototype after draft review. Gate 1
+Status: CLOSED on Linux 2026-09-19. Gate 4 measured no startup change and
+sub-millisecond bounded presentation; see
+[the costs and regression evidence](0068_costs_and_regression_evidence.md).
+Originally: accepted for the isolated gate 1 prototype after draft review. Gate 1
 must settle the native presentation registration seam before any product public
 API or generated wrapper changes. 0067 is closed on Linux. Its clang/mold
 follow-up is rnx `1f497de`, bench `3d2a2f9`.
@@ -13,7 +16,7 @@ Gate 1 was accepted after three reviews. Gate 2 ported it into the product
 with the product-level matrix; see [the product port evidence](0068_product_port_evidence.md).
 Gate 3 ran the journey at a real prompt and through a real kernel; see
 [the interactive journey evidence](0068_interactive_journey_evidence.md).
-Gate 4 remains.
+Gate 4 closed the record on Linux.
 
 ## Problem and user journey
 
