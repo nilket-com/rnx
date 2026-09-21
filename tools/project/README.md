@@ -572,28 +572,42 @@ are in rnx-bench/probes/project-workflow. No tool implementation module is publi
 ## Requesting adapters from a live session
 
 A session opened through this tool retains its project association. Type
-`:dep polars postgres` to request catalogue adapters: the tool describes the
-change, asks for consent, then adds, locks, builds or attaches, and checks actual
-startup before replacement. Already-installed names are a no-op. Use
-`:dep --offline polars` to forbid source downloads. This is a restart with binding
-loss, not dynamic loading; saved history is reloaded but never replayed.
+`:dep polars postgres` to request catalogue adapters: the tool adds, locks,
+builds or attaches, and checks actual startup before replacement, printing
+nothing unless it fails (record 0070). `:depv polars postgres` is the same
+preparation shown in full: the description of the change, a confirmation,
+the phases and Cargo's output. In quiet mode the tool's own output and
+Cargo's go to `<project>/.rnx/dep.log` — first line the reopen command for a
+scratch project, then the output up to a size limit with a marker naming
+what was left out, then on failure the error and the recovery commands — and
+a failure prints the error, the last lines of that output and the log's
+path. The log is replaced by the next preparation of the same project, is
+created only once Cargo is about to run, and is not an input to any
+identity. Already-installed names are a no-op (silent under `:dep`). Use
+`:dep --offline polars` to forbid source downloads. This is a restart with
+binding loss, not dynamic loading; saved history is reloaded but never
+replayed.
 
 A stock session delegates to its own executable. Associated sessions use their
 recorded manager. An unassociated assembled session uses `RNX_PROJECT_TOOL` when
 set, otherwise a stock `rnx` on PATH after a bounded capability check. Invalid
 explicit overrides refuse without fallback. `RNX_DEP_RUNTIME` selects a path
 runtime; it never silently replaces an associated project. A retained scratch project is created
-only after consent. Its successful replacement prints the quoted command to
-reopen it. Projects and scratch consumers reuse the same shared assembly when
+only after consent (the request itself under `:dep`). A `:depv` replacement
+prints the quoted command to reopen it; under `:dep` that command is the log's
+first line. Projects and scratch consumers reuse the same shared assembly when
 their native inputs match. The working directory stays the caller's directory.
 On Unix, scratch preparation makes existing user-owned `rnx` and `rnx/sessions`
-state directories private, reporting any permission repair. This accommodates
+state directories private, reporting any permission repair (into the log under
+`:dep`). This accommodates
 history directories created by older runners under a permissive umask. Describe
 and decline change no permissions; symlinks and directories owned by another
 user still refuse. New history directories are created with mode `0700`.
 A private startup probe executes builders before the replacement executes them
 again. Failed preparation preserves the old session, but project edits may remain;
-cleanup or exec failure after the restart announcement is terminal.
+cleanup or exec failure after the restart announcement (printed by `:depv`
+only) is terminal and is named in both modes. An older management executable
+that knows no quiet mode refuses `:dep` by name and still serves `:depv`.
 
 ## Retained runtime sources
 

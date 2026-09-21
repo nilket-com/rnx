@@ -29,14 +29,11 @@ cargo install --git https://github.com/nilket-com/rnx \
 rnx
 ```
 
-At the prompt, enter `:dep polars` and answer the preparation notice. Cargo fetches
-and builds the adapter, then rnx restarts the session with Polars available:
+At the prompt, enter `:dep polars`. Cargo fetches and builds the adapter, then
+rnx restarts the session with Polars available, printing nothing along the way:
 
 ```text
 [1] > :dep polars
-...
-Continue? [y/N] y
-...
 [1] > polars::lit(42).is_ok()
 [1] true
 ```
@@ -44,8 +41,14 @@ Continue? [y/N] y
 This installs one executable. No companion program, runtime installation or
 source-checkout environment variable is needed. The first adapter build can take
 a few minutes; later sessions reuse its assembly. Restart loses bindings but
-keeps history. The printed command reopens the retained scratch project.
-A notebook can use the assembled executable as its worker.
+keeps history. `:dep` prints only what varies — a failure, with the error, the
+last lines of Cargo's output and the path of the log that holds it up to a
+size limit, with a marker naming what was left out;
+`:depv polars` is the same preparation with the notice, a confirmation and
+Cargo's output on the terminal. The command that reopens the retained scratch
+project is the first line of that log (`.rnx/dep.log` in the scratch project)
+and is printed by `:depv`. A notebook can use the assembled executable as its
+worker.
 
 Cargo owns the fetched sources. Ordinary project launches trust that checkout;
 `--verify`, lock, build and attachment check its contents. Developer path overrides
@@ -334,8 +337,9 @@ omit management and delegate dependency preparation to their associated manager,
 or an explicit `RNX_PROJECT_TOOL`, or a capable stock `rnx` on PATH.
 
 A clean stock build with known Git coordinates describes its revision without
-fetching. After consent, `:dep polars` uses Cargo to acquire that revision, builds
-or attaches to its assembly, probes startup and restarts the session. No runtime
+fetching. `:dep polars` uses Cargo to acquire that revision, builds or attaches
+to its assembly, probes startup and restarts the session; `:depv polars` does
+the same after showing the description and asking. No runtime
 installation or companion program is required. Dirty or unknown builds print a
 path-override recovery. Existing path projects and
 `RNX_DEP_RUNTIME=/absolute/path/to/rnx` retain their content checks. A selected
@@ -350,11 +354,15 @@ result is verified before publishing the lock. The other checks refuse edits
 without repairing them.
 
 A session opened with `rnx project session --manifest ...` edits that project;
-a stock session creates a retained scratch project only after consent. The
-replacement prints an absolute, shell-quoted command to reopen it later.
+a stock session creates a retained scratch project; with `:dep` the request is
+the consent, with `:depv` a confirmation is asked first. The absolute,
+shell-quoted command to reopen the scratch project is the first line of its
+`.rnx/dep.log` and is printed by a `:depv` replacement.
 
-The notice lists the additions, existing declarations and build cost before
-asking. `:dep --offline polars` prevents Cargo from fetching sources. The first
+`:depv`'s notice lists the additions, existing declarations and build cost
+before asking; `:dep` prints nothing on success and, on failure, the error,
+the last lines of the output and the log's path (record 0070). `:dep --offline
+polars` prevents Cargo from fetching sources. The first
 Polars build can take about 100 seconds with registry sources cached; another
 consumer of the same assembly attaches without compiling. A successful restart
 loses bindings and declarations, resets numbering, keeps your working directory,

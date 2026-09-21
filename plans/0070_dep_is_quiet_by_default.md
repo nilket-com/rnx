@@ -1,7 +1,15 @@
 # rnx 0070: `:dep` is quiet by default, `:depv` says everything
 
-Status: accepted for gate 1 after two drafts. 0069 awaits the user's slim confirmation and is
-otherwise complete; this record builds on its transition path.
+Status: accepted for gate 1 after two drafts; revised 2026-09-21 on the
+user's clarification that quiet prints nothing on success (decision 2 and
+the journey). Gate 1 accepted, see
+[the quiet transition evidence](0070_quiet_transition_evidence.md); gate 2
+accepted, see [the prompt evidence](0070_prompt_evidence.md); gate 3
+passes on nano, see
+[the costs and regression evidence](0070_costs_and_regression_evidence.md).
+The record closes on Linux when the user reports the slim screens. 0069
+awaits the user's slim confirmation and is otherwise complete; this record
+builds on its transition path.
 
 ## Problem and user journey
 
@@ -14,34 +22,26 @@ and how long it took, and land at the new prompt. The full account should
 remain one command away for the case where something goes wrong or the user
 wants to watch: `:depv polars`.
 
-The intended result:
+The intended result, in the user's words: not one line of noise, where
+noise is any text that is time invariant — anything that would print the
+same on every run:
 
 ```
 [1] > :dep polars
-preparing polars: a first Polars build takes about 100 seconds; the session
-restarts when it is ready and its bindings are lost
-  author
-  resolve
-  build/attach
-  startup check
-prepared in 96 s
-restart is beginning
-Reopen this scratch session:
-  'rnx' project session --manifest '…/rnx.toml'
-rnx: a Rune session. :help lists the commands, :quit ends it.
-[1] >
+[1] > let x = polars::read_csv("sales.csv", …)?;
 ```
 
-and, when the same runtime and adapter are already built, `prepared in 4 s`
-with the same four phase lines. `prepared in N s` reports preparation only;
-"restart is beginning" stays exactly where 0063 put it, printed when
-preparation has succeeded and before the irreversible cleanup begins, and
-the reopen command is printed only by the
-replacement once it has initialized, as 0063 established — a preparation
-message is not proof that cleanup and exec succeeded, and their named
-failures are unchanged. A failure prints the phase, the actual last lines of
+Quiet preparation prints nothing on success: no notice, no phases, no
+timing, no "restart is beginning", no reopen command, and the replacement
+session starts without its banner. What varies from run to run is a
+failure, and a failure prints where it happened, the actual last lines of
 Cargo's output and the log's path, or the tool's own error when Cargo never
-ran.
+ran. The reopen command for a scratch session is written as the first line
+of the log and stays available through `rnx project session`. "restart is
+beginning" stays where 0063 put it for `:depv` — printed when preparation
+has succeeded and before the irreversible cleanup begins — and the reopen
+command is printed by the initialized replacement in `:depv` only; cleanup
+and exec failures keep their names in both modes.
 
 ## Current boundaries, checked in source
 
@@ -64,41 +64,44 @@ group and the session continues — is unchanged by anything here.
 ### 1. Two spellings, one protocol
 
 `:dep NAME…` is quiet; `:depv NAME…` is verbose. Both accept `--offline`.
-Quiet does not prompt: the request is the consent, and the notice is
-reduced to one sentence that still says the two things a person must know —
-what will be built and roughly how long, and that the session restarts and
-its bindings are lost. Verbose keeps today's notice, prompt and full output
-exactly, so 0063's and 0067's journeys are `:depv`'s journeys. `:help`
-lists both; history records what was typed.
+Quiet does not prompt and does not explain: the request is the consent,
+and what a first build costs and that the session restarts are documented
+under `:help dep`, not printed. Verbose keeps today's notice, prompt and
+full output exactly, so 0063's and 0067's journeys are `:depv`'s journeys.
+`:help` lists both; history records what was typed.
 
-### 2. Quiet output is the phases and the outcome; capture is a drained, rolling tail
+### 2. Quiet prints nothing on success; capture is a drained, rolling tail
 
 The session passes the mode to the helper in the transition request. In
-quiet mode the tool gives Cargo *build* commands piped stdout and stderr and
-drains both concurrently and completely, whatever their volume: a noisy
-child is never blocked on a full pipe, and Ctrl-C still kills the process
-group and reaps it as 0063 requires. `commands::run_inner`'s bounded
-capture, which stops at the limit and fails, is not reused for this; it
-stays what it is for the commands that parse their output. `cargo metadata`
-keeps its stdout as returned data under its existing limit — lock and
-verification parse it — and only its stderr is diagnostic.
+quiet mode the tool gives Cargo *build* commands piped stdout and stderr
+and drains both concurrently and completely, whatever their volume: a
+noisy child is never blocked on a full pipe, and Ctrl-C still kills the
+process group and reaps it as 0063 requires. `commands::run_inner`'s
+bounded capture, which stops at the limit and fails, is not reused for
+this; it stays what it is for the commands that parse their output. `cargo
+metadata` keeps its stdout as returned data under its existing limit —
+lock and verification parse it — and only its stderr is diagnostic.
 
 Two sinks receive the drained bytes. The log, `<project>/.rnx/dep.log`,
-receives a prefix of at most the document limit, then a marker line naming
-how many bytes were not written, and draining continues without writing.
-A rolling tail in memory keeps the last thirty lines *and* at most 16 KiB,
-whichever bound is tighter, so a single enormous line cannot grow it; the
-tail is what a failure prints, terminal-escaped, so it is the actual end
-of the output even when the log was cut long before. Streams are
-interleaved in arrival order in both sinks with no claim of exact
-ordering between them. A failure with an empty log or one where Cargo
-never started prints the tool's own error, which is never replaced by a
-log path.
+receives the reopen command as its first line, then everything captured
+before the log existed, then a prefix of Cargo's output of at most the
+document limit, then a marker line naming how many bytes were not written,
+and draining continues without writing. The log is written and finalized
+through the handle the tool checked when it opened it; nothing reopens the
+path. A rolling
+tail in memory keeps the last thirty lines *and* at most 16 KiB, whichever
+bound is tighter, so a single enormous line cannot grow it; the tail is
+what a failure prints, terminal-escaped, so it is the actual end of the
+output even when the log was cut long before. Streams are interleaved in
+arrival order in both sinks with no claim of exact ordering between them.
+A failure with an empty log or one where Cargo never started prints the
+tool's own error, which is never replaced by a log path.
 
-On the terminal in quiet mode: one line per phase, `prepared in N s`, and
-the lines the tool prints on its own behalf that a person must act on (the
-scratch-directory repair notice), which are one line each. Cargo's own
-progress bars are not shown; they need a terminal it no longer has.
+On the terminal in quiet mode, on success: nothing — not the tool's
+notices (the scratch-directory repair notice included; it goes to the
+log), not the session's, and the replacement starts with `--no-splash`.
+Cargo's own progress bars are not shown; they need a terminal it no longer
+has.
 
 ### 3. The terminal requirement stays
 
@@ -170,12 +173,12 @@ journey fixture.
 
 ### Gate 2 — the session's two spellings
 
-`:dep` and `:depv` in `repl.rs` and `:help`; the one-sentence notice; no
-prompt in quiet mode; "restart is beginning" at its existing position and the reopen
-command from the replacement only. At a real prompt: `:dep polars` first
-build, then a fresh session's `:dep polars` attach, then `:dep postgres`,
-each printing at most the lines decision 2 names (counted), no `Compiling`,
-no `Continue?`; a cleanup or exec failure still named;
+`:dep` and `:depv` in `repl.rs` and `:help`; no notice, no prompt and no
+output in quiet mode; "restart is beginning" and the reopen command in
+`:depv` only. At a real prompt: `:dep polars` first build, then a fresh
+session's `:dep polars` attach, then `:dep postgres`, each printing nothing
+between the echo and the replacement's first prompt (counted: zero lines);
+a cleanup or exec failure still named;
 `:depv polars` printing the notice, waiting for the prompt, and showing
 Cargo's lines; a build failure in quiet mode (an unreachable origin) showing
 the tail and the path; Ctrl-C during a quiet build returning to the prompt

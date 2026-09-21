@@ -303,7 +303,7 @@ mod tests {
 		names.extend(crate::fs::install(&mut context).unwrap());
 		names
 	}
-	const COMMANDS: [(&str, &str); 9] = crate::repl::COMMANDS;
+	const COMMANDS: [(&str, &str); 10] = crate::repl::COMMANDS;
 
 	#[test]
 	fn vars_lists_bindings_in_name_order_with_type_and_value() {
@@ -573,7 +573,7 @@ mod budget_tests {
 		names.extend(crate::fs::install(&mut context).unwrap());
 		names
 	}
-	const COMMANDS: [(&str, &str); 9] = crate::repl::COMMANDS;
+	const COMMANDS: [(&str, &str); 10] = crate::repl::COMMANDS;
 
 	#[test]
 	fn an_oversized_unknown_name_is_bounded_and_escaped() {

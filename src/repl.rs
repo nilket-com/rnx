@@ -49,10 +49,14 @@ impl rustyline::Prompt for NumberedPrompt {
 /// The session's commands and their one-line descriptions, which are what
 /// `:help` shows: the description lives with the command, not in a second
 /// catalogue.
-pub const COMMANDS: [(&str, &str); 9] = [
+pub const COMMANDS: [(&str, &str); 10] = [
 	(
 		":dep",
-		"prepare native dependencies and restart after confirmation",
+		"prepare native dependencies and restart, printing nothing unless it fails; a first Polars build takes minutes, the restart loses bindings, and Cargo's output and the reopen command are in the project's .rnx/dep.log",
+	),
+	(
+		":depv",
+		"the same with the full notice, a confirmation and Cargo's output",
 	),
 	(":quit", "(:q) end the session"),
 	(":clear", "clear the screen, keeping session state"),
@@ -400,23 +404,32 @@ pub fn run(
 		if let Some(path) = &history {
 			let _ = editor.append_history(path);
 		}
-		let outcome = if input.split_whitespace().next() == Some(":dep") {
-			let answer = crate::dep_transition::prepare(&input, || {
+		let spelling = input.split_whitespace().next();
+		let outcome = if matches!(spelling, Some(":dep" | ":depv")) {
+			let answer = crate::dep_transition::prepare(&input, spelling == Some(":dep"), || {
 				editor
 					.readline("Continue? [y/N] ")
 					.is_ok_and(|line| matches!(line.trim(), "y" | "Y" | "yes"))
 			});
+			let quiet = spelling == Some(":dep");
 			match answer {
 				Ok(true) => {
-					println!("restart is beginning");
+					if !quiet {
+						println!("restart is beginning");
+					}
 					Outcome::Quit
 				}
 				Ok(false) => Outcome::Continue,
 				Err(error) => {
-					eprintln!(
-						"dependency preparation refused: {}",
-						crate::format::terminal_safe(&error)
-					);
+					// Quiet prints the error and nothing standard around it.
+					if quiet {
+						eprintln!("{}", crate::format::terminal_safe(&error));
+					} else {
+						eprintln!(
+							"dependency preparation refused: {}",
+							crate::format::terminal_safe(&error)
+						);
+					}
 					Outcome::Continue
 				}
 			}

@@ -6,12 +6,19 @@ pub(crate) fn installed(mut names: Vec<String>) {
 	INSTALLED.with(|v| *v.borrow_mut() = names);
 }
 #[cfg(not(unix))]
-pub(crate) fn prepare(_: &str, _: impl FnOnce() -> bool) -> Result<bool, String> {
+pub(crate) fn prepare(_: &str, _: bool, _: impl FnOnce() -> bool) -> Result<bool, String> {
 	Err("dependency transitions are not supported on this platform".into())
 }
+/// Record 0070: `quiet` is `:dep`'s mode — no prompt, phases and the
+/// outcome, Cargo's output in the project's log; `:depv` keeps the notice,
+/// the prompt and the full output.
 #[cfg(unix)]
-pub(crate) fn prepare(input: &str, consent: impl FnOnce() -> bool) -> Result<bool, String> {
-	unix::prepare(input, consent)
+pub(crate) fn prepare(
+	input: &str,
+	quiet: bool,
+	consent: impl FnOnce() -> bool,
+) -> Result<bool, String> {
+	unix::prepare(input, quiet, consent)
 }
 #[cfg(unix)]
 mod unix {
@@ -236,7 +243,11 @@ mod unix {
 			}
 		}
 	}
-	pub(super) fn prepare(input: &str, consent: impl FnOnce() -> bool) -> Result<bool, String> {
+	pub(super) fn prepare(
+		input: &str,
+		quiet: bool,
+		consent: impl FnOnce() -> bool,
+	) -> Result<bool, String> {
 		if !std::io::stdin().is_terminal() || !std::io::stdout().is_terminal() {
 			return Err(":dep requires a terminal; use rnx project add, lock, build and session --manifest FILE".into());
 		}
@@ -293,28 +304,39 @@ mod unix {
 			probe.finish()?;
 		}
 		let mut helper = Helper::spawn(&tool, &[])?;
-		helper.send(
-			1,
-			&wire::Fields::from([
-				(1, names.join("\n")),
-				(2, association),
-				(
-					3,
-					std::env::current_exe()
-						.map_err(err)?
-						.to_str()
-						.ok_or("executable path is not Unicode")?
-						.into(),
-				),
-				(4, installed),
-				(5, if offline { "offline" } else { "online" }.into()),
-				(6, flags().join("\n")),
-			]),
-		)?;
+		// The mode field only for quiet: an older tool, which knows no such
+		// field, still serves :depv exactly as before.
+		let mut request = wire::Fields::from([
+			(1, names.join("\n")),
+			(2, association),
+			(
+				3,
+				std::env::current_exe()
+					.map_err(err)?
+					.to_str()
+					.ok_or("executable path is not Unicode")?
+					.into(),
+			),
+			(4, installed),
+			(5, if offline { "offline" } else { "online" }.into()),
+			(6, flags().join("\n")),
+		]);
+		if quiet {
+			request.insert(7, "quiet".into());
+		}
+		helper.send(1, &request)?;
 		let (kind, description) = helper.receive()?;
 		if kind == 8 {
 			wire::exact(&description, &[1])?;
 			helper.finish()?;
+			// A tool that predates the mode field refuses the request whole,
+			// before writing anything; say what to do about it.
+			if description[&1].contains("unexpected message fields") {
+				return Err(format!(
+					"{} predates quiet preparation; update the installed rnx, or use :depv",
+					tool.display()
+				));
+			}
 			return Err(description[&1].clone());
 		}
 		if kind != 2 {
@@ -329,11 +351,17 @@ mod unix {
 				.shutdown(std::net::Shutdown::Write)
 				.map_err(err)?;
 			helper.finish()?;
-			println!("already installed; session unchanged");
+			if !quiet {
+				println!("already installed; session unchanged");
+			}
 			return Ok(false);
 		}
-		println!("{}", crate::format::terminal_safe(&description[&2]));
-		if !consent() {
+		// Quiet prints nothing: the request is the consent, and what a
+		// preparation costs is documented under :help, not printed.
+		if !quiet {
+			println!("{}", crate::format::terminal_safe(&description[&2]));
+		}
+		if !quiet && !consent() {
 			helper.send(3, &wire::Fields::new())?;
 			helper
 				.socket
@@ -372,12 +400,18 @@ mod unix {
 		#[cfg(feature = "test-support")]
 		point("before-commit", &result[&1])?;
 		helper.check()?;
+		let mut flags = flags();
+		if quiet && !flags.iter().any(|f| f == "--no-splash") {
+			// The replacement's banner would read the same every time.
+			flags.insert(0, "--no-splash".into());
+		}
 		let next = Replacement {
 			path: result[&1].clone(),
 			association: result[&2].clone(),
 			stamp: result[&3].clone(),
-			reopen: result.get(&4).cloned(),
-			flags: flags(),
+			// The reopen command is the log's first line in quiet mode.
+			reopen: if quiet { None } else { result.get(&4).cloned() },
+			flags,
 		};
 		next.recheck()?;
 		#[cfg(feature = "test-support")]

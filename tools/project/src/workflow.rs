@@ -1,5 +1,7 @@
 mod add;
 mod git_sources;
+#[cfg(unix)]
+mod quiet;
 mod shared;
 mod startup;
 mod transition;

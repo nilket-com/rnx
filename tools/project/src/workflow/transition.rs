@@ -163,6 +163,8 @@ struct Description {
 	entries: Vec<catalogue::Entry>,
 	scratch: bool,
 	offline: bool,
+	/// Record 0070: the session asked for quiet preparation (field 7).
+	quiet: bool,
 	runtime: Option<crate::runtime_install::Selection>,
 	git: Option<crate::entry::Coordinates>,
 }
@@ -262,15 +264,26 @@ fn scratch_path() -> Result<PathBuf, String> {
 		.join(format!("session-{}-{nonce}", std::process::id()))
 		.join("rnx.toml"))
 }
+/// Record 0070: field 7 names the preparation mode. Absent means the
+/// prompted, verbose behaviour an older session drives; only the explicit
+/// value `quiet` grants quiet preparation; anything else is a protocol error.
+fn mode(request: &protocol::Fields) -> Result<bool, String> {
+	match request.get(&7).map(String::as_str) {
+		None | Some("verbose") => Ok(false),
+		Some("quiet") => Ok(true),
+		Some(_) => Err("invalid preparation mode".into()),
+	}
+}
 fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Description, String> {
-	protocol::exact(
-		request,
-		if request.contains_key(&6) {
-			&[1, 2, 3, 4, 5, 6]
-		} else {
-			&[1, 2, 3, 4, 5]
-		},
-	)?;
+	let mut expected = vec![1, 2, 3, 4, 5];
+	if request.contains_key(&6) {
+		expected.push(6);
+	}
+	if request.contains_key(&7) {
+		expected.push(7);
+	}
+	protocol::exact(request, &expected)?;
+	let quiet = mode(request)?;
 	super::startup::flags(request.get(&6).map(String::as_str).unwrap_or(""))?;
 	let entries = catalogue::select(&request[&1].lines().map(str::to_owned).collect::<Vec<_>>())?;
 	let offline = match request[&5].as_str() {
@@ -357,6 +370,7 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 		entries,
 		scratch,
 		offline,
+		quiet,
 		runtime: selection,
 		git,
 	})
@@ -500,6 +514,9 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			return Err("expected management capability request".into());
 		}
 		protocol::exact(&fields, &[])?;
+		// Still version 1: an older session requires exactly this answer.
+		// Record 0070's mode field is optional in the request, so a newer
+		// session learns of an older tool from that tool's refusal instead.
 		return protocol::write(&mut socket, 6, &protocol::Fields::from([(1, "1".into())]));
 	}
 	commands::install_signals()?;
@@ -540,31 +557,78 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		if let Some(runtime) = &fresh.runtime {
 			runtime.validate()?;
 		}
-		if fresh.scratch {
-			create_scratch(&fresh)?;
+		// Record 0070: in quiet mode everything on both standard streams —
+		// the scratch repair notice, the tool's own notices, the phases and
+		// Cargo — drains into the tail from here and into the log once the
+		// project is open; the terminal gets nothing unless preparation
+		// fails.
+		let mut capture = if fresh.quiet {
+			Some(super::quiet::Capture::begin()?)
+		} else {
+			None
+		};
+		let created = if fresh.scratch {
+			create_scratch(&fresh)
+		} else {
+			Ok(())
+		};
+		let opened = created.and_then(|()| Project::open(&fresh.manifest));
+		let p = match opened {
+			Ok(p) => p,
+			Err(e) => {
+				return match capture.take() {
+					Some(c) => c.finish(Err(e), "prepare", ""),
+					None => Err(e),
+				};
+			}
+		};
+		if let Some(c) = capture.as_mut() {
+			let header = if fresh.scratch {
+				format!(
+					"reopen this scratch session with: {} session --manifest {}",
+					crate::entry::project_prefix().unwrap_or_else(|_| "rnx project".into()),
+					super::add::shell_word(&p.manifest)
+						.unwrap_or_else(|_| p.manifest.display().to_string())
+				)
+			} else {
+				format!("project {}", p.manifest.display())
+			};
+			c.attach_log(&p.dot, &header);
 		}
-		let p = Project::open(&fresh.manifest)?;
-		if input::read(&p.manifest, input::MANIFEST_LIMIT)? != fresh.original {
-			return Err("manifest changed before authoring; request consent again".into());
-		}
-		if !fresh.scratch {
-			validate_association(&p, &request[&2], &request[&3], &request[&4])?;
+		// Every early exit from here restores the streams through `finish`.
+		let early: Result<(), String> = (|| {
+			if input::read(&p.manifest, input::MANIFEST_LIMIT)? != fresh.original {
+				return Err("manifest changed before authoring; request consent again".into());
+			}
+			if !fresh.scratch {
+				validate_association(&p, &request[&2], &request[&3], &request[&4])?;
+			}
+			Ok(())
+		})();
+		if let Err(e) = early {
+			return match capture.take() {
+				Some(c) => c.finish(Err(e), "prepare", ""),
+				None => Err(e),
+			};
 		}
 		let mut phase = "author";
+		let announce = |name: &str, _: &mut Option<super::quiet::Capture>| {
+			eprintln!("dependency phase: {name}");
+		};
 		let prepare: Result<(), String> = (|| {
-			eprintln!("dependency phase: author");
+			announce("author", &mut capture);
 			#[cfg(feature = "test-support")]
 			protocol::trace("tool-author");
 			fault("dep-author")?;
 			p.add(&fresh.entries)?;
 			phase = "resolve";
-			eprintln!("dependency phase: resolve");
+			announce("resolve", &mut capture);
 			#[cfg(feature = "test-support")]
 			protocol::trace("tool-resolve");
 			fault("dep-resolve")?;
 			p.lock(fresh.offline)?;
 			phase = "build/attach";
-			eprintln!("dependency phase: build/attach");
+			announce("build/attach", &mut capture);
 			#[cfg(feature = "test-support")]
 			protocol::trace("tool-build");
 			fault("dep-build")?;
@@ -572,7 +636,7 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			let (checked, digest, bytes, replacement) = p.prepared_session()?;
 			checked.recheck()?;
 			phase = "startup check";
-			eprintln!("dependency phase: startup check");
+			announce("startup check", &mut capture);
 			#[cfg(feature = "test-support")]
 			protocol::trace("tool-probe");
 			super::startup::check(&checked, request.get(&6).map(String::as_str).unwrap_or(""))?;
@@ -606,16 +670,26 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			protocol::write(&mut socket, 5, &ready)?;
 			Ok(())
 		})();
-		prepare.map_err(|e| {
+		let recovery = |e: &str| {
 			format!(
-				"{phase}: {e}; project files may have been published; retry with:\n{}{}",
+				"project files may have been published; retry with:\n{}{}",
 				crate::entry::recovery(&p.manifest).unwrap_or_else(|e| e),
-				fresh
-					.git
-					.map(|c| c.acquisition_help(&e))
-					.unwrap_or_default()
+				fresh.git.map(|c| c.acquisition_help(e)).unwrap_or_default()
 			)
-		})
+		};
+		match capture.take() {
+			// Quiet: the error itself, the tail and the log; the recovery
+			// commands are standard text and go to the log.
+			Some(c) => {
+				let hint = prepare
+					.as_ref()
+					.err()
+					.map(|e| recovery(e))
+					.unwrap_or_default();
+				c.finish(prepare, phase, &hint)
+			}
+			None => prepare.map_err(|e| format!("{phase}: {e}; {}", recovery(&e))),
+		}
 	})();
 	if let Err(e) = outcome {
 		protocol::write(&mut socket, 8, &protocol::Fields::from([(1, e)]))?;
@@ -679,5 +753,34 @@ mod scratch_directory_tests {
 			assert!(scratch_directory(&parent.join("history"), repair).is_err());
 		}
 		fs::remove_dir_all(root).unwrap();
+	}
+}
+
+#[cfg(test)]
+mod mode_tests {
+	use super::*;
+	/// Record 0070: only the explicit value grants quiet preparation; an
+	/// absent field is the prompted, verbose behaviour; anything else refuses.
+	#[test]
+	fn a_missing_mode_is_verbose_and_never_quiet_consent() {
+		let base = protocol::Fields::from([
+			(1, "polars".into()),
+			(2, String::new()),
+			(3, "/x".into()),
+			(4, String::new()),
+			(5, "online".into()),
+		]);
+		assert!(!mode(&base).unwrap());
+		let mut verbose = base.clone();
+		verbose.insert(7, "verbose".into());
+		assert!(!mode(&verbose).unwrap());
+		let mut quiet = base.clone();
+		quiet.insert(7, "quiet".into());
+		assert!(mode(&quiet).unwrap());
+		for value in ["", "Quiet", "yes", "quiet\n", "silent"] {
+			let mut bad = base.clone();
+			bad.insert(7, value.into());
+			assert!(mode(&bad).is_err(), "{value:?}");
+		}
 	}
 }
