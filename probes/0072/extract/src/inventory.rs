@@ -62,6 +62,72 @@ impl Docs {
     }
 }
 
+impl Docs {
+    /// Render a type with canonical paths; see `Param::ty_canonical`.
+    pub fn canon(&self, krate: &str, t: &Type) -> String {
+        match t {
+            Type::ResolvedPath(p) => {
+                let base = match self.resolve(krate, p.id) {
+                    Resolved::Local(home, hid) => self.crates[&home].paths.get(&hid).map(|s| s.path.join("::")).unwrap_or_else(|| p.path.clone()),
+                    Resolved::Foreign(_, path, _) => path,
+                    Resolved::Unknown(_) => format!("?{}", p.path),
+                };
+                let args: Vec<String> = match p.args.as_deref() {
+                    Some(rustdoc_types::GenericArgs::AngleBracketed { args, constraints }) => {
+                        let mut v: Vec<String> = args
+                            .iter()
+                            .filter_map(|a| match a {
+                                rustdoc_types::GenericArg::Type(t) => Some(self.canon(krate, t)),
+                                rustdoc_types::GenericArg::Const(c) => Some(c.expr.clone()),
+                                _ => None,
+                            })
+                            .collect();
+                        for c in constraints {
+                            if let rustdoc_types::AssocItemConstraintKind::Equality(rustdoc_types::Term::Type(t)) = &c.binding {
+                                v.push(format!("{} = {}", c.name, self.canon(krate, t)));
+                            }
+                        }
+                        v
+                    }
+                    Some(rustdoc_types::GenericArgs::Parenthesized { inputs, output }) => {
+                        let ins: Vec<String> = inputs.iter().map(|t| self.canon(krate, t)).collect();
+                        return match output {
+                            Some(o) => format!("{}({}) -> {}", base, ins.join(", "), self.canon(krate, o)),
+                            None => format!("{}({})", base, ins.join(", ")),
+                        };
+                    }
+                    _ => vec![],
+                };
+                if args.is_empty() { base } else { format!("{}<{}>", base, args.join(", ")) }
+            }
+            Type::BorrowedRef { is_mutable, type_, lifetime } => format!("&{}{}{}", if lifetime.as_deref() == Some("'static") { "'static " } else { "" }, if *is_mutable { "mut " } else { "" }, self.canon(krate, type_)),
+            Type::Slice(i) => format!("[{}]", self.canon(krate, i)),
+            Type::Array { type_, len } => format!("[{}; {}]", self.canon(krate, type_), len),
+            Type::Tuple(ts) => format!("({})", ts.iter().map(|t| self.canon(krate, t)).collect::<Vec<_>>().join(", ")),
+            Type::ImplTrait(bounds) => format!("impl {}", self.canon_bounds(krate, bounds)),
+            Type::DynTrait(d) => format!("dyn {}", d.traits.iter().map(|t| self.canon_path(krate, &t.trait_)).collect::<Vec<_>>().join(" + ")),
+            Type::Generic(g) => g.clone(),
+            other => render::ty(other),
+        }
+    }
+
+    pub fn canon_path(&self, krate: &str, p: &rustdoc_types::Path) -> String {
+        self.canon(krate, &Type::ResolvedPath(p.clone()))
+    }
+
+    pub fn canon_bounds(&self, krate: &str, bounds: &[rustdoc_types::GenericBound]) -> String {
+        bounds
+            .iter()
+            .filter_map(|b| match b {
+                rustdoc_types::GenericBound::TraitBound { trait_, .. } => Some(self.canon_path(krate, trait_)),
+                rustdoc_types::GenericBound::Outlives(l) => Some(l.clone()),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+            .join(" + ")
+    }
+}
+
 pub enum Resolved {
     Local(String, Id),
     /// Belongs to a crate that was not documented (std, core, arrow2, ...).
@@ -73,6 +139,10 @@ pub enum Resolved {
 pub struct Param {
     pub name: String,
     pub ty: String,
+    /// The same type with every path replaced by the defining item's
+    /// canonical path (`polars_core::frame::DataFrame`, `core::option::Option`),
+    /// so a consumer can key on identity rather than on a bare name.
+    pub ty_canonical: String,
     #[serde(skip)]
     pub raw: Type,
 }
@@ -104,13 +174,22 @@ pub struct Callable {
     pub name: String,
     pub canonical_path: String,
     pub found_paths: Vec<String>,
+    /// Public paths of the item from its own crate's root (spellable with
+    /// a direct dependency on that crate), shortest first.
+    pub crate_paths: Vec<String>,
     pub receiver: String,
     pub params: Vec<Param>,
     pub ret: Option<String>,
+    pub ret_canonical: Option<String>,
     #[serde(skip)]
     pub ret_raw: Option<Type>,
     pub generics: Vec<GenericParam>,
     pub where_clause: Vec<String>,
+    /// Generic parameter name -> canonical bounds (from both the parameter
+    /// list and the where clause), for consumers that key on identity.
+    pub generics_canonical: Vec<(String, String)>,
+    /// First paragraph of the item's rustdoc, if any.
+    pub docs_first: Option<String>,
     #[serde(skip)]
     pub bounds_raw: Vec<(String, Vec<rustdoc_types::GenericBound>)>,
     pub owner_generic: bool,
@@ -140,9 +219,15 @@ pub struct Supporting {
     pub kind: String,
     pub canonical_path: String,
     pub found_paths: Vec<String>,
+    /// Public paths from the defining crate's own root, shortest first.
+    pub crate_paths: Vec<String>,
     pub public_fields: usize,
     /// (name, rendered type) of public fields.
     pub fields: Vec<(String, String)>,
+    /// (name, canonical rendering) of public fields.
+    pub fields_canonical: Vec<(String, String)>,
+    /// (variant, [canonical payload types]) for data-carrying variants.
+    pub variant_payloads: Vec<(String, Vec<String>)>,
     pub variants: usize,
     /// Variant names with whether they carry data.
     pub variant_shapes: Vec<(String, bool)>,
@@ -284,7 +369,67 @@ pub fn extract(docs: &Docs, root: &str) -> Inventory {
     w.inv.callables.sort_by(|a, b| a.canonical_path.cmp(&b.canonical_path).then(a.key.cmp(&b.key)));
     w.inv.supporting.sort_by(|a, b| a.canonical_path.cmp(&b.canonical_path));
     w.inv.gross = gross(docs);
-    w.inv
+    let mut inv = w.inv;
+    // Own-crate paths: walk each documented crate from its own root and
+    // take the paths it finds for the same items.
+    let mut own: HashMap<String, Vec<String>> = HashMap::new();
+    for name in docs.crates.keys() {
+        if name == root {
+            continue;
+        }
+        let sub = extract_paths_only(docs, name);
+        for (key, paths) in sub {
+            own.entry(key).or_default().extend(paths);
+        }
+    }
+    let sortkey = |p: &String| (p.matches("::").count(), p.clone());
+    for c in &mut inv.callables {
+        if let Some(v) = own.get(&c.key) {
+            let mut v: Vec<String> = v.iter().filter(|p| !p.contains(" as ")).cloned().collect();
+            v.sort_by_key(sortkey);
+            v.dedup();
+            c.crate_paths = v;
+        }
+    }
+    for s in &mut inv.supporting {
+        if let Some(v) = own.get(&s.key) {
+            let mut v: Vec<String> = v.clone();
+            v.sort_by_key(sortkey);
+            v.dedup();
+            s.crate_paths = v;
+        }
+    }
+    inv
+}
+
+/// Paths of every item reachable from `root`'s own crate root, by key.
+fn extract_paths_only(docs: &Docs, root: &str) -> HashMap<String, Vec<String>> {
+    let mut w = Walker {
+        docs,
+        inv: Inventory { root: root.to_string(), ..Default::default() },
+        seen_callable: HashMap::new(),
+        seen_support: HashMap::new(),
+        visited_types: BTreeSet::new(),
+        visited_modules: BTreeSet::new(),
+        implementors: BTreeMap::new(),
+        reachable_traits: BTreeSet::new(),
+        pending_traits: BTreeSet::new(),
+        aliases: BTreeMap::new(),
+    };
+    let Some(rc) = docs.crates.get(root) else { return HashMap::new() };
+    w.walk_module(root, rc.root, root, false);
+    let mut out = HashMap::new();
+    for c in w.inv.callables {
+        if c.krate == root {
+            out.insert(c.key, c.found_paths);
+        }
+    }
+    for s in w.inv.supporting {
+        if s.key.starts_with(&format!("{root}:")) {
+            out.insert(s.key, s.found_paths);
+        }
+    }
+    out
 }
 
 fn gross(docs: &Docs) -> BTreeMap<String, GrossCounts> {
@@ -427,8 +572,11 @@ impl<'a> Walker<'a> {
             kind: kind.to_string(),
             canonical_path: item_path(c, id).unwrap_or_else(|| found.to_string()),
             found_paths: vec![found.to_string()],
+            crate_paths: vec![],
             public_fields: fields,
             fields: vec![],
+            fields_canonical: vec![],
+            variant_payloads: vec![],
             variants,
             variant_shapes: vec![],
             generic,
@@ -477,6 +625,8 @@ impl<'a> Walker<'a> {
                         if let Some(fi) = c.index.get(f) {
                             if let ItemEnum::StructField(t) = &fi.inner {
                                 self.inv.supporting[idx].fields.push((fi.name.clone().unwrap_or_default(), render::ty(t)));
+                                let canon = self.docs.canon(krate, t);
+                                self.inv.supporting[idx].fields_canonical.push((fi.name.clone().unwrap_or_default(), canon));
                             }
                         }
                     }
@@ -488,6 +638,14 @@ impl<'a> Walker<'a> {
                         if let ItemEnum::Variant(var) = &vi.inner {
                             let data = !matches!(var.kind, rustdoc_types::VariantKind::Plain);
                             self.inv.supporting[idx].variant_shapes.push((vi.name.clone().unwrap_or_default(), data));
+                            let payload: Vec<String> = match &var.kind {
+                                rustdoc_types::VariantKind::Tuple(fs) => fs.iter().filter_map(|f| f.as_ref()).filter_map(|f| c.index.get(f)).filter_map(|fi| if let ItemEnum::StructField(t) = &fi.inner { Some(self.docs.canon(krate, t)) } else { None }).collect(),
+                                rustdoc_types::VariantKind::Struct { fields, .. } => fields.iter().filter_map(|f| c.index.get(f)).filter_map(|fi| if let ItemEnum::StructField(t) = &fi.inner { Some(format!("{}: {}", fi.name.clone().unwrap_or_default(), self.docs.canon(krate, t))) } else { None }).collect(),
+                                rustdoc_types::VariantKind::Plain => vec![],
+                            };
+                            if data {
+                                self.inv.supporting[idx].variant_payloads.push((vi.name.clone().unwrap_or_default(), payload));
+                            }
                         }
                     }
                 }
@@ -541,7 +699,11 @@ impl<'a> Walker<'a> {
                                 continue;
                             }
                             self.seen_callable.insert((key.clone(), Id(0)), self.inv.callables.len());
-                            let (recv, params, ret, ret_raw, inputs_raw) = first_method_sig(c, imp);
+                            let (recv, mut params, ret, ret_raw, inputs_raw) = first_method_sig(c, imp);
+                            for p in params.iter_mut() {
+                                p.ty_canonical = self.docs.canon(krate, &p.raw);
+                            }
+                            let ret_canonical = ret_raw.as_ref().map(|t| self.docs.canon(krate, t));
                             self.inv.callables.push(Callable {
                                 key: key.clone(),
                                 kind: CallableKind::ForeignTraitImpl,
@@ -550,12 +712,16 @@ impl<'a> Walker<'a> {
                                 name: tname.clone(),
                                 canonical_path: format!("{owner_path} as {tpath}"),
                                 found_paths: vec![format!("{found} as {tname}")],
+                                crate_paths: vec![],
                                 receiver: recv,
                                 params,
                                 ret,
+                                ret_canonical,
                                 ret_raw,
                                 generics: vec![],
                                 where_clause: vec![],
+                                generics_canonical: vec![],
+                                docs_first: None,
                                 bounds_raw: vec![],
                                 owner_generic: generic,
                                 owner_aliases: vec![],
@@ -613,7 +779,11 @@ impl<'a> Walker<'a> {
         let c = self.crate_(krate);
         let item = &c.index[&id];
         let ItemEnum::Function(f) = &item.inner else { return None };
-        let (receiver, params) = split_receiver(&f.sig.inputs);
+        let (receiver, mut params) = split_receiver(&f.sig.inputs);
+        for p in params.iter_mut() {
+            p.ty_canonical = self.docs.canon(krate, &p.raw);
+        }
+        let ret_canonical = f.sig.output.as_ref().map(|t| self.docs.canon(krate, t));
         let generics = f
             .generics
             .params
@@ -641,6 +811,8 @@ impl<'a> Walker<'a> {
                 }
             }
         }
+        let generics_canonical: Vec<(String, String)> = bounds_raw.iter().map(|(n, b)| (n.clone(), self.docs.canon_bounds(krate, b))).collect();
+        let docs_first = item.docs.as_ref().map(|d| d.split("\n\n").next().unwrap_or("").trim().to_string()).filter(|d| !d.is_empty());
         let where_clause = f
             .generics
             .where_predicates
@@ -663,12 +835,16 @@ impl<'a> Walker<'a> {
             name: item.name.clone().unwrap_or_default(),
             canonical_path,
             found_paths: vec![found.to_string()],
+            crate_paths: vec![],
             receiver,
             params,
             ret: f.sig.output.as_ref().map(render::ty),
+            ret_canonical,
             ret_raw: f.sig.output.clone(),
             generics,
             where_clause,
+            generics_canonical,
+            docs_first,
             bounds_raw,
             owner_generic,
             owner_aliases: vec![],
@@ -703,7 +879,7 @@ fn split_receiver(inputs: &[(String, Type)]) -> (String, Vec<Param>) {
             };
             continue;
         }
-        params.push(Param { name: name.clone(), ty: render::ty(ty), raw: ty.clone() });
+        params.push(Param { name: name.clone(), ty: render::ty(ty), ty_canonical: String::new(), raw: ty.clone() });
     }
     (receiver, params)
 }

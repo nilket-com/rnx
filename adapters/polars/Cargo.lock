@@ -2689,7 +2689,18 @@ version = "0.0.0"
 dependencies = [
  "libc",
  "polars",
+ "polars-core",
+ "polars-dtype",
+ "polars-error",
+ "polars-io",
+ "polars-lazy",
+ "polars-ops",
+ "polars-plan",
+ "polars-schema",
+ "polars-time",
+ "polars-utils",
  "rnx",
+ "serde_json",
  "tokio",
 ]
 
