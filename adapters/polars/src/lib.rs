@@ -4,21 +4,27 @@ use polars::prelude as p;
 use rnx::rune::{self, runtime::Vec as RuneVec};
 mod engine;
 mod files;
+#[cfg(feature = "generated")]
+#[doc(hidden)]
+pub mod generated;
+#[cfg(all(feature = "generated", feature = "test-support"))]
+#[doc(hidden)]
+pub mod oracle;
 mod preview;
 mod values;
 
-#[derive(rune::Any)]
+#[derive(rune::Any, Clone)]
 #[rune(item = ::polars)]
-struct DataFrame(p::DataFrame);
-#[derive(rune::Any)]
+struct DataFrame(pub(crate) p::DataFrame);
+#[derive(rune::Any, Clone)]
 #[rune(item = ::polars)]
-struct LazyFrame(p::LazyFrame);
-#[derive(rune::Any)]
+struct LazyFrame(pub(crate) p::LazyFrame);
+#[derive(rune::Any, Clone)]
 #[rune(item = ::polars)]
-struct LazyGroupBy(p::LazyGroupBy);
-#[derive(rune::Any)]
+struct LazyGroupBy(pub(crate) p::LazyGroupBy);
+#[derive(rune::Any, Clone)]
 #[rune(item = ::polars)]
-struct Expr(p::Expr);
+struct Expr(pub(crate) p::Expr);
 fn err(e: impl std::fmt::Display) -> String {
 	e.to_string()
 }
@@ -183,8 +189,16 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.function("engine_counts", engine::counts)
 		.build()
 		.map_err(err)?;
+	// Record 0073: generated bindings, registered after the hand-written
+	// ones so a hand-written name always wins.
+	#[cfg(feature = "generated")]
+	{
+		generated::support::install(m).map_err(err)?;
+		generated::types::install(m).map_err(err)?;
+		generated::functions::install(m).map_err(err)?;
+	}
 
-	Ok(vec![
+	let mut catalogue = vec![
 		(
 			"polars::DataFrame::preview".into(),
 			"preview() -> Result<String>: dimensions and bounded data; 10 rows, 8 columns, 80 scalars per name/cell, 8192 bytes",
@@ -213,5 +227,8 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 			"polars::DataFrame::write_parquet_new".into(),
 			"write_parquet_new(path) -> Result<()>: uncompressed, create-new; failure may leave a partial file",
 		),
-	])
+	];
+	#[cfg(feature = "generated")]
+	catalogue.extend(generated::catalogue::CATALOGUE.iter().map(|(k, v)| (k.to_string(), *v)));
+	Ok(catalogue)
 }

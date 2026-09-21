@@ -1,0 +1,13 @@
+[package]
+name = "regcost"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+rune = { version = "=0.14.2", default-features = false, features = ["std"] }
+
+[profile.release]
+debug = false

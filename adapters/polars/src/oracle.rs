@@ -1,0 +1,379 @@
+//! Record 0073: support for the generated oracle tests. Hand-written,
+//! only built with `test-support`. Values are compared structurally with
+//! a per-case order policy, errors by kind, panics by message, and every
+//! outcome the tests have not explicitly approved fails. Oracle
+//! variability never excuses a binding failure: the binding side is
+//! judged first, and known nondeterministic oracles are excluded per case
+//! by the generator, not tolerated here.
+use polars::prelude as p;
+use rnx::rune;
+
+/// A shown value: plain text, or a frame as its header plus one string
+/// per row, so rows are never split out of a delimited text.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Repr {
+	Text(String),
+	Frame { head: String, rows: Vec<String> },
+}
+
+impl Repr {
+	/// Ordered flat text, for nesting inside options, vectors and tuples.
+	pub fn to_text(&self) -> String {
+		match self {
+			Repr::Text(s) => s.clone(),
+			Repr::Frame { head, rows } => format!("{head}; rows=[{}]", rows.join(" | ")),
+		}
+	}
+	pub fn prefixed(self, prefix: &str) -> Repr {
+		match self {
+			Repr::Text(s) => Repr::Text(format!("{prefix}{s}")),
+			Repr::Frame { head, rows } => Repr::Frame { head: format!("{prefix}{head}"), rows },
+		}
+	}
+}
+
+/// Every cell of a series, by index, as `AnyValue` debug text; nulls
+/// included. Independent of Polars's `fmt` feature.
+pub fn series_repr(s: &p::Series) -> Repr {
+	let mut out = format!("{}:{:?}:[", s.name(), s.dtype());
+	for i in 0..s.len() {
+		if i > 0 {
+			out.push_str(", ");
+		}
+		match s.get(i) {
+			Ok(v) => out.push_str(&format!("{v:?}")),
+			Err(e) => out.push_str(&format!("<get error: {e}>")),
+		}
+	}
+	out.push(']');
+	Repr::Text(out)
+}
+
+pub fn column_repr(c: &p::Column) -> Repr {
+	series_repr(c.as_materialized_series())
+}
+
+/// Dimensions and the columns with name and dtype in the header, then
+/// one entry per row with all its cells.
+pub fn frame_repr(df: &p::DataFrame) -> Repr {
+	let mut head = format!("shape=({}, {}); columns=[", df.height(), df.width());
+	let mut cols = Vec::new();
+	for name in df.get_column_names() {
+		match df.column(name) {
+			Ok(c) => {
+				head.push_str(&format!("{}:{:?},", c.name(), c.dtype()));
+				cols.push(c.as_materialized_series().clone());
+			}
+			Err(e) => head.push_str(&format!("<column error: {e}>,")),
+		}
+	}
+	head.push(']');
+	let mut rows = Vec::with_capacity(df.height());
+	for i in 0..df.height() {
+		let mut row = String::from("(");
+		for (j, c) in cols.iter().enumerate() {
+			if j > 0 {
+				row.push_str(", ");
+			}
+			match c.get(i) {
+				Ok(v) => row.push_str(&format!("{v:?}")),
+				Err(e) => row.push_str(&format!("<get error: {e}>")),
+			}
+		}
+		row.push(')');
+		rows.push(row);
+	}
+	Repr::Frame { head, rows }
+}
+
+/// The kind name Rust matches on, the same derivation the generated
+/// `polars::Error` uses.
+pub fn error_kind(e: &p::PolarsError) -> String {
+	let kind = format!("{e:?}");
+	kind.split(['(', ' ', '{']).next().unwrap_or("Unknown").to_string()
+}
+
+/// The kind of a `polars::Error` held in a Rune value.
+pub fn rune_error_kind(v: &rune::Value) -> Result<String, String> {
+	v.borrow_ref::<crate::generated::support::Error>()
+		.map(|e| e.0.clone())
+		.map_err(|e| e.to_string())
+}
+
+/// What one side produced.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Side {
+	Value(Repr),
+	/// A Polars error of this kind.
+	Error(String),
+	/// A panic with this message.
+	Panic(String),
+	/// The script could not run: compile or VM error, or a conversion failure.
+	Broken(String),
+}
+
+/// How values are compared for one case. Exact ordered values by
+/// default; unordered rows only where the generator identified an
+/// operation whose Rust contract leaves row order unspecified.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Policy {
+	pub unordered_rows: bool,
+}
+
+pub const ORDERED: Policy = Policy { unordered_rows: false };
+pub const UNORDERED: Policy = Policy { unordered_rows: true };
+
+/// The classification the test asserts on. Only `Match`, `RowOrderDiffers`
+/// (under an unordered policy), `BothError` with equal kinds and
+/// `BothPanic` with equal messages are approved; everything else fails.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Outcome {
+	Match,
+	RowOrderDiffers,
+	BothError,
+	BothPanic,
+	ReuseFailed,
+	Mismatch,
+	ErrorKindMismatch,
+	PanicMismatch,
+	BindingPanicked,
+	OraclePanicked,
+	/// The oracle gave two different values: the case must be excluded
+	/// explicitly by the generator, not tolerated.
+	Nondeterministic,
+	Broken,
+}
+
+impl Outcome {
+	pub fn approved(&self) -> bool {
+		matches!(self, Outcome::Match | Outcome::RowOrderDiffers | Outcome::BothError | Outcome::BothPanic)
+	}
+	pub fn name(&self) -> &'static str {
+		match self {
+			Outcome::Match => "match",
+			Outcome::RowOrderDiffers => "row_order_differs",
+			Outcome::BothError => "both_error",
+			Outcome::BothPanic => "both_panic",
+			Outcome::ReuseFailed => "reuse_failed",
+			Outcome::Mismatch => "mismatch",
+			Outcome::ErrorKindMismatch => "error_kind_mismatch",
+			Outcome::PanicMismatch => "panic_mismatch",
+			Outcome::BindingPanicked => "binding_panicked",
+			Outcome::OraclePanicked => "oracle_panicked",
+			Outcome::Nondeterministic => "oracle_nondeterministic",
+			Outcome::Broken => "broken",
+		}
+	}
+}
+
+/// Value equality under a policy: `Some(true)` exact, `Some(false)` equal
+/// as row sets (only under an unordered policy), `None` different.
+fn same(policy: Policy, a: &Repr, b: &Repr) -> Option<bool> {
+	if a == b {
+		return Some(true);
+	}
+	match (a, b) {
+		(Repr::Frame { head: ha, rows: ra }, Repr::Frame { head: hb, rows: rb }) if policy.unordered_rows && ha == hb => {
+			let mut x = ra.clone();
+			let mut y = rb.clone();
+			x.sort();
+			y.sort();
+			if x == y { Some(false) } else { None }
+		}
+		_ => None,
+	}
+}
+
+/// Classify one case. `first` is the binding's result, `second` the same
+/// call again on the same receiver (instance methods only), `oracle` the
+/// Rust result and `again` a second run of the oracle.
+pub fn classify(policy: Policy, first: &Side, second: Option<&Side>, oracle: &Side, again: &Side) -> (Outcome, String) {
+	// The binding side is judged first: nothing about the oracle excuses
+	// a script that did not run, or panicked where Rust did not.
+	if let Side::Broken(e) = first {
+		return (Outcome::Broken, e.clone());
+	}
+	// Then the oracle must agree with itself: no approved outcome rests
+	// on a Rust result that a second run did not reproduce.
+	let agrees = match (oracle, again) {
+		(Side::Value(a), Side::Value(b)) => same(policy, a, b).is_some(),
+		(a, b) => a == b,
+	};
+	if !agrees {
+		return (Outcome::Nondeterministic, format!("polars gave {oracle:?} then {again:?}"));
+	}
+	let base = match (first, oracle) {
+		(Side::Broken(e), _) => return (Outcome::Broken, e.clone()),
+		(Side::Panic(a), Side::Panic(b)) => {
+			if a == b { (Outcome::BothPanic, a.clone()) } else { return (Outcome::PanicMismatch, format!("rune {a:?} polars {b:?}")) }
+		}
+		(Side::Panic(m), _) => return (Outcome::BindingPanicked, m.clone()),
+		(_, Side::Panic(m)) => return (Outcome::OraclePanicked, m.clone()),
+		(_, Side::Broken(e)) => return (Outcome::Broken, format!("oracle: {e}")),
+		(Side::Value(a), Side::Value(b)) => match same(policy, a, b) {
+			Some(true) => (Outcome::Match, a.to_text()),
+			Some(false) => (Outcome::RowOrderDiffers, a.to_text()),
+			None => return (Outcome::Mismatch, format!("rune {:?} polars {:?}", a.to_text(), b.to_text())),
+		},
+		(Side::Error(a), Side::Error(b)) => {
+			if a == b { (Outcome::BothError, a.clone()) } else { return (Outcome::ErrorKindMismatch, format!("rune {a} polars {b}")) }
+		}
+		(Side::Value(a), Side::Error(b)) => return (Outcome::Mismatch, format!("rune value {:?} polars error {b}", a.to_text())),
+		(Side::Error(a), Side::Value(b)) => return (Outcome::Mismatch, format!("rune error {a} polars value {:?}", b.to_text())),
+	};
+	if let Some(s) = second {
+		let reused = match (s, first) {
+			(Side::Value(a), Side::Value(b)) => same(policy, a, b).is_some(),
+			_ => s == first,
+		};
+		if !reused {
+			return (Outcome::ReuseFailed, format!("second call on the same receiver gave {s:?}"));
+		}
+	}
+	base
+}
+
+/// A formatted Rust result: a nested `<<ERR:kind>>` marker means the
+/// wrapper would have failed with that kind.
+pub fn collapse(s: String) -> Side {
+	if let Some(i) = s.find("<<ERR:") {
+		let kind = s[i + 6..].split(">>").next().unwrap_or("Unknown");
+		return Side::Error(kind.to_string());
+	}
+	Side::Value(Repr::Text(s))
+}
+
+pub fn panic_text(e: Box<dyn std::any::Any + Send>) -> String {
+	e.downcast_ref::<String>().cloned().or_else(|| e.downcast_ref::<&str>().map(|s| s.to_string())).unwrap_or_else(|| "<non-string panic>".to_string())
+}
+
+#[cfg(test)]
+mod controls {
+	//! Negative controls on the classifier: each injected wrong outcome
+	//! must fail closed. The generated runner has its own integrated
+	//! controls on top of these.
+	use super::*;
+	use polars::prelude::*;
+
+	fn df() -> p::DataFrame {
+		polars::df!("x" => [1i64, 2, 3], "y" => ["a", "b", "c"]).unwrap()
+	}
+	fn v(r: Repr) -> Side {
+		Side::Value(r)
+	}
+
+	#[test]
+	fn same_shape_wrong_frame_is_distinguished() {
+		let a = frame_repr(&df());
+		let b = frame_repr(&polars::df!("x" => [1i64, 2, 4], "y" => ["a", "b", "c"]).unwrap());
+		assert_ne!(a, b);
+		let (o, _) = classify(ORDERED, &v(a.clone()), None, &v(b.clone()), &v(b.clone()));
+		assert_eq!(o, Outcome::Mismatch);
+		let (o, _) = classify(UNORDERED, &v(a), None, &v(b.clone()), &v(b));
+		assert_eq!(o, Outcome::Mismatch, "a changed cell is a mismatch even under an unordered policy");
+	}
+
+	#[test]
+	fn a_permutation_is_a_mismatch_unless_the_case_is_unordered() {
+		let a = frame_repr(&df());
+		let b = frame_repr(&df().reverse());
+		let (o, _) = classify(ORDERED, &v(a.clone()), None, &v(b.clone()), &v(b.clone()));
+		assert_eq!(o, Outcome::Mismatch, "a reversed frame under the default policy must fail");
+		let (o, _) = classify(UNORDERED, &v(a), None, &v(b.clone()), &v(b));
+		assert_eq!(o, Outcome::RowOrderDiffers);
+	}
+
+	#[test]
+	fn rows_with_the_delimiter_in_a_cell_stay_one_row() {
+		let r = frame_repr(&polars::df!("s" => ["a | b"]).unwrap());
+		match r {
+			Repr::Frame { rows, .. } => assert_eq!(rows.len(), 1),
+			_ => panic!(),
+		}
+	}
+
+	#[test]
+	fn nulls_and_dtypes_are_visible() {
+		let s = p::Series::new("n".into(), [Some(1i64), None]);
+		assert_eq!(series_repr(&s), Repr::Text("n:Int64:[Int64(1), Null]".into()));
+	}
+
+	#[test]
+	fn changed_error_kind_fails() {
+		let e = |k: &str| Side::Error(k.into());
+		assert_eq!(classify(ORDERED, &e("ColumnNotFound"), None, &e("ComputeError"), &e("ComputeError")).0, Outcome::ErrorKindMismatch);
+		assert_eq!(classify(ORDERED, &e("ColumnNotFound"), None, &e("ColumnNotFound"), &e("ColumnNotFound")).0, Outcome::BothError);
+	}
+
+	#[test]
+	fn unrelated_panic_fails() {
+		let pnc = |m: &str| Side::Panic(m.into());
+		assert_eq!(classify(ORDERED, &pnc("injected"), None, &pnc("polars said no"), &pnc("polars said no")).0, Outcome::PanicMismatch);
+		assert_eq!(classify(ORDERED, &pnc("same"), None, &pnc("same"), &pnc("same")).0, Outcome::BothPanic);
+	}
+
+	#[test]
+	fn wrong_second_call_fails_under_both_policies() {
+		let a = frame_repr(&df());
+		let b = frame_repr(&polars::df!("x" => [9i64], "y" => ["z"]).unwrap());
+		assert_eq!(classify(ORDERED, &v(a.clone()), Some(&v(b.clone())), &v(a.clone()), &v(a.clone())).0, Outcome::ReuseFailed);
+		assert_eq!(classify(UNORDERED, &v(a.clone()), Some(&v(b)), &v(a.clone()), &v(a.clone())).0, Outcome::ReuseFailed);
+		// a second call in another row order fails under the default policy
+		let r = frame_repr(&df().reverse());
+		assert_eq!(classify(ORDERED, &v(a.clone()), Some(&v(r.clone())), &v(a.clone()), &v(a.clone())).0, Outcome::ReuseFailed);
+		assert_eq!(classify(UNORDERED, &v(a.clone()), Some(&v(r)), &v(a.clone()), &v(a)).0, Outcome::Match);
+	}
+
+	#[test]
+	fn binding_success_against_panicking_oracle_fails() {
+		let t = |s: &str| v(Repr::Text(s.into()));
+		let (o, _) = classify(ORDERED, &t("1"), None, &Side::Panic("boom".into()), &Side::Panic("boom".into()));
+		assert_eq!(o, Outcome::OraclePanicked);
+		let (o, _) = classify(ORDERED, &t("1"), None, &Side::Panic("activate 'x' feature".into()), &Side::Panic("activate 'x' feature".into()));
+		assert_eq!(o, Outcome::OraclePanicked, "a feature-gated Rust panic is not an excuse for a binding that returned a value");
+	}
+
+	#[test]
+	fn nondeterministic_oracle_never_excuses_the_binding() {
+		let t = |s: &str| v(Repr::Text(s.into()));
+		let (run1, run2) = (t("run1"), t("run2"));
+		// a broken binding is reported as such; every other binding result
+		// against a disagreeing oracle is unexpected nondeterminism, which fails
+		assert_eq!(classify(ORDERED, &Side::Broken("compile error".into()), None, &run1, &run2).0, Outcome::Broken);
+		assert_eq!(classify(ORDERED, &Side::Panic("unrelated".into()), None, &run1, &run2).0, Outcome::Nondeterministic);
+		assert_eq!(classify(ORDERED, &t("wrong"), None, &run1, &run2).0, Outcome::Nondeterministic);
+		assert_eq!(classify(ORDERED, &t("run1"), None, &run1, &run2).0, Outcome::Nondeterministic);
+		assert_eq!(classify(ORDERED, &t("run1"), Some(&t("other")), &run1, &run2).0, Outcome::Nondeterministic);
+		assert!(!Outcome::Nondeterministic.approved(), "unexpected nondeterminism fails; known cases are excluded by the generator");
+	}
+
+	#[test]
+	fn a_matching_first_run_never_hides_a_disagreeing_second_run() {
+		let a = v(frame_repr(&df()));
+		let changed = v(frame_repr(&df().reverse()));
+		assert_eq!(classify(ORDERED, &a, None, &a, &changed).0, Outcome::Nondeterministic);
+		assert_eq!(classify(ORDERED, &a, None, &a, &Side::Error("ComputeError".into())).0, Outcome::Nondeterministic);
+		assert_eq!(classify(ORDERED, &a, None, &a, &Side::Panic("later".into())).0, Outcome::Nondeterministic);
+		let e = Side::Error("ComputeError".into());
+		assert_eq!(classify(ORDERED, &e, None, &e, &Side::Error("Other".into())).0, Outcome::Nondeterministic);
+		let pnc = Side::Panic("same".into());
+		assert_eq!(classify(ORDERED, &pnc, None, &pnc, &Side::Panic("other".into())).0, Outcome::Nondeterministic);
+		// a broken binding still fails as broken, before agreement is asked
+		assert_eq!(classify(ORDERED, &Side::Broken("compile".into()), None, &a, &changed).0, Outcome::Broken);
+	}
+
+	#[test]
+	fn value_against_error_fails_both_ways() {
+		let t = v(Repr::Text("1".into()));
+		let e = Side::Error("ComputeError".into());
+		assert_eq!(classify(ORDERED, &t, None, &e, &e).0, Outcome::Mismatch);
+		assert_eq!(classify(ORDERED, &e, None, &t, &t).0, Outcome::Mismatch);
+	}
+
+	#[test]
+	fn error_kind_derivation_matches_the_generated_error() {
+		let e = p::PolarsError::ColumnNotFound("x".into());
+		assert_eq!(error_kind(&e), "ColumnNotFound");
+		assert_eq!(crate::generated::support::Error::from(e).0, "ColumnNotFound");
+	}
+}
