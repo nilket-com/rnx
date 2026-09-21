@@ -242,6 +242,14 @@ pub struct Callable {
     /// instantiation (`ChunkedArray<BooleanType>`) of a generic owner.
     pub impl_for: Option<String>,
     pub impl_bounds: Vec<(String, String)>,
+    /// Record 0076: for an inherent method of a generic owner, the impl
+    /// block's head (`for` type, canonical, possibly specialized), its
+    /// `where` predicates in canonical form, and for any impl the
+    /// associated types it binds (`Target` of a `Deref`, `Native` of a
+    /// `PolarsDataType`).
+    pub impl_head: Option<String>,
+    pub impl_where: Vec<String>,
+    pub impl_assoc: Vec<(String, String)>,
     /// First paragraph of the item's rustdoc, if any.
     pub docs_first: Option<String>,
     #[serde(skip)]
@@ -298,6 +306,20 @@ pub struct Supporting {
     /// For a trait (record 0075): the canonical types with a direct impl
     /// (`blanket` for a blanket impl), gathered while visiting types.
     pub implementors: Vec<String>,
+    /// For a trait (record 0076): every impl seen while visiting types,
+    /// with its canonical `for` type (an instantiation such as
+    /// `Logical<DateType, Int32Type>` is kept as such), its parameter
+    /// bounds, `where` predicates and bound associated types.
+    pub impls: Vec<TraitImpl>,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct TraitImpl {
+    pub for_type: String,
+    pub blanket: bool,
+    pub bounds: Vec<(String, String)>,
+    pub where_predicates: Vec<String>,
+    pub assoc_types: Vec<(String, String)>,
 }
 
 #[derive(Serialize, Default)]
@@ -334,6 +356,8 @@ struct Walker<'a> {
     visited_modules: BTreeSet<(String, Id, bool)>,
     /// trait key -> implementors, filled while visiting types.
     implementors: BTreeMap<(String, Id), Vec<String>>,
+    /// trait key -> impls with their heads, filled while visiting types.
+    trait_impls: BTreeMap<(String, Id), Vec<TraitImpl>>,
     reachable_traits: BTreeSet<(String, Id)>,
     /// traits implemented by reachable types but not reached by path yet.
     pending_traits: BTreeSet<(String, Id)>,
@@ -358,6 +382,7 @@ pub fn extract(docs: &Docs, root: &str) -> Inventory {
         visited_types: BTreeSet::new(),
         visited_modules: BTreeSet::new(),
         implementors: BTreeMap::new(),
+        trait_impls: BTreeMap::new(),
         reachable_traits: BTreeSet::new(),
         pending_traits: BTreeSet::new(),
         aliases: BTreeMap::new(),
@@ -409,6 +434,15 @@ pub fn extract(docs: &Docs, root: &str) -> Inventory {
         for s in &mut w.inv.supporting {
             if s.key == tkey {
                 s.implementors = types.clone();
+            }
+        }
+    }
+    let timpls = w.trait_impls.clone();
+    for ((krate, id), impls) in timpls {
+        let tkey = format!("{krate}:{}", id.0);
+        for s in &mut w.inv.supporting {
+            if s.key == tkey {
+                s.impls = impls.clone();
             }
         }
     }
@@ -478,6 +512,7 @@ fn extract_paths_only(docs: &Docs, root: &str) -> HashMap<String, Vec<String>> {
         visited_types: BTreeSet::new(),
         visited_modules: BTreeSet::new(),
         implementors: BTreeMap::new(),
+        trait_impls: BTreeMap::new(),
         reachable_traits: BTreeSet::new(),
         pending_traits: BTreeSet::new(),
         aliases: BTreeMap::new(),
@@ -650,6 +685,32 @@ impl<'a> Walker<'a> {
         raw.iter().map(|(n, b)| (n.clone(), self.docs.canon_bounds(krate, b))).collect()
     }
 
+    /// Every `where` predicate of an impl, canonical: `Self: LogicalType`,
+    /// `T: PolarsDataType<Array = A>`, `A = B`; lifetime predicates are
+    /// omitted.
+    fn impl_where(&self, krate: &str, g: &rustdoc_types::Generics) -> Vec<String> {
+        g.where_predicates
+            .iter()
+            .filter_map(|w| match w {
+                rustdoc_types::WherePredicate::BoundPredicate { type_, bounds, .. } => Some(format!("{}: {}", self.docs.canon(krate, type_), self.docs.canon_bounds(krate, bounds))),
+                rustdoc_types::WherePredicate::EqPredicate { lhs, rhs } => Some(format!("{} = {}", self.docs.canon(krate, lhs), match rhs { rustdoc_types::Term::Type(t) => self.docs.canon(krate, t), rustdoc_types::Term::Constant(c) => c.expr.clone() })),
+                rustdoc_types::WherePredicate::LifetimePredicate { .. } => None,
+            })
+            .collect()
+    }
+
+    /// The associated types an impl binds, canonical with aliases expanded.
+    fn impl_assoc(&self, krate: &str, imp: &rustdoc_types::Impl) -> Vec<(String, String)> {
+        let c = &self.docs.crates[krate];
+        imp.items
+            .iter()
+            .filter_map(|m| match c.index.get(m).map(|i| (&i.inner, i.name.clone())) {
+                Some((ItemEnum::AssocType { type_: Some(t), .. }, Some(name))) => Some((name, self.docs.canon_expanded(krate, t))),
+                _ => None,
+            })
+            .collect()
+    }
+
     fn support(&mut self, krate: &str, id: Id, kind: &str, found: &str, fields: usize, variants: usize, generic: bool, hidden: bool) -> usize {
         let key = (krate.to_string(), id);
         if let Some(&i) = self.seen_support.get(&key) {
@@ -676,6 +737,7 @@ impl<'a> Walker<'a> {
             derived: vec![],
             alias_target: None,
             implementors: vec![],
+            impls: vec![],
         };
         self.inv.supporting.push(s);
         let i = self.inv.supporting.len() - 1;
@@ -765,10 +827,20 @@ impl<'a> Walker<'a> {
             }
             match &imp.trait_ {
                 None => {
+                    let head = self.docs.canon_expanded(krate, &imp.for_);
+                    let bounds = self.impl_bounds(krate, &imp.generics);
+                    let wh = self.impl_where(krate, &imp.generics);
                     for m in &imp.items {
                         if matches!(c.index.get(m).map(|i| &i.inner), Some(ItemEnum::Function(_))) {
                             let name = c.index[m].name.clone().unwrap();
-                            self.visit_function(krate, *m, &format!("{owner_path}::{name}"), hidden, CallableKind::Inherent, owner_key.clone(), generic, true);
+                            if let Some(i) = self.visit_function(krate, *m, &format!("{owner_path}::{name}"), hidden, CallableKind::Inherent, owner_key.clone(), generic, true) {
+                                if generic {
+                                    let cl = &mut self.inv.callables[i];
+                                    cl.impl_head = Some(head.clone());
+                                    cl.impl_bounds = bounds.clone();
+                                    cl.impl_where = wh.clone();
+                                }
+                            }
                         }
                     }
                 }
@@ -778,6 +850,8 @@ impl<'a> Walker<'a> {
                         Resolved::Local(home, tid) => {
                             let label = if blanket { "blanket".to_string() } else { owner_path.clone() };
                             self.implementors.entry((home.clone(), tid)).or_default().push(label);
+                            let ti = TraitImpl { for_type: self.docs.canon_expanded(krate, &imp.for_), blanket, bounds: self.impl_bounds(krate, &imp.generics), where_predicates: self.impl_where(krate, &imp.generics), assoc_types: self.impl_assoc(krate, imp) };
+                            self.trait_impls.entry((home.clone(), tid)).or_default().push(ti);
                             self.pending_traits.insert((home, tid));
                         }
                         Resolved::Foreign(_cname, tpath, _) => {
@@ -818,6 +892,9 @@ impl<'a> Walker<'a> {
                                 generics_canonical: vec![],
                                 impl_for,
                                 impl_bounds,
+                                impl_head: None,
+                                impl_where: vec![],
+                                impl_assoc: self.impl_assoc(krate, imp),
                                 docs_first: None,
                                 bounds_raw: vec![],
                                 owner_generic: generic,
@@ -943,6 +1020,9 @@ impl<'a> Walker<'a> {
             generics_canonical,
             impl_for: None,
             impl_bounds: vec![],
+            impl_head: None,
+            impl_where: vec![],
+            impl_assoc: vec![],
             docs_first,
             bounds_raw,
             owner_generic,

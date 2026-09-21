@@ -206,7 +206,9 @@ if os_ in ("ok", "cases_failed") and os.path.exists(p):
     ra = load(frozen["baseline_oracle_results"]); rb = load(p)
     assert rb.get("run_id") == status["run_id"], "oracle results are not from this run"
     assert rb["cases"] == sb["oracle_cases"], "oracle results do not match the generated case count"
-    ka = {r["path"]: r for r in ra["results"]}; kb = {r["path"]: r for r in rb["results"]}
+    # keyed by case id (record 0076): one path may have several receivers
+    ka = {r["id"]: r for r in ra["results"]}; kb = {r["id"]: r for r in rb["results"]}
+    assert len(ka) == len(ra["results"]) and len(kb) == len(rb["results"]), "duplicate case ids in oracle results"
     print(f"Controls: {status['stages'].get('oracle_controls')}. Cases: {rb['cases']} emitted at rc2 (results verified as this run's, run {rb['run_id']}).\n")
     print("| tally | 0.55.2 | rc2 |\n|---|---:|---:|")
     for k in sorted(set(ra["tally"]) | set(rb["tally"])): print(f"| {k} | {ra['tally'].get(k, 0)} | {rb['tally'].get(k, 0)} |")

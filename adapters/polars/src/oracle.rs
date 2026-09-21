@@ -32,16 +32,68 @@ impl Repr {
 	}
 }
 
-/// Every cell of a series, by index, as `AnyValue` debug text; nulls
-/// included. Independent of Polars's `fmt` feature.
+/// One cell, structurally: a scalar as its `AnyValue` debug text (exact
+/// for scalars: floats print at full precision); a list or array cell as
+/// the full representation of its inner series, recursively; a struct
+/// cell by its fields' names and values. Polars's display formatting,
+/// which elides middle values, is never used for a nested value (record
+/// 0076).
+pub fn anyvalue_repr(v: &p::AnyValue) -> String {
+	match v {
+		p::AnyValue::List(inner) => format!("List({})", series_repr(inner).to_text()),
+		#[allow(unreachable_patterns)]
+		other => match other.dtype() {
+			p::DataType::Struct(_) => {
+				// materialise the one cell as a series and render it structurally
+				let one = p::Series::from_any_values_and_dtype("cell".into(), std::slice::from_ref(other), &other.dtype(), true);
+				match one {
+					Ok(s) => format!("{:?}{}", other.dtype(), nested_series_body(&s)),
+					Err(e) => format!("<cell error: {e}>"),
+				}
+			}
+			_ => format!("{other:?}"),
+		},
+	}
+}
+
+/// The body of a nested series: for a struct, each field's name and full
+/// representation; for anything else, its cells.
+fn nested_series_body(s: &p::Series) -> String {
+	match s.dtype() {
+		p::DataType::Struct(_) => match s.struct_() {
+			Ok(sc) => {
+				let fields: Vec<String> = sc.fields_as_series().iter().map(|f| series_repr(f).to_text()).collect();
+				format!("{{{}}}", fields.join("; "))
+			}
+			Err(e) => format!("<struct error: {e}>"),
+		},
+		_ => {
+			let cells: Vec<String> = (0..s.len()).map(|i| match s.get(i) { Ok(v) => anyvalue_repr(&v), Err(e) => format!("<get error: {e}>") }).collect();
+			format!("[{}]", cells.join(", "))
+		}
+	}
+}
+
+/// Every cell of a series, by index, structurally (see `anyvalue_repr`);
+/// nulls included; a struct series by its fields. Independent of Polars's
+/// `fmt` feature.
 pub fn series_repr(s: &p::Series) -> Repr {
-	let mut out = format!("{}:{:?}:[", s.name(), s.dtype());
+	let head = format!("{}:{:?}:", s.name(), s.dtype());
+	if matches!(s.dtype(), p::DataType::Struct(_)) {
+		// the struct's own validity per row, apart from its fields' nulls: a
+		// null struct and a valid struct whose fields are null differ
+		let nulls = s.is_null();
+		let valid: Vec<String> = (0..nulls.len()).map(|i| match nulls.get(i) { Some(true) => "null".to_string(), Some(false) => "valid".to_string(), None => "?".to_string() }).collect();
+		return Repr::Text(format!("{head}len={}:rows=[{}]:{}", s.len(), valid.join(", "), nested_series_body(s)));
+	}
+	let mut out = head;
+	out.push('[');
 	for i in 0..s.len() {
 		if i > 0 {
 			out.push_str(", ");
 		}
 		match s.get(i) {
-			Ok(v) => out.push_str(&format!("{v:?}")),
+			Ok(v) => out.push_str(&anyvalue_repr(&v)),
 			Err(e) => out.push_str(&format!("<get error: {e}>")),
 		}
 	}
@@ -76,7 +128,7 @@ pub fn frame_repr(df: &p::DataFrame) -> Repr {
 				row.push_str(", ");
 			}
 			match c.get(i) {
-				Ok(v) => row.push_str(&format!("{v:?}")),
+				Ok(v) => row.push_str(&anyvalue_repr(&v)),
 				Err(e) => row.push_str(&format!("<get error: {e}>")),
 			}
 		}
@@ -429,6 +481,54 @@ mod controls {
 		assert_eq!(classify(ORDERED, &failed, &Setup::Ok, &unrun, None, &v, &v).0, Outcome::SetupMismatch);
 		assert_eq!(classify(ORDERED, &Setup::Ok, &failed, &v, None, &unrun, &unrun).0, Outcome::SetupMismatch);
 		assert!(!Outcome::SetupMismatch.approved() && !Outcome::SetupMismatch.setup_failed());
+	}
+	#[test]
+	fn nested_values_are_compared_structurally() {
+		// a list cell whose 21st inner value differs, beyond what Debug shows
+		let inner_a: Vec<i64> = (0..40).collect();
+		let mut inner_b = inner_a.clone();
+		inner_b[20] = 999;
+		let a = p::Series::new("x".into(), [p::Series::new("i".into(), inner_a)]);
+		let b = p::Series::new("x".into(), [p::Series::new("i".into(), inner_b)]);
+		assert_ne!(series_repr(&a), series_repr(&b), "an inner element hidden by Debug's ellipsis must be seen");
+		assert_eq!(ok(ORDERED, &v(series_repr(&a)), None, &v(series_repr(&b)), &v(series_repr(&b))).0, Outcome::Mismatch);
+		assert_eq!(ok(ORDERED, &v(series_repr(&a)), None, &v(series_repr(&a.clone())), &v(series_repr(&a))).0, Outcome::Match);
+		// a null moved inside a list cell
+		let c = p::Series::new("x".into(), [p::Series::new("i".into(), [Some(1i64), None, Some(3)])]);
+		let d = p::Series::new("x".into(), [p::Series::new("i".into(), [None, Some(1i64), Some(3)])]);
+		assert_ne!(series_repr(&c), series_repr(&d));
+		// a struct field value, and a struct field name
+		let e = df().into_struct("s".into()).into_series();
+		let f = p::df!("x" => [1i64, 2, 4], "y" => ["a", "b", "c"], "z" => [1.5f64, 2.5, 3.5]).unwrap().into_struct("s".into()).into_series();
+		let g = p::df!("w" => [1i64, 2, 3], "y" => ["a", "b", "c"], "z" => [1.5f64, 2.5, 3.5]).unwrap().into_struct("s".into()).into_series();
+		assert_ne!(series_repr(&e), series_repr(&f), "a changed struct field value must be seen");
+		assert_ne!(series_repr(&e), series_repr(&g), "a renamed struct field must be seen");
+		assert_eq!(series_repr(&e), series_repr(&df().into_struct("s".into()).into_series()));
+	}
+	#[test]
+	fn struct_nullness_is_part_of_the_value() {
+		use polars::prelude::IntoSeries;
+		// a valid struct whose one field is null, against a null struct
+		let valid = p::df!("x" => [None::<i64>], "y" => ["a"]).unwrap().into_struct("s".into()).into_series();
+		let null = p::Series::full_null("s".into(), 1, valid.dtype());
+		assert_eq!(valid.null_count(), 0);
+		assert_eq!(null.null_count(), 1);
+		assert_ne!(series_repr(&valid), series_repr(&null), "a null struct must not equal a valid struct with null fields");
+		assert_eq!(ok(ORDERED, &v(series_repr(&valid)), None, &v(series_repr(&null)), &v(series_repr(&null))).0, Outcome::Mismatch);
+		// an outer null moved to the other row
+		let mut a = null.clone();
+		a.append(&valid).unwrap();
+		let mut b = valid.clone();
+		b.append(&null).unwrap();
+		assert_ne!(series_repr(&a), series_repr(&b), "a moved outer null must be seen");
+		// the same distinctions nested in a list cell
+		let la = p::Series::new("l".into(), [valid.clone()]);
+		let lb = p::Series::new("l".into(), [null.clone()]);
+		assert_ne!(series_repr(&la), series_repr(&lb), "a null struct inside a list cell must be seen");
+		let lc = p::Series::new("l".into(), [a.clone()]);
+		let ld = p::Series::new("l".into(), [b.clone()]);
+		assert_ne!(series_repr(&lc), series_repr(&ld));
+		assert_eq!(series_repr(&la), series_repr(&p::Series::new("l".into(), [valid.clone()])));
 	}
 	#[test]
 	fn setup_is_a_stage_not_a_message() {

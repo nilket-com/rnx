@@ -32,6 +32,27 @@ struct Release {
     unordered: Vec<Unordered>,
     #[serde(default)]
     excluded_oracle: Vec<ExcludedOracle>,
+    /// Record 0076: which alias families get instantiated bindings; empty
+    /// means every family. The shipped set under the launch budget is
+    /// recorded here, as the recipe that selected it.
+    #[serde(default)]
+    instantiation: InstantiationScope,
+}
+#[derive(serde::Deserialize, Clone, Default)]
+struct InstantiationScope {
+    #[serde(default)]
+    families: Vec<String>,
+    /// Proven pairs the compiler refuses for a reason the inventory cannot
+    /// see (a `no_call_const` in the pinned sources), excluded with a
+    /// citation; each is a route exception, never a silent skip.
+    #[serde(default)]
+    exclude: Vec<InstantiationExclude>,
+}
+#[derive(serde::Deserialize, Clone)]
+struct InstantiationExclude {
+    alias: String,
+    methods: Vec<String>,
+    cite: String,
 }
 #[derive(serde::Deserialize, Clone, Default)]
 struct ReleaseProvenance {
@@ -114,6 +135,588 @@ impl Release {
 
 /// Record 0075 gate 3 controls: equivalent aliases resolve to one wrapper;
 /// same-name distinct types resolve to two Rune paths.
+// ---------------------------------------------------------------- instantiation (record 0076)
+
+/// The result of checking one impl against one alias instantiation. Only
+/// `Proven` yields a binding; the other two are counted exceptions.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(tag = "result", content = "reason")]
+enum Applicability {
+    Proven,
+    Rejected(String),
+    Unresolved(String),
+}
+
+impl Applicability {
+    fn and(self, other: Applicability) -> Applicability {
+        match (self, other) {
+            (Applicability::Proven, o) => o,
+            (Applicability::Rejected(r), _) => Applicability::Rejected(r),
+            (Applicability::Unresolved(_), Applicability::Rejected(r)) => Applicability::Rejected(r),
+            (u @ Applicability::Unresolved(_), _) => u,
+        }
+    }
+}
+
+/// `Base<args>` split at the top level: the base path and its arguments.
+fn split_head(t: &str) -> (String, Vec<String>) {
+    let t = t.trim();
+    match t.find('<') {
+        Some(i) if t.ends_with('>') => (t[..i].to_string(), split_top(&t[i + 1..t.len() - 1])),
+        _ => (t.to_string(), vec![]),
+    }
+}
+
+/// A generic parameter name: one identifier, no path.
+fn is_param(s: &str) -> bool {
+    !s.is_empty() && !s.contains("::") && s.chars().all(|c| c.is_alphanumeric() || c == '_') && s.chars().next().is_some_and(|c| c.is_ascii_uppercase())
+}
+
+/// Replace whole-identifier generic parameters by their bindings.
+fn subst_params(s: &str, subst: &BTreeMap<String, String>) -> String {
+    let mut out = String::new();
+    let b = s.as_bytes();
+    let mut i = 0;
+    while i < b.len() {
+        if b[i].is_ascii_alphabetic() || b[i] == b'_' {
+            let start = i;
+            while i < b.len() && (b[i].is_ascii_alphanumeric() || b[i] == b'_') {
+                i += 1;
+            }
+            let tok = &s[start..i];
+            let prev = if start >= 2 { &s[start - 2..start] } else { "" };
+            let next = if i + 2 <= b.len() { &s[i..i + 2] } else { "" };
+            // a later path segment is not a parameter (`foo::T`); a leading one
+            // is (`T::Native` becomes `Int64Type::Native` for the projection step)
+            let _ = next;
+            if prev != "::" {
+                if let Some(v) = subst.get(tok) {
+                    out.push_str(v);
+                    continue;
+                }
+            }
+            out.push_str(tok);
+        } else {
+            out.push(b[i] as char);
+            i += 1;
+        }
+    }
+    out
+}
+
+/// A trait bound `path<Assoc = X, …>` split into the trait path and its
+/// associated-type constraints. `Err` for any other argument form (a
+/// generic trait argument, a lifetime, a parenthesized signature): the
+/// grammar this evaluation supports is bare traits and associated-type
+/// equalities, and anything else is unresolved, never weakened.
+fn split_bound(bound: &str) -> Result<(String, Vec<(String, String)>), String> {
+    if bound.contains('(') || bound.starts_with('\'') {
+        return Err(format!("bound syntax `{bound}` is not modelled"));
+    }
+    let (path, args) = split_head(bound);
+    let mut cons = Vec::new();
+    for a in &args {
+        match a.split_once(" = ") {
+            Some((k, v)) => cons.push((k.trim().to_string(), v.trim().to_string())),
+            None => return Err(format!("trait argument `{a}` in `{bound}` is not modelled")),
+        }
+    }
+    Ok((path, cons))
+}
+
+/// The core derivable traits a builtin type implements, by type: floats
+/// have no `Eq`, `Ord` or `Hash`; the owned string is not `Copy`; unit
+/// has no `Display`; unsized `str` is neither `Clone` nor `Default`, and
+/// a `&T` is `Copy` and `Clone` while a `&mut T` is neither. Anything
+/// else is not a builtin and gets no answer here.
+fn core_trait_on_builtin(ty: &str, short: &str) -> Option<bool> {
+    let float = matches!(ty, "f32" | "f64");
+    let owned_string = ty == "alloc::string::String";
+    let str_slice = ty == "str";
+    let unit = ty == "()";
+    let shared_ref = ty.starts_with('&') && !ty.starts_with("&mut ");
+    let mut_ref = ty.starts_with("&mut ");
+    if shared_ref || mut_ref {
+        return match short {
+            "Copy" | "Clone" => Some(shared_ref),
+            _ => None,
+        };
+    }
+    if !(float || owned_string || str_slice || unit || SCALARS.contains(&ty)) {
+        return None;
+    }
+    Some(match short {
+        "Debug" | "PartialEq" | "PartialOrd" => true,
+        "Clone" | "Default" => !str_slice,
+        "Eq" | "Ord" | "Hash" => !float,
+        "Copy" => !(owned_string || str_slice),
+        "Display" => !unit,
+        _ => return None,
+    })
+}
+
+/// Whether a canonical type is `Sized`: references, scalars, unit, the
+/// owned string, `PlSmallStr`, and reachable structs, enums and unions
+/// (bare or instantiated) are; `str`, slices and trait objects are not;
+/// anything else is unknown.
+fn sizedness(world: &World, ty: &str) -> Option<bool> {
+    let t = ty.trim();
+    if t.starts_with('&') { return Some(true); }
+    if t == "str" || t.starts_with('[') || t.starts_with("dyn ") || t.starts_with("impl ") { return Some(false); }
+    if t == "()" || SCALARS.contains(&t) || t == "alloc::string::String" || t == "polars_utils::pl_str::PlSmallStr" || t.starts_with('(') { return Some(true); }
+    let (base, _) = split_head(t);
+    match world.types.get(&base) {
+        Some(s) if matches!(s.kind.as_str(), "struct" | "enum" | "union") => Some(true),
+        Some(s) if s.kind == "type_alias" => s.alias_target.as_deref().and_then(|target| sizedness(world, target)),
+        _ => None,
+    }
+}
+
+impl World {
+    /// The associated type `assoc` that some recorded impl on `ty` binds;
+    /// `None` when no impl binds it or two impls disagree.
+    fn assoc_of(&self, ty: &str, assoc: &str, trait_hint: Option<&str>) -> Option<String> {
+        let mut found: BTreeSet<String> = BTreeSet::new();
+        for (tp, t) in &self.types {
+            if t.kind != "trait" {
+                continue;
+            }
+            if let Some(h) = trait_hint {
+                if tp != h {
+                    continue;
+                }
+            }
+            for i in &t.impls {
+                if i.for_type == ty {
+                    if let Some((_, v)) = i.assoc_types.iter().find(|(n, _)| n == assoc) {
+                        found.insert(v.clone());
+                    }
+                }
+            }
+        }
+        if found.len() == 1 { found.into_iter().next() } else { None }
+    }
+
+    /// Resolve `<P as Trait>::Assoc` and `P::Assoc` projections after
+    /// parameter substitution; `Err` names the first one left open.
+    fn resolve_projections(&self, s: &str) -> Result<String, String> {
+        let mut cur = s.to_string();
+        for _ in 0..8 {
+            let mut changed = false;
+            // qualified projection: <X as Trait>::Assoc
+            while let Some(i) = cur.find("<") {
+                let rest = &cur[i..];
+                let Some(as_i) = rest.find(" as ") else { break };
+                // the matching '>' for this '<'
+                let mut depth = 0;
+                let mut close = None;
+                for (k, ch) in rest.char_indices() {
+                    match ch { '<' => depth += 1, '>' => { depth -= 1; if depth == 0 { close = Some(k); break; } } _ => {} }
+                }
+                let Some(close) = close else { break };
+                if as_i > close { break; }
+                if !rest[close + 1..].starts_with("::") { break; }
+                let inner_ty = rest[1..as_i].trim().to_string();
+                let trait_path = rest[as_i + 4..close].trim().to_string();
+                let after = &rest[close + 3..];
+                let assoc: String = after.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+                if assoc.is_empty() { break; }
+                if is_param(&inner_ty) { return Err(format!("projection on an unbound parameter: <{inner_ty} as {trait_path}>::{assoc}")); }
+                let Some(v) = self.assoc_of(&inner_ty, &assoc, Some(&trait_path)) else { return Err(format!("no recorded `{assoc}` for `{inner_ty}` in `{trait_path}`")) };
+                let end = i + close + 3 + assoc.len();
+                cur = format!("{}{}{}", &cur[..i], v, &cur[end..]);
+                changed = true;
+            }
+            // short projection: X::Assoc where X is a concrete path known to some impl
+            let mut from = 0;
+            loop {
+                let Some(off) = cur[from..].find("::") else { break };
+                let i = from + off;
+                let before = &cur[..i];
+                let lhs_start = before.rfind(|c: char| !(c.is_alphanumeric() || c == '_' || c == ':')).map(|k| k + 1).unwrap_or(0);
+                let lhs = before[lhs_start..].trim_start_matches(':').to_string();
+                let assoc: String = cur[i + 2..].chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+                let upper = assoc.chars().next().is_some_and(|c| c.is_ascii_uppercase());
+                if !lhs.is_empty() && upper {
+                    if let Some(v) = self.assoc_of(&lhs, &assoc, None) {
+                        let end = i + 2 + assoc.len();
+                        cur = format!("{}{}{}", &cur[..lhs_start], v, &cur[end..]);
+                        changed = true;
+                        from = lhs_start;
+                        continue;
+                    }
+                    if is_param(&lhs) {
+                        return Err(format!("projection on an unbound parameter: {lhs}::{assoc}"));
+                    }
+                    // a projection on a known type that no recorded impl binds
+                    if self.types.get(&lhs).is_some_and(|t| t.kind != "trait") {
+                        return Err(format!("no recorded `{assoc}` for `{lhs}`"));
+                    }
+                }
+                from = i + 2;
+            }
+            let out = cur.clone();
+            cur = out;
+            if !changed { break; }
+        }
+        Ok(cur)
+    }
+
+    /// Whether `ty` satisfies one bound, from the inventory's recorded impls.
+    fn holds(&self, ty: &str, bound: &str, depth: usize) -> Applicability {
+        if depth > 4 {
+            return Applicability::Unresolved(format!("nesting limit at `{ty}: {bound}`"));
+        }
+        let (tpath, cons) = match split_bound(bound) { Ok(x) => x, Err(e) => return Applicability::Unresolved(e) };
+        let short = last(&tpath);
+        if tpath.starts_with("core::") || tpath.starts_with("alloc::") || tpath.starts_with("std::") {
+            if !cons.is_empty() {
+                return Applicability::Unresolved(format!("core trait `{tpath}` with associated-type constraints is not modelled"));
+            }
+            return match short {
+                "Sized" => match sizedness(self, ty) {
+                    Some(true) => Applicability::Proven,
+                    Some(false) => Applicability::Rejected(format!("`{ty}` is not `Sized`")),
+                    None => Applicability::Unresolved(format!("the sizedness of `{ty}` is not established")),
+                },
+                "Send" | "Sync" | "Unpin" | "UnwindSafe" | "RefUnwindSafe" => Applicability::Unresolved(format!("auto trait `{short}` is not recorded")),
+                "Clone" | "Debug" | "Default" | "PartialEq" | "Eq" | "Hash" | "Copy" | "PartialOrd" | "Ord" | "Display" => {
+                    let (base, _) = split_head(ty);
+                    if ty == "polars_utils::pl_str::PlSmallStr" {
+                        // a polars type: only its recorded derives and impls count
+                    } else if let Some(holds) = core_trait_on_builtin(ty, short) {
+                        return if holds { Applicability::Proven } else { Applicability::Rejected(format!("`{ty}` does not implement `{short}`")) };
+                    }
+                    let derived = self.types.get(&base).is_some_and(|t| !ty.contains('<') && t.derived.iter().any(|d| d == short));
+                    let implemented = self.impls.get(&base).is_some_and(|v| v.iter().any(|(n, f, _)| n == short && f == ty));
+                    if derived || implemented { Applicability::Proven } else { Applicability::Unresolved(format!("no recorded impl of `{short}` for `{ty}`")) }
+                }
+                _ => Applicability::Unresolved(format!("core trait `{tpath}` is not modelled")),
+            };
+        }
+        let Some(t) = self.types.get(&tpath).filter(|t| t.kind == "trait") else {
+            return Applicability::Unresolved(format!("trait `{tpath}` is outside the inventory"));
+        };
+        // an exact impl head
+        if let Some(i) = t.impls.iter().find(|i| !i.blanket && i.for_type == ty) {
+            for (a, x) in &cons {
+                match i.assoc_types.iter().find(|(n, _)| n == a) {
+                    Some((_, v)) if v == x => {}
+                    Some((_, v)) => return Applicability::Rejected(format!("`{ty}: {tpath}` binds `{a} = {v}`, not `{x}`")),
+                    None => return Applicability::Unresolved(format!("`{ty}: {tpath}` does not record `{a}`")),
+                }
+            }
+            return Applicability::Proven;
+        }
+        // a generic impl head that unifies with `ty`
+        for i in t.impls.iter().filter(|i| !i.blanket && i.for_type.contains('<')) {
+            let params: BTreeSet<String> = i.bounds.iter().map(|(n, _)| n.clone()).collect();
+            if let Ok(subst) = unify(&i.for_type, ty, &params) {
+                let mut r = Applicability::Proven;
+                for (p, b) in &i.bounds {
+                    let Some(pt) = subst.get(p) else { continue };
+                    r = r.and(self.holds_all(pt, b, depth + 1));
+                }
+                for w in &i.where_predicates {
+                    r = r.and(self.predicate(w, &subst, ty, depth + 1));
+                }
+                for (a, x) in &cons {
+                    match i.assoc_types.iter().find(|(n, _)| n == a) {
+                        Some((_, v)) => {
+                            let v = subst_params(v, &subst);
+                            let v = self.resolve_projections(&v).unwrap_or(v);
+                            if &v != x { r = r.and(Applicability::Rejected(format!("`{ty}: {tpath}` binds `{a} = {v}`, not `{x}`"))); }
+                        }
+                        None => r = r.and(Applicability::Unresolved(format!("`{ty}: {tpath}` does not record `{a}`"))),
+                    }
+                }
+                return r;
+            }
+        }
+        if t.impls.iter().any(|i| i.blanket) {
+            return Applicability::Unresolved(format!("`{tpath}` has a blanket impl; `{ty}` is not proven by a direct one"));
+        }
+        if t.impls.is_empty() {
+            return Applicability::Unresolved(format!("no impl of `{tpath}` is recorded under this configuration"));
+        }
+        Applicability::Rejected(format!("no recorded impl of `{tpath}` for `{ty}`"))
+    }
+
+    fn holds_all(&self, ty: &str, bounds: &str, depth: usize) -> Applicability {
+        let mut r = Applicability::Proven;
+        for b in split_top_plus(bounds) {
+            if b.is_empty() { continue; }
+            r = r.and(self.holds(ty, &b, depth));
+        }
+        r
+    }
+
+    /// One `where` predicate under a substitution: `X: bounds` or `A = B`.
+    fn predicate(&self, w: &str, subst: &BTreeMap<String, String>, self_ty: &str, depth: usize) -> Applicability {
+        let mut s2 = subst.clone();
+        s2.insert("Self".into(), self_ty.to_string());
+        if let Some((lhs, bounds)) = w.split_once(": ") {
+            let lhs = subst_params(lhs, &s2);
+            let lhs = match self.resolve_projections(&lhs) { Ok(x) => x, Err(e) => return Applicability::Unresolved(e) };
+            if lhs.split(|c: char| !(c.is_alphanumeric() || c == '_')).any(|tok| is_param(tok) && !s2.contains_key(tok) && tok != "Self") {
+                // a parameter the substitution leaves open
+                let open: Vec<&str> = lhs.split(|c: char| !(c.is_alphanumeric() || c == '_')).filter(|tok| is_param(tok) && !s2.contains_key(*tok)).collect();
+                if !open.is_empty() && open.iter().any(|o| !lhs.contains(&format!("::{o}"))) {
+                    return Applicability::Unresolved(format!("`{w}` involves a parameter the head does not bind"));
+                }
+            }
+            let bounds = subst_params(bounds, &s2);
+            self.holds_all(&lhs, &bounds, depth)
+        } else if let Some((a, b)) = w.split_once(" = ") {
+            let a = subst_params(a, &s2);
+            let b = subst_params(b, &s2);
+            match (self.resolve_projections(&a), self.resolve_projections(&b)) {
+                (Ok(x), Ok(y)) if x == y => Applicability::Proven,
+                (Ok(x), Ok(y)) => Applicability::Rejected(format!("`{w}`: `{x}` is not `{y}`")),
+                (Err(e), _) | (_, Err(e)) => Applicability::Unresolved(e),
+            }
+        } else {
+            Applicability::Unresolved(format!("predicate form `{w}` is not modelled"))
+        }
+    }
+
+    /// Whether a method's impl applies to an alias instantiation, with the
+    /// substitution of the impl's parameters that makes it apply.
+    fn applicability(&self, c: &Callable, identity: &str) -> (Applicability, BTreeMap<String, String>) {
+        let Some(head) = &c.impl_head else { return (Applicability::Unresolved("no impl head recorded".into()), BTreeMap::new()) };
+        let mut params: BTreeSet<String> = c.impl_bounds.iter().map(|(n, _)| n.clone()).filter(|n| n != "Self").collect();
+        // parameters that appear in the head without a bound
+        let (_, hargs) = split_head(head);
+        for a in &hargs {
+            if is_param(a) { params.insert(a.clone()); }
+        }
+        let subst = match unify_with(self, head, identity, &params) {
+            Ok(s) => s,
+            Err(e) if e.starts_with("unresolved: ") => return (Applicability::Unresolved(e), BTreeMap::new()),
+            Err(e) => return (Applicability::Rejected(e), BTreeMap::new()),
+        };
+        let mut r = Applicability::Proven;
+        for (p, b) in &c.impl_bounds {
+            if b.is_empty() { continue; }
+            let pt = if p == "Self" { identity.to_string() } else { match subst.get(p) { Some(t) => t.clone(), None => return (Applicability::Unresolved(format!("bound on `{p}`, which the head does not bind")), subst) } };
+            let b = subst_params(b, &subst);
+            r = r.and(self.holds_all(&pt, &b, 0));
+        }
+        for w in &c.impl_where {
+            r = r.and(self.predicate(w, &subst, identity, 0));
+        }
+        (r, subst)
+    }
+
+    /// The method's signature under the substitution, every projection
+    /// resolved; `Err` names what stays open.
+    fn substitute_signature(&self, c: &Callable, identity: &str, subst: &BTreeMap<String, String>) -> Result<(Vec<String>, Option<String>), String> {
+        let mut s2 = subst.clone();
+        s2.insert("Self".into(), identity.to_string());
+        let one = |t: &str| -> Result<String, String> {
+            let t = subst_params(t, &s2);
+            let t = self.resolve_projections(&t)?;
+            // an associated-type constraint key (`Item = …`) is not a parameter
+            let stripped = {
+                let mut r = String::new();
+                let mut rest = t.as_str();
+                while let Some(i) = rest.find(" = ") {
+                    let (pre, post) = rest.split_at(i);
+                    let k = pre.rfind(|c: char| !(c.is_alphanumeric() || c == '_')).map(|x| x + 1).unwrap_or(0);
+                    r.push_str(&pre[..k]);
+                    r.push_str(" = ");
+                    rest = &post[3..];
+                }
+                r.push_str(rest);
+                r
+            };
+            let mut left: Vec<&str> = stripped.split(|ch: char| !(ch.is_alphanumeric() || ch == '_' || ch == ':')).filter(|tok| is_param(tok)).collect();
+            left.sort();
+            left.dedup();
+            if !left.is_empty() { return Err(format!("`{}` left open in `{t}`", left.join(", "))); }
+            Ok(t)
+        };
+        let params = c.params.iter().map(|p| one(&p.ty_canonical)).collect::<Result<Vec<_>, _>>()?;
+        let ret = match &c.ret_canonical { Some(r) => Some(one(r)?), None => None };
+        Ok((params, ret))
+    }
+}
+
+/// `A + B` split at top level.
+fn split_top_plus(s: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut depth = 0i32;
+    let mut cur = String::new();
+    for ch in s.chars() {
+        match ch {
+            '<' | '(' | '[' => { depth += 1; cur.push(ch); }
+            '>' | ')' | ']' => { depth -= 1; cur.push(ch); }
+            '+' if depth == 0 => { out.push(cur.trim().to_string()); cur.clear(); }
+            _ => cur.push(ch),
+        }
+    }
+    if !cur.trim().is_empty() { out.push(cur.trim().to_string()); }
+    out
+}
+
+/// Unify an impl head with a concrete instantiation: `params` are the
+/// head's generic names. Repeated parameters must bind consistently; a
+/// concrete argument must be equal. Projections in the head are checked
+/// after the parameters they mention are bound.
+fn unify(head: &str, ty: &str, params: &BTreeSet<String>) -> Result<BTreeMap<String, String>, String> {
+    let (hb, ha) = split_head(head);
+    let (tb, ta) = split_head(ty);
+    if hb != tb { return Err(format!("head `{hb}` is not `{tb}`")); }
+    if ha.len() != ta.len() { return Err(format!("head `{head}` has {} arguments, `{ty}` has {}", ha.len(), ta.len())); }
+    let mut subst: BTreeMap<String, String> = BTreeMap::new();
+    let mut deferred: Vec<(String, String)> = Vec::new();
+    for (h, t) in ha.iter().zip(&ta) {
+        if params.contains(h) {
+            match subst.get(h) {
+                Some(prev) if prev != t => return Err(format!("`{h}` would be both `{prev}` and `{t}`")),
+                Some(_) => {}
+                None => { subst.insert(h.clone(), t.clone()); }
+            }
+        } else if h.contains("::") && (h.starts_with('<') || h.split("::").next().is_some_and(is_param)) {
+            deferred.push((h.clone(), t.clone()));
+        } else if h.contains('<') {
+            let inner = unify(h, t, params)?;
+            for (k, v) in inner {
+                match subst.get(&k) {
+                    Some(prev) if *prev != v => return Err(format!("`{k}` would be both `{prev}` and `{v}`")),
+                    _ => { subst.insert(k, v); }
+                }
+            }
+        } else if h != t {
+            return Err(format!("head argument `{h}` is not `{t}`"));
+        }
+    }
+    for (h, t) in deferred {
+        // recorded as a check to run with the world's assoc facts
+        subst.insert(format!("?{h}"), t);
+    }
+    Ok(subst)
+}
+
+/// `unify`, then the deferred projection checks against recorded
+/// associated types.
+fn unify_with(world: &World, head: &str, ty: &str, params: &BTreeSet<String>) -> Result<BTreeMap<String, String>, String> {
+    let mut subst = unify(head, ty, params)?;
+    let deferred: Vec<(String, String)> = subst.iter().filter(|(k, _)| k.starts_with('?')).map(|(k, v)| (k[1..].to_string(), v.clone())).collect();
+    subst.retain(|k, _| !k.starts_with('?'));
+    for (proj, want) in deferred {
+        let p = subst_params(&proj, &subst);
+        match world.resolve_projections(&p) {
+            Ok(v) if v == want => {}
+            Ok(v) => return Err(format!("head projection `{proj}` is `{v}`, not `{want}`")),
+            Err(e) => return Err(format!("unresolved: {e}")),
+        }
+    }
+    Ok(subst)
+}
+
+/// The family an alias instantiation belongs to, for the shipping order.
+fn family(world: &World, identity: &str) -> &'static str {
+    let (base, args) = split_head(identity);
+    if base.ends_with("::Logical") { return "logical"; }
+    let arg = args.first().map(|s| s.as_str()).unwrap_or("");
+    let numeric = world.types.get("polars_core::datatypes::PolarsNumericType").is_some_and(|t| t.implementors.iter().any(|i| i == arg));
+    if numeric { return "numeric"; }
+    match last(arg) {
+        "BooleanType" => "boolean",
+        "StringType" | "BinaryType" | "BinaryOffsetType" => "string-binary",
+        "ListType" | "StructType" | "ArrayType" => "list-struct",
+        _ => "other",
+    }
+}
+
+/// The instantiation census: every (method, alias identity) candidate
+/// on generic owners that have alias wrappers, with its applicability.
+#[derive(serde::Serialize, Clone)]
+struct PairRecord {
+    /// The callable's inventory key: one canonical path can carry several
+    /// impl blocks (specialized heads), each its own callable.
+    key: String,
+    method: String,
+    identity: String,
+    alias: String,
+    family: &'static str,
+    #[serde(flatten)]
+    result: Applicability,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    signature: Option<String>,
+    /// Whether the callable was eligible for emission at all (0072's
+    /// terms: not in the `unsupported`/`unknown` bucket); an ineligible
+    /// callable's pairs are gross applicability, never emitted.
+    eligible: bool,
+    /// Filled after emission: `emitted`, `refused: …`, `excluded: …`,
+    /// `not eligible: …`, or for an unproven pair its result.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    disposition: Option<String>,
+}
+
+fn instantiation_census(world: &World, inv: &Inventory) -> Vec<PairRecord> {
+    // alias identities per generic base, representative alias first
+    let mut by_base: BTreeMap<String, BTreeMap<String, String>> = BTreeMap::new();
+    for (path, w) in &world.wrappers {
+        if w.rule != "alias" { continue; }
+        let Some(base) = &w.base else { continue };
+        if !w.identity.starts_with(&format!("{base}<")) { continue; } // an Arc<…> target is not an instantiation of the base
+        by_base.entry(base.clone()).or_default().entry(w.identity.clone()).or_insert_with(|| w.aliases.first().cloned().unwrap_or_else(|| path.clone()));
+    }
+    let mut out = Vec::new();
+    // the record's scope: inherent methods of the two generic owners named
+    // in the plan; other generic owners with aliases stay in the generic bucket
+    const OWNERS: &[&str] = &["polars_core::chunked_array::ChunkedArray", "polars_core::chunked_array::logical::Logical"];
+    for c in &inv.callables {
+        if c.kind != "inherent" || c.impl_head.is_none() || !OWNERS.contains(&c.owner.as_str()) { continue; }
+        let Some(ids) = by_base.get(&c.owner) else { continue };
+        for (identity, alias) in ids {
+            if !c.generics_canonical.is_empty() {
+                out.push(PairRecord { key: c.key.clone(), method: c.canonical_path.clone(), identity: identity.clone(), alias: alias.clone(), family: family(world, identity), result: Applicability::Unresolved("function-level generics are out of this record's scope".into()), signature: None, eligible: !matches!(c.bucket.as_str(), "unsupported" | "unknown"), disposition: None });
+                continue;
+            }
+            let (r, subst) = world.applicability(c, identity);
+            let (r, sig) = match r {
+                Applicability::Proven => match world.substitute_signature(c, identity, &subst) {
+                    Ok((ps, ret)) => (Applicability::Proven, Some(format!("({}) -> {}", ps.join(", "), ret.as_deref().unwrap_or("()")))),
+                    Err(e) => (Applicability::Unresolved(format!("signature: {e}")), None),
+                },
+                other => (other, None),
+            };
+            out.push(PairRecord { key: c.key.clone(), method: c.canonical_path.clone(), identity: identity.clone(), alias: alias.clone(), family: family(world, identity), result: r, signature: sig, eligible: !matches!(c.bucket.as_str(), "unsupported" | "unknown"), disposition: None });
+        }
+    }
+    out
+}
+
+fn census_summary(pairs: &[PairRecord]) -> serde_json::Value {
+    let mut per: BTreeMap<&str, BTreeMap<&str, usize>> = BTreeMap::new();
+    for p in pairs {
+        let k = match &p.result { Applicability::Proven => "proven", Applicability::Rejected(_) => "rejected", Applicability::Unresolved(_) => "unresolved" };
+        *per.entry(p.family).or_default().entry(k).or_insert(0) += 1;
+        *per.entry("all").or_default().entry(k).or_insert(0) += 1;
+    }
+    let mut reasons: BTreeMap<String, usize> = BTreeMap::new();
+    for p in pairs {
+        if let Applicability::Rejected(r) | Applicability::Unresolved(r) = &p.result {
+            let key = r.split('`').next().unwrap_or(r).trim().to_string();
+            *reasons.entry(key).or_insert(0) += 1;
+        }
+    }
+    let mut eligible: BTreeMap<&str, usize> = BTreeMap::new();
+    for p in pairs.iter().filter(|p| p.eligible) {
+        let k = match &p.result { Applicability::Proven => "proven", Applicability::Rejected(_) => "rejected", Applicability::Unresolved(_) => "unresolved" };
+        *eligible.entry(k).or_insert(0) += 1;
+    }
+    let mut disp: BTreeMap<String, usize> = BTreeMap::new();
+    for p in pairs.iter().filter(|p| matches!(p.result, Applicability::Proven)) {
+        let d = p.disposition.as_deref().unwrap_or("none").split(':').next().unwrap_or("none").to_string();
+        *disp.entry(d).or_insert(0) += 1;
+    }
+    serde_json::json!({"pairs": pairs.len(), "by_family": per, "eligible": eligible, "proven_dispositions": disp, "exception_reasons": reasons})
+}
+
 fn wrapper_self_test() {
     fn sup(path: &str, kind: &str, target: Option<&str>) -> Supporting {
         Supporting {
@@ -132,6 +735,7 @@ fn wrapper_self_test() {
             derived: vec![],
             alias_target: target.map(|t| t.to_string()),
             implementors: vec![],
+            impls: vec![],
         }
     }
     let mut generic = sup("polars_core::chunked_array::ChunkedArray", "struct", None);
@@ -149,7 +753,7 @@ fn wrapper_self_test() {
             sup("polars_dtype::categorical::CatSize", "type_alias", Some("u32")),
         ],
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![] };
     let w = World::new(&inv, &release, &["mechanical"]);
     let idx = &w.wrappers["polars_core::datatypes::aliases::IdxCa"];
     let u32c = &w.wrappers["polars_core::datatypes::UInt32Chunked"];
@@ -166,6 +770,147 @@ fn wrapper_self_test() {
     let distinct: BTreeSet<&str> = w.wrappers.values().map(|w| w.rust.as_str()).collect();
     assert_eq!(distinct.len(), 4, "four wrapper structs: one shared alias, BooleanChunked, two Fields");
     println!("wrapper self-test: ok");
+    // deref targets: only a `dyn Trait` target of a wrapped type names a route
+    let mk = |owner: &str, name: &str, assoc: Vec<(String, String)>| Callable {
+        key: format!("{owner}#{name}"), kind: "foreign_trait_impl".into(), krate: "polars_core".into(), owner: owner.into(), name: name.into(), canonical_path: format!("{owner} as {name}"),
+        found_paths: vec![], crate_paths: vec![], receiver: "&self".into(), params: vec![], ret: None, ret_canonical: None, generics_canonical: vec![], impl_for: Some(owner.into()), impl_bounds: vec![],
+        impl_head: None, impl_where: vec![], impl_assoc: assoc, docs_first: None, owner_generic: false, is_unsafe: false, is_async: false, deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "generic".into(), rules: vec![],
+    };
+    let mut tr = sup("polars_core::schema::SomeTrait", "trait", None);
+    tr.kind = "trait".into();
+    let inv = Inventory {
+        callables: vec![
+            mk("polars_core::schema::Field", "Deref", vec![("Target".into(), "dyn polars_core::schema::SomeTrait".into())]),
+            mk("polars_plan::dsl::Field", "Deref", vec![("Target".into(), "alloc::vec::Vec<u8>".into())]),
+            mk("polars_plan::dsl::Field", "DerefMut", vec![]),
+        ],
+        provenance: None,
+        supporting: vec![sup("polars_core::schema::Field", "struct", None), sup("polars_plan::dsl::Field", "struct", None), tr],
+    };
+    let w = World::new(&inv, &release, &["mechanical"]);
+    assert_eq!(w.deref_targets.get("polars_core::schema::SomeTrait").map(|v| v.len()), Some(1), "a dyn-trait target names one route");
+    assert!(w.deref_targets.values().flatten().all(|o| o == "polars_core::schema::Field"), "a Deref to a non-trait target binds nothing");
+    assert!(w.deref_mut.contains("polars_plan::dsl::Field") && !w.deref_mut.contains("polars_core::schema::Field"));
+    println!("deref self-test: ok");
+    applicability_self_test();
+}
+
+/// Record 0076 gate 3 controls, from a synthetic inventory: a specialized
+/// head matches only its alias; repeated parameters reject; `Self: Trait`
+/// proves only for recorded implementors; a bound on a parameter the head
+/// leaves open is unresolved; an associated-type equality proves and
+/// rejects by the recorded binding; an unresolved projection is an
+/// exception, never a binding.
+fn applicability_self_test() {
+    fn sup(path: &str, kind: &str, target: Option<&str>) -> Supporting {
+        Supporting {
+            key: path.to_string(), kind: kind.to_string(), canonical_path: path.to_string(),
+            found_paths: vec![format!("polars::{}", path.split("::").skip(1).collect::<Vec<_>>().join("::"))], crate_paths: vec![path.to_string()],
+            public_fields: 0, fields_canonical: vec![], variant_shapes: vec![], variant_payloads: vec![], generic: false, lifetime: false, hidden: false,
+            derived: vec![], alias_target: target.map(|t| t.to_string()), implementors: vec![], impls: vec![],
+        }
+    }
+    fn method(name: &str, head: &str, bounds: &[(&str, &str)], wh: &[&str], params: &[&str], ret: &str) -> Callable {
+        Callable {
+            key: format!("k:{name}"), kind: "inherent".into(), krate: "polars_core".into(), owner: "polars_core::chunked_array::ChunkedArray".into(), name: name.into(),
+            canonical_path: format!("polars_core::chunked_array::ChunkedArray::{name}"), found_paths: vec![], crate_paths: vec![], receiver: "&self".into(),
+            params: params.iter().enumerate().map(|(i, t)| Param { name: format!("a{i}"), ty: t.to_string(), ty_canonical: t.to_string() }).collect(),
+            ret: Some(ret.into()), ret_canonical: Some(ret.into()), generics_canonical: vec![], impl_for: None, impl_bounds: bounds.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(),
+            impl_head: Some(head.into()), impl_where: wh.iter().map(|w| w.to_string()).collect(), impl_assoc: vec![], docs_first: None, owner_generic: true, is_unsafe: false, is_async: false,
+            deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "generic".into(), rules: vec![],
+        }
+    }
+    let ca = "polars_core::chunked_array::ChunkedArray";
+    let mut base = sup(ca, "struct", None);
+    base.generic = true;
+    let mut numeric = sup("polars_core::datatypes::PolarsNumericType", "trait", None);
+    numeric.implementors = vec!["polars_core::datatypes::Int64Type".into()];
+    numeric.impls = vec![model::TraitImpl { for_type: "polars_core::datatypes::Int64Type".into(), blanket: false, bounds: vec![], where_predicates: vec![], assoc_types: vec![("Native".into(), "i64".into())] }];
+    let mut data = sup("polars_core::datatypes::PolarsDataType", "trait", None);
+    data.implementors = vec!["polars_core::datatypes::Int64Type".into(), "polars_core::datatypes::BooleanType".into()];
+    data.impls = vec![
+        model::TraitImpl { for_type: "polars_core::datatypes::Int64Type".into(), blanket: false, bounds: vec![], where_predicates: vec![], assoc_types: vec![("Physical".into(), "i64".into())] },
+        model::TraitImpl { for_type: "polars_core::datatypes::BooleanType".into(), blanket: false, bounds: vec![], where_predicates: vec![], assoc_types: vec![("Physical".into(), "bool".into())] },
+    ];
+    let mut logical = sup("polars_core::chunked_array::logical::LogicalType", "trait", None);
+    logical.impls = vec![model::TraitImpl { for_type: format!("{ca}<polars_core::datatypes::Int64Type>"), blanket: false, bounds: vec![], where_predicates: vec![], assoc_types: vec![] }];
+    let inv = Inventory {
+        callables: vec![],
+        provenance: None,
+        supporting: vec![
+            base, numeric, data, logical,
+            sup("polars_core::datatypes::Int64Type", "struct", None), sup("polars_core::datatypes::BooleanType", "struct", None), sup("polars_core::datatypes::StringType", "struct", None),
+            sup("polars_core::datatypes::Int64Chunked", "type_alias", Some(&format!("{ca}<polars_core::datatypes::Int64Type>"))),
+            sup("polars_core::datatypes::BooleanChunked", "type_alias", Some(&format!("{ca}<polars_core::datatypes::BooleanType>"))),
+            sup("polars_core::datatypes::StringChunked", "type_alias", Some(&format!("{ca}<polars_core::datatypes::StringType>"))),
+        ],
+    };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![] };
+    let w = World::new(&inv, &release, &["mechanical"]);
+    let i64c = format!("{ca}<polars_core::datatypes::Int64Type>");
+    let boolc = format!("{ca}<polars_core::datatypes::BooleanType>");
+    let strc = format!("{ca}<polars_core::datatypes::StringType>");
+    let ok = |r: &Applicability| matches!(r, Applicability::Proven);
+    // a specialized head matches only its alias
+    let m = method("all", &boolc, &[], &[], &[], "bool");
+    assert!(ok(&w.applicability(&m, &boolc).0));
+    assert!(matches!(w.applicability(&m, &i64c).0, Applicability::Rejected(_)), "a specialized head must reject another alias");
+    // a generic head with a local-trait bound proves by recorded implementors and rejects otherwise
+    let m = method("sum", &format!("{ca}<T>"), &[("T", "polars_core::datatypes::PolarsNumericType")], &[], &[], "T::Native");
+    assert!(ok(&w.applicability(&m, &i64c).0));
+    assert!(matches!(w.applicability(&m, &boolc).0, Applicability::Rejected(_)), "a bound the alias does not satisfy must reject");
+    // the substituted signature resolves the projection; an unrecorded one is an exception
+    let (_, subst) = w.applicability(&m, &i64c);
+    assert_eq!(w.substitute_signature(&m, &i64c, &subst).unwrap().1.as_deref(), Some("i64"));
+    let m2 = method("weird", &format!("{ca}<T>"), &[("T", "polars_core::datatypes::PolarsNumericType")], &[], &[], "T::Unknown");
+    let (_, subst) = w.applicability(&m2, &i64c);
+    assert!(w.substitute_signature(&m2, &i64c, &subst).is_err(), "an unresolved projection is an exception");
+    // repeated type parameters must bind consistently
+    let m = method("pair", &format!("{ca}<T>"), &[("T", "")], &[], &[], "bool");
+    let mut params = BTreeSet::new(); params.insert("T".to_string());
+    assert!(unify("polars_core::chunked_array::logical::Logical<T, T>", "polars_core::chunked_array::logical::Logical<A, B>", &params).is_err(), "repeated parameters with different arguments must reject");
+    assert!(unify("polars_core::chunked_array::logical::Logical<T, T>", "polars_core::chunked_array::logical::Logical<A, A>", &params).is_ok());
+    let _ = m;
+    // Self: LocalTrait proves only for recorded implementors
+    let m = method("logical", &format!("{ca}<T>"), &[("T", "polars_core::datatypes::PolarsDataType")], &["Self: polars_core::chunked_array::logical::LogicalType"], &[], "bool");
+    assert!(ok(&w.applicability(&m, &i64c).0), "Self: LogicalType holds for the recorded impl");
+    assert!(matches!(w.applicability(&m, &boolc).0, Applicability::Rejected(_)), "Self: LogicalType rejects an alias without an impl");
+    // a bound involving a parameter the head does not bind is unresolved
+    let m = method("open", &format!("{ca}<T>"), &[("T", "polars_core::datatypes::PolarsDataType"), ("U", "polars_core::datatypes::PolarsDataType")], &[], &[], "bool");
+    assert!(matches!(w.applicability(&m, &i64c).0, Applicability::Unresolved(_)), "a bound on an unbound parameter is unresolved");
+    // an associated-type equality proves and rejects by the recorded binding
+    let m = method("phys", &format!("{ca}<T>"), &[("T", "polars_core::datatypes::PolarsDataType<Physical = i64>")], &[], &[], "bool");
+    assert!(ok(&w.applicability(&m, &i64c).0));
+    assert!(matches!(w.applicability(&m, &boolc).0, Applicability::Rejected(_)), "a differing associated type must reject");
+    // a trait with no recorded impl is unresolved, an alias outside every impl of a trait that has some is rejected
+    let m = method("num", &format!("{ca}<T>"), &[("T", "polars_core::datatypes::PolarsNumericType")], &[], &[], "bool");
+    assert!(matches!(w.applicability(&m, &strc).0, Applicability::Rejected(_)));
+    let m = method("foreign", &format!("{ca}<T>"), &[("T", "num_traits::float::Float")], &[], &[], "bool");
+    assert!(matches!(w.applicability(&m, &i64c).0, Applicability::Unresolved(_)), "a trait outside the inventory is unresolved");
+    // core traits by type: floats have no Eq/Ord/Hash; a trait argument is never erased
+    assert!(matches!(w.holds("f64", "core::cmp::Eq", 0), Applicability::Rejected(_)), "f64: Eq must be rejected");
+    assert!(matches!(w.holds("f64", "core::cmp::Ord", 0), Applicability::Rejected(_)));
+    assert!(matches!(w.holds("f64", "core::cmp::PartialEq", 0), Applicability::Proven));
+    assert!(matches!(w.holds("i64", "core::cmp::Eq", 0), Applicability::Proven));
+    assert!(matches!(w.holds("alloc::string::String", "core::marker::Copy", 0), Applicability::Rejected(_)));
+    assert!(matches!(w.holds("polars_core::datatypes::Int64Type", "polars_core::datatypes::PolarsNumericType<unmodeled::Argument>", 0), Applicability::Unresolved(_)), "a generic trait argument must not be erased");
+    assert!(matches!(w.holds("i64", "core::ops::function::Fn(i64) -> i64", 0), Applicability::Unresolved(_)));
+    assert!(matches!(w.holds("polars_core::datatypes::Int64Type", "polars_core::datatypes::PolarsNumericType", 0), Applicability::Proven));
+    // unsized str: neither Clone, Default nor Sized; sizedness by type
+    assert!(matches!(w.holds("str", "core::clone::Clone", 0), Applicability::Rejected(_)), "str: Clone must be rejected");
+    assert!(matches!(w.holds("str", "core::default::Default", 0), Applicability::Rejected(_)), "str: Default must be rejected");
+    assert!(matches!(w.holds("str", "core::marker::Sized", 0), Applicability::Rejected(_)), "str: Sized must be rejected");
+    assert!(matches!(w.holds("str", "core::fmt::Debug", 0), Applicability::Proven));
+    assert!(matches!(w.holds("&str", "core::marker::Sized", 0), Applicability::Proven));
+    assert!(matches!(w.holds("&str", "core::clone::Clone", 0), Applicability::Proven));
+    assert!(matches!(w.holds("&mut str", "core::clone::Clone", 0), Applicability::Rejected(_)));
+    assert!(matches!(w.holds("[u8]", "core::marker::Sized", 0), Applicability::Rejected(_)));
+    assert!(matches!(w.holds("dyn polars_core::series::series_trait::SeriesTrait", "core::marker::Sized", 0), Applicability::Rejected(_)));
+    assert!(matches!(w.holds("alloc::string::String", "core::marker::Sized", 0), Applicability::Proven));
+    assert!(matches!(w.holds("polars_core::datatypes::Int64Type", "core::marker::Sized", 0), Applicability::Proven));
+    assert!(matches!(w.holds(&i64c, "core::marker::Sized", 0), Applicability::Proven));
+    assert!(matches!(w.holds("unknown::Type", "core::marker::Sized", 0), Applicability::Unresolved(_)), "an unknown type's sizedness is unresolved");
+    println!("applicability self-test: ok");
 }
 
 fn policy_self_test() {
@@ -283,6 +1028,14 @@ struct World {
     clonable: BTreeSet<String>,
     /// Foreign trait impls by owner: (trait short name, `for` type, bounds).
     impls: BTreeMap<String, Vec<(String, String, Vec<(String, String)>)>>,
+    /// Record 0076: trait canonical path -> wrapped types whose `Deref`
+    /// target is `dyn` that trait (`Series` -> `dyn SeriesTrait`).
+    deref_targets: BTreeMap<String, Vec<String>>,
+    /// Wrapped types with a `DerefMut` impl.
+    deref_mut: BTreeSet<String>,
+    /// Record 0076: an instantiation rendered canonically (`ChunkedArray<
+    /// Int64Type>`) -> the alias wrapper key that holds exactly that type.
+    by_identity: BTreeMap<String, String>,
 }
 
 /// A spellable Rust path for an inventoried item, in order: a public
@@ -404,8 +1157,34 @@ impl World {
                 }
             }
         }
-        let mut w = World { release: release.clone(), tmp: std::cell::Cell::new(0), types, wrappers: BTreeMap::new(), ambiguous_prelude, clonable, impls };
+        let mut w = World { release: release.clone(), tmp: std::cell::Cell::new(0), types, wrappers: BTreeMap::new(), ambiguous_prelude, clonable, impls, deref_targets: BTreeMap::new(), deref_mut: BTreeSet::new(), by_identity: BTreeMap::new() };
         w.assign_wrappers(&mentioned);
+        for (path, wr) in &w.wrappers {
+            if wr.rule == "alias" && wr.identity.contains('<') && wr.aliases.first().is_some_and(|a| a == path) {
+                w.by_identity.insert(wr.identity.clone(), path.clone());
+            }
+        }
+        for c in &inv.callables {
+            if c.kind != "foreign_trait_impl" || !w.wrappers.contains_key(&c.owner) {
+                continue;
+            }
+            let short = c.name.split('<').next().unwrap_or("");
+            if short == "DerefMut" {
+                w.deref_mut.insert(c.owner.clone());
+            }
+            if short == "Deref" {
+                if let Some((_, target)) = c.impl_assoc.iter().find(|(n, _)| n == "Target") {
+                    // only a trait-object target names a trait whose methods the type exposes
+                    if let Some(tr) = target.strip_prefix("dyn ") {
+                        let tr = tr.split(" + ").next().unwrap_or(tr).trim();
+                        if w.types.get(tr).is_some_and(|t| t.kind == "trait") {
+                            w.deref_targets.entry(tr.to_string()).or_default().push(c.owner.clone());
+                        }
+                    }
+                }
+            }
+        }
+        for v in w.deref_targets.values_mut() { v.sort(); v.dedup(); }
         // an alias wrapper clones when an impl covers its instantiation
         let mut more = Vec::new();
         for (path, wr) in &w.wrappers {
@@ -768,6 +1547,12 @@ impl World {
                     None => Err(Unsupported("Self without owner", t.render())),
                 },
                 _ => {
+                    // an instantiation an alias wrapper holds exactly (record 0076)
+                    if !args.is_empty() {
+                        if let Some(c) = self.by_identity.get(&t.render()) {
+                            return self.arg(&Ty::Path { path: c.clone(), args: vec![] }, name, generics, owner, depth + 1);
+                        }
+                    }
                     if let Some(w) = self.wrapper_for(path) {
                         if !args.is_empty() {
                             return Err(Unsupported("generic instantiation", t.render()));
@@ -1003,6 +1788,11 @@ impl World {
                 }
                 "core::result::Result" => Err(Unsupported("result with foreign error", t.render())),
                 _ => {
+                    if !args.is_empty() {
+                        if let Some(c) = self.by_identity.get(&t.render()) {
+                            return self.ret(&Ty::Path { path: c.clone(), args: vec![] }, owner, depth + 1);
+                        }
+                    }
                     if let Some(w) = self.wrapper_for(path) {
                         if !args.is_empty() {
                             return Err(Unsupported("generic instantiation", t.render()));
@@ -1074,6 +1864,57 @@ struct Entry {
     rune: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
+    /// Record 0076: the emitted bindings of this callable, one per
+    /// receiver route. The entry's status is callable coverage; each
+    /// binding carries its own disposition and, when it has one, its case.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    bindings: Vec<Binding>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    exceptions: Vec<RouteException>,
+}
+
+/// One emitted binding of a callable: its identity is the callable plus
+/// the canonical receiver and the route that produced it.
+#[derive(Clone, serde::Serialize)]
+struct Binding {
+    /// Unique across the surface: the callable's sanitized path, with
+    /// `__on__<receiver>` for every receiver after the first.
+    id: String,
+    rune: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    receiver: Option<String>,
+    /// `inherent`, `free`, `protocol`, `implementor` (a trait method on a
+    /// wrapped implementor).
+    route: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    disposition: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    case_id: Option<String>,
+    /// The Rust callee for the oracle when the route changes it (deref).
+    #[serde(skip)]
+    callee: Option<String>,
+    /// The oracle information of this binding when it differs from the
+    /// entry's (an instantiation has its own substituted signature).
+    #[serde(skip)]
+    info: Option<OracleInfo>,
+}
+
+/// A candidate receiver route that produced no binding, with its reason:
+/// every candidate route of a callable has exactly one disposition, a
+/// binding or one of these.
+#[derive(Clone, serde::Serialize)]
+struct RouteException {
+    route: &'static str,
+    receiver: String,
+    reason: String,
+}
+
+fn binding_id(canonical_path: &str, receiver: Option<&str>, first: bool) -> String {
+    let base = sanitize(canonical_path).to_lowercase();
+    match receiver {
+        Some(r) if !first => format!("{base}__on__{}", sanitize(last(r)).to_lowercase()),
+        _ => base,
+    }
 }
 
 /// Everything the oracle test generator needs about one generated binding.
@@ -1098,6 +1939,8 @@ struct OracleInfo {
     generics: BTreeMap<String, String>,
     /// For trait methods: every generated implementor (canonical, wrapper ident).
     implementors: Vec<(String, String)>,
+    /// The binding reaches the trait through `Deref`: the oracle's receiver is `&*recv`.
+    deref: bool,
 }
 
 struct Emitted {
@@ -1137,17 +1980,28 @@ fn doc_line(c: &Callable) -> String {
 
 impl Emitted {
     fn unsupported(&mut self, c: &Callable, reason: &str, detail: &str) {
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "unsupported", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some(format!("{reason}: {detail}")), rune: None, note: None });
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "unsupported", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some(format!("{reason}: {detail}")), rune: None, note: None, bindings: vec![], exceptions: vec![] });
     }
     fn adapted(&mut self, c: &Callable, reason: &str, rune: &str) {
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "adapted", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some(reason.into()), rune: Some(rune.into()), note: None });
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "adapted", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some(reason.into()), rune: Some(rune.into()), note: None, bindings: vec![], exceptions: vec![] });
     }
     fn generated(&mut self, c: &Callable, rune: &str, note: Option<String>) {
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: None, rune: Some(rune.into()), note });
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: None, rune: Some(rune.into()), note, bindings: vec![Binding { id: binding_id(&c.canonical_path, None, true), rune: rune.into(), receiver: None, route: "inherent", disposition: None, case_id: None, callee: None, info: None }], exceptions: vec![] });
     }
     fn generated_with(&mut self, c: &Callable, rune: &str, note: Option<String>, info: OracleInfo) {
         let fallible = info.fallible;
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: Some(fallible), signature: signature_of(c), execution: None, oracle: Some(info), reason: None, rune: Some(rune.into()), note });
+        let route = match c.kind.as_str() { "inherent" => "inherent", "free_fn" => "free", "foreign_trait_impl" => "protocol", _ => "implementor" };
+        let receiver = info.owner.as_ref().map(|(o, _)| o.clone());
+        let bindings = vec![Binding { id: binding_id(&c.canonical_path, receiver.as_deref(), true), rune: rune.into(), receiver, route, disposition: None, case_id: None, callee: None, info: None }];
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: Some(fallible), signature: signature_of(c), execution: None, oracle: Some(info), reason: None, rune: Some(rune.into()), note, bindings, exceptions: vec![] });
+    }
+    /// A trait method bound on several implementors: one binding per
+    /// implementor, the entry's status counting the callable once.
+    fn generated_on(&mut self, c: &Callable, per: &[(String, String, &'static str, Option<String>)], info: OracleInfo) {
+        let fallible = info.fallible;
+        let bindings: Vec<Binding> = per.iter().enumerate().map(|(i, (rune, owner, route, callee))| Binding { id: binding_id(&c.canonical_path, Some(owner), i == 0), rune: rune.clone(), receiver: Some(owner.clone()), route, disposition: None, case_id: None, callee: callee.clone(), info: None }).collect();
+        let rune = per.iter().map(|(r, _, _, _)| r.as_str()).collect::<Vec<_>>().join(" ");
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: Some(fallible), signature: signature_of(c), execution: None, oracle: Some(info), reason: None, rune: Some(rune), note: None, bindings, exceptions: vec![] });
     }
 }
 
@@ -1212,6 +2066,87 @@ fn rune_path(w: &Wrapper) -> String {
     format!("{}::{}", w.rune_item.trim_start_matches("::"), w.rune_name)
 }
 
+/// Record 0076 gate 4: one binding per proven (method, alias) pair of a
+/// generic owner, with the owner's parameters substituted; each binding
+/// has its own oracle information. Pairs outside the release's
+/// instantiation scope, and proven pairs the mapping rules refuse, are
+/// route exceptions with their reason.
+fn emit_instantiations(world: &World, out: &mut Emitted, c: &Callable, pairs: &[&PairRecord]) {
+    let scope = &world.release.instantiation.families;
+    let mut done: Vec<(String, String, &'static str, Option<String>)> = Vec::new();
+    let mut infos: Vec<OracleInfo> = Vec::new();
+    let mut exceptions: Vec<RouteException> = Vec::new();
+    let mut first_info: Option<OracleInfo> = None;
+    for p in pairs {
+        match &p.result {
+            Applicability::Proven => {}
+            Applicability::Rejected(r) => { exceptions.push(RouteException { route: "instantiation", receiver: p.alias.clone(), reason: format!("rejected: {r}") }); continue; }
+            Applicability::Unresolved(r) => { exceptions.push(RouteException { route: "instantiation", receiver: p.alias.clone(), reason: format!("unresolved: {r}") }); continue; }
+        }
+        if !scope.is_empty() && !scope.iter().any(|f| f == p.family) {
+            exceptions.push(RouteException { route: "instantiation", receiver: p.alias.clone(), reason: format!("not shipped: family `{}` is outside the release's instantiation scope", p.family) });
+            continue;
+        }
+        if let Some(x) = world.release.instantiation.exclude.iter().find(|x| last(&p.alias) == x.alias && x.methods.iter().any(|m| *m == c.name)) {
+            exceptions.push(RouteException { route: "instantiation", receiver: p.alias.clone(), reason: format!("excluded by the release file: {}", x.cite) });
+            continue;
+        }
+        let (_, subst) = world.applicability(c, &p.identity);
+        let Ok((params, ret)) = world.substitute_signature(c, &p.identity, &subst) else { continue };
+        // an instantiation an alias wrapper holds exactly is spelled as that
+        // alias everywhere downstream (mapping, oracle formatting)
+        let norm = |t: String| -> String {
+            let mut t = t;
+            for (identity, alias) in &world.by_identity {
+                if t.contains(identity.as_str()) { t = t.replace(identity.as_str(), alias); }
+            }
+            t
+        };
+        let params: Vec<String> = params.into_iter().map(norm).collect();
+        let ret = ret.map(norm);
+        let mut syn = c.clone();
+        syn.owner = p.alias.clone();
+        syn.bucket = "mechanical".into();
+        for (q, t) in syn.params.iter_mut().zip(params) {
+            q.ty_canonical = t;
+        }
+        syn.ret_canonical = ret;
+        syn.impl_head = None;
+        syn.impl_bounds.clear();
+        syn.impl_where.clear();
+        let before = out.entries.len();
+        emit_method(world, out, &syn, &p.alias, None, false);
+        let e = out.entries.pop().unwrap();
+        debug_assert_eq!(before, out.entries.len());
+        if e.status == "generated" {
+            done.push((e.rune.clone().unwrap(), p.alias.clone(), "instantiation", None));
+            if let Some(i) = e.oracle.clone() {
+                if first_info.is_none() { first_info = Some(i.clone()); }
+                infos.push(i);
+            }
+        } else {
+            exceptions.push(RouteException { route: "instantiation", receiver: p.alias.clone(), reason: format!("{}: {}", e.status, e.reason.unwrap_or_default()) });
+        }
+    }
+    if done.is_empty() {
+        let why = if pairs.iter().any(|p| matches!(p.result, Applicability::Proven)) { "generic (proven instantiations were not emitted; see exceptions)" } else { "generic (no proven instantiation)" };
+        out.unsupported(c, "bucket", why);
+        out.entries.last_mut().unwrap().exceptions = exceptions;
+        return;
+    }
+    let info = first_info.unwrap();
+    out.generated_on(c, &done, info);
+    let e = out.entries.last_mut().unwrap();
+    for (b, i) in e.bindings.iter_mut().zip(infos) {
+        b.info = Some(i);
+        // one canonical path can carry several callables (one per impl
+        // head): every instantiation id names its receiver
+        b.id = binding_id(&c.canonical_path, b.receiver.as_deref(), false);
+    }
+    e.note = Some(format!("instantiated on {} of {} alias identities", done.len(), pairs.len()));
+    e.exceptions = exceptions;
+}
+
 /// Generate one method/function binding. `owner` is the canonical owner
 /// type (for methods) and `trait_spell` the trait for UFCS calls.
 fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str]) {
@@ -1220,7 +2155,7 @@ fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str
         return;
     }
     match c.kind.as_str() {
-        "inherent" => emit_method(world, out, c, &c.owner, None),
+        "inherent" => emit_method(world, out, c, &c.owner, None, false),
         "trait_method" => {
             let trait_ = &c.owner;
             let tspell = match world.types.get(trait_).and_then(|s| spell(&s.found_paths, &s.crate_paths, last(trait_), &world.ambiguous_prelude)) {
@@ -1235,37 +2170,48 @@ fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str
                 out.unsupported(c, "no wrapped implementor", &c.implementors.join(", "));
                 return;
             }
-            let mut done = Vec::new();
+            let mut done: Vec<(String, String, &'static str, Option<String>)> = Vec::new();
             let mut first_err: Option<(String, String)> = None;
             let mut first_info: Option<OracleInfo> = None;
             let mut infos: Vec<OracleInfo> = Vec::new();
-            for owner in impls {
+            let mut exceptions: Vec<RouteException> = Vec::new();
+            let derefs: Vec<&String> = world.deref_targets.get(trait_).map(|v| v.iter().collect()).unwrap_or_default();
+            let candidates: Vec<(&String, bool)> = impls.iter().map(|o| (*o, false)).chain(derefs.iter().map(|o| (*o, true))).collect();
+            for (owner, deref) in candidates {
+                let route: &'static str = if deref { "deref" } else { "implementor" };
                 let before = out.entries.len();
-                emit_method(world, out, c, owner, Some(&tspell));
+                emit_method(world, out, c, owner, Some(&tspell), deref);
                 let e = out.entries.pop().unwrap();
                 debug_assert_eq!(before, out.entries.len());
                 if e.status == "generated" {
-                    done.push(e.rune.clone().unwrap());
+                    let callee = if deref { e.oracle.as_ref().map(|i| i.callee.clone()) } else { None };
+                    done.push((e.rune.clone().unwrap(), owner.clone(), route, callee));
                     if let Some(i) = e.oracle.clone() {
                         infos.push(i);
                     }
                     if first_info.is_none() {
                         first_info = e.oracle.clone();
                     }
-                } else if first_err.is_none() {
-                    first_err = Some((e.status.to_string(), e.reason.unwrap_or_default()));
+                } else {
+                    let why = e.reason.clone().unwrap_or_default();
+                    let why = if deref && why.starts_with("name taken on this type by") { format!("not separately exposed, inherent binding retained ({why})") } else { why };
+                    exceptions.push(RouteException { route, receiver: owner.clone(), reason: why.clone() });
+                    if first_err.is_none() {
+                        first_err = Some((e.status.to_string(), why));
+                    }
                 }
             }
             if done.is_empty() {
                 let (st, why) = first_err.unwrap();
                 if st == "adapted" { out.adapted(c, &why, "") } else { out.unsupported(c, "on every implementor", &why) }
+                out.entries.last_mut().unwrap().exceptions = exceptions;
             } else if let Some(mut info) = first_info {
-                // every generated implementor is a candidate receiver for the
-                // oracle; the fixture derivation picks the first with a fixture
+                // every generated receiver is a binding with its own case
                 info.implementors = infos.iter().filter_map(|i| i.owner.clone()).collect();
-                out.generated_with(c, &done.join(" "), None, info);
+                out.generated_on(c, &done, info);
+                out.entries.last_mut().unwrap().exceptions = exceptions;
             } else {
-                out.generated(c, &done.join(" "), None);
+                out.generated(c, &done.iter().map(|(r, _, _, _)| r.as_str()).collect::<Vec<_>>().join(" "), None);
             }
         }
         "free_fn" => emit_free(world, out, c),
@@ -1274,7 +2220,7 @@ fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str
     }
 }
 
-fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trait_spell: Option<&str>) {
+fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trait_spell: Option<&str>, deref: bool) {
     world.tmp.set(0);
     if c.is_async {
         out.unsupported(c, "async", &c.name);
@@ -1349,6 +2295,17 @@ fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trai
         }
     };
     let fallible = ret.fallible || params.iter().any(|(_, a)| a.fallible);
+    // the deref route: the receiver is `&*this.0`, a `&dyn Trait`; it needs
+    // a reference receiver, `DerefMut` for `&mut self`, and cannot move out
+    if deref {
+        match c.receiver.as_str() {
+            "&self" => {}
+            "&mut self" if world.deref_mut.contains(owner) => {}
+            "&mut self" => { out.unsupported(c, "deref route needs DerefMut", owner); return; }
+            "self" => { out.unsupported(c, "deref route cannot move out of a dyn target", owner); return; }
+            other => { out.unsupported(c, "deref route needs a receiver", other); return; }
+        }
+    }
     let (recv_sig, recv_expr, recv_note) = match c.receiver.as_str() {
         "none" => ("".to_string(), None, None),
         "self" if !world.clonable.contains(owner) => {
@@ -1356,6 +2313,8 @@ fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trai
             return;
         }
         "self" => (format!("this: &{}", w.rust), Some("this.0.clone()".to_string()), Some("consumes in Rust; the Rune value is cloned and stays usable")),
+        "&self" if deref => (format!("this: &{}", w.rust), Some("&*this.0".to_string()), Some("through Deref, as Rust's autoderef would")),
+        "&mut self" if deref => (format!("this: &mut {}", w.rust), Some("&mut *this.0".to_string()), Some("through DerefMut; mutates the Rune value in place")),
         "&self" => (format!("this: &{}", w.rust), Some("&this.0".to_string()), None),
         "&mut self" => (format!("this: &mut {}", w.rust), Some("&mut this.0".to_string()), Some("mutates the Rune value in place")),
         other => {
@@ -1366,10 +2325,11 @@ fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trai
     let idx = out.fn_index;
     out.fn_index += 1;
     // trait methods are emitted once per implementor: the owner is part of the identity
-    let ident = rust_ident("f", &format!("{}#{owner}", c.canonical_path), idx);
-    let callee = match trait_spell {
-        Some(t) => format!("<{} as {t}>::{rust_name}", w.spell),
-        None => format!("<{}>::{rust_name}", w.spell),
+    let ident = rust_ident("f", &format!("{}#{owner}{}", c.canonical_path, if deref { "#deref" } else { "" }), idx);
+    let callee = match (trait_spell, deref) {
+        (Some(t), true) => format!("<dyn {t}>::{rust_name}"),
+        (Some(t), false) => format!("<{} as {t}>::{rust_name}", w.spell),
+        (None, _) => format!("<{}>::{rust_name}", w.spell),
     };
     let mut args: Vec<String> = Vec::new();
     if let Some(r) = &recv_expr {
@@ -1427,6 +2387,7 @@ fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trai
         fallible,
         generics: generics.clone(),
         implementors: vec![],
+        deref: false,
     };
     out.generated_with(c, &rune, note, info);
 }
@@ -1531,6 +2492,7 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
         fallible,
         generics: generics.clone(),
         implementors: vec![],
+        deref: false,
     };
     out.generated_with(c, &rune, if notes.is_empty() { None } else { Some(notes.join("; ")) }, info);
 }
@@ -1622,6 +2584,7 @@ fn emit_foreign(world: &World, out: &mut Emitted, c: &Callable) {
         fallible: false,
         generics: BTreeMap::new(),
         implementors: vec![],
+        deref: false,
     };
     out.generated_with(c, &rune, Some(format!("derived: {}", c.derived)), info);
 }
@@ -1772,18 +2735,66 @@ fn main() {
     callables.sort_by(|a, b| a.canonical_path.cmp(&b.canonical_path).then(a.key.cmp(&b.key)));
     // inherent methods take names before trait methods do
     callables.sort_by_key(|c| match c.kind.as_str() { "inherent" => 0, "free_fn" => 1, "foreign_trait_impl" => 2, _ => 3 });
+    // record 0076 gate 3: the instantiation census, before any binding is emitted
+    let census = instantiation_census(&world, &inv);
+    {
+        let summary = census_summary(&census);
+        println!("instantiation census: {}", serde_json::to_string(&summary["by_family"]).unwrap());
+    }
+    let mut census_by_method: BTreeMap<String, Vec<&PairRecord>> = BTreeMap::new();
+    for p in &census {
+        census_by_method.entry(p.key.clone()).or_default().push(p);
+    }
+    let census_keys: BTreeSet<String> = census.iter().map(|p| p.key.clone()).collect();
     for c in callables {
         let api = release.is_api(&c.krate);
         if c.bucket == "unsupported" || c.bucket == "unknown" {
             continue; // not eligible in 0072's terms
         }
+        if api && c.kind == "inherent" && c.bucket == "generic" {
+            if let Some(pairs) = census_by_method.get(&c.key) {
+                emit_instantiations(&world, &mut out, c, pairs);
+                continue;
+            }
+        }
         if !api {
-            out.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "out_of_scope", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some("internal crate reachable through the prelude".into()), rune: None, note: None });
+            out.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "out_of_scope", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some("internal crate reachable through the prelude".into()), rune: None, note: None, bindings: vec![], exceptions: vec![] });
             continue;
         }
         emit_callable(&world, &mut out, c, &buckets);
     }
     emit_struct_extras(&world, &mut out, &buckets);
+    // every pair of the census gets exactly one disposition, emitted or not
+    let mut census = census;
+    {
+        let mut per_key: BTreeMap<&str, (&str, Option<&str>, Vec<(&str, &str)>, Vec<(&str, &str)>)> = BTreeMap::new();
+        for e in &out.entries {
+            if !census_keys.contains(&e.key) { continue; }
+            let bs: Vec<(&str, &str)> = e.bindings.iter().filter(|b| b.route == "instantiation").filter_map(|b| b.receiver.as_deref().map(|r| (r, b.id.as_str()))).collect();
+            let xs: Vec<(&str, &str)> = e.exceptions.iter().filter(|x| x.route == "instantiation").map(|x| (x.receiver.as_str(), x.reason.as_str())).collect();
+            per_key.insert(e.key.as_str(), (e.status, e.reason.as_deref(), bs, xs));
+        }
+        let by_key: BTreeMap<&str, &Callable> = inv.callables.iter().map(|c| (c.key.as_str(), c)).collect();
+        for p in census.iter_mut() {
+            p.disposition = Some(match &p.result {
+                Applicability::Rejected(r) => format!("rejected: {r}"),
+                Applicability::Unresolved(r) => format!("unresolved: {r}"),
+                Applicability::Proven => {
+                    if !p.eligible {
+                        let c = by_key[p.key.as_str()];
+                        format!("not eligible: the callable is in 0072's `{}` bucket ({})", c.bucket, c.rules.join(" "))
+                    } else if let Some((status, reason, bs, xs)) = per_key.get(p.key.as_str()) {
+                        if bs.iter().any(|(r, _)| *r == p.alias) { "emitted".to_string() }
+                        else if let Some((_, why)) = xs.iter().find(|(r, _)| *r == p.alias) {
+                            if why.starts_with("excluded by the release file") { format!("excluded: {why}") } else if why.starts_with("not shipped") { why.to_string() } else { format!("refused: {why}") }
+                        } else { format!("no disposition: entry {status} ({})", reason.unwrap_or("")) }
+                    } else {
+                        "no disposition: no entry for the callable".to_string()
+                    }
+                }
+            });
+        }
+    }
     // Only wrapper types some generated binding mentions are emitted; the
     // rest would be registered for nothing. Hand-written wrappers always exist.
     let mut used: BTreeSet<String> = BTreeSet::new();
@@ -1821,6 +2832,7 @@ fn main() {
         "buckets": buckets,
         "counts": counts,
         "wrappers": world.wrappers.iter().map(|(c, w)| serde_json::json!({"type": c, "rune": rune_path(w), "hand_written": w.hand, "rule": w.rule, "identity": w.identity, "shared_with": w.aliases.iter().filter(|a| *a != c).collect::<Vec<_>>()})).collect::<Vec<_>>(),
+        "instantiation": { "summary": census_summary(&census), "pairs": census },
         "oracle_cases": oracle_tests.matches("    Case {").count(),
         "fixtures": recipes,
         "oracle_skipped": oracle_skipped.iter().map(|(p, r)| serde_json::json!({"path": p, "reason": r})).collect::<Vec<_>>(),
@@ -1865,6 +2877,41 @@ fn main() {
 /// Core fixtures: canonical type -> (rune fx function, Rust value, how to
 /// show it structurally). Frames, series and columns are shown cell by cell
 /// through `rnx_polars::oracle`, independent of Polars's `fmt` feature.
+/// Record 0076: typed source fixtures. Each is a small deterministic value
+/// of a wrapped type, named for its family, that feeds the producer
+/// bindings it lists (`series_bool` feeds `Series::bool`); none replaces
+/// the type's default fixture.
+const TYPED_FIXTURES: &[(&str, &str, &str, &str, &[&str])] = &[
+    ("polars_core::series::Series", "series_bool", "p::Series::new(\"x\".into(), [true, false, true])", "crate_oracle::series_repr(v)", &["bool"]),
+    ("polars_core::series::Series", "series_str", "p::Series::new(\"x\".into(), [\"a\", \"bb\", \"ccc\"])", "crate_oracle::series_repr(v)", &["str"]),
+    ("polars_core::series::Series", "series_binary", "p::Series::new(\"x\".into(), [&b\"ab\"[..], b\"c\", b\"\"])", "crate_oracle::series_repr(v)", &["binary"]),
+    ("polars_core::series::Series", "series_binary_offset", "p::Series::new(\"x\".into(), [&b\"ab\"[..], b\"c\", b\"\"]).cast(&p::DataType::BinaryOffset).unwrap()", "crate_oracle::series_repr(v)", &["binary_offset"]),
+    ("polars_core::series::Series", "series_i8", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::Int8).unwrap()", "crate_oracle::series_repr(v)", &["i8"]),
+    ("polars_core::series::Series", "series_i16", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::Int16).unwrap()", "crate_oracle::series_repr(v)", &["i16"]),
+    ("polars_core::series::Series", "series_i32", "p::Series::new(\"x\".into(), [1i32, 2, 3])", "crate_oracle::series_repr(v)", &["i32"]),
+    ("polars_core::series::Series", "series_i64", "p::Series::new(\"x\".into(), [1i64, 2, 3])", "crate_oracle::series_repr(v)", &["i64"]),
+    ("polars_core::series::Series", "series_u8", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::UInt8).unwrap()", "crate_oracle::series_repr(v)", &["u8"]),
+    ("polars_core::series::Series", "series_u16", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::UInt16).unwrap()", "crate_oracle::series_repr(v)", &["u16"]),
+    ("polars_core::series::Series", "series_u32", "p::Series::new(\"x\".into(), [1u32, 2, 3])", "crate_oracle::series_repr(v)", &["u32", "idx"]),
+    ("polars_core::series::Series", "series_u64", "p::Series::new(\"x\".into(), [1u64, 2, 3])", "crate_oracle::series_repr(v)", &["u64"]),
+    ("polars_core::series::Series", "series_f32", "p::Series::new(\"x\".into(), [1.5f32, 2.5, 3.5])", "crate_oracle::series_repr(v)", &["f32"]),
+    ("polars_core::series::Series", "series_f64", "p::Series::new(\"x\".into(), [1.5f64, 2.5, 3.5])", "crate_oracle::series_repr(v)", &["f64"]),
+    ("polars_core::series::Series", "series_struct", "p::IntoSeries::into_series(df().into_struct(\"x\".into()))", "crate_oracle::series_repr(v)", &["struct_"]),
+    ("polars_core::series::Series", "series_list", "p::Series::new(\"x\".into(), [p::Series::new(\"a\".into(), [1i64, 2]), p::Series::new(\"b\".into(), [3i64])])", "crate_oracle::series_repr(v)", &["list"]),
+    ("polars_core::series::Series", "series_date", "p::Series::new(\"x\".into(), [1i32, 2, 3]).cast(&p::DataType::Date).unwrap()", "crate_oracle::series_repr(v)", &["date"]),
+    ("polars_core::series::Series", "series_datetime", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::Datetime(p::TimeUnit::Milliseconds, None)).unwrap()", "crate_oracle::series_repr(v)", &["datetime"]),
+    ("polars_core::series::Series", "series_duration", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::Duration(p::TimeUnit::Milliseconds)).unwrap()", "crate_oracle::series_repr(v)", &["duration"]),
+    ("polars_core::series::Series", "series_time", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::Time).unwrap()", "crate_oracle::series_repr(v)", &["time"]),
+    // for the comparator controls: a long array, an array with a null, floats that display alike
+    ("polars_core::series::Series", "series_long", "p::Series::new(\"x\".into(), (0..40i64).collect::<Vec<_>>())", "crate_oracle::series_repr(v)", &[]),
+    ("polars_core::series::Series", "series_nulls", "p::Series::new(\"x\".into(), [Some(1i64), None, Some(3)])", "crate_oracle::series_repr(v)", &[]),
+    ("polars_core::series::Series", "series_struct_null_field", "p::IntoSeries::into_series(p::df!(\"x\" => [None::<i64>], \"y\" => [\"a\"]).unwrap().into_struct(\"s\".into()))", "crate_oracle::series_repr(v)", &[]),
+    ("polars_core::series::Series", "series_list_of_struct", "p::Series::new(\"l\".into(), [p::IntoSeries::into_series(p::df!(\"x\" => [None::<i64>], \"y\" => [\"a\"]).unwrap().into_struct(\"s\".into()))])", "crate_oracle::series_repr(v)", &[]),
+    ("polars_core::series::Series", "series_list_long", "p::Series::new(\"x\".into(), [p::Series::new(\"i\".into(), (0..40i64).collect::<Vec<_>>())])", "crate_oracle::series_repr(v)", &[]),
+    ("polars_core::series::Series", "series_list_nulls", "p::Series::new(\"x\".into(), [p::Series::new(\"i\".into(), [Some(1i64), None, Some(3)])])", "crate_oracle::series_repr(v)", &[]),
+    ("polars_core::series::Series", "series_float_sum", "p::Series::new(\"x\".into(), [0.1f64 + 0.2])", "crate_oracle::series_repr(v)", &[]),
+];
+
 const FIXTURES: &[(&str, &str, &str, &str)] = &[
     ("polars_core::frame::dataframe::DataFrame", "df", "polars::df!(\"x\" => [1i64, 2, 3], \"y\" => [\"a\", \"b\", \"c\"], \"z\" => [1.5f64, 2.5, 3.5]).unwrap()", "crate_oracle::frame_repr(v)"),
     ("polars_lazy::frame::LazyFrame", "lf", "df().lazy()", "match v.clone().collect() { Ok(d) => crate_oracle::frame_repr(&d).prefixed(\"collected \"), Err(e) => crate_oracle::Repr::Text(format!(\"collect error: {}\", crate_oracle::error_kind(&e))) }"),
@@ -1873,6 +2920,7 @@ const FIXTURES: &[(&str, &str, &str, &str)] = &[
     ("polars_core::frame::column::Column", "column", "series().into_column()", "crate_oracle::column_repr(v)"),
     ("polars_core::datatypes::dtype::DataType", "dtype", "p::DataType::Int64", "crate_oracle::Repr::Text(format!(\"{:?}\", v))"),
     ("polars_core::datatypes::field::Field", "field", "p::Field::new(\"x\".into(), p::DataType::Int64)", "crate_oracle::Repr::Text(format!(\"{:?}\", v))"),
+    ("polars_core::series::implementations::null::NullChunked", "null_chunked", "p::Series::new_null(\"x\".into(), 2).null().unwrap().clone()", "crate_oracle::Repr::Text(format!(\"{}:{:?}:len={}\", p::SeriesTrait::name(v), p::SeriesTrait::dtype(v), v.len()))"),
     ("polars_lazy::frame::LazyGroupBy", "group_by", "lf().group_by_stable([p::col(\"y\")])", "match v.clone().agg([p::col(\"x\").sum()]).collect() { Ok(d) => crate_oracle::frame_repr(&d).prefixed(\"agg \"), Err(e) => crate_oracle::Repr::Text(format!(\"agg error: {}\", crate_oracle::error_kind(&e))) }"),
 ];
 
@@ -1982,7 +3030,11 @@ impl<'a> Oracle<'a> {
             let v = s.variant_shapes.iter().find(|(_, data)| !*data)?;
             return Some(format!("<{}>::{}", w.spell, v.0));
         }
-        if self.defaultable.contains(canonical) {
+        // the same condition as the Rune side: a `Default` fixture exists
+        // only where the `default_` binding does, so both sides build the
+        // same value (record 0076: an impl on the generic base gave Rust an
+        // empty array while Rune took the producer)
+        if self.defaultable.contains(canonical) && self.default_bound.contains(canonical) {
             return Some(format!("<{}>::default()", w.spell));
         }
         None
@@ -2020,9 +3072,14 @@ impl<'a> Oracle<'a> {
             for canonical in wanted {
                 let Some(w) = self.world.wrappers.get(&canonical) else { continue };
                 let Some(s) = self.world.types.get(&canonical) else { continue };
+                // rule 5a (record 0076): a producer on a typed source fixture
+                // that names it comes first: it is a deliberately supplied
+                // value, where a constructor's placeholder arguments may not be
+                // valid for the type (`rand_bernoulli("x", 2, 1.5)`)
+                let mut found: Option<Recipe> = self.producer_recipe(&canonical, entries, true);
                 // rule 3: a constructor binding whose arguments all have fixtures
-                let mut found: Option<Recipe> = None;
                 for (name, info, fallible) in ctors.get(&canonical).cloned().unwrap_or_default() {
+                    if found.is_some() { break; }
                     let mut rune_args = Vec::new();
                     let mut rust_args = Vec::new();
                     let mut ok = true;
@@ -2063,6 +3120,12 @@ impl<'a> Oracle<'a> {
                         break;
                     }
                 }
+                // rule 5 (record 0076): a producer, a bound binding elsewhere
+                // that returns this type, on a receiver whose fixture is typed
+                // for it when a typed fixture lists the producer
+                if found.is_none() {
+                    found = self.producer_recipe(&canonical, entries, false);
+                }
                 if let Some(r) = found {
                     self.recipes.insert(canonical.clone(), r);
                     progress = true;
@@ -2078,6 +3141,50 @@ impl<'a> Oracle<'a> {
                 self.no_recipe.insert(canonical.clone(), why.to_string());
             }
         }
+    }
+
+    /// The producer recipe for a wrapped type: among generated `&self`
+    /// bindings without parameters whose return is the type (directly, by
+    /// reference, or through `PolarsResult`), on a receiver type that has
+    /// a fixture, the first by shortest canonical path then alphabetical.
+    /// The receiver fixture is the typed fixture that lists the producer's
+    /// name, else the receiver type's default fixture.
+    fn producer_recipe(&self, canonical: &str, entries: &[Entry], typed_only: bool) -> Option<Recipe> {
+        let mut cands: Vec<(&Entry, &OracleInfo, bool, bool)> = Vec::new();
+        for e in entries {
+            if e.status != "generated" { continue }
+            let Some(info) = &e.oracle else { continue };
+            if info.receiver != "&self" || !info.params.is_empty() { continue }
+            let Some((owner, _)) = &info.owner else { continue };
+            if owner == canonical { continue }
+            let ret = info.ret_canonical.as_deref().unwrap_or("");
+            let (target, fallible) = match ty::parse(ret) {
+                Ty::Path { path, args } if (path == "polars_error::PolarsResult" || path == "core::result::Result") && !args.is_empty() => (args[0].clone(), true),
+                other => (other, false),
+            };
+            let (target, by_ref) = match target { Ty::Ref { inner, mutable: false } => (*inner, true), other => (other, false) };
+            let hits = matches!(&target, Ty::Path { path, args } if args.is_empty() && path == canonical);
+            if !hits { continue }
+            cands.push((e, info, fallible, by_ref));
+        }
+        cands.sort_by_key(|(e, _, _, _)| (e.canonical_path.len(), e.canonical_path.clone()));
+        for (e, info, fallible, by_ref) in cands {
+            let (owner, _) = info.owner.as_ref().unwrap();
+            let typed = TYPED_FIXTURES.iter().find(|f| f.0 == owner && f.4.iter().any(|n| *n == info.rune_name));
+            if typed_only && typed.is_none() { continue }
+            let (recv_rune, recv_rust) = match typed {
+                Some(f) => (format!("fx::{}()", f.1), format!("{}()", f.1)),
+                None => match (self.rune_wrapped(owner), self.rust_wrapped(owner)) { (Some(a), Some(b)) => (a, b), _ => continue },
+            };
+            let rune_call = format!("{recv_rune}.{}()", info.rune_name);
+            let rune = if info.fallible { format!("match {rune_call} {{ Ok(v) => v, Err(e) => panic(`fixture: {} failed: ${{e}}`) }}", info.rune_name) } else { rune_call };
+            let rust_call = format!("{}(&{recv_rust})", info.callee);
+            let rust_call = if fallible { format!("match {rust_call} {{ Ok(v) => v, Err(e) => panic!(\"fixture: {} failed: {{e}}\") }}", info.rune_name) } else { rust_call };
+            let rust = if by_ref { format!("{rust_call}.clone()") } else { rust_call };
+            let via = match typed { Some(f) => format!(" on {}", f.1), None => String::new() };
+            return Some(Recipe { rune, rust, kind: format!("producer {}{via}", e.canonical_path.rsplit("::").take(2).collect::<Vec<_>>().into_iter().rev().collect::<Vec<_>>().join("::")) });
+        }
+        None
     }
 
     /// Rust expression producing the Polars value for a canonical parameter
@@ -2158,6 +3265,14 @@ impl<'a> Oracle<'a> {
     fn show(&self, canonical: &str) -> Option<String> {
         if let Some(f) = self.fixture(canonical) {
             return Some(f.3.to_string());
+        }
+        // record 0076: an array alias is compared structurally, as the series
+        // it converts to (name, dtype, every element, nulls), never by Debug,
+        // whose formatting truncates and rounds
+        if let Some(w) = self.world.wrappers.get(canonical) {
+            if w.rule == "alias" && w.base.as_deref().is_some_and(|b| b == "polars_core::chunked_array::ChunkedArray" || b == "polars_core::chunked_array::logical::Logical") {
+                return Some("crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone()))".into());
+            }
         }
         if self.debuggable.contains(canonical) {
             return Some("crate_oracle::Repr::Text(format!(\"{:?}\", v))".into());
@@ -2306,20 +3421,47 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
     o.derive_recipes(entries);
     let mut cases = Vec::new();
     let mut skipped: Vec<(String, String)> = Vec::new();
-    // Every generated entry gets exactly one disposition.
-    for e in entries.iter_mut() {
-        if e.status != "generated" {
-            continue;
-        }
+    // Every binding of every generated entry gets exactly one disposition:
+    // a case with its own id, or a reason. A trait method bound on several
+    // implementors is visited once per binding.
+    let plan: Vec<(usize, usize)> = entries.iter().enumerate().filter(|(_, e)| e.status == "generated").flat_map(|(ei, e)| (0..e.bindings.len().max(1)).map(move |bi| (ei, bi))).collect();
+    for (ei, bi) in plan {
+        let e = &mut entries[ei];
+        let single = e.bindings.len() <= 1;
         let mut skip = |e: &mut Entry, why: String| {
-            e.execution = Some(why.clone());
+            if let Some(b) = e.bindings.get_mut(bi) { b.disposition = Some(why.clone()); }
+            if single { e.execution = Some(why.clone()); }
             skipped.push((e.canonical_path.clone(), why));
         };
-        let Some(info) = e.oracle.clone() else {
+        let Some(mut info) = e.oracle.clone() else {
             skip(e, "no call information".into());
             continue;
         };
-        let id = sanitize(&e.canonical_path).to_lowercase();
+        let id = e.bindings.get(bi).map(|b| b.id.clone()).unwrap_or_else(|| sanitize(&e.canonical_path).to_lowercase());
+        // the route decides the callee and the receiver spelling, for one
+        // binding or many; an instantiation carries its own information
+        let mut own_info = false;
+        if let Some(b) = e.bindings.get(bi) {
+            if let Some(i) = &b.info { info = i.clone(); own_info = true; }
+            if let Some(cal) = b.callee.clone() { info.callee = cal; }
+            info.deref = b.route == "deref";
+        }
+        // a binding on a specific implementor: that receiver, not the first one with a fixture
+        if !single && !own_info {
+            let Some(r) = e.bindings[bi].receiver.clone() else { skip(e, "binding without a receiver".into()); continue };
+            if o.rune_wrapped(&r).is_none() || o.rust_wrapped(&r).is_none() {
+                skip(e, format!("no fixture for the receiver type ({})", o.no_recipe.get(&r).cloned().unwrap_or_else(|| "no fixture".into())));
+                continue;
+            }
+            if e.bindings[bi].callee.is_none() {
+                if let Some((c0, _)) = info.owner.clone() {
+                    info.callee = info.callee.replacen(&format!("<{}", world.wrappers[&c0].spell), &format!("<{}", world.wrappers[&r].spell), 1);
+                }
+            }
+            info.rune_owner = Some(rune_path(&world.wrappers[&r]));
+            info.owner = Some((r.clone(), world.wrappers[&r].rust.clone()));
+            info.implementors.clear();
+        }
         let owner = info.owner.as_ref().map(|(c, _)| c.as_str());
         if let Some(x) = world.release.excluded_oracle.iter().find(|x| x.path == e.canonical_path) {
             skip(e, format!("excluded: nondeterministic oracle ({})", x.reason));
@@ -2386,12 +3528,13 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
                 }
                 _ => { skip(e, format!("protocol {tname} has no script-level trigger")); continue }
             };
-            e.execution = Some(format!("case{}", o.recipe_note(&e.canonical_path, &[script.as_str()])));
+            let d = format!("case{}", o.recipe_note(&e.canonical_path, &[script.as_str()]));
+            if let Some(b) = e.bindings.get_mut(bi) { b.disposition = Some(d.clone()); b.case_id = Some(id.clone()); }
+            if single { e.execution = Some(d); }
             cases.push(OracleCase { id, path: e.canonical_path.clone(), script, has_receiver: false, fmt, oracle, unordered: false, policy: "ordered (protocol)".into() });
             continue;
         }
-        // receiver: for a trait method, the first generated implementor with a fixture
-        let mut info = info;
+        // receiver: a single-binding trait method takes its one implementor
         if !info.implementors.is_empty() {
             if let Some((c, w)) = info.implementors.iter().find(|(c, _)| o.rune_wrapped(c).is_some() && o.rust_wrapped(c).is_some()).cloned() {
                 info.callee = info.callee.replacen(&format!("<{}", world.wrappers[&info.owner.as_ref().unwrap().0].spell), &format!("<{}", world.wrappers[&c].spell), 1);
@@ -2483,7 +3626,7 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
             let fmt = format!("{{ let (a, r) = match rune::from_value::<(rune::Value, rune::Value)>(v) {{ Ok(x) => x, Err(e) => return crate_oracle::Side::Broken(e.to_string()) }}; let recv = match rnx_polars::generated::fixtures::show_{}(&a) {{ Ok(s) => s.to_text(), Err(e) => return crate_oracle::Side::Broken(e) }}; let ret = {{ let v = r; {} }}; match ret {{ crate_oracle::Side::Value(s) => crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"recv={{recv}};ret={{}}\", s.to_text()))), crate_oracle::Side::Error(k) => crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"recv={{recv}};ret=ERR:{{k}}\"))), other => other }} }}", w.rust.to_lowercase(), if info.fallible { value_side(&ret_fmt_script) } else { plain_side(&ret_fmt_script) });
             let mut fx = vec![("__o".to_string(), recv_rust.clone().unwrap())];
             fx.extend(fixtures.iter().cloned());
-            let oracle = staged(&fx, &format!("{{ let mut __o = __o; let __r = {}(&mut __o, {args_s}); let ret = {}; let recv = ({{ let v = &__o; {show} }}).to_text(); let ret = ret.replace(\"<<ERR:\", \"ERR:\").replace(\">>\", \"\"); crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"recv={{recv}};ret={{ret}}\"))) }}", info.callee, ret_fmt_rust).replace(", )", ")"));
+            let oracle = staged(&fx, &format!("{{ let mut __o = __o; let __r = {}({}__o, {args_s}); let ret = {}; let recv = ({{ let v = &__o; {show} }}).to_text(); let ret = ret.replace(\"<<ERR:\", \"ERR:\").replace(\">>\", \"\"); crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"recv={{recv}};ret={{ret}}\"))) }}", info.callee, if info.deref { "&mut *" } else { "&mut " }, ret_fmt_rust).replace(", )", ")"));
             (script, fmt, oracle)
         } else {
             let script = match (&info.rune_owner, info.receiver.as_str()) {
@@ -2505,6 +3648,7 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
             let call = match info.receiver.as_str() {
                 "none" => format!("let __r = {}({args_s});", info.callee),
                 "self" => format!("let __r = {}(__recv, {args_s});", info.callee),
+                "&self" if info.deref => format!("let __r = {}(&*__recv, {args_s});", info.callee),
                 "&self" => format!("let __r = {}(&__recv, {args_s});", info.callee),
                 _ => { skip(e, "receiver form".into()); continue }
             }.replace(", )", ")");
@@ -2515,17 +3659,34 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
             };
             (script, fmt, staged(&fx, &format!("{{ {call} {oracle_body} }}")))
         };
-        e.execution = Some(format!("case{}", o.recipe_note(&e.canonical_path, &[script.as_str()])));
+        let d = format!("case{}", o.recipe_note(&e.canonical_path, &[script.as_str()]));
+        if let Some(b) = e.bindings.get_mut(bi) { b.disposition = Some(d.clone()); b.case_id = Some(id.clone()); }
+        if single { e.execution = Some(d); }
         cases.push(OracleCase { id, path: e.canonical_path.clone(), script, has_receiver: !mutating && (info.receiver == "self" || info.receiver == "&self"), fmt, oracle, unordered, policy });
+    }
+    // callable-level disposition of a multi-binding entry: a case if any
+    // binding has one, else the first binding's reason
+    for e in entries.iter_mut() {
+        if e.status == "generated" && e.bindings.len() > 1 {
+            let n = e.bindings.iter().filter(|b| b.case_id.is_some()).count();
+            e.execution = Some(if n > 0 { format!("case (on {n} of {} receivers)", e.bindings.len()) } else { e.bindings[0].disposition.clone().unwrap_or_else(|| "no disposition".into()) });
+        }
     }
     // fixtures module inside the adapter
     let mut fixtures = String::from("//! GENERATED by tools/polars-gen: fixtures for the generated oracle tests.\n//! Only built with the `test-support` feature.\n#![allow(dead_code, non_snake_case, unused_imports, clippy::all)]\nuse super::types::*;\nuse crate::oracle as crate_oracle;\nuse crate::{DataFrame, Expr, LazyFrame, LazyGroupBy};\nuse polars::prelude as p;\nuse polars::prelude::{IntoColumn, IntoLazy};\nuse rnx::rune;\nuse values::*;\n\n/// The Polars values the oracle tests use on both sides.\npub mod values {\n    use polars::prelude as p;\n    use polars::prelude::*;\n");
+    for (_, name, expr, _, _) in TYPED_FIXTURES {
+        writeln!(fixtures, "    pub fn {name}() -> p::Series {{ {expr} }}").unwrap();
+    }
     for (_, name, expr, _) in FIXTURES {
-        let ret = match *name { "df" => "p::DataFrame", "lf" => "p::LazyFrame", "expr" => "p::Expr", "series" => "p::Series", "column" => "p::Column", "dtype" => "p::DataType", "field" => "p::Field", "group_by" => "p::LazyGroupBy", _ => unreachable!() };
+        let ret = match *name { "df" => "p::DataFrame", "lf" => "p::LazyFrame", "expr" => "p::Expr", "series" => "p::Series", "column" => "p::Column", "dtype" => "p::DataType", "field" => "p::Field", "group_by" => "p::LazyGroupBy", "null_chunked" => "p::NullChunked", _ => unreachable!("core fixture {name} has no return type") };
         writeln!(fixtures, "    pub fn {name}() -> {ret} {{ {expr} }}").unwrap();
     }
     fixtures.push_str("}\n\n");
     for (canonical, name, _, _) in FIXTURES {
+        let w = &world.wrappers[*canonical];
+        writeln!(fixtures, "#[rune::function(path = {name})]\nfn fx_{name}() -> {} {{ {}(values::{name}()) }}", w.rust, w.rust).unwrap();
+    }
+    for (canonical, name, _, _, _) in TYPED_FIXTURES {
         let w = &world.wrappers[*canonical];
         writeln!(fixtures, "#[rune::function(path = {name})]\nfn fx_{name}() -> {} {{ {}(values::{name}()) }}", w.rust, w.rust).unwrap();
     }
@@ -2540,6 +3701,9 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
     }
     fixtures.push_str("\npub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {\n");
     for (_, name, _, _) in FIXTURES {
+        writeln!(fixtures, "    m.function_meta(fx_{name})?;").unwrap();
+    }
+    for (_, name, _, _, _) in TYPED_FIXTURES {
         writeln!(fixtures, "    m.function_meta(fx_{name})?;").unwrap();
     }
     fixtures.push_str("    Ok(())\n}\n");
@@ -2663,8 +3827,13 @@ impl Harness {
     }
 }
 
+/// The engine's counters are process-global, so the two tests of this
+/// binary never interleave: whichever starts second waits.
+static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 #[test]
 fn generated_bindings_match_polars() {
+    let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
     let h = Harness::new();
     let mut results = Vec::new();
     let mut tally: std::collections::BTreeMap<&str, usize> = std::collections::BTreeMap::new();
@@ -2694,6 +3863,7 @@ fn generated_bindings_match_polars() {
 #[test]
 fn oracle_runner_fails_closed() {
     use rnx_polars::generated::fixtures::show_dataframe as show_df;
+    let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
     let h = Harness::new();
     let previous = std::panic::take_hook();
     std::panic::set_hook(Box::new(|_| {}));
@@ -2799,6 +3969,58 @@ fn oracle_runner_fails_closed() {
         ("a target panic that mentions fixture: is a target panic", Case { id: "s7", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(fixture_worded_panic) }, Outcome::OraclePanicked),
         ("a first rust run whose setup succeeds, then a second run whose setup fails", Case { id: "s9", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || if nth() == 0 { Staged::Ran(same()) } else { Staged::SetupFailed("second run setup".into()) } }, Outcome::Nondeterministic),
     ];
+    // the null-series comparator: name, dtype and length are the whole
+    // logical content of an all-null array, and each must be distinguished
+    fn null_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__series__implementations__null__nullchunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    let null_controls: &[(&str, Case)] = &[
+        ("a null series of another length fails", Case { id: "n1", path: "control", script: "pub fn setup() { [fx::null_chunked()] } pub fn main(__fx) { (__fx[0], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: null_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text("x:Null:len=3".into()))) }),
+        ("a null series of another name fails", Case { id: "n2", path: "control", script: "pub fn setup() { [fx::null_chunked()] } pub fn main(__fx) { (__fx[0], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: null_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text("y:Null:len=2".into()))) }),
+        ("a null series of another dtype fails", Case { id: "n3", path: "control", script: "pub fn setup() { [fx::null_chunked()] } pub fn main(__fx) { (__fx[0], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: null_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text("x:Int64:len=2".into()))) }),
+    ];
+    for (label, case) in null_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != Outcome::Mismatch { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // the array comparator (record 0076): an alias array is compared as the
+    // series it converts to, element by element; each control changes what
+    // Debug's formatting would hide
+    fn i64_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__datatypes__int64chunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn f64_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__datatypes__float64chunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn list_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__datatypes__listchunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn struct_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__chunked_array__struct___structchunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn long_changed() -> Staged {
+        let mut v: Vec<i64> = (0..40).collect();
+        v[20] = 21;
+        Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), v))))
+    }
+    fn null_moved() -> Staged { Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), [None, Some(1i64), Some(3)])))) }
+    fn float_alike() -> Staged { Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), [0.3f64])))) }
+    fn long_same() -> Staged { Staged::Ran(Side::Value(crate_oracle::series_repr(&series_long()))) }
+    let array_controls: &[(&str, Case, Outcome)] = &[
+        ("a changed element outside Debug's window fails", Case { id: "a1", path: "control", script: "pub fn setup() { [fx::series_long()] } pub fn main(__fx) { (match __fx[0].i64() { Ok(v) => v, Err(e) => panic(`i64: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: i64_side, oracle: long_changed }, Outcome::Mismatch),
+        ("a moved null fails", Case { id: "a2", path: "control", script: "pub fn setup() { [fx::series_nulls()] } pub fn main(__fx) { (match __fx[0].i64() { Ok(v) => v, Err(e) => panic(`i64: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: i64_side, oracle: null_moved }, Outcome::Mismatch),
+        ("floats that display alike fail", Case { id: "a3", path: "control", script: "pub fn setup() { [fx::series_float_sum()] } pub fn main(__fx) { (match __fx[0].f64() { Ok(v) => v, Err(e) => panic(`f64: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: f64_side, oracle: float_alike }, Outcome::Mismatch),
+        ("a changed inner element of a list cell, beyond Debug's ellipsis, fails", Case { id: "a5", path: "control", script: "pub fn setup() { [fx::series_list_long()] } pub fn main(__fx) { (match __fx[0].list() { Ok(v) => v, Err(e) => panic(`list: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: list_side, oracle: || { let mut inner: Vec<i64> = (0..40).collect(); inner[20] = 999; Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), [p::Series::new("i".into(), inner)])))) } }, Outcome::Mismatch),
+        ("a null moved inside a list cell fails", Case { id: "a6", path: "control", script: "pub fn setup() { [fx::series_list_nulls()] } pub fn main(__fx) { (match __fx[0].list() { Ok(v) => v, Err(e) => panic(`list: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: list_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), [p::Series::new("i".into(), [None, Some(1i64), Some(3)])])))) }, Outcome::Mismatch),
+        ("a changed struct field value fails", Case { id: "a7", path: "control", script: "pub fn setup() { [fx::series_struct()] } pub fn main(__fx) { (match __fx[0].struct_() { Ok(v) => v, Err(e) => panic(`struct: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: struct_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&p::IntoSeries::into_series(p::df!("x" => [1i64, 2, 4], "y" => ["a", "b", "c"], "z" => [1.5f64, 2.5, 3.5]).unwrap().into_struct("x".into()))))) }, Outcome::Mismatch),
+        ("a null struct against a valid struct with null fields fails", Case { id: "a9", path: "control", script: "pub fn setup() { [fx::series_struct_null_field()] } pub fn main(__fx) { (match __fx[0].struct_() { Ok(v) => v, Err(e) => panic(`struct: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: struct_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::full_null("s".into(), 1, series_struct_null_field().dtype())))) }, Outcome::Mismatch),
+        ("a null struct inside a list cell fails", Case { id: "a10", path: "control", script: "pub fn setup() { [fx::series_list_of_struct()] } pub fn main(__fx) { (match __fx[0].list() { Ok(v) => v, Err(e) => panic(`list: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: list_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("l".into(), [p::Series::full_null("s".into(), 1, series_struct_null_field().dtype())])))) }, Outcome::Mismatch),
+        ("the same struct with a null field matches", Case { id: "a11", path: "control", script: "pub fn setup() { [fx::series_struct_null_field()] } pub fn main(__fx) { (match __fx[0].struct_() { Ok(v) => v, Err(e) => panic(`struct: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: struct_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&series_struct_null_field()))) }, Outcome::Match),
+        ("the same struct matches", Case { id: "a8", path: "control", script: "pub fn setup() { [fx::series_struct()] } pub fn main(__fx) { (match __fx[0].struct_() { Ok(v) => v, Err(e) => panic(`struct: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: struct_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&series_struct()))) }, Outcome::Match),
+        ("the same long array matches", Case { id: "a4", path: "control", script: "pub fn setup() { [fx::series_long()] } pub fn main(__fx) { (match __fx[0].i64() { Ok(v) => v, Err(e) => panic(`i64: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: i64_side, oracle: long_same }, Outcome::Match),
+    ];
+    for (label, case, expected) in array_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // two cases of one path (two receivers) survive result collection independently
+    {
+        let twin = |id: &'static str| Case { id, path: "control::twin", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(same) };
+        let results: Vec<(&str, Outcome)> = [twin("t1"), twin("t1__on__other")].iter().map(|c| (c.id, h.run(c).0)).collect();
+        if results.len() != 2 || results.iter().any(|(_, o)| *o != Outcome::Match) || results[0].0 == results[1].0 {
+            failures.push(format!("twin receivers: {results:?}"));
+        }
+    }
     for (label, case, expected) in one_sided_controls {
         let (outcome, detail) = h.run(case);
         if outcome != *expected || outcome.approved() || outcome.setup_failed() {

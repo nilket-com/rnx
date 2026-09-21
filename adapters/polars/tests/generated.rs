@@ -58,6 +58,76 @@ fn a_release_file_for_another_inventory_is_refused() {
 	}
 }
 
+/// Record 0076 gate 2 controls on the committed surface: the deref route
+/// keeps receiver forms, retains inherent names, and a trait method bound
+/// on two receivers keeps two independent results.
+#[test]
+fn deref_route_controls() {
+	let surface: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(root().join("adapters/polars/surface.json")).unwrap()).unwrap();
+	let results: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(root().join("adapters/polars/oracle-results.json")).unwrap()).unwrap();
+	let by_id: std::collections::HashMap<&str, &serde_json::Value> = results["results"].as_array().unwrap().iter().map(|r| (r["id"].as_str().unwrap(), r)).collect();
+	let mut deref_bindings = 0;
+	let mut mut_exceptions = 0;
+	let mut retained = 0;
+	let mut two_outcomes = 0;
+	// the names Series binds inherently: every SeriesTrait method with one
+	// of these names must keep the inherent binding on the deref route
+	let inherent: std::collections::BTreeSet<String> = surface["entries"].as_array().unwrap().iter()
+		.filter(|e| e["status"] == "generated" && e["canonical_path"].as_str().unwrap().starts_with("polars_core::series::Series::"))
+		.map(|e| e["canonical_path"].as_str().unwrap().rsplit("::").next().unwrap().to_string()).collect();
+	let mut colliding = 0;
+	for e in surface["entries"].as_array().unwrap() {
+		let path = e["canonical_path"].as_str().unwrap();
+		if !path.contains("SeriesTrait::") {
+			continue;
+		}
+		if inherent.contains(path.rsplit("::").next().unwrap()) {
+			colliding += 1;
+		}
+		let empty = vec![];
+		let bindings = e["bindings"].as_array().unwrap_or(&empty);
+		let exceptions = e["exceptions"].as_array().unwrap_or(&empty);
+		for b in bindings {
+			if b["route"] == "deref" {
+				deref_bindings += 1;
+				assert_eq!(b["receiver"], "polars_core::series::Series", "{path}: deref binding on an unexpected receiver");
+				assert!(b["rune"].as_str().unwrap().starts_with("polars::Series::"), "{path}: deref binding not on polars::Series");
+			}
+		}
+		for x in exceptions {
+			if x["route"] != "deref" {
+				continue;
+			}
+			let reason = x["reason"].as_str().unwrap();
+			if reason.contains("needs DerefMut") {
+				mut_exceptions += 1;
+				assert!(bindings.iter().all(|b| b["route"] != "deref"), "{path}: a &mut self method must not have a deref binding");
+			}
+			if reason.starts_with("not separately exposed") {
+				retained += 1;
+				assert!(reason.contains("polars_core::series::Series::"), "{path}: the retained inherent binding must be named: {reason}");
+			}
+		}
+		// two receivers, two results: both collected, judged apart, and the
+		// null and data receivers recorded different approved results
+		let cases: Vec<&str> = bindings.iter().filter_map(|b| b["case_id"].as_str()).collect();
+		if cases.len() == 2 {
+			let a = by_id[cases[0]];
+			let b = by_id[cases[1]];
+			assert_ne!(cases[0], cases[1]);
+			if a["status"] != b["status"] || a["detail"] != b["detail"] {
+				two_outcomes += 1;
+			}
+		}
+	}
+	assert!(deref_bindings > 0, "no SeriesTrait method reached Series through Deref");
+	assert!(mut_exceptions > 0, "no &mut self SeriesTrait method was refused on the deref route (Series has no DerefMut)");
+	assert_eq!(retained, colliding, "every SeriesTrait name that Series binds inherently must be retained with the trait route not separately exposed");
+	assert!(colliding >= 8, "expected the inherent name collisions the inventory shows, got {colliding}");
+	assert!(two_outcomes > 0, "expected at least one SeriesTrait method whose null and data receivers record different results");
+	eprintln!("deref route: {deref_bindings} bindings on Series, {mut_exceptions} &mut self exceptions, {retained} inherent names retained, {two_outcomes} methods whose two receivers recorded different results");
+}
+
 /// The buckets this stage generates and the release input the committed
 /// module was generated from; kept in one place with the drift test.
 const BUCKETS: &str = "mechanical,conversion,option_struct";
@@ -110,8 +180,73 @@ fn every_callable_is_accounted_for() {
 		}
 		*dispositions.entry(d.split(" (").next().unwrap().to_string()).or_insert(0usize) += 1;
 	}
-	assert_eq!(cases, surface["oracle_cases"].as_u64().unwrap() as usize, "case dispositions must equal emitted oracle cases");
 	assert_eq!(dispositions.values().sum::<usize>(), generated, "dispositions must partition the generated entries");
 	eprintln!("execution dispositions: {dispositions:?}");
+	// Record 0076: the binding level. Every generated entry has at least
+	// one binding; every binding has exactly one disposition; the bindings
+	// with a case equal the emitted cases; case ids are unique and are
+	// exactly the ids in the generated harness.
+	let mut binding_cases = std::collections::BTreeSet::new();
+	let mut binding_ids = std::collections::BTreeSet::new();
+	let mut multi = 0;
+	for e in surface["entries"].as_array().unwrap() {
+		if e["status"] != "generated" {
+			continue;
+		}
+		let bs = e["bindings"].as_array().unwrap_or_else(|| panic!("{}: generated without bindings", e["canonical_path"]));
+		assert!(!bs.is_empty(), "{}: generated without bindings", e["canonical_path"]);
+		if bs.len() > 1 {
+			multi += 1;
+		}
+		let mut entry_cases = 0;
+		for b in bs {
+			let id = b["id"].as_str().unwrap();
+			assert!(binding_ids.insert(id.to_string()), "duplicate binding id {id}");
+			let d = b["disposition"].as_str().unwrap_or_else(|| panic!("{id}: binding without a disposition"));
+			if d.starts_with("case") {
+				entry_cases += 1;
+				let cid = b["case_id"].as_str().unwrap_or_else(|| panic!("{id}: case without a case id"));
+				assert!(binding_cases.insert(cid.to_string()), "duplicate case id {cid}");
+			} else {
+				assert!(b["case_id"].is_null(), "{id}: a case id without a case");
+			}
+		}
+		let d = e["execution"].as_str().unwrap();
+		assert_eq!(d.starts_with("case"), entry_cases > 0, "{}: entry disposition {d} disagrees with its bindings", e["canonical_path"]);
+	}
+	assert_eq!(binding_cases.len(), surface["oracle_cases"].as_u64().unwrap() as usize, "binding cases must equal emitted oracle cases");
+	assert_eq!(cases, surface["entries"].as_array().unwrap().iter().filter(|e| e["status"] == "generated" && e["execution"].as_str().map(|d| d.starts_with("case")).unwrap_or(false)).count());
+	let harness = std::fs::read_to_string(root().join("adapters/polars/tests/generated_oracle.rs")).unwrap();
+	let mut harness_ids = std::collections::BTreeSet::new();
+	for line in harness.lines().filter(|l| l.trim_start().starts_with("Case { id: \"")) {
+		let id = line.split("id: \"").nth(1).unwrap().split('"').next().unwrap().to_string();
+		assert!(harness_ids.insert(id.clone()), "duplicate case id in the harness: {id}");
+	}
+	assert_eq!(harness_ids, binding_cases, "the harness's case ids must be exactly the bindings' case ids");
+	eprintln!("bindings: {} ids, {} cases, {multi} entries with several receivers", binding_ids.len(), binding_cases.len());
+	// Record 0076: every pair of the instantiation census has exactly one
+	// disposition, and the proven pairs partition into emitted, refused,
+	// excluded, not shipped and not eligible; an emitted pair has a binding.
+	let mut proven_disp = std::collections::BTreeMap::new();
+	let mut emitted_pairs = 0;
+	for p in surface["instantiation"]["pairs"].as_array().unwrap() {
+		let d = p["disposition"].as_str().unwrap_or_else(|| panic!("{} on {}: pair without a disposition", p["method"], p["alias"]));
+		let head = d.split(':').next().unwrap();
+		match p["result"].as_str().unwrap() {
+			"Proven" => {
+				assert!(["emitted", "refused", "excluded", "not shipped", "not eligible"].contains(&head), "{} on {}: proven pair with disposition {d}", p["method"], p["alias"]);
+				*proven_disp.entry(head.to_string()).or_insert(0usize) += 1;
+				if head == "emitted" {
+					emitted_pairs += 1;
+				}
+			}
+			other => assert_eq!(head, other.to_lowercase(), "{} on {}: {other} pair with disposition {d}", p["method"], p["alias"]),
+		}
+	}
+	let instantiation_bindings = surface["entries"].as_array().unwrap().iter().flat_map(|e| e["bindings"].as_array().cloned().unwrap_or_default()).filter(|b| b["route"] == "instantiation").count();
+	assert_eq!(emitted_pairs, instantiation_bindings, "emitted pairs must equal instantiation bindings");
+	let proven = surface["instantiation"]["pairs"].as_array().unwrap().iter().filter(|p| p["result"] == "Proven").count();
+	assert_eq!(proven_disp.values().sum::<usize>(), proven, "proven-pair dispositions must partition the proven pairs");
+	eprintln!("proven pairs: {proven_disp:?}");
 }
 

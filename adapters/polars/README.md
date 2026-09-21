@@ -121,6 +121,25 @@ Policies for generated bindings:
 - Arity: Rune binds free functions of at most five parameters; the four
   API functions above that are listed as unsupported with the reason
   `arity`.
+- Receivers (record 0076): one callable may be bound on several
+  receivers, each a binding with its own oracle case; `surface.json`
+  lists them under the entry's `bindings` with the route that produced
+  them and the candidate routes that produced nothing under
+  `exceptions`. `SeriesTrait` methods are bound on `polars::NullChunked`
+  (the trait's public implementor) and, through `Series: Deref<Target =
+  dyn SeriesTrait>`, on `polars::Series`, the way autoderef reaches them
+  in Rust; where `Series` has an inherent method of the same name the
+  inherent one is retained. Methods of the generic `ChunkedArray<T>` and
+  `Logical<K, T>` are bound on their alias wrappers (`polars::Int64Chunked::…`)
+  for every instantiation the inventory's recorded impl heads, bounds,
+  `where` predicates and associated types prove applicable; unproven
+  pairs are counted exceptions with their reason, and the release file
+  records the families shipped under the launch budget and the cited
+  exclusions the compiler forces.
+- Arrays in the oracle are compared as the series they convert to, name,
+  dtype and every element with nulls; typed source fixtures per family
+  (`fx::series_bool()`, `fx::series_f64()`, …) feed the producer
+  bindings that give each array alias its fixture.
 - Errors: `PolarsResult<T>` is a Rune `Result` whose error is a
   `polars::Error` with `kind()` and `message()`; `kind()` is the variant
   name Rust matches on.

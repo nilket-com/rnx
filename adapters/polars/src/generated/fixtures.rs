@@ -13,6 +13,33 @@ use values::*;
 pub mod values {
     use polars::prelude as p;
     use polars::prelude::*;
+    pub fn series_bool() -> p::Series { p::Series::new("x".into(), [true, false, true]) }
+    pub fn series_str() -> p::Series { p::Series::new("x".into(), ["a", "bb", "ccc"]) }
+    pub fn series_binary() -> p::Series { p::Series::new("x".into(), [&b"ab"[..], b"c", b""]) }
+    pub fn series_binary_offset() -> p::Series { p::Series::new("x".into(), [&b"ab"[..], b"c", b""]).cast(&p::DataType::BinaryOffset).unwrap() }
+    pub fn series_i8() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::Int8).unwrap() }
+    pub fn series_i16() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::Int16).unwrap() }
+    pub fn series_i32() -> p::Series { p::Series::new("x".into(), [1i32, 2, 3]) }
+    pub fn series_i64() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]) }
+    pub fn series_u8() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::UInt8).unwrap() }
+    pub fn series_u16() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::UInt16).unwrap() }
+    pub fn series_u32() -> p::Series { p::Series::new("x".into(), [1u32, 2, 3]) }
+    pub fn series_u64() -> p::Series { p::Series::new("x".into(), [1u64, 2, 3]) }
+    pub fn series_f32() -> p::Series { p::Series::new("x".into(), [1.5f32, 2.5, 3.5]) }
+    pub fn series_f64() -> p::Series { p::Series::new("x".into(), [1.5f64, 2.5, 3.5]) }
+    pub fn series_struct() -> p::Series { p::IntoSeries::into_series(df().into_struct("x".into())) }
+    pub fn series_list() -> p::Series { p::Series::new("x".into(), [p::Series::new("a".into(), [1i64, 2]), p::Series::new("b".into(), [3i64])]) }
+    pub fn series_date() -> p::Series { p::Series::new("x".into(), [1i32, 2, 3]).cast(&p::DataType::Date).unwrap() }
+    pub fn series_datetime() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::Datetime(p::TimeUnit::Milliseconds, None)).unwrap() }
+    pub fn series_duration() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::Duration(p::TimeUnit::Milliseconds)).unwrap() }
+    pub fn series_time() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::Time).unwrap() }
+    pub fn series_long() -> p::Series { p::Series::new("x".into(), (0..40i64).collect::<Vec<_>>()) }
+    pub fn series_nulls() -> p::Series { p::Series::new("x".into(), [Some(1i64), None, Some(3)]) }
+    pub fn series_struct_null_field() -> p::Series { p::IntoSeries::into_series(p::df!("x" => [None::<i64>], "y" => ["a"]).unwrap().into_struct("s".into())) }
+    pub fn series_list_of_struct() -> p::Series { p::Series::new("l".into(), [p::IntoSeries::into_series(p::df!("x" => [None::<i64>], "y" => ["a"]).unwrap().into_struct("s".into()))]) }
+    pub fn series_list_long() -> p::Series { p::Series::new("x".into(), [p::Series::new("i".into(), (0..40i64).collect::<Vec<_>>())]) }
+    pub fn series_list_nulls() -> p::Series { p::Series::new("x".into(), [p::Series::new("i".into(), [Some(1i64), None, Some(3)])]) }
+    pub fn series_float_sum() -> p::Series { p::Series::new("x".into(), [0.1f64 + 0.2]) }
     pub fn df() -> p::DataFrame { polars::df!("x" => [1i64, 2, 3], "y" => ["a", "b", "c"], "z" => [1.5f64, 2.5, 3.5]).unwrap() }
     pub fn lf() -> p::LazyFrame { df().lazy() }
     pub fn expr() -> p::Expr { p::col("x") }
@@ -20,6 +47,7 @@ pub mod values {
     pub fn column() -> p::Column { series().into_column() }
     pub fn dtype() -> p::DataType { p::DataType::Int64 }
     pub fn field() -> p::Field { p::Field::new("x".into(), p::DataType::Int64) }
+    pub fn null_chunked() -> p::NullChunked { p::Series::new_null("x".into(), 2).null().unwrap().clone() }
     pub fn group_by() -> p::LazyGroupBy { lf().group_by_stable([p::col("y")]) }
 }
 
@@ -37,8 +65,64 @@ fn fx_column() -> W_polars_core__frame__column__Column { W_polars_core__frame__c
 fn fx_dtype() -> W_polars_core__datatypes__dtype__DataType { W_polars_core__datatypes__dtype__DataType(values::dtype()) }
 #[rune::function(path = field)]
 fn fx_field() -> W_polars_core__datatypes__field__Field { W_polars_core__datatypes__field__Field(values::field()) }
+#[rune::function(path = null_chunked)]
+fn fx_null_chunked() -> W_polars_core__series__implementations__null__NullChunked { W_polars_core__series__implementations__null__NullChunked(values::null_chunked()) }
 #[rune::function(path = group_by)]
 fn fx_group_by() -> LazyGroupBy { LazyGroupBy(values::group_by()) }
+#[rune::function(path = series_bool)]
+fn fx_series_bool() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_bool()) }
+#[rune::function(path = series_str)]
+fn fx_series_str() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_str()) }
+#[rune::function(path = series_binary)]
+fn fx_series_binary() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_binary()) }
+#[rune::function(path = series_binary_offset)]
+fn fx_series_binary_offset() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_binary_offset()) }
+#[rune::function(path = series_i8)]
+fn fx_series_i8() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_i8()) }
+#[rune::function(path = series_i16)]
+fn fx_series_i16() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_i16()) }
+#[rune::function(path = series_i32)]
+fn fx_series_i32() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_i32()) }
+#[rune::function(path = series_i64)]
+fn fx_series_i64() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_i64()) }
+#[rune::function(path = series_u8)]
+fn fx_series_u8() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u8()) }
+#[rune::function(path = series_u16)]
+fn fx_series_u16() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u16()) }
+#[rune::function(path = series_u32)]
+fn fx_series_u32() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u32()) }
+#[rune::function(path = series_u64)]
+fn fx_series_u64() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u64()) }
+#[rune::function(path = series_f32)]
+fn fx_series_f32() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_f32()) }
+#[rune::function(path = series_f64)]
+fn fx_series_f64() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_f64()) }
+#[rune::function(path = series_struct)]
+fn fx_series_struct() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_struct()) }
+#[rune::function(path = series_list)]
+fn fx_series_list() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_list()) }
+#[rune::function(path = series_date)]
+fn fx_series_date() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_date()) }
+#[rune::function(path = series_datetime)]
+fn fx_series_datetime() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_datetime()) }
+#[rune::function(path = series_duration)]
+fn fx_series_duration() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_duration()) }
+#[rune::function(path = series_time)]
+fn fx_series_time() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_time()) }
+#[rune::function(path = series_long)]
+fn fx_series_long() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_long()) }
+#[rune::function(path = series_nulls)]
+fn fx_series_nulls() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_nulls()) }
+#[rune::function(path = series_struct_null_field)]
+fn fx_series_struct_null_field() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_struct_null_field()) }
+#[rune::function(path = series_list_of_struct)]
+fn fx_series_list_of_struct() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_list_of_struct()) }
+#[rune::function(path = series_list_long)]
+fn fx_series_list_long() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_list_long()) }
+#[rune::function(path = series_list_nulls)]
+fn fx_series_list_nulls() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_list_nulls()) }
+#[rune::function(path = series_float_sum)]
+fn fx_series_float_sum() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_float_sum()) }
 /// Show a `polars_arrow::datatypes::ArrowDataType` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_arrow__datatypes__arrowdatatype(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__datatypes__ArrowDataType>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_arrow::datatypes::TimeUnit` held in a Rune value, for the oracle tests.
@@ -49,34 +133,52 @@ pub fn show_w_polars_core__chunked_array__cast__castoptions(v: &rune::Value) -> 
 pub fn show_w_polars_core__chunked_array__flags__statisticsflags(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__flags__StatisticsFlags>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::chunked_array::flags::StatisticsFlagsIM` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__chunked_array__flags__statisticsflagsim(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__flags__StatisticsFlagsIM>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_core::chunked_array::logical::date::DateChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__chunked_array__logical__date__datechunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__logical__date__DateChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
+/// Show a `polars_core::chunked_array::logical::datetime::DatetimeChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__chunked_array__logical__datetime__datetimechunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__logical__datetime__DatetimeChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
+/// Show a `polars_core::chunked_array::logical::duration::DurationChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__chunked_array__logical__duration__durationchunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__logical__duration__DurationChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
+/// Show a `polars_core::chunked_array::logical::time::TimeChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__chunked_array__logical__time__timechunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__logical__time__TimeChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::chunked_array::ops::search_sorted::SearchSortedSide` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__chunked_array__ops__search_sorted__searchsortedside(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::chunked_array::ops::sort::options::SortMultipleOptions` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__chunked_array__ops__sort__options__sortmultipleoptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::chunked_array::ops::sort::options::SortOptions` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__chunked_array__ops__sort__options__sortoptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__ops__sort__options__SortOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_core::chunked_array::struct_::StructChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__chunked_array__struct___structchunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__chunked_array__struct___StructChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
+/// Show a `polars_core::datatypes::BinaryChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__datatypes__binarychunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__BinaryChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
+/// Show a `polars_core::datatypes::BinaryOffsetChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__datatypes__binaryoffsetchunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__BinaryOffsetChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::BooleanChunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__booleanchunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__BooleanChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__booleanchunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__BooleanChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::Float32Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__float32chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Float32Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__float32chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Float32Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::Float64Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__float64chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Float64Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__float64chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Float64Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::Int16Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__int16chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Int16Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__int16chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Int16Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::Int32Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__int32chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Int32Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__int32chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Int32Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::Int64Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__int64chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Int64Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__int64chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Int64Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::Int8Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__int8chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Int8Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__int8chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__Int8Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
+/// Show a `polars_core::datatypes::ListChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__datatypes__listchunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__ListChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
+/// Show a `polars_core::datatypes::StringChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__datatypes__stringchunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__StringChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::UInt16Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__uint16chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__uint16chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::UInt32Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__aliases__idxca(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__aliases__idxca(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::UInt64Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__uint64chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__uint64chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::UInt8Chunked` held in a Rune value, for the oracle tests.
-pub fn show_w_polars_core__datatypes__uint8chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+pub fn show_w_polars_core__datatypes__uint8chunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&polars::prelude::IntoSeries::into_series(v.clone())) }) }
 /// Show a `polars_core::datatypes::dtype::CompatLevel` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__datatypes__dtype__compatlevel(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__dtype__CompatLevel>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::datatypes::dtype::DataType` held in a Rune value, for the oracle tests.
@@ -85,6 +187,8 @@ pub fn show_w_polars_core__datatypes__dtype__datatype(v: &rune::Value) -> Result
 pub fn show_w_polars_core__datatypes__dtype__unknownkind(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__dtype__UnknownKind>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::datatypes::field::Field` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__datatypes__field__field(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__field__Field>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_core::datatypes::temporal::time_unit::TimeUnit` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__datatypes__temporal__time_unit__timeunit(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__temporal__time_unit__TimeUnit>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::datatypes::temporal::time_zone::TimeZone` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__datatypes__temporal__time_zone__timezone(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__datatypes__temporal__time_zone__TimeZone>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::frame::PivotColumnNaming` held in a Rune value, for the oracle tests.
@@ -111,6 +215,8 @@ pub fn show_w_polars_core__scalar__scalar(v: &rune::Value) -> Result<crate_oracl
 pub fn show_w_polars_core__schema__schemaref(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__schema__SchemaRef>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::series::Series` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__series__series(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__series__Series>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(v) }) }
+/// Show a `polars_core::series::implementations::null::NullChunked` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__series__implementations__null__nullchunked(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__series__implementations__null__NullChunked>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{}:{:?}:len={}", p::SeriesTrait::name(v), p::SeriesTrait::dtype(v), v.len())) }) }
 /// Show a `polars_core::series::ops::NullBehavior` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__series__ops__nullbehavior(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__series__ops__NullBehavior>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::series::series_trait::IsSorted` held in a Rune value, for the oracle tests.
@@ -252,6 +358,34 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(fx_column)?;
     m.function_meta(fx_dtype)?;
     m.function_meta(fx_field)?;
+    m.function_meta(fx_null_chunked)?;
     m.function_meta(fx_group_by)?;
+    m.function_meta(fx_series_bool)?;
+    m.function_meta(fx_series_str)?;
+    m.function_meta(fx_series_binary)?;
+    m.function_meta(fx_series_binary_offset)?;
+    m.function_meta(fx_series_i8)?;
+    m.function_meta(fx_series_i16)?;
+    m.function_meta(fx_series_i32)?;
+    m.function_meta(fx_series_i64)?;
+    m.function_meta(fx_series_u8)?;
+    m.function_meta(fx_series_u16)?;
+    m.function_meta(fx_series_u32)?;
+    m.function_meta(fx_series_u64)?;
+    m.function_meta(fx_series_f32)?;
+    m.function_meta(fx_series_f64)?;
+    m.function_meta(fx_series_struct)?;
+    m.function_meta(fx_series_list)?;
+    m.function_meta(fx_series_date)?;
+    m.function_meta(fx_series_datetime)?;
+    m.function_meta(fx_series_duration)?;
+    m.function_meta(fx_series_time)?;
+    m.function_meta(fx_series_long)?;
+    m.function_meta(fx_series_nulls)?;
+    m.function_meta(fx_series_struct_null_field)?;
+    m.function_meta(fx_series_list_of_struct)?;
+    m.function_meta(fx_series_list_long)?;
+    m.function_meta(fx_series_list_nulls)?;
+    m.function_meta(fx_series_float_sum)?;
     Ok(())
 }
