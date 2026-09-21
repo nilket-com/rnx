@@ -1,0 +1,96 @@
+{
+ "accepted_generator_revision": "98885e0",
+ "written_at_revision": "c56f415144d55b631b92481ab60f1646b75b12b8",
+ "inputs": {
+  "generator": {
+   "pattern": "tools/polars-gen/src/*.rs",
+   "files": 3,
+   "sha256": "12b18425a2c820d9dc992709879f888526e9dbdec0f42f57bdf5dac5d66d2661"
+  },
+  "generator_manifest": {
+   "pattern": "tools/polars-gen/Cargo.toml",
+   "files": 1,
+   "sha256": "9ca7fe69b5cd08b4260fc1682e00df12fef56079b1814ffb0faae4f39b31a769"
+  },
+  "generator_lock": {
+   "pattern": "tools/polars-gen/Cargo.lock",
+   "files": 1,
+   "sha256": "aae1797afdbb3b7cdde9fdddd5af0dca61cc1f8b9e19bca553fd35b045deb7b0"
+  },
+  "extractor": {
+   "pattern": "probes/0072/extract/src/*.rs",
+   "files": 4,
+   "sha256": "0a9cdce968674dff67253fc84e87df8d66fb0e2522f846e51c5e618900fd0631"
+  },
+  "extractor_manifest": {
+   "pattern": "probes/0072/extract/Cargo.toml",
+   "files": 1,
+   "sha256": "f8996f535e5dceefba63e7a3f7a4c9dfc0d80b44e8b6297a9406ff8803c56d46"
+  },
+  "extractor_lock": {
+   "pattern": "probes/0072/extract/Cargo.lock",
+   "files": 1,
+   "sha256": "fd7d5411fedb36a0d1e6168276d15da8cb348ca69ae340891c46a6c0a9ee44b7"
+  },
+  "adapter_sources": {
+   "pattern": "adapters/polars/src/*.rs",
+   "files": 7,
+   "sha256": "2999716119319544829b839f0807d31532ee7cc342699e22dd261f159c0c1645"
+  },
+  "adapter_generated": {
+   "pattern": "adapters/polars/src/generated/*.rs",
+   "files": 6,
+   "sha256": "eafce159a8af6f709cd012e1b1e4973d445c474e73eceae4c34e7a3edbf7a336"
+  },
+  "adapter_tests": {
+   "pattern": "adapters/polars/tests/*",
+   "files": 6,
+   "sha256": "b8a77598c20b2ff6a612dfe9003b4c5d472a45208006ace555fcaf13fc5e77d2"
+  },
+  "adapter_manifest": {
+   "pattern": "adapters/polars/Cargo.toml",
+   "files": 1,
+   "sha256": "f7e16d593597faeec1f068943ea6dc480848c54bcbe750edd8dae667c0390a6e"
+  },
+  "baseline_inventory": {
+   "pattern": "probes/0072/out/0.55.2-adapter/result/inventory.json",
+   "files": 1,
+   "sha256": "0f9dbb80f746e17b3c11fff11624927e4f8eb6878a3174ed26cbfc8c1fb93219"
+  },
+  "baseline_summary": {
+   "pattern": "probes/0072/out/0.55.2-adapter/result/summary.json",
+   "files": 1,
+   "sha256": "df9a3724800d43e7544e613af396a87e2ac5212f0cc2359df6475e48748d482d"
+  },
+  "baseline_pins": {
+   "pattern": "probes/0072/out/0.55.2-adapter/pins.json",
+   "files": 1,
+   "sha256": "7648a0ea1bf980514f58c4318be9583f7737ff77876579b66f397de7a8964e2b"
+  },
+  "baseline_surface": {
+   "pattern": "adapters/polars/surface.json",
+   "files": 1,
+   "sha256": "288f27ed4c3640c572103dfa2c2bcf7801ac414fd0bd0279c364784dec82eead"
+  },
+  "baseline_oracle_results": {
+   "pattern": "adapters/polars/oracle-results.json",
+   "files": 1,
+   "sha256": "6fbe831c1691a70decde84663763cb7214fe3e83e7e175c332eda446dc55ada7"
+  },
+  "doc_lock": {
+   "pattern": "probes/0074/locks/doc-rc2.lock",
+   "files": 1,
+   "sha256": "29e1f665ec88406ff1093d645216319fa66d3985344124e32e850b4954ba7a50"
+  },
+  "adapter_lock": {
+   "pattern": "probes/0074/locks/adapter.lock",
+   "files": 1,
+   "sha256": "7ec9e13334f7e5ef24f6ddcb9d5f81150c3d7f072be095bedd7c0b92b1e7e0f4"
+  },
+  "doc_script": {
+   "pattern": "probes/0074/doc.sh",
+   "files": 1,
+   "sha256": "199f2f175c204249351e3774a75a3018a109de8e36cffab3c64f032e984c3d1f"
+  }
+ }
+}

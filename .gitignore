@@ -8,3 +8,4 @@ __pycache__/
 # review notes stay out of history
 reviews/
 probes/0072/samples/harness/Cargo.lock
+probes/0074/out/
