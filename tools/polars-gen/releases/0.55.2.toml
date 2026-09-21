@@ -1,0 +1,56 @@
+# Record 0075: the generator's release-specific inputs for Polars 0.55.2
+# (crates.io). Everything here was a constant in the generator before
+# record 0075; gate 1 proves the generated output unchanged with it.
+
+name = "0.55.2"
+source = "crates.io =0.55.2"
+
+# Crates whose callables are the Polars API for coverage purposes; the
+# rest of the reachable surface is out of scope.
+api_crates = ["polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error"]
+
+# The inventory this policy belongs to; the generator refuses any other.
+[provenance]
+release = "0.55.2"
+
+# Operations whose Rust contract leaves row order unspecified, by
+# canonical path. A case compares rows as a multiset only when its
+# recorded options match `options`; every other case compares in order.
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::unique"
+args = { subset = "*", keep_strategy = "*" }
+options = "default arguments"
+cite = "Polars documents unique as order-unspecified unless maintain_order is set"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::unique_generic"
+args = { subset = "*", keep_strategy = "*" }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_plan::dsl::expr::Expr::unique"
+args = { }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_core::frame::dataframe::DataFrame::unique"
+args = { subset = "*", keep = "*", slice = "*" }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_core::series::Series::unique"
+args = { }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_core::frame::column::Column::unique"
+args = { }
+options = "default arguments"
+cite = "as unique"
+
+# Oracles that cannot be compared, excluded by identity.
+[[excluded_oracle]]
+path = "polars_core::series::Series::as_single_ptr"
+reason = "returns a memory address"
+[[excluded_oracle]]
+path = "polars_io::cloud::concurrency::ConcurrencyController::new"
+reason = "Debug output shows runtime state"

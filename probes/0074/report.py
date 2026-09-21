@@ -11,9 +11,12 @@ pins, denominators, API delta, accounting under the unchanged generator,
 compilation, oracle differences, excluded cases, a census of fixture-free
 receivers, and the labeled join diagnostic.
 """
-import collections, json, os, re, sys
+import collections, json, os, re, sys, tomllib
 
-API = {"polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error"}
+def api_crates(release_file):
+    """The API-crate subset is release-specific (record 0075): it is read from
+    the release file the run recorded, never from a constant here."""
+    return set(tomllib.load(open(release_file, "rb"))["api_crates"])
 
 def sig(c):
     """Parameters, return, and the generic parameters with their canonical
@@ -27,8 +30,8 @@ def identity(c):
     including generic bounds. Trait methods carry the trait in the path."""
     return (c["canonical_path"], c["kind"], c["receiver"], sig(c))
 
-def eligible(inv):
-    return [c for c in inv["callables"] if c["bucket"] not in ("unsupported", "unknown") and c["krate"] in API]
+def eligible(inv, api):
+    return [c for c in inv["callables"] if c["bucket"] not in ("unsupported", "unknown") and c["krate"] in api]
 
 def delta(base, other):
     """Match by full identity first; then within a path group pair one
@@ -121,11 +124,13 @@ print("|---|---:|---:|---:|---:|---:|---:|")
 for name, s in (("0.55.2", base_sum), ("rc2", rc2_sum)):
     print(f"| {name} | {s['gross_total_callables']} | {s['reachable_callables']} | {s['excluded']} | {s['unknown']} | **{s['eligible']}** | {s['derived_callables']} |")
 
-ea, eb = eligible(base), eligible(rc2)
+api_a, api_b = api_crates(frozen["baseline_release"]), api_crates(frozen["release"])
+ea, eb = eligible(base, api_a), eligible(rc2, api_b)
 same, reshaped, removed, added = delta(ea, eb)
 sa = load(frozen["baseline_surface"]); sb = load(os.path.join(out, "surface-rc2.json"))
 in_scope_a = sum(1 for e in sa["entries"] if e["status"] != "out_of_scope")
 print("\n## API delta, API crates, eligible callables, identity = path + kind + receiver + signature\n")
+print(f"API crates are release-specific: 0.55.2 uses {', '.join(sorted(api_a))} (from {os.path.relpath(frozen['baseline_release'], root)}); rc2 uses {', '.join(sorted(api_b))} (from {os.path.relpath(frozen['release'], root)}).\n")
 print("| measure | count |\n|---|---:|")
 print(f"| eligible entries in 0.55.2 (reconciles with surface.json in-scope entries: {in_scope_a}) | {len(ea)} |\n| eligible entries at rc2 | {len(eb)} |\n| identical entries | {len(same)} |\n| reshaped (one unmatched entry per side of a path group, same kind and receiver) | {len(reshaped)} |\n| removed at rc2 | {len(removed)} |\n| added at rc2 | {len(added)} |")
 assert len(ea) == in_scope_a, f"eligible entries {len(ea)} do not reconcile with surface.json {in_scope_a}"

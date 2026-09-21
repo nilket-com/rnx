@@ -112,6 +112,16 @@ pub enum Side {
 	Broken(String),
 }
 
+/// One Rust oracle run: its setup stage either failed before the measured
+/// call, or ran the call and produced a `Side`. The generated oracle
+/// function builds its fixtures under `catch_unwind` and passes them into
+/// the call, so every run has its own staged setup.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Staged {
+	SetupFailed(String),
+	Ran(Side),
+}
+
 /// How values are compared for one case. Exact ordered values by
 /// default; unordered rows only where the generator identified an
 /// operation whose Rust contract leaves row order unspecified.
@@ -123,11 +133,31 @@ pub struct Policy {
 pub const ORDERED: Policy = Policy { unordered_rows: false };
 pub const UNORDERED: Policy = Policy { unordered_rows: true };
 
+/// What the setup stage of one side did. Setup is a separate execution
+/// stage (the script's `setup` function; the case's Rust setup function)
+/// that builds every fixture the measured call needs and nothing else; a
+/// failure there is structural, whatever its message says.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Setup {
+	/// The stage did not run because the script did not compile.
+	NotRun,
+	Ok,
+	/// A panic, VM error or refused fixture, with its message.
+	Failed(String),
+}
+
 /// The classification the test asserts on. Only `Match`, `RowOrderDiffers`
 /// (under an unordered policy), `BothError` with equal kinds and
 /// `BothPanic` with equal messages are approved; everything else fails.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Outcome {
+	/// Setup failed on both sides before the measured call, which was
+	/// therefore never made. Counted apart; never verified; not a run
+	/// failure.
+	FixtureFailed,
+	/// Setup failed on one side only: a constructor binding or a Rust
+	/// fixture is broken. A failure.
+	SetupMismatch,
 	Match,
 	RowOrderDiffers,
 	BothError,
@@ -148,8 +178,14 @@ impl Outcome {
 	pub fn approved(&self) -> bool {
 		matches!(self, Outcome::Match | Outcome::RowOrderDiffers | Outcome::BothError | Outcome::BothPanic)
 	}
+	/// Setup failure is neither approved nor a failure of the run.
+	pub fn setup_failed(&self) -> bool {
+		matches!(self, Outcome::FixtureFailed)
+	}
 	pub fn name(&self) -> &'static str {
 		match self {
+			Outcome::FixtureFailed => "fixture_failed",
+			Outcome::SetupMismatch => "setup_mismatch",
 			Outcome::Match => "match",
 			Outcome::RowOrderDiffers => "row_order_differs",
 			Outcome::BothError => "both_error",
@@ -184,10 +220,24 @@ fn same(policy: Policy, a: &Repr, b: &Repr) -> Option<bool> {
 	}
 }
 
-/// Classify one case. `first` is the binding's result, `second` the same
-/// call again on the same receiver (instance methods only), `oracle` the
-/// Rust result and `again` a second run of the oracle.
-pub fn classify(policy: Policy, first: &Side, second: Option<&Side>, oracle: &Side, again: &Side) -> (Outcome, String) {
+/// Classify one case. `rune_setup` and `rust_setup` are the two setup
+/// stages; `first` is the binding's result, `second` the same call again
+/// on the same receiver (instance methods only), `oracle` the Rust result
+/// and `again` a second run of the oracle. A script that did not compile
+/// is judged before any setup: nothing about a fixture excuses a binding
+/// that does not build.
+pub fn classify(policy: Policy, rune_setup: &Setup, rust_setup: &Setup, first: &Side, second: Option<&Side>, oracle: &Side, again: &Side) -> (Outcome, String) {
+	if *rune_setup == Setup::NotRun {
+		let why = match first { Side::Broken(e) => e.clone(), other => format!("setup did not run: {other:?}") };
+		return (Outcome::Broken, why);
+	}
+	match (rune_setup, rust_setup) {
+		(Setup::Failed(a), Setup::Failed(b)) => return (Outcome::FixtureFailed, format!("rune setup {a:?}; polars setup {b:?}")),
+		(Setup::Failed(a), _) => return (Outcome::SetupMismatch, format!("rune setup failed {a:?}; polars setup {rust_setup:?}")),
+		(_, Setup::Failed(b)) => return (Outcome::SetupMismatch, format!("polars setup failed {b:?}; rune setup {rune_setup:?}")),
+		(Setup::Ok, Setup::Ok) => {}
+		(_, Setup::NotRun) | (Setup::NotRun, _) => return (Outcome::Broken, "setup did not run".into()),
+	}
 	// The binding side is judged first: nothing about the oracle excuses
 	// a script that did not run, or panicked where Rust did not.
 	if let Side::Broken(e) = first {
@@ -253,6 +303,10 @@ mod controls {
 	//! must fail closed. The generated runner has its own integrated
 	//! controls on top of these.
 	use super::*;
+	/// Classify with both setup stages succeeded.
+	fn ok(policy: Policy, first: &Side, second: Option<&Side>, oracle: &Side, again: &Side) -> (Outcome, String) {
+		classify(policy, &Setup::Ok, &Setup::Ok, first, second, oracle, again)
+	}
 	use polars::prelude::*;
 
 	fn df() -> p::DataFrame {
@@ -267,9 +321,9 @@ mod controls {
 		let a = frame_repr(&df());
 		let b = frame_repr(&polars::df!("x" => [1i64, 2, 4], "y" => ["a", "b", "c"]).unwrap());
 		assert_ne!(a, b);
-		let (o, _) = classify(ORDERED, &v(a.clone()), None, &v(b.clone()), &v(b.clone()));
+		let (o, _) = ok(ORDERED, &v(a.clone()), None, &v(b.clone()), &v(b.clone()));
 		assert_eq!(o, Outcome::Mismatch);
-		let (o, _) = classify(UNORDERED, &v(a), None, &v(b.clone()), &v(b));
+		let (o, _) = ok(UNORDERED, &v(a), None, &v(b.clone()), &v(b));
 		assert_eq!(o, Outcome::Mismatch, "a changed cell is a mismatch even under an unordered policy");
 	}
 
@@ -277,9 +331,9 @@ mod controls {
 	fn a_permutation_is_a_mismatch_unless_the_case_is_unordered() {
 		let a = frame_repr(&df());
 		let b = frame_repr(&df().reverse());
-		let (o, _) = classify(ORDERED, &v(a.clone()), None, &v(b.clone()), &v(b.clone()));
+		let (o, _) = ok(ORDERED, &v(a.clone()), None, &v(b.clone()), &v(b.clone()));
 		assert_eq!(o, Outcome::Mismatch, "a reversed frame under the default policy must fail");
-		let (o, _) = classify(UNORDERED, &v(a), None, &v(b.clone()), &v(b));
+		let (o, _) = ok(UNORDERED, &v(a), None, &v(b.clone()), &v(b));
 		assert_eq!(o, Outcome::RowOrderDiffers);
 	}
 
@@ -301,35 +355,35 @@ mod controls {
 	#[test]
 	fn changed_error_kind_fails() {
 		let e = |k: &str| Side::Error(k.into());
-		assert_eq!(classify(ORDERED, &e("ColumnNotFound"), None, &e("ComputeError"), &e("ComputeError")).0, Outcome::ErrorKindMismatch);
-		assert_eq!(classify(ORDERED, &e("ColumnNotFound"), None, &e("ColumnNotFound"), &e("ColumnNotFound")).0, Outcome::BothError);
+		assert_eq!(ok(ORDERED, &e("ColumnNotFound"), None, &e("ComputeError"), &e("ComputeError")).0, Outcome::ErrorKindMismatch);
+		assert_eq!(ok(ORDERED, &e("ColumnNotFound"), None, &e("ColumnNotFound"), &e("ColumnNotFound")).0, Outcome::BothError);
 	}
 
 	#[test]
 	fn unrelated_panic_fails() {
 		let pnc = |m: &str| Side::Panic(m.into());
-		assert_eq!(classify(ORDERED, &pnc("injected"), None, &pnc("polars said no"), &pnc("polars said no")).0, Outcome::PanicMismatch);
-		assert_eq!(classify(ORDERED, &pnc("same"), None, &pnc("same"), &pnc("same")).0, Outcome::BothPanic);
+		assert_eq!(ok(ORDERED, &pnc("injected"), None, &pnc("polars said no"), &pnc("polars said no")).0, Outcome::PanicMismatch);
+		assert_eq!(ok(ORDERED, &pnc("same"), None, &pnc("same"), &pnc("same")).0, Outcome::BothPanic);
 	}
 
 	#[test]
 	fn wrong_second_call_fails_under_both_policies() {
 		let a = frame_repr(&df());
 		let b = frame_repr(&polars::df!("x" => [9i64], "y" => ["z"]).unwrap());
-		assert_eq!(classify(ORDERED, &v(a.clone()), Some(&v(b.clone())), &v(a.clone()), &v(a.clone())).0, Outcome::ReuseFailed);
-		assert_eq!(classify(UNORDERED, &v(a.clone()), Some(&v(b)), &v(a.clone()), &v(a.clone())).0, Outcome::ReuseFailed);
+		assert_eq!(ok(ORDERED, &v(a.clone()), Some(&v(b.clone())), &v(a.clone()), &v(a.clone())).0, Outcome::ReuseFailed);
+		assert_eq!(ok(UNORDERED, &v(a.clone()), Some(&v(b)), &v(a.clone()), &v(a.clone())).0, Outcome::ReuseFailed);
 		// a second call in another row order fails under the default policy
 		let r = frame_repr(&df().reverse());
-		assert_eq!(classify(ORDERED, &v(a.clone()), Some(&v(r.clone())), &v(a.clone()), &v(a.clone())).0, Outcome::ReuseFailed);
-		assert_eq!(classify(UNORDERED, &v(a.clone()), Some(&v(r)), &v(a.clone()), &v(a)).0, Outcome::Match);
+		assert_eq!(ok(ORDERED, &v(a.clone()), Some(&v(r.clone())), &v(a.clone()), &v(a.clone())).0, Outcome::ReuseFailed);
+		assert_eq!(ok(UNORDERED, &v(a.clone()), Some(&v(r)), &v(a.clone()), &v(a)).0, Outcome::Match);
 	}
 
 	#[test]
 	fn binding_success_against_panicking_oracle_fails() {
 		let t = |s: &str| v(Repr::Text(s.into()));
-		let (o, _) = classify(ORDERED, &t("1"), None, &Side::Panic("boom".into()), &Side::Panic("boom".into()));
+		let (o, _) = ok(ORDERED, &t("1"), None, &Side::Panic("boom".into()), &Side::Panic("boom".into()));
 		assert_eq!(o, Outcome::OraclePanicked);
-		let (o, _) = classify(ORDERED, &t("1"), None, &Side::Panic("activate 'x' feature".into()), &Side::Panic("activate 'x' feature".into()));
+		let (o, _) = ok(ORDERED, &t("1"), None, &Side::Panic("activate 'x' feature".into()), &Side::Panic("activate 'x' feature".into()));
 		assert_eq!(o, Outcome::OraclePanicked, "a feature-gated Rust panic is not an excuse for a binding that returned a value");
 	}
 
@@ -339,11 +393,11 @@ mod controls {
 		let (run1, run2) = (t("run1"), t("run2"));
 		// a broken binding is reported as such; every other binding result
 		// against a disagreeing oracle is unexpected nondeterminism, which fails
-		assert_eq!(classify(ORDERED, &Side::Broken("compile error".into()), None, &run1, &run2).0, Outcome::Broken);
-		assert_eq!(classify(ORDERED, &Side::Panic("unrelated".into()), None, &run1, &run2).0, Outcome::Nondeterministic);
-		assert_eq!(classify(ORDERED, &t("wrong"), None, &run1, &run2).0, Outcome::Nondeterministic);
-		assert_eq!(classify(ORDERED, &t("run1"), None, &run1, &run2).0, Outcome::Nondeterministic);
-		assert_eq!(classify(ORDERED, &t("run1"), Some(&t("other")), &run1, &run2).0, Outcome::Nondeterministic);
+		assert_eq!(ok(ORDERED, &Side::Broken("compile error".into()), None, &run1, &run2).0, Outcome::Broken);
+		assert_eq!(ok(ORDERED, &Side::Panic("unrelated".into()), None, &run1, &run2).0, Outcome::Nondeterministic);
+		assert_eq!(ok(ORDERED, &t("wrong"), None, &run1, &run2).0, Outcome::Nondeterministic);
+		assert_eq!(ok(ORDERED, &t("run1"), None, &run1, &run2).0, Outcome::Nondeterministic);
+		assert_eq!(ok(ORDERED, &t("run1"), Some(&t("other")), &run1, &run2).0, Outcome::Nondeterministic);
 		assert!(!Outcome::Nondeterministic.approved(), "unexpected nondeterminism fails; known cases are excluded by the generator");
 	}
 
@@ -351,23 +405,55 @@ mod controls {
 	fn a_matching_first_run_never_hides_a_disagreeing_second_run() {
 		let a = v(frame_repr(&df()));
 		let changed = v(frame_repr(&df().reverse()));
-		assert_eq!(classify(ORDERED, &a, None, &a, &changed).0, Outcome::Nondeterministic);
-		assert_eq!(classify(ORDERED, &a, None, &a, &Side::Error("ComputeError".into())).0, Outcome::Nondeterministic);
-		assert_eq!(classify(ORDERED, &a, None, &a, &Side::Panic("later".into())).0, Outcome::Nondeterministic);
+		assert_eq!(ok(ORDERED, &a, None, &a, &changed).0, Outcome::Nondeterministic);
+		assert_eq!(ok(ORDERED, &a, None, &a, &Side::Error("ComputeError".into())).0, Outcome::Nondeterministic);
+		assert_eq!(ok(ORDERED, &a, None, &a, &Side::Panic("later".into())).0, Outcome::Nondeterministic);
 		let e = Side::Error("ComputeError".into());
-		assert_eq!(classify(ORDERED, &e, None, &e, &Side::Error("Other".into())).0, Outcome::Nondeterministic);
+		assert_eq!(ok(ORDERED, &e, None, &e, &Side::Error("Other".into())).0, Outcome::Nondeterministic);
 		let pnc = Side::Panic("same".into());
-		assert_eq!(classify(ORDERED, &pnc, None, &pnc, &Side::Panic("other".into())).0, Outcome::Nondeterministic);
+		assert_eq!(ok(ORDERED, &pnc, None, &pnc, &Side::Panic("other".into())).0, Outcome::Nondeterministic);
 		// a broken binding still fails as broken, before agreement is asked
-		assert_eq!(classify(ORDERED, &Side::Broken("compile".into()), None, &a, &changed).0, Outcome::Broken);
+		assert_eq!(ok(ORDERED, &Side::Broken("compile".into()), None, &a, &changed).0, Outcome::Broken);
+	}
+
+	#[test]
+	fn setup_failure_is_neither_verified_nor_a_match() {
+		let failed = Setup::Failed("new failed: boom".into());
+		let v = Side::Value(Repr::Text("1".into()));
+		let unrun = Side::Broken("target not run".into());
+		// both setups fail: counted apart, never verified, not a failure
+		let (o, _) = classify(ORDERED, &failed, &failed, &unrun, None, &unrun, &unrun);
+		assert_eq!(o, Outcome::FixtureFailed);
+		assert!(!o.approved() && o.setup_failed());
+		// one side failing setup is a failure of that side's fixture path
+		assert_eq!(classify(ORDERED, &failed, &Setup::Ok, &unrun, None, &v, &v).0, Outcome::SetupMismatch);
+		assert_eq!(classify(ORDERED, &Setup::Ok, &failed, &v, None, &unrun, &unrun).0, Outcome::SetupMismatch);
+		assert!(!Outcome::SetupMismatch.approved() && !Outcome::SetupMismatch.setup_failed());
+	}
+	#[test]
+	fn setup_is_a_stage_not_a_message() {
+		// a target panic that happens to say "fixture:" is a target panic
+		let f = Side::Panic("fixture: new failed: boom".into());
+		assert_eq!(ok(ORDERED, &f, None, &f, &f).0, Outcome::BothPanic);
+		let v = Side::Value(Repr::Text("1".into()));
+		assert_eq!(ok(ORDERED, &f, None, &v, &v).0, Outcome::BindingPanicked);
+		// a script that does not compile is broken whatever the Rust setup did
+		let compile = Side::Broken("compile: bad".into());
+		let failed = Setup::Failed("fixture: refused".into());
+		assert_eq!(classify(ORDERED, &Setup::NotRun, &failed, &compile, None, &v, &v).0, Outcome::Broken);
+		assert_eq!(classify(ORDERED, &Setup::NotRun, &Setup::Ok, &compile, None, &v, &v).0, Outcome::Broken);
+		// a wrong value is a mismatch even when the second Rust run fails
+		let wrong = Side::Value(Repr::Text("2".into()));
+		assert_ne!(classify(ORDERED, &Setup::Ok, &Setup::Ok, &wrong, None, &v, &Side::Panic("fixture: second".into())).0, Outcome::FixtureFailed);
+		assert!(!classify(ORDERED, &Setup::Ok, &Setup::Ok, &wrong, None, &v, &Side::Panic("fixture: second".into())).0.approved());
 	}
 
 	#[test]
 	fn value_against_error_fails_both_ways() {
 		let t = v(Repr::Text("1".into()));
 		let e = Side::Error("ComputeError".into());
-		assert_eq!(classify(ORDERED, &t, None, &e, &e).0, Outcome::Mismatch);
-		assert_eq!(classify(ORDERED, &e, None, &t, &t).0, Outcome::Mismatch);
+		assert_eq!(ok(ORDERED, &t, None, &e, &e).0, Outcome::Mismatch);
+		assert_eq!(ok(ORDERED, &e, None, &t, &t).0, Outcome::Mismatch);
 	}
 
 	#[test]
