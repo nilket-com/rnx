@@ -1,0 +1,27 @@
+[package]
+name = "samples"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+rune = { version = "=0.14.2", default-features = false, features = ["std"] }
+polars = { version = "=0.55.2", default-features = false, features = ["lazy", "csv", "parquet"] }
+# Same crates the facade links, so canonical paths from the inventory spell.
+polars-core = { version = "=0.55.2", default-features = false }
+polars-plan = { version = "=0.55.2", default-features = false }
+polars-lazy = { version = "=0.55.2", default-features = false }
+polars-io = { version = "=0.55.2", default-features = false }
+polars-ops = { version = "=0.55.2", default-features = false }
+polars-schema = { version = "=0.55.2", default-features = false }
+polars-dtype = { version = "=0.55.2", default-features = false }
+polars-error = { version = "=0.55.2", default-features = false }
+serde_json = "1"
+
+[profile.dev]
+debug = false

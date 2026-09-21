@@ -1,0 +1,101 @@
+{
+ "_comment": "Written before the extractor ran. Canonical callables reachable from crate `ctrl`, one entry per defining item. Two configurations: default features and `extra`. Buckets: expected classification for the identity controls (same-name types in two crates, alias to a generic struct, container values, extra bounds).",
+ "default": {
+  "callables": [
+   "ctrl_dep::Thing::new",
+   "ctrl_dep::Thing::method",
+   "ctrl_dep::Tr::required",
+   "ctrl_dep::Tr::provided",
+   "ctrl_dep::Blanket::blank",
+   "ctrl_dep::inner::f",
+   "ctrl_dep::inner::g",
+   "ctrl_dep::crate_fn",
+   "ctrl_dep::danger",
+   "ctrl_dep::hidden",
+   "ctrl_dep2::only_this",
+   "ctrl::local::Local::m",
+   "ctrl_dep::take_opts",
+   "ctrl_dep::take_map",
+   "ctrl_dep::Gen::get_ref",
+   "ctrl_dep::take_alias",
+   "ctrl_dep::take_generic",
+   "ctrl_dep::take_into",
+   "ctrl_dep::take_into_extra",
+   "ctrl_dep::take_opt_vec",
+   "ctrl_dep2::take_opts",
+   "ctrl_dep::Opts as core::default::Default",
+   "ctrl_dep::Thing as core::clone::Clone"
+  ],
+  "excluded": {
+   "ctrl_dep::danger": "unsafe",
+   "ctrl_dep::hidden": "doc_hidden"
+  },
+  "eligible": 21,
+  "found_paths_for_Thing": [
+   "ctrl::Thing",
+   "ctrl::alt::Thing",
+   "ctrl::dep::Thing"
+  ],
+  "trait_implementors": {
+   "ctrl_dep::Tr": [
+    "ctrl_dep::Thing"
+   ],
+   "ctrl_dep::Blanket": [
+    "blanket"
+   ]
+  },
+  "supporting": {
+   "struct": [
+    "ctrl_dep::Thing",
+    "ctrl::local::Local",
+    "ctrl_dep::Opts",
+    "ctrl_dep2::Opts",
+    "ctrl_dep::Gen"
+   ],
+   "enum": [
+    "ctrl_dep::Kind"
+   ],
+   "trait": [
+    "ctrl_dep::Tr",
+    "ctrl_dep::Blanket"
+   ],
+   "constant": [
+    "ctrl_dep::C"
+   ],
+   "macro": [
+    "ctrl_dep::mac"
+   ],
+   "type_alias": [
+    "ctrl_dep::GenI"
+   ]
+  },
+  "unreachable_public": [
+   "ctrl_dep2::not_this",
+   "ctrl_dep2::Unreached"
+  ],
+  "unknown": [],
+  "buckets": {
+   "ctrl_dep::take_opts": "option_struct",
+   "ctrl_dep2::take_opts": "mechanical",
+   "ctrl_dep::take_map": "option_struct",
+   "ctrl_dep::Gen::get_ref": "generic",
+   "ctrl_dep::take_alias": "option_struct",
+   "ctrl_dep::take_generic": "generic",
+   "ctrl_dep::take_into": "conversion",
+   "ctrl_dep::take_into_extra": "generic",
+   "ctrl_dep::take_opt_vec": "conversion",
+   "ctrl_dep::Thing::method": "mechanical",
+   "ctrl_dep::Tr::provided": "mechanical",
+   "ctrl_dep::Opts as core::default::Default": "mechanical",
+   "ctrl_dep::danger": "unsupported",
+   "ctrl_dep::hidden": "unsupported",
+   "ctrl_dep::Thing as core::clone::Clone": "mechanical"
+  }
+ },
+ "extra": {
+  "additional_callables": [
+   "ctrl::gated"
+  ],
+  "eligible": 22
+ }
+}
