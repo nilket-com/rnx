@@ -1,0 +1,97 @@
+{
+ "label": "EXPERIMENTAL: record 0075 rerun of the 0074 probe with rc2.toml; not the accepted 0074 manifest",
+ "accepted_generator_revision": "98885e0",
+ "written_at_revision": "53db6042520852001b9037b653a4f4b90c20ff3d",
+ "inputs": {
+  "generator": {
+   "pattern": "tools/polars-gen/src/*.rs",
+   "files": 3,
+   "sha256": "87e22fad2f71aca9968c55fbea6d325eca7764a1261847a6a3bfd8318195aa5b"
+  },
+  "generator_manifest": {
+   "pattern": "tools/polars-gen/Cargo.toml",
+   "files": 1,
+   "sha256": "e1cbd8544eced812cf3e15d533f614c8043ef071af88214036ef6971b77d6413"
+  },
+  "generator_lock": {
+   "pattern": "tools/polars-gen/Cargo.lock",
+   "files": 1,
+   "sha256": "a37ae3829af3eedb0c2da1c3377bd4ff2d72db57bbc5efbda1f1486ce201e23c"
+  },
+  "extractor": {
+   "pattern": "probes/0072/extract/src/*.rs",
+   "files": 4,
+   "sha256": "f5fd4e6cf9bedff455abbc5782558809528b967304f31443530d13e5d3c46d71"
+  },
+  "extractor_manifest": {
+   "pattern": "probes/0072/extract/Cargo.toml",
+   "files": 1,
+   "sha256": "f8996f535e5dceefba63e7a3f7a4c9dfc0d80b44e8b6297a9406ff8803c56d46"
+  },
+  "extractor_lock": {
+   "pattern": "probes/0072/extract/Cargo.lock",
+   "files": 1,
+   "sha256": "fd7d5411fedb36a0d1e6168276d15da8cb348ca69ae340891c46a6c0a9ee44b7"
+  },
+  "adapter_sources": {
+   "pattern": "adapters/polars/src/*.rs",
+   "files": 7,
+   "sha256": "425c1799f27f03718901e34c0c5d36bd354bef3b0ec6e21f0709e81f22191ef4"
+  },
+  "adapter_generated": {
+   "pattern": "adapters/polars/src/generated/*.rs",
+   "files": 6,
+   "sha256": "e68774861815d87b47b8c825d231cebc94d40a9773c75a3f765b10f03d54e253"
+  },
+  "adapter_tests": {
+   "pattern": "adapters/polars/tests/*",
+   "files": 6,
+   "sha256": "bc1b0096614c8cce72b23d644b93226f0122e60ed584babae55276373fcd466d"
+  },
+  "adapter_manifest": {
+   "pattern": "adapters/polars/Cargo.toml",
+   "files": 1,
+   "sha256": "f7e16d593597faeec1f068943ea6dc480848c54bcbe750edd8dae667c0390a6e"
+  },
+  "baseline_inventory": {
+   "pattern": "probes/0072/out/0.55.2-adapter/result/inventory.json",
+   "files": 1,
+   "sha256": "9281e288e268173de9ed3f0cc961c557c2df377d940a21e0f0bde6e4bdf42b5f"
+  },
+  "baseline_summary": {
+   "pattern": "probes/0072/out/0.55.2-adapter/result/summary.json",
+   "files": 1,
+   "sha256": "df9a3724800d43e7544e613af396a87e2ac5212f0cc2359df6475e48748d482d"
+  },
+  "baseline_pins": {
+   "pattern": "probes/0072/out/0.55.2-adapter/pins.json",
+   "files": 1,
+   "sha256": "7648a0ea1bf980514f58c4318be9583f7737ff77876579b66f397de7a8964e2b"
+  },
+  "baseline_surface": {
+   "pattern": "adapters/polars/surface.json",
+   "files": 1,
+   "sha256": "29f10cc5f924b61dca6506550c6313254f743112669a8788704df8b66fc996bf"
+  },
+  "baseline_oracle_results": {
+   "pattern": "adapters/polars/oracle-results.json",
+   "files": 1,
+   "sha256": "c8c9fa67c07df367043c00b7c657b147e42e7e7bf09c6a1472c490b2eb02e4f8"
+  },
+  "doc_lock": {
+   "pattern": "probes/0074/locks/doc-rc2.lock",
+   "files": 1,
+   "sha256": "29e1f665ec88406ff1093d645216319fa66d3985344124e32e850b4954ba7a50"
+  },
+  "adapter_lock": {
+   "pattern": "probes/0074/locks/adapter.lock",
+   "files": 1,
+   "sha256": "7ec9e13334f7e5ef24f6ddcb9d5f81150c3d7f072be095bedd7c0b92b1e7e0f4"
+  },
+  "doc_script": {
+   "pattern": "probes/0074/doc.sh",
+   "files": 1,
+   "sha256": "199f2f175c204249351e3774a75a3018a109de8e36cffab3c64f032e984c3d1f"
+  }
+ }
+}

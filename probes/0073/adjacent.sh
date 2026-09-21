@@ -24,7 +24,7 @@ if [ -f "$lock" ]; then cp "$lock" "$scratch/polars/Cargo.lock"; else
   ( cd "$scratch/polars" && "$CARGO" generate-lockfile -q ) && cp "$scratch/polars/Cargo.lock" "$lock" && echo "new configuration: lock saved to $lock"
 fi
 ( cd "$root/tools/polars-gen" && CARGO_TARGET_DIR="$root/target/0073" "$CARGO" build -q --locked )
-"$root/target/0073/debug/polars-gen" "$inv" "$scratch/polars" --buckets mechanical,conversion,option_struct > "$scratch/gen.log"
+"$root/target/0073/debug/polars-gen" "$inv" "$scratch/polars" --release "$root/tools/polars-gen/releases/0.54.4.toml" --buckets mechanical,conversion,option_struct > "$scratch/gen.log"
 cat "$scratch/gen.log"
 if ( cd "$scratch/polars" && CARGO_TARGET_DIR="$root/target/0073-adjacent-target" "$CARGO" check -q --locked 2> "$scratch/check.log" ); then
   echo "cargo check: ok"

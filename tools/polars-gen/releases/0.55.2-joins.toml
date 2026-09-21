@@ -1,0 +1,75 @@
+# Record 0075 gate 1, second step: 0.55.2 with the join-order policy.
+# Identical to 0.55.2.toml except the joins below. Justification, pinned
+# sources: polars-ops-0.55.2/src/frame/join/args.rs line 124 marks
+# `MaintainOrderJoin::None` as `#[default]`, and `JoinArgs::default()`
+# (line 153) takes it; polars-lazy-0.55.2/src/frame/mod.rs lines 1256,
+# 1281 and 1306 build inner_join, left_join and full_join with
+# `JoinArgs::new`. A case is unordered only when its recorded options are
+# the default arguments; an explicit `MaintainOrderJoin` keeps the case
+# ordered.
+
+name = "0.55.2"
+source = "crates.io =0.55.2"
+api_crates = ["polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error"]
+
+# The inventory this policy belongs to; the generator refuses any other.
+[provenance]
+release = "0.55.2"
+
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::unique"
+args = { subset = "*", keep_strategy = "*" }
+options = "default arguments"
+cite = "Polars documents unique as order-unspecified unless maintain_order is set"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::unique_generic"
+args = { subset = "*", keep_strategy = "*" }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_plan::dsl::expr::Expr::unique"
+args = { }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_core::frame::dataframe::DataFrame::unique"
+args = { subset = "*", keep = "*", slice = "*" }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_core::series::Series::unique"
+args = { }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_core::frame::column::Column::unique"
+args = { }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::inner_join"
+args = { other = "*", left_on = "*", right_on = "*" }
+options = "default arguments"
+cite = "polars-lazy-0.55.2 frame/mod.rs:1281 uses JoinArgs::new; polars-ops-0.55.2 join/args.rs:124 MaintainOrderJoin::None is #[default]"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::left_join"
+args = { other = "*", left_on = "*", right_on = "*" }
+options = "default arguments"
+cite = "polars-lazy-0.55.2 frame/mod.rs:1256 uses JoinArgs::new; args.rs:124"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::full_join"
+args = { other = "*", left_on = "*", right_on = "*" }
+options = "default arguments"
+cite = "polars-lazy-0.55.2 frame/mod.rs:1306 uses JoinArgs::new; args.rs:124"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::join"
+args = { other = "*", left_on = "*", right_on = "*", args = "polars::JoinArgs::default_()" }
+options = "JoinArgs::default()"
+cite = "polars-ops-0.55.2 join/args.rs:153 JoinArgs::default() takes maintain_order: Default::default() = None"
+
+[[excluded_oracle]]
+path = "polars_core::series::Series::as_single_ptr"
+reason = "returns a memory address"
+[[excluded_oracle]]
+path = "polars_io::cloud::concurrency::ConcurrencyController::new"
+reason = "Debug output shows runtime state"

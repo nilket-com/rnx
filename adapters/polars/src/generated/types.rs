@@ -4,6 +4,26 @@
 use polars::prelude as p;
 use rnx::rune;
 
+/// `polars_arrow::datatypes::ArrowDataType`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = ArrowDataType)]
+pub struct W_polars_arrow__datatypes__ArrowDataType(pub(crate) polars::prelude::datatypes::ArrowDataType);
+/// `polars_arrow::datatypes::TimeUnit`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = TimeUnit)]
+pub struct W_polars_arrow__datatypes__TimeUnit(pub(crate) polars::prelude::datatypes::ArrowTimeUnit);
+/// `polars_arrow::datatypes::reshape::ReshapeDimension`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = ReshapeDimension)]
+pub struct W_polars_arrow__datatypes__reshape__ReshapeDimension(pub(crate) polars::prelude::datatypes::ReshapeDimension);
+/// `polars_compute::rolling::QuantileMethod`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::compute, name = QuantileMethod)]
+pub struct W_polars_compute__rolling__QuantileMethod(pub(crate) polars::polars_compute::rolling::QuantileMethod);
+/// `polars_config::engine::Engine`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::config, name = Engine)]
+pub struct W_polars_config__engine__Engine(pub(crate) polars::prelude::Engine);
 /// `polars_core::chunked_array::builder::boolean::BooleanChunkedBuilder`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = BooleanChunkedBuilder)]
@@ -44,6 +64,22 @@ pub struct W_polars_core__chunked_array__flags__StatisticsFlags(pub(crate) polar
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = StatisticsFlagsIM)]
 pub struct W_polars_core__chunked_array__flags__StatisticsFlagsIM(pub(crate) polars::chunked_array::flags::StatisticsFlagsIM);
+/// polars_core::chunked_array::logical::date::DateChunked = `polars_core::chunked_array::logical::Logical<polars_core::datatypes::DateType, polars_core::datatypes::Int32Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = DateChunked)]
+pub struct W_polars_core__chunked_array__logical__date__DateChunked(pub(crate) polars_core::datatypes::DateChunked);
+/// polars_core::chunked_array::logical::datetime::DatetimeChunked = `polars_core::chunked_array::logical::Logical<polars_core::datatypes::DatetimeType, polars_core::datatypes::Int64Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = DatetimeChunked)]
+pub struct W_polars_core__chunked_array__logical__datetime__DatetimeChunked(pub(crate) polars_core::datatypes::DatetimeChunked);
+/// polars_core::chunked_array::logical::duration::DurationChunked = `polars_core::chunked_array::logical::Logical<polars_core::datatypes::DurationType, polars_core::datatypes::Int64Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = DurationChunked)]
+pub struct W_polars_core__chunked_array__logical__duration__DurationChunked(pub(crate) polars_core::datatypes::DurationChunked);
+/// polars_core::chunked_array::logical::time::TimeChunked = `polars_core::chunked_array::logical::Logical<polars_core::datatypes::TimeType, polars_core::datatypes::Int64Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = TimeChunked)]
+pub struct W_polars_core__chunked_array__logical__time__TimeChunked(pub(crate) polars_core::datatypes::TimeChunked);
 /// `polars_core::chunked_array::ops::ExplodeOptions`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = ExplodeOptions)]
@@ -64,6 +100,18 @@ pub struct W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = SortOptions)]
 pub struct W_polars_core__chunked_array__ops__sort__options__SortOptions(pub(crate) polars_core::chunked_array::ops::sort::options::SortOptions);
+/// polars_core::chunked_array::struct_::StructChunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = StructChunked)]
+pub struct W_polars_core__chunked_array__struct___StructChunked(pub(crate) polars::chunked_array::StructChunked);
+/// polars_core::datatypes::BinaryChunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = BinaryChunked)]
+pub struct W_polars_core__datatypes__BinaryChunked(pub(crate) polars_core::datatypes::BinaryChunked);
+/// polars_core::datatypes::BinaryOffsetChunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = BinaryOffsetChunked)]
+pub struct W_polars_core__datatypes__BinaryOffsetChunked(pub(crate) polars_core::datatypes::BinaryOffsetChunked);
 /// `polars_core::datatypes::BinaryOffsetType`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = BinaryOffsetType)]
@@ -72,6 +120,10 @@ pub struct W_polars_core__datatypes__BinaryOffsetType(pub(crate) polars_core::da
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = BinaryType)]
 pub struct W_polars_core__datatypes__BinaryType(pub(crate) polars_core::datatypes::BinaryType);
+/// polars_core::datatypes::BooleanChunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = BooleanChunked)]
+pub struct W_polars_core__datatypes__BooleanChunked(pub(crate) polars_core::datatypes::BooleanChunked);
 /// `polars_core::datatypes::BooleanType`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = BooleanType)]
@@ -104,30 +156,62 @@ pub struct W_polars_core__datatypes__DatetimeType(pub(crate) polars_core::dataty
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = DurationType)]
 pub struct W_polars_core__datatypes__DurationType(pub(crate) polars_core::datatypes::DurationType);
+/// polars_core::datatypes::Float32Chunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = Float32Chunked)]
+pub struct W_polars_core__datatypes__Float32Chunked(pub(crate) polars_core::datatypes::Float32Chunked);
 /// `polars_core::datatypes::Float32Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = Float32Type)]
 pub struct W_polars_core__datatypes__Float32Type(pub(crate) polars_core::datatypes::Float32Type);
+/// polars_core::datatypes::Float64Chunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = Float64Chunked)]
+pub struct W_polars_core__datatypes__Float64Chunked(pub(crate) polars_core::datatypes::Float64Chunked);
 /// `polars_core::datatypes::Float64Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = Float64Type)]
 pub struct W_polars_core__datatypes__Float64Type(pub(crate) polars_core::datatypes::Float64Type);
+/// polars_core::datatypes::Int16Chunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = Int16Chunked)]
+pub struct W_polars_core__datatypes__Int16Chunked(pub(crate) polars_core::datatypes::Int16Chunked);
 /// `polars_core::datatypes::Int16Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = Int16Type)]
 pub struct W_polars_core__datatypes__Int16Type(pub(crate) polars_core::datatypes::Int16Type);
+/// polars_core::datatypes::Int32Chunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = Int32Chunked)]
+pub struct W_polars_core__datatypes__Int32Chunked(pub(crate) polars_core::datatypes::Int32Chunked);
 /// `polars_core::datatypes::Int32Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = Int32Type)]
 pub struct W_polars_core__datatypes__Int32Type(pub(crate) polars_core::datatypes::Int32Type);
+/// polars_core::datatypes::Int64Chunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = Int64Chunked)]
+pub struct W_polars_core__datatypes__Int64Chunked(pub(crate) polars_core::datatypes::Int64Chunked);
 /// `polars_core::datatypes::Int64Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = Int64Type)]
 pub struct W_polars_core__datatypes__Int64Type(pub(crate) polars_core::datatypes::Int64Type);
+/// polars_core::datatypes::Int8Chunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = Int8Chunked)]
+pub struct W_polars_core__datatypes__Int8Chunked(pub(crate) polars_core::datatypes::Int8Chunked);
 /// `polars_core::datatypes::Int8Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = Int8Type)]
 pub struct W_polars_core__datatypes__Int8Type(pub(crate) polars_core::datatypes::Int8Type);
+/// polars_core::datatypes::ListChunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = ListChunked)]
+pub struct W_polars_core__datatypes__ListChunked(pub(crate) polars_core::datatypes::ListChunked);
+/// polars_core::datatypes::StringChunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = StringChunked)]
+pub struct W_polars_core__datatypes__StringChunked(pub(crate) polars_core::datatypes::StringChunked);
 /// `polars_core::datatypes::StringType`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = StringType)]
@@ -136,18 +220,34 @@ pub struct W_polars_core__datatypes__StringType(pub(crate) polars_core::datatype
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = TimeType)]
 pub struct W_polars_core__datatypes__TimeType(pub(crate) polars_core::datatypes::TimeType);
+/// polars_core::datatypes::UInt16Chunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = UInt16Chunked)]
+pub struct W_polars_core__datatypes__UInt16Chunked(pub(crate) polars_core::datatypes::UInt16Chunked);
 /// `polars_core::datatypes::UInt16Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = UInt16Type)]
 pub struct W_polars_core__datatypes__UInt16Type(pub(crate) polars_core::datatypes::UInt16Type);
+/// polars_core::datatypes::aliases::IdxCa = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>` (also `polars_core::datatypes::UInt32Chunked`)
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = IdxCa)]
+pub struct W_polars_core__datatypes__aliases__IdxCa(pub(crate) polars_core::datatypes::IdxCa);
 /// `polars_core::datatypes::UInt32Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = UInt32Type)]
 pub struct W_polars_core__datatypes__UInt32Type(pub(crate) polars_core::datatypes::IdxType);
+/// polars_core::datatypes::UInt64Chunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = UInt64Chunked)]
+pub struct W_polars_core__datatypes__UInt64Chunked(pub(crate) polars_core::datatypes::UInt64Chunked);
 /// `polars_core::datatypes::UInt64Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = UInt64Type)]
 pub struct W_polars_core__datatypes__UInt64Type(pub(crate) polars_core::datatypes::UInt64Type);
+/// polars_core::datatypes::UInt8Chunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = UInt8Chunked)]
+pub struct W_polars_core__datatypes__UInt8Chunked(pub(crate) polars_core::datatypes::UInt8Chunked);
 /// `polars_core::datatypes::UInt8Type`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = UInt8Type)]
@@ -220,6 +320,14 @@ pub struct W_polars_core__frame__group_by__position__GroupsType(pub(crate) polar
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = Scalar)]
 pub struct W_polars_core__scalar__Scalar(pub(crate) polars_core::scalar::Scalar);
+/// polars_core::schema::Schema = `polars_schema::schema::Schema<polars_core::datatypes::dtype::DataType, ()>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = Schema)]
+pub struct W_polars_core__schema__Schema(pub(crate) polars_core::prelude::Schema);
+/// polars_core::schema::SchemaRef = `alloc::sync::Arc<polars_schema::schema::Schema<polars_core::datatypes::dtype::DataType, ()>>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = SchemaRef)]
+pub struct W_polars_core__schema__SchemaRef(pub(crate) polars_core::prelude::SchemaRef);
 /// `polars_core::series::Series`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = Series)]
@@ -808,6 +916,10 @@ pub struct W_polars_plan__dsl__options__WindowMapping(pub(crate) polars_plan::ds
 #[derive(rune::Any)]
 #[rune(item = ::polars, name = FileProviderArgs)]
 pub struct W_polars_plan__dsl__options__file_provider__FileProviderArgs(pub(crate) polars_plan::dsl::file_provider::FileProviderArgs);
+/// polars_plan::dsl::options::file_provider::FileProviderFunction = `polars_plan::callback::PlanCallback<polars_plan::dsl::options::file_provider::FileProviderArgs, polars_plan::dsl::options::file_provider::FileProviderReturn>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = FileProviderFunction)]
+pub struct W_polars_plan__dsl__options__file_provider__FileProviderFunction(pub(crate) polars_plan::dsl::file_provider::FileProviderFunction);
 /// `polars_plan::dsl::options::file_provider::FileProviderReturn`
 #[derive(rune::Any)]
 #[rune(item = ::polars, name = FileProviderReturn)]
@@ -936,8 +1048,25 @@ pub struct W_polars_plan__frame__opt_state__OptFlags(pub(crate) polars_plan::fra
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = LiteralValue)]
 pub struct W_polars_plan__plans__lit__LiteralValue(pub(crate) polars_plan::plans::LiteralValue);
+/// `polars_row::row::RowEncodingOptions`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::row, name = RowEncodingOptions)]
+pub struct W_polars_row__row__RowEncodingOptions(pub(crate) polars::prelude::RowEncodingOptions);
+/// `polars_utils::pl_path::CloudScheme`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::utils, name = CloudScheme)]
+pub struct W_polars_utils__pl_path__CloudScheme(pub(crate) polars::polars_utils::pl_path::CloudScheme);
+/// `polars_utils::pl_path::PlRefPath`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::utils, name = PlRefPath)]
+pub struct W_polars_utils__pl_path__PlRefPath(pub(crate) polars::polars_utils::pl_path::PlRefPath);
 
 pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
+    m.ty::<W_polars_arrow__datatypes__ArrowDataType>()?;
+    m.ty::<W_polars_arrow__datatypes__TimeUnit>()?;
+    m.ty::<W_polars_arrow__datatypes__reshape__ReshapeDimension>()?;
+    m.ty::<W_polars_compute__rolling__QuantileMethod>()?;
+    m.ty::<W_polars_config__engine__Engine>()?;
     m.ty::<W_polars_core__chunked_array__builder__boolean__BooleanChunkedBuilder>()?;
     m.ty::<W_polars_core__chunked_array__builder__list__anonymous__AnonymousOwnedListBuilder>()?;
     m.ty::<W_polars_core__chunked_array__builder__list__binary__ListBinaryChunkedBuilder>()?;
@@ -948,13 +1077,21 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_core__chunked_array__cast__CastOptions>()?;
     m.ty::<W_polars_core__chunked_array__flags__StatisticsFlags>()?;
     m.ty::<W_polars_core__chunked_array__flags__StatisticsFlagsIM>()?;
+    m.ty::<W_polars_core__chunked_array__logical__date__DateChunked>()?;
+    m.ty::<W_polars_core__chunked_array__logical__datetime__DatetimeChunked>()?;
+    m.ty::<W_polars_core__chunked_array__logical__duration__DurationChunked>()?;
+    m.ty::<W_polars_core__chunked_array__logical__time__TimeChunked>()?;
     m.ty::<W_polars_core__chunked_array__ops__ExplodeOptions>()?;
     m.ty::<W_polars_core__chunked_array__ops__FillNullStrategy>()?;
     m.ty::<W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide>()?;
     m.ty::<W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions>()?;
     m.ty::<W_polars_core__chunked_array__ops__sort__options__SortOptions>()?;
+    m.ty::<W_polars_core__chunked_array__struct___StructChunked>()?;
+    m.ty::<W_polars_core__datatypes__BinaryChunked>()?;
+    m.ty::<W_polars_core__datatypes__BinaryOffsetChunked>()?;
     m.ty::<W_polars_core__datatypes__BinaryOffsetType>()?;
     m.ty::<W_polars_core__datatypes__BinaryType>()?;
+    m.ty::<W_polars_core__datatypes__BooleanChunked>()?;
     m.ty::<W_polars_core__datatypes__BooleanType>()?;
     m.ty::<W_polars_core__datatypes__Categorical16Type>()?;
     m.ty::<W_polars_core__datatypes__Categorical32Type>()?;
@@ -963,17 +1100,29 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_core__datatypes__DateType>()?;
     m.ty::<W_polars_core__datatypes__DatetimeType>()?;
     m.ty::<W_polars_core__datatypes__DurationType>()?;
+    m.ty::<W_polars_core__datatypes__Float32Chunked>()?;
     m.ty::<W_polars_core__datatypes__Float32Type>()?;
+    m.ty::<W_polars_core__datatypes__Float64Chunked>()?;
     m.ty::<W_polars_core__datatypes__Float64Type>()?;
+    m.ty::<W_polars_core__datatypes__Int16Chunked>()?;
     m.ty::<W_polars_core__datatypes__Int16Type>()?;
+    m.ty::<W_polars_core__datatypes__Int32Chunked>()?;
     m.ty::<W_polars_core__datatypes__Int32Type>()?;
+    m.ty::<W_polars_core__datatypes__Int64Chunked>()?;
     m.ty::<W_polars_core__datatypes__Int64Type>()?;
+    m.ty::<W_polars_core__datatypes__Int8Chunked>()?;
     m.ty::<W_polars_core__datatypes__Int8Type>()?;
+    m.ty::<W_polars_core__datatypes__ListChunked>()?;
+    m.ty::<W_polars_core__datatypes__StringChunked>()?;
     m.ty::<W_polars_core__datatypes__StringType>()?;
     m.ty::<W_polars_core__datatypes__TimeType>()?;
+    m.ty::<W_polars_core__datatypes__UInt16Chunked>()?;
     m.ty::<W_polars_core__datatypes__UInt16Type>()?;
+    m.ty::<W_polars_core__datatypes__aliases__IdxCa>()?;
     m.ty::<W_polars_core__datatypes__UInt32Type>()?;
+    m.ty::<W_polars_core__datatypes__UInt64Chunked>()?;
     m.ty::<W_polars_core__datatypes__UInt64Type>()?;
+    m.ty::<W_polars_core__datatypes__UInt8Chunked>()?;
     m.ty::<W_polars_core__datatypes__UInt8Type>()?;
     m.ty::<W_polars_core__datatypes__dtype__CompatLevel>()?;
     m.ty::<W_polars_core__datatypes__dtype__DataType>()?;
@@ -992,6 +1141,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_core__frame__group_by__position__GroupsIdx>()?;
     m.ty::<W_polars_core__frame__group_by__position__GroupsType>()?;
     m.ty::<W_polars_core__scalar__Scalar>()?;
+    m.ty::<W_polars_core__schema__Schema>()?;
+    m.ty::<W_polars_core__schema__SchemaRef>()?;
     m.ty::<W_polars_core__series__Series>()?;
     m.ty::<W_polars_core__series__amortized_iter__AmortSeries>()?;
     m.ty::<W_polars_core__series__arithmetic__list__NumericListOp>()?;
@@ -1139,6 +1290,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_plan__dsl__options__UnpivotArgsDSL>()?;
     m.ty::<W_polars_plan__dsl__options__WindowMapping>()?;
     m.ty::<W_polars_plan__dsl__options__file_provider__FileProviderArgs>()?;
+    m.ty::<W_polars_plan__dsl__options__file_provider__FileProviderFunction>()?;
     m.ty::<W_polars_plan__dsl__options__file_provider__FileProviderReturn>()?;
     m.ty::<W_polars_plan__dsl__options__file_provider__FileProviderType>()?;
     m.ty::<W_polars_plan__dsl__options__file_provider__HivePathProvider>()?;
@@ -1171,5 +1323,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_plan__dsl__udf__UserDefinedFunction>()?;
     m.ty::<W_polars_plan__frame__opt_state__OptFlags>()?;
     m.ty::<W_polars_plan__plans__lit__LiteralValue>()?;
+    m.ty::<W_polars_row__row__RowEncodingOptions>()?;
+    m.ty::<W_polars_utils__pl_path__CloudScheme>()?;
+    m.ty::<W_polars_utils__pl_path__PlRefPath>()?;
     Ok(())
 }

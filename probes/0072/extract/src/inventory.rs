@@ -111,6 +111,54 @@ impl Docs {
         }
     }
 
+    /// `canon`, with every non-generic local type alias replaced by its
+    /// (recursively expanded) target. Generic aliases keep their own path.
+    pub fn canon_expanded(&self, krate: &str, t: &Type) -> String {
+        self.canon_expanded_depth(krate, t, 0)
+    }
+    fn canon_expanded_depth(&self, krate: &str, t: &Type, depth: usize) -> String {
+        if depth > 16 { return self.canon(krate, t); }
+        match t {
+            Type::ResolvedPath(p) => {
+                if let Resolved::Local(home, hid) = self.resolve(krate, p.id) {
+                    if let Some(ItemEnum::TypeAlias(ta)) = self.crates[&home].index.get(&hid).map(|i| &i.inner) {
+                        let generic = ta.generics.params.iter().any(|g| !matches!(g.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. }));
+                        if !generic {
+                            return self.canon_expanded_depth(&home, &ta.type_, depth + 1);
+                        }
+                    }
+                }
+                let base = self.canon(krate, &Type::ResolvedPath(rustdoc_types::Path { path: p.path.clone(), id: p.id, args: None }));
+                let args: Vec<String> = match p.args.as_deref() {
+                    Some(rustdoc_types::GenericArgs::AngleBracketed { args, constraints }) => {
+                        let mut v: Vec<String> = args
+                            .iter()
+                            .filter_map(|a| match a {
+                                rustdoc_types::GenericArg::Type(t) => Some(self.canon_expanded_depth(krate, t, depth + 1)),
+                                rustdoc_types::GenericArg::Const(c) => Some(c.expr.clone()),
+                                _ => None,
+                            })
+                            .collect();
+                        for c in constraints {
+                            if let rustdoc_types::AssocItemConstraintKind::Equality(rustdoc_types::Term::Type(t)) = &c.binding {
+                                v.push(format!("{} = {}", c.name, self.canon_expanded_depth(krate, t, depth + 1)));
+                            }
+                        }
+                        v
+                    }
+                    Some(rustdoc_types::GenericArgs::Parenthesized { .. }) => return self.canon(krate, t),
+                    _ => vec![],
+                };
+                if args.is_empty() { base } else { format!("{}<{}>", base, args.join(", ")) }
+            }
+            Type::BorrowedRef { is_mutable, type_, lifetime } => format!("&{}{}{}", if lifetime.as_deref() == Some("'static") { "'static " } else { "" }, if *is_mutable { "mut " } else { "" }, self.canon_expanded_depth(krate, type_, depth + 1)),
+            Type::Slice(i) => format!("[{}]", self.canon_expanded_depth(krate, i, depth + 1)),
+            Type::Array { type_, len } => format!("[{}; {}]", self.canon_expanded_depth(krate, type_, depth + 1), len),
+            Type::Tuple(ts) => format!("({})", ts.iter().map(|t| self.canon_expanded_depth(krate, t, depth + 1)).collect::<Vec<_>>().join(", ")),
+            other => self.canon(krate, other),
+        }
+    }
+
     pub fn canon_path(&self, krate: &str, p: &rustdoc_types::Path) -> String {
         self.canon(krate, &Type::ResolvedPath(p.clone()))
     }
@@ -188,6 +236,12 @@ pub struct Callable {
     /// Generic parameter name -> canonical bounds (from both the parameter
     /// list and the where clause), for consumers that key on identity.
     pub generics_canonical: Vec<(String, String)>,
+    /// Foreign trait impls only (record 0075): the impl's `for` type,
+    /// canonical, and the impl's generic parameters with their canonical
+    /// bounds, so a generator can decide whether the impl covers one
+    /// instantiation (`ChunkedArray<BooleanType>`) of a generic owner.
+    pub impl_for: Option<String>,
+    pub impl_bounds: Vec<(String, String)>,
     /// First paragraph of the item's rustdoc, if any.
     pub docs_first: Option<String>,
     #[serde(skip)]
@@ -237,6 +291,13 @@ pub struct Supporting {
     pub hidden: bool,
     /// Traits whose impls are `#[derive]`d (Clone, Default, Debug, ...).
     pub derived: Vec<String>,
+    /// For a type alias: the aliased type rendered canonically, with
+    /// non-generic aliases inside it expanded (record 0075), so that two
+    /// aliases of one instantiation render the same.
+    pub alias_target: Option<String>,
+    /// For a trait (record 0075): the canonical types with a direct impl
+    /// (`blanket` for a blanket impl), gathered while visiting types.
+    pub implementors: Vec<String>,
 }
 
 #[derive(Serialize, Default)]
@@ -343,6 +404,11 @@ pub fn extract(docs: &Docs, root: &str) -> Inventory {
         for c in &mut w.inv.callables {
             if c.kind == CallableKind::TraitMethod && c.owner == tkey {
                 c.implementors = types.clone();
+            }
+        }
+        for s in &mut w.inv.supporting {
+            if s.key == tkey {
+                s.implementors = types.clone();
             }
         }
     }
@@ -525,7 +591,10 @@ impl<'a> Walker<'a> {
             }
             ItemEnum::TypeAlias(ta) => {
                 let alias_generic = ta.generics.params.iter().any(|p| !matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. }));
-                let _ = self.support(krate, id, "type_alias", found, 0, 0, alias_generic, hidden);
+                let idx = self.support(krate, id, "type_alias", found, 0, 0, alias_generic, hidden);
+                if self.inv.supporting[idx].alias_target.is_none() {
+                    self.inv.supporting[idx].alias_target = Some(self.docs.canon_expanded(krate, &ta.type_));
+                }
                 if let Type::ResolvedPath(p) = &ta.type_ {
                     if let Resolved::Local(home, hid) = self.docs.resolve(krate, p.id) {
                         let h = self.crate_(&home);
@@ -559,6 +628,28 @@ impl<'a> Walker<'a> {
         }
     }
 
+    /// An impl's type parameters with their bounds (declared and `where`),
+    /// canonical.
+    fn impl_bounds(&self, krate: &str, g: &rustdoc_types::Generics) -> Vec<(String, String)> {
+        let mut raw: Vec<(String, Vec<rustdoc_types::GenericBound>)> = g
+            .params
+            .iter()
+            .filter_map(|p| match &p.kind {
+                rustdoc_types::GenericParamDefKind::Type { bounds, .. } => Some((p.name.clone(), bounds.clone())),
+                _ => None,
+            })
+            .collect();
+        for w in &g.where_predicates {
+            if let rustdoc_types::WherePredicate::BoundPredicate { type_: Type::Generic(gn), bounds, .. } = w {
+                match raw.iter_mut().find(|(n, _)| n == gn) {
+                    Some((_, b)) => b.extend(bounds.iter().cloned()),
+                    None => raw.push((gn.clone(), bounds.clone())),
+                }
+            }
+        }
+        raw.iter().map(|(n, b)| (n.clone(), self.docs.canon_bounds(krate, b))).collect()
+    }
+
     fn support(&mut self, krate: &str, id: Id, kind: &str, found: &str, fields: usize, variants: usize, generic: bool, hidden: bool) -> usize {
         let key = (krate.to_string(), id);
         if let Some(&i) = self.seen_support.get(&key) {
@@ -583,6 +674,8 @@ impl<'a> Walker<'a> {
             lifetime: false,
             hidden,
             derived: vec![],
+            alias_target: None,
+            implementors: vec![],
         };
         self.inv.supporting.push(s);
         let i = self.inv.supporting.len() - 1;
@@ -704,6 +797,8 @@ impl<'a> Walker<'a> {
                                 p.ty_canonical = self.docs.canon(krate, &p.raw);
                             }
                             let ret_canonical = ret_raw.as_ref().map(|t| self.docs.canon(krate, t));
+                            let impl_for = Some(self.docs.canon_expanded(krate, &imp.for_));
+                            let impl_bounds = self.impl_bounds(krate, &imp.generics);
                             self.inv.callables.push(Callable {
                                 key: key.clone(),
                                 kind: CallableKind::ForeignTraitImpl,
@@ -721,6 +816,8 @@ impl<'a> Walker<'a> {
                                 generics: vec![],
                                 where_clause: vec![],
                                 generics_canonical: vec![],
+                                impl_for,
+                                impl_bounds,
                                 docs_first: None,
                                 bounds_raw: vec![],
                                 owner_generic: generic,
@@ -844,6 +941,8 @@ impl<'a> Walker<'a> {
             generics,
             where_clause,
             generics_canonical,
+            impl_for: None,
+            impl_bounds: vec![],
             docs_first,
             bounds_raw,
             owner_generic,

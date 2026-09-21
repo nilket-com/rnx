@@ -26,15 +26,42 @@ fn generated_files_do_not_drift() {
 		.arg("--")
 		.arg(inventory())
 		.arg(root().join("adapters/polars"))
-		.args(["--buckets", BUCKETS, "--check"])
+		.args(["--buckets", BUCKETS, "--release"])
+		.arg(root().join("tools/polars-gen/releases").join(RELEASE_FILE))
+		.arg("--check")
 		.env("CARGO_TARGET_DIR", root().join("target/0073"))
 		.status()
 		.expect("run polars-gen");
 	assert!(status.success(), "generated files differ from the generator's output; regenerate and commit");
 }
 
-/// The buckets this stage generates; kept in one place with the drift test.
+/// Record 0075: a release policy that does not belong to the inventory is
+/// refused before anything is generated, whichever way the mismatch goes.
+#[test]
+fn a_release_file_for_another_inventory_is_refused() {
+	for wrong in ["rc2.toml", "0.54.4.toml"] {
+		let out = Command::new("cargo")
+			.args(["run", "-q", "--locked", "--manifest-path"])
+			.arg(root().join("tools/polars-gen/Cargo.toml"))
+			.arg("--")
+			.arg(inventory())
+			.arg(root().join("adapters/polars"))
+			.args(["--buckets", BUCKETS, "--release"])
+			.arg(root().join("tools/polars-gen/releases").join(wrong))
+			.arg("--check")
+			.env("CARGO_TARGET_DIR", root().join("target/0073"))
+			.output()
+			.expect("run polars-gen");
+		let stderr = String::from_utf8_lossy(&out.stderr);
+		assert!(!out.status.success(), "{wrong} against the 0.55.2 inventory must be refused");
+		assert!(stderr.contains("refusing to generate"), "{wrong}: refusal must name the provenance mismatch, got: {stderr}");
+	}
+}
+
+/// The buckets this stage generates and the release input the committed
+/// module was generated from; kept in one place with the drift test.
 const BUCKETS: &str = "mechanical,conversion,option_struct";
+const RELEASE_FILE: &str = "0.55.2-joins.toml";
 
 /// Every eligible callable of the API crates has exactly one status.
 #[test]
@@ -78,7 +105,7 @@ fn every_callable_is_accounted_for() {
 		}
 		generated += 1;
 		let d = e["execution"].as_str().unwrap_or_else(|| panic!("{}: generated without an execution disposition", e["canonical_path"]));
-		if d == "case" {
+		if d.split(" (").next() == Some("case") {
 			cases += 1;
 		}
 		*dispositions.entry(d.split(" (").next().unwrap().to_string()).or_insert(0usize) += 1;

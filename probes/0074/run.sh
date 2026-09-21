@@ -17,9 +17,12 @@ here="$(cd "$(dirname "$0")" && pwd)"; root="$(cd "$here/../.." && pwd)"
 REV="da47b7405f0e2d188e71cce7c2d588c695f4098d"
 GIT_URL="https://github.com/pola-rs/polars"
 CARGO="${PROBE_CARGO:-cargo}"
-out="${PROBE_OUT:-$here/out}"; status="$out/status.json"
-locks="${PROBE_LOCKS:-$here/locks}"; frozen_file="${PROBE_FROZEN:-$here/frozen.json}"
-scratch="${PROBE_SCRATCH:-$root/target/0074-adapter}"
+# every override is made absolute: stages cd into the scratch adapter
+abs() { case "$1" in /*) echo "$1" ;; *) echo "$PWD/$1" ;; esac; }
+release="${PROBE_RELEASE:+$(abs "$PROBE_RELEASE")}"   # record 0075: a release file; required, recorded in status
+out="$(abs "${PROBE_OUT:-$here/out}")"; status="$out/status.json"
+locks="$(abs "${PROBE_LOCKS:-$here/locks}")"; frozen_file="$(abs "${PROBE_FROZEN:-$here/frozen.json}")"
+scratch="$(abs "${PROBE_SCRATCH:-$root/target/0074-adapter}")"
 run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 experimental="${PROBE_EXPERIMENTAL:-0}"
 
@@ -34,10 +37,10 @@ rm -f "$out"/gen.log "$out"/build.json "$out"/build.stderr "$out"/oracle*.log "$
 rm -rf "$out/rc2/result"
 declare -A stage
 write_status() {
-  python3 - "$status" "$run_id" "$experimental" "$scratch" "$root" "${!stage[@]}" -- "${stage[@]}" <<'PY'
+  python3 - "$status" "$run_id" "$experimental" "$scratch" "$root" "$release" "${!stage[@]}" -- "${stage[@]}" <<'PY'
 import json, sys
-p, run_id, exp, scratch, root = sys.argv[1:6]
-rest = sys.argv[6:]; i = rest.index("--"); keys, vals = rest[:i], rest[i+1:]
+p, run_id, exp, scratch, root, release = sys.argv[1:7]
+rest = sys.argv[7:]; i = rest.index("--"); keys, vals = rest[:i], rest[i+1:]
 frozen = {k: root + "/" + v for k, v in {
     "baseline_inventory": "probes/0072/out/0.55.2-adapter/result/inventory.json",
     "baseline_summary": "probes/0072/out/0.55.2-adapter/result/summary.json",
@@ -45,6 +48,9 @@ frozen = {k: root + "/" + v for k, v in {
     "baseline_surface": "adapters/polars/surface.json",
     "baseline_oracle_results": "adapters/polars/oracle-results.json"}.items()}
 frozen["doc_lock"] = "probes/0074/locks/doc-rc2.lock"; frozen["adapter_lock"] = "probes/0074/locks/adapter.lock"
+# record 0075: the API-crate subset is release-specific; both release files are recorded
+frozen["baseline_release"] = root + "/tools/polars-gen/releases/0.55.2-joins.toml"
+frozen["release"] = release
 reg = 0
 try:
     reg = sum(1 for l in open(root + "/probes/0074/locks/adapter.lock") if l.startswith('source = "registry'))
@@ -92,21 +98,31 @@ rm -rf "$scratch"; mkdir -p "$scratch/polars"
 for f in Cargo.toml src tests; do cp -r "$root/adapters/polars/$f" "$scratch/polars/"; done
 rm -f "$scratch/polars/src/generated/"*.rs "$scratch/polars/tests/generated_oracle.rs"   # nothing of the baseline module survives
 cp "$root/adapters/polars/src/generated/support.rs" "$scratch/polars/src/generated/"      # hand-written support is part of the adapter
-python3 - "$scratch/polars/Cargo.toml" "$root" "$GIT_URL" "$REV" <<'PY'
+python3 - "$scratch/polars/Cargo.toml" "$root" "$GIT_URL" "$REV" "$release" <<'PY'
 import re, sys
-p, root, url, rev = sys.argv[1:5]
+p, root, url, rev, release = sys.argv[1:6]
 t = open(p).read().replace('path = "../.."', f'path = "{root}"')
 t = re.sub(r'(polars(?:-[a-z]+)?) = \{ version = "=0\.55\.2"', lambda m: f'{m.group(1)} = {{ git = "{url}", rev = "{rev}"', t)
+# every API crate the release names is a direct dependency, so generated
+# code can spell its items; crates the 0.55.2 manifest lacks are added
+import tomllib
+api = tomllib.load(open(release, "rb")).get("api_crates", [])
+for crate in api:
+    dep = crate.replace("_", "-")
+    if f"\n{dep} = " not in t:
+        t = t.replace("[dependencies]", f'[dependencies]\n{dep} = {{ git = "{url}", rev = "{rev}", default-features = false }}', 1)
 open(p, "w").write(t)
 PY
-n=$(grep -c "rev = \"$REV\"" "$scratch/polars/Cargo.toml"); [ "$n" = 11 ] || fail generate "expected 11 crates pinned to rc2, found $n"
-"$gen" "$out/rc2/result/inventory.json" "$scratch/polars" --buckets mechanical,conversion,option_struct > "$out/gen.log" 2>&1 || fail generate "generator failed: $(tail -1 "$out/gen.log")"
+n=$(grep -c "rev = \"$REV\"" "$scratch/polars/Cargo.toml"); [ "$n" -ge 11 ] || fail generate "expected at least 11 crates pinned to rc2, found $n"; echo "crates pinned to rc2: $n"
+[ -n "$release" ] && [ -f "$release" ] || fail generate "PROBE_RELEASE must name the release file for rc2 (tools/polars-gen/releases/rc2.toml)"
+"$gen" "$out/rc2/result/inventory.json" "$scratch/polars" --release "$release" --buckets mechanical,conversion,option_struct > "$out/gen.log" 2>&1 || fail generate "generator failed: $(tail -1 "$out/gen.log")"
 [ -f "$scratch/polars/src/generated/functions.rs" ] && [ -f "$scratch/polars/tests/generated_oracle.rs" ] || fail generate "generator produced no module"
 cp "$scratch/polars/surface.json" "$out/surface-rc2.json"
 tail -5 "$out/gen.log"; stage[generate]=ok; write_status
 
 step "build the scratch adapter against rc2 (--locked)"
 lock="$locks/adapter.lock"
+mkdir -p "$(dirname "$lock")"
 if [ -f "$lock" ]; then cp "$lock" "$scratch/polars/Cargo.lock"; else ( cd "$scratch/polars" && "$CARGO" generate-lockfile -q ) && cp "$scratch/polars/Cargo.lock" "$lock" && echo "INIT: lock saved to $lock"; fi
 ( cd "$scratch/polars" && CARGO_TARGET_DIR="$root/target/0074-adapter-target" "$CARGO" build -q --locked --release --features test-support --message-format=json > "$out/build.json" 2> "$out/build.stderr" )
 build=$?
