@@ -21,6 +21,19 @@ that cannot affect order, and a citation), and the oracle exclusions. `0.55.2.to
 the wrapper identity rules (equivalent aliases share one wrapper,
 same-name distinct types get distinct Rune paths).
 
+Record 0076 added the deref route (trait methods on a type whose `Deref`
+target is that trait), the null-series core fixture, the instantiation
+of `ChunkedArray` and `Logical` methods on their alias wrappers from an
+applicability evaluation over the inventory's recorded impl heads,
+bounds, `where` predicates and associated types (three results: proven,
+rejected, unresolved; only proven pairs are emitted, and Rust
+compilation is the second check), typed source fixtures and a producer
+fixture rule, and the structural array comparator (`into_series`,
+never `Debug`). The release file's `[instantiation]` table names the
+families shipped and the cited exclusions; `surface.json` records the
+whole census under `instantiation`. `--self-test` covers the deref
+targets and the applicability rules from synthetic inventories.
+
 Writes `adapters/polars/src/generated/` (types, functions, catalogue,
 fixtures), `adapters/polars/tests/generated_oracle.rs` and
 `adapters/polars/surface.json`, the accounting of every eligible callable

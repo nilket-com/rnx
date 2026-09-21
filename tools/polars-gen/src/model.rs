@@ -50,6 +50,14 @@ pub struct Callable {
     pub impl_for: Option<String>,
     #[serde(default)]
     pub impl_bounds: Vec<(String, String)>,
+    /// Record 0076: inherent impl head and `where` predicates; bound
+    /// associated types of any impl. Absent in older inventories.
+    #[serde(default)]
+    pub impl_head: Option<String>,
+    #[serde(default)]
+    pub impl_where: Vec<String>,
+    #[serde(default)]
+    pub impl_assoc: Vec<(String, String)>,
     pub docs_first: Option<String>,
     pub owner_generic: bool,
     pub is_unsafe: bool,
@@ -85,4 +93,20 @@ pub struct Supporting {
     /// For a trait (record 0075): canonical types with a direct impl.
     #[serde(default)]
     pub implementors: Vec<String>,
+    /// For a trait (record 0076): every recorded impl with its head.
+    #[serde(default)]
+    pub impls: Vec<TraitImpl>,
+}
+
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct TraitImpl {
+    pub for_type: String,
+    #[serde(default)]
+    pub blanket: bool,
+    #[serde(default)]
+    pub bounds: Vec<(String, String)>,
+    #[serde(default)]
+    pub where_predicates: Vec<String>,
+    #[serde(default)]
+    pub assoc_types: Vec<(String, String)>,
 }

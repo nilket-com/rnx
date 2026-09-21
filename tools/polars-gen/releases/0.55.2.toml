@@ -54,3 +54,13 @@ reason = "returns a memory address"
 [[excluded_oracle]]
 path = "polars_io::cloud::concurrency::ConcurrencyController::new"
 reason = "Debug output shows runtime state"
+
+# Record 0076: proven instantiations the compiler refuses. polars-arrow-0.55.2
+# src/array/static_array.rs lines 52 and 80 mark `StructArray`'s
+# `value_unchecked` and `iter` with `no_call_const`, a compile-time panic,
+# and `get`, `first`, `last`, `first_null`, `first_non_null` and `last_non_null`
+# on `ChunkedArray<T>` reach them (bisected by compilation, record 0076).
+[[instantiation.exclude]]
+alias = "StructChunked"
+methods = ["get", "first", "last", "first_null", "first_non_null", "last_non_null"]
+cite = "polars-arrow-0.55.2 array/static_array.rs:52,80 no_call_const on StructArray"

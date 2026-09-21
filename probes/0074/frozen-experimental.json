@@ -1,12 +1,12 @@
 {
- "label": "EXPERIMENTAL: record 0075 rerun of the 0074 probe with rc2.toml; not the accepted 0074 manifest",
+ "label": "EXPERIMENTAL: record 0076 rerun of the 0074 probe with rc2.toml; not the accepted 0074 manifest",
  "accepted_generator_revision": "98885e0",
- "written_at_revision": "53db6042520852001b9037b653a4f4b90c20ff3d",
+ "written_at_revision": "e3ca79523ac82653bfe356855d535d61b1a6dde9",
  "inputs": {
   "generator": {
    "pattern": "tools/polars-gen/src/*.rs",
    "files": 3,
-   "sha256": "87e22fad2f71aca9968c55fbea6d325eca7764a1261847a6a3bfd8318195aa5b"
+   "sha256": "f217dc30c5715356416e027ae46d5d64007ffa9d4487df50ed3de52660212232"
   },
   "generator_manifest": {
    "pattern": "tools/polars-gen/Cargo.toml",
@@ -21,7 +21,7 @@
   "extractor": {
    "pattern": "probes/0072/extract/src/*.rs",
    "files": 4,
-   "sha256": "f5fd4e6cf9bedff455abbc5782558809528b967304f31443530d13e5d3c46d71"
+   "sha256": "fca0d68f1a71fc9120fff7ea31725b20542e813f313bef8f0362fcabead28130"
   },
   "extractor_manifest": {
    "pattern": "probes/0072/extract/Cargo.toml",
@@ -36,17 +36,17 @@
   "adapter_sources": {
    "pattern": "adapters/polars/src/*.rs",
    "files": 7,
-   "sha256": "425c1799f27f03718901e34c0c5d36bd354bef3b0ec6e21f0709e81f22191ef4"
+   "sha256": "bba30909ebc3575231964dbb1667ee3621f22d1ca96da2cd236b1d604734ac32"
   },
   "adapter_generated": {
    "pattern": "adapters/polars/src/generated/*.rs",
    "files": 6,
-   "sha256": "e68774861815d87b47b8c825d231cebc94d40a9773c75a3f765b10f03d54e253"
+   "sha256": "29731b48c48771a8b1f77535d8a07605cca05c1e1b9fa015b5927c15b6fffece"
   },
   "adapter_tests": {
    "pattern": "adapters/polars/tests/*",
    "files": 6,
-   "sha256": "bc1b0096614c8cce72b23d644b93226f0122e60ed584babae55276373fcd466d"
+   "sha256": "496a9c996c11bbe54cbf579cf7fed9b9f7b753870b8148c78a8fd1e5c3bef596"
   },
   "adapter_manifest": {
    "pattern": "adapters/polars/Cargo.toml",
@@ -56,7 +56,7 @@
   "baseline_inventory": {
    "pattern": "probes/0072/out/0.55.2-adapter/result/inventory.json",
    "files": 1,
-   "sha256": "9281e288e268173de9ed3f0cc961c557c2df377d940a21e0f0bde6e4bdf42b5f"
+   "sha256": "794a56620fd14da4614a9a5f399174e69920b6f1ae46c735e66053fd2c8da7d5"
   },
   "baseline_summary": {
    "pattern": "probes/0072/out/0.55.2-adapter/result/summary.json",
@@ -71,12 +71,12 @@
   "baseline_surface": {
    "pattern": "adapters/polars/surface.json",
    "files": 1,
-   "sha256": "29f10cc5f924b61dca6506550c6313254f743112669a8788704df8b66fc996bf"
+   "sha256": "9814e9f703d7b6bca48c59c7624221556da02585bd854e13f024f40b41b957b0"
   },
   "baseline_oracle_results": {
    "pattern": "adapters/polars/oracle-results.json",
    "files": 1,
-   "sha256": "c8c9fa67c07df367043c00b7c657b147e42e7e7bf09c6a1472c490b2eb02e4f8"
+   "sha256": "41852844e5bda8bb52d8f094e10b83bf35f1cbdb97de921cece726bbadecb9a2"
   },
   "doc_lock": {
    "pattern": "probes/0074/locks/doc-rc2.lock",

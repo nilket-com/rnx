@@ -8,6 +8,2550 @@ use polars::prelude as p;
 use polars::prelude::*;
 use rnx::rune;
 
+/// Returns whether all values in the array are `true`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::all`. all() -> bool
+#[rune::function(instance, path = all)]
+fn f_a5765ab3_rray__all_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> bool { let __r = <polars_core::datatypes::BooleanChunked>::all(&this.0); __r }
+/// Returns whether all values in the column are `true`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::all_kleene`. all_kleene() -> option of bool
+#[rune::function(instance, path = all_kleene)]
+fn f_5124ff95_ll_kleene_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::all_kleene(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// Returns whether any of the values in the column are `true`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::any`. any() -> bool
+#[rune::function(instance, path = any)]
+fn f_de283a08_rray__any_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> bool { let __r = <polars_core::datatypes::BooleanChunked>::any(&this.0); __r }
+/// Returns whether any of the values in the column are `true`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::any_kleene`. any_kleene() -> option of bool
+#[rune::function(instance, path = any_kleene)]
+fn f_e0196bec_ny_kleene_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::any_kleene(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::append`. append(other: ListChunked) -> result of unit (fallible)
+#[rune::function(instance, path = append)]
+fn f_6e078264_rray__append_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked, other: &W_polars_core__datatypes__ListChunked) -> Result<(), Error> { let __r = <polars_core::datatypes::ListChunked>::append(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::append`. append(other: StructChunked) -> result of unit (fallible)
+#[rune::function(instance, path = append)]
+fn f_25dcab9d_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked, other: &W_polars_core__chunked_array__struct___StructChunked) -> Result<(), Error> { let __r = <polars::chunked_array::StructChunked>::append(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::append_owned`. append_owned(other: ListChunked) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned)]
+fn f_adfd2e25_append_owned_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked, other: &W_polars_core__datatypes__ListChunked) -> Result<(), Error> { let __r = <polars_core::datatypes::ListChunked>::append_owned(&mut this.0, other.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::append_owned`. append_owned(other: StructChunked) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned)]
+fn f_9808a643_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked, other: &W_polars_core__chunked_array__struct___StructChunked) -> Result<(), Error> { let __r = <polars::chunked_array::StructChunked>::append_owned(&mut this.0, other.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::arg_max_binary`. arg_max_binary() -> option of int
+#[rune::function(instance, path = arg_max_binary)]
+fn f_651d79b4_max_binary_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Option<i64> { let __r = <polars_core::datatypes::BinaryChunked>::arg_max_binary(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::arg_min_binary`. arg_min_binary() -> option of int
+#[rune::function(instance, path = arg_min_binary)]
+fn f_17595ef8_min_binary_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Option<i64> { let __r = <polars_core::datatypes::BinaryChunked>::arg_min_binary(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::as_binary`. as_binary() -> BinaryChunked
+#[rune::function(instance, path = as_binary)]
+fn f_55c61ad3__as_binary_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__BinaryChunked { let __r = <polars_core::datatypes::StringChunked>::as_binary(&this.0); W_polars_core__datatypes__BinaryChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::cast`. cast(dtype: DataType) -> result of Series (fallible)
+#[rune::function(instance, path = cast)]
+fn f_ea8a1c19_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, dtype: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = &dtype.0; let __r = crate::engine::run(move || <polars::chunked_array::StructChunked>::cast(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::cast_with_options`. cast_with_options(dtype: DataType, cast_options: CastOptions) -> result of Series (fallible)
+#[rune::function(instance, path = cast_with_options)]
+fn f_b556bd87_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, dtype: &W_polars_core__datatypes__dtype__DataType, cast_options: &W_polars_core__chunked_array__cast__CastOptions) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = &dtype.0; let __arg2 = cast_options.0.clone(); let __r = crate::engine::run(move || <polars::chunked_array::StructChunked>::cast_with_options(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> BinaryOffsetChunked
+#[rune::function(instance, path = clear)]
+fn f_230a4bdb_lear_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__BinaryOffsetChunked { let __r = <polars_core::datatypes::BinaryOffsetChunked>::clear(&this.0); W_polars_core__datatypes__BinaryOffsetChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> BinaryChunked
+#[rune::function(instance, path = clear)]
+fn f_67c1d7f1_ray__clear_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__datatypes__BinaryChunked { let __r = <polars_core::datatypes::BinaryChunked>::clear(&this.0); W_polars_core__datatypes__BinaryChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> BooleanChunked
+#[rune::function(instance, path = clear)]
+fn f_7101c6e5_ay__clear_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BooleanChunked>::clear(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> Float32Chunked
+#[rune::function(instance, path = clear)]
+fn f_dc80b1d3_ay__clear_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__Float32Chunked { let __r = <polars_core::datatypes::Float32Chunked>::clear(&this.0); W_polars_core__datatypes__Float32Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> Float64Chunked
+#[rune::function(instance, path = clear)]
+fn f_bdcdb18b_ay__clear_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__Float64Chunked { let __r = <polars_core::datatypes::Float64Chunked>::clear(&this.0); W_polars_core__datatypes__Float64Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> Int16Chunked
+#[rune::function(instance, path = clear)]
+fn f_0977247f_rray__clear_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__datatypes__Int16Chunked { let __r = <polars_core::datatypes::Int16Chunked>::clear(&this.0); W_polars_core__datatypes__Int16Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> Int32Chunked
+#[rune::function(instance, path = clear)]
+fn f_5d5db8e4_rray__clear_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__datatypes__Int32Chunked { let __r = <polars_core::datatypes::Int32Chunked>::clear(&this.0); W_polars_core__datatypes__Int32Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> Int64Chunked
+#[rune::function(instance, path = clear)]
+fn f_0371d26c_rray__clear_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__datatypes__Int64Chunked { let __r = <polars_core::datatypes::Int64Chunked>::clear(&this.0); W_polars_core__datatypes__Int64Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> Int8Chunked
+#[rune::function(instance, path = clear)]
+fn f_08f43398_array__clear_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__datatypes__Int8Chunked { let __r = <polars_core::datatypes::Int8Chunked>::clear(&this.0); W_polars_core__datatypes__Int8Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> ListChunked
+#[rune::function(instance, path = clear)]
+fn f_2726e372_array__clear_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__ListChunked { let __r = <polars_core::datatypes::ListChunked>::clear(&this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> StringChunked
+#[rune::function(instance, path = clear)]
+fn f_75b9e3c1_ray__clear_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__StringChunked { let __r = <polars_core::datatypes::StringChunked>::clear(&this.0); W_polars_core__datatypes__StringChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> StructChunked
+#[rune::function(instance, path = clear)]
+fn f_c7d6c774_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__chunked_array__struct___StructChunked { let __r = <polars::chunked_array::StructChunked>::clear(&this.0); W_polars_core__chunked_array__struct___StructChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> UInt16Chunked
+#[rune::function(instance, path = clear)]
+fn f_cd881f1b_ray__clear_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__datatypes__UInt16Chunked { let __r = <polars_core::datatypes::UInt16Chunked>::clear(&this.0); W_polars_core__datatypes__UInt16Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> IdxCa
+#[rune::function(instance, path = clear)]
+fn f_25174840_ay__clear_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__datatypes__aliases__IdxCa { let __r = <polars_core::datatypes::IdxCa>::clear(&this.0); W_polars_core__datatypes__aliases__IdxCa(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> UInt64Chunked
+#[rune::function(instance, path = clear)]
+fn f_5318be76_ray__clear_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__datatypes__UInt64Chunked { let __r = <polars_core::datatypes::UInt64Chunked>::clear(&this.0); W_polars_core__datatypes__UInt64Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> UInt8Chunked
+#[rune::function(instance, path = clear)]
+fn f_0d3216e4_rray__clear_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__datatypes__UInt8Chunked { let __r = <polars_core::datatypes::UInt8Chunked>::clear(&this.0); W_polars_core__datatypes__UInt8Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> BinaryOffsetChunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_e3505c5c_ulls_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__BinaryOffsetChunked { let __r = <polars_core::datatypes::BinaryOffsetChunked>::drop_nulls(&this.0); W_polars_core__datatypes__BinaryOffsetChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> BinaryChunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_caa5dddc_drop_nulls_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__datatypes__BinaryChunked { let __r = <polars_core::datatypes::BinaryChunked>::drop_nulls(&this.0); W_polars_core__datatypes__BinaryChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> BooleanChunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_c8520198_rop_nulls_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BooleanChunked>::drop_nulls(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> Float32Chunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_43811095_rop_nulls_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__Float32Chunked { let __r = <polars_core::datatypes::Float32Chunked>::drop_nulls(&this.0); W_polars_core__datatypes__Float32Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> Float64Chunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_61aa1e4a_rop_nulls_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__Float64Chunked { let __r = <polars_core::datatypes::Float64Chunked>::drop_nulls(&this.0); W_polars_core__datatypes__Float64Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> Int16Chunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_bcd0862b__drop_nulls_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__datatypes__Int16Chunked { let __r = <polars_core::datatypes::Int16Chunked>::drop_nulls(&this.0); W_polars_core__datatypes__Int16Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> Int32Chunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_cc4352a7__drop_nulls_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__datatypes__Int32Chunked { let __r = <polars_core::datatypes::Int32Chunked>::drop_nulls(&this.0); W_polars_core__datatypes__Int32Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> Int64Chunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_86b136e6__drop_nulls_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__datatypes__Int64Chunked { let __r = <polars_core::datatypes::Int64Chunked>::drop_nulls(&this.0); W_polars_core__datatypes__Int64Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> Int8Chunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_0992157a___drop_nulls_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__datatypes__Int8Chunked { let __r = <polars_core::datatypes::Int8Chunked>::drop_nulls(&this.0); W_polars_core__datatypes__Int8Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> ListChunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_3469374f___drop_nulls_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__ListChunked { let __r = <polars_core::datatypes::ListChunked>::drop_nulls(&this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> StringChunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_76fa9bac_drop_nulls_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__StringChunked { let __r = <polars_core::datatypes::StringChunked>::drop_nulls(&this.0); W_polars_core__datatypes__StringChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> StructChunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_73b19508_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__chunked_array__struct___StructChunked { let __r = <polars::chunked_array::StructChunked>::drop_nulls(&this.0); W_polars_core__chunked_array__struct___StructChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> UInt16Chunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_3b849d16_drop_nulls_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__datatypes__UInt16Chunked { let __r = <polars_core::datatypes::UInt16Chunked>::drop_nulls(&this.0); W_polars_core__datatypes__UInt16Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> IdxCa
+#[rune::function(instance, path = drop_nulls)]
+fn f_e64d473a_rop_nulls_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__datatypes__aliases__IdxCa { let __r = <polars_core::datatypes::IdxCa>::drop_nulls(&this.0); W_polars_core__datatypes__aliases__IdxCa(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> UInt64Chunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_80bc4581_drop_nulls_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__datatypes__UInt64Chunked { let __r = <polars_core::datatypes::UInt64Chunked>::drop_nulls(&this.0); W_polars_core__datatypes__UInt64Chunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> UInt8Chunked
+#[rune::function(instance, path = drop_nulls)]
+fn f_b465da09__drop_nulls_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__datatypes__UInt8Chunked { let __r = <polars_core::datatypes::UInt8Chunked>::drop_nulls(&this.0); W_polars_core__datatypes__UInt8Chunked(__r) }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_1fb9e071_type_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::BinaryOffsetChunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_eb8ade35_ray__dtype_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::BinaryChunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_10d263a2_ay__dtype_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::BooleanChunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_bcf1504d_ay__dtype_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Float32Chunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_b0dbeb7c_ay__dtype_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Float64Chunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_04c72e9d_rray__dtype_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Int16Chunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_aac36355_rray__dtype_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Int32Chunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_0fdfc800_rray__dtype_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Int64Chunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_ec4b500e_array__dtype_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Int8Chunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_1dda3f45_array__dtype_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::ListChunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_19ed04a8_ray__dtype_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::StringChunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_72395c95_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars::chunked_array::StructChunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_ae21b2a2_ray__dtype_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::UInt16Chunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_dc0adb61_ay__dtype_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::IdxCa>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_53e02b15_ray__dtype_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::UInt64Chunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_55cde366_rray__dtype_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::UInt8Chunked>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: Float32Chunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_eff91465_y__extend_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked, other: &W_polars_core__datatypes__Float32Chunked) -> Result<(), Error> { let __r = <polars_core::datatypes::Float32Chunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: Float64Chunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_9dbb84a6_y__extend_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked, other: &W_polars_core__datatypes__Float64Chunked) -> Result<(), Error> { let __r = <polars_core::datatypes::Float64Chunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: Int16Chunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_c770fc2f_ray__extend_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked, other: &W_polars_core__datatypes__Int16Chunked) -> Result<(), Error> { let __r = <polars_core::datatypes::Int16Chunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: Int32Chunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_55c7e750_ray__extend_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked, other: &W_polars_core__datatypes__Int32Chunked) -> Result<(), Error> { let __r = <polars_core::datatypes::Int32Chunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: Int64Chunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_45e8db79_ray__extend_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked, other: &W_polars_core__datatypes__Int64Chunked) -> Result<(), Error> { let __r = <polars_core::datatypes::Int64Chunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: Int8Chunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_ed8f294d_rray__extend_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked, other: &W_polars_core__datatypes__Int8Chunked) -> Result<(), Error> { let __r = <polars_core::datatypes::Int8Chunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: UInt16Chunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_897b40ac_ay__extend_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked, other: &W_polars_core__datatypes__UInt16Chunked) -> Result<(), Error> { let __r = <polars_core::datatypes::UInt16Chunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: IdxCa) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_c3314d6c_y__extend_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa, other: &W_polars_core__datatypes__aliases__IdxCa) -> Result<(), Error> { let __r = <polars_core::datatypes::IdxCa>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: UInt64Chunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_7164fcd7_ay__extend_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked, other: &W_polars_core__datatypes__UInt64Chunked) -> Result<(), Error> { let __r = <polars_core::datatypes::UInt64Chunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Extend the memory backed by this array with the values from `other`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: UInt8Chunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_0c00db9c_ray__extend_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked, other: &W_polars_core__datatypes__UInt8Chunked) -> Result<(), Error> { let __r = <polars_core::datatypes::UInt8Chunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: StringChunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_7e5b294f_ay__extend_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked, other: &W_polars_core__datatypes__StringChunked) -> Result<(), Error> { let __r = <polars_core::datatypes::StringChunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: BinaryChunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_23b23d68_ay__extend_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked, other: &W_polars_core__datatypes__BinaryChunked) -> Result<(), Error> { let __r = <polars_core::datatypes::BinaryChunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: BinaryOffsetChunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_3db3d219_tend_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked, other: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<(), Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: BooleanChunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_eef53f44_y__extend_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked, other: &W_polars_core__datatypes__BooleanChunked) -> Result<(), Error> { let __r = <polars_core::datatypes::BooleanChunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: ListChunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_da0275e9_rray__extend_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked, other: &W_polars_core__datatypes__ListChunked) -> Result<(), Error> { let __r = <polars_core::datatypes::ListChunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::extend`. extend(other: StructChunked) -> result of unit (fallible)
+#[rune::function(instance, path = extend)]
+fn f_00e33886_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked, other: &W_polars_core__chunked_array__struct___StructChunked) -> Result<(), Error> { let __r = <polars::chunked_array::StructChunked>::extend(&mut this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Get access to one of this [`StructChunked`]'s fields
+/// Polars: `polars_core::chunked_array::ChunkedArray::field_by_name`. field_by_name(name: string) -> result of Series (fallible)
+#[rune::function(instance, path = field_by_name)]
+fn f_7cc45e5e_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, name: &str) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = name; let __r = crate::engine::run(move || <polars::chunked_array::StructChunked>::field_by_name(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::fields_as_columns`. fields_as_columns() -> vector of Column
+#[rune::function(instance, path = fields_as_columns)]
+fn f_4acb9a72_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Vec<W_polars_core__frame__column__Column> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars::chunked_array::StructChunked>::fields_as_columns(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); { let mut __v = Vec::new(); for __r in __r { __v.push(W_polars_core__frame__column__Column(__r)); } __v } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::fields_as_series`. fields_as_series() -> vector of Series
+#[rune::function(instance, path = fields_as_series)]
+fn f_e68762f7_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Vec<W_polars_core__series__Series> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars::chunked_array::StructChunked>::fields_as_series(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); { let mut __v = Vec::new(); for __r in __r { __v.push(W_polars_core__series__Series(__r)); } __v } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of bool
+#[rune::function(instance, path = first)]
+fn f_74b25ff0_ay__first_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::first(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of float
+#[rune::function(instance, path = first)]
+fn f_c2e1c0bd_ay__first_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Option<f64> { let __r = <polars_core::datatypes::Float32Chunked>::first(&this.0); match __r { Some(__r) => Some((__r as f64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of float
+#[rune::function(instance, path = first)]
+fn f_255aca72_ay__first_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Option<f64> { let __r = <polars_core::datatypes::Float64Chunked>::first(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of int
+#[rune::function(instance, path = first)]
+fn f_8686a717_rray__first_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int16Chunked>::first(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of int
+#[rune::function(instance, path = first)]
+fn f_2d6afbbb_rray__first_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int32Chunked>::first(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of int
+#[rune::function(instance, path = first)]
+fn f_993b15ea_rray__first_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int64Chunked>::first(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of int
+#[rune::function(instance, path = first)]
+fn f_091f91fc_array__first_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int8Chunked>::first(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of string
+#[rune::function(instance, path = first)]
+fn f_4d83d9e2_ray__first_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Option<String> { let __r = <polars_core::datatypes::StringChunked>::first(&this.0); match __r { Some(__r) => Some(__r.to_string()), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of int
+#[rune::function(instance, path = first)]
+fn f_047fd4a8_ray__first_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt16Chunked>::first(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of int
+#[rune::function(instance, path = first)]
+fn f_691d0922_ay__first_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Option<i64> { let __r = <polars_core::datatypes::IdxCa>::first(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of int
+#[rune::function(instance, path = first)]
+fn f_cc741fc7_ray__first_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt64Chunked>::first(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of int
+#[rune::function(instance, path = first)]
+fn f_bd4b5505_rray__first_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt8Chunked>::first(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_false_idx`. first_false_idx() -> option of int
+#[rune::function(instance, path = first_false_idx)]
+fn f_7bd9a878_false_idx_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::first_false_idx(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_07c6ac3a_null_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Option<i64> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_1e5653e7_t_non_null_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Option<i64> { let __r = <polars_core::datatypes::BinaryChunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_5354133a__non_null_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_40e51619__non_null_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Float32Chunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_d4457f5f__non_null_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Float64Chunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_d1d99b43_st_non_null_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int16Chunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_ff3892e7_st_non_null_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int32Chunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_3dde8ffe_st_non_null_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int64Chunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_7922b604_rst_non_null_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int8Chunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_3caaebc7_rst_non_null_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> Option<i64> { let __r = <polars_core::datatypes::ListChunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_1f085c3e_t_non_null_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Option<i64> { let __r = <polars_core::datatypes::StringChunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_723e7370_t_non_null_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt16Chunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_4846fc60__non_null_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Option<i64> { let __r = <polars_core::datatypes::IdxCa>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_86dbf92e_t_non_null_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt64Chunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the first non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_non_null`. first_non_null() -> option of int
+#[rune::function(instance, path = first_non_null)]
+fn f_ab0c6435_st_non_null_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt8Chunked>::first_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_53acd0c3_null_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Option<i64> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_c6e2983d_first_null_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Option<i64> { let __r = <polars_core::datatypes::BinaryChunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_ca4452c3_irst_null_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_20e5b777_irst_null_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Float32Chunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_b26d9777_irst_null_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Float64Chunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_27c1fff7__first_null_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int16Chunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_d43ed425__first_null_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int32Chunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_6bb717b4__first_null_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int64Chunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_903ea040___first_null_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int8Chunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_af462f1b___first_null_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> Option<i64> { let __r = <polars_core::datatypes::ListChunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_9222f285_first_null_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Option<i64> { let __r = <polars_core::datatypes::StringChunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_32b6ea43_first_null_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt16Chunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_80c05c8a_irst_null_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Option<i64> { let __r = <polars_core::datatypes::IdxCa>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_fa1600fa_first_null_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt64Chunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_null`. first_null() -> option of int
+#[rune::function(instance, path = first_null)]
+fn f_ec1f2f27__first_null_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt8Chunked>::first_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::first_true_idx`. first_true_idx() -> option of int
+#[rune::function(instance, path = first_true_idx)]
+fn f_f29a47c2__true_idx_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::first_true_idx(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_columns`. from_columns(name: string, length: int, fields: vector of Column) -> result of StructChunked (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__struct___StructChunked::from_columns)]
+fn f_1843bac0_lars_core__chunked_array__struct___structchunked(name: &str, length: i64, fields: Vec<rune::Value>) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __t0 = fields.into_iter().map(|v| Ok::<_, Error>(support::take::<W_polars_core__frame__column__Column>(&v, "v")?.0)).collect::<Result<Vec<_>, Error>>()?; let __arg0 = p::PlSmallStr::from(name); let __arg1 = support::narrow::<usize>(length, "length")?; let __arg2 = &__t0[..]; let __r = crate::engine::run(move || <polars::chunked_array::StructChunked>::from_columns(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__chunked_array__struct___StructChunked(__r) }) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of float) -> Float32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float32Chunked::from_vec)]
+fn f_74afc3ef__from_vec_polars_core__datatypes__float32chunked(name: &str, v: Vec<f64>) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __r = <polars_core::datatypes::Float32Chunked>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>((v as f32))).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of float) -> Float64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float64Chunked::from_vec)]
+fn f_24d6a163__from_vec_polars_core__datatypes__float64chunked(name: &str, v: Vec<f64>) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __r = <polars_core::datatypes::Float64Chunked>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(v)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of int) -> Int16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::from_vec)]
+fn f_afefd33d_y__from_vec_polars_core__datatypes__int16chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __r = <polars_core::datatypes::Int16Chunked>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<i16>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of int) -> Int32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::from_vec)]
+fn f_de586c10_y__from_vec_polars_core__datatypes__int32chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __r = <polars_core::datatypes::Int32Chunked>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<i32>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of int) -> Int64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::from_vec)]
+fn f_7963b168_y__from_vec_polars_core__datatypes__int64chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __r = <polars_core::datatypes::Int64Chunked>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(v)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of int) -> Int8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::from_vec)]
+fn f_698a5797_ay__from_vec_polars_core__datatypes__int8chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __r = <polars_core::datatypes::Int8Chunked>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<i8>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of int) -> UInt16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::from_vec)]
+fn f_f549df57___from_vec_polars_core__datatypes__uint16chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u16>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of int) -> IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::from_vec)]
+fn f_400af4bb__from_vec_polars_core__datatypes__aliases__idxca(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __r = <polars_core::datatypes::IdxCa>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u32>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of int) -> UInt64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::from_vec)]
+fn f_6ae50374___from_vec_polars_core__datatypes__uint64chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u64>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// Create a new ChunkedArray by taking ownership of the Vec. This operation is zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of int) -> UInt8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::from_vec)]
+fn f_5012e7cb_y__from_vec_polars_core__datatypes__uint8chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::from_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u8>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: BinaryOffsetChunked, length: int) -> BinaryOffsetChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__BinaryOffsetChunked::full_null_like)]
+fn f_45bb2e7b_like_polars_core__datatypes__binaryoffsetchunked(ca: &W_polars_core__datatypes__BinaryOffsetChunked, length: i64) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BinaryOffsetChunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: BinaryChunked, length: int) -> BinaryChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__BinaryChunked::full_null_like)]
+fn f_a1cfb9fb__null_like_polars_core__datatypes__binarychunked(ca: &W_polars_core__datatypes__BinaryChunked, length: i64) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { let __r = <polars_core::datatypes::BinaryChunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BinaryChunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: BooleanChunked, length: int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__BooleanChunked::full_null_like)]
+fn f_fc9d1711_null_like_polars_core__datatypes__booleanchunked(ca: &W_polars_core__datatypes__BooleanChunked, length: i64) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = <polars_core::datatypes::BooleanChunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: Float32Chunked, length: int) -> Float32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float32Chunked::full_null_like)]
+fn f_c6d3cbcb_null_like_polars_core__datatypes__float32chunked(ca: &W_polars_core__datatypes__Float32Chunked, length: i64) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __r = <polars_core::datatypes::Float32Chunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: Float64Chunked, length: int) -> Float64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float64Chunked::full_null_like)]
+fn f_e41b523c_null_like_polars_core__datatypes__float64chunked(ca: &W_polars_core__datatypes__Float64Chunked, length: i64) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __r = <polars_core::datatypes::Float64Chunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: Int16Chunked, length: int) -> Int16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::full_null_like)]
+fn f_4ec68fae_l_null_like_polars_core__datatypes__int16chunked(ca: &W_polars_core__datatypes__Int16Chunked, length: i64) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __r = <polars_core::datatypes::Int16Chunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: Int32Chunked, length: int) -> Int32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::full_null_like)]
+fn f_1d5f7171_l_null_like_polars_core__datatypes__int32chunked(ca: &W_polars_core__datatypes__Int32Chunked, length: i64) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __r = <polars_core::datatypes::Int32Chunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: Int64Chunked, length: int) -> Int64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::full_null_like)]
+fn f_1561af0a_l_null_like_polars_core__datatypes__int64chunked(ca: &W_polars_core__datatypes__Int64Chunked, length: i64) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __r = <polars_core::datatypes::Int64Chunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: Int8Chunked, length: int) -> Int8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::full_null_like)]
+fn f_2ded2757_ll_null_like_polars_core__datatypes__int8chunked(ca: &W_polars_core__datatypes__Int8Chunked, length: i64) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __r = <polars_core::datatypes::Int8Chunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: ListChunked, length: int) -> ListChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__ListChunked::full_null_like)]
+fn f_7cd101f6_ll_null_like_polars_core__datatypes__listchunked(ca: &W_polars_core__datatypes__ListChunked, length: i64) -> Result<W_polars_core__datatypes__ListChunked, Error> { let __r = <polars_core::datatypes::ListChunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__ListChunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: StringChunked, length: int) -> StringChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__StringChunked::full_null_like)]
+fn f_aa6ea971__null_like_polars_core__datatypes__stringchunked(ca: &W_polars_core__datatypes__StringChunked, length: i64) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __r = <polars_core::datatypes::StringChunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__StringChunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: StructChunked, length: int) -> StructChunked (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__struct___StructChunked::full_null_like)]
+fn f_927e2bb4_lars_core__chunked_array__struct___structchunked(ca: &W_polars_core__chunked_array__struct___StructChunked, length: i64) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __r = <polars::chunked_array::StructChunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__chunked_array__struct___StructChunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: UInt16Chunked, length: int) -> UInt16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::full_null_like)]
+fn f_042f1666__null_like_polars_core__datatypes__uint16chunked(ca: &W_polars_core__datatypes__UInt16Chunked, length: i64) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: IdxCa, length: int) -> IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::full_null_like)]
+fn f_4ad776c2_null_like_polars_core__datatypes__aliases__idxca(ca: &W_polars_core__datatypes__aliases__IdxCa, length: i64) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __r = <polars_core::datatypes::IdxCa>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: UInt64Chunked, length: int) -> UInt64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::full_null_like)]
+fn f_24d36327__null_like_polars_core__datatypes__uint64chunked(ca: &W_polars_core__datatypes__UInt64Chunked, length: i64) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: UInt8Chunked, length: int) -> UInt8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::full_null_like)]
+fn f_554a21ee_l_null_like_polars_core__datatypes__uint8chunked(ca: &W_polars_core__datatypes__UInt8Chunked, length: i64) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::full_null_with_dtype`. full_null_with_dtype(name: string, length: int, inner_dtype: DataType) -> ListChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__ListChunked::full_null_with_dtype)]
+fn f_fc2c3e3e_l_with_dtype_polars_core__datatypes__listchunked(name: &str, length: i64, inner_dtype: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__datatypes__ListChunked, Error> { let __r = <polars_core::datatypes::ListChunked>::full_null_with_dtype(p::PlSmallStr::from(name), support::narrow::<usize>(length, "length")?, &inner_dtype.0); Ok(W_polars_core__datatypes__ListChunked(__r)) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of bool (fallible)
+#[rune::function(instance, path = get)]
+fn f_82004a3f_rray__get_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, idx: i64) -> Result<Option<bool>, Error> { let __r = <polars_core::datatypes::BooleanChunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some(__r), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of float (fallible)
+#[rune::function(instance, path = get)]
+fn f_5f2b513f_rray__get_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, idx: i64) -> Result<Option<f64>, Error> { let __r = <polars_core::datatypes::Float32Chunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some((__r as f64)), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of float (fallible)
+#[rune::function(instance, path = get)]
+fn f_7a7de307_rray__get_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, idx: i64) -> Result<Option<f64>, Error> { let __r = <polars_core::datatypes::Float64Chunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some(__r), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of int (fallible)
+#[rune::function(instance, path = get)]
+fn f_ff54c840_darray__get_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, idx: i64) -> Result<Option<i64>, Error> { let __r = <polars_core::datatypes::Int16Chunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some((__r as i64)), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of int (fallible)
+#[rune::function(instance, path = get)]
+fn f_1e7f980c_darray__get_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, idx: i64) -> Result<Option<i64>, Error> { let __r = <polars_core::datatypes::Int32Chunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some((__r as i64)), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of int (fallible)
+#[rune::function(instance, path = get)]
+fn f_34e92dbc_darray__get_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, idx: i64) -> Result<Option<i64>, Error> { let __r = <polars_core::datatypes::Int64Chunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some(__r), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of int (fallible)
+#[rune::function(instance, path = get)]
+fn f_f97859e5_edarray__get_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, idx: i64) -> Result<Option<i64>, Error> { let __r = <polars_core::datatypes::Int8Chunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some((__r as i64)), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of string (fallible)
+#[rune::function(instance, path = get)]
+fn f_7a91772e_array__get_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, idx: i64) -> Result<Option<String>, Error> { let __r = <polars_core::datatypes::StringChunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some(__r.to_string()), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of int (fallible)
+#[rune::function(instance, path = get)]
+fn f_ff55241d_array__get_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, idx: i64) -> Result<Option<i64>, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some((__r as i64)), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of int (fallible)
+#[rune::function(instance, path = get)]
+fn f_ff752514_rray__get_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, idx: i64) -> Result<Option<i64>, Error> { let __r = <polars_core::datatypes::IdxCa>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some((__r as i64)), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of int (fallible)
+#[rune::function(instance, path = get)]
+fn f_6eb30f7b_array__get_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, idx: i64) -> Result<Option<i64>, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some((__r as i64)), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of int (fallible)
+#[rune::function(instance, path = get)]
+fn f_bdd2a191_darray__get_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, idx: i64) -> Result<Option<i64>, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some((__r as i64)), None => None }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_as_series`. get_as_series(idx: int) -> option of Series (fallible)
+#[rune::function(instance, path = get_as_series)]
+fn f_2e770923_et_as_series_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, idx: i64) -> Result<Option<W_polars_core__series__Series>, Error> { let __arg0 = &this.0; let __arg1 = support::narrow::<usize>(idx, "idx")?; let __r = crate::engine::run(move || <polars_core::datatypes::ListChunked>::get_as_series(__arg0, __arg1)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(W_polars_core__series__Series(__r)), None => None }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_09e34440_list_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> bool { let __r = <polars_core::datatypes::BinaryOffsetChunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_25911abb_plode_list_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> bool { let __r = <polars_core::datatypes::BinaryChunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_478c3676_lode_list_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> bool { let __r = <polars_core::datatypes::BooleanChunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_0742b082_lode_list_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> bool { let __r = <polars_core::datatypes::Float32Chunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_9b4e41e0_lode_list_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> bool { let __r = <polars_core::datatypes::Float64Chunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_e186b330_xplode_list_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> bool { let __r = <polars_core::datatypes::Int16Chunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_d4de08c3_xplode_list_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> bool { let __r = <polars_core::datatypes::Int32Chunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_cc42a0b0_xplode_list_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> bool { let __r = <polars_core::datatypes::Int64Chunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_c4d852e4_explode_list_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> bool { let __r = <polars_core::datatypes::Int8Chunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_e36c3a96_explode_list_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> bool { let __r = <polars_core::datatypes::ListChunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_9198e883_plode_list_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> bool { let __r = <polars_core::datatypes::StringChunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_2d113650_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> bool { let __r = <polars::chunked_array::StructChunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_4a5ec8f5_plode_list_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> bool { let __r = <polars_core::datatypes::UInt16Chunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_b936baa6_lode_list_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> bool { let __r = <polars_core::datatypes::IdxCa>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_11bbd4e4_plode_list_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> bool { let __r = <polars_core::datatypes::UInt64Chunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_fast_explode_list`. get_fast_explode_list() -> bool
+#[rune::function(instance, path = get_fast_explode_list)]
+fn f_6ac53efc_xplode_list_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> bool { let __r = <polars_core::datatypes::UInt8Chunked>::get_fast_explode_list(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_362d7201_lags_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::BinaryOffsetChunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_fe6430a3__get_flags_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::BinaryChunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_2495ea27_get_flags_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::BooleanChunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_71d3b1dc_get_flags_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::Float32Chunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_96067cf4_get_flags_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::Float64Chunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_6364ab35___get_flags_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::Int16Chunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_b6d6e9a2___get_flags_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::Int32Chunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_61e2ec03___get_flags_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::Int64Chunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_b79912a1_y__get_flags_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::Int8Chunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_50133150_y__get_flags_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::ListChunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_a4643a4a__get_flags_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::StringChunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_4381047c_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars::chunked_array::StructChunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_f175562d__get_flags_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::UInt16Chunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_c44d5420_get_flags_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::IdxCa>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_850f082b__get_flags_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::UInt64Chunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_flags`. get_flags() -> StatisticsFlags
+#[rune::function(instance, path = get_flags)]
+fn f_db27657d___get_flags_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = <polars_core::datatypes::UInt8Chunked>::get_flags(&this.0); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// Get the inner values as [`Series`], ignoring the list offsets.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_inner`. get_inner() -> Series
+#[rune::function(instance, path = get_inner)]
+fn f_1205e8af_y__get_inner_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__series__Series { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::datatypes::ListChunked>::get_inner(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_row_encoded`. get_row_encoded(options: SortOptions) -> result of BinaryOffsetChunked (fallible)
+#[rune::function(instance, path = get_row_encoded)]
+fn f_ce768482_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, options: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { let __r = <polars::chunked_array::StructChunked>::get_row_encoded(&this.0, options.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BinaryOffsetChunked(__r) }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_empty_lists`. has_empty_lists() -> bool
+#[rune::function(instance, path = has_empty_lists)]
+fn f_ac9852db__empty_lists_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> bool { let __r = <polars_core::datatypes::ListChunked>::has_empty_lists(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_masked_out_values`. has_masked_out_values() -> bool
+#[rune::function(instance, path = has_masked_out_values)]
+fn f_fa7dd8ca_d_out_values_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> bool { let __r = <polars_core::datatypes::ListChunked>::has_masked_out_values(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_c44fc58e_ulls_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> bool { let __r = <polars_core::datatypes::BinaryOffsetChunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_75b6243e__has_nulls_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> bool { let __r = <polars_core::datatypes::BinaryChunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_1518cc27_has_nulls_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> bool { let __r = <polars_core::datatypes::BooleanChunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_163327bc_has_nulls_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> bool { let __r = <polars_core::datatypes::Float32Chunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_1ef113e6_has_nulls_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> bool { let __r = <polars_core::datatypes::Float64Chunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_1375e483___has_nulls_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> bool { let __r = <polars_core::datatypes::Int16Chunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_e5206abd___has_nulls_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> bool { let __r = <polars_core::datatypes::Int32Chunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_099f0f59___has_nulls_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> bool { let __r = <polars_core::datatypes::Int64Chunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_3458a000_y__has_nulls_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> bool { let __r = <polars_core::datatypes::Int8Chunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_42a34832_y__has_nulls_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> bool { let __r = <polars_core::datatypes::ListChunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_24280866__has_nulls_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> bool { let __r = <polars_core::datatypes::StringChunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_ec8cd8f3_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> bool { let __r = <polars::chunked_array::StructChunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_f9d7ae8c__has_nulls_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> bool { let __r = <polars_core::datatypes::UInt16Chunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_ebc7d520_has_nulls_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> bool { let __r = <polars_core::datatypes::IdxCa>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_4402ae7f__has_nulls_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> bool { let __r = <polars_core::datatypes::UInt64Chunked>::has_nulls(&this.0); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_725e49b4___has_nulls_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> bool { let __r = <polars_core::datatypes::UInt8Chunked>::has_nulls(&this.0); __r }
+/// Get the inner data type of the list.
+/// Polars: `polars_core::chunked_array::ChunkedArray::inner_dtype`. inner_dtype() -> DataType
+#[rune::function(instance, path = inner_dtype)]
+fn f_b4d37819__inner_dtype_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::ListChunked>::inner_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::inner_length`. inner_length() -> int
+#[rune::function(instance, path = inner_length)]
+fn f_108456de_inner_length_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> i64 { let __r = <polars_core::datatypes::ListChunked>::inner_length(&this.0); (__r as i64) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_date`. into_date() -> DateChunked
+#[rune::function(instance, path = into_date)]
+fn f_ecfb1929___into_date_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__chunked_array__logical__date__DateChunked { let __r = <polars_core::datatypes::Int32Chunked>::into_date(this.0.clone()); W_polars_core__chunked_array__logical__date__DateChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_datetime`. into_datetime(timeunit: TimeUnit, tz: option of TimeZone) -> DatetimeChunked (fallible)
+#[rune::function(instance, path = into_datetime)]
+fn f_8f8522cd_to_datetime_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, timeunit: &W_polars_core__datatypes__temporal__time_unit__TimeUnit, tz: Option<rune::Value>) -> Result<W_polars_core__chunked_array__logical__datetime__DatetimeChunked, Error> { let __r = <polars_core::datatypes::Int64Chunked>::into_datetime(this.0.clone(), timeunit.0.clone(), match tz { Some(v) => Some(support::take::<W_polars_core__datatypes__temporal__time_zone__TimeZone>(&v, "v")?.0), None => None }); Ok(W_polars_core__chunked_array__logical__datetime__DatetimeChunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_duration`. into_duration(timeunit: TimeUnit) -> DurationChunked
+#[rune::function(instance, path = into_duration)]
+fn f_0bd32d26_to_duration_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, timeunit: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> W_polars_core__chunked_array__logical__duration__DurationChunked { let __r = <polars_core::datatypes::Int64Chunked>::into_duration(this.0.clone(), timeunit.0.clone()); W_polars_core__chunked_array__logical__duration__DurationChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_time`. into_time() -> TimeChunked
+#[rune::function(instance, path = into_time)]
+fn f_4f5f93f0___into_time_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__chunked_array__logical__time__TimeChunked { let __r = <polars_core::datatypes::Int64Chunked>::into_time(this.0.clone()); W_polars_core__chunked_array__logical__time__TimeChunked(__r) }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_e81f9ac9_mpty_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> bool { let __r = <polars_core::datatypes::BinaryOffsetChunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_55ea070b___is_empty_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> bool { let __r = <polars_core::datatypes::BinaryChunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_3622a491__is_empty_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> bool { let __r = <polars_core::datatypes::BooleanChunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_db374ce8__is_empty_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> bool { let __r = <polars_core::datatypes::Float32Chunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_3a9b87c0__is_empty_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> bool { let __r = <polars_core::datatypes::Float64Chunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_40db4b55_y__is_empty_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> bool { let __r = <polars_core::datatypes::Int16Chunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_60620562_y__is_empty_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> bool { let __r = <polars_core::datatypes::Int32Chunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_a955f1a6_y__is_empty_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> bool { let __r = <polars_core::datatypes::Int64Chunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_1d991c51_ay__is_empty_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> bool { let __r = <polars_core::datatypes::Int8Chunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_2ddb448d_ay__is_empty_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> bool { let __r = <polars_core::datatypes::ListChunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_ea219f0e___is_empty_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> bool { let __r = <polars_core::datatypes::StringChunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_908b167b_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> bool { let __r = <polars::chunked_array::StructChunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_9c0541d5___is_empty_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> bool { let __r = <polars_core::datatypes::UInt16Chunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_4a066c03__is_empty_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> bool { let __r = <polars_core::datatypes::IdxCa>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_a0bcbe06___is_empty_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> bool { let __r = <polars_core::datatypes::UInt64Chunked>::is_empty(&this.0); __r }
+/// Check if ChunkedArray is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_3cf392dd_y__is_empty_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> bool { let __r = <polars_core::datatypes::UInt8Chunked>::is_empty(&this.0); __r }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_52ef558a_null_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BinaryOffsetChunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_079323fb_s_not_null_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BinaryChunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_364d0428__not_null_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BooleanChunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_b97bf1ab__not_null_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float32Chunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_bcbe4f3c__not_null_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float64Chunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_45c36c92_is_not_null_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Int16Chunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_79d99425_is_not_null_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Int32Chunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_5b3d89de_is_not_null_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Int64Chunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_6d4e9be9__is_not_null_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Int8Chunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_e84c3343__is_not_null_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::ListChunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_0c65ee31_s_not_null_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::StringChunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_77c54fdf_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars::chunked_array::StructChunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_16e2ac83_s_not_null_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::UInt16Chunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_050ff827__not_null_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::IdxCa>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_a01920b7_s_not_null_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::UInt64Chunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the valid values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_f761a917_is_not_null_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::UInt8Chunked>::is_not_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_dfc29f5a_null_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BinaryOffsetChunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_c66b638b_y__is_null_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BinaryChunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_25bd6715___is_null_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BooleanChunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_7b95ed61___is_null_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float32Chunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_c5b2fa68___is_null_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float64Chunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_1c3965ae_ay__is_null_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Int16Chunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_3eae1818_ay__is_null_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Int32Chunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_690b0a2a_ay__is_null_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Int64Chunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_7fde54a6_ray__is_null_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Int8Chunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_dbaabd82_ray__is_null_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::ListChunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_fdc83861_y__is_null_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::StringChunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_6d8913db_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars::chunked_array::StructChunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_07f601b0_y__is_null_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::UInt16Chunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_d978ee56___is_null_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::IdxCa>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_238d88f3_y__is_null_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::UInt64Chunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_44428d4c_ay__is_null_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::UInt8Chunked>::is_null(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_eb6a1997_gned_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> bool { let __r = <polars_core::datatypes::BinaryOffsetChunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_c33c72fd_al_aligned_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> bool { let __r = <polars_core::datatypes::BinaryChunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_50b3d9f7_l_aligned_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> bool { let __r = <polars_core::datatypes::BooleanChunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_2d7653cc_l_aligned_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> bool { let __r = <polars_core::datatypes::Float32Chunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_d9f2733e_l_aligned_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> bool { let __r = <polars_core::datatypes::Float64Chunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_7469a202_mal_aligned_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> bool { let __r = <polars_core::datatypes::Int16Chunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_fa5d7d19_mal_aligned_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> bool { let __r = <polars_core::datatypes::Int32Chunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_22461e8d_mal_aligned_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> bool { let __r = <polars_core::datatypes::Int64Chunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_7c12842f_imal_aligned_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> bool { let __r = <polars_core::datatypes::Int8Chunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_f84eec75_imal_aligned_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> bool { let __r = <polars_core::datatypes::ListChunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_d11817cf_al_aligned_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> bool { let __r = <polars_core::datatypes::StringChunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_da752e09_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> bool { let __r = <polars::chunked_array::StructChunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_323b9187_al_aligned_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> bool { let __r = <polars_core::datatypes::UInt16Chunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_f72399ce_l_aligned_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> bool { let __r = <polars_core::datatypes::IdxCa>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_720b29e6_al_aligned_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> bool { let __r = <polars_core::datatypes::UInt64Chunked>::is_optimal_aligned(&this.0); __r }
+/// Returns true if contains a single chunk and has no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_optimal_aligned`. is_optimal_aligned() -> bool
+#[rune::function(instance, path = is_optimal_aligned)]
+fn f_948f8045_mal_aligned_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> bool { let __r = <polars_core::datatypes::UInt8Chunked>::is_optimal_aligned(&this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_44e6d235_flag_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::BinaryOffsetChunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_a575b97c_orted_flag_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::BinaryChunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_d2309555_rted_flag_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::BooleanChunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_1aefda2c_rted_flag_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::Float32Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_9a8313eb_rted_flag_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::Float64Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_a74665e0_sorted_flag_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::Int16Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_f658d716_sorted_flag_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::Int32Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_7854228c_sorted_flag_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::Int64Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_70ee870f__sorted_flag_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::Int8Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_7ea3b121__sorted_flag_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::ListChunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_6696f9ef_orted_flag_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::StringChunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_c3623d24_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars::chunked_array::StructChunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_2774e2bb_orted_flag_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::UInt16Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_21304674_rted_flag_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::IdxCa>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_8981b3e1_orted_flag_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::UInt64Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
+#[rune::function(instance, path = is_sorted_flag)]
+fn f_6a2539a6_sorted_flag_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::UInt8Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of bool
+#[rune::function(instance, path = last)]
+fn f_993b62fc_ray__last_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::last(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of float
+#[rune::function(instance, path = last)]
+fn f_da365613_ray__last_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Option<f64> { let __r = <polars_core::datatypes::Float32Chunked>::last(&this.0); match __r { Some(__r) => Some((__r as f64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of float
+#[rune::function(instance, path = last)]
+fn f_4fe719ad_ray__last_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Option<f64> { let __r = <polars_core::datatypes::Float64Chunked>::last(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of int
+#[rune::function(instance, path = last)]
+fn f_f76b7192_array__last_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int16Chunked>::last(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of int
+#[rune::function(instance, path = last)]
+fn f_a30f0d9a_array__last_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int32Chunked>::last(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of int
+#[rune::function(instance, path = last)]
+fn f_909cf930_array__last_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int64Chunked>::last(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of int
+#[rune::function(instance, path = last)]
+fn f_1fe1261a_darray__last_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int8Chunked>::last(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of string
+#[rune::function(instance, path = last)]
+fn f_7608b785_rray__last_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Option<String> { let __r = <polars_core::datatypes::StringChunked>::last(&this.0); match __r { Some(__r) => Some(__r.to_string()), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of int
+#[rune::function(instance, path = last)]
+fn f_a1ca2d91_rray__last_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt16Chunked>::last(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of int
+#[rune::function(instance, path = last)]
+fn f_c341d188_ray__last_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Option<i64> { let __r = <polars_core::datatypes::IdxCa>::last(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of int
+#[rune::function(instance, path = last)]
+fn f_91613d77_rray__last_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt64Chunked>::last(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of int
+#[rune::function(instance, path = last)]
+fn f_f154aacf_array__last_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt8Chunked>::last(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_d63eb2f9_null_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Option<i64> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_262a22f8_t_non_null_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Option<i64> { let __r = <polars_core::datatypes::BinaryChunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_a674df68__non_null_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_4967623d__non_null_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Float32Chunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_d924be8e__non_null_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Float64Chunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_8dda26e5_st_non_null_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int16Chunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_6451b040_st_non_null_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int32Chunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_63ba4e0a_st_non_null_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int64Chunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_f837432c_ast_non_null_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::Int8Chunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_d8d0b899_ast_non_null_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> Option<i64> { let __r = <polars_core::datatypes::ListChunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_37f57103_t_non_null_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Option<i64> { let __r = <polars_core::datatypes::StringChunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_0fe04c9d_t_non_null_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt16Chunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_cf66e647__non_null_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Option<i64> { let __r = <polars_core::datatypes::IdxCa>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_88b33383_t_non_null_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt64Chunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the index of the last non null value in this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int
+#[rune::function(instance, path = last_non_null)]
+fn f_b2bd4cd3_st_non_null_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Option<i64> { let __r = <polars_core::datatypes::UInt8Chunked>::last_non_null(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_4383c850__len_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> i64 { let __r = <polars_core::datatypes::BinaryOffsetChunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_ee83bda7_array__len_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> i64 { let __r = <polars_core::datatypes::BinaryChunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_238cd0a9_rray__len_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> i64 { let __r = <polars_core::datatypes::BooleanChunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_3bbc5822_rray__len_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> i64 { let __r = <polars_core::datatypes::Float32Chunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_71c3dea3_rray__len_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> i64 { let __r = <polars_core::datatypes::Float64Chunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_9a0b5d5c_darray__len_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> i64 { let __r = <polars_core::datatypes::Int16Chunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_affd9b11_darray__len_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> i64 { let __r = <polars_core::datatypes::Int32Chunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_75da2dc9_darray__len_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> i64 { let __r = <polars_core::datatypes::Int64Chunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_0d2b7d61_edarray__len_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> i64 { let __r = <polars_core::datatypes::Int8Chunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_f4b3b377_edarray__len_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> i64 { let __r = <polars_core::datatypes::ListChunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_a0a694ef_array__len_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> i64 { let __r = <polars_core::datatypes::StringChunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_87fe29d8_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> i64 { let __r = <polars::chunked_array::StructChunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_ece4611d_array__len_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> i64 { let __r = <polars_core::datatypes::UInt16Chunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_cc18c7c5_rray__len_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> i64 { let __r = <polars_core::datatypes::IdxCa>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_4cc5601e_array__len_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> i64 { let __r = <polars_core::datatypes::UInt64Chunked>::len(&this.0); (__r as i64) }
+/// Get the length of the ChunkedArray
+/// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_d2de4892_darray__len_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> i64 { let __r = <polars_core::datatypes::UInt8Chunked>::len(&this.0); (__r as i64) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::max`. max() -> option of bool
+#[rune::function(instance, path = max)]
+fn f_b3d21805_rray__max_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::max(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::mean`. mean() -> option of float
+#[rune::function(instance, path = mean)]
+fn f_6988d52c_ray__mean_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<f64> { let __r = <polars_core::datatypes::BooleanChunked>::mean(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::min`. min() -> option of bool
+#[rune::function(instance, path = min)]
+fn f_d23720e6_rray__min_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::min(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_9dd410a2_name_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> String { let __r = <polars_core::datatypes::BinaryOffsetChunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_bdd0a872_rray__name_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> String { let __r = <polars_core::datatypes::BinaryChunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_40b25a00_ray__name_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> String { let __r = <polars_core::datatypes::BooleanChunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_3e9743cf_ray__name_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> String { let __r = <polars_core::datatypes::Float32Chunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_24520be7_ray__name_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> String { let __r = <polars_core::datatypes::Float64Chunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_f934f77c_array__name_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> String { let __r = <polars_core::datatypes::Int16Chunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_3d1ed6a7_array__name_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> String { let __r = <polars_core::datatypes::Int32Chunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_1a860924_array__name_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> String { let __r = <polars_core::datatypes::Int64Chunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_e3ebd2ab_darray__name_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> String { let __r = <polars_core::datatypes::Int8Chunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_c2aa33e9_darray__name_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> String { let __r = <polars_core::datatypes::ListChunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_885cc702_rray__name_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> String { let __r = <polars_core::datatypes::StringChunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_4a9e1563_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> String { let __r = <polars::chunked_array::StructChunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_8e5db942_rray__name_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> String { let __r = <polars_core::datatypes::UInt16Chunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_f6943bd9_ray__name_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> String { let __r = <polars_core::datatypes::IdxCa>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_50ca6739_rray__name_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> String { let __r = <polars_core::datatypes::UInt64Chunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of the [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_9f62a4a7_array__name_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> String { let __r = <polars_core::datatypes::UInt8Chunked>::name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of float) -> Float32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float32Chunked::new_vec)]
+fn f_934f3493___new_vec_polars_core__datatypes__float32chunked(name: &str, v: Vec<f64>) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __r = <polars_core::datatypes::Float32Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>((v as f32))).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of float) -> Float64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float64Chunked::new_vec)]
+fn f_24b8f25e___new_vec_polars_core__datatypes__float64chunked(name: &str, v: Vec<f64>) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __r = <polars_core::datatypes::Float64Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(v)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> Int16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::new_vec)]
+fn f_b3a55ff2_ay__new_vec_polars_core__datatypes__int16chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __r = <polars_core::datatypes::Int16Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<i16>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> Int32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::new_vec)]
+fn f_60728cf1_ay__new_vec_polars_core__datatypes__int32chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __r = <polars_core::datatypes::Int32Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<i32>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> Int64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::new_vec)]
+fn f_a78d61fe_ay__new_vec_polars_core__datatypes__int64chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __r = <polars_core::datatypes::Int64Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(v)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> Int8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::new_vec)]
+fn f_cabd8bb0_ray__new_vec_polars_core__datatypes__int8chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __r = <polars_core::datatypes::Int8Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<i8>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> UInt16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::new_vec)]
+fn f_cc5f0c7f_y__new_vec_polars_core__datatypes__uint16chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u16>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::new_vec)]
+fn f_5f88be6f___new_vec_polars_core__datatypes__aliases__idxca(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __r = <polars_core::datatypes::IdxCa>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u32>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> UInt64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::new_vec)]
+fn f_a642e907_y__new_vec_polars_core__datatypes__uint64chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u64>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// Specialization that prevents an allocation prefer this over ChunkedArray::new when you have a `Vec<T::Native>` and no null values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> UInt8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::new_vec)]
+fn f_c323b7fc_ay__new_vec_polars_core__datatypes__uint8chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u8>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_7d14d47b_ount_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> i64 { let __r = <polars_core::datatypes::BinaryOffsetChunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_dc1963e9_null_count_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> i64 { let __r = <polars_core::datatypes::BinaryChunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_680f49a3_ull_count_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> i64 { let __r = <polars_core::datatypes::BooleanChunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_5033b955_ull_count_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> i64 { let __r = <polars_core::datatypes::Float32Chunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_7694943e_ull_count_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> i64 { let __r = <polars_core::datatypes::Float64Chunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_46894b66__null_count_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> i64 { let __r = <polars_core::datatypes::Int16Chunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_dff8073e__null_count_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> i64 { let __r = <polars_core::datatypes::Int32Chunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_e42d1c76__null_count_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> i64 { let __r = <polars_core::datatypes::Int64Chunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_d9196994___null_count_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> i64 { let __r = <polars_core::datatypes::Int8Chunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_aaadc779___null_count_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> i64 { let __r = <polars_core::datatypes::ListChunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_56691913_null_count_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> i64 { let __r = <polars_core::datatypes::StringChunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_25f189cd_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> i64 { let __r = <polars::chunked_array::StructChunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_8804f1dc_null_count_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> i64 { let __r = <polars_core::datatypes::UInt16Chunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_1600d182_ull_count_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> i64 { let __r = <polars_core::datatypes::IdxCa>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_bda22d01_null_count_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> i64 { let __r = <polars_core::datatypes::UInt64Chunked>::null_count(&this.0); (__r as i64) }
+/// Return the number of null values in the ChunkedArray.
+/// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_9b127f52__null_count_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> i64 { let __r = <polars_core::datatypes::UInt8Chunked>::null_count(&this.0); (__r as i64) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::num_falses`. num_falses() -> int
+#[rune::function(instance, path = num_falses)]
+fn f_f3c912d3_um_falses_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> i64 { let __r = <polars_core::datatypes::BooleanChunked>::num_falses(&this.0); (__r as i64) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::num_trues`. num_trues() -> int
+#[rune::function(instance, path = num_trues)]
+fn f_3c8f850e_num_trues_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> i64 { let __r = <polars_core::datatypes::BooleanChunked>::num_trues(&this.0); (__r as i64) }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_e7dc8743_unks_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked) -> () { let __r = <polars_core::datatypes::BinaryOffsetChunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_e6b900a5_pty_chunks_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked) -> () { let __r = <polars_core::datatypes::BinaryChunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_bd478cdd_ty_chunks_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked) -> () { let __r = <polars_core::datatypes::BooleanChunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_4f1e71c3_ty_chunks_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked) -> () { let __r = <polars_core::datatypes::Float32Chunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_2098cca3_ty_chunks_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked) -> () { let __r = <polars_core::datatypes::Float64Chunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_d7429bcf_mpty_chunks_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked) -> () { let __r = <polars_core::datatypes::Int16Chunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_1fdd0ddd_mpty_chunks_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked) -> () { let __r = <polars_core::datatypes::Int32Chunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_9fa7bc35_mpty_chunks_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked) -> () { let __r = <polars_core::datatypes::Int64Chunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_cd3946dc_empty_chunks_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked) -> () { let __r = <polars_core::datatypes::Int8Chunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_0864165a_empty_chunks_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked) -> () { let __r = <polars_core::datatypes::ListChunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_94c57fff_pty_chunks_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked) -> () { let __r = <polars_core::datatypes::StringChunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_6344cf22_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked) -> () { let __r = <polars::chunked_array::StructChunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_bea9c0fd_pty_chunks_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked) -> () { let __r = <polars_core::datatypes::UInt16Chunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_d3019f5d_ty_chunks_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa) -> () { let __r = <polars_core::datatypes::IdxCa>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_8102d4be_pty_chunks_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked) -> () { let __r = <polars_core::datatypes::UInt64Chunked>::prune_empty_chunks(&mut this.0); __r }
+/// Remove empty chunks.
+/// Polars: `polars_core::chunked_array::ChunkedArray::prune_empty_chunks`. prune_empty_chunks() -> unit
+#[rune::function(instance, path = prune_empty_chunks)]
+fn f_140b2f46_mpty_chunks_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked) -> () { let __r = <polars_core::datatypes::UInt8Chunked>::prune_empty_chunks(&mut this.0); __r }
+/// Create [`ChunkedArray`] with samples from a Bernoulli distribution.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rand_bernoulli`. rand_bernoulli(name: string, length: int, p: float) -> result of BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__BooleanChunked::rand_bernoulli)]
+fn f_89524280_bernoulli_polars_core__datatypes__booleanchunked(name: &str, length: i64, p: f64) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = <polars_core::datatypes::BooleanChunked>::rand_bernoulli(p::PlSmallStr::from(name), support::narrow::<usize>(length, "length")?, p); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BooleanChunked(__r) }) }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_611e73b2__mut_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::BinaryOffsetChunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_56db4fc9_echunk_mut_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::BinaryChunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_ec5e5374_chunk_mut_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::BooleanChunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_c131b1d9_chunk_mut_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::Float32Chunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_0ec47904_chunk_mut_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::Float64Chunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_127ae651_rechunk_mut_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::Int16Chunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_6c189b97_rechunk_mut_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::Int32Chunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_a49856c4_rechunk_mut_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::Int64Chunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_ea918d95__rechunk_mut_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::Int8Chunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_33d27717__rechunk_mut_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::ListChunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_d5823983_echunk_mut_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::StringChunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_e68a5dee_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars::chunked_array::StructChunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_802f681d_echunk_mut_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::UInt16Chunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_12f6c4fe_chunk_mut_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::IdxCa>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_5ed52617_echunk_mut_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::UInt64Chunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Rechunks this ChunkedArray in-place.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
+#[rune::function(instance, path = rechunk_mut)]
+fn f_499e300c_rechunk_mut_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::run(move || <polars_core::datatypes::UInt8Chunked>::rechunk_mut(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_1e89cafd_ield_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::BinaryOffsetChunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_93b03741__ref_field_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::BinaryChunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_32feb96a_ref_field_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::BooleanChunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_f1ea39a9_ref_field_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::Float32Chunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_9b436403_ref_field_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::Float64Chunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_f5492b08___ref_field_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::Int16Chunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_49b5da23___ref_field_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::Int32Chunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_e6f4aaca___ref_field_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::Int64Chunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_9e73eca6_y__ref_field_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::Int8Chunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_fa63ff83_y__ref_field_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::ListChunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_79375322__ref_field_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::StringChunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_c50542ba_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::StructChunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_8716713a__ref_field_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::UInt16Chunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_f8e13f21_ref_field_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::IdxCa>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_942ccd12__ref_field_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::UInt64Chunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Get a reference to the field.
+/// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
+#[rune::function(instance, path = ref_field)]
+fn f_f834c959___ref_field_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__datatypes__field__Field { let __r = <polars_core::datatypes::UInt8Chunked>::ref_field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_652f504c_name_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked, name: &str) -> () { let __r = <polars_core::datatypes::BinaryOffsetChunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_cc934501_ay__rename_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked, name: &str) -> () { let __r = <polars_core::datatypes::BinaryChunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_e355bf6f_y__rename_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked, name: &str) -> () { let __r = <polars_core::datatypes::BooleanChunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_824368bc_y__rename_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked, name: &str) -> () { let __r = <polars_core::datatypes::Float32Chunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_23865d43_y__rename_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked, name: &str) -> () { let __r = <polars_core::datatypes::Float64Chunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_87ea5893_ray__rename_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked, name: &str) -> () { let __r = <polars_core::datatypes::Int16Chunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_440eaa56_ray__rename_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked, name: &str) -> () { let __r = <polars_core::datatypes::Int32Chunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_758089bb_ray__rename_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked, name: &str) -> () { let __r = <polars_core::datatypes::Int64Chunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_62ef5cf4_rray__rename_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked, name: &str) -> () { let __r = <polars_core::datatypes::Int8Chunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_6f47269f_rray__rename_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked, name: &str) -> () { let __r = <polars_core::datatypes::ListChunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_dc0d0840_ay__rename_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked, name: &str) -> () { let __r = <polars_core::datatypes::StringChunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_060c6927_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked, name: &str) -> () { let __r = <polars::chunked_array::StructChunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_116869ae_ay__rename_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked, name: &str) -> () { let __r = <polars_core::datatypes::UInt16Chunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_4e276451_y__rename_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa, name: &str) -> () { let __r = <polars_core::datatypes::IdxCa>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_b436be5e_ay__rename_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked, name: &str) -> () { let __r = <polars_core::datatypes::UInt64Chunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// Rename this [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::rename`. rename(name: string) -> unit
+#[rune::function(instance, path = rename)]
+fn f_d07b1504_ray__rename_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked, name: &str) -> () { let __r = <polars_core::datatypes::UInt8Chunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::row_decode_ordered`. row_decode_ordered(fields: vector of Field, descending: vector of bool, nulls_last: vector of bool) -> result of StructChunked (fallible)
+#[rune::function(instance, path = row_decode_ordered)]
+fn f_b3adb3bc_ered_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, fields: Vec<rune::Value>, descending: Vec<bool>, nulls_last: Vec<bool>) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __t0 = fields.into_iter().map(|v| Ok::<_, Error>(support::take::<W_polars_core__datatypes__field__Field>(&v, "v")?.0)).collect::<Result<Vec<_>, Error>>()?; let __t1 = descending.into_iter().map(|v| Ok::<_, Error>(v)).collect::<Result<Vec<_>, Error>>()?; let __t2 = nulls_last.into_iter().map(|v| Ok::<_, Error>(v)).collect::<Result<Vec<_>, Error>>()?; let __r = <polars_core::datatypes::BinaryOffsetChunked>::row_decode_ordered(&this.0, &__t0[..], &__t1[..], &__t2[..]); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__chunked_array__struct___StructChunked(__r) }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::row_decode_unordered`. row_decode_unordered(fields: vector of Field) -> result of StructChunked (fallible)
+#[rune::function(instance, path = row_decode_unordered)]
+fn f_c96ca912_ered_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, fields: Vec<rune::Value>) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __t0 = fields.into_iter().map(|v| Ok::<_, Error>(support::take::<W_polars_core__datatypes__field__Field>(&v, "v")?.0)).collect::<Result<Vec<_>, Error>>()?; let __r = <polars_core::datatypes::BinaryOffsetChunked>::row_decode_unordered(&this.0, &__t0[..]); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__chunked_array__struct___StructChunked(__r) }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode`. set_fast_explode() -> unit
+#[rune::function(instance, path = set_fast_explode)]
+fn f_993c040d_fast_explode_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked) -> () { let __r = <polars_core::datatypes::ListChunked>::set_fast_explode(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_91dcee93_list_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked, value: bool) -> () { let __r = <polars_core::datatypes::BinaryOffsetChunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_275ea9e4_plode_list_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked, value: bool) -> () { let __r = <polars_core::datatypes::BinaryChunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_5a9eab84_lode_list_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked, value: bool) -> () { let __r = <polars_core::datatypes::BooleanChunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_c8f82a50_lode_list_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked, value: bool) -> () { let __r = <polars_core::datatypes::Float32Chunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_3e42fe3d_lode_list_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked, value: bool) -> () { let __r = <polars_core::datatypes::Float64Chunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_999b89e4_xplode_list_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked, value: bool) -> () { let __r = <polars_core::datatypes::Int16Chunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_b9d24ff1_xplode_list_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked, value: bool) -> () { let __r = <polars_core::datatypes::Int32Chunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_b53e525e_xplode_list_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked, value: bool) -> () { let __r = <polars_core::datatypes::Int64Chunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_1b1a9fa5_explode_list_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked, value: bool) -> () { let __r = <polars_core::datatypes::Int8Chunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_f75aec34_explode_list_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked, value: bool) -> () { let __r = <polars_core::datatypes::ListChunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_5d1e0c37_plode_list_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked, value: bool) -> () { let __r = <polars_core::datatypes::StringChunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_93ff196c_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked, value: bool) -> () { let __r = <polars::chunked_array::StructChunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_9e274684_plode_list_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked, value: bool) -> () { let __r = <polars_core::datatypes::UInt16Chunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_5f2b7152_lode_list_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa, value: bool) -> () { let __r = <polars_core::datatypes::IdxCa>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_2785beff_plode_list_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked, value: bool) -> () { let __r = <polars_core::datatypes::UInt64Chunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode_list`. set_fast_explode_list(value: bool) -> unit
+#[rune::function(instance, path = set_fast_explode_list)]
+fn f_f42a2054_xplode_list_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked, value: bool) -> () { let __r = <polars_core::datatypes::UInt8Chunked>::set_fast_explode_list(&mut this.0, value); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_aa33ffa6_lags_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::BinaryOffsetChunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_830c5e2d__set_flags_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::BinaryChunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_62b3c864_set_flags_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::BooleanChunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_109c6240_set_flags_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::Float32Chunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_25e9a4c8_set_flags_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::Float64Chunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_4da5454f___set_flags_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::Int16Chunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_b35bf015___set_flags_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::Int32Chunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_e4d4b5c7___set_flags_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::Int64Chunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_26781ce3_y__set_flags_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::Int8Chunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_a1a6cf50_y__set_flags_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::ListChunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_05ea0bf8__set_flags_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::StringChunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_77b0f4d9_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars::chunked_array::StructChunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_c6b1dee0__set_flags_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::UInt16Chunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_9e4d538c_set_flags_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::IdxCa>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_251e0857__set_flags_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::UInt64Chunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// Set flags for the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_flags`. set_flags(flags: StatisticsFlags) -> unit
+#[rune::function(instance, path = set_flags)]
+fn f_9f6ef786___set_flags_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked, flags: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars_core::datatypes::UInt8Chunked>::set_flags(&mut this.0, flags.0.clone()); __r }
+/// # Panics Panics if the physical representation of `dtype` differs the physical representation of the existing inner `dtype`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_inner_dtype`. set_inner_dtype(dtype: DataType) -> unit
+#[rune::function(instance, path = set_inner_dtype)]
+fn f_c369b728__inner_dtype_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked, dtype: &W_polars_core__datatypes__dtype__DataType) -> () { let __r = <polars_core::datatypes::ListChunked>::set_inner_dtype(&mut this.0, dtype.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_fedfb5b2_flag_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::BinaryOffsetChunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_aa77faec_orted_flag_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::BinaryChunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_3cf10926_rted_flag_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::BooleanChunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_e17ee5e0_rted_flag_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::Float32Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_70a25b96_rted_flag_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::Float64Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_493959ae_sorted_flag_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::Int16Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_f3ff649f_sorted_flag_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::Int32Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_8981fd49_sorted_flag_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::Int64Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_e85fa438__sorted_flag_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::Int8Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_15fd9c19__sorted_flag_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::ListChunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_6de95b16_orted_flag_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::StringChunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_b30f814e_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars::chunked_array::StructChunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_09cc7f81_orted_flag_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::UInt16Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_59e84479_rted_flag_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::IdxCa>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_6fedd6e6_orted_flag_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::UInt64Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
+#[rune::function(instance, path = set_sorted_flag)]
+fn f_e36b20d8_sorted_flag_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::UInt8Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_eda00a8d__fit_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked) -> () { let __r = <polars_core::datatypes::BinaryOffsetChunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_d820f5f7_ink_to_fit_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked) -> () { let __r = <polars_core::datatypes::BinaryChunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_aa269f5f_nk_to_fit_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked) -> () { let __r = <polars_core::datatypes::BooleanChunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_0805207f_nk_to_fit_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked) -> () { let __r = <polars_core::datatypes::Float32Chunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_cbe5ebd1_nk_to_fit_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked) -> () { let __r = <polars_core::datatypes::Float64Chunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_6f77353f_rink_to_fit_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked) -> () { let __r = <polars_core::datatypes::Int16Chunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_6efb698c_rink_to_fit_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked) -> () { let __r = <polars_core::datatypes::Int32Chunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_b476aafe_rink_to_fit_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked) -> () { let __r = <polars_core::datatypes::Int64Chunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_e675f837_hrink_to_fit_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked) -> () { let __r = <polars_core::datatypes::Int8Chunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_a5428aea_hrink_to_fit_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked) -> () { let __r = <polars_core::datatypes::ListChunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_4b86eaec_ink_to_fit_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked) -> () { let __r = <polars_core::datatypes::StringChunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_f4a9d1d8_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked) -> () { let __r = <polars::chunked_array::StructChunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_a7b0f80d_ink_to_fit_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked) -> () { let __r = <polars_core::datatypes::UInt16Chunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_c264a387_nk_to_fit_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa) -> () { let __r = <polars_core::datatypes::IdxCa>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_63ca92fa_ink_to_fit_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked) -> () { let __r = <polars_core::datatypes::UInt64Chunked>::shrink_to_fit(&mut this.0); __r }
+/// Shrink the capacity of this array to fit its length.
+/// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
+#[rune::function(instance, path = shrink_to_fit)]
+fn f_70dd11b2_rink_to_fit_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked) -> () { let __r = <polars_core::datatypes::UInt8Chunked>::shrink_to_fit(&mut this.0); __r }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> BinaryOffsetChunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_ce6c3f82_lice_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BinaryOffsetChunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> BinaryChunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_7a2eaa89_ray__slice_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { let __r = <polars_core::datatypes::BinaryChunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BinaryChunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> BooleanChunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_c04480fa_ay__slice_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = <polars_core::datatypes::BooleanChunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> Float32Chunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_e1184d9a_ay__slice_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __r = <polars_core::datatypes::Float32Chunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> Float64Chunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_8fc442cd_ay__slice_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __r = <polars_core::datatypes::Float64Chunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> Int16Chunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_b4b00cc2_rray__slice_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __r = <polars_core::datatypes::Int16Chunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> Int32Chunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_d9082bf6_rray__slice_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __r = <polars_core::datatypes::Int32Chunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> Int64Chunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_f3c74869_rray__slice_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __r = <polars_core::datatypes::Int64Chunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> Int8Chunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_b3f2dae2_array__slice_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __r = <polars_core::datatypes::Int8Chunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> ListChunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_ae4bbc4e_array__slice_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__ListChunked, Error> { let __r = <polars_core::datatypes::ListChunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__ListChunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> StringChunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_51f6e506_ray__slice_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __r = <polars_core::datatypes::StringChunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__StringChunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> StructChunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_f8a12f79_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, offset: i64, length: i64) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __r = <polars::chunked_array::StructChunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__chunked_array__struct___StructChunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> UInt16Chunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_6551fb95_ray__slice_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> IdxCa (fallible)
+#[rune::function(instance, path = slice)]
+fn f_36e66c75_ay__slice_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, offset: i64, length: i64) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __r = <polars_core::datatypes::IdxCa>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> UInt64Chunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_7ab6a7aa_ray__slice_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// Slice the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::slice`. slice(offset: int, length: int) -> UInt8Chunked (fallible)
+#[rune::function(instance, path = slice)]
+fn f_47b12aa8_rray__slice_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, offset: i64, length: i64) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::slice(&this.0, offset, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of BinaryOffsetChunked, BinaryOffsetChunked
+#[rune::function(instance, path = split_at)]
+fn f_1505ee52_t_at_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, offset: i64) -> (W_polars_core__datatypes__BinaryOffsetChunked, W_polars_core__datatypes__BinaryOffsetChunked) { let __r = <polars_core::datatypes::BinaryOffsetChunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__BinaryOffsetChunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__BinaryOffsetChunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of BinaryChunked, BinaryChunked
+#[rune::function(instance, path = split_at)]
+fn f_d943a7ff___split_at_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, offset: i64) -> (W_polars_core__datatypes__BinaryChunked, W_polars_core__datatypes__BinaryChunked) { let __r = <polars_core::datatypes::BinaryChunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__BinaryChunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__BinaryChunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of BooleanChunked, BooleanChunked
+#[rune::function(instance, path = split_at)]
+fn f_7a0443f3__split_at_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, offset: i64) -> (W_polars_core__datatypes__BooleanChunked, W_polars_core__datatypes__BooleanChunked) { let __r = <polars_core::datatypes::BooleanChunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__BooleanChunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__BooleanChunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of Float32Chunked, Float32Chunked
+#[rune::function(instance, path = split_at)]
+fn f_5cf04692__split_at_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, offset: i64) -> (W_polars_core__datatypes__Float32Chunked, W_polars_core__datatypes__Float32Chunked) { let __r = <polars_core::datatypes::Float32Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__Float32Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__Float32Chunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of Float64Chunked, Float64Chunked
+#[rune::function(instance, path = split_at)]
+fn f_af352d6d__split_at_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, offset: i64) -> (W_polars_core__datatypes__Float64Chunked, W_polars_core__datatypes__Float64Chunked) { let __r = <polars_core::datatypes::Float64Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__Float64Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__Float64Chunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of Int16Chunked, Int16Chunked
+#[rune::function(instance, path = split_at)]
+fn f_63bf394f_y__split_at_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, offset: i64) -> (W_polars_core__datatypes__Int16Chunked, W_polars_core__datatypes__Int16Chunked) { let __r = <polars_core::datatypes::Int16Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__Int16Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__Int16Chunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of Int32Chunked, Int32Chunked
+#[rune::function(instance, path = split_at)]
+fn f_25483a31_y__split_at_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, offset: i64) -> (W_polars_core__datatypes__Int32Chunked, W_polars_core__datatypes__Int32Chunked) { let __r = <polars_core::datatypes::Int32Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__Int32Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__Int32Chunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of Int64Chunked, Int64Chunked
+#[rune::function(instance, path = split_at)]
+fn f_3ea2c659_y__split_at_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, offset: i64) -> (W_polars_core__datatypes__Int64Chunked, W_polars_core__datatypes__Int64Chunked) { let __r = <polars_core::datatypes::Int64Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__Int64Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__Int64Chunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of Int8Chunked, Int8Chunked
+#[rune::function(instance, path = split_at)]
+fn f_e1415c57_ay__split_at_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, offset: i64) -> (W_polars_core__datatypes__Int8Chunked, W_polars_core__datatypes__Int8Chunked) { let __r = <polars_core::datatypes::Int8Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__Int8Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__Int8Chunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of ListChunked, ListChunked
+#[rune::function(instance, path = split_at)]
+fn f_f4c7d202_ay__split_at_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, offset: i64) -> (W_polars_core__datatypes__ListChunked, W_polars_core__datatypes__ListChunked) { let __r = <polars_core::datatypes::ListChunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__ListChunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__ListChunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of StringChunked, StringChunked
+#[rune::function(instance, path = split_at)]
+fn f_bbe3b336___split_at_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, offset: i64) -> (W_polars_core__datatypes__StringChunked, W_polars_core__datatypes__StringChunked) { let __r = <polars_core::datatypes::StringChunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__StringChunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__StringChunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of StructChunked, StructChunked
+#[rune::function(instance, path = split_at)]
+fn f_d290fd0a_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, offset: i64) -> (W_polars_core__chunked_array__struct___StructChunked, W_polars_core__chunked_array__struct___StructChunked) { let __r = <polars::chunked_array::StructChunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__chunked_array__struct___StructChunked(__r) }, { let __r = __t.1; W_polars_core__chunked_array__struct___StructChunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of UInt16Chunked, UInt16Chunked
+#[rune::function(instance, path = split_at)]
+fn f_2feb3417___split_at_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, offset: i64) -> (W_polars_core__datatypes__UInt16Chunked, W_polars_core__datatypes__UInt16Chunked) { let __r = <polars_core::datatypes::UInt16Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__UInt16Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__UInt16Chunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of IdxCa, IdxCa
+#[rune::function(instance, path = split_at)]
+fn f_aeb815d5__split_at_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, offset: i64) -> (W_polars_core__datatypes__aliases__IdxCa, W_polars_core__datatypes__aliases__IdxCa) { let __r = <polars_core::datatypes::IdxCa>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__aliases__IdxCa(__r) }, { let __r = __t.1; W_polars_core__datatypes__aliases__IdxCa(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of UInt64Chunked, UInt64Chunked
+#[rune::function(instance, path = split_at)]
+fn f_33f2eb4c___split_at_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, offset: i64) -> (W_polars_core__datatypes__UInt64Chunked, W_polars_core__datatypes__UInt64Chunked) { let __r = <polars_core::datatypes::UInt64Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__UInt64Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__UInt64Chunked(__r) }) } }
+/// Split the array. The chunks are reallocated the underlying data slices are zero copy.
+/// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of UInt8Chunked, UInt8Chunked
+#[rune::function(instance, path = split_at)]
+fn f_bd0d16bd_y__split_at_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, offset: i64) -> (W_polars_core__datatypes__UInt8Chunked, W_polars_core__datatypes__UInt8Chunked) { let __r = <polars_core::datatypes::UInt8Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__UInt8Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__UInt8Chunked(__r) }) } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::sum`. sum() -> option of int
+#[rune::function(instance, path = sum)]
+fn f_c93b6cdd_rray__sum_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::sum(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of float
+#[rune::function(instance, path = to_vec)]
+fn f_34949b18_y__to_vec_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Vec<Option<f64>> { let __r = <polars_core::datatypes::Float32Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some((__r as f64)), None => None }); } __v } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of float
+#[rune::function(instance, path = to_vec)]
+fn f_8d8f65f2_y__to_vec_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Vec<Option<f64>> { let __r = <polars_core::datatypes::Float64Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some(__r), None => None }); } __v } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of int
+#[rune::function(instance, path = to_vec)]
+fn f_c3fb8102_ray__to_vec_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Vec<Option<i64>> { let __r = <polars_core::datatypes::Int16Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some((__r as i64)), None => None }); } __v } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of int
+#[rune::function(instance, path = to_vec)]
+fn f_452b307c_ray__to_vec_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Vec<Option<i64>> { let __r = <polars_core::datatypes::Int32Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some((__r as i64)), None => None }); } __v } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of int
+#[rune::function(instance, path = to_vec)]
+fn f_4e711c15_ray__to_vec_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Vec<Option<i64>> { let __r = <polars_core::datatypes::Int64Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some(__r), None => None }); } __v } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of int
+#[rune::function(instance, path = to_vec)]
+fn f_a04062c4_rray__to_vec_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Vec<Option<i64>> { let __r = <polars_core::datatypes::Int8Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some((__r as i64)), None => None }); } __v } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of int
+#[rune::function(instance, path = to_vec)]
+fn f_7cba491e_ay__to_vec_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Vec<Option<i64>> { let __r = <polars_core::datatypes::UInt16Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some((__r as i64)), None => None }); } __v } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of int
+#[rune::function(instance, path = to_vec)]
+fn f_4e24be5f_y__to_vec_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Vec<Option<i64>> { let __r = <polars_core::datatypes::IdxCa>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some((__r as i64)), None => None }); } __v } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of int
+#[rune::function(instance, path = to_vec)]
+fn f_d6238444_ay__to_vec_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Vec<Option<i64>> { let __r = <polars_core::datatypes::UInt64Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some((__r as i64)), None => None }); } __v } }
+/// Convert to a [`Vec`] of [`Option<T::Native>`].
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of int
+#[rune::function(instance, path = to_vec)]
+fn f_8d29dc80_ray__to_vec_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Vec<Option<i64>> { let __r = <polars_core::datatypes::UInt8Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some((__r as i64)), None => None }); } __v } }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unnest`. unnest() -> DataFrame
+#[rune::function(instance, path = unnest)]
+fn f_dde81979_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> DataFrame { let __arg0 = this.0.clone(); let __r = crate::engine::run(move || <polars::chunked_array::StructChunked>::unnest(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); DataFrame(__r) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of BinaryOffsetChunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_93362f13_type_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::BinaryOffsetChunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__BinaryOffsetChunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of BinaryChunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_626e4ed9_ching_type_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::BinaryChunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__BinaryChunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of BooleanChunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_91a9be8c_hing_type_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::BooleanChunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__BooleanChunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of Float32Chunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_f98ada41_hing_type_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::Float32Chunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__Float32Chunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of Float64Chunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_d13248bb_hing_type_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::Float64Chunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__Float64Chunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of Int16Chunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_4991c43e_tching_type_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::Int16Chunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__Int16Chunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of Int32Chunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_9b8671e1_tching_type_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::Int32Chunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__Int32Chunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of Int64Chunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_9b10179a_tching_type_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::Int64Chunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__Int64Chunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of Int8Chunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_e5c51b50_atching_type_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::Int8Chunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__Int8Chunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of ListChunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_92bd22f1_atching_type_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__ListChunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::ListChunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__ListChunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of StringChunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_fa8c7697_ching_type_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::StringChunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__StringChunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of StructChunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_d8350108_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars::chunked_array::StructChunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__chunked_array__struct___StructChunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of UInt16Chunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_cccf7a48_ching_type_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::UInt16Chunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__UInt16Chunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of IdxCa (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_c7fe0c44_hing_type_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::IdxCa>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__aliases__IdxCa(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of UInt64Chunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_ecbcc9c5_ching_type_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::UInt64Chunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__UInt64Chunked(__r) } }) }
+/// Series to [`ChunkedArray<T>`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::unpack_series_matching_type`. unpack_series_matching_type(series: Series) -> result of UInt8Chunked (fallible)
+#[rune::function(instance, path = unpack_series_matching_type)]
+fn f_5598a541_tching_type_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, series: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __arg0 = &this.0; let __arg1 = &series.0; let __r = crate::engine::run(move || <polars_core::datatypes::UInt8Chunked>::unpack_series_matching_type(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__UInt8Chunked(__r) } }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_7b93eec1_list_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked) -> () { let __r = <polars_core::datatypes::BinaryOffsetChunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_597bf99a_plode_list_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked) -> () { let __r = <polars_core::datatypes::BinaryChunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_682e3dda_lode_list_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked) -> () { let __r = <polars_core::datatypes::BooleanChunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_8fdd8549_lode_list_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked) -> () { let __r = <polars_core::datatypes::Float32Chunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_fb1584d8_lode_list_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked) -> () { let __r = <polars_core::datatypes::Float64Chunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_7c8dd971_xplode_list_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked) -> () { let __r = <polars_core::datatypes::Int16Chunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_67dc0ccf_xplode_list_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked) -> () { let __r = <polars_core::datatypes::Int32Chunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_a95e8046_xplode_list_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked) -> () { let __r = <polars_core::datatypes::Int64Chunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_08c68d33_explode_list_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked) -> () { let __r = <polars_core::datatypes::Int8Chunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_3233fb0c_explode_list_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked) -> () { let __r = <polars_core::datatypes::ListChunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_9c372e7c_plode_list_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked) -> () { let __r = <polars_core::datatypes::StringChunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_bf86ef77_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked) -> () { let __r = <polars::chunked_array::StructChunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_df04f327_plode_list_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked) -> () { let __r = <polars_core::datatypes::UInt16Chunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_077e041d_lode_list_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa) -> () { let __r = <polars_core::datatypes::IdxCa>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_61fd0abe_plode_list_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked) -> () { let __r = <polars_core::datatypes::UInt64Chunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::unset_fast_explode_list`. unset_fast_explode_list() -> unit
+#[rune::function(instance, path = unset_fast_explode_list)]
+fn f_22c80723_xplode_list_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked) -> () { let __r = <polars_core::datatypes::UInt8Chunked>::unset_fast_explode_list(&mut this.0); __r }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_inner_values`. with_inner_values(values: Series) -> ListChunked
+#[rune::function(instance, path = with_inner_values)]
+fn f_cf9f8b72_inner_values_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, values: &W_polars_core__series__Series) -> W_polars_core__datatypes__ListChunked { let __arg0 = &this.0; let __arg1 = &values.0; let __r = crate::engine::run(move || <polars_core::datatypes::ListChunked>::with_inner_values(__arg0, __arg1)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__datatypes__ListChunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> BinaryOffsetChunked
+#[rune::function(instance, path = with_name)]
+fn f_121096c8_name_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, name: &str) -> W_polars_core__datatypes__BinaryOffsetChunked { let __r = <polars_core::datatypes::BinaryOffsetChunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__BinaryOffsetChunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> BinaryChunked
+#[rune::function(instance, path = with_name)]
+fn f_d2c4e9a3__with_name_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, name: &str) -> W_polars_core__datatypes__BinaryChunked { let __r = <polars_core::datatypes::BinaryChunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__BinaryChunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> BooleanChunked
+#[rune::function(instance, path = with_name)]
+fn f_c01c2413_with_name_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, name: &str) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BooleanChunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> Float32Chunked
+#[rune::function(instance, path = with_name)]
+fn f_8e203f32_with_name_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, name: &str) -> W_polars_core__datatypes__Float32Chunked { let __r = <polars_core::datatypes::Float32Chunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__Float32Chunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> Float64Chunked
+#[rune::function(instance, path = with_name)]
+fn f_3cedf1cc_with_name_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, name: &str) -> W_polars_core__datatypes__Float64Chunked { let __r = <polars_core::datatypes::Float64Chunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__Float64Chunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> Int16Chunked
+#[rune::function(instance, path = with_name)]
+fn f_1b2f3670___with_name_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, name: &str) -> W_polars_core__datatypes__Int16Chunked { let __r = <polars_core::datatypes::Int16Chunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__Int16Chunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> Int32Chunked
+#[rune::function(instance, path = with_name)]
+fn f_301ccd2e___with_name_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, name: &str) -> W_polars_core__datatypes__Int32Chunked { let __r = <polars_core::datatypes::Int32Chunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__Int32Chunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> Int64Chunked
+#[rune::function(instance, path = with_name)]
+fn f_213dd8a7___with_name_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, name: &str) -> W_polars_core__datatypes__Int64Chunked { let __r = <polars_core::datatypes::Int64Chunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__Int64Chunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> Int8Chunked
+#[rune::function(instance, path = with_name)]
+fn f_8ba3a6c2_y__with_name_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, name: &str) -> W_polars_core__datatypes__Int8Chunked { let __r = <polars_core::datatypes::Int8Chunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__Int8Chunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> ListChunked
+#[rune::function(instance, path = with_name)]
+fn f_765ef497_y__with_name_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, name: &str) -> W_polars_core__datatypes__ListChunked { let __r = <polars_core::datatypes::ListChunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__ListChunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> StringChunked
+#[rune::function(instance, path = with_name)]
+fn f_27251d82__with_name_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, name: &str) -> W_polars_core__datatypes__StringChunked { let __r = <polars_core::datatypes::StringChunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__StringChunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> StructChunked
+#[rune::function(instance, path = with_name)]
+fn f_264a2a08_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, name: &str) -> W_polars_core__chunked_array__struct___StructChunked { let __r = <polars::chunked_array::StructChunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__chunked_array__struct___StructChunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> UInt16Chunked
+#[rune::function(instance, path = with_name)]
+fn f_8bef2463__with_name_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, name: &str) -> W_polars_core__datatypes__UInt16Chunked { let __r = <polars_core::datatypes::UInt16Chunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__UInt16Chunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> IdxCa
+#[rune::function(instance, path = with_name)]
+fn f_b4d8d235_with_name_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, name: &str) -> W_polars_core__datatypes__aliases__IdxCa { let __r = <polars_core::datatypes::IdxCa>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__aliases__IdxCa(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> UInt64Chunked
+#[rune::function(instance, path = with_name)]
+fn f_8e11a918__with_name_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, name: &str) -> W_polars_core__datatypes__UInt64Chunked { let __r = <polars_core::datatypes::UInt64Chunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__UInt64Chunked(__r) }
+/// Return this [`ChunkedArray`] with a new name.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_name`. with_name(name: string) -> UInt8Chunked
+#[rune::function(instance, path = with_name)]
+fn f_204119d2___with_name_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, name: &str) -> W_polars_core__datatypes__UInt8Chunked { let __r = <polars_core::datatypes::UInt8Chunked>::with_name(this.0.clone(), p::PlSmallStr::from(name)); W_polars_core__datatypes__UInt8Chunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> BinaryOffsetChunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_7eff379f_flag_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__BinaryOffsetChunked { let __r = <polars_core::datatypes::BinaryOffsetChunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__BinaryOffsetChunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> BinaryChunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_a455e35b_orted_flag_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__BinaryChunked { let __r = <polars_core::datatypes::BinaryChunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__BinaryChunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> BooleanChunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_a02ed392_rted_flag_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::BooleanChunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> Float32Chunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_09ca159d_rted_flag_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__Float32Chunked { let __r = <polars_core::datatypes::Float32Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__Float32Chunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> Float64Chunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_e0d13366_rted_flag_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__Float64Chunked { let __r = <polars_core::datatypes::Float64Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__Float64Chunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> Int16Chunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_d82e55b1_sorted_flag_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__Int16Chunked { let __r = <polars_core::datatypes::Int16Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__Int16Chunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> Int32Chunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_d2d247f4_sorted_flag_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__Int32Chunked { let __r = <polars_core::datatypes::Int32Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__Int32Chunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> Int64Chunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_73d9b4e6_sorted_flag_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__Int64Chunked { let __r = <polars_core::datatypes::Int64Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__Int64Chunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> Int8Chunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_9b0a2245__sorted_flag_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__Int8Chunked { let __r = <polars_core::datatypes::Int8Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__Int8Chunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> ListChunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_890c234e__sorted_flag_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__ListChunked { let __r = <polars_core::datatypes::ListChunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__ListChunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> StringChunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_2734854e_orted_flag_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__StringChunked { let __r = <polars_core::datatypes::StringChunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__StringChunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> StructChunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_f3242401_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__chunked_array__struct___StructChunked { let __r = <polars::chunked_array::StructChunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__chunked_array__struct___StructChunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> UInt16Chunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_97a4968b_orted_flag_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__UInt16Chunked { let __r = <polars_core::datatypes::UInt16Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__UInt16Chunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> IdxCa
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_3013acc3_rted_flag_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__aliases__IdxCa { let __r = <polars_core::datatypes::IdxCa>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__aliases__IdxCa(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> UInt64Chunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_b1f221c2_orted_flag_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__UInt64Chunked { let __r = <polars_core::datatypes::UInt64Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__UInt64Chunked(__r) }
+/// Set the 'sorted' bit meta info.
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> UInt8Chunked
+#[rune::function(instance, path = with_sorted_flag)]
+fn f_b7b48b8e_sorted_flag_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__UInt8Chunked { let __r = <polars_core::datatypes::UInt8Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__UInt8Chunked(__r) }
+/// Combine the validities of two structs.
+/// Polars: `polars_core::chunked_array::ChunkedArray::zip_outer_validity`. zip_outer_validity(other: StructChunked) -> unit
+#[rune::function(instance, path = zip_outer_validity)]
+fn f_6a5930a5_lars_core__chunked_array__struct___structchunked(this: &mut W_polars_core__chunked_array__struct___StructChunked, other: &W_polars_core__chunked_array__struct___StructChunked) -> () { let __r = <polars::chunked_array::StructChunked>::zip_outer_validity(&mut this.0, &other.0); __r }
 /// 
 /// Polars: `polars_core::chunked_array::builder::boolean::BooleanChunkedBuilder::new`. new(name: string, capacity: int) -> BooleanChunkedBuilder (fallible)
 #[rune::function(free, path = W_polars_core__chunked_array__builder__boolean__BooleanChunkedBuilder::new)]
@@ -192,6 +2736,62 @@ fn f_c6e97031_rs_core__chunked_array__flags__statisticsflagsim(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlagsIM::set_mut`. set_mut(value: StatisticsFlags) -> unit
 #[rune::function(instance, path = set_mut)]
 fn f_f655707a_rs_core__chunked_array__flags__statisticsflagsim(this: &mut W_polars_core__chunked_array__flags__StatisticsFlagsIM, value: &W_polars_core__chunked_array__flags__StatisticsFlags) -> () { let __r = <polars::chunked_array::flags::StatisticsFlagsIM>::set_mut(&mut this.0, value.0.clone()); __r }
+/// Change the underlying [`TimeUnit`]. And update the data accordingly.
+/// Polars: `polars_core::chunked_array::logical::Logical::cast_time_unit`. cast_time_unit(tu: TimeUnit) -> DatetimeChunked
+#[rune::function(instance, path = cast_time_unit)]
+fn f_ad4c2ddd_hunked_array__logical__datetime__datetimechunked(this: &W_polars_core__chunked_array__logical__datetime__DatetimeChunked, tu: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> W_polars_core__chunked_array__logical__datetime__DatetimeChunked { let __r = <polars_core::datatypes::DatetimeChunked>::cast_time_unit(&this.0, tu.0.clone()); W_polars_core__chunked_array__logical__datetime__DatetimeChunked(__r) }
+/// Change the underlying [`TimeUnit`]. And update the data accordingly.
+/// Polars: `polars_core::chunked_array::logical::Logical::cast_time_unit`. cast_time_unit(tu: TimeUnit) -> DurationChunked
+#[rune::function(instance, path = cast_time_unit)]
+fn f_1f6aaab0_hunked_array__logical__duration__durationchunked(this: &W_polars_core__chunked_array__logical__duration__DurationChunked, tu: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> W_polars_core__chunked_array__logical__duration__DurationChunked { let __r = <polars_core::datatypes::DurationChunked>::cast_time_unit(&this.0, tu.0.clone()); W_polars_core__chunked_array__logical__duration__DurationChunked(__r) }
+/// Change the underlying [`TimeUnit`]. This does not modify the data.
+/// Polars: `polars_core::chunked_array::logical::Logical::set_time_unit`. set_time_unit(time_unit: TimeUnit) -> unit
+#[rune::function(instance, path = set_time_unit)]
+fn f_c2865934_hunked_array__logical__datetime__datetimechunked(this: &mut W_polars_core__chunked_array__logical__datetime__DatetimeChunked, time_unit: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> () { let __r = <polars_core::datatypes::DatetimeChunked>::set_time_unit(&mut this.0, time_unit.0.clone()); __r }
+/// Change the underlying [`TimeUnit`]. This does not modify the data.
+/// Polars: `polars_core::chunked_array::logical::Logical::set_time_unit`. set_time_unit(tu: TimeUnit) -> unit
+#[rune::function(instance, path = set_time_unit)]
+fn f_5a1c0fcd_hunked_array__logical__duration__durationchunked(this: &mut W_polars_core__chunked_array__logical__duration__DurationChunked, tu: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> () { let __r = <polars_core::datatypes::DurationChunked>::set_time_unit(&mut this.0, tu.0.clone()); __r }
+/// Convert from Date into String with the given format. See [chrono strftime/strptime](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html).
+/// Polars: `polars_core::chunked_array::logical::Logical::strftime`. strftime(format: string) -> result of StringChunked (fallible)
+#[rune::function(instance, path = strftime)]
+fn f_75c62335__core__chunked_array__logical__date__datechunked(this: &W_polars_core__chunked_array__logical__date__DateChunked, format: &str) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __r = <polars_core::datatypes::DateChunked>::strftime(&this.0, format); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__StringChunked(__r) }) }
+/// Convert from Datetime into String with the given format. See [chrono strftime/strptime](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html).
+/// Polars: `polars_core::chunked_array::logical::Logical::strftime`. strftime(format: string) -> result of StringChunked (fallible)
+#[rune::function(instance, path = strftime)]
+fn f_eb609645_hunked_array__logical__datetime__datetimechunked(this: &W_polars_core__chunked_array__logical__datetime__DatetimeChunked, format: &str) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __r = <polars_core::datatypes::DatetimeChunked>::strftime(&this.0, format); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__StringChunked(__r) }) }
+/// Convert from Time into String with the given format. See [chrono strftime/strptime](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html).
+/// Polars: `polars_core::chunked_array::logical::Logical::strftime`. strftime(format: string) -> StringChunked
+#[rune::function(instance, path = strftime)]
+fn f_287fdc6a__core__chunked_array__logical__time__timechunked(this: &W_polars_core__chunked_array__logical__time__TimeChunked, format: &str) -> W_polars_core__datatypes__StringChunked { let __r = <polars_core::datatypes::TimeChunked>::strftime(&this.0, format); W_polars_core__datatypes__StringChunked(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::logical::Logical::time_unit`. time_unit() -> TimeUnit
+#[rune::function(instance, path = time_unit)]
+fn f_2d20eb46_hunked_array__logical__datetime__datetimechunked(this: &W_polars_core__chunked_array__logical__datetime__DatetimeChunked) -> W_polars_core__datatypes__temporal__time_unit__TimeUnit { let __r = <polars_core::datatypes::DatetimeChunked>::time_unit(&this.0); W_polars_core__datatypes__temporal__time_unit__TimeUnit(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::logical::Logical::time_unit`. time_unit() -> TimeUnit
+#[rune::function(instance, path = time_unit)]
+fn f_ca64718d_hunked_array__logical__duration__durationchunked(this: &W_polars_core__chunked_array__logical__duration__DurationChunked) -> W_polars_core__datatypes__temporal__time_unit__TimeUnit { let __r = <polars_core::datatypes::DurationChunked>::time_unit(&this.0); W_polars_core__datatypes__temporal__time_unit__TimeUnit(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::logical::Logical::time_zone`. time_zone() -> option of TimeZone
+#[rune::function(instance, path = time_zone)]
+fn f_37140ebe_hunked_array__logical__datetime__datetimechunked(this: &W_polars_core__chunked_array__logical__datetime__DatetimeChunked) -> Option<W_polars_core__datatypes__temporal__time_zone__TimeZone> { let __r = <polars_core::datatypes::DatetimeChunked>::time_zone(&this.0); { let __r = (__r).clone(); match __r { Some(__r) => Some(W_polars_core__datatypes__temporal__time_zone__TimeZone(__r)), None => None } } }
+/// Convert from Date into String with the given format. See [chrono strftime/strptime](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html).
+/// Polars: `polars_core::chunked_array::logical::Logical::to_string`. to_string(format: string) -> result of StringChunked (fallible)
+#[rune::function(instance, path = to_string)]
+fn f_7cb53e9a__core__chunked_array__logical__date__datechunked(this: &W_polars_core__chunked_array__logical__date__DateChunked, format: &str) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __r = <polars_core::datatypes::DateChunked>::to_string(&this.0, format); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__StringChunked(__r) }) }
+/// Convert from Datetime into String with the given format. See [chrono strftime/strptime](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html).
+/// Polars: `polars_core::chunked_array::logical::Logical::to_string`. to_string(format: string) -> result of StringChunked (fallible)
+#[rune::function(instance, path = to_string)]
+fn f_3d24a6f8_hunked_array__logical__datetime__datetimechunked(this: &W_polars_core__chunked_array__logical__datetime__DatetimeChunked, format: &str) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __r = <polars_core::datatypes::DatetimeChunked>::to_string(&this.0, format); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__StringChunked(__r) }) }
+/// Convert from [`Duration`] to String; note that `strftime` format strings are not supported, only the specifiers 'iso' and 'polars'.
+/// Polars: `polars_core::chunked_array::logical::Logical::to_string`. to_string(format: string) -> result of StringChunked (fallible)
+#[rune::function(instance, path = to_string)]
+fn f_79ab4799_hunked_array__logical__duration__durationchunked(this: &W_polars_core__chunked_array__logical__duration__DurationChunked, format: &str) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __r = <polars_core::datatypes::DurationChunked>::to_string(&this.0, format); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__StringChunked(__r) }) }
+/// Convert from Time into String with the given format. See [chrono strftime/strptime](https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html).
+/// Polars: `polars_core::chunked_array::logical::Logical::to_string`. to_string(format: string) -> StringChunked
+#[rune::function(instance, path = to_string)]
+fn f_40d01ea7__core__chunked_array__logical__time__timechunked(this: &W_polars_core__chunked_array__logical__time__TimeChunked, format: &str) -> W_polars_core__datatypes__StringChunked { let __r = <polars_core::datatypes::TimeChunked>::to_string(&this.0, format); W_polars_core__datatypes__StringChunked(__r) }
 /// 
 /// Polars: `polars_core::chunked_array::ops::FillNullStrategy::is_elementwise`. is_elementwise() -> bool
 #[rune::function(instance, path = is_elementwise)]
@@ -1108,6 +3708,10 @@ fn f_b46646d8_n__xor_reduce_polars_core__frame__column__column(this: &W_polars_c
 /// Polars: `polars_core::frame::column::Column::zip_with`. zip_with(mask: BooleanChunked, other: Column) -> result of Column (fallible)
 #[rune::function(instance, path = zip_with)]
 fn f_08047910_umn__zip_with_polars_core__frame__column__column(this: &W_polars_core__frame__column__Column, mask: &W_polars_core__datatypes__BooleanChunked, other: &W_polars_core__frame__column__Column) -> Result<W_polars_core__frame__column__Column, Error> { let __arg0 = &this.0; let __arg1 = &mask.0; let __arg2 = &other.0.clone(); let __r = crate::engine::run(move || <polars::frame::column::Column>::zip_with(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__frame__column__Column(__r) }) }
+/// 
+/// Polars: `polars_core::frame::column::Column::zip_with_same_type`. zip_with_same_type(mask: BooleanChunked, other: Column) -> result of Column (fallible)
+#[rune::function(instance, path = zip_with_same_type)]
+fn f_112bdf52_ith_same_type_polars_core__frame__column__column(this: &W_polars_core__frame__column__Column, mask: &W_polars_core__datatypes__BooleanChunked, other: &W_polars_core__frame__column__Column) -> Result<W_polars_core__frame__column__Column, Error> { let __arg0 = &this.0; let __arg1 = &mask.0.clone(); let __arg2 = &other.0; let __r = crate::engine::run(move || <polars::frame::column::Column>::zip_with_same_type(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__frame__column__Column(__r) }) }
 /// Take the [`ScalarColumn`] as a series with a `n` values.
 /// Polars: `polars_core::frame::column::scalar::ScalarColumn::as_n_values_series`. as_n_values_series(n: int) -> Series (fallible)
 #[rune::function(instance, path = as_n_values_series)]
@@ -6515,6 +9119,10 @@ fn f_6c544a99_ntoseries__is_series_polars_core__series__series() -> bool { let _
 /// Polars: `polars_core::series::series_trait::SeriesTrait::and_reduce`. and_reduce() -> result of Scalar (fallible)
 #[rune::function(instance, path = and_reduce)]
 fn f_ac2a8bf6_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::and_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get the bitwise AND of the Series as a new Series of length 1,
+/// Polars: `polars_core::series::series_trait::SeriesTrait::and_reduce`. and_reduce() -> result of Scalar (fallible)
+#[rune::function(instance, path = and_reduce)]
+fn f_a581e353_it__and_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::and_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
 /// 
 /// Polars: `polars_core::series::series_trait::SeriesTrait::append`. append(other: Series) -> result of unit (fallible)
 #[rune::function(instance, path = append)]
@@ -6527,10 +9135,18 @@ fn f_c44193f1_core__series__implementations__null__nullchunked(this: &mut W_pola
 /// Polars: `polars_core::series::series_trait::SeriesTrait::arg_sort`. arg_sort(options: SortOptions) -> IdxCa
 #[rune::function(instance, path = arg_sort)]
 fn f_88546331_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, options: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> W_polars_core__datatypes__aliases__IdxCa { let __arg0 = &this.0; let __arg1 = options.0.clone(); let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::arg_sort(__arg0, __arg1)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__datatypes__aliases__IdxCa(__r) }
+/// Retrieve the indexes needed for a sort.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::arg_sort`. arg_sort(options: SortOptions) -> IdxCa
+#[rune::function(instance, path = arg_sort)]
+fn f_7a45896f_rait__arg_sort_polars_core__series__series_deref(this: &W_polars_core__series__Series, options: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> W_polars_core__datatypes__aliases__IdxCa { let __arg0 = &*this.0; let __arg1 = options.0.clone(); let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::arg_sort(__arg0, __arg1)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__datatypes__aliases__IdxCa(__r) }
 /// Get first indexes of unique values.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::arg_unique`. arg_unique() -> result of IdxCa (fallible)
 #[rune::function(instance, path = arg_unique)]
 fn f_bdf16741_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::arg_unique(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// Get first indexes of unique values.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::arg_unique`. arg_unique() -> result of IdxCa (fallible)
+#[rune::function(instance, path = arg_unique)]
+fn f_6ae0b76b_it__arg_unique_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::arg_unique(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
 /// Rechunk and return a pointer to the start of the Series. Only implemented for numeric types
 /// Polars: `polars_core::series::series_trait::SeriesTrait::as_single_ptr`. as_single_ptr() -> result of int (fallible)
 #[rune::function(instance, path = as_single_ptr)]
@@ -6543,6 +9159,10 @@ fn f_a8c81064_core__series__implementations__null__nullchunked(this: &W_polars_c
 /// Polars: `polars_core::series::series_trait::SeriesTrait::drop_nulls`. drop_nulls() -> Series
 #[rune::function(instance, path = drop_nulls)]
 fn f_3939ccb5_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__series__Series { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::drop_nulls(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
+/// Drop all null values and return a new Series.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::drop_nulls`. drop_nulls() -> Series
+#[rune::function(instance, path = drop_nulls)]
+fn f_07eaba68_it__drop_nulls_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__series__Series { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::drop_nulls(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
 /// 
 /// Polars: `polars_core::series::series_trait::SeriesTrait::extend`. extend(_other: Series) -> result of unit (fallible)
 #[rune::function(instance, path = extend)]
@@ -6551,50 +9171,106 @@ fn f_4085410c_core__series__implementations__null__nullchunked(this: &mut W_pola
 /// Polars: `polars_core::series::series_trait::SeriesTrait::filter`. filter(_filter: BooleanChunked) -> result of Series (fallible)
 #[rune::function(instance, path = filter)]
 fn f_f2ce3b92_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = &_filter.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::filter(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// Filter by boolean mask. This operation clones data.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::filter`. filter(_filter: BooleanChunked) -> result of Series (fallible)
+#[rune::function(instance, path = filter)]
+fn f_143ffbed_strait__filter_polars_core__series__series_deref(this: &W_polars_core__series__Series, _filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &*this.0; let __arg1 = &_filter.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::filter(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
 /// Get the first element of the [`Series`] as a [`Scalar`]
 /// Polars: `polars_core::series::series_trait::SeriesTrait::first`. first() -> Scalar
 #[rune::function(instance, path = first)]
 fn f_316cbcf9_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__scalar__Scalar { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::first(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__scalar__Scalar(__r) }
+/// Get the first element of the [`Series`] as a [`Scalar`]
+/// Polars: `polars_core::series::series_trait::SeriesTrait::first`. first() -> Scalar
+#[rune::function(instance, path = first)]
+fn f_5b485414_estrait__first_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__scalar__Scalar { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::first(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__scalar__Scalar(__r) }
 /// Get the first non-null element of the [`Series`] as a [`Scalar`]
 /// Polars: `polars_core::series::series_trait::SeriesTrait::first_non_null`. first_non_null() -> Scalar
 #[rune::function(instance, path = first_non_null)]
 fn f_7b7dda97_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__scalar__Scalar { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::first_non_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__scalar__Scalar(__r) }
+/// Get the first non-null element of the [`Series`] as a [`Scalar`]
+/// Polars: `polars_core::series::series_trait::SeriesTrait::first_non_null`. first_non_null() -> Scalar
+#[rune::function(instance, path = first_non_null)]
+fn f_dd32a0e6_first_non_null_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__scalar__Scalar { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::first_non_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__scalar__Scalar(__r) }
 /// Return if any the chunks in this [`ChunkedArray`] have nulls.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::has_nulls`. has_nulls() -> bool
 #[rune::function(instance, path = has_nulls)]
 fn f_dd2b2821_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> bool { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::has_nulls(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Return if any the chunks in this [`ChunkedArray`] have nulls.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_2b9e1429_ait__has_nulls_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> bool { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::has_nulls(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Check if Series is empty.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_1dd6572d_rait__is_empty_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> bool { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::is_empty(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
 /// Check if Series only consists of nulls.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::is_full_null`. is_full_null() -> bool
 #[rune::function(instance, path = is_full_null)]
 fn f_d111e869_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> bool { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::is_full_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
+/// Check if Series only consists of nulls.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::is_full_null`. is_full_null() -> bool
+#[rune::function(instance, path = is_full_null)]
+fn f_a14cd771___is_full_null_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> bool { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::is_full_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); __r }
 /// Get a mask of the non-null values.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::is_not_null`. is_not_null() -> BooleanChunked
 #[rune::function(instance, path = is_not_null)]
 fn f_606c580d_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__datatypes__BooleanChunked { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::is_not_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the non-null values.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::is_not_null`. is_not_null() -> BooleanChunked
+#[rune::function(instance, path = is_not_null)]
+fn f_bc54cac3_t__is_not_null_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__datatypes__BooleanChunked { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::is_not_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__datatypes__BooleanChunked(__r) }
 /// Get a mask of the null values.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::is_null`. is_null() -> BooleanChunked
 #[rune::function(instance, path = is_null)]
 fn f_3349d234_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__datatypes__BooleanChunked { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::is_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a mask of the null values.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::is_null`. is_null() -> BooleanChunked
+#[rune::function(instance, path = is_null)]
+fn f_003464f6_trait__is_null_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__datatypes__BooleanChunked { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::is_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__datatypes__BooleanChunked(__r) }
 /// Get the last element of the [`Series`] as a [`Scalar`]
 /// Polars: `polars_core::series::series_trait::SeriesTrait::last`. last() -> Scalar
 #[rune::function(instance, path = last)]
 fn f_37873338_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__scalar__Scalar { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::last(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__scalar__Scalar(__r) }
+/// Get the last element of the [`Series`] as a [`Scalar`]
+/// Polars: `polars_core::series::series_trait::SeriesTrait::last`. last() -> Scalar
+#[rune::function(instance, path = last)]
+fn f_24183db2_iestrait__last_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__scalar__Scalar { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::last(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__scalar__Scalar(__r) }
 /// Get the last non-null element of the [`Series`] as a [`Scalar`]
 /// Polars: `polars_core::series::series_trait::SeriesTrait::last_non_null`. last_non_null() -> Scalar
 #[rune::function(instance, path = last_non_null)]
 fn f_d1334bd3_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__scalar__Scalar { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::last_non_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__scalar__Scalar(__r) }
+/// Get the last non-null element of the [`Series`] as a [`Scalar`]
+/// Polars: `polars_core::series::series_trait::SeriesTrait::last_non_null`. last_non_null() -> Scalar
+#[rune::function(instance, path = last_non_null)]
+fn f_1041e7b1__last_non_null_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__scalar__Scalar { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::last_non_null(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__scalar__Scalar(__r) }
+/// Get length of series.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::len`. len() -> int
+#[rune::function(instance, path = len)]
+fn f_237286ca_riestrait__len_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> i64 { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::len(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); (__r as i64) }
 /// Take `num_elements` from the top as a zero copy view.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::limit`. limit(num_elements: int) -> Series (fallible)
 #[rune::function(instance, path = limit)]
 fn f_796a976d_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, num_elements: i64) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = support::narrow::<usize>(num_elements, "num_elements")?; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::limit(__arg0, __arg1)).map_err(Error::engine)?; Ok(W_polars_core__series__Series(__r)) }
+/// Take `num_elements` from the top as a zero copy view.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::limit`. limit(num_elements: int) -> Series (fallible)
+#[rune::function(instance, path = limit)]
+fn f_4e640341_estrait__limit_polars_core__series__series_deref(this: &W_polars_core__series__Series, num_elements: i64) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &*this.0; let __arg1 = support::narrow::<usize>(num_elements, "num_elements")?; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::limit(__arg0, __arg1)).map_err(Error::engine)?; Ok(W_polars_core__series__Series(__r)) }
 /// Get the max of the Series as a new Series of length 1.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::max_reduce`. max_reduce() -> result of Scalar (fallible)
 #[rune::function(instance, path = max_reduce)]
 fn f_b0b2f858_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::max_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get the max of the Series as a new Series of length 1.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::max_reduce`. max_reduce() -> result of Scalar (fallible)
+#[rune::function(instance, path = max_reduce)]
+fn f_b6ee60fe_it__max_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::max_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
 /// Returns the mean value in the array Returns an option because the array is nullable.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::mean`. mean() -> option of float
 #[rune::function(instance, path = mean)]
 fn f_9824c31a_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Option<f64> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::mean(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); match __r { Some(__r) => Some(__r), None => None } }
+/// Returns the mean value in the array Returns an option because the array is nullable.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::mean`. mean() -> option of float
+#[rune::function(instance, path = mean)]
+fn f_42dd4e55_iestrait__mean_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Option<f64> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::mean(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); match __r { Some(__r) => Some(__r), None => None } }
 /// Get the mean of the Series as a new Scalar
 /// Polars: `polars_core::series::series_trait::SeriesTrait::mean_reduce`. mean_reduce() -> result of Scalar (fallible)
 #[rune::function(instance, path = mean_reduce)]
@@ -6603,50 +9279,102 @@ fn f_225b1eb9_core__series__implementations__null__nullchunked(this: &W_polars_c
 /// Polars: `polars_core::series::series_trait::SeriesTrait::median`. median() -> option of float
 #[rune::function(instance, path = median)]
 fn f_4074c610_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Option<f64> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::median(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); match __r { Some(__r) => Some(__r), None => None } }
+/// Returns the median value in the array Returns an option because the array is nullable.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::median`. median() -> option of float
+#[rune::function(instance, path = median)]
+fn f_517751fb_strait__median_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Option<f64> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::median(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); match __r { Some(__r) => Some(__r), None => None } }
 /// Get the median of the Series as a new Series of length 1.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::median_reduce`. median_reduce() -> result of Scalar (fallible)
 #[rune::function(instance, path = median_reduce)]
 fn f_a871e882_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::median_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get the median of the Series as a new Series of length 1.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::median_reduce`. median_reduce() -> result of Scalar (fallible)
+#[rune::function(instance, path = median_reduce)]
+fn f_669d4d8d__median_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::median_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
 /// Get the min of the Series as a new Series of length 1.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::min_reduce`. min_reduce() -> result of Scalar (fallible)
 #[rune::function(instance, path = min_reduce)]
 fn f_6cfad1b5_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::min_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get the min of the Series as a new Series of length 1.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::min_reduce`. min_reduce() -> result of Scalar (fallible)
+#[rune::function(instance, path = min_reduce)]
+fn f_3faec49d_it__min_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::min_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
 /// Number of chunks in this Series
 /// Polars: `polars_core::series::series_trait::SeriesTrait::n_chunks`. n_chunks() -> int
 #[rune::function(instance, path = n_chunks)]
 fn f_b7597cbe_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> i64 { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::n_chunks(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); (__r as i64) }
+/// Number of chunks in this Series
+/// Polars: `polars_core::series::series_trait::SeriesTrait::n_chunks`. n_chunks() -> int
+#[rune::function(instance, path = n_chunks)]
+fn f_de15bbfe_rait__n_chunks_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> i64 { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::n_chunks(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); (__r as i64) }
 /// Get unique values in the Series.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::n_unique`. n_unique() -> result of int (fallible)
 #[rune::function(instance, path = n_unique)]
 fn f_4185291c_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<i64, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::n_unique(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; (__r as i64) }) }
+/// Get unique values in the Series.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::n_unique`. n_unique() -> result of int (fallible)
+#[rune::function(instance, path = n_unique)]
+fn f_45b85ca1_rait__n_unique_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<i64, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::n_unique(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; (__r as i64) }) }
 /// Name of series.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::name`. name() -> string
 #[rune::function(instance, path = name)]
 fn f_5bfea71f_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> String { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::name(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); { let __r = (__r).clone(); __r.to_string() } }
+/// Name of series.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::name`. name() -> string
+#[rune::function(instance, path = name)]
+fn f_977d8f0a_iestrait__name_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> String { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::name(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); { let __r = (__r).clone(); __r.to_string() } }
 /// Create a new Series filled with values from the given index.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::new_from_index`. new_from_index(_index: int, _length: int) -> Series (fallible)
 #[rune::function(instance, path = new_from_index)]
 fn f_d621bb32_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _index: i64, _length: i64) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = support::narrow::<usize>(_index, "_index")?; let __arg2 = support::narrow::<usize>(_length, "_length")?; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::new_from_index(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok(W_polars_core__series__Series(__r)) }
+/// Create a new Series filled with values from the given index.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::new_from_index`. new_from_index(_index: int, _length: int) -> Series (fallible)
+#[rune::function(instance, path = new_from_index)]
+fn f_b4629dad_new_from_index_polars_core__series__series_deref(this: &W_polars_core__series__Series, _index: i64, _length: i64) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &*this.0; let __arg1 = support::narrow::<usize>(_index, "_index")?; let __arg2 = support::narrow::<usize>(_length, "_length")?; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::new_from_index(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok(W_polars_core__series__Series(__r)) }
 /// Count the null values.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::null_count`. null_count() -> int
 #[rune::function(instance, path = null_count)]
 fn f_206b837a_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> i64 { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::null_count(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); (__r as i64) }
+/// Count the null values.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::null_count`. null_count() -> int
+#[rune::function(instance, path = null_count)]
+fn f_68285b51_it__null_count_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> i64 { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::null_count(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); (__r as i64) }
 /// Get the bitwise OR of the Series as a new Series of length 1,
 /// Polars: `polars_core::series::series_trait::SeriesTrait::or_reduce`. or_reduce() -> result of Scalar (fallible)
 #[rune::function(instance, path = or_reduce)]
 fn f_4b78fa0c_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::or_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get the bitwise OR of the Series as a new Series of length 1,
+/// Polars: `polars_core::series::series_trait::SeriesTrait::or_reduce`. or_reduce() -> result of Scalar (fallible)
+#[rune::function(instance, path = or_reduce)]
+fn f_3997e9b1_ait__or_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::or_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Propagate down nulls in nested types.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::propagate_nulls`. propagate_nulls() -> option of Series
+#[rune::function(instance, path = propagate_nulls)]
+fn f_174a0df4_ropagate_nulls_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Option<W_polars_core__series__Series> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::propagate_nulls(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); match __r { Some(__r) => Some(W_polars_core__series__Series(__r)), None => None } }
 /// Get the quantile of the Series as a new Series of length 1.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::quantile_reduce`. quantile_reduce(_quantile: float, _method: QuantileMethod) -> result of Scalar (fallible)
 #[rune::function(instance, path = quantile_reduce)]
 fn f_f3c9536d_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _quantile: f64, _method: &W_polars_compute__rolling__QuantileMethod) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __arg1 = _quantile; let __arg2 = _method.0.clone(); let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::quantile_reduce(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get the quantile of the Series as a new Series of length 1.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::quantile_reduce`. quantile_reduce(_quantile: float, _method: QuantileMethod) -> result of Scalar (fallible)
+#[rune::function(instance, path = quantile_reduce)]
+fn f_dfb0d1ca_uantile_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series, _quantile: f64, _method: &W_polars_compute__rolling__QuantileMethod) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __arg1 = _quantile; let __arg2 = _method.0.clone(); let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::quantile_reduce(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
 /// Get multiple quantiles of the ChunkedArray as a new `List` Scalar
 /// Polars: `polars_core::series::series_trait::SeriesTrait::quantiles_reduce`. quantiles_reduce(_quantiles: vector of float, _method: QuantileMethod) -> result of Scalar (fallible)
 #[rune::function(instance, path = quantiles_reduce)]
 fn f_d8e5ddf4_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _quantiles: Vec<f64>, _method: &W_polars_compute__rolling__QuantileMethod) -> Result<W_polars_core__scalar__Scalar, Error> { let __t0 = _quantiles.into_iter().map(|v| Ok::<_, Error>(v)).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &this.0; let __arg1 = &__t0[..]; let __arg2 = _method.0.clone(); let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::quantiles_reduce(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get multiple quantiles of the ChunkedArray as a new `List` Scalar
+/// Polars: `polars_core::series::series_trait::SeriesTrait::quantiles_reduce`. quantiles_reduce(_quantiles: vector of float, _method: QuantileMethod) -> result of Scalar (fallible)
+#[rune::function(instance, path = quantiles_reduce)]
+fn f_90cfcd2c_antiles_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series, _quantiles: Vec<f64>, _method: &W_polars_compute__rolling__QuantileMethod) -> Result<W_polars_core__scalar__Scalar, Error> { let __t0 = _quantiles.into_iter().map(|v| Ok::<_, Error>(v)).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &*this.0; let __arg1 = &__t0[..]; let __arg2 = _method.0.clone(); let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::quantiles_reduce(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
 /// Aggregate all chunks to a contiguous array of memory.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::rechunk`. rechunk() -> Series
 #[rune::function(instance, path = rechunk)]
 fn f_1242465a_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__series__Series { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::rechunk(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
+/// Aggregate all chunks to a contiguous array of memory.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::rechunk`. rechunk() -> Series
+#[rune::function(instance, path = rechunk)]
+fn f_f0ba8a52_trait__rechunk_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__series__Series { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::rechunk(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
 /// Rename the Series.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::rename`. rename(name: string) -> unit
 #[rune::function(instance, path = rename)]
@@ -6655,10 +9383,18 @@ fn f_4b848f65_core__series__implementations__null__nullchunked(this: &mut W_pola
 /// Polars: `polars_core::series::series_trait::SeriesTrait::reverse`. reverse() -> Series
 #[rune::function(instance, path = reverse)]
 fn f_993327cb_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__series__Series { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::reverse(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
+/// return a Series in reversed order
+/// Polars: `polars_core::series::series_trait::SeriesTrait::reverse`. reverse() -> Series
+#[rune::function(instance, path = reverse)]
+fn f_8db31b0a_trait__reverse_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__series__Series { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::reverse(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
 /// Shift the values by a given period and fill the parts that will be empty due to this operation with `Nones`.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::shift`. shift(_periods: int) -> Series
 #[rune::function(instance, path = shift)]
 fn f_a8bcb5d6_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _periods: i64) -> W_polars_core__series__Series { let __arg0 = &this.0; let __arg1 = _periods; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::shift(__arg0, __arg1)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
+/// Shift the values by a given period and fill the parts that will be empty due to this operation with `Nones`.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::shift`. shift(_periods: int) -> Series
+#[rune::function(instance, path = shift)]
+fn f_afb06355_estrait__shift_polars_core__series__series_deref(this: &W_polars_core__series__Series, _periods: i64) -> W_polars_core__series__Series { let __arg0 = &*this.0; let __arg1 = _periods; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::shift(__arg0, __arg1)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
 /// Shrink the capacity of this array to fit its length.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::shrink_to_fit`. shrink_to_fit() -> unit
 #[rune::function(instance, path = shrink_to_fit)]
@@ -6667,22 +9403,42 @@ fn f_c38f92a8_core__series__implementations__null__nullchunked(this: &mut W_pola
 /// Polars: `polars_core::series::series_trait::SeriesTrait::slice`. slice(_offset: int, _length: int) -> Series (fallible)
 #[rune::function(instance, path = slice)]
 fn f_6ee529de_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _offset: i64, _length: i64) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = _offset; let __arg2 = support::narrow::<usize>(_length, "_length")?; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::slice(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok(W_polars_core__series__Series(__r)) }
+/// Get a zero copy view of the data.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::slice`. slice(_offset: int, _length: int) -> Series (fallible)
+#[rune::function(instance, path = slice)]
+fn f_c49bd5c9_estrait__slice_polars_core__series__series_deref(this: &W_polars_core__series__Series, _offset: i64, _length: i64) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &*this.0; let __arg1 = _offset; let __arg2 = support::narrow::<usize>(_length, "_length")?; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::slice(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok(W_polars_core__series__Series(__r)) }
 /// 
 /// Polars: `polars_core::series::series_trait::SeriesTrait::sort_with`. sort_with(_options: SortOptions) -> result of Series (fallible)
 #[rune::function(instance, path = sort_with)]
 fn f_c0016bc4_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _options: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = _options.0.clone(); let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::sort_with(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// 
+/// Polars: `polars_core::series::series_trait::SeriesTrait::sort_with`. sort_with(_options: SortOptions) -> result of Series (fallible)
+#[rune::function(instance, path = sort_with)]
+fn f_06612406_ait__sort_with_polars_core__series__series_deref(this: &W_polars_core__series__Series, _options: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &*this.0; let __arg1 = _options.0.clone(); let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::sort_with(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
 /// Get a zero copy view of the data.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::split_at`. split_at(_offset: int) -> tuple of Series, Series
 #[rune::function(instance, path = split_at)]
 fn f_e3d1e712_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _offset: i64) -> (W_polars_core__series__Series, W_polars_core__series__Series) { let __arg0 = &this.0; let __arg1 = _offset; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::split_at(__arg0, __arg1)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); { let __t = __r; ({ let __r = __t.0; W_polars_core__series__Series(__r) }, { let __r = __t.1; W_polars_core__series__Series(__r) }) } }
+/// Get a zero copy view of the data.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::split_at`. split_at(_offset: int) -> tuple of Series, Series
+#[rune::function(instance, path = split_at)]
+fn f_e99f78e0_rait__split_at_polars_core__series__series_deref(this: &W_polars_core__series__Series, _offset: i64) -> (W_polars_core__series__Series, W_polars_core__series__Series) { let __arg0 = &*this.0; let __arg1 = _offset; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::split_at(__arg0, __arg1)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); { let __t = __r; ({ let __r = __t.0; W_polars_core__series__Series(__r) }, { let __r = __t.1; W_polars_core__series__Series(__r) }) } }
 /// Returns the std value in the array Returns an option because the array is nullable.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::std`. std(_ddof: int) -> option of float (fallible)
 #[rune::function(instance, path = std)]
 fn f_19b5e3ca_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _ddof: i64) -> Result<Option<f64>, Error> { let __arg0 = &this.0; let __arg1 = support::narrow::<u8>(_ddof, "_ddof")?; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::std(__arg0, __arg1)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(__r), None => None }) }
+/// Returns the std value in the array Returns an option because the array is nullable.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::std`. std(_ddof: int) -> option of float (fallible)
+#[rune::function(instance, path = std)]
+fn f_b14f5887_riestrait__std_polars_core__series__series_deref(this: &W_polars_core__series__Series, _ddof: i64) -> Result<Option<f64>, Error> { let __arg0 = &*this.0; let __arg1 = support::narrow::<u8>(_ddof, "_ddof")?; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::std(__arg0, __arg1)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(__r), None => None }) }
 /// Get the standard deviation of the Series as a new Series of length 1.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::std_reduce`. std_reduce(_ddof: int) -> result of Scalar (fallible)
 #[rune::function(instance, path = std_reduce)]
 fn f_3193f9ba_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _ddof: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __arg1 = support::narrow::<u8>(_ddof, "_ddof")?; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::std_reduce(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get the standard deviation of the Series as a new Series of length 1.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::std_reduce`. std_reduce(_ddof: int) -> result of Scalar (fallible)
+#[rune::function(instance, path = std_reduce)]
+fn f_b39bad9f_it__std_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series, _ddof: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __arg1 = support::narrow::<u8>(_ddof, "_ddof")?; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::std_reduce(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
 /// Get the sum of the Series as a new Scalar.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::sum_reduce`. sum_reduce() -> result of Scalar (fallible)
 #[rune::function(instance, path = sum_reduce)]
@@ -6692,29 +9448,61 @@ fn f_58e48a09_core__series__implementations__null__nullchunked(this: &W_polars_c
 #[rune::function(instance, path = take)]
 fn f_c30c5d5b_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _indices: &W_polars_core__datatypes__aliases__IdxCa) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = &_indices.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::take(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
 /// Take from `self` at the indexes given by `idx`.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::take`. take(_indices: IdxCa) -> result of Series (fallible)
+#[rune::function(instance, path = take)]
+fn f_b14ab1d4_iestrait__take_polars_core__series__series_deref(this: &W_polars_core__series__Series, _indices: &W_polars_core__datatypes__aliases__IdxCa) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &*this.0; let __arg1 = &_indices.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::take(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// Take from `self` at the indexes given by `idx`.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::take_slice`. take_slice(_indices: vector of int) -> result of Series (fallible)
 #[rune::function(instance, path = take_slice)]
 fn f_731e79df_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _indices: Vec<i64>) -> Result<W_polars_core__series__Series, Error> { let __t0 = _indices.into_iter().map(|v| Ok::<_, Error>(support::narrow::<p::IdxSize>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &this.0; let __arg1 = &__t0[..]; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::take_slice(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// Take from `self` at the indexes given by `idx`.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::take_slice`. take_slice(_indices: vector of int) -> result of Series (fallible)
+#[rune::function(instance, path = take_slice)]
+fn f_53f3f74b_it__take_slice_polars_core__series__series_deref(this: &W_polars_core__series__Series, _indices: Vec<i64>) -> Result<W_polars_core__series__Series, Error> { let __t0 = _indices.into_iter().map(|v| Ok::<_, Error>(support::narrow::<p::IdxSize>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &*this.0; let __arg1 = &__t0[..]; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::take_slice(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// Trim all lists of unused start and end elements recursively.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::trim_lists_to_normalized_offsets`. trim_lists_to_normalized_offsets() -> option of Series
+#[rune::function(instance, path = trim_lists_to_normalized_offsets)]
+fn f_69c3aa17_alized_offsets_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Option<W_polars_core__series__Series> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::trim_lists_to_normalized_offsets(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); match __r { Some(__r) => Some(W_polars_core__series__Series(__r)), None => None } }
 /// Get unique values in the Series.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::unique`. unique() -> result of Series (fallible)
 #[rune::function(instance, path = unique)]
 fn f_07e98a4a_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::unique(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// Get unique values in the Series.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::unique`. unique() -> result of Series (fallible)
+#[rune::function(instance, path = unique)]
+fn f_adbf9eca_strait__unique_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::unique(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
 /// Get dense ids for each unique value.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::unique_id`. unique_id() -> result of tuple of int, vector of int (fallible)
 #[rune::function(instance, path = unique_id)]
 fn f_94c2e4bc_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<(i64, Vec<i64>), Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::unique_id(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __t = __r; ({ let __r = __t.0; (__r as i64) }, { let __r = __t.1; { let mut __v = Vec::new(); for __r in __r { __v.push((__r as i64)); } __v } }) } }) }
+/// Get dense ids for each unique value.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::unique_id`. unique_id() -> result of tuple of int, vector of int (fallible)
+#[rune::function(instance, path = unique_id)]
+fn f_327837a5_ait__unique_id_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<(i64, Vec<i64>), Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::unique_id(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __t = __r; ({ let __r = __t.0; (__r as i64) }, { let __r = __t.1; { let mut __v = Vec::new(); for __r in __r { __v.push((__r as i64)); } __v } }) } }) }
 /// Returns the var value in the array Returns an option because the array is nullable.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::var`. var(_ddof: int) -> option of float (fallible)
 #[rune::function(instance, path = var)]
 fn f_7feb1f86_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _ddof: i64) -> Result<Option<f64>, Error> { let __arg0 = &this.0; let __arg1 = support::narrow::<u8>(_ddof, "_ddof")?; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::var(__arg0, __arg1)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(__r), None => None }) }
+/// Returns the var value in the array Returns an option because the array is nullable.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::var`. var(_ddof: int) -> option of float (fallible)
+#[rune::function(instance, path = var)]
+fn f_97081a41_riestrait__var_polars_core__series__series_deref(this: &W_polars_core__series__Series, _ddof: i64) -> Result<Option<f64>, Error> { let __arg0 = &*this.0; let __arg1 = support::narrow::<u8>(_ddof, "_ddof")?; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::var(__arg0, __arg1)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(__r), None => None }) }
 /// Get the variance of the Series as a new Series of length 1.
 /// Polars: `polars_core::series::series_trait::SeriesTrait::var_reduce`. var_reduce(_ddof: int) -> result of Scalar (fallible)
 #[rune::function(instance, path = var_reduce)]
 fn f_94893be1_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked, _ddof: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __arg1 = support::narrow::<u8>(_ddof, "_ddof")?; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::var_reduce(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get the variance of the Series as a new Series of length 1.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::var_reduce`. var_reduce(_ddof: int) -> result of Scalar (fallible)
+#[rune::function(instance, path = var_reduce)]
+fn f_6407b502_it__var_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series, _ddof: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __arg1 = support::narrow::<u8>(_ddof, "_ddof")?; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::var_reduce(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
 /// Get the bitwise XOR of the Series as a new Series of length 1,
 /// Polars: `polars_core::series::series_trait::SeriesTrait::xor_reduce`. xor_reduce() -> result of Scalar (fallible)
 #[rune::function(instance, path = xor_reduce)]
 fn f_5ae5b7ea_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::xor_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Get the bitwise XOR of the Series as a new Series of length 1,
+/// Polars: `polars_core::series::series_trait::SeriesTrait::xor_reduce`. xor_reduce() -> result of Scalar (fallible)
+#[rune::function(instance, path = xor_reduce)]
+fn f_897302b6_it__xor_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::xor_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
 /// Note, technically shouldn't be under the `IntoCredentialProvider` trait, but it's here for convenience.
 /// Polars: `polars_io::cloud::credential_provider::IntoCredentialProvider::storage_update_options`. storage_update_options() -> result of vector of tuple of string, string (fallible)
 #[rune::function(instance, path = storage_update_options)]
@@ -9338,6 +12126,642 @@ fn v_99e6a99f_polars_utils__pl_path__cloudscheme__s3() -> W_polars_utils__pl_pat
 fn v_2c190394_polars_utils__pl_path__cloudscheme__s3a() -> W_polars_utils__pl_path__CloudScheme { W_polars_utils__pl_path__CloudScheme(<polars::polars_utils::pl_path::CloudScheme>::S3a) }
 
 pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
+    m.function_meta(f_a5765ab3_rray__all_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_5124ff95_ll_kleene_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_de283a08_rray__any_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_e0196bec_ny_kleene_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_6e078264_rray__append_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_25dcab9d_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_adfd2e25_append_owned_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_9808a643_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_651d79b4_max_binary_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_17595ef8_min_binary_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_55c61ad3__as_binary_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_ea8a1c19_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_b556bd87_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_230a4bdb_lear_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_67c1d7f1_ray__clear_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_7101c6e5_ay__clear_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_dc80b1d3_ay__clear_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_bdcdb18b_ay__clear_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_0977247f_rray__clear_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_5d5db8e4_rray__clear_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_0371d26c_rray__clear_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_08f43398_array__clear_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_2726e372_array__clear_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_75b9e3c1_ray__clear_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_c7d6c774_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_cd881f1b_ray__clear_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_25174840_ay__clear_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_5318be76_ray__clear_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_0d3216e4_rray__clear_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_e3505c5c_ulls_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_caa5dddc_drop_nulls_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_c8520198_rop_nulls_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_43811095_rop_nulls_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_61aa1e4a_rop_nulls_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_bcd0862b__drop_nulls_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_cc4352a7__drop_nulls_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_86b136e6__drop_nulls_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_0992157a___drop_nulls_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_3469374f___drop_nulls_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_76fa9bac_drop_nulls_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_73b19508_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_3b849d16_drop_nulls_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_e64d473a_rop_nulls_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_80bc4581_drop_nulls_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_b465da09__drop_nulls_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_1fb9e071_type_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_eb8ade35_ray__dtype_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_10d263a2_ay__dtype_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_bcf1504d_ay__dtype_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_b0dbeb7c_ay__dtype_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_04c72e9d_rray__dtype_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_aac36355_rray__dtype_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_0fdfc800_rray__dtype_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_ec4b500e_array__dtype_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_1dda3f45_array__dtype_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_19ed04a8_ray__dtype_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_72395c95_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_ae21b2a2_ray__dtype_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_dc0adb61_ay__dtype_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_53e02b15_ray__dtype_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_55cde366_rray__dtype_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_eff91465_y__extend_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_9dbb84a6_y__extend_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_c770fc2f_ray__extend_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_55c7e750_ray__extend_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_45e8db79_ray__extend_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_ed8f294d_rray__extend_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_897b40ac_ay__extend_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_c3314d6c_y__extend_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_7164fcd7_ay__extend_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_0c00db9c_ray__extend_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_7e5b294f_ay__extend_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_23b23d68_ay__extend_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_3db3d219_tend_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_eef53f44_y__extend_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_da0275e9_rray__extend_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_00e33886_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_7cc45e5e_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_4acb9a72_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_e68762f7_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_74b25ff0_ay__first_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_c2e1c0bd_ay__first_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_255aca72_ay__first_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_8686a717_rray__first_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_2d6afbbb_rray__first_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_993b15ea_rray__first_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_091f91fc_array__first_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_4d83d9e2_ray__first_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_047fd4a8_ray__first_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_691d0922_ay__first_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_cc741fc7_ray__first_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_bd4b5505_rray__first_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_7bd9a878_false_idx_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_07c6ac3a_null_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_1e5653e7_t_non_null_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_5354133a__non_null_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_40e51619__non_null_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_d4457f5f__non_null_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_d1d99b43_st_non_null_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_ff3892e7_st_non_null_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_3dde8ffe_st_non_null_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_7922b604_rst_non_null_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_3caaebc7_rst_non_null_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_1f085c3e_t_non_null_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_723e7370_t_non_null_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_4846fc60__non_null_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_86dbf92e_t_non_null_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_ab0c6435_st_non_null_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_53acd0c3_null_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_c6e2983d_first_null_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_ca4452c3_irst_null_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_20e5b777_irst_null_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_b26d9777_irst_null_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_27c1fff7__first_null_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_d43ed425__first_null_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_6bb717b4__first_null_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_903ea040___first_null_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_af462f1b___first_null_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_9222f285_first_null_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_32b6ea43_first_null_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_80c05c8a_irst_null_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_fa1600fa_first_null_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_ec1f2f27__first_null_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_f29a47c2__true_idx_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_1843bac0_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_74afc3ef__from_vec_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_24d6a163__from_vec_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_afefd33d_y__from_vec_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_de586c10_y__from_vec_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_7963b168_y__from_vec_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_698a5797_ay__from_vec_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_f549df57___from_vec_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_400af4bb__from_vec_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_6ae50374___from_vec_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_5012e7cb_y__from_vec_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_45bb2e7b_like_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_a1cfb9fb__null_like_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_fc9d1711_null_like_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_c6d3cbcb_null_like_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_e41b523c_null_like_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_4ec68fae_l_null_like_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_1d5f7171_l_null_like_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_1561af0a_l_null_like_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_2ded2757_ll_null_like_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_7cd101f6_ll_null_like_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_aa6ea971__null_like_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_927e2bb4_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_042f1666__null_like_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_4ad776c2_null_like_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_24d36327__null_like_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_554a21ee_l_null_like_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_fc2c3e3e_l_with_dtype_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_82004a3f_rray__get_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_5f2b513f_rray__get_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_7a7de307_rray__get_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_ff54c840_darray__get_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_1e7f980c_darray__get_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_34e92dbc_darray__get_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_f97859e5_edarray__get_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_7a91772e_array__get_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_ff55241d_array__get_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_ff752514_rray__get_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_6eb30f7b_array__get_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_bdd2a191_darray__get_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_2e770923_et_as_series_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_09e34440_list_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_25911abb_plode_list_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_478c3676_lode_list_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_0742b082_lode_list_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_9b4e41e0_lode_list_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_e186b330_xplode_list_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_d4de08c3_xplode_list_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_cc42a0b0_xplode_list_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_c4d852e4_explode_list_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_e36c3a96_explode_list_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_9198e883_plode_list_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_2d113650_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_4a5ec8f5_plode_list_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_b936baa6_lode_list_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_11bbd4e4_plode_list_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_6ac53efc_xplode_list_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_362d7201_lags_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_fe6430a3__get_flags_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_2495ea27_get_flags_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_71d3b1dc_get_flags_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_96067cf4_get_flags_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_6364ab35___get_flags_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_b6d6e9a2___get_flags_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_61e2ec03___get_flags_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_b79912a1_y__get_flags_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_50133150_y__get_flags_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_a4643a4a__get_flags_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_4381047c_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_f175562d__get_flags_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_c44d5420_get_flags_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_850f082b__get_flags_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_db27657d___get_flags_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_1205e8af_y__get_inner_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_ce768482_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_ac9852db__empty_lists_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_fa7dd8ca_d_out_values_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_c44fc58e_ulls_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_75b6243e__has_nulls_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_1518cc27_has_nulls_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_163327bc_has_nulls_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_1ef113e6_has_nulls_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_1375e483___has_nulls_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_e5206abd___has_nulls_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_099f0f59___has_nulls_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_3458a000_y__has_nulls_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_42a34832_y__has_nulls_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_24280866__has_nulls_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_ec8cd8f3_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_f9d7ae8c__has_nulls_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_ebc7d520_has_nulls_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_4402ae7f__has_nulls_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_725e49b4___has_nulls_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_b4d37819__inner_dtype_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_108456de_inner_length_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_ecfb1929___into_date_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_8f8522cd_to_datetime_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_0bd32d26_to_duration_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_4f5f93f0___into_time_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_e81f9ac9_mpty_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_55ea070b___is_empty_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_3622a491__is_empty_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_db374ce8__is_empty_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_3a9b87c0__is_empty_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_40db4b55_y__is_empty_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_60620562_y__is_empty_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_a955f1a6_y__is_empty_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_1d991c51_ay__is_empty_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_2ddb448d_ay__is_empty_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_ea219f0e___is_empty_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_908b167b_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_9c0541d5___is_empty_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_4a066c03__is_empty_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_a0bcbe06___is_empty_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_3cf392dd_y__is_empty_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_52ef558a_null_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_079323fb_s_not_null_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_364d0428__not_null_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_b97bf1ab__not_null_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_bcbe4f3c__not_null_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_45c36c92_is_not_null_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_79d99425_is_not_null_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_5b3d89de_is_not_null_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_6d4e9be9__is_not_null_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_e84c3343__is_not_null_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_0c65ee31_s_not_null_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_77c54fdf_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_16e2ac83_s_not_null_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_050ff827__not_null_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_a01920b7_s_not_null_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_f761a917_is_not_null_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_dfc29f5a_null_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_c66b638b_y__is_null_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_25bd6715___is_null_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_7b95ed61___is_null_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_c5b2fa68___is_null_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_1c3965ae_ay__is_null_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_3eae1818_ay__is_null_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_690b0a2a_ay__is_null_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_7fde54a6_ray__is_null_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_dbaabd82_ray__is_null_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_fdc83861_y__is_null_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_6d8913db_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_07f601b0_y__is_null_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_d978ee56___is_null_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_238d88f3_y__is_null_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_44428d4c_ay__is_null_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_eb6a1997_gned_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_c33c72fd_al_aligned_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_50b3d9f7_l_aligned_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_2d7653cc_l_aligned_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_d9f2733e_l_aligned_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_7469a202_mal_aligned_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_fa5d7d19_mal_aligned_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_22461e8d_mal_aligned_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_7c12842f_imal_aligned_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_f84eec75_imal_aligned_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_d11817cf_al_aligned_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_da752e09_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_323b9187_al_aligned_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_f72399ce_l_aligned_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_720b29e6_al_aligned_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_948f8045_mal_aligned_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_44e6d235_flag_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_a575b97c_orted_flag_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_d2309555_rted_flag_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_1aefda2c_rted_flag_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_9a8313eb_rted_flag_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_a74665e0_sorted_flag_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_f658d716_sorted_flag_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_7854228c_sorted_flag_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_70ee870f__sorted_flag_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_7ea3b121__sorted_flag_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_6696f9ef_orted_flag_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_c3623d24_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_2774e2bb_orted_flag_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_21304674_rted_flag_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_8981b3e1_orted_flag_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_6a2539a6_sorted_flag_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_993b62fc_ray__last_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_da365613_ray__last_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_4fe719ad_ray__last_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_f76b7192_array__last_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_a30f0d9a_array__last_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_909cf930_array__last_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_1fe1261a_darray__last_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_7608b785_rray__last_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_a1ca2d91_rray__last_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_c341d188_ray__last_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_91613d77_rray__last_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_f154aacf_array__last_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_d63eb2f9_null_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_262a22f8_t_non_null_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_a674df68__non_null_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_4967623d__non_null_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_d924be8e__non_null_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_8dda26e5_st_non_null_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_6451b040_st_non_null_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_63ba4e0a_st_non_null_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_f837432c_ast_non_null_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_d8d0b899_ast_non_null_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_37f57103_t_non_null_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_0fe04c9d_t_non_null_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_cf66e647__non_null_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_88b33383_t_non_null_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_b2bd4cd3_st_non_null_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_4383c850__len_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_ee83bda7_array__len_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_238cd0a9_rray__len_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_3bbc5822_rray__len_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_71c3dea3_rray__len_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_9a0b5d5c_darray__len_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_affd9b11_darray__len_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_75da2dc9_darray__len_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_0d2b7d61_edarray__len_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_f4b3b377_edarray__len_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_a0a694ef_array__len_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_87fe29d8_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_ece4611d_array__len_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_cc18c7c5_rray__len_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_4cc5601e_array__len_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_d2de4892_darray__len_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_b3d21805_rray__max_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_6988d52c_ray__mean_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_d23720e6_rray__min_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_9dd410a2_name_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_bdd0a872_rray__name_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_40b25a00_ray__name_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_3e9743cf_ray__name_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_24520be7_ray__name_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_f934f77c_array__name_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_3d1ed6a7_array__name_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_1a860924_array__name_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_e3ebd2ab_darray__name_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_c2aa33e9_darray__name_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_885cc702_rray__name_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_4a9e1563_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_8e5db942_rray__name_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_f6943bd9_ray__name_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_50ca6739_rray__name_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_9f62a4a7_array__name_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_934f3493___new_vec_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_24b8f25e___new_vec_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_b3a55ff2_ay__new_vec_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_60728cf1_ay__new_vec_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_a78d61fe_ay__new_vec_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_cabd8bb0_ray__new_vec_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_cc5f0c7f_y__new_vec_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_5f88be6f___new_vec_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_a642e907_y__new_vec_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_c323b7fc_ay__new_vec_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_7d14d47b_ount_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_dc1963e9_null_count_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_680f49a3_ull_count_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_5033b955_ull_count_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_7694943e_ull_count_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_46894b66__null_count_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_dff8073e__null_count_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_e42d1c76__null_count_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_d9196994___null_count_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_aaadc779___null_count_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_56691913_null_count_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_25f189cd_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_8804f1dc_null_count_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_1600d182_ull_count_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_bda22d01_null_count_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_9b127f52__null_count_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_f3c912d3_um_falses_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_3c8f850e_num_trues_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_e7dc8743_unks_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_e6b900a5_pty_chunks_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_bd478cdd_ty_chunks_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_4f1e71c3_ty_chunks_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_2098cca3_ty_chunks_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_d7429bcf_mpty_chunks_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_1fdd0ddd_mpty_chunks_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_9fa7bc35_mpty_chunks_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_cd3946dc_empty_chunks_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_0864165a_empty_chunks_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_94c57fff_pty_chunks_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_6344cf22_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_bea9c0fd_pty_chunks_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_d3019f5d_ty_chunks_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_8102d4be_pty_chunks_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_140b2f46_mpty_chunks_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_89524280_bernoulli_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_611e73b2__mut_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_56db4fc9_echunk_mut_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_ec5e5374_chunk_mut_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_c131b1d9_chunk_mut_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_0ec47904_chunk_mut_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_127ae651_rechunk_mut_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_6c189b97_rechunk_mut_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_a49856c4_rechunk_mut_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_ea918d95__rechunk_mut_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_33d27717__rechunk_mut_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_d5823983_echunk_mut_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_e68a5dee_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_802f681d_echunk_mut_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_12f6c4fe_chunk_mut_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_5ed52617_echunk_mut_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_499e300c_rechunk_mut_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_1e89cafd_ield_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_93b03741__ref_field_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_32feb96a_ref_field_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_f1ea39a9_ref_field_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_9b436403_ref_field_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_f5492b08___ref_field_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_49b5da23___ref_field_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_e6f4aaca___ref_field_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_9e73eca6_y__ref_field_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_fa63ff83_y__ref_field_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_79375322__ref_field_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_c50542ba_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_8716713a__ref_field_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_f8e13f21_ref_field_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_942ccd12__ref_field_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_f834c959___ref_field_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_652f504c_name_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_cc934501_ay__rename_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_e355bf6f_y__rename_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_824368bc_y__rename_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_23865d43_y__rename_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_87ea5893_ray__rename_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_440eaa56_ray__rename_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_758089bb_ray__rename_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_62ef5cf4_rray__rename_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_6f47269f_rray__rename_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_dc0d0840_ay__rename_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_060c6927_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_116869ae_ay__rename_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_4e276451_y__rename_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_b436be5e_ay__rename_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_d07b1504_ray__rename_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_b3adb3bc_ered_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_c96ca912_ered_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_993c040d_fast_explode_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_91dcee93_list_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_275ea9e4_plode_list_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_5a9eab84_lode_list_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_c8f82a50_lode_list_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_3e42fe3d_lode_list_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_999b89e4_xplode_list_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_b9d24ff1_xplode_list_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_b53e525e_xplode_list_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_1b1a9fa5_explode_list_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_f75aec34_explode_list_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_5d1e0c37_plode_list_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_93ff196c_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_9e274684_plode_list_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_5f2b7152_lode_list_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_2785beff_plode_list_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_f42a2054_xplode_list_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_aa33ffa6_lags_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_830c5e2d__set_flags_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_62b3c864_set_flags_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_109c6240_set_flags_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_25e9a4c8_set_flags_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_4da5454f___set_flags_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_b35bf015___set_flags_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_e4d4b5c7___set_flags_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_26781ce3_y__set_flags_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_a1a6cf50_y__set_flags_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_05ea0bf8__set_flags_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_77b0f4d9_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_c6b1dee0__set_flags_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_9e4d538c_set_flags_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_251e0857__set_flags_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_9f6ef786___set_flags_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_c369b728__inner_dtype_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_fedfb5b2_flag_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_aa77faec_orted_flag_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_3cf10926_rted_flag_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_e17ee5e0_rted_flag_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_70a25b96_rted_flag_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_493959ae_sorted_flag_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_f3ff649f_sorted_flag_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_8981fd49_sorted_flag_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_e85fa438__sorted_flag_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_15fd9c19__sorted_flag_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_6de95b16_orted_flag_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_b30f814e_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_09cc7f81_orted_flag_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_59e84479_rted_flag_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_6fedd6e6_orted_flag_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_e36b20d8_sorted_flag_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_eda00a8d__fit_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_d820f5f7_ink_to_fit_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_aa269f5f_nk_to_fit_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_0805207f_nk_to_fit_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_cbe5ebd1_nk_to_fit_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_6f77353f_rink_to_fit_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_6efb698c_rink_to_fit_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_b476aafe_rink_to_fit_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_e675f837_hrink_to_fit_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_a5428aea_hrink_to_fit_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_4b86eaec_ink_to_fit_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_f4a9d1d8_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_a7b0f80d_ink_to_fit_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_c264a387_nk_to_fit_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_63ca92fa_ink_to_fit_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_70dd11b2_rink_to_fit_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_ce6c3f82_lice_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_7a2eaa89_ray__slice_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_c04480fa_ay__slice_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_e1184d9a_ay__slice_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_8fc442cd_ay__slice_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_b4b00cc2_rray__slice_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_d9082bf6_rray__slice_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_f3c74869_rray__slice_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_b3f2dae2_array__slice_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_ae4bbc4e_array__slice_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_51f6e506_ray__slice_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_f8a12f79_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_6551fb95_ray__slice_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_36e66c75_ay__slice_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_7ab6a7aa_ray__slice_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_47b12aa8_rray__slice_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_1505ee52_t_at_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_d943a7ff___split_at_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_7a0443f3__split_at_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_5cf04692__split_at_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_af352d6d__split_at_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_63bf394f_y__split_at_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_25483a31_y__split_at_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_3ea2c659_y__split_at_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_e1415c57_ay__split_at_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_f4c7d202_ay__split_at_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_bbe3b336___split_at_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_d290fd0a_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_2feb3417___split_at_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_aeb815d5__split_at_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_33f2eb4c___split_at_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_bd0d16bd_y__split_at_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_c93b6cdd_rray__sum_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_34949b18_y__to_vec_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_8d8f65f2_y__to_vec_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_c3fb8102_ray__to_vec_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_452b307c_ray__to_vec_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_4e711c15_ray__to_vec_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_a04062c4_rray__to_vec_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_7cba491e_ay__to_vec_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_4e24be5f_y__to_vec_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_d6238444_ay__to_vec_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_8d29dc80_ray__to_vec_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_dde81979_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_93362f13_type_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_626e4ed9_ching_type_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_91a9be8c_hing_type_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_f98ada41_hing_type_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_d13248bb_hing_type_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_4991c43e_tching_type_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_9b8671e1_tching_type_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_9b10179a_tching_type_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_e5c51b50_atching_type_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_92bd22f1_atching_type_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_fa8c7697_ching_type_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_d8350108_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_cccf7a48_ching_type_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_c7fe0c44_hing_type_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_ecbcc9c5_ching_type_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_5598a541_tching_type_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_7b93eec1_list_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_597bf99a_plode_list_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_682e3dda_lode_list_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_8fdd8549_lode_list_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_fb1584d8_lode_list_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_7c8dd971_xplode_list_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_67dc0ccf_xplode_list_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_a95e8046_xplode_list_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_08c68d33_explode_list_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_3233fb0c_explode_list_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_9c372e7c_plode_list_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_bf86ef77_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_df04f327_plode_list_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_077e041d_lode_list_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_61fd0abe_plode_list_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_22c80723_xplode_list_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_cf9f8b72_inner_values_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_121096c8_name_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_d2c4e9a3__with_name_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_c01c2413_with_name_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_8e203f32_with_name_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_3cedf1cc_with_name_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_1b2f3670___with_name_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_301ccd2e___with_name_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_213dd8a7___with_name_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_8ba3a6c2_y__with_name_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_765ef497_y__with_name_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_27251d82__with_name_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_264a2a08_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_8bef2463__with_name_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_b4d8d235_with_name_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_8e11a918__with_name_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_204119d2___with_name_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_7eff379f_flag_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_a455e35b_orted_flag_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_a02ed392_rted_flag_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_09ca159d_rted_flag_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_e0d13366_rted_flag_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_d82e55b1_sorted_flag_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_d2d247f4_sorted_flag_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_73d9b4e6_sorted_flag_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_9b0a2245__sorted_flag_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_890c234e__sorted_flag_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_2734854e_orted_flag_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_f3242401_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_97a4968b_orted_flag_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_3013acc3_rted_flag_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_b1f221c2_orted_flag_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_b7b48b8e_sorted_flag_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_6a5930a5_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_21fa0918_d_array__builder__boolean__booleanchunkedbuilder)?;
     m.function_meta(f_56da4a7e_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_ee06c05e_lder__list__anonymous__anonymousownedlistbuilder)?;
@@ -9384,6 +12808,20 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_466e9533_rs_core__chunked_array__flags__statisticsflagsim)?;
     m.function_meta(f_c6e97031_rs_core__chunked_array__flags__statisticsflagsim)?;
     m.function_meta(f_f655707a_rs_core__chunked_array__flags__statisticsflagsim)?;
+    m.function_meta(f_ad4c2ddd_hunked_array__logical__datetime__datetimechunked)?;
+    m.function_meta(f_1f6aaab0_hunked_array__logical__duration__durationchunked)?;
+    m.function_meta(f_c2865934_hunked_array__logical__datetime__datetimechunked)?;
+    m.function_meta(f_5a1c0fcd_hunked_array__logical__duration__durationchunked)?;
+    m.function_meta(f_75c62335__core__chunked_array__logical__date__datechunked)?;
+    m.function_meta(f_eb609645_hunked_array__logical__datetime__datetimechunked)?;
+    m.function_meta(f_287fdc6a__core__chunked_array__logical__time__timechunked)?;
+    m.function_meta(f_2d20eb46_hunked_array__logical__datetime__datetimechunked)?;
+    m.function_meta(f_ca64718d_hunked_array__logical__duration__durationchunked)?;
+    m.function_meta(f_37140ebe_hunked_array__logical__datetime__datetimechunked)?;
+    m.function_meta(f_7cb53e9a__core__chunked_array__logical__date__datechunked)?;
+    m.function_meta(f_3d24a6f8_hunked_array__logical__datetime__datetimechunked)?;
+    m.function_meta(f_79ab4799_hunked_array__logical__duration__durationchunked)?;
+    m.function_meta(f_40d01ea7__core__chunked_array__logical__time__timechunked)?;
     m.function_meta(f_69f14d38_olars_core__chunked_array__ops__fillnullstrategy)?;
     m.function_meta(f_9a80fb08_nked_array__ops__search_sorted__searchsortedside)?;
     m.function_meta(f_8011afff_d_array__ops__sort__options__sortmultipleoptions)?;
@@ -9613,6 +13051,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_c192b944_mn__with_name_polars_core__frame__column__column)?;
     m.function_meta(f_b46646d8_n__xor_reduce_polars_core__frame__column__column)?;
     m.function_meta(f_08047910_umn__zip_with_polars_core__frame__column__column)?;
+    m.function_meta(f_112bdf52_ith_same_type_polars_core__frame__column__column)?;
     m.function_meta(f_88f2142e_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_efbe3f35_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_24b3abe5_polars_core__frame__column__scalar__scalarcolumn)?;
@@ -11116,56 +14555,102 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_b0a5e27e_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_6c544a99_ntoseries__is_series_polars_core__series__series)?;
     m.function_meta(f_ac2a8bf6_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_a581e353_it__and_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_8685c2c7_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_c44193f1_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_88546331_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_7a45896f_rait__arg_sort_polars_core__series__series_deref)?;
     m.function_meta(f_bdf16741_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_6ae0b76b_it__arg_unique_polars_core__series__series_deref)?;
     m.function_meta(f_6cd2415a_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_a8c81064_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_3939ccb5_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_07eaba68_it__drop_nulls_polars_core__series__series_deref)?;
     m.function_meta(f_4085410c_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_f2ce3b92_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_143ffbed_strait__filter_polars_core__series__series_deref)?;
     m.function_meta(f_316cbcf9_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_5b485414_estrait__first_polars_core__series__series_deref)?;
     m.function_meta(f_7b7dda97_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_dd32a0e6_first_non_null_polars_core__series__series_deref)?;
     m.function_meta(f_dd2b2821_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_2b9e1429_ait__has_nulls_polars_core__series__series_deref)?;
+    m.function_meta(f_1dd6572d_rait__is_empty_polars_core__series__series_deref)?;
     m.function_meta(f_d111e869_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_a14cd771___is_full_null_polars_core__series__series_deref)?;
     m.function_meta(f_606c580d_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_bc54cac3_t__is_not_null_polars_core__series__series_deref)?;
     m.function_meta(f_3349d234_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_003464f6_trait__is_null_polars_core__series__series_deref)?;
     m.function_meta(f_37873338_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_24183db2_iestrait__last_polars_core__series__series_deref)?;
     m.function_meta(f_d1334bd3_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_1041e7b1__last_non_null_polars_core__series__series_deref)?;
+    m.function_meta(f_237286ca_riestrait__len_polars_core__series__series_deref)?;
     m.function_meta(f_796a976d_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_4e640341_estrait__limit_polars_core__series__series_deref)?;
     m.function_meta(f_b0b2f858_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_b6ee60fe_it__max_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_9824c31a_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_42dd4e55_iestrait__mean_polars_core__series__series_deref)?;
     m.function_meta(f_225b1eb9_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_4074c610_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_517751fb_strait__median_polars_core__series__series_deref)?;
     m.function_meta(f_a871e882_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_669d4d8d__median_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_6cfad1b5_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_3faec49d_it__min_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_b7597cbe_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_de15bbfe_rait__n_chunks_polars_core__series__series_deref)?;
     m.function_meta(f_4185291c_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_45b85ca1_rait__n_unique_polars_core__series__series_deref)?;
     m.function_meta(f_5bfea71f_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_977d8f0a_iestrait__name_polars_core__series__series_deref)?;
     m.function_meta(f_d621bb32_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_b4629dad_new_from_index_polars_core__series__series_deref)?;
     m.function_meta(f_206b837a_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_68285b51_it__null_count_polars_core__series__series_deref)?;
     m.function_meta(f_4b78fa0c_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_3997e9b1_ait__or_reduce_polars_core__series__series_deref)?;
+    m.function_meta(f_174a0df4_ropagate_nulls_polars_core__series__series_deref)?;
     m.function_meta(f_f3c9536d_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_dfb0d1ca_uantile_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_d8e5ddf4_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_90cfcd2c_antiles_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_1242465a_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_f0ba8a52_trait__rechunk_polars_core__series__series_deref)?;
     m.function_meta(f_4b848f65_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_993327cb_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_8db31b0a_trait__reverse_polars_core__series__series_deref)?;
     m.function_meta(f_a8bcb5d6_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_afb06355_estrait__shift_polars_core__series__series_deref)?;
     m.function_meta(f_c38f92a8_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_6ee529de_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_c49bd5c9_estrait__slice_polars_core__series__series_deref)?;
     m.function_meta(f_c0016bc4_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_06612406_ait__sort_with_polars_core__series__series_deref)?;
     m.function_meta(f_e3d1e712_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_e99f78e0_rait__split_at_polars_core__series__series_deref)?;
     m.function_meta(f_19b5e3ca_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_b14f5887_riestrait__std_polars_core__series__series_deref)?;
     m.function_meta(f_3193f9ba_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_b39bad9f_it__std_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_58e48a09_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_c30c5d5b_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_b14ab1d4_iestrait__take_polars_core__series__series_deref)?;
     m.function_meta(f_731e79df_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_53f3f74b_it__take_slice_polars_core__series__series_deref)?;
+    m.function_meta(f_69c3aa17_alized_offsets_polars_core__series__series_deref)?;
     m.function_meta(f_07e98a4a_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_adbf9eca_strait__unique_polars_core__series__series_deref)?;
     m.function_meta(f_94c2e4bc_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_327837a5_ait__unique_id_polars_core__series__series_deref)?;
     m.function_meta(f_7feb1f86_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_97081a41_riestrait__var_polars_core__series__series_deref)?;
     m.function_meta(f_94893be1_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_6407b502_it__var_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_5ae5b7ea_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_897302b6_it__xor_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_c4e341b0_cloud__credential_provider__plcredentialprovider)?;
     m.function_meta(f_67da5d37__credential_provider__credentialproviderfunction)?;
     m.function_meta(f_87471c27_me__intolazy__lazy_polars_lazy__frame__lazyframe)?;
