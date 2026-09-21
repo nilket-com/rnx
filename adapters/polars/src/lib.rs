@@ -162,6 +162,9 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		.build()
 		.map_err(err)?;
 	m.function("lit", values::literal).build().map_err(err)?;
+	m.function("version", || String::from(polars::VERSION))
+		.build()
+		.map_err(err)?;
 	m.function_meta(lazy).map_err(err)?;
 	m.function_meta(filter).map_err(err)?;
 	m.function_meta(group_by).map_err(err)?;
@@ -201,6 +204,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		(
 			"polars::lit".into(),
 			"lit(value) -> Result<Expr>: bool, i64, finite f64 or string",
+		),
+		(
+			"polars::version".into(),
+			"version() -> String: the Rust polars crate version this executable was built with",
 		),
 		(
 			"polars::DataFrame::write_parquet_new".into(),

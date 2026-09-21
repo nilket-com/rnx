@@ -395,6 +395,8 @@ fn lazy_values_stay_opaque_and_unexecuted_and_presentation_runs_no_engine() {
 	assert_eq!(w.text("plan"), "<::polars::LazyFrame>");
 	assert_eq!(w.text("sales.lazy()"), "<::polars::LazyFrame>");
 	assert_eq!(w.text(r#"polars::col("qty")"#), "<::polars::Expr>");
+	// The pinned crate version (adapters/polars/Cargo.toml); a bump must change both.
+	assert_eq!(w.text("polars::version()"), "\"0.55.2\"");
 	assert_eq!(
 		w.text(r#"sales.lazy().group_by([polars::col("item")])?"#),
 		"<::polars::LazyGroupBy>"

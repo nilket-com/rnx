@@ -68,6 +68,9 @@ borrow: a frame, plan, expression, path, schema or expression array can be reuse
 comparisons; `>` returns a boolean in Rune and cannot build an expression. Both
 `a.add(b)` and `a + b` take Expr operands; use `lit` for scalars. Collect executes
 again on each call; nonexistent columns are catchable errors at collect.
+`polars::version()` returns the Rust `polars` crate version the executable
+was built with (`"0.55.2"`). Rust and Python Polars use separate version
+tracks; their numbers alone don't establish release age or feature parity.
 
 CSV schema is an ordered, nonempty vector of `(name, dtype)` tuples, with unique
 nonempty names and exactly `string`, `i64`, `f64` or `bool`. The raw header must
