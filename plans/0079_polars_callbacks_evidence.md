@@ -193,7 +193,7 @@ Variants are interleaved per iteration and every raw sample is kept in
 
 What can be said: a callback invocation costs about a quarter of a
 microsecond on one thread (one `Vm` per call), and wrapping a small
-series in and out adds about a hundredth of that; a per-element callback
+series in and out adds about 4% of that; a per-element callback
 over a million elements costs a quarter of a second end to end, two
 hundred times the Rust closure; the commit clone of `apply_mut` is not
 separable from the noise at a million elements (paired median near

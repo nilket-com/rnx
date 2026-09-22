@@ -463,7 +463,7 @@ probe (`probes/0079`) and its numbers in the evidence.
 4. **Threading.** Polars invokes callbacks on its own threads, in
    parallel; each invocation is its own `Vm` (about a quarter of a
    microsecond per invocation on one thread, the conversion of a small
-   series in and out about a hundredth of that; under parallel
+   series in and out about 4% of that; under parallel
    execution the probe measured throughput, not latency). A callback may call unrouted bindings; it may not call a
    routed binding (refused at `engine::run` with the binding named) and
    no callback may start under another on the same thread (refused by
