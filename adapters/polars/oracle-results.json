@@ -1,5 +1,5 @@
 {
-  "cases": 1859,
+  "cases": 1898,
   "results": [
     {
       "detail": "false",
@@ -10,7 +10,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(false)",
+      "detail": "Some(5:false)",
       "id": "polars_core__chunked_array__chunkedarray__all_kleene__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::all_kleene",
       "policy": "ordered (operation not listed as unordered)",
@@ -26,7 +26,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(true)",
+      "detail": "Some(4:true)",
       "id": "polars_core__chunked_array__chunkedarray__any_kleene__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::any_kleene",
       "policy": "ordered (operation not listed as unordered)",
@@ -66,7 +66,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1)",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__arg_max_binary__on__binarychunked",
       "path": "polars_core::chunked_array::ChunkedArray::arg_max_binary",
       "policy": "ordered (operation not listed as unordered)",
@@ -74,7 +74,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__arg_min_binary__on__binarychunked",
       "path": "polars_core::chunked_array::ChunkedArray::arg_min_binary",
       "policy": "ordered (operation not listed as unordered)",
@@ -106,11 +106,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "x:BinaryOffset:[]",
       "id": "polars_core__chunked_array__chunkedarray__clear__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::clear",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -234,11 +234,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])]",
       "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::drop_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -362,11 +362,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "BinaryOffset",
       "id": "polars_core__chunked_array__chunkedarray__dtype__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::dtype",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -586,11 +586,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([]), Binary([97, 98]), Binary([99]), Binary([])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__extend__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::extend",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -626,7 +626,7 @@
       "unordered": false
     },
     {
-      "detail": "[x:Int64:[Int64(1), Int64(2), Int64(3)], y:String:[String(\"a\"), String(\"b\"), String(\"c\")], z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
+      "detail": "[38:x:Int64:[Int64(1), Int64(2), Int64(3)], 48:y:String:[String(\"a\"), String(\"b\"), String(\"c\")], 52:z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
       "id": "polars_core__chunked_array__chunkedarray__fields_as_columns__on__structchunked",
       "path": "polars_core::chunked_array::ChunkedArray::fields_as_columns",
       "policy": "ordered (operation not listed as unordered)",
@@ -634,7 +634,7 @@
       "unordered": false
     },
     {
-      "detail": "[x:Int64:[Int64(1), Int64(2), Int64(3)], y:String:[String(\"a\"), String(\"b\"), String(\"c\")], z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
+      "detail": "[38:x:Int64:[Int64(1), Int64(2), Int64(3)], 48:y:String:[String(\"a\"), String(\"b\"), String(\"c\")], 52:z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
       "id": "polars_core__chunked_array__chunkedarray__fields_as_series__on__structchunked",
       "path": "polars_core::chunked_array::ChunkedArray::fields_as_series",
       "policy": "ordered (operation not listed as unordered)",
@@ -642,7 +642,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(true)",
+      "detail": "Some(4:true)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
@@ -650,7 +650,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1.5)",
+      "detail": "Some(3:1.5)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__float32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
@@ -658,7 +658,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1.5)",
+      "detail": "Some(3:1.5)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__float64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
@@ -674,7 +674,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1)",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__int32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
@@ -682,7 +682,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1)",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__int64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
@@ -698,7 +698,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(a)",
+      "detail": "Some(1:a)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__stringchunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
@@ -714,7 +714,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1)",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__idxca",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
@@ -722,7 +722,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1)",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__uint64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
@@ -738,7 +738,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1)",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__first_false_idx__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_false_idx",
       "policy": "ordered (operation not listed as unordered)",
@@ -746,15 +746,15 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__binarychunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -762,7 +762,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -770,7 +770,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__float32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -778,7 +778,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__float64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -794,7 +794,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__int32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -802,7 +802,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__int64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -818,7 +818,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__listchunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -826,7 +826,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__stringchunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -842,7 +842,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__idxca",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -850,7 +850,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__uint64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -866,11 +866,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "None",
       "id": "polars_core__chunked_array__chunkedarray__first_null__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -986,7 +986,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_true_idx__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_true_idx",
       "policy": "ordered (operation not listed as unordered)",
@@ -1082,11 +1082,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "x:BinaryOffset:[Null, Null]",
       "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::full_null_like",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1218,7 +1218,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(true)",
+      "detail": "Some(4:true)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
@@ -1226,7 +1226,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3.5)",
+      "detail": "Some(3:3.5)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__float32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
@@ -1234,7 +1234,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3.5)",
+      "detail": "Some(3:3.5)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__float64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
@@ -1250,7 +1250,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3)",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__int32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
@@ -1258,7 +1258,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3)",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__int64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
@@ -1274,7 +1274,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(ccc)",
+      "detail": "Some(3:ccc)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__stringchunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
@@ -1290,7 +1290,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3)",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__idxca",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
@@ -1298,7 +1298,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3)",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__uint64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
@@ -1322,11 +1322,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1450,11 +1450,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "StatisticsFlags(0x0)",
       "id": "polars_core__chunked_array__chunkedarray__get_flags__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1610,11 +1610,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::has_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1770,6 +1770,86 @@
       "unordered": false
     },
     {
+      "detail": "[3:1.5, 3:2.5, 3:3.5]",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[3:1.5, 3:2.5, 3:3.5]",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__int16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "[1:1, 1:2, 1:3]",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__int32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[1:1, 1:2, 1:3]",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__int64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__int8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__uint16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "[1:1, 1:2, 1:3]",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__idxca",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[1:1, 1:2, 1:3]",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__uint64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__uint8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
       "detail": "x:Time:[Time(1), Time(2), Time(3)]",
       "id": "polars_core__chunked_array__chunkedarray__into_time__on__int64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::into_time",
@@ -1778,11 +1858,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__is_empty__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_empty",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1906,11 +1986,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
       "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_not_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2034,11 +2114,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
       "id": "polars_core__chunked_array__chunkedarray__is_null__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2162,11 +2242,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "true",
       "id": "polars_core__chunked_array__chunkedarray__is_optimal_aligned__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2290,11 +2370,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "Not",
       "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2418,7 +2498,103 @@
       "unordered": false
     },
     {
-      "detail": "Some(true)",
+      "detail": "[12:Some(4:true), 13:Some(5:false), 12:Some(4:true)]",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__booleanchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[11:Some(3:1.5), 11:Some(3:2.5), 11:Some(3:3.5)]",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[11:Some(3:1.5), 11:Some(3:2.5), 11:Some(3:3.5)]",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__int16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__int32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__int64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__int8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "[9:Some(1:a), 10:Some(2:bb), 11:Some(3:ccc)]",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__stringchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__uint16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__idxca",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__uint64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__iter__on__uint8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "Some(4:true)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
@@ -2426,7 +2602,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3.5)",
+      "detail": "Some(3:3.5)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__float32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
@@ -2434,7 +2610,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3.5)",
+      "detail": "Some(3:3.5)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__float64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
@@ -2450,7 +2626,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3)",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__int32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
@@ -2458,7 +2634,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3)",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__int64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
@@ -2474,7 +2650,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(ccc)",
+      "detail": "Some(3:ccc)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__stringchunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
@@ -2490,7 +2666,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3)",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__idxca",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
@@ -2498,7 +2674,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(3)",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__uint64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
@@ -2514,15 +2690,15 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__binarychunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2530,7 +2706,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2538,7 +2714,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__float32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2546,7 +2722,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__float64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2562,7 +2738,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__int32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2570,7 +2746,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__int64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2586,7 +2762,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1)",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__listchunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2594,7 +2770,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__stringchunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2610,7 +2786,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__idxca",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2618,7 +2794,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__uint64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -2634,11 +2810,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "3",
       "id": "polars_core__chunked_array__chunkedarray__len__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::len",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2762,7 +2938,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(true)",
+      "detail": "Some(4:true)",
       "id": "polars_core__chunked_array__chunkedarray__max__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::max",
       "policy": "ordered (operation not listed as unordered)",
@@ -2770,7 +2946,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0.6666666666666666)",
+      "detail": "Some(18:0.6666666666666666)",
       "id": "polars_core__chunked_array__chunkedarray__mean__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::mean",
       "policy": "ordered (operation not listed as unordered)",
@@ -2778,7 +2954,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(false)",
+      "detail": "Some(5:false)",
       "id": "polars_core__chunked_array__chunkedarray__min__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::min",
       "policy": "ordered (operation not listed as unordered)",
@@ -2786,11 +2962,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "x",
       "id": "polars_core__chunked_array__chunkedarray__name__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2994,11 +3170,115 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "[4:true, 5:false, 4:true]",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__booleanchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[3:1.5, 3:2.5, 3:3.5]",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[3:1.5, 3:2.5, 3:3.5]",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__int16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "[1:1, 1:2, 1:3]",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__int32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[1:1, 1:2, 1:3]",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__int64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__int8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "[1:a, 2:bb, 3:ccc]",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__stringchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__uint16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "[1:1, 1:2, 1:3]",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__idxca",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[1:1, 1:2, 1:3]",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__uint64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__uint8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "fixture_failed",
+      "unordered": false
+    },
+    {
+      "detail": "[27::Int64:[Int64(1), Int64(2)], 17::Int64:[Int64(3)]]",
+      "id": "polars_core__chunked_array__chunkedarray__no_null_series_iter__on__listchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::no_null_series_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "0",
       "id": "polars_core__chunked_array__chunkedarray__null_count__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::null_count",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3138,11 +3418,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::prune_empty_chunks",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3274,11 +3554,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::rechunk_mut",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3402,11 +3682,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "Field { name: \"x\", dtype: BinaryOffset }",
       "id": "polars_core__chunked_array__chunkedarray__ref_field__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::ref_field",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3530,11 +3810,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rename__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::rename",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3658,19 +3938,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
-      "id": "polars_core__chunked_array__chunkedarray__row_decode_ordered__on__binaryoffsetchunked",
-      "path": "polars_core::chunked_array::ChunkedArray::row_decode_ordered",
+      "detail": "[36:Some(27::Int64:[Int64(1), Int64(2)]), 26:Some(17::Int64:[Int64(3)])]",
+      "id": "polars_core__chunked_array__chunkedarray__series_iter__on__listchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::series_iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
-      "unordered": false
-    },
-    {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
-      "id": "polars_core__chunked_array__chunkedarray__row_decode_unordered__on__binaryoffsetchunked",
-      "path": "polars_core::chunked_array::ChunkedArray::row_decode_unordered",
-      "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3682,11 +3954,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3810,11 +4082,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_flags__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3946,11 +4218,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4074,11 +4346,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::shrink_to_fit",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4202,11 +4474,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "x:BinaryOffset:[Binary([])]",
       "id": "polars_core__chunked_array__chunkedarray__slice__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::slice",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4330,7 +4602,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__sum__on__booleanchunked",
       "path": "polars_core::chunked_array::ChunkedArray::sum",
       "policy": "ordered (operation not listed as unordered)",
@@ -4338,7 +4610,7 @@
       "unordered": false
     },
     {
-      "detail": "[Some(1.5), Some(2.5), Some(3.5)]",
+      "detail": "[11:Some(3:1.5), 11:Some(3:2.5), 11:Some(3:3.5)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__float32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
@@ -4346,7 +4618,7 @@
       "unordered": false
     },
     {
-      "detail": "[Some(1.5), Some(2.5), Some(3.5)]",
+      "detail": "[11:Some(3:1.5), 11:Some(3:2.5), 11:Some(3:3.5)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__float64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
@@ -4362,7 +4634,7 @@
       "unordered": false
     },
     {
-      "detail": "[Some(1), Some(2), Some(3)]",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__int32chunked",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
@@ -4370,7 +4642,7 @@
       "unordered": false
     },
     {
-      "detail": "[Some(1), Some(2), Some(3)]",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__int64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
@@ -4394,7 +4666,7 @@
       "unordered": false
     },
     {
-      "detail": "[Some(1), Some(2), Some(3)]",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__idxca",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
@@ -4402,7 +4674,7 @@
       "unordered": false
     },
     {
-      "detail": "[Some(1), Some(2), Some(3)]",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__uint64chunked",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
@@ -4426,11 +4698,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "SchemaMismatch",
       "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::unpack_series_matching_type",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "both_error",
       "unordered": false
     },
     {
@@ -4554,11 +4826,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::unset_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4690,11 +4962,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])]",
       "id": "polars_core__chunked_array__chunkedarray__with_name__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4818,11 +5090,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "x:BinaryOffset:[Binary([97, 98]), Binary([99]), Binary([])]",
       "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5026,7 +5298,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(StatisticsFlags(IS_SORTED_DSC))",
+      "detail": "Some(30:StatisticsFlags(IS_SORTED_DSC))",
       "id": "polars_core__chunked_array__flags__statisticsflags__from_bits",
       "path": "polars_core::chunked_array::flags::StatisticsFlags::from_bits",
       "policy": "ordered (operation not listed as unordered)",
@@ -5522,7 +5794,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(true)",
+      "detail": "Some(4:true)",
       "id": "polars_core__datatypes__dtype__datatype__can_cast_to",
       "path": "polars_core::datatypes::dtype::DataType::can_cast_to",
       "policy": "ordered (operation not listed as unordered)",
@@ -5914,7 +6186,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(UInt64)",
+      "detail": "Some(6:UInt64)",
       "id": "polars_core__datatypes__dtype__datatype__numeric_to_unsigned_bit_repr",
       "path": "polars_core::datatypes::dtype::DataType::numeric_to_unsigned_bit_repr",
       "policy": "ordered (operation not listed as unordered)",
@@ -5970,7 +6242,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(Float64)",
+      "detail": "Some(7:Float64)",
       "id": "polars_core__datatypes__dtype__unknownkind__materialize",
       "path": "polars_core::datatypes::dtype::UnknownKind::materialize",
       "policy": "ordered (operation not listed as unordered)",
@@ -6042,7 +6314,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(\"x\")",
+      "detail": "Some(3:\"x\")",
       "id": "polars_core__datatypes__temporal__time_zone__timezone__opt_try_new",
       "path": "polars_core::datatypes::temporal::time_zone::TimeZone::opt_try_new",
       "policy": "ordered (operation not listed as unordered)",
@@ -6130,7 +6402,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(38:x:Int64:[Int64(1), Int64(2), Int64(3)])",
       "id": "polars_core__frame__column__column__as_series",
       "path": "polars_core::frame::column::Column::as_series",
       "policy": "ordered (operation not listed as unordered)",
@@ -6282,7 +6554,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__frame__column__column__first_non_null",
       "path": "polars_core::frame::column::Column::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -6458,7 +6730,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__frame__column__column__last_non_null",
       "path": "polars_core::frame::column::Column::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -6914,7 +7186,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(38:x:Int64:[Int64(1), Int64(2), Int64(3)])",
       "id": "polars_core__frame__column__column__try_i64",
       "path": "polars_core::frame::column::Column::try_i64",
       "policy": "ordered (operation not listed as unordered)",
@@ -7330,7 +7602,7 @@
       "unordered": false
     },
     {
-      "detail": "[Int64, String, Float64]",
+      "detail": "[5:Int64, 6:String, 7:Float64]",
       "id": "polars_core__frame__dataframe__dataframe__dtypes",
       "path": "polars_core::frame::dataframe::DataFrame::dtypes",
       "policy": "ordered (operation not listed as unordered)",
@@ -7394,7 +7666,7 @@
       "unordered": false
     },
     {
-      "detail": "[Field { name: \"x\", dtype: Int64 }, Field { name: \"y\", dtype: String }, Field { name: \"z\", dtype: Float64 }]",
+      "detail": "[33:Field { name: \"x\", dtype: Int64 }, 34:Field { name: \"y\", dtype: String }, 35:Field { name: \"z\", dtype: Float64 }]",
       "id": "polars_core__frame__dataframe__dataframe__fields",
       "path": "polars_core::frame::dataframe::DataFrame::fields",
       "policy": "ordered (operation not listed as unordered)",
@@ -7434,7 +7706,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__frame__dataframe__dataframe__get_column_index",
       "path": "polars_core::frame::dataframe::DataFrame::get_column_index",
       "policy": "ordered (operation not listed as unordered)",
@@ -7442,7 +7714,7 @@
       "unordered": false
     },
     {
-      "detail": "[x, y, z]",
+      "detail": "[1:x, 1:y, 1:z]",
       "id": "polars_core__frame__dataframe__dataframe__get_column_names",
       "path": "polars_core::frame::dataframe::DataFrame::get_column_names",
       "policy": "ordered (operation not listed as unordered)",
@@ -7450,7 +7722,7 @@
       "unordered": false
     },
     {
-      "detail": "[x, y, z]",
+      "detail": "[1:x, 1:y, 1:z]",
       "id": "polars_core__frame__dataframe__dataframe__get_column_names_owned",
       "path": "polars_core::frame::dataframe::DataFrame::get_column_names_owned",
       "policy": "ordered (operation not listed as unordered)",
@@ -7458,7 +7730,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(String)",
+      "detail": "Some(6:String)",
       "id": "polars_core__frame__dataframe__dataframe__get_supertype",
       "path": "polars_core::frame::dataframe::DataFrame::get_supertype",
       "policy": "ordered (operation not listed as unordered)",
@@ -7506,7 +7778,7 @@
       "unordered": false
     },
     {
-      "detail": "[x:Int64:[Int64(1), Int64(2), Int64(3)], y:String:[String(\"a\"), String(\"b\"), String(\"c\")], z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
+      "detail": "[38:x:Int64:[Int64(1), Int64(2), Int64(3)], 48:y:String:[String(\"a\"), String(\"b\"), String(\"c\")], 52:z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
       "id": "polars_core__frame__dataframe__dataframe__into_columns",
       "path": "polars_core::frame::dataframe::DataFrame::into_columns",
       "policy": "ordered (operation not listed as unordered)",
@@ -7533,6 +7805,14 @@
       "detail": ":Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
       "id": "polars_core__frame__dataframe__dataframe__is_unique",
       "path": "polars_core::frame::dataframe::DataFrame::is_unique",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[38:x:Int64:[Int64(1), Int64(2), Int64(3)], 48:y:String:[String(\"a\"), String(\"b\"), String(\"c\")], 52:z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
+      "id": "polars_core__frame__dataframe__dataframe__materialized_column_iter",
+      "path": "polars_core::frame::dataframe::DataFrame::materialized_column_iter",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -7682,7 +7962,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)])",
+      "detail": "Some(52:z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)])",
       "id": "polars_core__frame__dataframe__dataframe__select_at_idx",
       "path": "polars_core::frame::dataframe::DataFrame::select_at_idx",
       "policy": "ordered (operation not listed as unordered)",
@@ -7690,7 +7970,7 @@
       "unordered": false
     },
     {
-      "detail": "recv=shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))];ret=[255, 255, 255, 255, 24, 1, 0, 0, 4, 0, 0, 0, 242, 255, 255, 255, 20, 0, 0, 0, 4, 0, 1, 0, 0, 0, 10, 0, 11, 0, 8, 0, 10, 0, 4, 0, 242, 255, 255, 255, 76, 0, 0, 0, 16, 0, 0, 0, 0, 0, 10, 0, 12, 0, 0, 0, 4, 0, 8, 0,",
+      "detail": "recv=shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))];ret=[3:255, 3:255, 3:255, 3:255, 2:24, 1:1, 1:0, 1:0, 1:4, 1:0, 1:0, 1:0, 3:242, 3:255, 3:255, 3:255, 2:20, 1:0, 1:0, 1:0, 1:4, 1:0, 1:1, 1:0, 1:0, 1:0, 2:10, 1:0, 2:11, 1:0, 1:8, 1:0, 2:10, 1:0, 1:4, 1:0, 3:242, 3:25",
       "id": "polars_core__frame__dataframe__dataframe__serialize_to_bytes",
       "path": "polars_core::frame::dataframe::DataFrame::serialize_to_bytes",
       "policy": "ordered (operation not listed as unordered)",
@@ -7754,7 +8034,7 @@
       "unordered": false
     },
     {
-      "detail": "[shape=(1, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5))], shape=(2, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]]",
+      "detail": "[97:shape=(1, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5))], 137:shape=(2, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]]",
       "id": "polars_core__frame__dataframe__dataframe__split_chunks_by_n",
       "path": "polars_core::frame::dataframe::DataFrame::split_chunks_by_n",
       "policy": "ordered (operation not listed as unordered)",
@@ -8570,7 +8850,7 @@
       "unordered": false
     },
     {
-      "detail": "[255, 255, 255, 255, 184, 0, 0, 0, 4, 0, 0, 0, 242, 255, 255, 255, 20, 0, 0, 0, 4, 0, 1, 0, 0, 0, 10, 0, 11, 0, 8, 0, 10, 0, 4, 0, 242, 255, 255, 255, 72, 0, 0, 0, 16, 0, 0, 0, 0, 0, 10, 0, 12, 0, 0, 0, 4, 0, 8, 0, 1, 0, 0, 0, 4, 0, 0, 0, 244, 255, 255, 255, 24, 0, 0, 0, 12, 0, 0, 0, 8, 0, 12, 0, 4, 0, 8, 0, 3, 0, 0, 0, 91, 48, 93, 0, 9, 0, 0, 0, 95, 80, 76, 95, 70, 76, 65, 71, 83, 0, 0, 0, 1, 0, ",
+      "detail": "[3:255, 3:255, 3:255, 3:255, 3:184, 1:0, 1:0, 1:0, 1:4, 1:0, 1:0, 1:0, 3:242, 3:255, 3:255, 3:255, 2:20, 1:0, 1:0, 1:0, 1:4, 1:0, 1:1, 1:0, 1:0, 1:0, 2:10, 1:0, 2:11, 1:0, 1:8, 1:0, 2:10, 1:0, 1:4, 1:0, 3:242, 3:255, 3:255, 3:255, 2:72, 1:0, 1:0, 1:0, 2:16, 1:0, 1:0, 1:0, 1:0, 1:0, 2:10, 1:0, 2:12, 1:0, 1:0, 1:0, 1:4, 1:0, 1:8, 1:0, 1:1, 1:0, 1:0, 1:0, 1:4, 1:0, 1:0, 1:0, 3:244, 3:255, 3:255, 3:25",
       "id": "polars_core__series__series__serialize_to_bytes",
       "path": "polars_core::series::Series::serialize_to_bytes",
       "policy": "ordered (operation not listed as unordered)",
@@ -8762,7 +9042,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(38:x:Int64:[Int64(1), Int64(2), Int64(3)])",
       "id": "polars_core__series__series__try_i64",
       "path": "polars_core::series::Series::try_i64",
       "policy": "ordered (operation not listed as unordered)",
@@ -9410,7 +9690,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(38:x:Int64:[Int64(1), Int64(2), Int64(3)])",
       "id": "polars_io__predicates__columnstats__get_max_state",
       "path": "polars_io::predicates::ColumnStats::get_max_state",
       "policy": "ordered (operation not listed as unordered)",
@@ -9418,7 +9698,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(38:x:Int64:[Int64(1), Int64(2), Int64(3)])",
       "id": "polars_io__predicates__columnstats__get_min_state",
       "path": "polars_io::predicates::ColumnStats::get_min_state",
       "policy": "ordered (operation not listed as unordered)",
@@ -9426,7 +9706,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(38:x:Int64:[Int64(1), Int64(2), Int64(3)])",
       "id": "polars_io__predicates__columnstats__get_null_count_state",
       "path": "polars_io::predicates::ColumnStats::get_null_count_state",
       "policy": "ordered (operation not listed as unordered)",
@@ -9442,7 +9722,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(6)",
+      "detail": "Some(1:6)",
       "id": "polars_io__predicates__columnstats__null_count",
       "path": "polars_io::predicates::ColumnStats::null_count",
       "policy": "ordered (operation not listed as unordered)",
@@ -9466,7 +9746,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3), Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(68:x:Int64:[Int64(1), Int64(2), Int64(3), Int64(1), Int64(2), Int64(3)])",
       "id": "polars_io__predicates__columnstats__to_min_max",
       "path": "polars_io::predicates::ColumnStats::to_min_max",
       "policy": "ordered (operation not listed as unordered)",
@@ -9818,7 +10098,7 @@
       "unordered": false
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
       "id": "polars_lazy__frame__lazyframe__unique",
       "path": "polars_lazy::frame::LazyFrame::unique",
       "policy": "unordered: default arguments [Polars documents unique as order-unspecified unless maintain_order is set]",
@@ -9826,7 +10106,7 @@
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
@@ -10546,7 +10826,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(ByName { names: [\"x\"], strict: true })",
+      "detail": "Some(37:ByName { names: [\"x\"], strict: true })",
       "id": "polars_plan__dsl__expr__expr__into_selector",
       "path": "polars_plan::dsl::expr::Expr::into_selector",
       "policy": "ordered (operation not listed as unordered)",
@@ -11098,7 +11378,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(!=)",
+      "detail": "Some(2:!=)",
       "id": "polars_plan__dsl__expr__operator__negate",
       "path": "polars_plan::dsl::expr::Operator::negate",
       "policy": "ordered (operation not listed as unordered)",
@@ -11106,7 +11386,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(==)",
+      "detail": "Some(2:==)",
       "id": "polars_plan__dsl__expr__operator__swap_operands",
       "path": "polars_plan::dsl::expr::Operator::swap_operands",
       "policy": "ordered (operation not listed as unordered)",
@@ -11370,7 +11650,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(Wildcard)",
+      "detail": "Some(8:Wildcard)",
       "id": "polars_plan__dsl__selector__selector__to_dtype_selector",
       "path": "polars_plan::dsl::selector::Selector::to_dtype_selector",
       "policy": "ordered (operation not listed as unordered)",
@@ -11426,7 +11706,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(TimeUnitSet(MICRO_SECONDS))",
+      "detail": "Some(26:TimeUnitSet(MICRO_SECONDS))",
       "id": "polars_plan__dsl__selector__timeunitset__from_bits",
       "path": "polars_plan::dsl::selector::TimeUnitSet::from_bits",
       "policy": "ordered (operation not listed as unordered)",
@@ -11890,7 +12170,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1)",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__arg_min_max__arg_max_binary",
       "path": "polars_core::chunked_array::arg_min_max::arg_max_binary",
       "policy": "ordered (operation not listed as unordered)",
@@ -11898,15 +12178,15 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__arg_min_max__arg_max_binary_offset",
       "path": "polars_core::chunked_array::arg_min_max::arg_max_binary_offset",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__arg_min_max__arg_max_bool",
       "path": "polars_core::chunked_array::arg_min_max::arg_max_bool",
       "policy": "ordered (operation not listed as unordered)",
@@ -11914,7 +12194,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__arg_min_max__arg_max_str",
       "path": "polars_core::chunked_array::arg_min_max::arg_max_str",
       "policy": "ordered (operation not listed as unordered)",
@@ -11922,7 +12202,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__arg_min_max__arg_min_binary",
       "path": "polars_core::chunked_array::arg_min_max::arg_min_binary",
       "policy": "ordered (operation not listed as unordered)",
@@ -11930,15 +12210,15 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"vm: Panicked: fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"; polars setup \"fixture: binary_offset failed: invalid series dtype: expected `BinaryOffset`, got `binary` for series with name `x`\"",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__arg_min_max__arg_min_binary_offset",
       "path": "polars_core::chunked_array::arg_min_max::arg_min_binary_offset",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
-      "detail": "Some(1)",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__arg_min_max__arg_min_bool",
       "path": "polars_core::chunked_array::arg_min_max::arg_min_bool",
       "policy": "ordered (operation not listed as unordered)",
@@ -11946,7 +12226,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(0)",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__arg_min_max__arg_min_str",
       "path": "polars_core::chunked_array::arg_min_max::arg_min_str",
       "policy": "ordered (operation not listed as unordered)",
@@ -12274,7 +12554,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(38:x:Int64:[Int64(1), Int64(2), Int64(3)])",
       "id": "polars_ops__series__ops__horizontal__max_horizontal",
       "path": "polars_ops::series::ops::horizontal::max_horizontal",
       "policy": "ordered (operation not listed as unordered)",
@@ -12282,7 +12562,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Float64:[Float64(1.0), Float64(2.0), Float64(3.0)])",
+      "detail": "Some(52:x:Float64:[Float64(1.0), Float64(2.0), Float64(3.0)])",
       "id": "polars_ops__series__ops__horizontal__mean_horizontal",
       "path": "polars_ops::series::ops::horizontal::mean_horizontal",
       "policy": "ordered (operation not listed as unordered)",
@@ -12290,7 +12570,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(38:x:Int64:[Int64(1), Int64(2), Int64(3)])",
       "id": "polars_ops__series__ops__horizontal__min_horizontal",
       "path": "polars_ops::series::ops::horizontal::min_horizontal",
       "policy": "ordered (operation not listed as unordered)",
@@ -12298,7 +12578,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(x:Int64:[Int64(1), Int64(2), Int64(3)])",
+      "detail": "Some(38:x:Int64:[Int64(1), Int64(2), Int64(3)])",
       "id": "polars_ops__series__ops__horizontal__sum_horizontal",
       "path": "polars_ops::series::ops::horizontal::sum_horizontal",
       "policy": "ordered (operation not listed as unordered)",
@@ -14418,7 +14698,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__series__series_trait__seriestrait__mean__on__series",
       "path": "polars_core::series::series_trait::SeriesTrait::mean",
       "policy": "ordered (operation not listed as unordered)",
@@ -14442,7 +14722,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__series__series_trait__seriestrait__median__on__series",
       "path": "polars_core::series::series_trait::SeriesTrait::median",
       "policy": "ordered (operation not listed as unordered)",
@@ -14722,7 +15002,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(1.4142135623730951)",
+      "detail": "Some(18:1.4142135623730951)",
       "id": "polars_core__series__series_trait__seriestrait__std__on__series",
       "path": "polars_core::series::series_trait::SeriesTrait::std",
       "policy": "ordered (operation not listed as unordered)",
@@ -14818,7 +15098,7 @@
       "unordered": false
     },
     {
-      "detail": "Some(2)",
+      "detail": "Some(1:2)",
       "id": "polars_core__series__series_trait__seriestrait__var__on__series",
       "path": "polars_core::series::series_trait::SeriesTrait::var",
       "policy": "ordered (operation not listed as unordered)",
@@ -14858,6 +15138,38 @@
       "unordered": false
     },
     {
+      "detail": "[1:3]",
+      "id": "polars_core__utils__container__chunk_lengths",
+      "path": "polars_core::utils::Container::chunk_lengths",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[1:3]",
+      "id": "polars_core__utils__container__chunk_lengths__on__series",
+      "path": "polars_core::utils::Container::chunk_lengths",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[177:shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]]",
+      "id": "polars_core__utils__container__iter_chunks",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[38:x:Int64:[Int64(1), Int64(2), Int64(3)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__series",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
       "id": "polars_lazy__frame__intolazy__lazy",
       "path": "polars_lazy::frame::IntoLazy::lazy",
@@ -14875,11 +15187,11 @@
     }
   ],
   "tally": {
-    "both_error": 92,
+    "both_error": 93,
     "both_panic": 23,
-    "fixture_failed": 180,
-    "match": 1562,
+    "fixture_failed": 156,
+    "match": 1624,
     "row_order_differs": 2
   },
-  "verified": 1679
+  "verified": 1742
 }

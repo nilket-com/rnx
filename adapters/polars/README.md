@@ -140,6 +140,20 @@ Policies for generated bindings:
   dtype and every element with nulls; typed source fixtures per family
   (`fx::series_bool()`, `fx::series_f64()`, …) feed the producer
   bindings that give each array alias its fixture.
+- Iterator returns (record 0077): a binding whose Rust return is an
+  iterator (`impl Iterator`, `DoubleEndedIterator`, `ExactSizeIterator`,
+  `PolarsIterator`, `TrustedLen`, bare or inside `Option`/`PolarsResult`)
+  returns a Rune vector, materialized inside the call, inside the engine
+  closure when the binding is routed, so the script never holds a lazy
+  iterator and a `&self` receiver stays usable. Materialization is
+  bounded by an item count, 1 048 576: exactly that many items succeed,
+  one more refuses with a `polars::Error` of kind `MaterializeLimit` and
+  no partial vector. A length is trusted only from `ExactSizeIterator`
+  (checked before the first item is taken); otherwise items are counted
+  as they are taken and excess is detected by one extra `next` whose
+  item is discarded. `&mut self` iterators are not bound. Items that do
+  not map (arrow-internal arrays, bare slices) leave the callable
+  unsupported with the item named.
 - Errors: `PolarsResult<T>` is a Rune `Result` whose error is a
   `polars::Error` with `kind()` and `message()`; `kind()` is the variant
   name Rust matches on.

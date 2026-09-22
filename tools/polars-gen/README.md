@@ -34,6 +34,20 @@ families shipped and the cited exclusions; `surface.json` records the
 whole census under `instantiation`. `--self-test` covers the deref
 targets and the applicability rules from synthetic inventories.
 
+Record 0077 added iterator returns: the recognizer (`iterator_return`)
+and the materialized return mapping with `support::materialize_exact`
+and `materialize_unknown` (the bound is `MATERIALIZE_LIMIT`, recorded in
+`surface.json` as `materialize_limit`; `polars::set_materialize_limit`
+exists under `test-support` for the controls), materialization inside
+the routed closure, length-framed vector, option and tuple formatting
+on both oracle sides (`[3:a, b, 1:c]`, so equal-length vectors whose
+element texts would join alike stay apart), and a census of every
+iterator-returning callable and pair under `iterators`. The release
+files carry two oracle exclusions for `row_decode_ordered` and
+`row_decode_unordered`, whose output on arbitrary bytes differs run to
+run, and the `StructChunked` exclusion grew by `iter` and `no_null_iter`
+(`no_call_const`, bisected by compilation).
+
 Writes `adapters/polars/src/generated/` (types, functions, catalogue,
 fixtures), `adapters/polars/tests/generated_oracle.rs` and
 `adapters/polars/surface.json`, the accounting of every eligible callable

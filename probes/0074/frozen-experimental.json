@@ -1,12 +1,12 @@
 {
- "label": "EXPERIMENTAL: record 0076 rerun of the 0074 probe with rc2.toml; not the accepted 0074 manifest",
+ "label": "EXPERIMENTAL: record 0077 rerun of the 0074 probe with rc2.toml; not the accepted 0074 manifest",
  "accepted_generator_revision": "98885e0",
- "written_at_revision": "e3ca79523ac82653bfe356855d535d61b1a6dde9",
+ "written_at_revision": "c30e1535fa0a978f319e6b874f0b8c4bdc994a06",
  "inputs": {
   "generator": {
    "pattern": "tools/polars-gen/src/*.rs",
    "files": 3,
-   "sha256": "f217dc30c5715356416e027ae46d5d64007ffa9d4487df50ed3de52660212232"
+   "sha256": "725097bf21a9a45c7cdfa697a5fd0b9a2c1a6dae1b0da067d76fc25e9db3944f"
   },
   "generator_manifest": {
    "pattern": "tools/polars-gen/Cargo.toml",
@@ -36,17 +36,17 @@
   "adapter_sources": {
    "pattern": "adapters/polars/src/*.rs",
    "files": 7,
-   "sha256": "bba30909ebc3575231964dbb1667ee3621f22d1ca96da2cd236b1d604734ac32"
+   "sha256": "8f9c8da691491180e2a8d32611312f2561bc55ee1f5752619fb0c4c7fa64ed34"
   },
   "adapter_generated": {
    "pattern": "adapters/polars/src/generated/*.rs",
    "files": 6,
-   "sha256": "29731b48c48771a8b1f77535d8a07605cca05c1e1b9fa015b5927c15b6fffece"
+   "sha256": "59eebe36ee4d6fb773a4fe4fc79b8408e24dafea0c98b99f91cbee26021d54f8"
   },
   "adapter_tests": {
    "pattern": "adapters/polars/tests/*",
    "files": 6,
-   "sha256": "496a9c996c11bbe54cbf579cf7fed9b9f7b753870b8148c78a8fd1e5c3bef596"
+   "sha256": "16e34cb8349fe2a89c4479a2a580b1ada82f828bb23930af3ac6fea10224d76c"
   },
   "adapter_manifest": {
    "pattern": "adapters/polars/Cargo.toml",
@@ -71,12 +71,12 @@
   "baseline_surface": {
    "pattern": "adapters/polars/surface.json",
    "files": 1,
-   "sha256": "9814e9f703d7b6bca48c59c7624221556da02585bd854e13f024f40b41b957b0"
+   "sha256": "24af51a3ce282ab82c7011a749fa732834fb6d2905efc93cace0983f73fd636b"
   },
   "baseline_oracle_results": {
    "pattern": "adapters/polars/oracle-results.json",
    "files": 1,
-   "sha256": "41852844e5bda8bb52d8f094e10b83bf35f1cbdb97de921cece726bbadecb9a2"
+   "sha256": "dc9346518dcf789e70641197c840d043d43f313d56f574a3892f58572248b391"
   },
   "doc_lock": {
    "pattern": "probes/0074/locks/doc-rc2.lock",

@@ -13,6 +13,7 @@ use std::sync::Arc;
 fn rows(r: &Repr) -> (String, Vec<String>) {
 	match r {
 		Repr::Frame { head, rows } => (head.clone(), rows.clone()),
+		Repr::Seq(_) => (r.to_text(), vec![]),
 		Repr::Text(t) => (t.clone(), vec![]),
 	}
 }

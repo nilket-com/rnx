@@ -690,6 +690,29 @@ fn instantiation_census(world: &World, inv: &Inventory) -> Vec<PairRecord> {
     out
 }
 
+/// Record 0077 gate 1: every eligible callable and every instantiation
+/// pair whose return is an iterator, with the item and its disposition.
+fn iterator_census(entries: &[Entry], inv: &Inventory, pairs: &[PairRecord]) -> serde_json::Value {
+    let mut callables = Vec::new();
+    let by_key: BTreeMap<&str, &Entry> = entries.iter().map(|e| (e.key.as_str(), e)).collect();
+    for c in &inv.callables {
+        let Some(r) = &c.ret_canonical else { continue };
+        let Some((item, known, wrap)) = iterator_return(&ty::parse(r)) else { continue };
+        let disposition = match by_key.get(c.key.as_str()) {
+            Some(e) if e.status == "generated" => if e.bindings.iter().any(|b| b.disposition.is_some()) { "materialized".to_string() } else { "generated".to_string() },
+            Some(e) => format!("{}: {}", e.status, e.reason.as_deref().unwrap_or("")),
+            None => match c.bucket.as_str() { "unsupported" | "unknown" => "not eligible".to_string(), _ => "out of scope".to_string() },
+        };
+        callables.push(serde_json::json!({"key": c.key, "method": c.canonical_path, "owner_generic": c.owner_generic, "receiver": c.receiver, "item": item.render(), "known_length": format!("{known:?}"), "wrap": format!("{wrap:?}"), "disposition": disposition}));
+    }
+    let pair_rows: Vec<serde_json::Value> = pairs.iter().filter(|p| p.signature.as_deref().is_some_and(|s| s.contains("impl ")) || p.disposition.as_deref().is_some_and(|d| d.contains("iterator") || d.contains("impl return"))).map(|p| serde_json::json!({"key": p.key, "method": p.method, "alias": p.alias, "disposition": p.disposition})).collect();
+    let mut by_disp: BTreeMap<String, usize> = BTreeMap::new();
+    for c in &callables { *by_disp.entry(c["disposition"].as_str().unwrap().split(':').next().unwrap().to_string()).or_insert(0) += 1; }
+    let mut pair_disp: BTreeMap<String, usize> = BTreeMap::new();
+    for p in &pair_rows { *pair_disp.entry(p["disposition"].as_str().unwrap_or("none").split(':').take(2).collect::<Vec<_>>().join(":")).or_insert(0) += 1; }
+    serde_json::json!({"callables": callables.len(), "callables_by_disposition": by_disp, "pairs": pair_rows.len(), "pairs_by_disposition": pair_disp, "callable_rows": callables, "pair_rows": pair_rows})
+}
+
 fn census_summary(pairs: &[PairRecord]) -> serde_json::Value {
     let mut per: BTreeMap<&str, BTreeMap<&str, usize>> = BTreeMap::new();
     for p in pairs {
@@ -911,6 +934,24 @@ fn applicability_self_test() {
     assert!(matches!(w.holds(&i64c, "core::marker::Sized", 0), Applicability::Proven));
     assert!(matches!(w.holds("unknown::Type", "core::marker::Sized", 0), Applicability::Unresolved(_)), "an unknown type's sizedness is unresolved");
     println!("applicability self-test: ok");
+    iterator_self_test();
+}
+
+/// Record 0077 gate 1 control: the recognizer accepts each bound spelling
+/// the inventory shows, tells known from unknown length, sees the wrapper,
+/// and rejects an `impl Trait` that is not an iterator.
+fn iterator_self_test() {
+    let known = |t: &str| iterator_return(&ty::parse(t)).map(|(item, known, wrap)| (item.render(), known, wrap));
+    assert_eq!(known("impl '_ + core::marker::Send + core::marker::Sync + core::iter::traits::exact_size::ExactSizeIterator<Item = i64>"), Some(("i64".to_string(), IterLen::Exact, IterWrap::Plain)));
+    assert_eq!(known("impl polars_core::chunked_array::iterator::PolarsIterator<Item = core::option::Option<&[u8]>>"), Some(("core::option::Option<&[u8]>".to_string(), IterLen::Exact, IterWrap::Plain)));
+    assert_eq!(known("impl core::iter::traits::double_ended::DoubleEndedIterator<Item = &[f64]>"), Some(("&[f64]".to_string(), IterLen::Unknown, IterWrap::Plain)));
+    assert_eq!(known("core::option::Option<impl core::iter::traits::double_ended::DoubleEndedIterator<Item = &[&[u8]]>>"), Some(("&[&[u8]]".to_string(), IterLen::Unknown, IterWrap::Option)));
+    assert_eq!(known("polars_error::PolarsResult<impl core::iter::traits::iterator::Iterator<Item = polars_core::series::Series>>"), Some(("polars_core::series::Series".to_string(), IterLen::Unknown, IterWrap::Result)));
+    assert_eq!(known("impl polars_arrow::trusted_len::TrustedLen<Item = usize>"), Some(("usize".to_string(), IterLen::Trusted, IterWrap::Plain)));
+    assert_eq!(known("impl polars_arrow::trusted_len::TrustedLen<Item = usize> + core::iter::traits::exact_size::ExactSizeIterator"), Some(("usize".to_string(), IterLen::Exact, IterWrap::Plain)), "an exact bound beside TrustedLen wins");
+    assert_eq!(known("impl core::fmt::Display"), None, "a non-iterator impl return is not an iterator");
+    assert_eq!(known("impl core::iter::traits::iterator::Iterator"), None, "an iterator without an Item is not mapped");
+    println!("iterator self-test: ok");
 }
 
 fn policy_self_test() {
@@ -1444,6 +1485,70 @@ struct Ret {
     conv: String,
     fallible: bool,
     doc: String,
+    /// Record 0077: the return is an iterator, materialized inside the
+    /// call (inside the routed closure when routed) under the bound.
+    materialize: Option<Materialize>,
+}
+
+/// How an iterator return is materialized: the element conversion (over
+/// `__r`, the element by value), whether the length is known exactly
+/// (`ExactSizeIterator`, `PolarsIterator`, `TrustedLen`), and the wrapper
+/// around the iterator (`Option`, `PolarsResult`, or none).
+#[derive(Clone)]
+struct Materialize {
+    elem_conv: String,
+    known: IterLen,
+    wrap: IterWrap,
+}
+/// How an iterator's length is known: exactly through `len()`
+/// (`ExactSizeIterator`, `PolarsIterator`), through the `TrustedLen`
+/// contract's `size_hint` upper bound, or not at all.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum IterLen {
+    Exact,
+    Trusted,
+    Unknown,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum IterWrap {
+    Plain,
+    Option,
+    Result,
+}
+
+/// The iterator traits a return may name, with how each fixes the
+/// length. `TrustedLen` is not `ExactSizeIterator` (Polars 0.55.2 defines
+/// `pub unsafe trait TrustedLen: Iterator {}`), so it gets its own route.
+const ITERATOR_TRAITS: &[(&str, IterLen)] = &[
+    ("core::iter::traits::iterator::Iterator", IterLen::Unknown),
+    ("core::iter::traits::double_ended::DoubleEndedIterator", IterLen::Unknown),
+    ("core::iter::traits::exact_size::ExactSizeIterator", IterLen::Exact),
+    ("polars_core::chunked_array::iterator::PolarsIterator", IterLen::Exact),
+    ("polars_arrow::trusted_len::TrustedLen", IterLen::Trusted),
+];
+
+/// Recognize an iterator return: `impl` bounds naming an iterator trait
+/// with an `Item`, possibly inside `Option` or `PolarsResult`.
+fn iterator_return(t: &Ty) -> Option<(Ty, IterLen, IterWrap)> {
+    let (inner, wrap) = match t {
+        Ty::Path { path, args } if path == "core::option::Option" && args.len() == 1 => (&args[0], IterWrap::Option),
+        Ty::Path { path, args } if (path == "polars_error::PolarsResult" || path == "core::result::Result") && !args.is_empty() => (&args[0], IterWrap::Result),
+        other => (other, IterWrap::Plain),
+    };
+    let Ty::Impl(bounds) = inner else { return None };
+    let mut item: Option<Ty> = None;
+    let mut is_iter = false;
+    let mut known = IterLen::Unknown;
+    for b in bounds {
+        if let Some((_, len)) = ITERATOR_TRAITS.iter().find(|(p, _)| *p == b.path) {
+            is_iter = true;
+            // the strongest knowledge among the bounds: exact beats trusted beats unknown
+            known = match (known, *len) { (IterLen::Exact, _) | (_, IterLen::Exact) => IterLen::Exact, (IterLen::Trusted, _) | (_, IterLen::Trusted) => IterLen::Trusted, _ => IterLen::Unknown };
+            if let Some(i) = &b.item { item = Some((**i).clone()); }
+        }
+    }
+    if !is_iter { return None; }
+    Some((item?, known, wrap))
 }
 
 #[derive(Debug)]
@@ -1725,11 +1830,27 @@ impl World {
         }
     }
 
+    /// An iterator return, bare or wrapped in `Option`/`PolarsResult`:
+    /// a vector of the element's mapping, materialized under the bound.
+    fn ret_iterator(&self, t: &Ty, owner: Option<&str>, depth: u8) -> Result<Ret, Unsupported> {
+        let Some((item, known, wrap)) = iterator_return(t) else { return Err(Unsupported("impl return", t.render())) };
+        let elem = self.ret(&item, owner, depth + 1).map_err(|Unsupported(why, what)| Unsupported("iterator item", format!("{why}: {what}")))?;
+        if elem.materialize.is_some() { return Err(Unsupported("iterator item", "nested iterator".into())); }
+        let vec_ty = format!("Vec<{}>", elem.rust_ty);
+        let limit = 1usize << 20;
+        let (rust_ty, doc) = match wrap {
+            IterWrap::Plain => (vec_ty, format!("vector of {} (materialized, at most {limit} items)", elem.doc)),
+            IterWrap::Option => (format!("Option<{vec_ty}>"), format!("option of vector of {} (materialized, at most {limit} items)", elem.doc)),
+            IterWrap::Result => (vec_ty, format!("result of vector of {} (materialized, at most {limit} items)", elem.doc)),
+        };
+        Ok(Ret { materialize: Some(Materialize { elem_conv: elem.conv, known, wrap }), rust_ty, conv: "__r".into(), fallible: true, doc })
+    }
+
     fn ret(&self, t: &Ty, owner: Option<&str>, depth: u8) -> Result<Ret, Unsupported> {
         if depth > 6 {
             return Err(Unsupported("nesting", t.render()));
         }
-        let r = |rust_ty: &str, conv: String, doc: &str| Ok(Ret { rust_ty: rust_ty.to_string(), fallible: false, conv, doc: doc.to_string() });
+        let r = |rust_ty: &str, conv: String, doc: &str| Ok(Ret { materialize: None, rust_ty: rust_ty.to_string(), fallible: false, conv, doc: doc.to_string() });
         match t {
             Ty::Tuple(ts) if ts.is_empty() => r("()", "__r".into(), "unit"),
             Ty::Tuple(ts) => {
@@ -1744,7 +1865,7 @@ impl World {
                     docs.push(x.doc);
                     fallible |= x.fallible;
                 }
-                Ok(Ret { rust_ty: format!("({})", tys.join(", ")), fallible, conv: format!("{{ let __t = __r; ({}) }}", convs.join(", ")), doc: format!("tuple of {}", docs.join(", ")) })
+                Ok(Ret { materialize: None, rust_ty: format!("({})", tys.join(", ")), fallible, conv: format!("{{ let __t = __r; ({}) }}", convs.join(", ")), doc: format!("tuple of {}", docs.join(", ")) })
             }
             Ty::Ref { inner, .. } => {
                 if let Ty::Path { path, .. } = &**inner {
@@ -1758,7 +1879,7 @@ impl World {
                 if matches!(&**inner, Ty::Path { path, .. } if path == "str") {
                     return Ok(x);
                 }
-                Ok(Ret { rust_ty: x.rust_ty, fallible: x.fallible, conv: format!("{{ let __r = (__r).clone(); {} }}", x.conv), doc: x.doc })
+                Ok(Ret { materialize: None, rust_ty: x.rust_ty, fallible: x.fallible, conv: format!("{{ let __r = (__r).clone(); {} }}", x.conv), doc: x.doc })
             }
             Ty::Path { path, args } => match path.as_str() {
                 "bool" => r("bool", "__r".into(), "bool"),
@@ -1770,21 +1891,23 @@ impl World {
                 "char" => r("String", "__r.to_string()".into(), "string"),
                 "str" | "alloc::string::String" | "polars_utils::pl_str::PlSmallStr" => r("String", "__r.to_string()".into(), "string"),
                 "Self" => self.ret(&Ty::Path { path: owner.ok_or_else(|| Unsupported("Self without owner", t.render()))?.to_string(), args: vec![] }, owner, depth + 1),
+                "core::option::Option" if args.len() == 1 && matches!(args[0], Ty::Impl(_)) => self.ret_iterator(t, owner, depth),
                 "core::option::Option" if args.len() == 1 => {
                     let x = self.ret(&args[0], owner, depth + 1)?;
-                    Ok(Ret { rust_ty: format!("Option<{}>", x.rust_ty), fallible: x.fallible, conv: format!("match __r {{ Some(__r) => Some({}), None => None }}", x.conv), doc: format!("option of {}", x.doc) })
+                    Ok(Ret { materialize: None, rust_ty: format!("Option<{}>", x.rust_ty), fallible: x.fallible, conv: format!("match __r {{ Some(__r) => Some({}), None => None }}", x.conv), doc: format!("option of {}", x.doc) })
                 }
                 "alloc::vec::Vec" if args.len() == 1 => {
                     let x = self.ret(&args[0], owner, depth + 1)?;
-                    Ok(Ret { rust_ty: format!("Vec<{}>", x.rust_ty), fallible: x.fallible, conv: format!("{{ let mut __v = Vec::new(); for __r in __r {{ __v.push({}); }} __v }}", x.conv), doc: format!("vector of {}", x.doc) })
+                    Ok(Ret { materialize: None, rust_ty: format!("Vec<{}>", x.rust_ty), fallible: x.fallible, conv: format!("{{ let mut __v = Vec::new(); for __r in __r {{ __v.push({}); }} __v }}", x.conv), doc: format!("vector of {}", x.doc) })
                 }
+                "polars_error::PolarsResult" if args.len() == 1 && matches!(args[0], Ty::Impl(_)) => self.ret_iterator(t, owner, depth),
                 "polars_error::PolarsResult" if args.len() == 1 => {
                     let x = self.ret(&args[0], owner, depth + 1)?;
-                    Ok(Ret { rust_ty: x.rust_ty, fallible: true, conv: format!("{{ let __r = __r.map_err(Error::from)?; {} }}", x.conv), doc: format!("result of {}", x.doc) })
+                    Ok(Ret { materialize: None, rust_ty: x.rust_ty, fallible: true, conv: format!("{{ let __r = __r.map_err(Error::from)?; {} }}", x.conv), doc: format!("result of {}", x.doc) })
                 }
                 "core::result::Result" if args.len() == 2 && args[1] == Ty::Path { path: "polars_error::PolarsError".into(), args: vec![] } => {
                     let x = self.ret(&args[0], owner, depth + 1)?;
-                    Ok(Ret { rust_ty: x.rust_ty, fallible: true, conv: format!("{{ let __r = __r.map_err(Error::from)?; {} }}", x.conv), doc: format!("result of {}", x.doc) })
+                    Ok(Ret { materialize: None, rust_ty: x.rust_ty, fallible: true, conv: format!("{{ let __r = __r.map_err(Error::from)?; {} }}", x.conv), doc: format!("result of {}", x.doc) })
                 }
                 "core::result::Result" => Err(Unsupported("result with foreign error", t.render())),
                 _ => {
@@ -1816,7 +1939,7 @@ impl World {
             },
             Ty::Generic(g) if g == "Self" => self.ret(&Ty::Path { path: "Self".into(), args: vec![] }, owner, depth + 1),
             Ty::Generic(_) => Err(Unsupported("generic return", t.render())),
-            Ty::Impl(_) => Err(Unsupported("impl return", t.render())),
+            Ty::Impl(_) => self.ret_iterator(t, owner, depth),
             Ty::Slice(_) => Err(Unsupported("bare slice", t.render())),
             Ty::Other(s) => Err(Unsupported("shape", s.clone())),
         }
@@ -2147,6 +2270,25 @@ fn emit_instantiations(world: &World, out: &mut Emitted, c: &Callable, pairs: &[
     e.exceptions = exceptions;
 }
 
+/// The call expression of a binding whose return is materialized: the
+/// iterator is created, driven under the bound and its elements
+/// converted to owned values inside one block, which is the routed
+/// closure when the binding is routed; only the owned vector leaves it.
+fn materialized_call(m: &Materialize, callee_call: &str, name: &str, route: bool) -> String {
+    let helper = match m.known { IterLen::Exact => "support::materialize_exact", IterLen::Trusted => "support::materialize_trusted", IterLen::Unknown => "support::materialize_unknown" };
+    let conv = format!("|__r| Ok::<_, Error>({})", m.elem_conv);
+    let inner = match m.wrap {
+        IterWrap::Plain => format!("{{ let __it = {callee_call}; {helper}(__it, \"{name}\", {conv}) }}"),
+        IterWrap::Result => format!("{{ let __it = {callee_call}.map_err(Error::from)?; {helper}(__it, \"{name}\", {conv}) }}"),
+        IterWrap::Option => format!("(|| Ok::<_, Error>(match {callee_call} {{ Some(__it) => Some({helper}(__it, \"{name}\", {conv})?), None => None }}))()"),
+    };
+    if route {
+        format!("crate::engine::run(move || {inner}).map_err(Error::engine)??")
+    } else {
+        format!("({inner})?")
+    }
+}
+
 /// Generate one method/function binding. `owner` is the canonical owner
 /// type (for methods) and `trait_spell` the trait for UFCS calls.
 fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str]) {
@@ -2265,15 +2407,15 @@ fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trai
         }
     }
     let ret = match c.ret_canonical.as_deref() {
-        None => Ret { rust_ty: "()".into(), fallible: false, conv: "__r".into(), doc: "unit".into() },
+        None => Ret { materialize: None, rust_ty: "()".into(), fallible: false, conv: "__r".into(), doc: "unit".into() },
         Some(rc) => {
             let t = ty::parse(rc);
             // `&mut Self` chains return unit: the receiver was mutated in place
             if matches!(&t, Ty::Ref { mutable: true, .. }) {
-                Ret { rust_ty: "()".into(), fallible: false, conv: "{ let _ = __r; }".into(), doc: "unit (receiver mutated in place)".into() }
+                Ret { materialize: None, rust_ty: "()".into(), fallible: false, conv: "{ let _ = __r; }".into(), doc: "unit (receiver mutated in place)".into() }
             } else if let Ty::Path { path, args } = &t {
                 if (path == "polars_error::PolarsResult" || path == "core::result::Result") && matches!(args.first(), Some(Ty::Ref { mutable: true, .. })) {
-                    Ret { rust_ty: "()".into(), fallible: true, conv: "{ let _ = __r.map_err(Error::from)?; }".into(), doc: "result of unit (receiver mutated in place)".into() }
+                    Ret { materialize: None, rust_ty: "()".into(), fallible: true, conv: "{ let _ = __r.map_err(Error::from)?; }".into(), doc: "result of unit (receiver mutated in place)".into() }
                 } else {
                     match world.ret(&t, Some(owner), 0) {
                         Ok(r) => r,
@@ -2295,6 +2437,10 @@ fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trai
         }
     };
     let fallible = ret.fallible || params.iter().any(|(_, a)| a.fallible);
+    if ret.materialize.is_some() && c.receiver == "&mut self" {
+        out.unsupported(c, "mutable iterator receiver", "the receiver's state after a partial materialization cannot be expressed");
+        return;
+    }
     // the deref route: the receiver is `&*this.0`, a `&dyn Trait`; it needs
     // a reference receiver, `DerefMut` for `&mut self`, and cannot move out
     if deref {
@@ -2347,7 +2493,17 @@ fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trai
     let rune = format!("{}::{name}", rune_path(w));
     let arg_docs: Vec<String> = params.iter().map(|(n, a)| format!("{n}: {}", a.doc)).collect();
     let summary = format!("{name}({}) -> {}{}", arg_docs.join(", "), ret.doc, if fallible { " (fallible)" } else { "" });
-    let (pre, call) = if route {
+    let (pre, call) = if let Some(m) = &ret.materialize {
+        // an iterator return: created, driven and converted inside the
+        // (routed) block; the receiver of a `&self` iterator stays usable
+        let mut pre = pre.clone();
+        let mut hoisted = Vec::new();
+        for (i, a) in args.iter().enumerate() {
+            pre.push_str(&format!("let __arg{i} = {a}; "));
+            hoisted.push(format!("__arg{i}"));
+        }
+        (pre, materialized_call(m, &format!("{callee}({})", hoisted.join(", ")), &name, route))
+    } else if route {
         // conversions may fail with `?`, so they run before the closure
         let mut pre = pre.clone();
         let mut hoisted = Vec::new();
@@ -2429,7 +2585,7 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
         }
     }
     let ret = match c.ret_canonical.as_deref() {
-        None => Ret { rust_ty: "()".into(), fallible: false, conv: "__r".into(), doc: "unit".into() },
+        None => Ret { materialize: None, rust_ty: "()".into(), fallible: false, conv: "__r".into(), doc: "unit".into() },
         Some(rc) => match world.ret(&ty::parse(rc), None, 0) {
             Ok(r) => r,
             Err(Unsupported(why, what)) => {
@@ -2459,7 +2615,15 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
     let doc = doc_line(c);
     let arg_docs: Vec<String> = params.iter().map(|(n, a)| format!("{n}: {}", a.doc)).collect();
     let summary = format!("{name}({}) -> {}{}", arg_docs.join(", "), ret.doc, if fallible { " (fallible)" } else { "" });
-    let (pre, call) = if route {
+    let (pre, call) = if let Some(m) = &ret.materialize {
+        let mut pre = pre.clone();
+        let mut hoisted = Vec::new();
+        for (i, a) in args.iter().enumerate() {
+            pre.push_str(&format!("let __arg{i} = {a}; "));
+            hoisted.push(format!("__arg{i}"));
+        }
+        (pre, materialized_call(m, &format!("{spelled}({})", hoisted.join(", ")), &name, route))
+    } else if route {
         let mut pre = pre.clone();
         let mut hoisted = Vec::new();
         for (i, a) in args.iter().enumerate() {
@@ -2757,6 +2921,15 @@ fn main() {
                 continue;
             }
         }
+        // record 0077: a callable in the generic bucket only because its
+        // return is an iterator (rule T3) is handled by the mapping rules,
+        // which materialize it or refuse it with the item named
+        if api && c.bucket == "generic" && !c.owner_generic && c.generics_canonical.is_empty() && c.ret_canonical.as_deref().is_some_and(|r| iterator_return(&ty::parse(r)).is_some()) {
+            let mut with_generic: Vec<&str> = buckets.clone();
+            with_generic.push("generic");
+            emit_callable(&world, &mut out, c, &with_generic);
+            continue;
+        }
         if !api {
             out.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "out_of_scope", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some("internal crate reachable through the prelude".into()), rune: None, note: None, bindings: vec![], exceptions: vec![] });
             continue;
@@ -2833,6 +3006,8 @@ fn main() {
         "counts": counts,
         "wrappers": world.wrappers.iter().map(|(c, w)| serde_json::json!({"type": c, "rune": rune_path(w), "hand_written": w.hand, "rule": w.rule, "identity": w.identity, "shared_with": w.aliases.iter().filter(|a| *a != c).collect::<Vec<_>>()})).collect::<Vec<_>>(),
         "instantiation": { "summary": census_summary(&census), "pairs": census },
+        "iterators": iterator_census(&out.entries, &inv, &census),
+        "materialize_limit": 1usize << 20,
         "oracle_cases": oracle_tests.matches("    Case {").count(),
         "fixtures": recipes,
         "oracle_skipped": oracle_skipped.iter().map(|(p, r)| serde_json::json!({"path": p, "reason": r})).collect::<Vec<_>>(),
@@ -2885,7 +3060,7 @@ const TYPED_FIXTURES: &[(&str, &str, &str, &str, &[&str])] = &[
     ("polars_core::series::Series", "series_bool", "p::Series::new(\"x\".into(), [true, false, true])", "crate_oracle::series_repr(v)", &["bool"]),
     ("polars_core::series::Series", "series_str", "p::Series::new(\"x\".into(), [\"a\", \"bb\", \"ccc\"])", "crate_oracle::series_repr(v)", &["str"]),
     ("polars_core::series::Series", "series_binary", "p::Series::new(\"x\".into(), [&b\"ab\"[..], b\"c\", b\"\"])", "crate_oracle::series_repr(v)", &["binary"]),
-    ("polars_core::series::Series", "series_binary_offset", "p::Series::new(\"x\".into(), [&b\"ab\"[..], b\"c\", b\"\"]).cast(&p::DataType::BinaryOffset).unwrap()", "crate_oracle::series_repr(v)", &["binary_offset"]),
+    ("polars_core::series::Series", "series_binary_offset", "p::Series::from_any_values_and_dtype(\"x\".into(), &[p::AnyValue::Binary(b\"ab\"), p::AnyValue::Binary(b\"c\"), p::AnyValue::Binary(b\"\")], &p::DataType::BinaryOffset, true).unwrap()", "crate_oracle::series_repr(v)", &["binary_offset"]),
     ("polars_core::series::Series", "series_i8", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::Int8).unwrap()", "crate_oracle::series_repr(v)", &["i8"]),
     ("polars_core::series::Series", "series_i16", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::Int16).unwrap()", "crate_oracle::series_repr(v)", &["i16"]),
     ("polars_core::series::Series", "series_i32", "p::Series::new(\"x\".into(), [1i32, 2, 3])", "crate_oracle::series_repr(v)", &["i32"]),
@@ -3305,7 +3480,7 @@ impl<'a> Oracle<'a> {
             Ty::Tuple(ts) if ts.is_empty() => Some("\"()\".to_string()".into()),
             Ty::Tuple(ts) => {
                 let parts: Option<Vec<String>> = ts.iter().enumerate().map(|(i, e)| self.oracle_fmt(e, owner, depth + 1).map(|f| format!("{{ let __r = __t.{i}; {f} }}"))).collect();
-                parts.map(|p| format!("{{ let __t = __r; format!(\"({{}})\", [{}].join(\", \")) }}", p.join(", ")))
+                parts.map(|p| format!("{{ let __t = __r; format!(\"({{}})\", [{}].iter().map(|e: &String| format!(\"{{}}:{{e}}\", e.len())).collect::<Vec<_>>().join(\", \")) }}", p.join(", ")))
             }
             Ty::Ref { inner, .. } if matches!(&**inner, Ty::Path { path, .. } if path == "str") => self.oracle_fmt(inner, owner, depth + 1),
             Ty::Ref { inner, .. } => self.oracle_fmt(inner, owner, depth + 1).map(|f| format!("{{ let __r = (__r).clone(); {f} }}")),
@@ -3316,8 +3491,8 @@ impl<'a> Oracle<'a> {
                 "polars_utils::index::IdxSize" => Some("format!(\"{}\", __r as i64)".into()),
                 "char" | "str" | "alloc::string::String" | "polars_utils::pl_str::PlSmallStr" => Some("format!(\"{}\", __r.to_string())".into()),
                 "Self" => self.oracle_fmt(&Ty::Path { path: owner?.to_string(), args: vec![] }, owner, depth + 1),
-                "core::option::Option" if args.len() == 1 => self.oracle_fmt(&args[0], owner, depth + 1).map(|f| format!("match __r {{ Some(__r) => format!(\"Some({{}})\", {f}), None => \"None\".to_string() }}")),
-                "alloc::vec::Vec" if args.len() == 1 => self.oracle_fmt(&args[0], owner, depth + 1).map(|f| format!("format!(\"[{{}}]\", __r.into_iter().map(|__r| {f}).collect::<Vec<_>>().join(\", \"))")),
+                "core::option::Option" if args.len() == 1 => self.oracle_fmt(&args[0], owner, depth + 1).map(|f| format!("match __r {{ Some(__r) => {{ let s: String = {f}; format!(\"Some({{}}:{{s}})\", s.len()) }}, None => \"None\".to_string() }}")),
+                "alloc::vec::Vec" if args.len() == 1 => self.oracle_fmt(&args[0], owner, depth + 1).map(|f| format!("format!(\"[{{}}]\", __r.into_iter().map(|__r| {{ let e: String = {f}; format!(\"{{}}:{{e}}\", e.len()) }}).collect::<Vec<_>>().join(\", \"))")),
                 "polars_error::PolarsResult" | "core::result::Result" if !args.is_empty() => self.oracle_fmt(&args[0], owner, depth + 1).map(|f| format!("match __r {{ Ok(__r) => {f}, Err(e) => format!(\"<<ERR:{{}}>>\", crate_oracle::error_kind(&e)) }}")),
                 _ => {
                     let show = self.show(path)?;
@@ -3325,6 +3500,13 @@ impl<'a> Oracle<'a> {
                 }
             },
             Ty::Generic(g) if g == "Self" => self.oracle_fmt(&Ty::Path { path: "Self".into(), args: vec![] }, owner, depth + 1),
+            // an iterator return (record 0077): the oracle drives it to a
+            // vector and frames the elements like any vector
+            Ty::Impl(_) => {
+                let (item, _, _) = iterator_return(t)?;
+                let f = self.oracle_fmt(&item, owner, depth + 1)?;
+                Some(format!("format!(\"[{{}}]\", __r.into_iter().map(|__r| {{ let e: String = {f}; format!(\"{{}}:{{e}}\", e.len()) }}).collect::<Vec<_>>().join(\", \"))"))
+            }
             _ => None,
         }
     }
@@ -3345,12 +3527,14 @@ impl<'a> Oracle<'a> {
                 if let Some(inner) = r.strip_prefix("Option<").and_then(|s| s.strip_suffix('>')) {
                     let ic = match ret_canonical { Some(Ty::Path { path, args }) if path == "core::option::Option" && args.len() == 1 => Some(&args[0]), Some(Ty::Ref { inner, .. }) => match &**inner { Ty::Path { path, args } if path == "core::option::Option" && args.len() == 1 => Some(&args[0]), _ => None }, _ => None };
                     let f = self.script_fmt(inner, ic, owner, depth + 1)?;
-                    return Some(format!("match rune::from_value::<Option<rune::Value>>(v) {{ Ok(Some(v)) => ({f}).map(|s| format!(\"Some({{s}})\")), Ok(None) => Ok(\"None\".to_string()), Err(e) => Err(e.to_string()) }}"));
+                    return Some(format!("match rune::from_value::<Option<rune::Value>>(v) {{ Ok(Some(v)) => ({f}).map(|s| format!(\"Some({{}}:{{s}})\", s.len())), Ok(None) => Ok(\"None\".to_string()), Err(e) => Err(e.to_string()) }}"));
                 }
                 if let Some(inner) = r.strip_prefix("Vec<").and_then(|s| s.strip_suffix('>')) {
-                    let ic = match ret_canonical { Some(Ty::Path { path, args }) if path == "alloc::vec::Vec" && args.len() == 1 => Some(&args[0]), _ => None };
+                    let item_of = ret_canonical.and_then(|t| iterator_return(t)).map(|(i, _, _)| i);
+                    let ic = match ret_canonical { Some(Ty::Path { path, args }) if path == "alloc::vec::Vec" && args.len() == 1 => Some(&args[0]), _ => item_of.as_ref() };
                     let f = self.script_fmt(inner, ic, owner, depth + 1)?;
-                    return Some(format!("match rune::from_value::<Vec<rune::Value>>(v) {{ Ok(items) => items.into_iter().map(|v| {f}).collect::<Result<Vec<_>, _>>().map(|s| format!(\"[{{}}]\", s.join(\", \"))), Err(e) => Err(e.to_string()) }}"));
+                    // length-framed elements: equal-length vectors whose element texts would join alike stay apart
+                    return Some(format!("match rune::from_value::<Vec<rune::Value>>(v) {{ Ok(items) => items.into_iter().map(|v| {f}).collect::<Result<Vec<_>, _>>().map(|s| format!(\"[{{}}]\", s.iter().map(|e| format!(\"{{}}:{{e}}\", e.len())).collect::<Vec<_>>().join(\", \"))), Err(e) => Err(e.to_string()) }}"));
                 }
                 if r.starts_with('(') {
                     return None; // tuples: not compared in this stage
@@ -3456,6 +3640,9 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
             if e.bindings[bi].callee.is_none() {
                 if let Some((c0, _)) = info.owner.clone() {
                     info.callee = info.callee.replacen(&format!("<{}", world.wrappers[&c0].spell), &format!("<{}", world.wrappers[&r].spell), 1);
+                    // a `Self` in the return names this receiver's wrapper, not the first implementor's
+                    let (w0, wr) = (world.wrappers[&c0].rust.clone(), world.wrappers[&r].rust.clone());
+                    if w0 != wr { info.ret_rust = info.ret_rust.replace(&w0, &wr); }
                 }
             }
             info.rune_owner = Some(rune_path(&world.wrappers[&r]));
@@ -3920,8 +4107,10 @@ fn oracle_runner_fails_closed() {
     // generator; j2 and j4 are asserted ordered at generation time.
     const J1_UNORDERED: bool = @J1@;
     let (j1_expected, j1_pass): (&[Outcome], bool) = if J1_UNORDERED { (&[Outcome::RowOrderDiffers, Outcome::Match], true) } else { (&[Outcome::Mismatch, Outcome::Nondeterministic], false) };
-    fn none_order_join_reversed() -> Side {
-        let mut args = p::JoinArgs::new(p::JoinType::Inner); args.maintain_order = p::MaintainOrderJoin::None;
+    // an explicit order the release file does not record: deterministic on
+    // every release, so the control never depends on an unspecified order
+    fn leftright_order_join_reversed() -> Side {
+        let mut args = p::JoinArgs::new(p::JoinType::Inner); args.maintain_order = p::MaintainOrderJoin::LeftRight;
         let d = lf().join(lf(), [expr()], [expr()], args).into_lazy().collect().unwrap().reverse();
         Side::Value(crate_oracle::frame_repr(&d).prefixed("collected "))
     }
@@ -3929,7 +4118,7 @@ fn oracle_runner_fails_closed() {
         ("permuted rows pass for a justified unordered join iff the policy says unordered", Case { id: "j1", path: "control", script: "pub fn setup() { [fx::lf(), fx::lf(), fx::expr(), fx::expr()] } pub fn main(__fx) { let a = __fx[0]; (a.inner_join(__fx[1], __fx[2], __fx[3]), ()) }", has_receiver: false, unordered: J1_UNORDERED, policy: "@J1_POLICY@", fmt: lf_side, oracle: || ran(joined_reversed) }, j1_expected, j1_pass),
         ("permuted rows fail for the same join with an explicit order", Case { id: "j2", path: "control", script: "pub fn setup() { [fx::lf(), fx::lf(), polars::JoinArgs::default_().with_maintain_order(polars::MaintainOrderJoin::Left())] } pub fn main(__fx) { let a = __fx[0]; let args = __fx[2]; let j = match a.join(__fx[1], [fx::expr()], [fx::expr()], args) { Ok(v) => v, Err(e) => panic(`join: ${e}`) }; (j, ()) }", has_receiver: false, unordered: @J2@, policy: "@J2_POLICY@", fmt: lf_side, oracle: || ran(ordered_join_reversed) }, &[Outcome::Mismatch], false),
         ("permuted rows fail for an unrelated ordered operation", Case { id: "j3", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "ordered", fmt: df_side, oracle: || ran(reversed) }, &[Outcome::Mismatch], false),
-        ("permuted rows fail for the same join with an unrecognized configuration", Case { id: "j4", path: "control", script: "pub fn setup() { [fx::lf(), fx::lf(), polars::JoinArgs::default_().with_maintain_order(polars::MaintainOrderJoin::None())] } pub fn main(__fx) { let a = __fx[0]; let args = __fx[2]; let j = match a.join(__fx[1], [fx::expr()], [fx::expr()], args) { Ok(v) => v, Err(e) => panic(`join: ${e}`) }; (j, ()) }", has_receiver: false, unordered: @J4@, policy: "@J4_POLICY@", fmt: lf_side, oracle: || ran(none_order_join_reversed) }, &[Outcome::Mismatch, Outcome::Nondeterministic], false),
+        ("permuted rows fail for the same join with an unrecognized configuration", Case { id: "j4", path: "control", script: "pub fn setup() { [fx::lf(), fx::lf(), polars::JoinArgs::default_().with_maintain_order(polars::MaintainOrderJoin::LeftRight())] } pub fn main(__fx) { let a = __fx[0]; let args = __fx[2]; let j = match a.join(__fx[1], [fx::expr()], [fx::expr()], args) { Ok(v) => v, Err(e) => panic(`join: ${e}`) }; (j, ()) }", has_receiver: false, unordered: @J4@, policy: "@J4_POLICY@", fmt: lf_side, oracle: || ran(leftright_order_join_reversed) }, &[Outcome::Mismatch], false),
     ];
     // setup failures are structural: a failing setup stage on both sides
     // credits nothing and calls the target zero times, whatever the
@@ -4013,6 +4202,36 @@ fn oracle_runner_fails_closed() {
         let (outcome, detail) = h.run(case);
         if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
     }
+    // record 0077: the materialization bound through a real binding
+    // (`DataFrame::materialized_column_iter`, three columns) with the
+    // test-support limit; the receiver stays usable after a refusal
+    fn cols_side(v: Value) -> Side { match rune::from_value::<Result<Vec<rune::Value>, rune::Value>>(v) { Ok(Ok(items)) => { let mut out = Vec::new(); for i in items { match rnx_polars::generated::fixtures::show_w_polars_core__series__series(&i) { Ok(r) => out.push(r.to_text()), Err(e) => return Side::Broken(e) } } Side::Value(crate_oracle::Repr::Text(format!("[{}]", out.iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", ")))) } Ok(Err(e)) => crate_oracle::rune_error_kind(&e).map(Side::Error).unwrap_or_else(Side::Broken), Err(e) => Side::Broken(e.to_string()) } }
+    fn cols_text() -> String { format!("[{}]", df().materialized_column_iter().map(|c| { let t = crate_oracle::series_repr(c).to_text(); format!("{}:{t}", t.len()) }).collect::<Vec<_>>().join(", ")) }
+    let bound_controls: &[(&str, Case, Outcome)] = &[
+        ("a bound below the length refuses on both sides with MaterializeLimit", Case { id: "b1", path: "control", script: "pub fn setup() { [fx::df()] } pub fn main(__fx) { polars::set_materialize_limit(2); let r = __fx[0].materialized_column_iter(); polars::set_materialize_limit(0); (r, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: cols_side, oracle: || Staged::Ran(Side::Error("MaterializeLimit".into())) }, Outcome::BothError),
+        ("a bound equal to the length succeeds", Case { id: "b2", path: "control", script: "pub fn setup() { [fx::df()] } pub fn main(__fx) { polars::set_materialize_limit(3); let r = __fx[0].materialized_column_iter(); polars::set_materialize_limit(0); (r, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: cols_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(cols_text()))) }, Outcome::Match),
+        ("the receiver is usable after a refusal", Case { id: "b3", path: "control", script: "pub fn setup() { [fx::df()] } pub fn main(__fx) { let a = __fx[0]; polars::set_materialize_limit(2); let _ = a.materialized_column_iter(); polars::set_materialize_limit(0); (a.materialized_column_iter(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: cols_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(cols_text()))) }, Outcome::Match),
+        ("a wrong bound-refusal claim fails: value against MaterializeLimit", Case { id: "b4", path: "control", script: "pub fn setup() { [fx::df()] } pub fn main(__fx) { (__fx[0].materialized_column_iter(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: cols_side, oracle: || Staged::Ran(Side::Error("MaterializeLimit".into())) }, Outcome::Mismatch),
+    ];
+    for (label, case, expected) in bound_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // length-framed vectors: equal-length string vectors whose element
+    // texts would join alike stay apart; a changed and a reordered element fail
+    fn strs_side(v: Value) -> Side { match rune::from_value::<Vec<String>>(v) { Ok(items) => Side::Value(crate_oracle::Repr::Text(format!("[{}]", items.iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", ")))), Err(e) => Side::Broken(e.to_string()) } }
+    let framed = |v: &[&str]| format!("[{}]", v.iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "));
+    let seq_controls: Vec<(&str, Case, Outcome)> = vec![
+        ("the string collision is a mismatch", Case { id: "q1", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { ([\"a, b\", \"c\"], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: strs_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("[{}]", ["a", "b, c"].iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "))))) }, Outcome::Mismatch),
+        ("a changed element fails", Case { id: "q2", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { ([\"a\", \"b\"], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: strs_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("[{}]", ["a", "c"].iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "))))) }, Outcome::Mismatch),
+        ("reordered elements fail", Case { id: "q3", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { ([\"a\", \"b\"], ()) }", has_receiver: false, unordered: true, policy: "control", fmt: strs_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("[{}]", ["b", "a"].iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "))))) }, Outcome::Mismatch),
+        ("the same vector matches", Case { id: "q4", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { ([\"a, b\", \"c\"], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: strs_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("[{}]", ["a, b", "c"].iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "))))) }, Outcome::Match),
+    ];
+    let _ = framed;
+    for (label, case, expected) in &seq_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
     // two cases of one path (two receivers) survive result collection independently
     {
         let twin = |id: &'static str| Case { id, path: "control::twin", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(same) };
@@ -4048,7 +4267,7 @@ fn oracle_runner_fails_closed() {
     let j1 = world.release.policy("polars_lazy::frame::LazyFrame::inner_join", &named(&[("other", "fx::lf()"), ("left_on", "fx::expr()"), ("right_on", "fx::expr()")]));
     let mut with_left = base.to_vec(); with_left.push(("args", "polars::JoinArgs::default_().with_maintain_order(polars::MaintainOrderJoin::Left())"));
     let j2 = world.release.policy("polars_lazy::frame::LazyFrame::join", &named(&with_left));
-    let mut with_none = base.to_vec(); with_none.push(("args", "polars::JoinArgs::default_().with_maintain_order(polars::MaintainOrderJoin::None())"));
+    let mut with_none = base.to_vec(); with_none.push(("args", "polars::JoinArgs::default_().with_maintain_order(polars::MaintainOrderJoin::LeftRight())"));
     let j4 = world.release.policy("polars_lazy::frame::LazyFrame::join", &named(&with_none));
     assert!(!j2.0, "the release policy must keep an explicit order ordered: {}", j2.1);
     assert!(!j4.0, "the release policy must keep an unrecognized configuration ordered: {}", j4.1);

@@ -68,6 +68,12 @@ options = "JoinArgs::default()"
 cite = "polars-ops-0.54.4 join/args.rs:153 JoinArgs::default() takes maintain_order: Default::default() = None"
 
 [[excluded_oracle]]
+path = "polars_core::chunked_array::ChunkedArray::row_decode_ordered"
+reason = "decodes arbitrary bytes as row-encoded data; the result differs run to run (record 0077, observed on BinaryOffsetChunked)"
+[[excluded_oracle]]
+path = "polars_core::chunked_array::ChunkedArray::row_decode_unordered"
+reason = "as row_decode_ordered"
+[[excluded_oracle]]
 path = "polars_core::series::Series::as_single_ptr"
 reason = "returns a memory address"
 [[excluded_oracle]]
@@ -76,10 +82,11 @@ reason = "Debug output shows runtime state"
 
 # Record 0076: proven instantiations the compiler refuses. polars-arrow-0.55.2
 # src/array/static_array.rs lines 52 and 80 mark `StructArray`'s
-# `value_unchecked` and `iter` with `no_call_const`, a compile-time panic,
+# `value_unchecked`, `iter` and `values_iter` (lines 52, 80, 83) with `no_call_const`, a compile-time panic,
 # and `get`, `first`, `last`, `first_null`, `first_non_null` and `last_non_null`
-# on `ChunkedArray<T>` reach them (bisected by compilation, record 0076).
+# on `ChunkedArray<T>` reach them (bisected by compilation, record 0076); `iter` and `no_null_iter`
+# (record 0077, iterator returns) reach `iter` and `values_iter`.
 [[instantiation.exclude]]
 alias = "StructChunked"
-methods = ["get", "first", "last", "first_null", "first_non_null", "last_non_null"]
+methods = ["get", "first", "last", "first_null", "first_non_null", "last_non_null", "iter", "no_null_iter"]
 cite = "polars-arrow-0.55.2 array/static_array.rs:52,80 no_call_const on StructArray"
