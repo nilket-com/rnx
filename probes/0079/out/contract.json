@@ -1,0 +1,476 @@
+{
+  "budget": {
+    "blocking_ms": 300.612211,
+    "blocking_native_call": "[1, 2, 3]",
+    "nontermination": "CallbackError: callback Column::apply_unary_elementwise: instruction budget 1000 exhausted",
+    "nontermination_ms": 0.12183100000000001,
+    "stored_callback_reads_setting": [
+      "ok",
+      "ExprContext: callback Expr::map: instruction budget 100 exhausted",
+      "ok"
+    ]
+  },
+  "budget_cost": {
+    "calls": 100000,
+    "paired_diff_ns_max": 84.67537,
+    "paired_diff_ns_median": 2.9013300000000086,
+    "paired_diff_ns_min": -136.09941,
+    "paired_diff_ns_per_call": [
+      -14.013810000000007,
+      13.064970000000002,
+      -136.09941,
+      -12.555520000000016,
+      4.493529999999986,
+      -29.959349999999997,
+      3.6745999999999768,
+      2.9013300000000086,
+      84.67537
+    ],
+    "with_budget_ms": [
+      28.478257,
+      25.902683,
+      22.888315,
+      22.205234,
+      22.531795,
+      23.146321,
+      24.213261,
+      26.235463,
+      32.117015
+    ],
+    "without_budget_ms": [
+      29.879638,
+      24.596186,
+      36.498256,
+      23.460786000000002,
+      22.082442,
+      26.142256,
+      23.845801,
+      25.94533,
+      23.649478000000002
+    ]
+  },
+  "budget_discrimination": {
+    "genuine": "CallbackError: callback Column::apply_unary_elementwise: instruction budget 1000 exhausted",
+    "user_panic_deferred": "ExprContext: callback Expr::map: call failed: Panicked: limited user message",
+    "user_panic_immediate": "CallbackError: callback Column::apply_unary_elementwise: call failed: Panicked: limited user message"
+  },
+  "captures": {
+    "constant_then_rebound": "[2, 3, 4]",
+    "function": "CallbackCapture: callback Column::apply_unary_elementwise: a captured value is not a constant: Type `::std::ops::Function` can't be converted to a constant value",
+    "nested_object": "CallbackCapture: callback Column::apply_unary_elementwise: a captured value is not a constant: Type `::polars::Series` can't be converted to a constant value",
+    "wrapped": "CallbackCapture: callback Expr::map: a captured value is not a constant: Type `::polars::Series` can't be converted to a constant value"
+  },
+  "concurrency": {
+    "calls": 64,
+    "columns": 64,
+    "distinct_threads": 28,
+    "max_simultaneous": 28,
+    "pool_threads": 28
+  },
+  "costs": {
+    "apply_columns_par_1000_one_row_columns": {
+      "columns": 1000,
+      "note": "parallel wall time over the pool: throughput, not per-invocation latency",
+      "rune_ms": {
+        "max": 2.109327,
+        "median": 1.159816,
+        "min": 0.94218,
+        "n": 7,
+        "samples": [
+          2.109327,
+          0.94218,
+          1.1727949999999998,
+          1.159816,
+          1.1778680000000001,
+          1.0640610000000001,
+          1.019323
+        ]
+      },
+      "rust_ms": {
+        "max": 1.172637,
+        "median": 0.652518,
+        "min": 0.54191,
+        "n": 7,
+        "samples": [
+          0.54191,
+          0.630426,
+          0.646244,
+          1.172637,
+          0.698958,
+          0.719408,
+          0.652518
+        ]
+      }
+    },
+    "apply_mut_1": {
+      "calls": 1,
+      "commit_minus_in_place_ms_paired": {
+        "max": 0.025228000000000007,
+        "median": 0.00019900000000000126,
+        "min": -0.031292000000000014,
+        "n": 9,
+        "samples": [
+          -0.031292000000000014,
+          0.025228000000000007,
+          0.0021029999999999972,
+          0.0009600000000000025,
+          -0.0014620000000000015,
+          0.00019900000000000126,
+          -0.0006649999999999989,
+          0.004232999999999997,
+          0.00008800000000000127
+        ]
+      },
+      "note": "end to end: the binding, the engine thread, one VM per element; not a separation of VM and conversion costs",
+      "rune_commit_on_success_ms": {
+        "max": 0.15256899999999998,
+        "median": 0.027916,
+        "min": 0.025961,
+        "n": 9,
+        "samples": [
+          0.15256899999999998,
+          0.060028000000000005,
+          0.029252999999999998,
+          0.027568000000000002,
+          0.027003,
+          0.027916,
+          0.025961,
+          0.031010999999999997,
+          0.026799
+        ]
+      },
+      "rune_in_place_ms": {
+        "max": 0.183861,
+        "median": 0.02715,
+        "min": 0.026608,
+        "n": 9,
+        "samples": [
+          0.183861,
+          0.0348,
+          0.02715,
+          0.026608,
+          0.028465,
+          0.027717,
+          0.026626,
+          0.026778,
+          0.026711
+        ]
+      },
+      "rust_clone_then_apply_ms": {
+        "max": 0.000789,
+        "median": 0.000236,
+        "min": 0.000186,
+        "n": 9,
+        "samples": [
+          0.000789,
+          0.00025699999999999996,
+          0.00022700000000000002,
+          0.000246,
+          0.00021799999999999999,
+          0.00026399999999999997,
+          0.000186,
+          0.000236,
+          0.00022
+        ]
+      },
+      "rust_closure_ms": {
+        "max": 0.000464,
+        "median": 0.000143,
+        "min": 0.000137,
+        "n": 9,
+        "samples": [
+          0.000464,
+          0.000168,
+          0.000139,
+          0.000138,
+          0.00015900000000000002,
+          0.000149,
+          0.000143,
+          0.000141,
+          0.000137
+        ]
+      }
+    },
+    "apply_mut_1000": {
+      "calls": 1000,
+      "commit_minus_in_place_ms_paired": {
+        "max": 0.014631999999999978,
+        "median": -0.00968800000000003,
+        "min": -0.068575,
+        "n": 9,
+        "samples": [
+          0.009233000000000047,
+          0.002827999999999997,
+          -0.008813000000000015,
+          -0.00968800000000003,
+          -0.04187799999999997,
+          -0.027293999999999985,
+          -0.03919800000000001,
+          0.014631999999999978,
+          -0.068575
+        ]
+      },
+      "note": "end to end: the binding, the engine thread, one VM per element; not a separation of VM and conversion costs",
+      "rune_commit_on_success_ms": {
+        "max": 0.49791199999999997,
+        "median": 0.347316,
+        "min": 0.29563,
+        "n": 9,
+        "samples": [
+          0.301566,
+          0.29563,
+          0.316274,
+          0.339352,
+          0.347316,
+          0.394384,
+          0.41718700000000003,
+          0.49791199999999997,
+          0.493837
+        ]
+      },
+      "rune_in_place_ms": {
+        "max": 0.562412,
+        "median": 0.389194,
+        "min": 0.29233299999999995,
+        "n": 9,
+        "samples": [
+          0.29233299999999995,
+          0.292802,
+          0.325087,
+          0.34904,
+          0.389194,
+          0.421678,
+          0.45638500000000004,
+          0.48328,
+          0.562412
+        ]
+      },
+      "rust_clone_then_apply_ms": {
+        "max": 0.000919,
+        "median": 0.000641,
+        "min": 0.000591,
+        "n": 9,
+        "samples": [
+          0.00082,
+          0.000613,
+          0.000591,
+          0.000616,
+          0.000634,
+          0.000641,
+          0.000747,
+          0.000733,
+          0.000919
+        ]
+      },
+      "rust_closure_ms": {
+        "max": 0.0014559999999999998,
+        "median": 0.000983,
+        "min": 0.0008449999999999999,
+        "n": 9,
+        "samples": [
+          0.000911,
+          0.000917,
+          0.0008449999999999999,
+          0.000854,
+          0.001037,
+          0.000983,
+          0.001145,
+          0.001126,
+          0.0014559999999999998
+        ]
+      }
+    },
+    "apply_mut_1000000": {
+      "calls": 1000000,
+      "commit_minus_in_place_ms_paired": {
+        "max": 17.220034000000027,
+        "median": 0.3006210000000067,
+        "min": -3.22447600000001,
+        "n": 5,
+        "samples": [
+          17.220034000000027,
+          -2.719116000000014,
+          -3.22447600000001,
+          6.220360000000028,
+          0.3006210000000067
+        ]
+      },
+      "note": "end to end: the binding, the engine thread, one VM per element; not a separation of VM and conversion costs",
+      "rune_commit_on_success_ms": {
+        "max": 238.14813,
+        "median": 222.297091,
+        "min": 216.520387,
+        "n": 5,
+        "samples": [
+          238.14813,
+          222.297091,
+          216.520387,
+          223.41781,
+          217.749369
+        ]
+      },
+      "rune_in_place_ms": {
+        "max": 225.016207,
+        "median": 219.744863,
+        "min": 217.19744999999998,
+        "n": 5,
+        "samples": [
+          220.92809599999998,
+          225.016207,
+          219.744863,
+          217.19744999999998,
+          217.448748
+        ]
+      },
+      "rust_clone_then_apply_ms": {
+        "max": 1.032081,
+        "median": 0.907294,
+        "min": 0.892536,
+        "n": 5,
+        "samples": [
+          0.907294,
+          0.892536,
+          0.945081,
+          1.032081,
+          0.895455
+        ]
+      },
+      "rust_closure_ms": {
+        "max": 1.31272,
+        "median": 1.284275,
+        "min": 1.006435,
+        "n": 5,
+        "samples": [
+          1.229603,
+          1.31272,
+          1.3018649999999998,
+          1.284275,
+          1.006435
+        ]
+      }
+    },
+    "bridge_alone_single_thread": {
+      "calls": 100000,
+      "note": "one VM per call (scalar); a Series wrapped into a Rune value and taken back (series); the identity closure",
+      "per_call_us_scalar": 0.23937545,
+      "per_call_us_series": 0.25034524999999996,
+      "per_call_us_series_conversion_over_scalar": 0.010969799999999984,
+      "scalar_i64_in_out_ms": {
+        "max": 24.154738,
+        "median": 23.937545,
+        "min": 23.911978,
+        "n": 7,
+        "samples": [
+          24.154738,
+          23.962958999999998,
+          23.913512,
+          23.957625999999998,
+          23.937545,
+          23.934483,
+          23.911978
+        ]
+      },
+      "series_in_out_ms": {
+        "max": 25.084431000000002,
+        "median": 25.034525,
+        "min": 25.011509,
+        "n": 7,
+        "samples": [
+          25.026862,
+          25.034525,
+          25.04917,
+          25.084431000000002,
+          25.011509,
+          25.033214,
+          25.064016000000002
+        ]
+      }
+    },
+    "elementwise_series_1m_rows": {
+      "note": "one bridge call on the whole series plus the fixture, the engine thread and Polars's own work; end to end",
+      "rows": 1000000,
+      "rune_ms": {
+        "max": 3.265345,
+        "median": 1.379499,
+        "min": 1.2373219999999998,
+        "n": 5,
+        "samples": [
+          3.265345,
+          1.259378,
+          1.2373219999999998,
+          1.379499,
+          1.763434
+        ]
+      },
+      "rust_ms": {
+        "max": 1.409553,
+        "median": 0.88814,
+        "min": 0.871107,
+        "n": 5,
+        "samples": [
+          0.88814,
+          0.871107,
+          0.88471,
+          1.078085,
+          1.409553
+        ]
+      }
+    }
+  },
+  "csv": {
+    "with_schema_modify": "[a, b] f64 f64 calls=1 height=2 a=2",
+    "without": "i64"
+  },
+  "deferred_journey": {
+    "budget_exhaustion": "ExprContext: callback Expr::map: instruction budget 500 exhausted calls=5",
+    "describe_sink": "calls=3",
+    "entry_points_invoking_callbacks": [
+      "LazyFrame::collect (function and output_type)",
+      "DslPlan::compute_schema (output_type)",
+      "LazyFrame::describe_plan (output_type)"
+    ],
+    "retry": "[2, 4, 6] calls=5",
+    "schema_sink": "[x2] calls=3",
+    "value": "[2, 4, 6] calls=5",
+    "vm_failure": "ExprContext: callback Expr::map: call failed: Panicked: later failure calls=5",
+    "wrong_type_at_collect": "Context: callback Expr::map: wrong result type: got ::std::i64 (Expected type `::polars::Field` but found `::std::i64`)\n\nResolved plan until failure:\n\n\t---> FAILED HERE RESOLVING 'select' <---\nDF [\"x\", \"y\", \"z\"]; PROJECT */3 COLUMNS: 'select' calls=1",
+    "wrong_type_at_schema": "Context: callback Expr::map: wrong result type: got ::std::i64 (Expected type `::polars::Field` but found `::std::i64`)\n\nResolved plan until failure:\n\n\t---> FAILED HERE RESOLVING 'select' <---\nDF [\"x\", \"y\", \"z\"]; PROJECT */3 COLUMNS: 'select' calls=1"
+  },
+  "errors": {
+    "fallible_vm_error": "ExprContext: callback Expr::map: call failed: Panicked: vm error",
+    "fallible_wrong_type": "ExprContext: callback Expr::map: wrong result type: got ::std::string::String (Expected type `::polars::Column` but found `::std::string::String`)",
+    "infallible_vm_error": "CallbackError: callback Column::apply_unary_elementwise: call failed: Panicked: vm error|[1, 2, 3]|[2, 3, 4]",
+    "infallible_wrong_type": "CallbackError: callback Column::apply_unary_elementwise: wrong result type: got ::std::i64 (Expected type `::polars::Series` but found `::std::i64`)",
+    "unrouted_leaks_panic": true,
+    "unrouted_wrap_msg_leaks_panic": true,
+    "wrap_msg_fail": "CallbackError: callback PolarsError::wrap_msg: call failed: Panicked: inside",
+    "wrap_msg_ok": "[base]"
+  },
+  "failures": [],
+  "mutation": {
+    "commit_on_success": "[1, null, 3, 4, 5] nulls=1 len=5 Ascending|CallbackError: callback Int64Chunked::apply_mut: call failed: Panicked: at four|[1, null, 3, 4, 5] nulls=1 len=5 Ascending|[2, null, 4, 5, 6]",
+    "in_place_partial_write": "CallbackError: callback Int64Chunked::apply_mut: call failed: Panicked: at four|[10, null, 30, 4, 5] Ascending",
+    "mutated_argument": "[1, 2, 3]|[0, 0, 0]",
+    "result_buffer": "[v0, v1, v2]",
+    "vector_argument": "[10, 20, 30]"
+  },
+  "reentry": {
+    "nested_via_routed_path": "CallbackError: callback Column::apply_unary_elementwise: call failed: Panicked: CallbackError|callback: `PolarsError::wrap_msg` is a routed binding and may not be called from a callback",
+    "nested_via_unrouted_path": "CallbackError: callback PolarsError::wrap_msg: nested callback: a callback invoked while another is running on this thread",
+    "routed_from_callback": "CallbackError: callback Column::apply_unary_elementwise: call failed: Panicked: CallbackError|callback: `Series::sum` is a routed binding and may not be called from a callback",
+    "unrouted_from_callback": "[4, 6, 8]"
+  },
+  "restoration": {
+    "calling_thread": [
+      "exhaustion under an inner budget of 100: got Exhausted (wanted Exhausted), guard clear true, outer allowance intact: small runs true, large halts true",
+      "success under an inner budget of 100 000: got Value(2) (wanted Value(2)), guard clear true, outer allowance intact: small runs true, large halts true",
+      "vm failure under an inner budget of 100 000: got VmFailure (wanted VmFailure), guard clear true, outer allowance intact: small runs true, large halts true",
+      "native panic inside the callback under an inner budget of 100 000: got NativePanic (wanted NativePanic), guard clear true, outer allowance intact: small runs true, large halts true",
+      "typed unwind under an inner budget of 100 000: got TypedUnwind (wanted TypedUnwind), guard clear true, outer allowance intact: small runs true, large halts true"
+    ],
+    "failing_invocations_observed": 63,
+    "negative_control": "negative control: no native panic: got Value(1) (wanted NativePanic), guard clear true, outer allowance intact: small runs true, large halts true",
+    "probe_failures": 0,
+    "worker_reuse": "CallbackError: callback DataFrame::apply_columns_par: call failed: Panicked: fail on a worker|failing_calls=63|again=64 calls=64 sum=128|0"
+  }
+}

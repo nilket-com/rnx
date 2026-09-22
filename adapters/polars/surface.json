@@ -4,6 +4,4086 @@
     "conversion",
     "option_struct"
   ],
+  "callbacks": {
+    "by_disposition": {
+      "feasible": 29,
+      "feasible (per family)": 7,
+      "feasible (per family, result buffer)": 1,
+      "feasible (vector argument)": 4,
+      "not eligible": 16,
+      "out of scope: internal crate": 31,
+      "refused": 78
+    },
+    "count": 166,
+    "rows": [
+      {
+        "closures": [
+          "f: FnOnce(polars_arrow::bitmap::immutable::Bitmap) -> polars_arrow::bitmap::immutable::Bitmap"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_arrow:3062",
+        "name": "apply_validity",
+        "owner": "polars_arrow::array::primitive::PrimitiveArray"
+      },
+      {
+        "closures": [
+          "f: FnOnce(polars_arrow::array::primitive::PrimitiveArray<T>) -> R"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_arrow:3074",
+        "name": "with_slice",
+        "owner": "polars_arrow::array::primitive::PrimitiveArray"
+      },
+      {
+        "closures": [
+          "f: FnOnce(&mut [T]) -> ()"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_arrow:3063",
+        "name": "with_values_mut",
+        "owner": "polars_arrow::array::primitive::PrimitiveArray"
+      },
+      {
+        "closures": [
+          "f: FnOnce(polars_arrow::bitmap::immutable::Bitmap) -> polars_arrow::bitmap::immutable::Bitmap"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_arrow:4030",
+        "name": "apply_validity",
+        "owner": "polars_arrow::array::utf8::Utf8Array"
+      },
+      {
+        "closures": [
+          "f: Fn() -> u64"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_arrow:11963",
+        "name": "get_or_infer_with",
+        "owner": "polars_arrow::datatypes::reshape::ReshapeDimension"
+      },
+      {
+        "closures": [
+          "op: Fn(L, R) -> O"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_compute:559",
+        "name": "prim_binary_values",
+        "owner": ""
+      },
+      {
+        "closures": [
+          "op: Fn(I) -> O"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_compute:557",
+        "name": "prim_unary_values",
+        "owner": ""
+      },
+      {
+        "closures": [
+          "f: Fn(T) -> bool"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_compute:1159",
+        "name": "primitive_map_is_valid",
+        "owner": ""
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:3648",
+        "name": "_apply_fields",
+        "owner": "polars_core::chunked_array::ChunkedArray"
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_amortized_generic",
+        "closures": [
+          "f: FnMut(core::option::Option<polars_core::series::amortized_iter::AmortSeries>) -> core::option::Option<K>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3595",
+        "mutable_contracts": [],
+        "name": "apply_amortized_generic",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: argument `core::option::Option<polars_core::series::amortized_iter::AmortSeries>` is an amortized borrow Polars reuses between calls (AmortSeries)",
+          "f: return `core::option::Option<K>` is the free generic `K` (a Rune function cannot choose a Rust type parameter)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:3602",
+        "name": "apply_amortized_same_type",
+        "owner": "polars_core::chunked_array::ChunkedArray"
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_as_ints",
+        "closures": [
+          "f: Fn(&polars_core::series::Series) -> polars_core::series::Series"
+        ],
+        "disposition": "feasible (per family)",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/ops/bit_repr.rs:211,226,240: `let out = f(&s)` on the bit representation, before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3479",
+        "mutable_contracts": [],
+        "name": "apply_as_ints",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_as_ints",
+        "closures": [
+          "f: Fn(&polars_core::series::Series) -> polars_core::series::Series"
+        ],
+        "disposition": "feasible (per family)",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/ops/bit_repr.rs:211,226,240: `let out = f(&s)` on the bit representation, before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3482",
+        "mutable_contracts": [],
+        "name": "apply_as_ints",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
+        "closures": [
+          "f: Fn(T::Native) -> T::Native"
+        ],
+        "disposition": "feasible (per family)",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/ops/apply.rs:183-189: chunks rebuilt through `apply_in_place_impl` (`:120`), which maps every value with `f` before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3463",
+        "mutable_contracts": [],
+        "name": "apply_in_place",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_into_string_amortized",
+        "closures": [
+          "f: FnMut(T::Physical, &mut alloc::string::String) -> ()"
+        ],
+        "disposition": "feasible (per family, result buffer)",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/ops/apply.rs:71-92: `f(v, &mut buf)` per element before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3459",
+        "mutable_contracts": [
+          "f `&mut alloc::string::String`: result buffer (polars-core-0.55.2/src/chunked_array/ops/apply.rs:71-92: `buf.clear(); f(v, &mut buf); mutarr.push_value(&buf)` per element)"
+        ],
+        "name": "apply_into_string_amortized",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_mut",
+        "closures": [
+          "f: Fn(T::Native) -> T::Native"
+        ],
+        "disposition": "feasible (per family)",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/ops/apply.rs:193-205: values mapped in place through `downcast_iter_mut` before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3465",
+        "mutable_contracts": [],
+        "name": "apply_mut",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_mut",
+        "closures": [
+          "f: FnMut(&str) -> &str"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/ops/apply.rs:193-205: values mapped in place through `downcast_iter_mut` before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3467",
+        "mutable_contracts": [],
+        "name": "apply_mut",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: return `&str` borrowed from the argument"
+        ],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_mut",
+        "closures": [
+          "f: FnMut(&[u8]) -> &[u8]"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/ops/apply.rs:193-205: values mapped in place through `downcast_iter_mut` before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3469",
+        "mutable_contracts": [],
+        "name": "apply_mut",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: return `&[u8]` borrowed from the argument"
+        ],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_nonnull_values_generic",
+        "closures": [
+          "op: FnMut(T::Physical) -> K"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3457",
+        "mutable_contracts": [],
+        "name": "apply_nonnull_values_generic",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "op: return `K` is the free generic `K` (a Rune function cannot choose a Rust type parameter)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<U>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::apply_to_inner",
+        "closures": [
+          "func: Fn(polars_core::series::Series) -> polars_error::PolarsResult<polars_core::series::Series>"
+        ],
+        "disposition": "feasible (per family)",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/list/mod.rs:167 and array/mod.rs:167: `let out: Series = func(elements)?` before returning",
+            "invocation": "immediate",
+            "param": "func",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3615",
+        "mutable_contracts": [],
+        "name": "apply_to_inner",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:3471",
+        "name": "apply_views",
+        "owner": "polars_core::chunked_array::ChunkedArray"
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::binary_zip_and_apply_amortized",
+        "closures": [
+          "f: FnMut(core::option::Option<polars_core::series::amortized_iter::AmortSeries>, core::option::Option<T::Physical>, core::option::Option<U::Physical>) -> core::option::Option<polars_core::series::Series>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3599",
+        "mutable_contracts": [],
+        "name": "binary_zip_and_apply_amortized",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: argument `core::option::Option<polars_core::series::amortized_iter::AmortSeries>` is an amortized borrow Polars reuses between calls (AmortSeries)",
+          "parameter `ca1`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `ca2`: generic type (polars_core::chunked_array::ChunkedArray<U>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::cast_and_apply_in_place",
+        "closures": [
+          "f: Fn(S::Native) -> S::Native"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3462",
+        "mutable_contracts": [],
+        "name": "cast_and_apply_in_place",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "return: generic type (polars_core::chunked_array::ChunkedArray<S>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::for_each",
+        "closures": [
+          "op: FnMut(core::option::Option<T::Physical>) -> ()"
+        ],
+        "disposition": "feasible (per family)",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/ops/for_each.rs:7-14: `arr.iter().for_each(&mut op)` per chunk before returning",
+            "invocation": "immediate",
+            "param": "op",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3527",
+        "mutable_contracts": [],
+        "name": "for_each",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::for_each_amortized",
+        "closures": [
+          "f: FnMut(core::option::Option<polars_core::series::amortized_iter::AmortSeries>) -> ()"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3597",
+        "mutable_contracts": [],
+        "name": "for_each_amortized",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: argument `core::option::Option<polars_core::series::amortized_iter::AmortSeries>` is an amortized borrow Polars reuses between calls (AmortSeries)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::try_apply_amortized",
+        "closures": [
+          "f: FnMut(polars_core::series::amortized_iter::AmortSeries) -> polars_error::PolarsResult<polars_core::series::Series>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3603",
+        "mutable_contracts": [],
+        "name": "try_apply_amortized",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: argument `polars_core::series::amortized_iter::AmortSeries` is an amortized borrow Polars reuses between calls (AmortSeries)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::try_apply_amortized_generic",
+        "closures": [
+          "f: FnMut(core::option::Option<polars_core::series::amortized_iter::AmortSeries>) -> polars_error::PolarsResult<core::option::Option<K>>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3596",
+        "mutable_contracts": [],
+        "name": "try_apply_amortized_generic",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: argument `core::option::Option<polars_core::series::amortized_iter::AmortSeries>` is an amortized borrow Polars reuses between calls (AmortSeries)",
+          "f: return `core::option::Option<K>` is the free generic `K` (a Rune function cannot choose a Rust type parameter)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:3604",
+        "name": "try_apply_amortized_same_type",
+        "owner": "polars_core::chunked_array::ChunkedArray"
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::try_apply_fields",
+        "closures": [
+          "func: FnMut(&polars_core::series::Series) -> polars_error::PolarsResult<polars_core::series::Series>"
+        ],
+        "disposition": "feasible (per family)",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/chunked_array/struct_/mod.rs:351-360: `.map(func).collect()` over the fields before returning",
+            "invocation": "immediate",
+            "param": "func",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3649",
+        "mutable_contracts": [],
+        "name": "try_apply_fields",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::try_apply_into_string_amortized",
+        "closures": [
+          "f: FnMut(T::Physical, &mut alloc::string::String) -> core::result::Result<(), E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3460",
+        "mutable_contracts": [],
+        "name": "try_apply_into_string_amortized",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: mutable argument `alloc::string::String` the callback cannot write back (no audited contract)",
+          "f: return `core::result::Result<(), E>` is the free generic `E` (a Rune function cannot choose a Rust type parameter)",
+          "return: result with foreign error (core::result::Result<polars_core::datatypes::StringChunked, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::try_apply_nonnull_values_generic",
+        "closures": [
+          "op: FnMut(T::Physical) -> core::result::Result<K, E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3458",
+        "mutable_contracts": [],
+        "name": "try_apply_nonnull_values_generic",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "op: return `core::result::Result<K, E>` is the free generic `E` (a Rune function cannot choose a Rust type parameter)",
+          "return: result with foreign error (core::result::Result<polars_core::chunked_array::ChunkedArray<U>, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::try_binary_zip_and_apply_amortized",
+        "closures": [
+          "f: FnMut(core::option::Option<polars_core::series::amortized_iter::AmortSeries>, core::option::Option<T::Physical>, core::option::Option<U::Physical>) -> polars_error::PolarsResult<core::option::Option<polars_core::series::Series>>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3600",
+        "mutable_contracts": [],
+        "name": "try_binary_zip_and_apply_amortized",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: argument `core::option::Option<polars_core::series::amortized_iter::AmortSeries>` is an amortized borrow Polars reuses between calls (AmortSeries)",
+          "parameter `ca1`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `ca2`: generic type (polars_core::chunked_array::ChunkedArray<U>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::try_zip_and_apply_amortized",
+        "closures": [
+          "f: FnMut(core::option::Option<polars_core::series::amortized_iter::AmortSeries>, core::option::Option<T::Physical>) -> polars_error::PolarsResult<core::option::Option<polars_core::series::Series>>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3601",
+        "mutable_contracts": [],
+        "name": "try_zip_and_apply_amortized",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: argument `core::option::Option<polars_core::series::amortized_iter::AmortSeries>` is an amortized borrow Polars reuses between calls (AmortSeries)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::with_nullable_idx",
+        "closures": [
+          "f: FnOnce(&polars_core::datatypes::aliases::IdxCa) -> T"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3531",
+        "mutable_contracts": [],
+        "name": "with_nullable_idx",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: return `T` is the free generic `T` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `idx`: unwrapped type (polars_utils::index::NullableIdxSize)",
+          "return: generic return (T)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ChunkedArray::zip_and_apply_amortized",
+        "closures": [
+          "f: FnMut(core::option::Option<polars_core::series::amortized_iter::AmortSeries>, core::option::Option<T::Physical>) -> core::option::Option<polars_core::series::Series>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:3598",
+        "mutable_contracts": [],
+        "name": "zip_and_apply_amortized",
+        "owner": "polars_core::chunked_array::ChunkedArray",
+        "refusals": [
+          "f: argument `core::option::Option<polars_core::series::amortized_iter::AmortSeries>` is an amortized borrow Polars reuses between calls (AmortSeries)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::ChunkApply::apply",
+        "closures": [
+          "f: Fn(core::option::Option<T>) -> core::option::Option<Self::FuncRet>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:1363",
+        "mutable_contracts": [],
+        "name": "apply",
+        "owner": "polars_core::chunked_array::ops::ChunkApply",
+        "refusals": [
+          "f: argument `core::option::Option<T>`: generic return (T)",
+          "f: return `core::option::Option<Self::FuncRet>`: foreign type (Self::FuncRet)",
+          "owner not wrapped: polars_core::chunked_array::ops::ChunkApply"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::ChunkApply::apply_to_slice",
+        "closures": [
+          "f: Fn(core::option::Option<T>, &S) -> S"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:1364",
+        "mutable_contracts": [],
+        "name": "apply_to_slice",
+        "owner": "polars_core::chunked_array::ops::ChunkApply",
+        "refusals": [
+          "f: argument `core::option::Option<T>`: generic return (T)",
+          "f: argument `&S` is the free generic `S`",
+          "f: return `S` is the free generic `S` (a Rune function cannot choose a Rust type parameter)",
+          "owner not wrapped: polars_core::chunked_array::ops::ChunkApply",
+          "parameter `slice`: mutable slice (&mut [S])"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::ChunkApply::apply_values",
+        "closures": [
+          "f: Fn(T) -> Self::FuncRet"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:1361",
+        "mutable_contracts": [],
+        "name": "apply_values",
+        "owner": "polars_core::chunked_array::ops::ChunkApply",
+        "refusals": [
+          "f: argument `T`: generic return (T)",
+          "f: return `Self::FuncRet`: foreign type (Self::FuncRet)",
+          "owner not wrapped: polars_core::chunked_array::ops::ChunkApply"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::ChunkApplyKernel::apply_kernel",
+        "closures": [
+          "f: Fn(&A) -> polars_arrow::array::ArrayRef"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:1914",
+        "mutable_contracts": [],
+        "name": "apply_kernel",
+        "owner": "polars_core::chunked_array::ops::ChunkApplyKernel",
+        "refusals": [
+          "f: argument `&A`: generic return (A)",
+          "f: return `polars_arrow::array::ArrayRef`: foreign type (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+          "owner not wrapped: polars_core::chunked_array::ops::ChunkApplyKernel"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::ChunkApplyKernel::apply_kernel_cast",
+        "closures": [
+          "f: Fn(&A) -> polars_arrow::array::ArrayRef"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:1916",
+        "mutable_contracts": [],
+        "name": "apply_kernel_cast",
+        "owner": "polars_core::chunked_array::ops::ChunkApplyKernel",
+        "refusals": [
+          "f: argument `&A`: generic return (A)",
+          "f: return `polars_arrow::array::ArrayRef`: foreign type (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+          "owner not wrapped: polars_core::chunked_array::ops::ChunkApplyKernel",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<S>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::ChunkSet::scatter_with",
+        "closures": [
+          "f: Fn(core::option::Option<A>) -> core::option::Option<B>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:1318",
+        "mutable_contracts": [],
+        "name": "scatter_with",
+        "owner": "polars_core::chunked_array::ops::ChunkSet",
+        "refusals": [
+          "f: argument `core::option::Option<A>`: generic return (A)",
+          "f: return `core::option::Option<B>`: unbounded generic (B)",
+          "owner not wrapped: polars_core::chunked_array::ops::ChunkSet"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::apply_binary_kernel_broadcast",
+        "closures": [
+          "kernel: Fn(&L::Array, &R::Array) -> O::Array",
+          "lhs_broadcast_kernel: Fn(L::Physical, &R::Array) -> O::Array",
+          "rhs_broadcast_kernel: Fn(&L::Array, R::Physical) -> O::Array"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "kernel",
+            "static_bound": false
+          },
+          {
+            "invocation": "unresolved",
+            "param": "lhs_broadcast_kernel",
+            "static_bound": false
+          },
+          {
+            "invocation": "unresolved",
+            "param": "rhs_broadcast_kernel",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:806",
+        "mutable_contracts": [],
+        "name": "apply_binary_kernel_broadcast",
+        "owner": "",
+        "refusals": [
+          "kernel: argument `&L::Array` is the free generic `L`",
+          "kernel: argument `&R::Array` is the free generic `R`",
+          "kernel: return `O::Array` is the free generic `O` (a Rune function cannot choose a Rust type parameter)",
+          "lhs_broadcast_kernel: projection `L::Physical` on an owner without instantiation families",
+          "lhs_broadcast_kernel: argument `&R::Array` is the free generic `R`",
+          "lhs_broadcast_kernel: return `O::Array` is the free generic `O` (a Rune function cannot choose a Rust type parameter)",
+          "rhs_broadcast_kernel: argument `&L::Array` is the free generic `L`",
+          "rhs_broadcast_kernel: projection `R::Physical` on an owner without instantiation families",
+          "rhs_broadcast_kernel: return `O::Array` is the free generic `O` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<L>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<R>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<O>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "kernel: invocation not audited",
+          "lhs_broadcast_kernel: invocation not audited",
+          "rhs_broadcast_kernel: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::apply_binary_kernel_broadcast_owned",
+        "closures": [
+          "kernel: Fn(L::Array, R::Array) -> O::Array",
+          "lhs_broadcast_kernel: Fn(L::Physical, R::Array) -> O::Array",
+          "rhs_broadcast_kernel: Fn(L::Array, R::Physical) -> O::Array"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "kernel",
+            "static_bound": false
+          },
+          {
+            "invocation": "unresolved",
+            "param": "lhs_broadcast_kernel",
+            "static_bound": false
+          },
+          {
+            "invocation": "unresolved",
+            "param": "rhs_broadcast_kernel",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:807",
+        "mutable_contracts": [],
+        "name": "apply_binary_kernel_broadcast_owned",
+        "owner": "",
+        "refusals": [
+          "kernel: argument `L::Array` is the free generic `L`",
+          "kernel: argument `R::Array` is the free generic `R`",
+          "kernel: return `O::Array` is the free generic `O` (a Rune function cannot choose a Rust type parameter)",
+          "lhs_broadcast_kernel: projection `L::Physical` on an owner without instantiation families",
+          "lhs_broadcast_kernel: argument `R::Array` is the free generic `R`",
+          "lhs_broadcast_kernel: return `O::Array` is the free generic `O` (a Rune function cannot choose a Rust type parameter)",
+          "rhs_broadcast_kernel: argument `L::Array` is the free generic `L`",
+          "rhs_broadcast_kernel: projection `R::Physical` on an owner without instantiation families",
+          "rhs_broadcast_kernel: return `O::Array` is the free generic `O` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<L>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<R>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<O>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "kernel: invocation not audited",
+          "lhs_broadcast_kernel: invocation not audited",
+          "rhs_broadcast_kernel: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::binary",
+        "closures": [
+          "op: FnMut(&T::Array, &U::Array) -> Arr"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:792",
+        "mutable_contracts": [],
+        "name": "binary",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: argument `&U::Array` is the free generic `U`",
+          "op: return `Arr` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::binary_elementwise_for_each",
+        "closures": [
+          "op: FnMut(core::option::Option<T::Physical>, core::option::Option<U::Physical>) -> ()"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:784",
+        "mutable_contracts": [],
+        "name": "binary_elementwise_for_each",
+        "owner": "",
+        "refusals": [
+          "op: projection `core::option::Option<T::Physical>` on an owner without instantiation families",
+          "op: projection `core::option::Option<U::Physical>` on an owner without instantiation families",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::binary_elementwise_into_string_amortized",
+        "closures": [
+          "op: FnMut(T::Physical, U::Physical, &mut alloc::string::String) -> ()"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:787",
+        "mutable_contracts": [],
+        "name": "binary_elementwise_into_string_amortized",
+        "owner": "",
+        "refusals": [
+          "op: projection `T::Physical` on an owner without instantiation families",
+          "op: projection `U::Physical` on an owner without instantiation families",
+          "op: mutable argument `alloc::string::String` the callback cannot write back (no audited contract)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::binary_elementwise_values",
+        "closures": [
+          "op: FnMut(T::Physical, U::Physical) -> K"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:786",
+        "mutable_contracts": [],
+        "name": "binary_elementwise_values",
+        "owner": "",
+        "refusals": [
+          "op: projection `T::Physical` on an owner without instantiation families",
+          "op: projection `U::Physical` on an owner without instantiation families",
+          "op: return `K` is the free generic `K` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::binary_mut_values",
+        "closures": [
+          "op: FnMut(&T::Array, &U::Array) -> Arr"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:789",
+        "mutable_contracts": [],
+        "name": "binary_mut_values",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: argument `&U::Array` is the free generic `U`",
+          "op: return `Arr` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::binary_mut_with_options",
+        "closures": [
+          "op: FnMut(&T::Array, &U::Array) -> Arr"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:790",
+        "mutable_contracts": [],
+        "name": "binary_mut_with_options",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: argument `&U::Array` is the free generic `U`",
+          "op: return `Arr` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::binary_owned",
+        "closures": [
+          "op: FnMut(L::Array, R::Array) -> Arr"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:793",
+        "mutable_contracts": [],
+        "name": "binary_owned",
+        "owner": "",
+        "refusals": [
+          "op: argument `L::Array` is the free generic `L`",
+          "op: argument `R::Array` is the free generic `R`",
+          "op: return `Arr` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<L>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<R>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::binary_to_series",
+        "closures": [
+          "op: FnMut(&T::Array, &U::Array) -> alloc::boxed::Box<dyn polars_arrow::array::Array>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:798",
+        "mutable_contracts": [],
+        "name": "binary_to_series",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: argument `&U::Array` is the free generic `U`",
+          "op: return `alloc::boxed::Box<dyn polars_arrow::array::Array>`: foreign type (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:795",
+        "name": "binary_unchecked_same_type",
+        "owner": ""
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::broadcast_binary_elementwise_values",
+        "closures": [
+          "op: FnMut(T::Physical, U::Physical) -> K"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:805",
+        "mutable_contracts": [],
+        "name": "broadcast_binary_elementwise_values",
+        "owner": "",
+        "refusals": [
+          "op: projection `T::Physical` on an owner without instantiation families",
+          "op: projection `U::Physical` on an owner without instantiation families",
+          "op: return `K` is the free generic `K` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::broadcast_try_binary_elementwise",
+        "closures": [
+          "op: FnMut(core::option::Option<T::Physical>, core::option::Option<U::Physical>) -> core::result::Result<core::option::Option<K>, E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:804",
+        "mutable_contracts": [],
+        "name": "broadcast_try_binary_elementwise",
+        "owner": "",
+        "refusals": [
+          "op: projection `core::option::Option<T::Physical>` on an owner without instantiation families",
+          "op: projection `core::option::Option<U::Physical>` on an owner without instantiation families",
+          "op: return `core::result::Result<core::option::Option<K>, E>` is the free generic `E` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "return: result with foreign error (core::result::Result<polars_core::chunked_array::ChunkedArray<V>, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::try_binary",
+        "closures": [
+          "op: FnMut(&T::Array, &U::Array) -> core::result::Result<Arr, E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:794",
+        "mutable_contracts": [],
+        "name": "try_binary",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: argument `&U::Array` is the free generic `U`",
+          "op: return `core::result::Result<Arr, E>` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "return: result with foreign error (core::result::Result<polars_core::chunked_array::ChunkedArray<V>, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::try_binary_elementwise",
+        "closures": [
+          "op: FnMut(core::option::Option<T::Physical>, core::option::Option<U::Physical>) -> core::result::Result<core::option::Option<K>, E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:785",
+        "mutable_contracts": [],
+        "name": "try_binary_elementwise",
+        "owner": "",
+        "refusals": [
+          "op: projection `core::option::Option<T::Physical>` on an owner without instantiation families",
+          "op: projection `core::option::Option<U::Physical>` on an owner without instantiation families",
+          "op: return `core::result::Result<core::option::Option<K>, E>` is the free generic `E` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "return: result with foreign error (core::result::Result<polars_core::chunked_array::ChunkedArray<V>, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::try_binary_mut_with_options",
+        "closures": [
+          "op: FnMut(&T::Array, &U::Array) -> core::result::Result<Arr, E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:791",
+        "mutable_contracts": [],
+        "name": "try_binary_mut_with_options",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: argument `&U::Array` is the free generic `U`",
+          "op: return `core::result::Result<Arr, E>` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "return: result with foreign error (core::result::Result<polars_core::chunked_array::ChunkedArray<V>, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::try_binary_to_series",
+        "closures": [
+          "op: FnMut(&T::Array, &U::Array) -> polars_error::PolarsResult<alloc::boxed::Box<dyn polars_arrow::array::Array>>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:799",
+        "mutable_contracts": [],
+        "name": "try_binary_to_series",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: argument `&U::Array` is the free generic `U`",
+          "op: return `alloc::boxed::Box<dyn polars_arrow::array::Array>`: foreign type (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+          "parameter `lhs`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `rhs`: generic type (polars_core::chunked_array::ChunkedArray<U>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:800",
+        "name": "try_binary_unchecked_same_type",
+        "owner": ""
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::try_ternary_elementwise",
+        "closures": [
+          "op: FnMut(core::option::Option<T::Physical>, core::option::Option<U::Physical>, core::option::Option<G::Physical>) -> core::result::Result<core::option::Option<K>, E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:801",
+        "mutable_contracts": [],
+        "name": "try_ternary_elementwise",
+        "owner": "",
+        "refusals": [
+          "op: projection `core::option::Option<T::Physical>` on an owner without instantiation families",
+          "op: projection `core::option::Option<U::Physical>` on an owner without instantiation families",
+          "op: projection `core::option::Option<G::Physical>` on an owner without instantiation families",
+          "op: return `core::result::Result<core::option::Option<K>, E>` is the free generic `E` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `ca1`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "parameter `ca2`: generic type (polars_core::chunked_array::ChunkedArray<U>)",
+          "parameter `ca3`: generic type (polars_core::chunked_array::ChunkedArray<G>)",
+          "return: result with foreign error (core::result::Result<polars_core::chunked_array::ChunkedArray<V>, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::try_unary_elementwise",
+        "closures": [
+          "op: FnMut(core::option::Option<T::Physical>) -> core::result::Result<core::option::Option<K>, E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:775",
+        "mutable_contracts": [],
+        "name": "try_unary_elementwise",
+        "owner": "",
+        "refusals": [
+          "op: projection `core::option::Option<T::Physical>` on an owner without instantiation families",
+          "op: return `core::result::Result<core::option::Option<K>, E>` is the free generic `E` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "return: result with foreign error (core::result::Result<polars_core::chunked_array::ChunkedArray<V>, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::try_unary_elementwise_values",
+        "closures": [
+          "op: FnMut(T::Physical) -> core::result::Result<K, E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:777",
+        "mutable_contracts": [],
+        "name": "try_unary_elementwise_values",
+        "owner": "",
+        "refusals": [
+          "op: projection `T::Physical` on an owner without instantiation families",
+          "op: return `core::result::Result<K, E>` is the free generic `E` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "return: result with foreign error (core::result::Result<polars_core::chunked_array::ChunkedArray<V>, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::try_unary_mut_with_options",
+        "closures": [
+          "op: FnMut(&T::Array) -> core::result::Result<Arr, E>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:781",
+        "mutable_contracts": [],
+        "name": "try_unary_mut_with_options",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: return `core::result::Result<Arr, E>` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "return: result with foreign error (core::result::Result<polars_core::chunked_array::ChunkedArray<V>, E>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::try_unary_to_series",
+        "closures": [
+          "op: FnMut(&T::Array) -> polars_error::PolarsResult<alloc::boxed::Box<dyn polars_arrow::array::Array>>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:797",
+        "mutable_contracts": [],
+        "name": "try_unary_to_series",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: return `alloc::boxed::Box<dyn polars_arrow::array::Array>`: foreign type (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::unary_kernel",
+        "closures": [
+          "op: FnMut(&T::Array) -> Arr"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:771",
+        "mutable_contracts": [],
+        "name": "unary_kernel",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: return `Arr` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::unary_kernel_owned",
+        "closures": [
+          "op: FnMut(T::Array) -> Arr"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:772",
+        "mutable_contracts": [],
+        "name": "unary_kernel_owned",
+        "owner": "",
+        "refusals": [
+          "op: argument `T::Array` is the free generic `T`",
+          "op: return `Arr` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::unary_mut_values",
+        "closures": [
+          "op: FnMut(&T::Array) -> Arr"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:778",
+        "mutable_contracts": [],
+        "name": "unary_mut_values",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: return `Arr` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::arity::unary_mut_with_options",
+        "closures": [
+          "op: FnMut(&T::Array) -> Arr"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:780",
+        "mutable_contracts": [],
+        "name": "unary_mut_with_options",
+        "owner": "",
+        "refusals": [
+          "op: argument `&T::Array` is the free generic `T`",
+          "op: return `Arr` is the free generic `Arr` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `ca`: generic type (polars_core::chunked_array::ChunkedArray<T>)",
+          "return: generic type (polars_core::chunked_array::ChunkedArray<V>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::chunked_array::ops::search_sorted::lower_bound_chunks",
+        "closures": [
+          "f: Fn(&T::Array, usize, &T::Physical) -> bool"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:971",
+        "mutable_contracts": [],
+        "name": "lower_bound_chunks",
+        "owner": "",
+        "refusals": [
+          "f: argument `&T::Array` is the free generic `T`",
+          "f: projection `&T::Physical` on an owner without instantiation families",
+          "parameter `chunks`: foreign type (T::Array)",
+          "parameter `search_values`: projection without instantiation families"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::datatypes::dtype::DataType::map_leaves",
+        "closures": [
+          "f: FnMut(polars_core::datatypes::dtype::DataType) -> polars_core::datatypes::dtype::DataType"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/datatypes/dtype.rs:408-424: recursive descent ending in `f(self)` at every leaf, before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:4422",
+        "mutable_contracts": [],
+        "name": "map_leaves",
+        "owner": "polars_core::datatypes::dtype::DataType",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::datatypes::dtype::DataType::try_mutate_with",
+        "closures": [
+          "visitor_fn: FnMut(alloc::borrow::Cow<polars_core::datatypes::dtype::DataType>) -> polars_error::PolarsResult<alloc::borrow::Cow<polars_core::datatypes::dtype::DataType>>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "visitor_fn",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:4480",
+        "mutable_contracts": [],
+        "name": "try_mutate_with",
+        "owner": "polars_core::datatypes::dtype::DataType",
+        "refusals": [
+          "visitor_fn: argument `alloc::borrow::Cow<polars_core::datatypes::dtype::DataType>`: foreign type (alloc::borrow::Cow<polars_core::datatypes::dtype::DataType>)",
+          "visitor_fn: return `alloc::borrow::Cow<polars_core::datatypes::dtype::DataType>`: foreign type (alloc::borrow::Cow<polars_core::datatypes::dtype::DataType>)",
+          "parameter `dtype`: foreign type (alloc::borrow::Cow<polars_core::datatypes::dtype::DataType>)",
+          "return: foreign type (alloc::borrow::Cow<polars_core::datatypes::dtype::DataType>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "visitor_fn: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::datatypes::dtype::DataType::try_visit_with",
+        "closures": [
+          "visitor_fn: FnMut(&polars_core::datatypes::dtype::DataType) -> polars_error::PolarsResult<()>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/datatypes/dtype.rs:1466-1473: `try_mutate_with` calls `visitor_fn` at every node before returning",
+            "invocation": "immediate",
+            "param": "visitor_fn",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:4479",
+        "mutable_contracts": [],
+        "name": "try_visit_with",
+        "owner": "polars_core::datatypes::dtype::DataType",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::datatypes::dtype::DataType::visit_with",
+        "closures": [
+          "visitor_fn: FnMut(&polars_core::datatypes::dtype::DataType) -> ()"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/datatypes/dtype.rs:1458-1464: delegates to `try_visit_with`, which walks the type through `try_mutate_with` before returning",
+            "invocation": "immediate",
+            "param": "visitor_fn",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:4478",
+        "mutable_contracts": [],
+        "name": "visit_with",
+        "owner": "polars_core::datatypes::dtype::DataType",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::column::Column::apply_binary_elementwise",
+        "closures": [
+          "f: Fn(&polars_core::series::Series, &polars_core::series::Series) -> polars_core::series::Series",
+          "f_lb: Fn(&polars_core::scalar::Scalar, &polars_core::series::Series) -> polars_core::series::Series",
+          "f_rb: Fn(&polars_core::series::Series, &polars_core::scalar::Scalar) -> polars_core::series::Series"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1781-1795: delegates to the `try_` form before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          },
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1781-1795: delegates to the `try_` form before returning",
+            "invocation": "immediate",
+            "param": "f_lb",
+            "sinks": [],
+            "static_bound": false
+          },
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1781-1795: delegates to the `try_` form before returning",
+            "invocation": "immediate",
+            "param": "f_rb",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7330",
+        "mutable_contracts": [],
+        "name": "apply_binary_elementwise",
+        "owner": "polars_core::frame::column::Column",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::column::Column::apply_broadcasting_binary_elementwise",
+        "closures": [
+          "op: Fn(&polars_core::series::Series, &polars_core::series::Series) -> polars_core::series::Series"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1737-1743: delegates to the `try_` form before returning",
+            "invocation": "immediate",
+            "param": "op",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7328",
+        "mutable_contracts": [],
+        "name": "apply_broadcasting_binary_elementwise",
+        "owner": "polars_core::frame::column::Column",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::column::Column::apply_unary_elementwise",
+        "closures": [
+          "f: Fn(&polars_core::series::Series) -> polars_core::series::Series"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1720-1722: delegates to the `try_` form, `f(s)` before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7326",
+        "mutable_contracts": [],
+        "name": "apply_unary_elementwise",
+        "owner": "polars_core::frame::column::Column",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::column::Column::map_unary_elementwise_to_bool",
+        "closures": [
+          "f: Fn(&polars_core::series::Series) -> polars_core::datatypes::BooleanChunked"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1703-1708: delegates to the `try_` form, `f(s)` before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7324",
+        "mutable_contracts": [],
+        "name": "map_unary_elementwise_to_bool",
+        "owner": "polars_core::frame::column::Column",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::column::Column::try_apply_binary_elementwise",
+        "closures": [
+          "f: Fn(&polars_core::series::Series, &polars_core::series::Series) -> polars_error::PolarsResult<polars_core::series::Series>",
+          "f_lb: Fn(&polars_core::scalar::Scalar, &polars_core::series::Series) -> polars_error::PolarsResult<polars_core::series::Series>",
+          "f_rb: Fn(&polars_core::series::Series, &polars_core::scalar::Scalar) -> polars_error::PolarsResult<polars_core::series::Series>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1796-1830: `f`, `f_lb` or `f_rb` called per variant pair before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          },
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1796-1830: `f`, `f_lb` or `f_rb` called per variant pair before returning",
+            "invocation": "immediate",
+            "param": "f_lb",
+            "sinks": [],
+            "static_bound": false
+          },
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1796-1830: `f`, `f_lb` or `f_rb` called per variant pair before returning",
+            "invocation": "immediate",
+            "param": "f_rb",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7331",
+        "mutable_contracts": [],
+        "name": "try_apply_binary_elementwise",
+        "owner": "polars_core::frame::column::Column",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::column::Column::try_apply_broadcasting_binary_elementwise",
+        "closures": [
+          "op: Fn(&polars_core::series::Series, &polars_core::series::Series) -> polars_error::PolarsResult<polars_core::series::Series>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1744-1780: `op(lhs, rhs)` per broadcast case before returning",
+            "invocation": "immediate",
+            "param": "op",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7329",
+        "mutable_contracts": [],
+        "name": "try_apply_broadcasting_binary_elementwise",
+        "owner": "polars_core::frame::column::Column",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::column::Column::try_apply_unary_elementwise",
+        "closures": [
+          "f: Fn(&polars_core::series::Series) -> polars_error::PolarsResult<polars_core::series::Series>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1723-1735: `f(s)` per column variant before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7327",
+        "mutable_contracts": [],
+        "name": "try_apply_unary_elementwise",
+        "owner": "polars_core::frame::column::Column",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::column::Column::try_map_unary_elementwise_to_bool",
+        "closures": [
+          "f: Fn(&polars_core::series::Series) -> polars_error::PolarsResult<polars_core::datatypes::BooleanChunked>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/mod.rs:1710-1718: `f(s)` on the series or the scalar's single-value series before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7325",
+        "mutable_contracts": [],
+        "name": "try_map_unary_elementwise_to_bool",
+        "owner": "polars_core::frame::column::Column",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::column::scalar::ScalarColumn::map_scalar",
+        "closures": [
+          "map_scalar: Fn(polars_core::scalar::Scalar) -> polars_core::scalar::Scalar"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/column/scalar.rs:315-318: `self.scalar = map_scalar(take(&mut self.scalar))` before returning",
+            "invocation": "immediate",
+            "param": "map_scalar",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7066",
+        "mutable_contracts": [],
+        "name": "map_scalar",
+        "owner": "polars_core::frame::column::scalar::ScalarColumn",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::apply",
+        "closures": [
+          "f: FnOnce(&polars_core::frame::column::Column) -> C"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7627",
+        "mutable_contracts": [],
+        "name": "apply",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [
+          "f: return `C` is the free generic `C` (a Rune function cannot choose a Rust type parameter)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::apply_at_idx",
+        "closures": [
+          "f: FnOnce(&polars_core::frame::column::Column) -> C"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7628",
+        "mutable_contracts": [],
+        "name": "apply_at_idx",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [
+          "f: return `C` is the free generic `C` (a Rune function cannot choose a Rust type parameter)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::apply_columns",
+        "closures": [
+          "func: Fn(&polars_core::frame::column::Column) -> polars_core::frame::column::Column"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/mod.rs:122-128: `slf.columns().iter().map(func).collect()` before returning",
+            "invocation": "immediate",
+            "param": "func",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7564",
+        "mutable_contracts": [],
+        "name": "apply_columns",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::apply_columns_par",
+        "closures": [
+          "func: Fn(&polars_core::frame::column::Column) -> polars_core::frame::column::Column"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/mod.rs:144-150: `RAYON.install(|| ... par_iter().map(func).collect())` before returning",
+            "invocation": "immediate",
+            "param": "func",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7566",
+        "mutable_contracts": [],
+        "name": "apply_columns_par",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::pipe",
+        "closures": [
+          "f: Fn(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<B>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7646",
+        "mutable_contracts": [],
+        "name": "pipe",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [
+          "f: return `B` is the free generic `B` (a Rune function cannot choose a Rust type parameter)",
+          "return: generic return (B)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::pipe_mut",
+        "closures": [
+          "f: Fn(&mut polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<B>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7647",
+        "mutable_contracts": [],
+        "name": "pipe_mut",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [
+          "f: mutable argument `polars_core::frame::dataframe::DataFrame` the callback cannot write back (no audited contract)",
+          "f: return `B` is the free generic `B` (a Rune function cannot choose a Rust type parameter)",
+          "return: generic return (B)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::pipe_with_args",
+        "closures": [
+          "f: Fn(polars_core::frame::dataframe::DataFrame, Args) -> polars_error::PolarsResult<B>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7648",
+        "mutable_contracts": [],
+        "name": "pipe_with_args",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [
+          "f: argument `Args` is the free generic `Args`",
+          "f: return `B` is the free generic `B` (a Rune function cannot choose a Rust type parameter)",
+          "parameter `args`: unbounded generic (Args)",
+          "return: generic return (B)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::try_apply",
+        "closures": [
+          "f: FnOnce(&polars_core::series::Series) -> polars_error::PolarsResult<C>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7630",
+        "mutable_contracts": [],
+        "name": "try_apply",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [
+          "f: return `C` is the free generic `C` (a Rune function cannot choose a Rust type parameter)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::try_apply_at_idx",
+        "closures": [
+          "f: FnOnce(&polars_core::frame::column::Column) -> polars_error::PolarsResult<C>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7629",
+        "mutable_contracts": [],
+        "name": "try_apply_at_idx",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [
+          "f: return `C` is the free generic `C` (a Rune function cannot choose a Rust type parameter)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::try_apply_columns",
+        "closures": [
+          "func: Fn(&polars_core::frame::column::Column) -> polars_error::PolarsResult<polars_core::frame::column::Column>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/mod.rs:108-119: `slf.columns().iter().map(func).collect()` before returning",
+            "invocation": "immediate",
+            "param": "func",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7563",
+        "mutable_contracts": [],
+        "name": "try_apply_columns",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::dataframe::DataFrame::try_apply_columns_par",
+        "closures": [
+          "func: Fn(&polars_core::frame::column::Column) -> polars_error::PolarsResult<polars_core::frame::column::Column>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-core-0.55.2/src/frame/mod.rs:130-142: `RAYON.install(|| ... par_iter().map(func).collect())` before returning",
+            "invocation": "immediate",
+            "param": "func",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:7565",
+        "mutable_contracts": [],
+        "name": "try_apply_columns_par",
+        "owner": "polars_core::frame::dataframe::DataFrame",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::group_by::GroupBy::apply",
+        "closures": [
+          "f: FnMut(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:8427",
+        "mutable_contracts": [],
+        "name": "apply",
+        "owner": "polars_core::frame::group_by::GroupBy",
+        "refusals": [
+          "owner not wrapped: polars_core::frame::group_by::GroupBy"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::group_by::GroupBy::apply_sliced",
+        "closures": [
+          "f: FnMut(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:8428",
+        "mutable_contracts": [],
+        "name": "apply_sliced",
+        "owner": "polars_core::frame::group_by::GroupBy",
+        "refusals": [
+          "owner not wrapped: polars_core::frame::group_by::GroupBy"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_core::frame::group_by::GroupBy::par_apply",
+        "closures": [
+          "f: Fn(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_core:8426",
+        "mutable_contracts": [],
+        "name": "par_apply",
+        "owner": "polars_core::frame::group_by::GroupBy",
+        "refusals": [
+          "owner not wrapped: polars_core::frame::group_by::GroupBy"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:7898",
+        "name": "_agg_helper_idx",
+        "owner": ""
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:7903",
+        "name": "_agg_helper_idx_idx",
+        "owner": ""
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:7901",
+        "name": "_agg_helper_idx_no_null",
+        "owner": ""
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:7902",
+        "name": "_agg_helper_slice",
+        "owner": ""
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:7904",
+        "name": "_agg_helper_slice_idx",
+        "owner": ""
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:7905",
+        "name": "_agg_helper_slice_no_null",
+        "owner": ""
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:10147",
+        "name": "with_array",
+        "owner": "polars_core::series::amortized_iter::AmortSeries"
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_core:10220",
+        "name": "_struct_arithmetic",
+        "owner": ""
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_error::PolarsContext::with_context",
+        "closures": [
+          "f: FnOnce() -> alloc::string::String"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_error:241",
+        "mutable_contracts": [],
+        "name": "with_context",
+        "owner": "polars_error::PolarsContext",
+        "refusals": [
+          "owner not wrapped: polars_error::PolarsContext",
+          "return: generic return (T)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_error::PolarsError::wrap_msg",
+        "closures": [
+          "func: FnOnce(&str) -> alloc::string::String"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-error-0.55.2/src/lib.rs:298-315: `func(msg)` on the variant's message before returning",
+            "invocation": "immediate",
+            "param": "func",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_error:187",
+        "mutable_contracts": [],
+        "name": "wrap_msg",
+        "owner": "polars_error::PolarsError",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_error::abort::catch_polars_abort",
+        "closures": [
+          "try_fn: FnOnce() -> R"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "try_fn",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_error:86",
+        "mutable_contracts": [],
+        "name": "catch_polars_abort",
+        "owner": "",
+        "refusals": [
+          "try_fn: return `R` is the free generic `R` (a Rune function cannot choose a Rust type parameter)",
+          "return: result with foreign error (core::result::Result<R, polars_error::abort::QueryAborted>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "try_fn: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_io::cloud::credential_provider::PlCredentialProvider::from_func",
+        "closures": [
+          "func: Fn() -> core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = polars_error::PolarsResult<(polars_io::cloud::credential_provider::ObjectStoreCredential, u64)>> + core::marker::Send + core::marker::Sync>>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "func",
+            "static_bound": true
+          }
+        ],
+        "key": "polars_io:1708",
+        "mutable_contracts": [],
+        "name": "from_func",
+        "owner": "polars_io::cloud::credential_provider::PlCredentialProvider",
+        "refusals": [
+          "func: return `core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = polars_error::PolarsResult<(polars_io::cloud::credential_provider::ObjectStoreCredential, u64)>> + core::marker::Send + core::marker::Sync>>`: foreign type (core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = polars_error::PolarsResult<(polars_io::cloud::credential_provider::ObjectStoreCredential, u64)>> + core::marker::Send + core::marker::Sync>>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "func: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::exec_with_rebuild_retry_on_err",
+        "closures": [
+          "func: FnMut(alloc::borrow::Cow<alloc::sync::Arc<dyn object_store::ObjectStore>>) -> Fut"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "func",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_io:561",
+        "mutable_contracts": [],
+        "name": "exec_with_rebuild_retry_on_err",
+        "owner": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore",
+        "refusals": [
+          "func: async closure",
+          "return: generic return (O)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "func: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_io::csv::read::options::CsvReadOptions::map_parse_options",
+        "closures": [
+          "map_func: Fn(polars_io::csv::read::options::CsvParseOptions) -> polars_io::csv::read::options::CsvParseOptions"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-io-0.55.2/src/csv/read/options.rs:277-283: `self.parse_options = Arc::new(map_func(parse_options))` before returning",
+            "invocation": "immediate",
+            "param": "map_func",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_io:2314",
+        "mutable_contracts": [],
+        "name": "map_parse_options",
+        "owner": "polars_io::csv::read::options::CsvReadOptions",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_io::hive::merge_sorted_to_schema_order_impl",
+        "closures": [
+          "get_opt_index: Fn(&T) -> core::option::Option<usize>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "get_opt_index",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_io:7608",
+        "mutable_contracts": [],
+        "name": "merge_sorted_to_schema_order_impl",
+        "owner": "",
+        "refusals": [
+          "get_opt_index: argument `&T` is the free generic `T`",
+          "parameter `cols_lhs`: mutable reference (&mut dyn core::iter::traits::iterator::Iterator<Item = T>)",
+          "parameter `cols_rhs`: mutable reference (&mut dyn core::iter::traits::iterator::Iterator<Item = T>)",
+          "parameter `output`: mutable reference (&mut O)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "get_opt_index: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_io::pl_async::tune_with_concurrency_budget",
+        "closures": [
+          "callable: FnOnce() -> Fut"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "callable",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_io:5575",
+        "mutable_contracts": [],
+        "name": "tune_with_concurrency_budget",
+        "owner": "",
+        "refusals": [
+          "callable: async closure",
+          "return: foreign type (Fut::Output)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "callable: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_io::pl_async::with_concurrency_budget",
+        "closures": [
+          "callable: FnOnce() -> Fut"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "callable",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_io:5576",
+        "mutable_contracts": [],
+        "name": "with_concurrency_budget",
+        "owner": "",
+        "refusals": [
+          "callable: async closure",
+          "return: foreign type (Fut::Output)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "callable: invocation not audited"
+        ]
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_lazy:284",
+        "name": "_collect_post_opt",
+        "owner": "polars_lazy::frame::LazyFrame"
+      },
+      {
+        "disposition": "not eligible: bucket unsupported",
+        "key": "polars_lazy:293",
+        "name": "_profile_post_opt",
+        "owner": "polars_lazy::frame::LazyFrame"
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_lazy::frame::LazyFrame::map",
+        "closures": [
+          "schema: Udf() -> "
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "schema",
+            "static_bound": true
+          }
+        ],
+        "key": "polars_lazy:356",
+        "mutable_contracts": [],
+        "name": "map",
+        "owner": "polars_lazy::frame::LazyFrame",
+        "refusals": [
+          "schema: Udf trait object",
+          "parameter `function`: bound (F)",
+          "parameter `name`: static borrow (&'static str)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "schema: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_lazy::scan::csv::LazyCsvReader::map_parse_options",
+        "closures": [
+          "map_func: Fn(polars_io::csv::read::options::CsvParseOptions) -> polars_io::csv::read::options::CsvParseOptions"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-lazy-0.55.2/src/scan/csv.rs:34-39: delegates to `CsvReadOptions::map_parse_options`, invoked before returning",
+            "invocation": "immediate",
+            "param": "map_func",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_lazy:800",
+        "mutable_contracts": [],
+        "name": "map_parse_options",
+        "owner": "polars_lazy::scan::csv::LazyCsvReader",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_lazy::scan::csv::LazyCsvReader::with_schema_modify",
+        "closures": [
+          "f: Fn(polars_core::schema::Schema) -> polars_error::PolarsResult<polars_core::schema::Schema>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-lazy-0.55.2/src/scan/csv.rs:277-357: the schema is inferred and `let mut schema = f(schema)?` (`:348`) before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_lazy:838",
+        "mutable_contracts": [],
+        "name": "with_schema_modify",
+        "owner": "polars_lazy::scan::csv::LazyCsvReader",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_plan::callback::PlanCallback::new",
+        "closures": [
+          "f: Fn(Args) -> polars_error::PolarsResult<Out>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:11",
+        "mutable_contracts": [],
+        "name": "new",
+        "owner": "polars_plan::callback::PlanCallback",
+        "refusals": [
+          "f: argument `Args`: generic return (Args)",
+          "f: return `Out`: unbounded generic (Out)",
+          "owner not wrapped: polars_plan::callback::PlanCallback"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::apply_multiple",
+        "closures": [
+          "function: Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
+          "output_type: Fn(&polars_core::schema::Schema, &[polars_core::datatypes::field::Field]) -> polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+        ],
+        "disposition": "feasible (vector argument)",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:1739: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "function",
+            "sinks": [
+              "plan execution"
+            ],
+            "static_bound": true
+          },
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:1739: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "output_type",
+            "sinks": [
+              "schema resolution"
+            ],
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:8404",
+        "mutable_contracts": [
+          "function `&mut [polars_core::frame::column::Column]`: vector (polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards)"
+        ],
+        "name": "apply_multiple",
+        "owner": "",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::map",
+        "closures": [
+          "function: Udf() -> ",
+          "schema: Udf() -> "
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "function",
+            "static_bound": true
+          },
+          {
+            "invocation": "unresolved",
+            "param": "schema",
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:666",
+        "mutable_contracts": [],
+        "name": "map",
+        "owner": "polars_plan::dsl::builder_dsl::DslBuilder",
+        "refusals": [
+          "function: Udf trait object",
+          "schema: Udf trait object"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "function: invocation not audited",
+          "schema: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::expr::Expr::agg_with_fmt_str",
+        "closures": [
+          "function: Fn(polars_core::frame::column::Column) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
+          "output_type: Fn(&polars_core::schema::Schema, &polars_core::datatypes::field::Field) -> polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:501: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "function",
+            "sinks": [
+              "plan execution"
+            ],
+            "static_bound": true
+          },
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:501: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "output_type",
+            "sinks": [
+              "schema resolution"
+            ],
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:1528",
+        "mutable_contracts": [],
+        "name": "agg_with_fmt_str",
+        "owner": "polars_plan::dsl::expr::Expr",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::expr::Expr::apply",
+        "closures": [
+          "function: Fn(polars_core::frame::column::Column) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
+          "output_type: Fn(&polars_core::schema::Schema, &polars_core::datatypes::field::Field) -> polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:582: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "function",
+            "sinks": [
+              "plan execution"
+            ],
+            "static_bound": true
+          },
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:582: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "output_type",
+            "sinks": [
+              "schema resolution"
+            ],
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:1525",
+        "mutable_contracts": [],
+        "name": "apply",
+        "owner": "polars_plan::dsl::expr::Expr",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::expr::Expr::apply_many",
+        "closures": [
+          "function: Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
+          "output_type: Fn(&polars_core::schema::Schema, &[polars_core::datatypes::field::Field]) -> polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+        ],
+        "disposition": "feasible (vector argument)",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:593: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "function",
+            "sinks": [
+              "plan execution"
+            ],
+            "static_bound": true
+          },
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:593: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "output_type",
+            "sinks": [
+              "schema resolution"
+            ],
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:1531",
+        "mutable_contracts": [
+          "function `&mut [polars_core::frame::column::Column]`: vector (polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards)"
+        ],
+        "name": "apply_many",
+        "owner": "polars_plan::dsl::expr::Expr",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::expr::Expr::apply_with_fmt_str",
+        "closures": [
+          "function: Fn(polars_core::frame::column::Column) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
+          "output_type: Fn(&polars_core::schema::Schema, &polars_core::datatypes::field::Field) -> polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:526: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "function",
+            "sinks": [
+              "plan execution"
+            ],
+            "static_bound": true
+          },
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:526: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "output_type",
+            "sinks": [
+              "schema resolution"
+            ],
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:1529",
+        "mutable_contracts": [],
+        "name": "apply_with_fmt_str",
+        "owner": "polars_plan::dsl::expr::Expr",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::expr::Expr::map",
+        "closures": [
+          "function: Fn(polars_core::frame::column::Column) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
+          "output_type: Fn(&polars_core::schema::Schema, &polars_core::datatypes::field::Field) -> polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "function",
+            "sinks": [
+              "plan execution"
+            ],
+            "static_bound": true
+          },
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "output_type",
+            "sinks": [
+              "schema resolution"
+            ],
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:1526",
+        "mutable_contracts": [],
+        "name": "map",
+        "owner": "polars_plan::dsl::expr::Expr",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::expr::Expr::map_expr",
+        "closures": [
+          "f: FnMut(Self) -> Self"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/plans/iterator.rs:164-167: `self.rewrite(&mut ExprMapper { f: ... })` walks the expression before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_plan:1587",
+        "mutable_contracts": [],
+        "name": "map_expr",
+        "owner": "polars_plan::dsl::expr::Expr",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::expr::Expr::map_many",
+        "closures": [
+          "function: Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
+          "output_type: Fn(&polars_core::schema::Schema, &[polars_core::datatypes::field::Field]) -> polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+        ],
+        "disposition": "feasible (vector argument)",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:554: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "function",
+            "sinks": [
+              "plan execution"
+            ],
+            "static_bound": true
+          },
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:554: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "output_type",
+            "sinks": [
+              "schema resolution"
+            ],
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:1530",
+        "mutable_contracts": [
+          "function `&mut [polars_core::frame::column::Column]`: vector (polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards)"
+        ],
+        "name": "map_many",
+        "owner": "polars_plan::dsl::expr::Expr",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::expr::Expr::map_with_fmt_str",
+        "closures": [
+          "function: Fn(polars_core::frame::column::Column) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
+          "output_type: Fn(&polars_core::schema::Schema, &polars_core::datatypes::field::Field) -> polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "function",
+            "sinks": [
+              "plan execution"
+            ],
+            "static_bound": true
+          },
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "output_type",
+            "sinks": [
+              "schema resolution"
+            ],
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:1527",
+        "mutable_contracts": [],
+        "name": "map_with_fmt_str",
+        "owner": "polars_plan::dsl::expr::Expr",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::expr::Expr::try_map_expr",
+        "closures": [
+          "f: FnMut(Self) -> polars_error::PolarsResult<Self>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/plans/iterator.rs:169-171: `self.rewrite(&mut ExprMapper { f })` walks the expression before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_plan:1589",
+        "mutable_contracts": [],
+        "name": "try_map_expr",
+        "owner": "polars_plan::dsl::expr::Expr",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_plan::dsl::expr::anonymous::expr::new_column_udf",
+        "closures": [
+          "func: Udf() -> "
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "func",
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:1028",
+        "mutable_contracts": [],
+        "name": "new_column_udf",
+        "owner": "",
+        "refusals": [
+          "func: Udf trait object",
+          "return: generic type (polars_plan::dsl::expr::LazySerde<polars_plan::dsl::expr::anonymous::expr::SpecialEq<alloc::sync::Arc<dyn polars_plan::dsl::expr::anonymous::expr::AnonymousColumnsUdf>>>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "func: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::map_multiple",
+        "closures": [
+          "function: Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
+          "output_type: Fn(&polars_core::schema::Schema, &[polars_core::datatypes::field::Field]) -> polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+        ],
+        "disposition": "feasible (vector argument)",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:1711: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "function",
+            "sinks": [
+              "plan execution"
+            ],
+            "static_bound": true
+          },
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/mod.rs:1711: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)",
+            "invocation": "stored",
+            "param": "output_type",
+            "sinks": [
+              "schema resolution"
+            ],
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:8405",
+        "mutable_contracts": [
+          "function `&mut [polars_core::frame::column::Column]`: vector (polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards)"
+        ],
+        "name": "map_multiple",
+        "owner": "",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::options::JoinTypeOptionsIR::compile",
+        "closures": [
+          "plan: FnOnce(&polars_plan::plans::expr_ir::ExprIR) -> polars_error::PolarsResult<alloc::sync::Arc<dyn polars_ops::frame::join::args::CrossJoinFilter>>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "plan",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_plan:5003",
+        "mutable_contracts": [],
+        "name": "compile",
+        "owner": "polars_plan::dsl::options::JoinTypeOptionsIR",
+        "refusals": [
+          "plan: argument `&polars_plan::plans::expr_ir::ExprIR`: unreachable polars type (polars_plan::plans::expr_ir::ExprIR)",
+          "plan: return `alloc::sync::Arc<dyn polars_ops::frame::join::args::CrossJoinFilter>`: foreign type (alloc::sync::Arc<dyn polars_ops::frame::join::args::CrossJoinFilter>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "plan: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "mechanical",
+        "canonical_path": "polars_plan::dsl::options::LogicalPlanUdfOptions as core::cmp::PartialEq",
+        "closures": [
+          "other: Udf() -> "
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "other",
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:5706:5772",
+        "mutable_contracts": [],
+        "name": "PartialEq",
+        "owner": "polars_plan::dsl::options::LogicalPlanUdfOptions",
+        "refusals": [
+          "other: Udf trait object"
+        ],
+        "today": "generated",
+        "unresolved": [
+          "other: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_plan::dsl::udf::UserDefinedFunction::new",
+        "closures": [
+          "fun: Udf() -> "
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "fun",
+            "static_bound": true
+          }
+        ],
+        "key": "polars_plan:6964",
+        "mutable_contracts": [],
+        "name": "new",
+        "owner": "polars_plan::dsl::udf::UserDefinedFunction",
+        "refusals": [
+          "fun: Udf trait object"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "fun: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::udf::infer_udf_output_dtype",
+        "closures": [
+          "f: Fn(&[polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/udf.rs:54-90: `f(&params)` on dummy columns (`:83`) before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_plan:7028",
+        "mutable_contracts": [],
+        "name": "infer_udf_output_dtype",
+        "owner": "",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "callback",
+        "canonical_path": "polars_plan::dsl::udf::try_infer_udf_output_dtype",
+        "closures": [
+          "f: Fn(&[polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column>"
+        ],
+        "disposition": "feasible",
+        "invocation": [
+          {
+            "cite": "polars-plan-0.55.2/src/dsl/udf.rs:93-100: delegates to `infer_udf_output_dtype`, invoked before returning",
+            "invocation": "immediate",
+            "param": "f",
+            "sinks": [],
+            "static_bound": false
+          }
+        ],
+        "key": "polars_plan:7029",
+        "mutable_contracts": [],
+        "name": "try_infer_udf_output_dtype",
+        "owner": "",
+        "refusals": [],
+        "today": "unsupported",
+        "unresolved": []
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_plan::plans::visitor::visitors::TreeWalker::apply_children",
+        "closures": [
+          "op: FnMut(&Self, &Self::Arena) -> polars_error::PolarsResult<polars_plan::plans::visitor::VisitRecursion>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_plan:15555",
+        "mutable_contracts": [],
+        "name": "apply_children",
+        "owner": "polars_plan::plans::visitor::visitors::TreeWalker",
+        "refusals": [
+          "op: argument `&Self`: trait object (polars_plan::plans::visitor::visitors::TreeWalker)",
+          "op: argument `&Self::Arena`: foreign type (Self::Arena)",
+          "op: return `polars_plan::plans::visitor::VisitRecursion`: unreachable polars type (polars_plan::plans::visitor::VisitRecursion)",
+          "owner not wrapped: polars_plan::plans::visitor::visitors::TreeWalker",
+          "parameter `arena`: foreign type (Self::Arena)",
+          "return: unreachable polars type (polars_plan::plans::visitor::VisitRecursion)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_plan::plans::visitor::visitors::TreeWalker::map_children",
+        "closures": [
+          "op: FnMut(Self, &mut Self::Arena) -> polars_error::PolarsResult<Self>"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "op",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_plan:15556",
+        "mutable_contracts": [],
+        "name": "map_children",
+        "owner": "polars_plan::plans::visitor::visitors::TreeWalker",
+        "refusals": [
+          "op: argument `Self`: trait object (polars_plan::plans::visitor::visitors::TreeWalker)",
+          "op: mutable argument `Self::Arena` the callback cannot write back (no audited contract)",
+          "op: return `Self`: trait object (polars_plan::plans::visitor::visitors::TreeWalker)",
+          "owner not wrapped: polars_plan::plans::visitor::visitors::TreeWalker",
+          "parameter `arena`: foreign type (Self::Arena)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "op: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_schema::schema::Schema::retain",
+        "closures": [
+          "f: FnMut(&polars_utils::pl_str::PlSmallStr, &Field) -> bool"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_schema:278",
+        "mutable_contracts": [],
+        "name": "retain",
+        "owner": "polars_schema::schema::Schema",
+        "refusals": [
+          "f: argument `&Field`: generic return (Field)",
+          "owner not wrapped: polars_schema::schema::Schema"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_schema::schema::Schema::retain_mut",
+        "closures": [
+          "f: FnMut(&mut polars_utils::pl_str::PlSmallStr, &mut Field) -> bool"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "f",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_schema:279",
+        "mutable_contracts": [],
+        "name": "retain_mut",
+        "owner": "polars_schema::schema::Schema",
+        "refusals": [
+          "f: mutable argument `polars_utils::pl_str::PlSmallStr` the callback cannot write back (no audited contract)",
+          "f: mutable argument `Field` the callback cannot write back (no audited contract)",
+          "owner not wrapped: polars_schema::schema::Schema"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "f: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_schema::schema::Schema::sort_by_key",
+        "closures": [
+          "sort_key: FnMut(&polars_utils::pl_str::PlSmallStr, &Field) -> T"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "sort_key",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_schema:254",
+        "mutable_contracts": [],
+        "name": "sort_by_key",
+        "owner": "polars_schema::schema::Schema",
+        "refusals": [
+          "sort_key: argument `&Field`: generic return (Field)",
+          "sort_key: return `T` is the free generic `T` (a Rune function cannot choose a Rust type parameter)",
+          "owner not wrapped: polars_schema::schema::Schema"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "sort_key: invocation not audited"
+        ]
+      },
+      {
+        "bucket": "generic",
+        "canonical_path": "polars_schema::schema::Schema::try_from_iter_check_duplicates",
+        "closures": [
+          "err_func: Fn(&str) -> polars_error::PolarsError"
+        ],
+        "disposition": "refused",
+        "invocation": [
+          {
+            "invocation": "unresolved",
+            "param": "err_func",
+            "static_bound": false
+          }
+        ],
+        "key": "polars_schema:221",
+        "mutable_contracts": [],
+        "name": "try_from_iter_check_duplicates",
+        "owner": "polars_schema::schema::Schema",
+        "refusals": [
+          "owner not wrapped: polars_schema::schema::Schema",
+          "parameter `iter`: result argument (polars_error::PolarsResult<F>)"
+        ],
+        "today": "unsupported",
+        "unresolved": [
+          "err_func: invocation not audited"
+        ]
+      },
+      {
+        "closures": [
+          "f: FnMut(T) -> T"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:521",
+        "name": "arc_map",
+        "owner": ""
+      },
+      {
+        "closures": [
+          "f: FnMut(T) -> core::result::Result<T, E>"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:524",
+        "name": "try_arc_map",
+        "owner": ""
+      },
+      {
+        "closures": [
+          "f: FnOnce(T) -> T"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:636",
+        "name": "replace_with",
+        "owner": "polars_utils::arena::Arena"
+      },
+      {
+        "closures": [
+          "f: FnMut(T) -> polars_utils::error::Result<T>"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:638",
+        "name": "try_replace_with",
+        "owner": "polars_utils::arena::Arena"
+      },
+      {
+        "closures": [
+          "f: FnMut(T) -> core::option::Option<U>"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:743",
+        "name": "try_map",
+        "owner": ""
+      },
+      {
+        "closures": [
+          "f: FnMut(&T) -> core::cmp::Ordering"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:749",
+        "name": "exponential_search_by",
+        "owner": "polars_utils::binary_search::ExponentialSearch"
+      },
+      {
+        "closures": [
+          "pred: FnMut(&T) -> bool"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:750",
+        "name": "partition_point_exponential",
+        "owner": "polars_utils::binary_search::ExponentialSearch"
+      },
+      {
+        "closures": [
+          "f: FnOnce(&Q) -> V"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:909",
+        "name": "get_or_insert_with",
+        "owner": "polars_utils::cache::LruCache"
+      },
+      {
+        "closures": [
+          "f: FnOnce(&Q) -> core::result::Result<V, E>"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:910",
+        "name": "try_get_or_insert_with",
+        "owner": "polars_utils::cache::LruCache"
+      },
+      {
+        "closures": [
+          "f: FnMut(&mut T) -> ()"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:1420",
+        "name": "for_each_mut",
+        "owner": "polars_utils::collection::CollectionWrap"
+      },
+      {
+        "closures": [
+          "f: FnMut(&mut T) -> B"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:1421",
+        "name": "map_mut",
+        "owner": "polars_utils::collection::CollectionWrap"
+      },
+      {
+        "closures": [
+          "f: FnMut(T) -> bool"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:3286",
+        "name": "retain",
+        "owner": "polars_utils::idx_vec::UnitVec"
+      },
+      {
+        "closures": [
+          "eq: FnMut(Self::Item, I::Item) -> bool"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:3800",
+        "name": "eq_by_",
+        "owner": "polars_utils::itertools::Itertools"
+      },
+      {
+        "closures": [
+          "partial_cmp: FnMut(Self::Item, I::Item) -> core::option::Option<core::cmp::Ordering>"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:3801",
+        "name": "partial_cmp_by_",
+        "owner": "polars_utils::itertools::Itertools"
+      },
+      {
+        "closures": [
+          "f: FnOnce(T) -> core::result::Result<U, E>"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:4501",
+        "name": "try_map",
+        "owner": "polars_utils::option::OptionTry"
+      },
+      {
+        "closures": [
+          "drop_guard: FnOnce() -> ()"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:4614",
+        "name": "gc",
+        "owner": "polars_utils::parma::raw::RawTable"
+      },
+      {
+        "closures": [
+          "eq: FnMut(&K) -> bool"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:4615",
+        "name": "get",
+        "owner": "polars_utils::parma::raw::RawTable"
+      },
+      {
+        "closures": [
+          "eq: FnMut(&K) -> bool",
+          "val_f: FnOnce(&K) -> V"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:4616",
+        "name": "get_or_insert_with",
+        "owner": "polars_utils::parma::raw::RawTable"
+      },
+      {
+        "closures": [
+          "eq: FnMut(&K) -> bool"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:4618",
+        "name": "remove",
+        "owner": "polars_utils::parma::raw::RawTable"
+      },
+      {
+        "closures": [
+          "eq: FnMut(&K) -> bool",
+          "val_f: FnOnce(&K) -> core::result::Result<V, E>"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:4617",
+        "name": "try_get_or_insert_with",
+        "owner": "polars_utils::parma::raw::RawTable"
+      },
+      {
+        "closures": [
+          "func: FnMut(alloc::borrow::Cow<[u8]>) -> O"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:7064",
+        "name": "deserialize_map_bytes",
+        "owner": ""
+      },
+      {
+        "closures": [
+          "f: FnOnce(&mut polars_utils::regex_cache::RegexCache) -> R"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:5396",
+        "name": "with_regex_cache",
+        "owner": ""
+      },
+      {
+        "closures": [
+          "f: FnOnce(&mut alloc::vec::Vec<U>) -> R"
+        ],
+        "disposition": "out of scope: internal crate",
+        "key": "polars_utils:6664",
+        "name": "with_cast_mut_vec",
+        "owner": ""
+      }
+    ],
+    "rule": "every binding that accepts a closure is routed through engine::run (route reason `callback`); a stored callback is invoked only from a classified sink, and every sink binding is routed (route reason `executes callbacks`)",
+    "sinks": {
+      "audit": [
+        "polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395 (ColumnsUdf::call_udf during plan execution)",
+        "polars-plan-0.55.2/src/plans/functions/mod.rs:202 (DataFrame UDF of LazyFrame::map)",
+        "polars-stream-0.55.2/src/nodes/map.rs:50, columnar_function.rs:94, in_memory_map.rs:51 (the streaming engine)",
+        "polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391, plans/ir/unoptimized.rs:48,65 and plans/schema.rs:21 (FunctionOutputField::get_field during schema resolution)"
+      ],
+      "bindings": [
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:746-757: `collect_with_engine` after `to_alp_optimized` (schema resolution, then execution)",
+          "key": "polars_lazy:16",
+          "path": "polars_lazy::frame::LazyFrame::collect",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::collect",
+          "sink": "plan execution",
+          "status": "adapted"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:711: optimizes and executes every plan",
+          "key": "polars_lazy:292",
+          "path": "polars_lazy::frame::LazyFrame::collect_all_with_engine",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::collect_all_with_engine",
+          "sink": "plan execution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp_optimized` then execution on a thread",
+          "key": "polars_lazy:230",
+          "path": "polars_lazy::frame::LazyFrame::collect_concurrently",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::collect_concurrently",
+          "sink": "plan execution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp` (DSL to IR conversion resolves every field)",
+          "key": "polars_lazy:228",
+          "path": "polars_lazy::frame::LazyFrame::collect_schema",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::collect_schema",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp_optimized` then execution",
+          "key": "polars_lazy:287",
+          "path": "polars_lazy::frame::LazyFrame::collect_with_engine",
+          "routed_today": true,
+          "rune": null,
+          "sink": "plan execution",
+          "status": "unsupported"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:230-231: `to_alp_optimized()?.describe()`",
+          "key": "polars_lazy:251",
+          "path": "polars_lazy::frame::LazyFrame::describe_optimized_plan",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::describe_optimized_plan",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:237-238: `to_alp_optimized()?.describe_tree_format()`",
+          "key": "polars_lazy:252",
+          "path": "polars_lazy::frame::LazyFrame::describe_optimized_plan_tree",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::describe_optimized_plan_tree",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:218-219: `self.clone().to_alp()?.describe()`",
+          "key": "polars_lazy:248",
+          "path": "polars_lazy::frame::LazyFrame::describe_plan",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::describe_plan",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:223-224: `to_alp()?.describe_tree_format()`",
+          "key": "polars_lazy:250",
+          "path": "polars_lazy::frame::LazyFrame::describe_plan_tree",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::describe_plan_tree",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:245: `describe_optimized_plan` or `describe_plan`",
+          "key": "polars_lazy:253",
+          "path": "polars_lazy::frame::LazyFrame::explain",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::explain",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:702: converts every plan to IR",
+          "key": "polars_lazy:290",
+          "path": "polars_lazy::frame::LazyFrame::explain_all",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::explain_all",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:500-506: `optimize_with_scratch` converts to IR",
+          "key": "polars_lazy:279",
+          "path": "polars_lazy::frame::LazyFrame::optimize",
+          "routed_today": true,
+          "rune": null,
+          "sink": "schema resolution",
+          "status": "unsupported"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:823: executes the plan and times its nodes",
+          "key": "polars_lazy:294",
+          "path": "polars_lazy::frame::LazyFrame::profile",
+          "routed_today": true,
+          "rune": "polars::LazyFrame::profile",
+          "sink": "plan execution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs: converts to IR into the given arenas",
+          "key": "polars_lazy:226",
+          "path": "polars_lazy::frame::LazyFrame::schema_with_arenas",
+          "routed_today": true,
+          "rune": null,
+          "sink": "schema resolution",
+          "status": "unsupported"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs: stores arenas, converts nothing",
+          "key": "polars_lazy:222",
+          "path": "polars_lazy::frame::LazyFrame::set_cached_arena",
+          "routed_today": true,
+          "rune": null,
+          "sink": "none",
+          "status": "unsupported"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:515-520: `to_alp(...)`",
+          "key": "polars_lazy:283",
+          "path": "polars_lazy::frame::LazyFrame::to_alp",
+          "routed_today": true,
+          "rune": null,
+          "sink": "schema resolution",
+          "status": "unsupported"
+        },
+        {
+          "cite": "polars-lazy-0.55.2/src/frame/mod.rs:508-513: `optimize_with_scratch`",
+          "key": "polars_lazy:281",
+          "path": "polars_lazy::frame::LazyFrame::to_alp_optimized",
+          "routed_today": true,
+          "rune": null,
+          "sink": "schema resolution",
+          "status": "unsupported"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/mod.rs:1651: returns a namespace holding the expression",
+          "key": "polars_plan:1575",
+          "path": "polars_plan::dsl::expr::Expr::binary",
+          "routed_today": false,
+          "rune": "polars::Expr::binary",
+          "sink": "none",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/mod.rs:1679: returns a namespace holding the expression",
+          "key": "polars_plan:1580",
+          "path": "polars_plan::dsl::expr::Expr::cat",
+          "routed_today": false,
+          "rune": "polars::Expr::cat",
+          "sink": "none",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/plans/lit.rs:279: reads a literal, no conversion",
+          "key": "polars_plan:1461",
+          "path": "polars_plan::dsl::expr::Expr::extract_i64",
+          "routed_today": false,
+          "rune": "polars::Expr::extract_i64",
+          "sink": "none",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/plans/lit.rs: reads a literal, no conversion",
+          "key": "polars_plan:1460",
+          "path": "polars_plan::dsl::expr::Expr::extract_usize",
+          "routed_today": false,
+          "rune": "polars::Expr::extract_usize",
+          "sink": "none",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/mod.rs: returns a namespace holding the expression",
+          "key": "polars_plan:1577",
+          "path": "polars_plan::dsl::expr::Expr::list",
+          "routed_today": false,
+          "rune": "polars::Expr::list",
+          "sink": "none",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/mod.rs:1667: returns the name namespace holding the expression",
+          "key": "polars_plan:1579",
+          "path": "polars_plan::dsl::expr::Expr::name",
+          "routed_today": false,
+          "rune": "polars::Expr::name",
+          "sink": "none",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/plans/iterator.rs:153: collects references to sub-expressions",
+          "key": "polars_plan:1584",
+          "path": "polars_plan::dsl::expr::Expr::nodes",
+          "routed_today": false,
+          "rune": null,
+          "sink": "none",
+          "status": "unsupported"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/plans/iterator.rs: collects sub-expressions",
+          "key": "polars_plan:1586",
+          "path": "polars_plan::dsl::expr::Expr::nodes_owned",
+          "routed_today": false,
+          "rune": null,
+          "sink": "none",
+          "status": "unsupported"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/mod.rs: returns a namespace holding the expression",
+          "key": "polars_plan:1582",
+          "path": "polars_plan::dsl::expr::Expr::struct_",
+          "routed_today": false,
+          "rune": "polars::Expr::struct_",
+          "sink": "none",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/expr/mod.rs:438: converts the expression to an AExpr against the schema and resolves its field",
+          "key": "polars_plan:1457",
+          "path": "polars_plan::dsl::expr::Expr::to_field",
+          "routed_today": false,
+          "rune": "polars::Expr::to_field",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/plans/schema.rs:21-30: `to_alp(self.clone(), ..., OptFlags::schema_only())` (reproduced by Codex: three output-field invocations)",
+          "key": "polars_plan:7129",
+          "path": "polars_plan::dsl::plan::DslPlan::compute_schema",
+          "routed_today": false,
+          "rune": "polars::DslPlan::compute_schema",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/plan.rs:247-249: `self.clone().to_alp()?.describe()`",
+          "key": "polars_plan:7123",
+          "path": "polars_plan::dsl::plan::DslPlan::describe",
+          "routed_today": false,
+          "rune": "polars::DslPlan::describe",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/plan.rs:251-253: `to_alp()?.describe_tree_format()`",
+          "key": "polars_plan:7124",
+          "path": "polars_plan::dsl::plan::DslPlan::describe_tree_format",
+          "routed_today": false,
+          "rune": "polars::DslPlan::describe_tree_format",
+          "sink": "schema resolution",
+          "status": "generated"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/plan.rs:255-263: `self.clone().to_alp()?`",
+          "key": "polars_plan:7125",
+          "path": "polars_plan::dsl::plan::DslPlan::display",
+          "routed_today": false,
+          "rune": null,
+          "sink": "schema resolution",
+          "status": "unsupported"
+        },
+        {
+          "cite": "polars-plan-0.55.2/src/dsl/plan.rs:265-275: DSL to IR conversion",
+          "key": "polars_plan:7126",
+          "path": "polars_plan::dsl::plan::DslPlan::to_alp",
+          "routed_today": false,
+          "rune": null,
+          "sink": "schema resolution",
+          "status": "unsupported"
+        }
+      ],
+      "classified": "every method of LazyFrame, DslPlan, DslBuilder, JoinBuilder, LazyGroupBy and Expr whose result is not a plan type, by the release file's [[callback_sink]] entries",
+      "generated_unrouted_today": 4,
+      "unclassified": []
+    }
+  },
   "conversions": {
     "by_disposition": {
       "assign: generated": 24,
@@ -135023,7 +139103,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "736bffe08e922bc6da5e4f3b556b251f9984aed9242c0c4e49dc648e2f9eb34a",
+    "sha256": "8f1510c46f0b54ef3531436e99b3569894fd91296f5a2bf5ec9fb02bc0ff17fb",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",

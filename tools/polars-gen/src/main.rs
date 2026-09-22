@@ -32,6 +32,13 @@ struct Release {
     unordered: Vec<Unordered>,
     #[serde(default)]
     excluded_oracle: Vec<ExcludedOracle>,
+    /// Record 0079: mutable closure arguments with an audited read-back contract.
+    #[serde(default)]
+    callback_mutable: Vec<CallbackMutable>,
+    #[serde(default)]
+    callback_invocation: Vec<CallbackInvocation>,
+    #[serde(default)]
+    callback_sink: Vec<CallbackSink>,
     /// Record 0076: which alias families get instantiated bindings; empty
     /// means every family. The shipped set under the launch budget is
     /// recorded here, as the recipe that selected it.
@@ -715,6 +722,408 @@ fn iterator_census(entries: &[Entry], inv: &Inventory, pairs: &[PairRecord]) -> 
 
 /// Record 0078 gate 1: every `From` impl and assignment/unary operator
 /// with the name the rule gives and its disposition.
+// ---- record 0079 gate 1: the callback census ----
+
+/// A mutable closure argument the release file has audited: what Polars
+/// does with the writes, with the citation.
+#[derive(Clone, Debug, serde::Deserialize)]
+struct CallbackMutable {
+    path: String,
+    param: String,
+    /// `vector` (the slice is never read back: passed as a Rune vector of
+    /// clones) or `result buffer` (the buffer's contents are the result:
+    /// the Rune callback returns a string written into it).
+    contract: String,
+    cite: String,
+}
+
+/// Where an operation invokes one closure parameter, from the pinned
+/// sources: `immediate` (before the call returns) or `stored` (kept by
+/// Polars and invoked from the listed sinks), with the citation. A
+/// lifetime bound is a signature fact, never the classification.
+#[derive(Clone, Debug, serde::Deserialize)]
+struct CallbackInvocation {
+    path: String,
+    param: String,
+    invocation: String,
+    #[serde(default)]
+    sinks: Vec<String>,
+    cite: String,
+}
+
+/// A method of a plan-holding type whose result is not the plan: an
+/// execution sink (`plan execution`, `schema resolution`) or `none`, with
+/// the citation. Every such method must be classified, or stored callbacks
+/// are unresolved.
+#[derive(Clone, Debug, serde::Deserialize)]
+struct CallbackSink {
+    path: String,
+    sink: String,
+    cite: String,
+}
+
+/// One closure parameter as the inventory spells it: the `Fn` kind, the
+/// argument and return types, and whether the bound requires `'static`
+/// (a signature fact; the invocation comes from the audit).
+#[derive(Clone, Debug)]
+struct ClosureSig {
+    param: String,
+    kind: String,
+    args: Vec<String>,
+    ret: String,
+    /// The bound requires `'static`: Polars may keep the closure. A fact,
+    /// not the invocation (an operation may invoke a `'static` closure
+    /// immediately, or keep a borrowing closure in a lifetime-bound holder).
+    static_bound: bool,
+    udf: bool,
+}
+
+fn split_top_on(s: &str, sep: char) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut depth = 0i32;
+    let mut cur = String::new();
+    for ch in s.chars() {
+        match ch {
+            '<' | '(' | '[' => depth += 1,
+            '>' | ')' | ']' => depth -= 1,
+            _ => {}
+        }
+        if ch == sep && depth == 0 {
+            out.push(cur.trim().to_string());
+            cur.clear();
+        } else {
+            cur.push(ch);
+        }
+    }
+    if !cur.trim().is_empty() { out.push(cur.trim().to_string()); }
+    out
+}
+
+fn closure_signature(c: &Callable, p: &Param) -> Option<ClosureSig> {
+    let generics = generics_map(c);
+    let bare = p.ty_canonical.trim().trim_start_matches("&mut ").trim_start_matches('&').trim();
+    let text = generics.get(bare).cloned().unwrap_or_else(|| p.ty_canonical.clone());
+    if text.contains("Udf") {
+        return Some(ClosureSig { param: p.name.clone(), kind: "Udf".into(), args: vec![], ret: String::new(), static_bound: true, udf: true });
+    }
+    let mut t = text.trim();
+    for prefix in ["&mut ", "&", "dyn ", "impl ", "core::ops::function::"] {
+        t = t.trim_start_matches(prefix).trim();
+    }
+    // `Fn(A, B) -> R + 'static + Send`
+    let kind = ["FnOnce", "FnMut", "Fn"].iter().find(|k| t.starts_with(**k) && t[k.len()..].starts_with('('))?.to_string();
+    let rest = &t[kind.len()..];
+    let close = {
+        let mut depth = 0i32;
+        let mut idx = None;
+        for (i, ch) in rest.char_indices() {
+            match ch { '(' | '<' | '[' => depth += 1, ')' | '>' | ']' => { depth -= 1; if depth == 0 { idx = Some(i); break; } } _ => {} }
+        }
+        idx?
+    };
+    let args = split_top_on(&rest[1..close], ',');
+    let after = rest[close + 1..].trim();
+    let ret = match after.strip_prefix("->") {
+        Some(r) => split_top_on(r.trim(), '+').into_iter().next().unwrap_or_default(),
+        None => "()".into(),
+    };
+    Some(ClosureSig { param: p.name.clone(), kind, args, ret, static_bound: text.contains("+ 'static") || text.contains("'static +"), udf: false })
+}
+
+/// A plan-holding type: a method of one whose result is not a plan type
+/// may execute or resolve the plan, and must be classified by the release
+/// file's `[[callback_sink]]` audit (plan execution, schema resolution, or
+/// none, each with a citation).
+fn plan_holder_non_plan_method(c: &Callable) -> bool {
+    const HOLDERS: &[&str] = &["polars_lazy::frame::LazyFrame", "polars_plan::dsl::plan::DslPlan", "polars_plan::dsl::builder_dsl::DslBuilder", "polars_lazy::frame::JoinBuilder", "polars_lazy::frame::LazyGroupBy", "polars_plan::dsl::expr::Expr"];
+    const PLAN_TYPES: &[&str] = &["Self", "LazyFrame", "DslPlan", "DslBuilder", "JoinBuilder", "LazyGroupBy", "Expr", "OptFlags", "ExprIR", "Selector"];
+    if !HOLDERS.iter().any(|h| c.owner == *h) || c.kind == "foreign_trait_impl" || c.bucket == "unsupported" || c.bucket == "unknown" { return false; }
+    let ret = c.ret_canonical.as_deref().unwrap_or("()");
+    !PLAN_TYPES.iter().any(|t| mentions(ret, t))
+}
+
+fn callback_census(world: &World, inv: &Inventory, entries: &[Entry]) -> serde_json::Value {
+    let release = &world.release;
+    let by_key: BTreeMap<&str, &Entry> = entries.iter().map(|e| (e.key.as_str(), e)).collect();
+    // an empty family list in the release file means every family (as the
+    // instantiation census reads it); the pair-level applicability is 0080's
+    let families = true;
+    let generic_family_owner = |o: &str| o == "polars_core::chunked_array::ChunkedArray" || o == "polars_core::chunked_array::logical::Logical";
+    // every non-plan-returning method of a plan-holding type is classified by the audit, or listed as unclassified
+    let mut sinks = Vec::new();
+    let mut unclassified_sinks: Vec<String> = Vec::new();
+    let mut sink_groups: BTreeSet<&str> = BTreeSet::new();
+    for c in &inv.callables {
+        if !release.is_api(&c.krate) || !plan_holder_non_plan_method(c) { continue; }
+        let e = by_key.get(c.key.as_str());
+        let routed_today = routed(&c.name, Some(&c.owner), &c.params, c.ret_canonical.as_deref());
+        match release.callback_sink.iter().find(|k| k.path == c.canonical_path) {
+            Some(k) => {
+                if k.sink != "none" { sink_groups.insert(k.sink.as_str()); }
+                sinks.push(serde_json::json!({"key": c.key, "path": c.canonical_path, "sink": k.sink, "cite": k.cite, "status": e.map(|e| e.status).unwrap_or("not emitted"), "rune": e.and_then(|e| e.rune.clone()), "routed_today": routed_today}));
+            }
+            None => unclassified_sinks.push(c.canonical_path.clone()),
+        }
+    }
+    let mut rows = Vec::new();
+    let mut disp: BTreeMap<String, usize> = BTreeMap::new();
+    for c in &inv.callables {
+        let closures: Vec<ClosureSig> = c.params.iter().filter_map(|p| closure_signature(c, p)).collect();
+        if closures.is_empty() { continue; }
+        let api = release.is_api(&c.krate);
+        let mut refusals: Vec<String> = Vec::new();
+        let mut contracts: Vec<String> = Vec::new();
+        let mut per_family = false;
+        let generics = generics_map(c);
+        let closure_names: BTreeSet<&str> = c.params.iter().filter(|p| closure_signature(c, p).is_some()).map(|p| p.ty_canonical.trim().trim_start_matches("&mut ").trim_start_matches('&').trim()).collect();
+        let free_generics: Vec<&str> = generics.keys().map(|s| s.as_str()).filter(|g| !closure_names.contains(g)).collect();
+        let is_projection = |t: &str| t.contains("::Native") || t.contains("::Physical");
+        let free_in = |t: &str| free_generics.iter().find(|g| mentions(t, g)).map(|g| g.to_string());
+        if !api {
+            let d = "out of scope: internal crate".to_string();
+            *disp.entry(d.clone()).or_insert(0) += 1;
+            rows.push(serde_json::json!({"key": c.key, "owner": c.owner, "name": c.name, "closures": closures.iter().map(|s| format!("{}: {}({}) -> {}", s.param, s.kind, s.args.join(", "), s.ret)).collect::<Vec<_>>(), "disposition": d}));
+            continue;
+        }
+        if c.bucket == "unsupported" || c.bucket == "unknown" {
+            let d = format!("not eligible: bucket {}", c.bucket);
+            *disp.entry("not eligible".into()).or_insert(0) += 1;
+            rows.push(serde_json::json!({"key": c.key, "owner": c.owner, "name": c.name, "disposition": d}));
+            continue;
+        }
+        for s in &closures {
+            if s.udf { refusals.push(format!("{}: Udf trait object", s.param)); continue; }
+            if c.is_async || mentions(&s.ret, "Fut") { refusals.push(format!("{}: async closure", s.param)); continue; }
+            for a in &s.args {
+                let ty = ty::parse(a);
+                if let Ty::Ref { mutable: true, inner } = &ty {
+                    match release.callback_mutable.iter().find(|m| m.path == c.canonical_path && m.param == s.param) {
+                        Some(m) => contracts.push(format!("{} `{}`: {} ({})", s.param, a, m.contract, m.cite)),
+                        None => refusals.push(format!("{}: mutable argument `{}` the callback cannot write back (no audited contract)", s.param, inner.render())),
+                    }
+                    continue;
+                }
+                if is_projection(a) {
+                    if generic_family_owner(&c.owner) && families { per_family = true; } else { refusals.push(format!("{}: projection `{a}` on an owner without instantiation families", s.param)); }
+                    continue;
+                }
+                if let Some(g) = free_in(a) { refusals.push(format!("{}: argument `{a}` is the free generic `{g}`", s.param)); continue; }
+                // an amortized series is a borrow Polars reuses between calls; it is kept out of callbacks (the plan's census class), a later record may relax it
+                if NOT_ROUTED_TYPES.iter().any(|d| mentions(a, d)) { refusals.push(format!("{}: argument `{a}` is an amortized borrow Polars reuses between calls (AmortSeries)", s.param)); continue; }
+                // a shared slice or vector of a wrapped type arrives as a Rune vector of clones
+                let elem = match &ty { Ty::Ref { mutable: false, inner } => match &**inner { Ty::Slice(e) => Some((**e).clone()), _ => None }, Ty::Path { path, args } if path == "alloc::vec::Vec" && args.len() == 1 => Some(args[0].clone()), _ => None };
+                if let Some(e) = elem {
+                    match world.ret(&e, Some(&c.owner), 0) { Ok(_) => continue, Err(Unsupported(why, what)) => { refusals.push(format!("{}: argument `{a}`: {why} ({what})", s.param)); continue; } }
+                }
+                if let Err(Unsupported(why, what)) = world.ret(&ty, Some(&c.owner), 0) {
+                    refusals.push(format!("{}: argument `{a}`: {why} ({what})", s.param));
+                }
+            }
+            let ret = s.ret.trim();
+            let ret = ret.strip_prefix("polars_error::PolarsResult<").and_then(|r| r.strip_suffix('>')).unwrap_or(ret);
+            let rty = ty::parse(ret);
+            if ret == "()" {
+            } else if matches!(rty, Ty::Ref { .. }) || ret.starts_with("&'") {
+                refusals.push(format!("{}: return `{ret}` borrowed from the argument", s.param));
+            } else if is_projection(ret) {
+                if generic_family_owner(&c.owner) && families { per_family = true; } else { refusals.push(format!("{}: projection `{ret}` on an owner without instantiation families", s.param)); }
+            } else if let Some(g) = free_in(ret) {
+                refusals.push(format!("{}: return `{ret}` is the free generic `{g}` (a Rune function cannot choose a Rust type parameter)", s.param));
+            } else if let Err(Unsupported(why, what)) = world.arg(&rty, "r", &generics, Some(&c.owner), 0) {
+                refusals.push(format!("{}: return `{ret}`: {why} ({what})", s.param));
+            }
+        }
+        // the rest of the callable: owner, receiver, other parameters, other generics
+        if world.wrapper_for(&c.owner).is_none() && !c.owner.is_empty() {
+            if generic_family_owner(&c.owner) && families { per_family = true; } else { refusals.push(format!("owner not wrapped: {}", c.owner)); }
+        }
+        if !matches!(c.receiver.as_str(), "none" | "self" | "&self" | "&mut self") { refusals.push(format!("receiver form `{}`", c.receiver)); }
+        for p in &c.params {
+            if closure_signature(c, p).is_some() { continue; }
+            let t = ty::parse(&p.ty_canonical);
+            if is_projection(&p.ty_canonical) { if !(generic_family_owner(&c.owner) && families) { refusals.push(format!("parameter `{}`: projection without instantiation families", p.name)); } continue; }
+            if let Err(Unsupported(why, what)) = world.arg(&t, &p.name, &generics, Some(&c.owner), 0) {
+                refusals.push(format!("parameter `{}`: {why} ({what})", p.name));
+            }
+        }
+        if let Some(r) = c.ret_canonical.as_deref() {
+            let r = r.strip_prefix("polars_error::PolarsResult<").and_then(|x| x.strip_suffix('>')).unwrap_or(r);
+            if r != "Self" && !is_projection(r) {
+                if let Err(Unsupported(why, what)) = world.ret(&ty::parse(r), Some(&c.owner), 0) { refusals.push(format!("return: {why} ({what})")); }
+            }
+        }
+        // invocation per closure from the release file's source audit; a
+        // closure without an entry leaves the operation unresolved
+        let mut unresolved: Vec<String> = Vec::new();
+        let mut invocation: Vec<serde_json::Value> = Vec::new();
+        for s in &closures {
+            match release.callback_invocation.iter().find(|a| a.path == c.canonical_path && a.param == s.param) {
+                Some(a) => {
+                    if a.invocation == "stored" {
+                        for g in &a.sinks {
+                            if !sink_groups.contains(g.as_str()) { unresolved.push(format!("{}: sink group `{g}` has no classified member", s.param)); }
+                        }
+                        if !unclassified_sinks.is_empty() { unresolved.push(format!("{}: unclassified execution path(s): {}", s.param, unclassified_sinks.join(", "))); }
+                    }
+                    invocation.push(serde_json::json!({"param": s.param, "invocation": a.invocation, "sinks": a.sinks, "cite": a.cite, "static_bound": s.static_bound}));
+                }
+                None => {
+                    unresolved.push(format!("{}: invocation not audited", s.param));
+                    invocation.push(serde_json::json!({"param": s.param, "invocation": "unresolved", "static_bound": s.static_bound}));
+                }
+            }
+        }
+        let disposition = if !refusals.is_empty() {
+            "refused".to_string()
+        } else if !unresolved.is_empty() {
+            "unresolved".to_string()
+        } else {
+            let mut q: Vec<&str> = Vec::new();
+            if per_family { q.push("per family"); }
+            if contracts.iter().any(|x| x.contains("result buffer")) { q.push("result buffer"); }
+            if contracts.iter().any(|x| x.contains("vector")) { q.push("vector argument"); }
+            if q.is_empty() { "feasible".to_string() } else { format!("feasible ({})", q.join(", ")) }
+        };
+        *disp.entry(disposition.clone()).or_insert(0) += 1;
+        let today = by_key.get(c.key.as_str()).map(|e| e.status.to_string()).unwrap_or_else(|| "not emitted".into());
+        rows.push(serde_json::json!({
+            "key": c.key, "owner": c.owner, "name": c.name, "canonical_path": c.canonical_path, "bucket": c.bucket,
+            "closures": closures.iter().map(|s| format!("{}: {}({}) -> {}", s.param, s.kind, s.args.join(", "), s.ret)).collect::<Vec<_>>(),
+            "invocation": invocation, "mutable_contracts": contracts, "disposition": disposition, "refusals": refusals, "unresolved": unresolved, "today": today,
+        }));
+    }
+    let unrouted = sinks.iter().filter(|s| s["status"] == "generated" && s["routed_today"] == false && s["sink"] != "none").count();
+    serde_json::json!({
+        "count": rows.len(),
+        "by_disposition": disp,
+        "rows": rows,
+        "rule": "every binding that accepts a closure is routed through engine::run (route reason `callback`); a stored callback is invoked only from a classified sink, and every sink binding is routed (route reason `executes callbacks`)",
+        "sinks": {
+            "audit": ["polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395 (ColumnsUdf::call_udf during plan execution)", "polars-plan-0.55.2/src/plans/functions/mod.rs:202 (DataFrame UDF of LazyFrame::map)", "polars-stream-0.55.2/src/nodes/map.rs:50, columnar_function.rs:94, in_memory_map.rs:51 (the streaming engine)", "polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391, plans/ir/unoptimized.rs:48,65 and plans/schema.rs:21 (FunctionOutputField::get_field during schema resolution)"],
+            "classified": "every method of LazyFrame, DslPlan, DslBuilder, JoinBuilder, LazyGroupBy and Expr whose result is not a plan type, by the release file's [[callback_sink]] entries",
+            "bindings": sinks,
+            "unclassified": unclassified_sinks,
+            "generated_unrouted_today": unrouted,
+        },
+    })
+}
+
+/// Record 0079 gate 1 controls, from a synthetic inventory: the closure
+/// classifier's dispositions and the sink rule.
+fn callback_self_test() {
+    fn sup(path: &str, derived: &[&str]) -> Supporting {
+        Supporting {
+            key: path.to_string(), kind: "struct".into(), canonical_path: path.to_string(),
+            found_paths: vec![format!("polars::{}", path.rsplit("::").next().unwrap())], crate_paths: vec![path.to_string()],
+            public_fields: 0, fields_canonical: vec![], variant_shapes: vec![], variant_payloads: vec![], generic: false, lifetime: false, hidden: false,
+            derived: derived.iter().map(|d| d.to_string()).collect(), alias_target: None, implementors: vec![], impls: vec![],
+        }
+    }
+    let series = "polars_core::series::Series";
+    let column = "polars_core::frame::column::Column";
+    let field = "polars_core::datatypes::field::Field";
+    let expr = "polars_plan::dsl::expr::Expr";
+    let mk = |key: &str, owner: &str, name: &str, receiver: &str, params: Vec<(&str, &str)>, generics: Vec<(&str, &str)>, ret: Option<&str>, owner_generic: bool| Callable {
+        key: key.into(), kind: "inherent".into(), krate: "polars_core".into(), owner: owner.into(), name: name.into(), canonical_path: format!("{owner}::{name}"),
+        found_paths: vec![], crate_paths: vec![], receiver: receiver.into(), params: params.iter().map(|(n, t)| Param { name: n.to_string(), ty: t.to_string(), ty_canonical: t.to_string() }).collect(),
+        ret: None, ret_canonical: ret.map(String::from), generics_canonical: generics.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(),
+        impl_for: None, impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic, is_unsafe: false, is_async: false,
+        deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "callback".into(), rules: vec![],
+    };
+    let ca = "polars_core::chunked_array::ChunkedArray";
+    let inv = Inventory {
+        callables: vec![
+            mk("ok", column, "apply_unary_elementwise", "&self", vec![("f", "F")], vec![("F", "impl core::ops::function::Fn(&polars_core::series::Series) -> polars_core::series::Series")], Some(column), false),
+            mk("stored", expr, "map", "self", vec![("function", "F"), ("output_type", "DT")], vec![("F", "core::ops::function::Fn(polars_core::frame::column::Column) -> polars_error::PolarsResult<polars_core::frame::column::Column> + 'static + core::marker::Send + core::marker::Sync"), ("DT", "core::ops::function::Fn(&polars_core::schema::Schema, &polars_core::datatypes::field::Field) -> polars_error::PolarsResult<polars_core::datatypes::field::Field> + 'static + core::marker::Send + core::marker::Sync")], Some("Self"), false),
+            mk("free", column, "try_apply_with", "&self", vec![("f", "F")], vec![("F", "core::ops::function::FnMut(polars_core::series::Series) -> core::result::Result<K, E>"), ("K", ""), ("E", "")], Some("core::result::Result<K, E>"), false),
+            mk("arrow", column, "apply_kernel", "&self", vec![("f", "F")], vec![("F", "core::ops::function::Fn(&polars_arrow::array::Array) -> polars_arrow::array::ArrayRef")], Some(column), false),
+            mk("amort", column, "amortized", "&self", vec![("f", "F")], vec![("F", "core::ops::function::FnMut(core::option::Option<polars_core::series::amortized_iter::AmortSeries>) -> polars_core::series::Series")], Some(column), false),
+            mk("udf", expr, "with_udf", "self", vec![("schema", "core::option::Option<alloc::sync::Arc<dyn polars_plan::dsl::UdfSchema>>")], vec![], Some("Self"), false),
+            mk("borrowed", ca, "apply_mut", "&self", vec![("f", "F")], vec![("F", "core::ops::function::FnMut(&str) -> &str")], Some("Self"), true),
+            mk("slice", expr, "map_many", "self", vec![("function", "F"), ("arguments", "&[polars_plan::dsl::expr::Expr]")], vec![("F", "core::ops::function::Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column> + 'static + core::marker::Send + core::marker::Sync")], Some("Self"), false),
+            mk("buffer", ca, "apply_into_string_amortized", "&self", vec![("f", "F")], vec![("F", "core::ops::function::FnMut(T::Physical, &mut alloc::string::String)")], Some("polars_core::datatypes::StringChunked"), true),
+            mk("readback", "polars_core::schema::Schema", "retain_mut", "&mut self", vec![("f", "F")], vec![("F", "core::ops::function::FnMut(&mut polars_core::datatypes::field::Field) -> bool")], None, false),
+            mk("native", ca, "apply_mut", "&mut self", vec![("f", "F")], vec![("F", "core::ops::function::Fn(T::Native) -> T::Native + core::marker::Copy")], None, true),
+            mk("otherarg", column, "apply_with_state", "&self", vec![("f", "F"), ("state", "polars_arrow::bitmap::Bitmap")], vec![("F", "core::ops::function::Fn(&polars_core::series::Series) -> polars_core::series::Series")], Some(column), false),
+            mk("sink", "polars_lazy::frame::LazyFrame", "collect", "self", vec![], vec![], Some("polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>"), false),
+            mk("plan", "polars_lazy::frame::LazyFrame", "filter", "self", vec![("p", expr)], vec![], Some("Self"), false),
+        ],
+        supporting: vec![sup(series, &["Clone", "Debug"]), sup(column, &["Clone", "Debug"]), sup(field, &["Clone", "Debug"]), sup(expr, &["Clone", "Debug"]), sup("polars_core::schema::Schema", &["Clone", "Debug"]), sup("polars_core::datatypes::StringChunked", &["Clone"]), sup("polars_lazy::frame::LazyFrame", &["Clone"]), sup("polars_core::frame::dataframe::DataFrame", &["Clone", "Debug"])],
+        provenance: None,
+    };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope { families: vec!["numeric".into()], exclude: vec![] }, api_crates: vec!["polars_core".into(), "polars_plan".into(), "polars_lazy".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![] };
+    release.callback_mutable.push(CallbackMutable { path: format!("{expr}::map_many"), param: "function".into(), contract: "vector".into(), cite: "t".into() });
+    release.callback_mutable.push(CallbackMutable { path: format!("{ca}::apply_into_string_amortized"), param: "f".into(), contract: "result buffer".into(), cite: "t".into() });
+    // the source audit: every feasible closure gets its invocation; `stored`
+    // names its sink groups; every non-plan-returning method of a plan holder is classified
+    let audit = |path: String, param: &str, invocation: &str, sinks: &[&str]| CallbackInvocation { path, param: param.into(), invocation: invocation.into(), sinks: sinks.iter().map(|s| s.to_string()).collect(), cite: "t".into() };
+    for (path, param, inv_, sinks) in [
+        (format!("{column}::apply_unary_elementwise"), "f", "immediate", vec![]),
+        (format!("{expr}::map"), "function", "stored", vec!["plan execution"]),
+        (format!("{expr}::map"), "output_type", "stored", vec!["schema resolution"]),
+        (format!("{expr}::map_many"), "function", "stored", vec!["plan execution"]),
+        (format!("{ca}::apply_into_string_amortized"), "f", "immediate", vec![]),
+        (format!("{ca}::apply_mut"), "f", "immediate", vec![]),
+    ] { release.callback_invocation.push(audit(path, param, inv_, &sinks)); }
+    release.callback_sink.push(CallbackSink { path: "polars_lazy::frame::LazyFrame::collect".into(), sink: "plan execution".into(), cite: "t".into() });
+    release.callback_sink.push(CallbackSink { path: "polars_lazy::frame::LazyFrame::collect_schema".into(), sink: "schema resolution".into(), cite: "t".into() });
+    let mut inv = inv;
+    inv.callables.push(mk("schema", "polars_lazy::frame::LazyFrame", "collect_schema", "self", vec![], vec![], Some("polars_error::PolarsResult<polars_core::schema::SchemaRef>"), false));
+    // a `'static` closure the audit does not cover: neither stored nor immediate, unresolved
+    inv.callables.push(mk("unaudited", column, "apply_later", "&self", vec![("f", "F")], vec![("F", "core::ops::function::Fn(&polars_core::series::Series) -> polars_core::series::Series + 'static")], Some(column), false));
+    let world = World::new(&inv, &release, &["mechanical", "conversion", "callback"]);
+    let census = callback_census(&world, &inv, &[]);
+    let row = |key: &str| census["rows"].as_array().unwrap().iter().find(|r| r["key"] == key).unwrap_or_else(|| panic!("no row {key}")).clone();
+    let disp = |key: &str| row(key)["disposition"].as_str().unwrap().to_string();
+    let refusals = |key: &str| row(key)["refusals"].as_array().map(|v| v.iter().map(|x| x.as_str().unwrap().to_string()).collect::<Vec<_>>()).unwrap_or_default();
+    let unresolved = |key: &str| row(key)["unresolved"].as_array().map(|v| v.iter().map(|x| x.as_str().unwrap().to_string()).collect::<Vec<_>>()).unwrap_or_default();
+    assert_eq!(disp("ok"), "feasible", "{:?} {:?}", refusals("ok"), unresolved("ok"));
+    assert_eq!(row("ok")["invocation"][0]["invocation"], "immediate");
+    assert_eq!(disp("stored"), "feasible", "{:?} {:?}", refusals("stored"), unresolved("stored"));
+    assert_eq!(row("stored")["invocation"][0]["invocation"], "stored");
+    assert_eq!(row("stored")["invocation"][1]["sinks"][0], "schema resolution", "each closure has its own audited sinks");
+    assert_eq!(row("stored")["closures"].as_array().unwrap().len(), 2, "two closures, one row");
+    assert_eq!(disp("unaudited"), "unresolved", "a 'static bound does not classify: without an audit entry the operation is unresolved");
+    assert_eq!(row("unaudited")["invocation"][0]["static_bound"], true, "the bound stays a recorded fact");
+    assert!(unresolved("unaudited")[0].contains("invocation not audited"));
+    assert_eq!(disp("free"), "refused");
+    assert!(refusals("free").iter().any(|r| r.contains("is the free generic `E`") || r.contains("is the free generic `K`")), "{:?}", refusals("free"));
+    assert!(refusals("arrow").iter().any(|r| r.contains("argument `&polars_arrow::array::Array`")), "{:?}", refusals("arrow"));
+    assert!(refusals("amort").iter().any(|r| r.contains("AmortSeries")), "{:?}", refusals("amort"));
+    assert!(refusals("udf").iter().any(|r| r.contains("Udf trait object")), "{:?}", refusals("udf"));
+    assert!(refusals("borrowed").iter().any(|r| r.contains("borrowed from the argument")), "{:?}", refusals("borrowed"));
+    assert_eq!(disp("slice"), "feasible (vector argument)", "{:?}", refusals("slice"));
+    assert_eq!(disp("buffer"), "feasible (per family, result buffer)", "{:?}", refusals("buffer"));
+    assert!(refusals("readback").iter().any(|r| r.contains("cannot write back")), "{:?}", refusals("readback"));
+    assert_eq!(disp("native"), "feasible (per family)", "{:?}", refusals("native"));
+    assert!(refusals("otherarg").iter().any(|r| r.starts_with("parameter `state`")), "a closure that maps on a callable whose other argument does not is not feasible: {:?}", refusals("otherarg"));
+    let sinks = census["sinks"]["bindings"].as_array().unwrap();
+    assert!(sinks.iter().any(|s| s["key"] == "sink") && !sinks.iter().any(|s| s["key"] == "plan"), "collect is a classified sink, filter (returns the plan) is not a candidate");
+    assert!(census["sinks"]["unclassified"].as_array().unwrap().is_empty());
+    // removing the classification of one execution path makes every stored operation unresolved, immediate ones stay feasible
+    let mut fewer = release.clone();
+    fewer.callback_sink.retain(|k| !k.path.ends_with("::collect_schema"));
+    let world2 = World::new(&inv, &fewer, &["mechanical", "conversion", "callback"]);
+    let census2 = callback_census(&world2, &inv, &[]);
+    let row2 = |key: &str| census2["rows"].as_array().unwrap().iter().find(|r| r["key"] == key).unwrap().clone();
+    assert_eq!(census2["sinks"]["unclassified"][0], "polars_lazy::frame::LazyFrame::collect_schema");
+    assert_eq!(row2("stored")["disposition"], "unresolved", "an unclassified execution path leaves stored callbacks unresolved");
+    assert!(row2("stored")["unresolved"][0].as_str().unwrap().contains("unclassified execution path"));
+    assert_eq!(row2("ok")["disposition"], "feasible", "an immediate callback does not depend on the sinks");
+    // the routing rule: a closure-taking callable on a non-data owner is routed with the reason `callback`
+    assert!(!routed("wrap_msg", Some("polars_error::PolarsError"), &[], Some("Self")), "today's rules leave wrap_msg unrouted");
+    assert!(routed_for_callbacks(&mk("w", "polars_error::PolarsError", "wrap_msg", "&self", vec![("func", "F")], vec![("F", "core::ops::function::FnOnce(&str) -> alloc::string::String")], Some("Self"), false)), "the rule routes it");
+    println!("callback self-test: ok");
+}
+
+/// Record 0079: the routing rule for callbacks. Every binding that accepts
+/// a closure is routed through `engine::run`, whatever its owner, name or
+/// types would decide, because the callback may be invoked immediately by
+/// that call and its failures are translated only at that boundary.
+fn routed_for_callbacks(c: &Callable) -> bool {
+    c.params.iter().any(|p| closure_signature(c, p).is_some()) || routed(&c.name, Some(&c.owner), &c.params, c.ret_canonical.as_deref())
+}
+
 fn conversion_census(entries: &[Entry], inv: &Inventory, from_names: &BTreeMap<String, String>) -> serde_json::Value {
     let by_key: BTreeMap<&str, &Entry> = entries.iter().map(|e| (e.key.as_str(), e)).collect();
     let mut rows = Vec::new();
@@ -799,7 +1208,7 @@ fn wrapper_self_test() {
             sup("polars_dtype::categorical::CatSize", "type_alias", Some("u32")),
         ],
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![] };
     let w = World::new(&inv, &release, &["mechanical"]);
     let idx = &w.wrappers["polars_core::datatypes::aliases::IdxCa"];
     let u32c = &w.wrappers["polars_core::datatypes::UInt32Chunked"];
@@ -891,7 +1300,7 @@ fn applicability_self_test() {
             sup("polars_core::datatypes::StringChunked", "type_alias", Some(&format!("{ca}<polars_core::datatypes::StringType>"))),
         ],
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![] };
     let w = World::new(&inv, &release, &["mechanical"]);
     let i64c = format!("{ca}<polars_core::datatypes::Int64Type>");
     let boolc = format!("{ca}<polars_core::datatypes::BooleanType>");
@@ -1018,6 +1427,7 @@ fn from_naming_self_test() {
     assert_eq!(distinct.len(), names.len(), "every impl has its own name");
     println!("from-naming self-test: ok");
     from_emission_self_test();
+    callback_self_test();
 }
 
 /// Record 0078 gate 1 controls, from a synthetic inventory through the
@@ -1055,7 +1465,7 @@ fn from_emission_self_test() {
         supporting: vec![sup(owner, &["Clone", "Debug", "PartialEq"]), sup(dtype, &["Clone", "Debug", "PartialEq", "Default"]), sup(field, &["Clone", "Debug", "PartialEq", "Default"])],
         provenance: None,
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![] };
     let world = World::new(&inv, &release, &["mechanical", "conversion"]);
     let mut out = Emitted { from_names: plan_from_names(&inv), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
     let buckets = ["mechanical", "conversion"];
@@ -3414,6 +3824,7 @@ fn main() {
         "instantiation": { "summary": census_summary(&census), "pairs": census },
         "iterators": iterator_census(&out.entries, &inv, &census),
         "conversions": conversion_census(&out.entries, &inv, &out.from_names),
+        "callbacks": callback_census(&world, &inv, &out.entries),
         "materialize_limit": 1usize << 20,
         "oracle_cases": oracle_tests.matches("    Case {").count(),
         "fixtures": recipes,

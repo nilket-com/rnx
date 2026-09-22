@@ -1,0 +1,90 @@
+{
+ "contract": {
+  "expected": "completed",
+  "status": "exit 0",
+  "verdict": "ok",
+  "survivors": [],
+  "output": ""
+ },
+ "starve_pool1": {
+  "expected": "deadlock",
+  "status": "deadlock",
+  "verdict": "ok",
+  "survivors": [
+   "2592176"
+  ],
+  "output": ""
+ },
+ "starve_pool2": {
+  "expected": "deadlock",
+  "status": "deadlock",
+  "verdict": "ok",
+  "survivors": [
+   "2592306"
+  ],
+  "output": ""
+ },
+ "starve_nested_callback_pool2": {
+  "expected": "completed",
+  "status": "exit 0",
+  "verdict": "ok",
+  "survivors": [],
+  "output": {
+   "elapsed_ms": 0.7670739999999999,
+   "interrupted": false,
+   "interrupted_at_ms": 0,
+   "pool_threads": 2,
+   "result": "completed 4 columns on 2 pool threads"
+  }
+ },
+ "starve_denied_pool2": {
+  "expected": "refused",
+  "status": "exit 0",
+  "verdict": "ok",
+  "survivors": [],
+  "output": {
+   "elapsed_ms": 1.515071,
+   "interrupted": false,
+   "interrupted_at_ms": 0,
+   "pool_threads": 2,
+   "result": "CallbackError: callback DataFrame::apply_columns_par: call failed: Panicked: CallbackError|callback: `DataFrame::apply_columns_par` is a routed binding and may not be called from a callback"
+  }
+ },
+ "ctrlc": {
+  "expected": "interrupted",
+  "status": "exit 0",
+  "verdict": "ok",
+  "survivors": [],
+  "output": {
+   "elapsed_ms": 4164.785003999999,
+   "interrupted": true,
+   "interrupted_at_ms": 786,
+   "pool_threads": 28,
+   "result": "completed len=20000 first=1"
+  }
+ },
+ "watchdog_control": {
+  "expected": "deadlock",
+  "status": "deadlock",
+  "verdict": "ok",
+  "survivors": [
+   "2592504"
+  ],
+  "output": ""
+ },
+ "survivor_control": {
+  "expected": "survivor",
+  "status": "exit 0",
+  "verdict": "ok",
+  "survivors": [
+   "2592531"
+  ],
+  "output": {
+   "elapsed_ms": 2.8563970000000003,
+   "interrupted": false,
+   "interrupted_at_ms": 0,
+   "pool_threads": 28,
+   "result": "CallbackError: callback DataFrame::apply_columns_par: call failed: Panicked: CallbackError|callback: `DataFrame::apply_columns_par` is a routed binding and may not be called from a callback"
+  }
+ }
+}

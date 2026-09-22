@@ -178,7 +178,14 @@ Policies for generated bindings:
   cannot start is a panic with a clear message; it does not change a
   binding's Rust fallibility. The one non-`Send` type, `AmortSeries`, is
   listed and not routed.
-- Callbacks are not generated in this stage.
+- Callbacks are not generated in this stage. Record 0079 settled their
+  contract without binding any (`plans/0079_polars_callbacks.md`,
+  "Contract"): 41 operations feasible (`surface.json` under
+  `callbacks`), every callback-taking binding routed, constants-only
+  captures, failures translated at the engine boundary and named after
+  the installing operation, no routed calls from a callback, commit on
+  success for in-place applies, an opt-in per-invocation instruction
+  budget and no preemption. Record 0080 generates from it.
 
 `polars::version()` returns the Rust `polars` crate version the executable
 was built with (`"0.55.2"`). Rust and Python Polars use separate version

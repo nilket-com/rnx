@@ -424,6 +424,83 @@ Cost: none to the adapter (nothing is bound); the probe builds in its
 own target directory. Commits: this plan, then one impl commit for the
 three gates, amended per gate.
 
+## Contract (gate 3, from the census and the probe)
+
+What record 0080 generates from; each clause has its control in the
+probe (`probes/0079`) and its numbers in the evidence.
+
+1. **Scope.** The 41 operations the census marks feasible (`surface.json`
+   under `callbacks`), 8 of them per-family candidates subject to pair
+   applicability. Every one is routed through `engine::run` with the
+   route reason `callback`; the stored ones (`Expr::map`, `apply`,
+   `map_many`, `apply_many`, `map_with_fmt_str`, `apply_with_fmt_str`,
+   `agg_with_fmt_str`, `map_multiple`, `apply_multiple`) are invoked
+   only from the classified sinks, which 0080 routes with the reason
+   `executes callbacks`: `LazyFrame::collect` and its kin, the
+   `describe`/`explain` family, `optimize`, `to_alp*`, `collect_schema`,
+   `schema_with_arenas`, `DslPlan::compute_schema`, `describe`,
+   `describe_tree_format`, `display`, `to_alp`, and `Expr::to_field`.
+   The hand-written `collect` maps `EngineFailure::Callback` into its
+   string error with the same text.
+2. **Captures.** Constants only, converted with `into_sync` before any
+   Polars work; a wrapped value, a function or an object holding either
+   is refused as `CallbackCapture` naming the operation and the value's
+   Rune type; a constant is carried by value and later rebinding does
+   not change it.
+3. **Errors.** One bridge; a `CallbackFailure` carries the installing
+   operation and one of: `call failed: <Rune's message>`, `wrong result
+   type: got <type> (<conversion error>)`, an argument conversion
+   failure, `instruction budget <n> exhausted`, `nested callback`. A
+   fallible signature returns it as `ComputeError` with the text
+   `callback <operation>: <cause>`; through an expression sink Polars
+   wraps it in `ExprContext`, the kind a script sees, with the text
+   inside. An infallible signature unwinds it to `engine::run`, which
+   returns `EngineFailure::Callback`; the binding returns a
+   `polars::Error` of kind `CallbackError` with the text, and becomes
+   fallible in Rune (accounting reason `callback`). Any other panic
+   payload stays a panic. A plan whose callback failed can be collected
+   again; the callbacks run again.
+4. **Threading.** Polars invokes callbacks on its own threads, in
+   parallel; each invocation is its own `Vm` (about a quarter of a
+   microsecond per invocation on one thread, the conversion of a small
+   series in and out about a hundredth of that; under parallel
+   execution the probe measured throughput, not latency). A callback may call unrouted bindings; it may not call a
+   routed binding (refused at `engine::run` with the binding named) and
+   no callback may start under another on the same thread (refused by
+   the bridge before any budget is set). The denial stands on the
+   probe's evidence: with it switched off, pool sizes 1 and 2 deadlock
+   when inner work needs the pool, and a nested call that happens not
+   to need it completes, so completion proves nothing.
+5. **Mutation.** `&mut [Column]` arrives as a vector of clones and is
+   not read back (`map_many`, `apply_many`, `map_multiple`,
+   `apply_multiple`); the `&mut String` buffer of
+   `apply_into_string_amortized` is the string the callback returns;
+   `Schema::retain_mut` is refused. `apply_mut` and `apply_in_place`
+   apply to a clone and commit on success; on failure the receiver is
+   unchanged in values, nulls, length and flags and usable (the clone's
+   cost was not separable from noise at a million elements; Polars's
+   own in-place form leaves a partial write with a stale sorted flag). A callback that mutates
+   what it received mutates a clone.
+6. **Cancellation and budget.** No preemption: Ctrl-C during a Polars
+   call that is invoking callbacks takes effect when the call returns.
+   `polars::set_callback_budget(n)` is process-wide, read at each
+   invocation, per invocation, restored on every exit, counts Rune
+   instructions only and never bounds a native call or wall time; the
+   default is none; its cost is inside the noise of paired samples.
+   Exhaustion is Rune's halt matched exactly with the allowance
+   confirmed spent; a script's own panic text is never mistaken for it.
+7. **Script surface.** A closure parameter is a Rune `Function`
+   (closure or named function); the two-closure operations take both;
+   `Vec<W>` parameters are borrowed and cloned, never taken (a taken
+   value leaves the script's variable empty, as the probe found with
+   `select`); `select` is `select_` (a Rune keyword); a callback
+   written as a closure whose body ends with a loop must `return` its
+   value (Rune 0.14.2 returns unit for the tail expression there).
+8. **Oracle.** Cases through a recipe table keyed by closure signature
+   with a Rune closure and the equivalent Rust closure producing a
+   non-identity result; the error and capture controls of the probe
+   become the harness's controls; compiled and value-tested stay apart.
+
 ## Out of scope
 
 Binding any callback in the adapter (record 0080, from this
