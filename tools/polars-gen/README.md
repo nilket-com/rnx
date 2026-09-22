@@ -48,6 +48,35 @@ files carry two oracle exclusions for `row_decode_ordered` and
 run, and the `StructChunked` exclusion grew by `iter` and `no_null_iter`
 (`no_call_const`, bisected by compilation).
 
+Record 0078 added `From` constructors and the assignment and `Not`
+operators. A `From<X>` impl on a wrapped owner becomes a constructor
+`Owner::from_<source>(x)` calling `<Owner as From<X>>::from` by UFCS;
+names come from `plan_from_names`: the source's last path segment, a
+by-reference twin as `_ref` (its own binding and oracle case, never
+merged with or provided by the by-value impl), distinct sources sharing
+a segment crate-qualified (`from_core_field`, `from_arrow_field`), a
+name an inherent method already holds refused as unsupported with the
+collision named. An integer source narrows through `TryFrom<i64>` and
+is fallible; an `f32` source is an infallible `as f32` cast (rounded,
+overflow to infinity). rustdoc lists `impl From<&X> for Y` on X's page
+as well as Y's; the listing on the source page is adapted as a
+"duplicate listing" only when the retained listing on Y is identified
+by impl id (`counterpart` in `surface.json`, the binding carried over
+when that entry is generated, unsupported with its reason otherwise);
+a listing with no retained counterpart is an outward conversion
+(`From<Owner> for &'static str`) and stays unsupported. `SubAssign`, `BitAndAssign`, `BitOrAssign` and
+`BitXorAssign` with a `Self` operand on a `Clone` owner bind the Rune
+`SUB_ASSIGN`, `BIT_AND_ASSIGN`, `BIT_OR_ASSIGN` and `BIT_XOR_ASSIGN`
+protocols, mutating the left Rune value in place and cloning the right
+operand out; Rune 0.14.2 has no unary `NOT` protocol, so `Not` is the
+method `not_()` returning the complement and leaving the receiver.
+`surface.json` records the census under `conversions`; `--self-test`
+covers naming and emission from a synthetic inventory (twin pair, crate
+qualification, inherent clash, fallible integer vs cast, unmappable
+source). The oracle's `From` cases with a wrapped, clonable source
+compare the source after the call as well as the result; the assignment
+cases use the mutating shape with a unit return.
+
 Writes `adapters/polars/src/generated/` (types, functions, catalogue,
 fixtures), `adapters/polars/tests/generated_oracle.rs` and
 `adapters/polars/surface.json`, the accounting of every eligible callable

@@ -317,6 +317,16 @@ pub fn show_w_polars_plan__dsl__file_scan__predicatefileskip(v: &rune::Value) ->
 pub fn show_w_polars_plan__dsl__file_scan__scanflags(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__file_scan__ScanFlags>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_plan::dsl::file_scan::UnifiedScanArgs` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_plan__dsl__file_scan__unifiedscanargs(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__file_scan__UnifiedScanArgs>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_plan::dsl::function_expr::FunctionExpr` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_plan__dsl__function_expr__functionexpr(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__function_expr__FunctionExpr>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_plan::dsl::function_expr::boolean::BooleanFunction` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_plan__dsl__function_expr__boolean__booleanfunction(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__function_expr__boolean__BooleanFunction>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_plan::dsl::function_expr::cat::CategoricalFunction` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_plan__dsl__function_expr__cat__categoricalfunction(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__function_expr__cat__CategoricalFunction>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_plan::dsl::function_expr::list::ListFunction` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_plan__dsl__function_expr__list__listfunction(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__function_expr__list__ListFunction>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_plan::dsl::function_expr::pow::PowFunction` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_plan__dsl__function_expr__pow__powfunction(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__function_expr__pow__PowFunction>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_plan::dsl::options::AnonymousScanOptions` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_plan__dsl__options__anonymousscanoptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__options__AnonymousScanOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_plan::dsl::options::DistinctOptionsDSL` held in a Rune value, for the oracle tests.
@@ -327,6 +337,8 @@ pub fn show_w_polars_plan__dsl__options__groupbyoptions(v: &rune::Value) -> Resu
 pub fn show_w_polars_plan__dsl__options__hconcatoptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__options__HConcatOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_plan::dsl::options::JoinOptions` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_plan__dsl__options__joinoptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__options__JoinOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_plan::dsl::options::JoinOptionsIR` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_plan__dsl__options__joinoptionsir(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__options__JoinOptionsIR>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_plan::dsl::options::StrptimeOptions` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_plan__dsl__options__strptimeoptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__options__StrptimeOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_plan::dsl::options::UnionArgs` held in a Rune value, for the oracle tests.

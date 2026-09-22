@@ -713,6 +713,29 @@ fn iterator_census(entries: &[Entry], inv: &Inventory, pairs: &[PairRecord]) -> 
     serde_json::json!({"callables": callables.len(), "callables_by_disposition": by_disp, "pairs": pair_rows.len(), "pairs_by_disposition": pair_disp, "callable_rows": callables, "pair_rows": pair_rows})
 }
 
+/// Record 0078 gate 1: every `From` impl and assignment/unary operator
+/// with the name the rule gives and its disposition.
+fn conversion_census(entries: &[Entry], inv: &Inventory, from_names: &BTreeMap<String, String>) -> serde_json::Value {
+    let by_key: BTreeMap<&str, &Entry> = entries.iter().map(|e| (e.key.as_str(), e)).collect();
+    let mut rows = Vec::new();
+    let mut disp: BTreeMap<String, usize> = BTreeMap::new();
+    for c in &inv.callables {
+        if c.kind != "foreign_trait_impl" { continue; }
+        let short = c.name.split('<').next().unwrap_or("");
+        let class = if short == "From" { "from" } else if ASSIGN_OPS.iter().any(|(n, _, _, _)| *n == short) { "assign" } else if short == "Not" { "not" } else { continue };
+        let name = match class { "from" => from_names.get(&c.key).cloned().unwrap_or_default(), "assign" => ASSIGN_OPS.iter().find(|(n, _, _, _)| *n == short).map(|x| x.2.to_string()).unwrap_or_default(), _ => "not_".into() };
+        let source = c.params.first().map(|p| p.ty_canonical.clone()).unwrap_or_default();
+        let disposition = match by_key.get(c.key.as_str()) {
+            Some(e) if e.status == "generated" => "generated".to_string(),
+            Some(e) => format!("{}: {}", e.status, e.reason.as_deref().unwrap_or("")),
+            None => "not eligible".to_string(),
+        };
+        *disp.entry(format!("{class}: {}", disposition.split(':').next().unwrap_or(""))).or_insert(0) += 1;
+        rows.push(serde_json::json!({"key": c.key, "class": class, "owner": c.owner, "source": source, "name": name, "disposition": disposition}));
+    }
+    serde_json::json!({"count": rows.len(), "by_disposition": disp, "rows": rows})
+}
+
 fn census_summary(pairs: &[PairRecord]) -> serde_json::Value {
     let mut per: BTreeMap<&str, BTreeMap<&str, usize>> = BTreeMap::new();
     for p in pairs {
@@ -952,6 +975,166 @@ fn iterator_self_test() {
     assert_eq!(known("impl core::fmt::Display"), None, "a non-iterator impl return is not an iterator");
     assert_eq!(known("impl core::iter::traits::iterator::Iterator"), None, "an iterator without an Item is not mapped");
     println!("iterator self-test: ok");
+    from_naming_self_test();
+}
+
+/// Record 0078 gate 1 controls: a by-reference twin gets its own `_ref`
+/// name; two distinct sources with one last segment get crate-qualified
+/// names; a twin pair is never merged, whatever the impls return; the
+/// segment rule spells `Vec` and `Option` sources.
+fn from_naming_self_test() {
+    fn from(key: &str, owner: &str, src: &str) -> Callable {
+        Callable {
+            key: key.into(), kind: "foreign_trait_impl".into(), krate: "polars_core".into(), owner: owner.into(), name: format!("From<{}>", src.rsplit("::").next().unwrap()), canonical_path: format!("{owner} as core::convert::From"),
+            found_paths: vec![], crate_paths: vec![], receiver: "none".into(), params: vec![Param { name: "value".into(), ty: src.into(), ty_canonical: src.into() }], ret: None, ret_canonical: Some(owner.into()),
+            generics_canonical: vec![], impl_for: Some(owner.into()), impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic: false, is_unsafe: false, is_async: false,
+            deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "conversion".into(), rules: vec![],
+        }
+    }
+    let o = "polars_core::datatypes::field::Field";
+    let inv = Inventory {
+        callables: vec![
+            from("a", o, "polars_core::datatypes::dtype::DataType"),
+            from("b", o, "&polars_core::datatypes::dtype::DataType"),
+            from("c", o, "polars_core::schema::Field"),
+            from("d", o, "polars_arrow::datatypes::field::Field"),
+            from("e", o, "alloc::vec::Vec<polars_core::series::Series>"),
+            from("f", o, "core::option::Option<i64>"),
+            from("g", o, "i64"),
+        ],
+        supporting: vec![],
+        provenance: None,
+    };
+    let names = plan_from_names(&inv);
+    assert_eq!(names["a"], "from_data_type");
+    assert_eq!(names["b"], "from_data_type_ref", "a by-reference twin is its own binding");
+    assert_ne!(names["a"], names["b"], "twins are never merged");
+    assert_eq!(names["c"], "from_core_field", "distinct sources with one last segment are crate-qualified");
+    assert_eq!(names["d"], "from_arrow_field");
+    assert_eq!(names["e"], "from_vec_series");
+    assert_eq!(names["f"], "from_option_i64");
+    assert_eq!(names["g"], "from_i64");
+    let distinct: BTreeSet<&String> = names.values().collect();
+    assert_eq!(distinct.len(), names.len(), "every impl has its own name");
+    println!("from-naming self-test: ok");
+    from_emission_self_test();
+}
+
+/// Record 0078 gate 1 controls, from a synthetic inventory through the
+/// production emission: an inherent `from_x` makes the impl unsupported
+/// with the collision named; an integer source is fallible and an `f32`
+/// source is not; an unmappable source is refused with the type named; a
+/// by-value/by-reference twin pair yields two bindings and two oracle
+/// cases, each calling its own impl.
+fn from_emission_self_test() {
+    fn sup(path: &str, derived: &[&str]) -> Supporting {
+        Supporting {
+            key: path.to_string(), kind: "struct".into(), canonical_path: path.to_string(),
+            found_paths: vec![format!("polars::{}", path.rsplit("::").next().unwrap())], crate_paths: vec![path.to_string()],
+            public_fields: 0, fields_canonical: vec![], variant_shapes: vec![], variant_payloads: vec![], generic: false, lifetime: false, hidden: false,
+            derived: derived.iter().map(|d| d.to_string()).collect(), alias_target: None, implementors: vec![], impls: vec![],
+        }
+    }
+    let owner = "polars_core::scalar::Scalar";
+    let dtype = "polars_core::datatypes::dtype::DataType";
+    let field = "polars_core::datatypes::field::Field";
+    let from = |key: &str, src: &str| Callable {
+        key: key.into(), kind: "foreign_trait_impl".into(), krate: "polars_core".into(), owner: owner.into(), name: format!("From<{}>", src.rsplit("::").next().unwrap()), canonical_path: format!("{owner} as core::convert::From"),
+        found_paths: vec![], crate_paths: vec![], receiver: "none".into(), params: vec![Param { name: "value".into(), ty: src.into(), ty_canonical: src.into() }], ret: None, ret_canonical: Some(owner.into()),
+        generics_canonical: vec![], impl_for: Some(owner.into()), impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic: false, is_unsafe: false, is_async: false,
+        deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "conversion".into(), rules: vec![],
+    };
+    let inherent = Callable {
+        key: "inh".into(), kind: "inherent".into(), krate: "polars_core".into(), owner: owner.into(), name: "from_data_type".into(), canonical_path: format!("{owner}::from_data_type"),
+        found_paths: vec![], crate_paths: vec![], receiver: "none".into(), params: vec![Param { name: "d".into(), ty: dtype.into(), ty_canonical: dtype.into() }], ret: None, ret_canonical: Some(owner.into()),
+        generics_canonical: vec![], impl_for: None, impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic: false, is_unsafe: false, is_async: false,
+        deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "mechanical".into(), rules: vec![],
+    };
+    let inv = Inventory {
+        callables: vec![inherent, from("clash", dtype), from("int", "i8"), from("float", "f32"), from("arrow", "polars_arrow::datatypes::field::Field"), from("twin_v", field), from("twin_r", &format!("&{field}"))],
+        supporting: vec![sup(owner, &["Clone", "Debug", "PartialEq"]), sup(dtype, &["Clone", "Debug", "PartialEq", "Default"]), sup(field, &["Clone", "Debug", "PartialEq", "Default"])],
+        provenance: None,
+    };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![] };
+    let world = World::new(&inv, &release, &["mechanical", "conversion"]);
+    let mut out = Emitted { from_names: plan_from_names(&inv), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+    let buckets = ["mechanical", "conversion"];
+    for c in &inv.callables {
+        emit_callable(&world, &mut out, c, &buckets);
+    }
+    fn find<'a>(entries: &'a [Entry], key: &str) -> &'a Entry { entries.iter().find(|e| e.key == key).unwrap_or_else(|| panic!("no entry for {key}")) }
+    let entry = |key: &str| find(&out.entries, key);
+    let clash = entry("clash");
+    assert_eq!(clash.status, "unsupported", "an inherent from_x makes the impl unsupported");
+    assert!(clash.reason.as_deref().unwrap_or("").contains("name taken by inherent from_data_type"), "the collision is named: {:?}", clash.reason);
+    assert_eq!((entry("int").status, entry("int").fallible), ("generated", Some(true)), "an integer source narrows fallibly");
+    assert_eq!((entry("float").status, entry("float").fallible), ("generated", Some(false)), "an f32 source is an infallible cast");
+    assert!(out.functions.contains("(value as f32)"), "the f32 cast is emitted as written");
+    let arrow = entry("arrow");
+    assert_eq!(arrow.status, "unsupported");
+    assert!(arrow.reason.as_deref().unwrap_or("").starts_with("conversion source"), "{:?}", arrow.reason);
+    assert!(arrow.reason.as_deref().unwrap_or("").contains("polars_arrow::datatypes::field::Field"), "the unmappable source is named: {:?}", arrow.reason);
+    let (tv, tr) = (entry("twin_v"), entry("twin_r"));
+    assert_eq!((tv.status, tr.status), ("generated", "generated"));
+    assert_eq!(tv.bindings.len() + tr.bindings.len(), 2, "a twin pair is two bindings");
+    assert_ne!(tv.bindings[0].rune, tr.bindings[0].rune, "with distinct names");
+    // the arrow Field source shares the last segment, so both twins are crate-qualified
+    assert_eq!((tv.bindings[0].rune.as_str(), tr.bindings[0].rune.as_str()), ("polars::Scalar::from_core_field", "polars::Scalar::from_core_field_ref"));
+    assert!(out.functions.contains("<polars::prelude::Scalar as From<polars::prelude::Field>>::from") || out.functions.contains(&format!("<{} as From<{}>>::from", world.wrappers[owner].spell, world.wrappers[field].spell)), "the by-value twin calls its own impl");
+    assert!(out.functions.contains(&format!("<{} as From<&{}>>::from", world.wrappers[owner].spell, world.wrappers[field].spell)), "the by-reference twin calls its own impl");
+    assert!(!out.entries.iter().any(|e| e.status == "adapted"), "no impl is adapted as provided by another");
+    let (_, harness, _, _) = emit_oracle(&world, &mut out.entries, &inv);
+    let entry = |key: &str| find(&out.entries, key);
+    let ids: Vec<String> = ["twin_v", "twin_r"].iter().map(|k| entry(k).bindings[0].case_id.clone().unwrap_or_else(|| panic!("{k}: no case ({:?})", entry(k).bindings[0].disposition))).collect();
+    assert_ne!(ids[0], ids[1], "a twin pair is two oracle cases");
+    assert!(ids.iter().all(|i| harness.contains(&format!("Case {{ id: \"{i}\""))), "both cases are emitted: {ids:?}");
+    // the by-value case hands the prepared source to the call and returns it for comparison; the by-reference case calls with the prepared value
+    assert!(harness.contains("let s = __fx[0]; let r = polars::Scalar::from_core_field(s); ((r, s), ())"), "the by-value case preserves its source");
+    assert!(harness.contains("polars::Scalar::from_core_field_ref(__fx[0])"), "the by-reference case calls its own binding");
+    assert!(harness.contains("as From<polars::prelude::Field>>::from(__a0.clone())") || harness.contains(&format!("<{} as From<{}>>::from(__a0.clone())", world.wrappers[owner].spell, world.wrappers[field].spell)), "the by-value oracle clones the source for its own impl");
+    // duplicate listings: a repeated impl (one impl id on two pages) is
+    // adapted with its retained counterpart named; an outward impl on the
+    // source page alone is unsupported; a repeated impl whose retained
+    // listing is unsupported is unsupported too
+    let listing = |key: &str, page: &str, for_ty: &str, src: &str| {
+        let mut c = from(key, src);
+        c.owner = page.into();
+        c.canonical_path = format!("{page} as core::convert::From");
+        c.impl_for = Some(for_ty.into());
+        c
+    };
+    let arrow = "polars_arrow::datatypes::field::Field";
+    let inv = Inventory {
+        callables: vec![
+            listing("polars_core:s:100", owner, owner, dtype), listing("polars_core:d:100", dtype, owner, dtype),
+            listing("polars_core:s:200", owner, "&'static str", owner), listing("polars_core:s:201", owner, "(polars_utils::pl_str::PlSmallStr, polars_core::datatypes::dtype::DataType)", owner),
+            listing("polars_core:s:300", owner, owner, arrow), listing("polars_core:f:300", arrow, owner, arrow),
+        ],
+        supporting: vec![sup(owner, &["Clone", "Debug", "PartialEq"]), sup(dtype, &["Clone", "Debug", "PartialEq", "Default"])],
+        provenance: None,
+    };
+    let world = World::new(&inv, &release, &["mechanical", "conversion"]);
+    let mut out = Emitted { from_names: plan_from_names(&inv), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+    for c in &inv.callables {
+        emit_callable(&world, &mut out, c, &buckets);
+    }
+    resolve_duplicates(&mut out.entries);
+    let entry = |key: &str| find(&out.entries, key);
+    assert_eq!(entry("polars_core:s:100").status, "generated");
+    let dup = entry("polars_core:d:100");
+    assert_eq!((dup.status, dup.counterpart.as_deref()), ("adapted", Some("polars_core:s:100")), "a repeated impl names its retained listing");
+    assert_eq!(dup.rune, entry("polars_core:s:100").rune, "and carries that listing's binding");
+    for k in ["polars_core:s:200", "polars_core:s:201"] {
+        let e = entry(k);
+        assert_eq!((e.status, e.counterpart.as_deref()), ("unsupported", None), "{k}: an outward impl is unsupported");
+        assert!(e.reason.as_deref().unwrap_or("").starts_with("outward conversion"), "{k}: {:?}", e.reason);
+    }
+    assert_eq!(entry("polars_core:s:300").status, "unsupported");
+    let e = entry("polars_core:f:300");
+    assert_eq!((e.status, e.rune.as_deref()), ("unsupported", None), "a repeated impl whose retained listing is unsupported is unsupported");
+    assert!(e.reason.as_deref().unwrap_or("").contains("retained listing is unsupported"), "{:?}", e.reason);
+    assert!(!out.entries.iter().any(|e| e.status == "adapted" && e.counterpart.is_none()), "no listing is adapted without an identified counterpart");
+    println!("from-emission self-test: ok");
 }
 
 fn policy_self_test() {
@@ -1994,6 +2177,10 @@ struct Entry {
     bindings: Vec<Binding>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     exceptions: Vec<RouteException>,
+    /// Record 0078: for a duplicate rustdoc listing of a `From` impl, the
+    /// key of the retained listing (on the impl's `for` type) that binds it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    counterpart: Option<String>,
 }
 
 /// One emitted binding of a callable: its identity is the callable plus
@@ -2067,6 +2254,8 @@ struct OracleInfo {
 }
 
 struct Emitted {
+    /// Record 0078: the planned `from_<source>` name per `From` impl key.
+    from_names: BTreeMap<String, String>,
     functions: String,
     registrations: Vec<String>,
     catalogue: Vec<(String, String)>,
@@ -2103,20 +2292,20 @@ fn doc_line(c: &Callable) -> String {
 
 impl Emitted {
     fn unsupported(&mut self, c: &Callable, reason: &str, detail: &str) {
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "unsupported", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some(format!("{reason}: {detail}")), rune: None, note: None, bindings: vec![], exceptions: vec![] });
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "unsupported", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some(format!("{reason}: {detail}")), rune: None, note: None, bindings: vec![], exceptions: vec![], counterpart: None });
     }
     fn adapted(&mut self, c: &Callable, reason: &str, rune: &str) {
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "adapted", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some(reason.into()), rune: Some(rune.into()), note: None, bindings: vec![], exceptions: vec![] });
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "adapted", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some(reason.into()), rune: Some(rune.into()), note: None, bindings: vec![], exceptions: vec![], counterpart: None });
     }
     fn generated(&mut self, c: &Callable, rune: &str, note: Option<String>) {
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: None, rune: Some(rune.into()), note, bindings: vec![Binding { id: binding_id(&c.canonical_path, None, true), rune: rune.into(), receiver: None, route: "inherent", disposition: None, case_id: None, callee: None, info: None }], exceptions: vec![] });
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: None, rune: Some(rune.into()), note, bindings: vec![Binding { id: binding_id(&c.canonical_path, None, true), rune: rune.into(), receiver: None, route: "inherent", disposition: None, case_id: None, callee: None, info: None }], exceptions: vec![], counterpart: None });
     }
     fn generated_with(&mut self, c: &Callable, rune: &str, note: Option<String>, info: OracleInfo) {
         let fallible = info.fallible;
         let route = match c.kind.as_str() { "inherent" => "inherent", "free_fn" => "free", "foreign_trait_impl" => "protocol", _ => "implementor" };
         let receiver = info.owner.as_ref().map(|(o, _)| o.clone());
         let bindings = vec![Binding { id: binding_id(&c.canonical_path, receiver.as_deref(), true), rune: rune.into(), receiver, route, disposition: None, case_id: None, callee: None, info: None }];
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: Some(fallible), signature: signature_of(c), execution: None, oracle: Some(info), reason: None, rune: Some(rune.into()), note, bindings, exceptions: vec![] });
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: Some(fallible), signature: signature_of(c), execution: None, oracle: Some(info), reason: None, rune: Some(rune.into()), note, bindings, exceptions: vec![], counterpart: None });
     }
     /// A trait method bound on several implementors: one binding per
     /// implementor, the entry's status counting the callable once.
@@ -2124,7 +2313,7 @@ impl Emitted {
         let fallible = info.fallible;
         let bindings: Vec<Binding> = per.iter().enumerate().map(|(i, (rune, owner, route, callee))| Binding { id: binding_id(&c.canonical_path, Some(owner), i == 0), rune: rune.clone(), receiver: Some(owner.clone()), route, disposition: None, case_id: None, callee: callee.clone(), info: None }).collect();
         let rune = per.iter().map(|(r, _, _, _)| r.as_str()).collect::<Vec<_>>().join(" ");
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: Some(fallible), signature: signature_of(c), execution: None, oracle: Some(info), reason: None, rune: Some(rune), note: None, bindings, exceptions: vec![] });
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: Some(fallible), signature: signature_of(c), execution: None, oracle: Some(info), reason: None, rune: Some(rune), note: None, bindings, exceptions: vec![], counterpart: None });
     }
 }
 
@@ -2363,6 +2552,13 @@ fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str
 }
 
 fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trait_spell: Option<&str>, deref: bool) {
+    emit_method_with(world, out, c, owner, trait_spell, deref, None)
+}
+
+/// `emit_method` with an explicit Rust callee (record 0078: a `From`
+/// constructor calls `<T as From<X>>::from`, never a method named after
+/// the binding).
+fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trait_spell: Option<&str>, deref: bool, callee_override: Option<&str>) {
     world.tmp.set(0);
     if c.is_async {
         out.unsupported(c, "async", &c.name);
@@ -2472,10 +2668,11 @@ fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trai
     out.fn_index += 1;
     // trait methods are emitted once per implementor: the owner is part of the identity
     let ident = rust_ident("f", &format!("{}#{owner}{}", c.canonical_path, if deref { "#deref" } else { "" }), idx);
-    let callee = match (trait_spell, deref) {
-        (Some(t), true) => format!("<dyn {t}>::{rust_name}"),
-        (Some(t), false) => format!("<{} as {t}>::{rust_name}", w.spell),
-        (None, _) => format!("<{}>::{rust_name}", w.spell),
+    let callee = match (callee_override, trait_spell, deref) {
+        (Some(o), _, _) => o.to_string(),
+        (None, Some(t), true) => format!("<dyn {t}>::{rust_name}"),
+        (None, Some(t), false) => format!("<{} as {t}>::{rust_name}", w.spell),
+        (None, None, _) => format!("<{}>::{rust_name}", w.spell),
     };
     let mut args: Vec<String> = Vec::new();
     if let Some(r) = &recv_expr {
@@ -2661,15 +2858,195 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
     out.generated_with(c, &rune, if notes.is_empty() { None } else { Some(notes.join("; ")) }, info);
 }
 
+/// Record 0078: assignment operators with their Rune protocols.
+const ASSIGN_OPS: &[(&str, &str, &str, &str)] = &[("SubAssign", "SUB_ASSIGN", "-=", "sub_assign"), ("BitAndAssign", "BIT_AND_ASSIGN", "&=", "bitand_assign"), ("BitOrAssign", "BIT_OR_ASSIGN", "|=", "bitor_assign"), ("BitXorAssign", "BIT_XOR_ASSIGN", "^=", "bitxor_assign")];
+
+/// The snake-case name of a conversion source's last segment, with `Vec`
+/// and `Option` spelled as prefixes.
+fn source_segment(src: &str) -> String {
+    let t = src.trim().trim_start_matches('&').trim();
+    if t.starts_with('(') { return "tuple".into(); }
+    if let Some(inner) = t.strip_prefix("alloc::vec::Vec<").and_then(|r| r.strip_suffix('>')) { return format!("vec_{}", source_segment(inner)); }
+    if let Some(inner) = t.strip_prefix("core::option::Option<").and_then(|r| r.strip_suffix('>')) { return format!("option_{}", source_segment(inner)); }
+    let seg = t.split('<').next().unwrap_or(t).rsplit("::").next().unwrap_or(t);
+    let mut out = String::new();
+    for (i, ch) in seg.chars().enumerate() {
+        if ch.is_ascii_uppercase() && i > 0 { out.push('_'); }
+        out.push(ch.to_ascii_lowercase());
+    }
+    out
+}
+
+/// The crate short name of a source type (`polars_core::…` gives `core`),
+/// or the scalar's own name.
+fn source_crate(src: &str) -> String {
+    let t = src.trim().trim_start_matches('&').trim();
+    let first = t.split("::").next().unwrap_or(t);
+    if first.contains('<') || !t.contains("::") { return "scalar".into(); }
+    first.trim_start_matches("polars_").to_string()
+}
+
+/// The `from_<source>` names of every `From` impl, per callable key
+/// (record 0078). A by-reference impl beside its by-value twin gets
+/// `_ref`; two distinct sources whose last segment coincides on one owner
+/// get names qualified by the source's crate; nothing is merged.
+fn plan_from_names(inv: &Inventory) -> BTreeMap<String, String> {
+    let mut by_owner: BTreeMap<&str, Vec<(&Callable, String, bool)>> = BTreeMap::new();
+    for c in &inv.callables {
+        if c.kind != "foreign_trait_impl" || !c.name.starts_with("From<") { continue; }
+        // rustdoc lists `impl From<&X> for Y` on X's page as well; the impl
+        // belongs to its `for` type, and the listing on X is a duplicate
+        if !from_impl_is_on_its_owner(c) { continue; }
+        let Some(src) = c.params.first().map(|p| p.ty_canonical.as_str()) else { continue };
+        let by_ref = src.trim().starts_with('&');
+        by_owner.entry(c.owner.as_str()).or_default().push((c, src.to_string(), by_ref));
+    }
+    let mut names = BTreeMap::new();
+    for (_, impls) in by_owner {
+        // distinct (by-value) sources per last segment
+        let mut per_seg: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+        for (_, src, _) in &impls {
+            per_seg.entry(source_segment(src)).or_default().insert(src.trim().trim_start_matches('&').trim().to_string());
+        }
+        for (c, src, by_ref) in &impls {
+            let seg = source_segment(src);
+            let base = if per_seg[&seg].len() > 1 { format!("from_{}_{seg}", source_crate(src)) } else { format!("from_{seg}") };
+            names.insert(c.key.clone(), if *by_ref { format!("{base}_ref") } else { base });
+        }
+    }
+    names
+}
+
+/// Whether a `From` impl's recorded `for` type is the type it is listed
+/// under (rustdoc lists an impl on the pages of both types it mentions).
+fn from_impl_is_on_its_owner(c: &Callable) -> bool {
+    match &c.impl_for {
+        Some(f) => f.split('<').next().unwrap_or(f) == c.owner,
+        None => true,
+    }
+}
+
+/// Record 0078: a duplicate listing stays adapted only when its
+/// counterpart is generated; a counterpart refused for any reason makes
+/// the listing unsupported with that reason, so nothing is called bound
+/// that is not.
+fn resolve_duplicates(entries: &mut [Entry]) {
+    let by_key: BTreeMap<String, (&'static str, Option<String>, Option<String>)> = entries.iter().map(|e| (e.key.clone(), (e.status, e.rune.clone(), e.reason.clone()))).collect();
+    for e in entries.iter_mut() {
+        let Some(k) = e.counterpart.clone() else { continue };
+        match by_key.get(&k) {
+            Some(("generated", rune, _)) => {
+                e.rune = rune.clone();
+                e.reason = Some(format!("{}; bound there as `{}`", e.reason.take().unwrap_or_default(), rune.as_deref().unwrap_or("").rsplit("::").next().unwrap_or("")));
+            }
+            Some((status, _, reason)) => {
+                e.status = "unsupported";
+                e.rune = None;
+                e.reason = Some(format!("duplicate listing whose retained listing is {status}: {}", reason.as_deref().unwrap_or("(no reason)")));
+            }
+            None => {
+                e.status = "unsupported";
+                e.rune = None;
+                e.reason = Some("duplicate listing whose retained listing has no entry".into());
+            }
+        }
+    }
+}
+
+/// The impl identity a rustdoc impl listing carries: crate and impl id
+/// (`krate:owner:impl` keys share the impl id across the pages it is
+/// listed on).
+fn impl_identity(key: &str) -> String {
+    let mut it = key.split(':');
+    let krate = it.next().unwrap_or("");
+    let last = key.rsplit(':').next().unwrap_or("");
+    format!("{krate}:{last}")
+}
+
+/// A `From<X>` impl as a constructor binding `T::from_<source>(x)` calling
+/// `<T as From<X>>::from` by UFCS; an unmappable source is refused with
+/// the reason `conversion source`.
+fn emit_from(world: &World, out: &mut Emitted, c: &Callable, name: &str) {
+    let owner = &c.owner;
+    let Some(w) = world.wrapper_for(owner) else { out.unsupported(c, "owner not wrapped", owner); return };
+    let Some(src) = c.params.first() else { out.unsupported(c, "conversion source", "none"); return };
+    if out.taken.contains_key(&(w.rust.clone(), name.to_string())) {
+        out.unsupported(c, &format!("name taken by inherent {name}"), &out.taken[&(w.rust.clone(), name.to_string())].clone());
+        return;
+    }
+    let mut syn = c.clone();
+    syn.kind = "inherent".into();
+    syn.receiver = "none".into();
+    syn.name = name.to_string();
+    syn.params = vec![Param { name: "value".into(), ty: src.ty.clone(), ty_canonical: src.ty_canonical.clone() }];
+    syn.ret = Some(w.spell.clone());
+    syn.ret_canonical = Some(owner.clone());
+    syn.generics_canonical.clear();
+    // the Rust identifier is hashed from the callable's path: make it name the source too
+    syn.canonical_path = format!("{} as core::convert::From<{}>", owner, src.ty_canonical);
+    let src_spell = &c.name[5..c.name.len() - 1]; // the `X` of `From<X>` as rustdoc rendered it
+    let callee = format!("<{} as From<{}>>::from", w.spell, spell_source(world, src_spell, &src.ty_canonical));
+    let before = out.entries.len();
+    emit_method_with(world, out, &syn, owner, None, false, Some(&callee));
+    debug_assert_eq!(before + 1, out.entries.len());
+    let e = out.entries.last_mut().unwrap();
+    e.key = c.key.clone();
+    e.canonical_path = c.canonical_path.clone();
+    e.kind = c.kind.clone();
+    e.signature = signature_of(c);
+    if e.status == "unsupported" {
+        if let Some(r) = &e.reason {
+            if !r.starts_with("name taken") { e.reason = Some(format!("conversion source: {r}")); }
+        }
+    } else if e.status == "generated" {
+        e.note = Some(format!("From<{}> as `{name}`{}", src_spell, if src.ty_canonical.trim().starts_with('&') { " (by reference; its by-value twin, if any, is a separate binding)" } else { "" }));
+    }
+}
+
+/// The Rust spelling of a conversion source for the UFCS path: a wrapped
+/// type by its wrapper's spelling, a scalar as is, a reference kept.
+fn spell_source(world: &World, rendered: &str, canonical: &str) -> String {
+    let by_ref = canonical.trim().starts_with('&');
+    let bare = canonical.trim().trim_start_matches('&').trim();
+    let inner = match world.wrappers.get(bare) {
+        Some(w) => w.spell.clone(),
+        None => match bare.split('<').next().unwrap_or(bare) {
+            "alloc::string::String" => "String".into(),
+            "polars_utils::pl_str::PlSmallStr" => "polars::prelude::PlSmallStr".into(),
+            "alloc::vec::Vec" | "core::option::Option" => rendered.trim_start_matches('&').to_string(),
+            _ => bare.to_string(),
+        },
+    };
+    if by_ref { format!("&{inner}") } else { inner }
+}
+
 const OPS: &[(&str, &str, &str)] = &[("Add", "ADD", "+"), ("Sub", "SUB", "-"), ("Mul", "MUL", "*"), ("Div", "DIV", "/"), ("Rem", "REM", "%"), ("BitAnd", "BIT_AND", "&"), ("BitOr", "BIT_OR", "|"), ("BitXor", "BIT_XOR", "^")];
 
 fn emit_foreign(world: &World, out: &mut Emitted, c: &Callable) {
     let owner = &c.owner;
+    let tname = c.name.split('<').next().unwrap_or("").to_string();
+    if tname == "From" && !from_impl_is_on_its_owner(c) {
+        // listed on its source type's page (wrapped or not); a duplicate only
+        // when the retained listing on the impl's `for` type is identified
+        // (same crate and impl id); its status is settled in
+        // `resolve_duplicates` once every entry exists. Otherwise it is an
+        // outward conversion `From<Owner> for Target` with no wrapped
+        // constructor to bind.
+        let target = c.impl_for.clone().unwrap_or_default();
+        let counterpart = out.from_names.keys().find(|k| impl_identity(k) == impl_identity(&c.key) && k.as_str() != c.key.as_str()).cloned();
+        match counterpart {
+            Some(k) => {
+                out.adapted(c, &format!("duplicate listing of impl {}: rustdoc lists it on this source type's page as well; its retained listing is on {}", impl_identity(&c.key), target), "");
+                out.entries.last_mut().unwrap().counterpart = Some(k);
+            }
+            None => out.unsupported(c, "outward conversion, no retained listing on its target", &format!("From<{}> for {target}", owner.rsplit("::").next().unwrap_or(""))),
+        }
+        return;
+    }
     let Some(w) = world.wrapper_for(owner) else {
         out.unsupported(c, "owner not wrapped", owner.clone().as_str());
         return;
     };
-    let tname = c.name.split('<').next().unwrap_or("").to_string();
     if matches!(tname.as_str(), "Eq" | "StructuralPartialEq" | "Copy") {
         out.adapted(c, "implied by the PartialEq or Clone protocol", &format!("{} {tname}", rune_path(w)));
         return;
@@ -2685,7 +3062,34 @@ fn emit_foreign(world: &World, out: &mut Emitted, c: &Callable) {
     }
     let idx = out.fn_index;
     let ident = rust_ident("p", &c.canonical_path, idx);
+    if tname == "From" {
+        let name = out.from_names.get(&c.key).cloned().unwrap_or_else(|| "from".into());
+        emit_from(world, out, c, &name);
+        return;
+    }
     let (code, note) = match tname.as_str() {
+        t if ASSIGN_OPS.iter().any(|(n, _, _, _)| *n == t) => {
+            let (_, proto, op, method) = ASSIGN_OPS.iter().find(|(n, _, _, _)| *n == t).unwrap();
+            let rhs_ok = c.params.first().is_some_and(|p| p.ty_canonical == *owner || p.ty_canonical == "Self");
+            if !rhs_ok {
+                out.unsupported(c, "assignment operand", &c.params.first().map(|p| p.ty_canonical.clone()).unwrap_or_default());
+                return;
+            }
+            if !world.clonable.contains(owner) {
+                out.unsupported(c, "operator on a non-Clone type", tname.as_str());
+                return;
+            }
+            // `x op= y` mutates the Rune value `x` in place; `y` is cloned out and stays usable
+            (format!("#[rune::function(instance, protocol = {proto})]\nfn {ident}(this: &mut {0}, rhs: &{0}) {{ <{1} as core::ops::{t}>::{method}(&mut this.0, rhs.0.clone()) }}", w.rust, w.spell), *op)
+        }
+        "Not" => {
+            if !world.clonable.contains(owner) {
+                out.unsupported(c, "operator on a non-Clone type", tname.as_str());
+                return;
+            }
+            // Rune 0.14.2 has no unary NOT protocol: bound as a method, the receiver unchanged
+            (format!("#[rune::function(instance, path = not_)]\nfn {ident}(this: &{0}) -> {0} {{ {0}(<{1} as core::ops::Not>::not(this.0.clone())) }}", w.rust, w.spell), "not_() (Rune has no unary NOT protocol; bound as a method, `not` is a keyword)")
+        }
         "Display" => (format!("#[rune::function(instance, protocol = DISPLAY_FMT)]\nfn {ident}(this: &{0}, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {{ use rune::alloc::fmt::TryWrite; let s = format!(\"{{}}\", this.0); rune::vm_write!(f, \"{{s}}\") }}", w.rust), "DISPLAY_FMT"),
         "Debug" => (format!("#[rune::function(instance, protocol = DEBUG_FMT)]\nfn {ident}(this: &{0}, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {{ use rune::alloc::fmt::TryWrite; let s = format!(\"{{:?}}\", this.0); rune::vm_write!(f, \"{{s}}\") }}", w.rust), "DEBUG_FMT"),
         "PartialEq" if c.params.len() == 1 && c.params[0].ty_canonical == format!("&{owner}") => (format!("#[rune::function(instance, protocol = PARTIAL_EQ)]\nfn {ident}(this: &{0}, other: &{0}) -> bool {{ this.0 == other.0 }}", w.rust), "PARTIAL_EQ"),
@@ -2735,16 +3139,17 @@ fn emit_foreign(world: &World, out: &mut Emitted, c: &Callable) {
     out.registrations.push(format!("m.function_meta({ident})?;"));
     out.taken.insert(key, c.canonical_path.clone());
     let rune = format!("{} {note}", rune_path(w));
+    let assign = ASSIGN_OPS.iter().find(|(n, _, _, _)| *n == tname);
     let info = OracleInfo {
         rune_owner: Some(rune_path(w)),
-        rune_name: format!("<{tname}>"),
-        receiver: "protocol".into(),
+        rune_name: match assign { Some((_, _, op, _)) => op.to_string(), None if tname == "Not" => "not_".to_string(), None => format!("<{tname}>") },
+        receiver: match assign { Some(_) => "&mut self".into(), None if tname == "Not" => "self".into(), None => "protocol".into() },
         owner: Some((owner.to_string(), w.rust.clone())),
-        callee: tname.clone(),
-        params: c.params.iter().map(|p| (String::new(), p.ty_canonical.clone())).collect(),
+        callee: match assign { Some((_, _, _, method)) => format!("<{} as core::ops::{tname}>::{method}", w.spell), None if tname == "Not" => format!("<{} as core::ops::Not>::not", w.spell), None => tname.clone() },
+        params: match assign { Some(_) => vec![(format!("W:{owner}"), owner.to_string())], None => c.params.iter().map(|p| (String::new(), p.ty_canonical.clone())).collect() },
         param_names: c.params.iter().map(|p| sanitize(&p.name)).collect(),
-        ret_canonical: c.ret_canonical.clone(),
-        ret_rust: String::new(),
+        ret_canonical: if assign.is_some() { None } else { c.ret_canonical.clone() },
+        ret_rust: if assign.is_some() { "()".into() } else { String::new() },
         fallible: false,
         generics: BTreeMap::new(),
         implementors: vec![],
@@ -2894,7 +3299,7 @@ fn main() {
         }
     }
     let world = World::new(&inv, &release, &buckets);
-    let mut out = Emitted { functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+    let mut out = Emitted { from_names: plan_from_names(&inv), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
     let mut callables: Vec<&Callable> = inv.callables.iter().collect();
     callables.sort_by(|a, b| a.canonical_path.cmp(&b.canonical_path).then(a.key.cmp(&b.key)));
     // inherent methods take names before trait methods do
@@ -2931,12 +3336,13 @@ fn main() {
             continue;
         }
         if !api {
-            out.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "out_of_scope", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some("internal crate reachable through the prelude".into()), rune: None, note: None, bindings: vec![], exceptions: vec![] });
+            out.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "out_of_scope", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some("internal crate reachable through the prelude".into()), rune: None, note: None, bindings: vec![], exceptions: vec![], counterpart: None });
             continue;
         }
         emit_callable(&world, &mut out, c, &buckets);
     }
     emit_struct_extras(&world, &mut out, &buckets);
+    resolve_duplicates(&mut out.entries);
     // every pair of the census gets exactly one disposition, emitted or not
     let mut census = census;
     {
@@ -3007,6 +3413,7 @@ fn main() {
         "wrappers": world.wrappers.iter().map(|(c, w)| serde_json::json!({"type": c, "rune": rune_path(w), "hand_written": w.hand, "rule": w.rule, "identity": w.identity, "shared_with": w.aliases.iter().filter(|a| *a != c).collect::<Vec<_>>()})).collect::<Vec<_>>(),
         "instantiation": { "summary": census_summary(&census), "pairs": census },
         "iterators": iterator_census(&out.entries, &inv, &census),
+        "conversions": conversion_census(&out.entries, &inv, &out.from_names),
         "materialize_limit": 1usize << 20,
         "oracle_cases": oracle_tests.matches("    Case {").count(),
         "fixtures": recipes,
@@ -3218,12 +3625,21 @@ impl<'a> Oracle<'a> {
     /// Record 0075 gate 2: derive recipes for wrapped types the base rules
     /// cannot build, from constructor bindings generated in this run and
     /// from data-carrying variants, as a fixpoint. Deterministic: names in
-    /// the fixed order `new`, `from_*`, then alphabetical; the first
-    /// variant in declaration order. A recipe is only adopted when every
+    /// the fixed order `new`, inherent `from_*`, then alphabetical, `From`
+    /// conversions last (record 0078); the first variant in declaration
+    /// order. A recipe is only adopted when every
     /// argument has a fixture already.
     fn derive_recipes(&mut self, entries: &[Entry]) {
         // constructor candidates per owner: receiver none, returns Self or PolarsResult<Self>
         let mut ctors: BTreeMap<String, Vec<(String, OracleInfo, bool)>> = BTreeMap::new();
+        // record 0078: a `From` conversion ranks after every inherent
+        // constructor; its argument is a placeholder fixture (`Scalar::default()`
+        // is a null scalar), where an inherent constructor's literal arguments
+        // give the value the receiver's methods can act on
+        let mut conversions: BTreeSet<(String, String)> = BTreeSet::new();
+        for e in entries {
+            if e.kind == "foreign_trait_impl" { if let Some(info) = &e.oracle { if let Some((owner, _)) = &info.owner { conversions.insert((owner.clone(), info.rune_name.clone())); } } }
+        }
         for e in entries {
             let Some(info) = &e.oracle else { continue };
             let Some((owner, _)) = &info.owner else { continue };
@@ -3237,8 +3653,8 @@ impl<'a> Oracle<'a> {
             if !returns_self { continue }
             ctors.entry(owner.clone()).or_default().push((info.rune_name.clone(), info.clone(), fallible));
         }
-        for v in ctors.values_mut() {
-            v.sort_by_key(|(n, _, _)| (if n == "new" { 0 } else if n.starts_with("from_") { 1 } else { 2 }, n.clone()));
+        for (owner, v) in ctors.iter_mut() {
+            v.sort_by_key(|(n, _, _)| (if conversions.contains(&(owner.clone(), n.clone())) { 3 } else if n == "new" { 0 } else if n.starts_with("from_") { 1 } else { 2 }, n.clone()));
         }
         loop {
             let mut progress = false;
@@ -3807,7 +4223,12 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
             let w = &world.wrappers[c];
             o.shown.borrow_mut().insert(c.to_string());
             // script: (receiver after the call, return); both compared
-            let script = format!("{} pub fn main(__fx) {{ let a = __fx[0]; let r = a.{}({args_r}); ((a, r), ()) }}", setup_fn(&setup_rune), info.rune_name);
+            let script = if ASSIGN_OPS.iter().any(|(_, _, op, _)| *op == info.rune_name) {
+                // an assignment operator: the statement form, no return value
+                format!("{} pub fn main(__fx) {{ let a = __fx[0]; a {} {args_r}; let r = (); ((a, r), ()) }}", setup_fn(&setup_rune), info.rune_name)
+            } else {
+                format!("{} pub fn main(__fx) {{ let a = __fx[0]; let r = a.{}({args_r}); ((a, r), ()) }}", setup_fn(&setup_rune), info.rune_name)
+            };
             // receiver state after the call and the return are compared together;
             // an error return keeps the receiver in the comparison as `ret=ERR:kind`
             let fmt = format!("{{ let (a, r) = match rune::from_value::<(rune::Value, rune::Value)>(v) {{ Ok(x) => x, Err(e) => return crate_oracle::Side::Broken(e.to_string()) }}; let recv = match rnx_polars::generated::fixtures::show_{}(&a) {{ Ok(s) => s.to_text(), Err(e) => return crate_oracle::Side::Broken(e) }}; let ret = {{ let v = r; {} }}; match ret {{ crate_oracle::Side::Value(s) => crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"recv={{recv}};ret={{}}\", s.to_text()))), crate_oracle::Side::Error(k) => crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"recv={{recv}};ret=ERR:{{k}}\"))), other => other }} }}", w.rust.to_lowercase(), if info.fallible { value_side(&ret_fmt_script) } else { plain_side(&ret_fmt_script) });
@@ -3844,7 +4265,27 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
                 Some((_, false)) => format!("crate_oracle::Side::Value({{ let v = &__r; {ret_fmt_rust} }})"),
                 None => format!("crate_oracle::collapse({ret_fmt_rust})"),
             };
-            (script, fmt, staged(&fx, &format!("{{ {call} {oracle_body} }}")))
+            // record 0078: a `From` constructor with a wrapped, clonable source
+            // also compares the source after the call (the Rune value is
+            // cloned out, so it must be unchanged); a scalar source is copied
+            let from_source = if info.callee.contains(" as From<") && info.receiver == "none" && info.params.len() == 1 && !info.params[0].1.trim().starts_with('&') {
+                let src = info.params[0].1.trim().to_string();
+                match (world.wrappers.get(&src), o.show(&src), world.clonable.contains(&src)) {
+                    (Some(sw), Some(show), true) => Some((sw.rust.to_lowercase(), show, src)),
+                    _ => None,
+                }
+            } else { None };
+            match from_source {
+                Some((src_fn, src_show, src)) => {
+                    o.shown.borrow_mut().insert(src);
+                    let script = format!("{} pub fn main(__fx) {{ let s = __fx[0]; let r = {}::{}(s); ((r, s), ()) }}", setup_fn(&setup_rune), info.rune_owner.as_ref().unwrap(), info.rune_name);
+                    let fmt = format!("{{ let (v, s) = match rune::from_value::<(rune::Value, rune::Value)>(v) {{ Ok(x) => x, Err(e) => return crate_oracle::Side::Broken(e.to_string()) }}; let src = match rnx_polars::generated::fixtures::show_{src_fn}(&s) {{ Ok(x) => x.to_text(), Err(e) => return crate_oracle::Side::Broken(e) }}; let ret = {{ {fmt} }}; match ret {{ crate_oracle::Side::Value(r) => crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"ret={{}};src={{src}}\", r.to_text()))), crate_oracle::Side::Error(k) => crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"ret=ERR:{{k}};src={{src}}\"))), other => other }} }}");
+                    let call = call.replace("(__a0)", "(__a0.clone())");
+                    let body = format!("{{ let __src = ({{ let v = &__a0; {src_show} }}).to_text(); {call} let ret = {oracle_body}; match ret {{ crate_oracle::Side::Value(r) => crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"ret={{}};src={{__src}}\", r.to_text()))), crate_oracle::Side::Error(k) => crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"ret=ERR:{{k}};src={{__src}}\"))), other => other }} }}");
+                    (script, fmt, staged(&fx, &body))
+                }
+                None => (script, fmt, staged(&fx, &format!("{{ {call} {oracle_body} }}"))),
+            }
         };
         let d = format!("case{}", o.recipe_note(&e.canonical_path, &[script.as_str()]));
         if let Some(b) = e.bindings.get_mut(bi) { b.disposition = Some(d.clone()); b.case_id = Some(id.clone()); }
@@ -3869,12 +4310,14 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
         writeln!(fixtures, "    pub fn {name}() -> {ret} {{ {expr} }}").unwrap();
     }
     fixtures.push_str("}\n\n");
+    // a synthetic inventory (self-test) may lack the fixture types; the
+    // drift test and the oracle build catch a real inventory missing one
     for (canonical, name, _, _) in FIXTURES {
-        let w = &world.wrappers[*canonical];
+        let Some(w) = world.wrappers.get(*canonical) else { continue };
         writeln!(fixtures, "#[rune::function(path = {name})]\nfn fx_{name}() -> {} {{ {}(values::{name}()) }}", w.rust, w.rust).unwrap();
     }
     for (canonical, name, _, _, _) in TYPED_FIXTURES {
-        let w = &world.wrappers[*canonical];
+        let Some(w) = world.wrappers.get(*canonical) else { continue };
         writeln!(fixtures, "#[rune::function(path = {name})]\nfn fx_{name}() -> {} {{ {}(values::{name}()) }}", w.rust, w.rust).unwrap();
     }
     let mut shown_structs: BTreeSet<String> = BTreeSet::new();
@@ -4231,6 +4674,64 @@ fn oracle_runner_fails_closed() {
     for (label, case, expected) in &seq_controls {
         let (outcome, detail) = h.run(case);
         if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // record 0078: assignment operators mutate the Rune value the way the
+    // Rust impl does (the whole left value compared, the right operand
+    // preserved), `not_` leaves its receiver, and the From constructors
+    // narrow or cast as documented
+    type Flags = polars::chunked_array::flags::StatisticsFlags;
+    fn flags_pair_side(v: Value) -> Side { match rune::from_value::<(rune::Value, rune::Value)>(v) { Ok((a, b)) => { let sa = match rnx_polars::generated::fixtures::show_w_polars_core__chunked_array__flags__statisticsflags(&a) { Ok(s) => s.to_text(), Err(e) => return Side::Broken(e) }; let sb = match rnx_polars::generated::fixtures::show_w_polars_core__chunked_array__flags__statisticsflags(&b) { Ok(s) => s.to_text(), Err(e) => return Side::Broken(e) }; Side::Value(crate_oracle::Repr::Text(format!("a={sa};b={sb}"))) } Err(e) => Side::Broken(e.to_string()) } }
+    fn sel_pair_side(v: Value) -> Side { match rune::from_value::<(rune::Value, rune::Value)>(v) { Ok((a, b)) => { let sa = match rnx_polars::generated::fixtures::show_w_polars_plan__dsl__selector__datatypeselector(&a) { Ok(s) => s.to_text(), Err(e) => return Side::Broken(e) }; let sb = match rnx_polars::generated::fixtures::show_w_polars_plan__dsl__selector__datatypeselector(&b) { Ok(s) => s.to_text(), Err(e) => return Side::Broken(e) }; Side::Value(crate_oracle::Repr::Text(format!("a={sa};b={sb}"))) } Err(e) => Side::Broken(e.to_string()) } }
+    fn scalar_fallible_side(v: Value) -> Side { match rune::from_value::<Result<rune::Value, rune::Value>>(v) { Ok(Ok(v)) => rnx_polars::generated::fixtures::show_w_polars_core__scalar__scalar(&v).map(Side::Value).unwrap_or_else(Side::Broken), Ok(Err(e)) => crate_oracle::rune_error_kind(&e).map(Side::Error).unwrap_or_else(Side::Broken), Err(e) => Side::Broken(e.to_string()) } }
+    fn scalar_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__scalar__scalar(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn pair_text<A: std::fmt::Debug, B: std::fmt::Debug>(a: &A, b: &B) -> Staged { Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("a={a:?};b={b:?}")))) }
+    fn scalar_text(s: polars::prelude::Scalar) -> Staged { Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("{s:?}")))) }
+    const FB3: &str = "match polars::StatisticsFlags::from_bits_retain(3) { Ok(v) => v, Err(e) => panic(`${e}`) }";
+    const FB6: &str = "match polars::StatisticsFlags::from_bits_retain(6) { Ok(v) => v, Err(e) => panic(`${e}`) }";
+    let flags_script = |op: &str| format!("pub fn setup() {{ [{FB3}, {FB6}] }} pub fn main(__fx) {{ let a = __fx[0]; let b = __fx[1]; a {op} b; ((a, b), ()) }}");
+    let op_scripts: Vec<&'static str> = ["-=", "&=", "|=", "^="].iter().map(|op| &*Box::leak(flags_script(op).into_boxed_str())).collect();
+    let op_controls: Vec<(&str, Case, Outcome)> = vec![
+        ("`-=` on flags with several bits set", Case { id: "o1", path: "control", script: op_scripts[0], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a -= b; pair_text(&a, &b) } }, Outcome::Match),
+        ("`&=` on flags with several bits set", Case { id: "o2", path: "control", script: op_scripts[1], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a &= b; pair_text(&a, &b) } }, Outcome::Match),
+        ("`|=` on flags with several bits set", Case { id: "o3", path: "control", script: op_scripts[2], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a |= b; pair_text(&a, &b) } }, Outcome::Match),
+        ("`^=` on flags with several bits set", Case { id: "o4", path: "control", script: op_scripts[3], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a ^= b; pair_text(&a, &b) } }, Outcome::Match),
+        ("`^=` against the `|=` result fails: the whole left value is compared", Case { id: "o5", path: "control", script: op_scripts[3], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a |= b; pair_text(&a, &b) } }, Outcome::Mismatch),
+        ("a changed right operand fails: the right operand is compared too", Case { id: "o6", path: "control", script: op_scripts[2], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); a |= Flags::from_bits_retain(6); pair_text(&a, &a) } }, Outcome::Mismatch),
+        ("`not_()` returns the complement and leaves the receiver", Case { id: "o7", path: "control", script: "pub fn setup() { [match polars::StatisticsFlags::from_bits_retain(3) { Ok(v) => v, Err(e) => panic(`${e}`) }] } pub fn main(__fx) { let a = __fx[0]; let r = a.not_(); ((a, r), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let a = Flags::from_bits_retain(3); let r = !a; pair_text(&a, &r) } }, Outcome::Match),
+        ("a receiver claimed changed by `not_()` fails", Case { id: "o8", path: "control", script: "pub fn setup() { [match polars::StatisticsFlags::from_bits_retain(3) { Ok(v) => v, Err(e) => panic(`${e}`) }] } pub fn main(__fx) { let a = __fx[0]; let r = a.not_(); ((a, r), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let a = !Flags::from_bits_retain(3); pair_text(&a, &a) } }, Outcome::Mismatch),
+        ("`-=` on selectors that differ", Case { id: "o9", path: "control", script: "pub fn setup() { [polars::DataTypeSelector::Wildcard(), polars::DataTypeSelector::Float()] } pub fn main(__fx) { let a = __fx[0]; let b = __fx[1]; a -= b; ((a, b), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: sel_pair_side, oracle: || { let mut a = polars_plan::dsl::DataTypeSelector::Wildcard; let b = polars_plan::dsl::DataTypeSelector::Float; a -= b.clone(); pair_text(&a, &b) } }, Outcome::Match),
+        ("`from_i8` at -128", Case { id: "o10", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_i8(-128), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_fallible_side, oracle: || scalar_text(polars::prelude::Scalar::from(-128i8)) }, Outcome::Match),
+        ("`from_i8` at 127", Case { id: "o11", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_i8(127), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_fallible_side, oracle: || scalar_text(polars::prelude::Scalar::from(127i8)) }, Outcome::Match),
+        ("`from_i8` at 128 refuses with the conversion kind on both sides", Case { id: "o12", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_i8(128), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_fallible_side, oracle: || Staged::Ran(match i8::try_from(128i64) { Ok(v) => Side::Value(crate_oracle::Repr::Text(format!("{:?}", polars::prelude::Scalar::from(v)))), Err(_) => Side::Error("ConversionError".into()) }) }, Outcome::BothError),
+        ("`from_f32` with 0.1 gives the f32-rounded value", Case { id: "o13", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_f32(0.1), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_side, oracle: || scalar_text(polars::prelude::Scalar::from(0.1f32)) }, Outcome::Match),
+        ("`from_f32` with 1e40 gives infinity", Case { id: "o14", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_f32(1e40), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_side, oracle: || scalar_text(polars::prelude::Scalar::from(f32::INFINITY)) }, Outcome::Match),
+        ("`from_f32` against the f64 scalar fails", Case { id: "o15", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_f32(0.1), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_side, oracle: || scalar_text(polars::prelude::Scalar::from(0.1f64)) }, Outcome::Mismatch),
+    ];
+    for (label, case, expected) in &op_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // an aliased operand (`a |= a`, and a second binding to the same value)
+    // is refused by Rune's dynamic borrow check before the Rust impl runs;
+    // the value is unchanged afterwards
+    {
+        let script = "pub fn setup() { [match polars::StatisticsFlags::from_bits_retain(3) { Ok(v) => v, Err(e) => panic(`${e}`) }] } pub fn aliased(__fx) { let a = __fx[0]; a |= a; a } pub fn rebound(__fx) { let a = __fx[0]; let b = a; a |= b; a } pub fn after(__fx) { __fx[0] }";
+        let mut sources = Sources::new();
+        sources.insert(Source::memory(script).unwrap()).unwrap();
+        let unit = Arc::new(rune::prepare(&mut sources).with_context(&h.context).build().unwrap());
+        let mut vm = Vm::new(h.runtime.clone(), unit);
+        let fx = vm.call(["setup"], ()).unwrap();
+        for name in ["aliased", "rebound"] {
+            match vm.call([name], (fx.clone(),)) {
+                Ok(_) => failures.push(format!("aliased operand `{name}` was not refused")),
+                // Rune 0.14.2 words the shared read of an exclusively held value "Cannot read, value is -X000000"
+                Err(e) => { let t = e.to_string(); if !(t.contains("borrow") || t.contains("Cannot read")) { failures.push(format!("aliased operand `{name}`: not a borrow refusal: {t}")); } }
+            }
+        }
+        let after = vm.call(["after"], (fx,)).unwrap();
+        let shown = rnx_polars::generated::fixtures::show_w_polars_core__chunked_array__flags__statisticsflags(&after).map(|s| s.to_text());
+        let expected = format!("{:?}", Flags::from_bits_retain(3));
+        if shown.as_deref() != Ok(expected.as_str()) { failures.push(format!("aliased operand: value after the refusal {shown:?}, expected {expected}")); }
     }
     // two cases of one path (two receivers) survive result collection independently
     {

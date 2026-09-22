@@ -72,11 +72,11 @@ pub(crate) fn materialize_unknown<I: Iterator, T>(it: I, method: &str, conv: imp
 /// makes `size_hint`'s upper bound the exact length or `None` when the
 /// length is not representable: an upper bound over the limit, or no
 /// upper bound, refuses before any `next` call; the count guard stays.
-pub(crate) fn materialize_trusted<I: polars_core::utils::arrow::trusted_len::TrustedLen, T>(it: I, method: &str, conv: impl FnMut(I::Item) -> Result<T, Error>) -> Result<Vec<T>, Error> {
+pub(crate) fn materialize_trusted<I: polars_arrow::trusted_len::TrustedLen, T>(it: I, method: &str, conv: impl FnMut(I::Item) -> Result<T, Error>) -> Result<Vec<T>, Error> {
 	materialize_trusted_with(it, materialize_limit(), method, conv)
 }
 
-pub(crate) fn materialize_trusted_with<I: polars_core::utils::arrow::trusted_len::TrustedLen, T>(it: I, limit: usize, method: &str, conv: impl FnMut(I::Item) -> Result<T, Error>) -> Result<Vec<T>, Error> {
+pub(crate) fn materialize_trusted_with<I: polars_arrow::trusted_len::TrustedLen, T>(it: I, limit: usize, method: &str, conv: impl FnMut(I::Item) -> Result<T, Error>) -> Result<Vec<T>, Error> {
 	match it.size_hint().1 {
 		Some(n) if n > limit => return Err(Error("MaterializeLimit".into(), format!("{method}: {n} items (TrustedLen upper bound), more than the bound of {limit}"))),
 		Some(_) => {}
@@ -240,8 +240,8 @@ mod materialize_tests {
 	}
 
 	// `TrustedLen` without `ExactSizeIterator`: the trait as Polars defines it
-	unsafe impl polars_core::utils::arrow::trusted_len::TrustedLen for Counting {}
-	fn trusted_only(len: usize, hint: (usize, Option<usize>)) -> (impl polars_core::utils::arrow::trusted_len::TrustedLen<Item = usize>, Rc<Cell<usize>>) {
+	unsafe impl polars_arrow::trusted_len::TrustedLen for Counting {}
+	fn trusted_only(len: usize, hint: (usize, Option<usize>)) -> (impl polars_arrow::trusted_len::TrustedLen<Item = usize>, Rc<Cell<usize>>) {
 		counting(len, hint)
 	}
 

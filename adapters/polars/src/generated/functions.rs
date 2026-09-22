@@ -7325,18 +7325,37 @@ fn p_62787664_rray__flags__statisticsflags_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_886ce722__flags__statisticsflags_as_core__ops__arith__sub(this: &W_polars_core__chunked_array__flags__StatisticsFlags, rhs: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = this.0.clone() - rhs.0.clone(); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::arith::SubAssign`.
+#[rune::function(instance, protocol = SUB_ASSIGN)]
+fn p_cd414ea0___statisticsflags_as_core__ops__arith__subassign(this: &mut W_polars_core__chunked_array__flags__StatisticsFlags, rhs: &W_polars_core__chunked_array__flags__StatisticsFlags) { <polars::chunked_array::flags::StatisticsFlags as core::ops::SubAssign>::sub_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::bit::BitAnd`.
 #[rune::function(instance, protocol = BIT_AND)]
 fn p_ab0a3a03_flags__statisticsflags_as_core__ops__bit__bitand(this: &W_polars_core__chunked_array__flags__StatisticsFlags, rhs: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = this.0.clone() & rhs.0.clone(); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::bit::BitAndAssign`.
+#[rune::function(instance, protocol = BIT_AND_ASSIGN)]
+fn p_5dddbb56__statisticsflags_as_core__ops__bit__bitandassign(this: &mut W_polars_core__chunked_array__flags__StatisticsFlags, rhs: &W_polars_core__chunked_array__flags__StatisticsFlags) { <polars::chunked_array::flags::StatisticsFlags as core::ops::BitAndAssign>::bitand_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::bit::BitOr`.
 #[rune::function(instance, protocol = BIT_OR)]
 fn p_f622b23b__flags__statisticsflags_as_core__ops__bit__bitor(this: &W_polars_core__chunked_array__flags__StatisticsFlags, rhs: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = this.0.clone() | rhs.0.clone(); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::bit::BitOrAssign`.
+#[rune::function(instance, protocol = BIT_OR_ASSIGN)]
+fn p_a93bcafa___statisticsflags_as_core__ops__bit__bitorassign(this: &mut W_polars_core__chunked_array__flags__StatisticsFlags, rhs: &W_polars_core__chunked_array__flags__StatisticsFlags) { <polars::chunked_array::flags::StatisticsFlags as core::ops::BitOrAssign>::bitor_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::bit::BitXor`.
 #[rune::function(instance, protocol = BIT_XOR)]
 fn p_1d20eb63_flags__statisticsflags_as_core__ops__bit__bitxor(this: &W_polars_core__chunked_array__flags__StatisticsFlags, rhs: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = this.0.clone() ^ rhs.0.clone(); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::bit::BitXorAssign`.
+#[rune::function(instance, protocol = BIT_XOR_ASSIGN)]
+fn p_94eab3be__statisticsflags_as_core__ops__bit__bitxorassign(this: &mut W_polars_core__chunked_array__flags__StatisticsFlags, rhs: &W_polars_core__chunked_array__flags__StatisticsFlags) { <polars::chunked_array::flags::StatisticsFlags as core::ops::BitXorAssign>::bitxor_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::bit::Not`.
+#[rune::function(instance, path = not_)]
+fn p_2c1f07d0_y__flags__statisticsflags_as_core__ops__bit__not(this: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlags { W_polars_core__chunked_array__flags__StatisticsFlags(<polars::chunked_array::flags::StatisticsFlags as core::ops::Not>::not(this.0.clone())) }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlagsIM as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_4b377447___flags__statisticsflagsim_as_core__clone__clone(this: &W_polars_core__chunked_array__flags__StatisticsFlagsIM) -> W_polars_core__chunked_array__flags__StatisticsFlagsIM { W_polars_core__chunked_array__flags__StatisticsFlagsIM(this.0.clone()) }
+/// 
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlagsIM as core::convert::From<polars_core::chunked_array::flags::StatisticsFlags>`. from_statistics_flags(value: StatisticsFlags) -> StatisticsFlagsIM
+#[rune::function(free, path = W_polars_core__chunked_array__flags__StatisticsFlagsIM::from_statistics_flags)]
+fn f_6c1cc0dc_rs_core__chunked_array__flags__statisticsflagsim(value: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlagsIM { let __r = <polars::chunked_array::flags::StatisticsFlagsIM as From<polars::chunked_array::flags::StatisticsFlags>>::from(value.0.clone()); W_polars_core__chunked_array__flags__StatisticsFlagsIM(__r) }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlagsIM as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_9171defa_ay__flags__statisticsflagsim_as_core__fmt__debug(this: &W_polars_core__chunked_array__flags__StatisticsFlagsIM, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -7376,6 +7395,10 @@ fn p_83e30ef3_tions__sortmultipleoptions_as_core__clone__clone(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e25a91e9_ons__sortmultipleoptions_as_core__cmp__partialeq(this: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions, other: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::convert::From<&polars_core::chunked_array::ops::sort::options::SortOptions>`. from_sort_options_ref(value: SortOptions) -> SortMultipleOptions
+#[rune::function(free, path = W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions::from_sort_options_ref)]
+fn f_5e279452_d_array__ops__sort__options__sortmultipleoptions(value: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions { let __r = <polars_core::chunked_array::ops::sort::options::SortMultipleOptions as From<&polars_core::chunked_array::ops::sort::options::SortOptions>>::from(&value.0); W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions(__r) }
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::default::Default`.
 #[rune::function(free, path = W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions::default_)]
 fn p_a57c33b4_s__sortmultipleoptions_as_core__default__default() -> W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions { W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions(<polars_core::chunked_array::ops::sort::options::SortMultipleOptions>::default()) }
@@ -7388,6 +7411,10 @@ fn p_61ae14b9_sort__options__sortoptions_as_core__clone__clone(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e1ddcfaf_rt__options__sortoptions_as_core__cmp__partialeq(this: &W_polars_core__chunked_array__ops__sort__options__SortOptions, other: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::convert::From<&polars_core::chunked_array::ops::sort::options::SortMultipleOptions>`. from_sort_multiple_options_ref(value: SortMultipleOptions) -> SortOptions
+#[rune::function(free, path = W_polars_core__chunked_array__ops__sort__options__SortOptions::from_sort_multiple_options_ref)]
+fn f_638ca6dd___chunked_array__ops__sort__options__sortoptions(value: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> W_polars_core__chunked_array__ops__sort__options__SortOptions { let __r = <polars_core::chunked_array::ops::sort::options::SortOptions as From<&polars_core::chunked_array::ops::sort::options::SortMultipleOptions>>::from(&value.0); W_polars_core__chunked_array__ops__sort__options__SortOptions(__r) }
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::default::Default`.
 #[rune::function(free, path = W_polars_core__chunked_array__ops__sort__options__SortOptions::default_)]
 fn p_a52bb73a___options__sortoptions_as_core__default__default() -> W_polars_core__chunked_array__ops__sort__options__SortOptions { W_polars_core__chunked_array__ops__sort__options__SortOptions(<polars_core::chunked_array::ops::sort::options::SortOptions>::default()) }
@@ -7472,6 +7499,10 @@ fn p_2c9ef818_atatypes__dtype__compatlevel_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::datatypes::dtype::DataType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_d5beb85c_datatypes__dtype__datatype_as_core__clone__clone(this: &W_polars_core__datatypes__dtype__DataType) -> W_polars_core__datatypes__dtype__DataType { W_polars_core__datatypes__dtype__DataType(this.0.clone()) }
+/// 
+/// Polars: `polars_core::datatypes::dtype::DataType as core::convert::From<polars_dtype::categorical::CategoricalPhysical>`. from_categorical_physical(value: CategoricalPhysical) -> DataType
+#[rune::function(free, path = W_polars_core__datatypes__dtype__DataType::from_categorical_physical)]
+fn f_c3e73ac8_hysical__polars_core__datatypes__dtype__datatype(value: &W_polars_dtype__categorical__CategoricalPhysical) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::DataType as From<polars_dtype::categorical::CategoricalPhysical>>::from(value.0.clone()); W_polars_core__datatypes__dtype__DataType(__r) }
 /// Polars: `polars_core::datatypes::dtype::DataType as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_19f7b58a___datatypes__dtype__datatype_as_core__fmt__debug(this: &W_polars_core__datatypes__dtype__DataType, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -7505,6 +7536,10 @@ fn p_80377a00_poral__time_unit__timeunit_as_core__clone__clone(this: &W_polars_c
 /// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_d10b8ff0_ral__time_unit__timeunit_as_core__cmp__partialeq(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit, other: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::convert::From<&polars_arrow::datatypes::TimeUnit>`. from_time_unit_ref(value: TimeUnit) -> TimeUnit
+#[rune::function(free, path = W_polars_core__datatypes__temporal__time_unit__TimeUnit::from_time_unit_ref)]
+fn f_111727c1_s_core__datatypes__temporal__time_unit__timeunit(value: &W_polars_arrow__datatypes__TimeUnit) -> W_polars_core__datatypes__temporal__time_unit__TimeUnit { let __r = <polars_core::datatypes::TimeUnit as From<&polars::prelude::datatypes::ArrowTimeUnit>>::from(&value.0); W_polars_core__datatypes__temporal__time_unit__TimeUnit(__r) }
 /// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_27f8cf16_emporal__time_unit__timeunit_as_core__fmt__debug(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -7550,6 +7585,14 @@ fn p_df0f79ba_e__frame__uniquekeepstrategy_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::frame::column::Column as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2d1c06dd_ore__frame__column__column_as_core__clone__clone(this: &W_polars_core__frame__column__Column) -> W_polars_core__frame__column__Column { W_polars_core__frame__column__Column(this.0.clone()) }
+/// 
+/// Polars: `polars_core::frame::column::Column as core::convert::From<polars_core::frame::column::scalar::ScalarColumn>`. from_scalar_column(value: ScalarColumn) -> Column
+#[rune::function(free, path = W_polars_core__frame__column__Column::from_scalar_column)]
+fn f_d59c4694_scalarcolumn__polars_core__frame__column__column(value: &W_polars_core__frame__column__scalar__ScalarColumn) -> W_polars_core__frame__column__Column { let __arg0 = value.0.clone(); let __r = crate::engine::run(move || <polars::frame::column::Column as From<polars::frame::column::ScalarColumn>>::from(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__frame__column__Column(__r) }
+/// 
+/// Polars: `polars_core::frame::column::Column as core::convert::From<polars_core::series::Series>`. from_series(value: Series) -> Column
+#[rune::function(free, path = W_polars_core__frame__column__Column::from_series)]
+fn f_c2c2954f_ries__series__polars_core__frame__column__column(value: &W_polars_core__series__Series) -> W_polars_core__frame__column__Column { let __arg0 = value.0.clone(); let __r = crate::engine::run(move || <polars::frame::column::Column as From<polars::series::Series>>::from(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__frame__column__Column(__r) }
 /// Polars: `polars_core::frame::column::Column as core::default::Default`.
 #[rune::function(free, path = W_polars_core__frame__column__Column::default_)]
 fn p_68160b34__frame__column__column_as_core__default__default() -> W_polars_core__frame__column__Column { W_polars_core__frame__column__Column(<polars::frame::column::Column>::default()) }
@@ -7619,6 +7662,10 @@ fn p_f2af2bd7_p_by__position__groupstype_as_core__clone__clone(this: &W_polars_c
 /// Polars: `polars_core::frame::group_by::position::GroupsType as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_6aaaae02_by__position__groupstype_as_core__cmp__partialeq(this: &W_polars_core__frame__group_by__position__GroupsType, other: &W_polars_core__frame__group_by__position__GroupsType) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_core::frame::group_by::position::GroupsType as core::convert::From<polars_core::frame::group_by::position::GroupsIdx>`. from_groups_idx(value: GroupsIdx) -> GroupsType
+#[rune::function(free, path = W_polars_core__frame__group_by__position__GroupsType::from_groups_idx)]
+fn f_20ff3b55_lars_core__frame__group_by__position__groupstype(value: &W_polars_core__frame__group_by__position__GroupsIdx) -> W_polars_core__frame__group_by__position__GroupsType { let __r = <polars_core::frame::group_by::GroupsType as From<polars_core::frame::group_by::GroupsIdx>>::from(value.0.clone()); W_polars_core__frame__group_by__position__GroupsType(__r) }
 /// Polars: `polars_core::frame::group_by::position::GroupsType as core::default::Default`.
 #[rune::function(free, path = W_polars_core__frame__group_by__position__GroupsType::default_)]
 fn p_4abb1f5b___position__groupstype_as_core__default__default() -> W_polars_core__frame__group_by__position__GroupsType { W_polars_core__frame__group_by__position__GroupsType(<polars_core::frame::group_by::GroupsType>::default()) }
@@ -7631,6 +7678,70 @@ fn p_8fba6366_olars_core__scalar__scalar_as_core__clone__clone(this: &W_polars_c
 /// Polars: `polars_core::scalar::Scalar as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_dfbeeb25_ars_core__scalar__scalar_as_core__cmp__partialeq(this: &W_polars_core__scalar__Scalar, other: &W_polars_core__scalar__Scalar) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<bool>`. from_bool(value: bool) -> Scalar
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_bool)]
+fn f_31ac90bc__convert__from_bool__polars_core__scalar__scalar(value: bool) -> W_polars_core__scalar__Scalar { let __r = <polars_core::scalar::Scalar as From<bool>>::from(value); W_polars_core__scalar__Scalar(__r) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<i8>`. from_i8(value: int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_i8)]
+fn f_189669ed_e__convert__from_i8__polars_core__scalar__scalar(value: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<i8>>::from(support::narrow::<i8>(value, "value")?); Ok(W_polars_core__scalar__Scalar(__r)) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<i16>`. from_i16(value: int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_i16)]
+fn f_6eadeb82___convert__from_i16__polars_core__scalar__scalar(value: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<i16>>::from(support::narrow::<i16>(value, "value")?); Ok(W_polars_core__scalar__Scalar(__r)) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<i32>`. from_i32(value: int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_i32)]
+fn f_21a9319d___convert__from_i32__polars_core__scalar__scalar(value: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<i32>>::from(support::narrow::<i32>(value, "value")?); Ok(W_polars_core__scalar__Scalar(__r)) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<i64>`. from_i64(value: int) -> Scalar
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_i64)]
+fn f_ec4941ed___convert__from_i64__polars_core__scalar__scalar(value: i64) -> W_polars_core__scalar__Scalar { let __r = <polars_core::scalar::Scalar as From<i64>>::from(value); W_polars_core__scalar__Scalar(__r) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<i128>`. from_i128(value: int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_i128)]
+fn f_656f3763__convert__from_i128__polars_core__scalar__scalar(value: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<i128>>::from(support::narrow::<i128>(value, "value")?); Ok(W_polars_core__scalar__Scalar(__r)) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<u8>`. from_u8(value: int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_u8)]
+fn f_aac00ffc_e__convert__from_u8__polars_core__scalar__scalar(value: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<u8>>::from(support::narrow::<u8>(value, "value")?); Ok(W_polars_core__scalar__Scalar(__r)) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<u16>`. from_u16(value: int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_u16)]
+fn f_d523b654___convert__from_u16__polars_core__scalar__scalar(value: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<u16>>::from(support::narrow::<u16>(value, "value")?); Ok(W_polars_core__scalar__Scalar(__r)) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<u32>`. from_u32(value: int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_u32)]
+fn f_098dabe6___convert__from_u32__polars_core__scalar__scalar(value: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<u32>>::from(support::narrow::<u32>(value, "value")?); Ok(W_polars_core__scalar__Scalar(__r)) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<u64>`. from_u64(value: int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_u64)]
+fn f_fd3b73b9___convert__from_u64__polars_core__scalar__scalar(value: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<u64>>::from(support::narrow::<u64>(value, "value")?); Ok(W_polars_core__scalar__Scalar(__r)) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<u128>`. from_u128(value: int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_u128)]
+fn f_9094405f__convert__from_u128__polars_core__scalar__scalar(value: i64) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<u128>>::from(support::narrow::<u128>(value, "value")?); Ok(W_polars_core__scalar__Scalar(__r)) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<polars_utils::float16::pf16>`. from_pf16(value: pf16) -> Scalar
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_pf16)]
+fn f_4c936eae_tils__float16__pf16__polars_core__scalar__scalar(value: &W_polars_utils__float16__pf16) -> W_polars_core__scalar__Scalar { let __r = <polars_core::scalar::Scalar as From<polars::polars_utils::float16::pf16>>::from(value.0.clone()); W_polars_core__scalar__Scalar(__r) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<f32>`. from_f32(value: float) -> Scalar
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_f32)]
+fn f_7d7e39ba___convert__from_f32__polars_core__scalar__scalar(value: f64) -> W_polars_core__scalar__Scalar { let __r = <polars_core::scalar::Scalar as From<f32>>::from((value as f32)); W_polars_core__scalar__Scalar(__r) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<f64>`. from_f64(value: float) -> Scalar
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_f64)]
+fn f_cdfd9a75___convert__from_f64__polars_core__scalar__scalar(value: f64) -> W_polars_core__scalar__Scalar { let __r = <polars_core::scalar::Scalar as From<f64>>::from(value); W_polars_core__scalar__Scalar(__r) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<polars_utils::pl_str::PlSmallStr>`. from_pl_small_str(value: string) -> Scalar
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_pl_small_str)]
+fn f_3dcdf569__pl_str__plsmallstr__polars_core__scalar__scalar(value: &str) -> W_polars_core__scalar__Scalar { let __r = <polars_core::scalar::Scalar as From<polars::polars_utils::pl_str::PlSmallStr>>::from(p::PlSmallStr::from(value)); W_polars_core__scalar__Scalar(__r) }
+/// 
+/// Polars: `polars_core::scalar::Scalar as core::convert::From<alloc::vec::Vec<u8>>`. from_vec_u8(value: vector of int) -> Scalar (fallible)
+#[rune::function(free, path = W_polars_core__scalar__Scalar::from_vec_u8)]
+fn f_a8fb684b_alloc__vec__vec_u8___polars_core__scalar__scalar(value: Vec<i64>) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar as From<Vec<u8>>>::from(value.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u8>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__scalar__Scalar(__r)) }
 /// Polars: `polars_core::scalar::Scalar as core::default::Default`.
 #[rune::function(free, path = W_polars_core__scalar__Scalar::default_)]
 fn p_921cc534_s_core__scalar__scalar_as_core__default__default() -> W_polars_core__scalar__Scalar { W_polars_core__scalar__Scalar(<polars_core::scalar::Scalar>::default()) }
@@ -7640,6 +7751,22 @@ fn p_d8ae41dd_polars_core__scalar__scalar_as_core__fmt__debug(this: &W_polars_co
 /// Polars: `polars_core::series::Series as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_6e2f06bb_olars_core__series__series_as_core__clone__clone(this: &W_polars_core__series__Series) -> W_polars_core__series__Series { W_polars_core__series__Series(this.0.clone()) }
+/// 
+/// Polars: `polars_core::series::Series as core::convert::From<polars_core::chunked_array::logical::date::DateChunked>`. from_date_chunked(value: DateChunked) -> Series
+#[rune::function(free, path = W_polars_core__series__Series::from_date_chunked)]
+fn f_36f6b8e5___date__datechunked__polars_core__series__series(value: &W_polars_core__chunked_array__logical__date__DateChunked) -> W_polars_core__series__Series { let __arg0 = value.0.clone(); let __r = crate::engine::run(move || <polars::series::Series as From<polars_core::datatypes::DateChunked>>::from(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
+/// 
+/// Polars: `polars_core::series::Series as core::convert::From<polars_core::chunked_array::logical::datetime::DatetimeChunked>`. from_datetime_chunked(value: DatetimeChunked) -> Series
+#[rune::function(free, path = W_polars_core__series__Series::from_datetime_chunked)]
+fn f_5e9e47be_me__datetimechunked__polars_core__series__series(value: &W_polars_core__chunked_array__logical__datetime__DatetimeChunked) -> W_polars_core__series__Series { let __arg0 = value.0.clone(); let __r = crate::engine::run(move || <polars::series::Series as From<polars_core::datatypes::DatetimeChunked>>::from(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
+/// 
+/// Polars: `polars_core::series::Series as core::convert::From<polars_core::chunked_array::logical::duration::DurationChunked>`. from_duration_chunked(value: DurationChunked) -> Series
+#[rune::function(free, path = W_polars_core__series__Series::from_duration_chunked)]
+fn f_0c440bdc_on__durationchunked__polars_core__series__series(value: &W_polars_core__chunked_array__logical__duration__DurationChunked) -> W_polars_core__series__Series { let __arg0 = value.0.clone(); let __r = crate::engine::run(move || <polars::series::Series as From<polars_core::datatypes::DurationChunked>>::from(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
+/// 
+/// Polars: `polars_core::series::Series as core::convert::From<polars_core::chunked_array::logical::time::TimeChunked>`. from_time_chunked(value: TimeChunked) -> Series
+#[rune::function(free, path = W_polars_core__series__Series::from_time_chunked)]
+fn f_d04b837a___time__timechunked__polars_core__series__series(value: &W_polars_core__chunked_array__logical__time__TimeChunked) -> W_polars_core__series__Series { let __arg0 = value.0.clone(); let __r = crate::engine::run(move || <polars::series::Series as From<polars_core::datatypes::TimeChunked>>::from(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); W_polars_core__series__Series(__r) }
 /// Polars: `polars_core::series::Series as core::default::Default`.
 #[rune::function(free, path = W_polars_core__series__Series::default_)]
 fn p_137ab81d_s_core__series__series_as_core__default__default() -> W_polars_core__series__Series { W_polars_core__series__Series(<polars::series::Series>::default()) }
@@ -7874,6 +8001,10 @@ fn p_4385af8b_ad__options__commentprefix_as_core__clone__clone(this: &W_polars_i
 /// Polars: `polars_io::csv::read::options::CommentPrefix as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_48c7623e___options__commentprefix_as_core__cmp__partialeq(this: &W_polars_io__csv__read__options__CommentPrefix, other: &W_polars_io__csv__read__options__CommentPrefix) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_io::csv::read::options::CommentPrefix as core::convert::From<&str>`. from_str_ref(value: string) -> CommentPrefix
+#[rune::function(free, path = W_polars_io__csv__read__options__CommentPrefix::from_str_ref)]
+fn f_814edb37_tr__polars_io__csv__read__options__commentprefix(value: &str) -> W_polars_io__csv__read__options__CommentPrefix { let __r = <polars_io::csv::read::CommentPrefix as From<&str>>::from(value); W_polars_io__csv__read__options__CommentPrefix(__r) }
 /// Polars: `polars_io::csv::read::options::CommentPrefix as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_c17308f9_read__options__commentprefix_as_core__fmt__debug(this: &W_polars_io__csv__read__options__CommentPrefix, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -8159,6 +8290,14 @@ fn p_08ee17ad___specializedcolumnpredicate_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_lazy::frame::LazyFrame as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_3fef77d3_ars_lazy__frame__lazyframe_as_core__clone__clone(this: &LazyFrame) -> LazyFrame { LazyFrame(this.0.clone()) }
+/// 
+/// Polars: `polars_lazy::frame::LazyFrame as core::convert::From<polars_plan::dsl::plan::DslPlan>`. from_dsl_plan(value: DslPlan) -> LazyFrame
+#[rune::function(free, path = LazyFrame::from_dsl_plan)]
+fn f_2c963957_sl__plan__dslplan__polars_lazy__frame__lazyframe(value: &W_polars_plan__dsl__plan__DslPlan) -> LazyFrame { let __arg0 = value.0.clone(); let __r = crate::engine::run(move || <polars_lazy::frame::LazyFrame as From<polars_plan::dsl::DslPlan>>::from(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); LazyFrame(__r) }
+/// 
+/// Polars: `polars_lazy::frame::LazyFrame as core::convert::From<polars_lazy::frame::LazyGroupBy>`. from_lazy_group_by(value: LazyGroupBy) -> LazyFrame
+#[rune::function(free, path = LazyFrame::from_lazy_group_by)]
+fn f_b48e0cf2_rame__lazygroupby__polars_lazy__frame__lazyframe(value: &LazyGroupBy) -> LazyFrame { let __arg0 = value.0.clone(); let __r = crate::engine::run(move || <polars_lazy::frame::LazyFrame as From<polars_lazy::frame::LazyGroupBy>>::from(__arg0)).unwrap_or_else(|e| panic!("polars engine thread: {e}")); LazyFrame(__r) }
 /// Polars: `polars_lazy::frame::LazyFrame as core::default::Default`.
 #[rune::function(free, path = LazyFrame::default_)]
 fn p_a84e4ccb_lazy__frame__lazyframe_as_core__default__default() -> LazyFrame { LazyFrame(<polars_lazy::frame::LazyFrame>::default()) }
@@ -8195,6 +8334,10 @@ fn p_825f7566_rame__join__args__joinargs_as_core__clone__clone(this: &W_polars_o
 /// Polars: `polars_ops::frame::join::args::JoinArgs as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e3090232_me__join__args__joinargs_as_core__cmp__partialeq(this: &W_polars_ops__frame__join__args__JoinArgs, other: &W_polars_ops__frame__join__args__JoinArgs) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_ops::frame::join::args::JoinArgs as core::convert::From<polars_ops::frame::join::args::JoinType>`. from_join_type(value: JoinType) -> JoinArgs
+#[rune::function(free, path = W_polars_ops__frame__join__args__JoinArgs::from_join_type)]
+fn f_eca8bc8e_ointype__polars_ops__frame__join__args__joinargs(value: &W_polars_ops__frame__join__args__JoinType) -> W_polars_ops__frame__join__args__JoinArgs { let __r = <polars_ops::frame::join::JoinArgs as From<polars_ops::frame::join::JoinType>>::from(value.0.clone()); W_polars_ops__frame__join__args__JoinArgs(__r) }
 /// Polars: `polars_ops::frame::join::args::JoinArgs as core::default::Default`.
 #[rune::function(free, path = W_polars_ops__frame__join__args__JoinArgs::default_)]
 fn p_6b89875b___join__args__joinargs_as_core__default__default() -> W_polars_ops__frame__join__args__JoinArgs { W_polars_ops__frame__join__args__JoinArgs(<polars_ops::frame::join::JoinArgs>::default()) }
@@ -8306,12 +8449,20 @@ fn p_62894699_ars_plan__dsl__arity__then_as_core__clone__clone(this: &W_polars_p
 /// Polars: `polars_plan::dsl::arity::When as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_da204555_ars_plan__dsl__arity__when_as_core__clone__clone(this: &W_polars_plan__dsl__arity__When) -> W_polars_plan__dsl__arity__When { W_polars_plan__dsl__arity__When(this.0.clone()) }
+/// 
+/// Polars: `polars_plan::dsl::builder_dsl::DslBuilder as core::convert::From<polars_plan::dsl::plan::DslPlan>`. from_dsl_plan(value: DslPlan) -> DslBuilder
+#[rune::function(free, path = W_polars_plan__dsl__builder_dsl__DslBuilder::from_dsl_plan)]
+fn f_7634057c_lplan__polars_plan__dsl__builder_dsl__dslbuilder(value: &W_polars_plan__dsl__plan__DslPlan) -> W_polars_plan__dsl__builder_dsl__DslBuilder { let __r = <polars_plan::dsl::DslBuilder as From<polars_plan::dsl::DslPlan>>::from(value.0.clone()); W_polars_plan__dsl__builder_dsl__DslBuilder(__r) }
 /// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_3c38cd1e_atatype_expr__datatypeexpr_as_core__clone__clone(this: &W_polars_plan__dsl__datatype_expr__DataTypeExpr) -> W_polars_plan__dsl__datatype_expr__DataTypeExpr { W_polars_plan__dsl__datatype_expr__DataTypeExpr(this.0.clone()) }
 /// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_539294e9_atype_expr__datatypeexpr_as_core__cmp__partialeq(this: &W_polars_plan__dsl__datatype_expr__DataTypeExpr, other: &W_polars_plan__dsl__datatype_expr__DataTypeExpr) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr as core::convert::From<polars_core::datatypes::dtype::DataType>`. from_data_type(value: DataType) -> DataTypeExpr
+#[rune::function(free, path = W_polars_plan__dsl__datatype_expr__DataTypeExpr::from_data_type)]
+fn f_784f7fc3_e__polars_plan__dsl__datatype_expr__datatypeexpr(value: &W_polars_core__datatypes__dtype__DataType) -> W_polars_plan__dsl__datatype_expr__DataTypeExpr { let __r = <polars_plan::dsl::DataTypeExpr as From<polars_core::datatypes::DataType>>::from(value.0.clone()); W_polars_plan__dsl__datatype_expr__DataTypeExpr(__r) }
 /// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_d8b814de__datatype_expr__datatypeexpr_as_core__fmt__debug(this: &W_polars_plan__dsl__datatype_expr__DataTypeExpr, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -8348,6 +8499,46 @@ fn p_e7eb8c1f_lars_plan__dsl__expr__expr_as_core__clone__clone(this: &Expr) -> E
 /// Polars: `polars_plan::dsl::expr::Expr as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_a16a848c_rs_plan__dsl__expr__expr_as_core__cmp__partialeq(this: &Expr, other: &Expr) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<polars_plan::dsl::expr::AggExpr>`. from_agg_expr(value: AggExpr) -> Expr
+#[rune::function(free, path = Expr::from_agg_expr)]
+fn f_62a06d30_dsl__expr__aggexpr__polars_plan__dsl__expr__expr(value: &W_polars_plan__dsl__expr__AggExpr) -> Expr { let __r = <polars_plan::dsl::Expr as From<polars_plan::dsl::AggExpr>>::from(value.0.clone()); Expr(__r) }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<&str>`. from_str_ref(value: string) -> Expr
+#[rune::function(free, path = Expr::from_str_ref)]
+fn f_02db65b1_convert__from__str__polars_plan__dsl__expr__expr(value: &str) -> Expr { let __r = <polars_plan::dsl::Expr as From<&str>>::from(value); Expr(__r) }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<f32>`. from_f32(value: float) -> Expr
+#[rune::function(free, path = Expr::from_f32)]
+fn f_1c0f328d__convert__from_f32__polars_plan__dsl__expr__expr(value: f64) -> Expr { let __r = <polars_plan::dsl::Expr as From<f32>>::from((value as f32)); Expr(__r) }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<f64>`. from_f64(value: float) -> Expr
+#[rune::function(free, path = Expr::from_f64)]
+fn f_13f336b4__convert__from_f64__polars_plan__dsl__expr__expr(value: f64) -> Expr { let __r = <polars_plan::dsl::Expr as From<f64>>::from(value); Expr(__r) }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<i32>`. from_i32(value: int) -> Expr (fallible)
+#[rune::function(free, path = Expr::from_i32)]
+fn f_7ac3fb8b__convert__from_i32__polars_plan__dsl__expr__expr(value: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr as From<i32>>::from(support::narrow::<i32>(value, "value")?); Ok(Expr(__r)) }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<i64>`. from_i64(value: int) -> Expr
+#[rune::function(free, path = Expr::from_i64)]
+fn f_76a03f7d__convert__from_i64__polars_plan__dsl__expr__expr(value: i64) -> Expr { let __r = <polars_plan::dsl::Expr as From<i64>>::from(value); Expr(__r) }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<u32>`. from_u32(value: int) -> Expr (fallible)
+#[rune::function(free, path = Expr::from_u32)]
+fn f_83d7ea78__convert__from_u32__polars_plan__dsl__expr__expr(value: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr as From<u32>>::from(support::narrow::<u32>(value, "value")?); Ok(Expr(__r)) }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<u64>`. from_u64(value: int) -> Expr (fallible)
+#[rune::function(free, path = Expr::from_u64)]
+fn f_bca03067__convert__from_u64__polars_plan__dsl__expr__expr(value: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr as From<u64>>::from(support::narrow::<u64>(value, "value")?); Ok(Expr(__r)) }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<bool>`. from_bool(value: bool) -> Expr
+#[rune::function(free, path = Expr::from_bool)]
+fn f_607b99ec_convert__from_bool__polars_plan__dsl__expr__expr(value: bool) -> Expr { let __r = <polars_plan::dsl::Expr as From<bool>>::from(value); Expr(__r) }
+/// 
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<polars_plan::dsl::selector::Selector>`. from_selector(value: Selector) -> Expr
+#[rune::function(free, path = Expr::from_selector)]
+fn f_e3c623c0_selector__selector__polars_plan__dsl__expr__expr(value: &W_polars_plan__dsl__selector__Selector) -> Expr { let __r = <polars_plan::dsl::Expr as From<polars_plan::dsl::Selector>>::from(value.0.clone()); Expr(__r) }
 /// Polars: `polars_plan::dsl::expr::Expr as core::default::Default`.
 #[rune::function(free, path = Expr::default_)]
 fn p_426f233f__plan__dsl__expr__expr_as_core__default__default() -> Expr { Expr(<polars_plan::dsl::Expr>::default()) }
@@ -8477,15 +8668,30 @@ fn p_85813242_n__dsl__file_scan__scanflags_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_e3a6c61b_l__file_scan__scanflags_as_core__ops__arith__sub(this: &W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) -> W_polars_plan__dsl__file_scan__ScanFlags { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__dsl__file_scan__ScanFlags(__r) }
+/// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::arith::SubAssign`.
+#[rune::function(instance, protocol = SUB_ASSIGN)]
+fn p_c969a7b2_e_scan__scanflags_as_core__ops__arith__subassign(this: &mut W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) { <polars_plan::dsl::ScanFlags as core::ops::SubAssign>::sub_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::bit::BitAnd`.
 #[rune::function(instance, protocol = BIT_AND)]
 fn p_465cffe6___file_scan__scanflags_as_core__ops__bit__bitand(this: &W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) -> W_polars_plan__dsl__file_scan__ScanFlags { let __r = this.0.clone() & rhs.0.clone(); W_polars_plan__dsl__file_scan__ScanFlags(__r) }
+/// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::bit::BitAndAssign`.
+#[rune::function(instance, protocol = BIT_AND_ASSIGN)]
+fn p_75cd3730__scan__scanflags_as_core__ops__bit__bitandassign(this: &mut W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) { <polars_plan::dsl::ScanFlags as core::ops::BitAndAssign>::bitand_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::bit::BitOr`.
 #[rune::function(instance, protocol = BIT_OR)]
 fn p_58ff7fa2_l__file_scan__scanflags_as_core__ops__bit__bitor(this: &W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) -> W_polars_plan__dsl__file_scan__ScanFlags { let __r = this.0.clone() | rhs.0.clone(); W_polars_plan__dsl__file_scan__ScanFlags(__r) }
+/// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::bit::BitOrAssign`.
+#[rune::function(instance, protocol = BIT_OR_ASSIGN)]
+fn p_8529449e_e_scan__scanflags_as_core__ops__bit__bitorassign(this: &mut W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) { <polars_plan::dsl::ScanFlags as core::ops::BitOrAssign>::bitor_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::bit::BitXor`.
 #[rune::function(instance, protocol = BIT_XOR)]
 fn p_989e9306___file_scan__scanflags_as_core__ops__bit__bitxor(this: &W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) -> W_polars_plan__dsl__file_scan__ScanFlags { let __r = this.0.clone() ^ rhs.0.clone(); W_polars_plan__dsl__file_scan__ScanFlags(__r) }
+/// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::bit::BitXorAssign`.
+#[rune::function(instance, protocol = BIT_XOR_ASSIGN)]
+fn p_22b5ae1a__scan__scanflags_as_core__ops__bit__bitxorassign(this: &mut W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) { <polars_plan::dsl::ScanFlags as core::ops::BitXorAssign>::bitxor_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::bit::Not`.
+#[rune::function(instance, path = not_)]
+fn p_a7747898_dsl__file_scan__scanflags_as_core__ops__bit__not(this: &W_polars_plan__dsl__file_scan__ScanFlags) -> W_polars_plan__dsl__file_scan__ScanFlags { W_polars_plan__dsl__file_scan__ScanFlags(<polars_plan::dsl::ScanFlags as core::ops::Not>::not(this.0.clone())) }
 /// Polars: `polars_plan::dsl::file_scan::TableStatistics as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_6effb034_file_scan__tablestatistics_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__TableStatistics) -> W_polars_plan__dsl__file_scan__TableStatistics { W_polars_plan__dsl__file_scan__TableStatistics(this.0.clone()) }
@@ -8540,6 +8746,22 @@ fn p_9dafb1cf_unction_expr__functionexpr_as_core__clone__clone(this: &W_polars_p
 /// Polars: `polars_plan::dsl::function_expr::FunctionExpr as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_85dc10ee_ction_expr__functionexpr_as_core__cmp__partialeq(this: &W_polars_plan__dsl__function_expr__FunctionExpr, other: &W_polars_plan__dsl__function_expr__FunctionExpr) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_plan::dsl::function_expr::FunctionExpr as core::convert::From<polars_plan::dsl::function_expr::boolean::BooleanFunction>`. from_boolean_function(value: BooleanFunction) -> FunctionExpr
+#[rune::function(free, path = W_polars_plan__dsl__function_expr__FunctionExpr::from_boolean_function)]
+fn f_88b19c4c_n__polars_plan__dsl__function_expr__functionexpr(value: &W_polars_plan__dsl__function_expr__boolean__BooleanFunction) -> W_polars_plan__dsl__function_expr__FunctionExpr { let __r = <polars_plan::dsl::function_expr::FunctionExpr as From<polars_plan::dsl::function_expr::BooleanFunction>>::from(value.0.clone()); W_polars_plan__dsl__function_expr__FunctionExpr(__r) }
+/// 
+/// Polars: `polars_plan::dsl::function_expr::FunctionExpr as core::convert::From<polars_plan::dsl::function_expr::cat::CategoricalFunction>`. from_categorical_function(value: CategoricalFunction) -> FunctionExpr
+#[rune::function(free, path = W_polars_plan__dsl__function_expr__FunctionExpr::from_categorical_function)]
+fn f_ca164dbb_n__polars_plan__dsl__function_expr__functionexpr(value: &W_polars_plan__dsl__function_expr__cat__CategoricalFunction) -> W_polars_plan__dsl__function_expr__FunctionExpr { let __r = <polars_plan::dsl::function_expr::FunctionExpr as From<polars_plan::dsl::function_expr::CategoricalFunction>>::from(value.0.clone()); W_polars_plan__dsl__function_expr__FunctionExpr(__r) }
+/// 
+/// Polars: `polars_plan::dsl::function_expr::FunctionExpr as core::convert::From<polars_plan::dsl::function_expr::list::ListFunction>`. from_list_function(value: ListFunction) -> FunctionExpr
+#[rune::function(free, path = W_polars_plan__dsl__function_expr__FunctionExpr::from_list_function)]
+fn f_15df9d3a_n__polars_plan__dsl__function_expr__functionexpr(value: &W_polars_plan__dsl__function_expr__list__ListFunction) -> W_polars_plan__dsl__function_expr__FunctionExpr { let __r = <polars_plan::dsl::function_expr::FunctionExpr as From<polars_plan::dsl::function_expr::ListFunction>>::from(value.0.clone()); W_polars_plan__dsl__function_expr__FunctionExpr(__r) }
+/// 
+/// Polars: `polars_plan::dsl::function_expr::FunctionExpr as core::convert::From<polars_plan::dsl::function_expr::pow::PowFunction>`. from_pow_function(value: PowFunction) -> FunctionExpr
+#[rune::function(free, path = W_polars_plan__dsl__function_expr__FunctionExpr::from_pow_function)]
+fn f_5968e4dc_n__polars_plan__dsl__function_expr__functionexpr(value: &W_polars_plan__dsl__function_expr__pow__PowFunction) -> W_polars_plan__dsl__function_expr__FunctionExpr { let __r = <polars_plan::dsl::function_expr::FunctionExpr as From<polars_plan::dsl::function_expr::PowFunction>>::from(value.0.clone()); W_polars_plan__dsl__function_expr__FunctionExpr(__r) }
 /// Polars: `polars_plan::dsl::function_expr::FunctionExpr as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_04edafd8__function_expr__functionexpr_as_core__fmt__debug(this: &W_polars_plan__dsl__function_expr__FunctionExpr, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -8708,6 +8930,10 @@ fn p_d1b87977__dsl__options__joinoptions_as_core__clone__clone(this: &W_polars_p
 /// Polars: `polars_plan::dsl::options::JoinOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_23e3f8fc_sl__options__joinoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__JoinOptions, other: &W_polars_plan__dsl__options__JoinOptions) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_plan::dsl::options::JoinOptions as core::convert::From<polars_plan::dsl::options::JoinOptionsIR>`. from_join_options_i_r(value: JoinOptionsIR) -> JoinOptions
+#[rune::function(free, path = W_polars_plan__dsl__options__JoinOptions::from_join_options_i_r)]
+fn f_552f08ae_ptionsir__polars_plan__dsl__options__joinoptions(value: &W_polars_plan__dsl__options__JoinOptionsIR) -> W_polars_plan__dsl__options__JoinOptions { let __r = <polars_plan::dsl::JoinOptions as From<polars_plan::dsl::JoinOptionsIR>>::from(value.0.clone()); W_polars_plan__dsl__options__JoinOptions(__r) }
 /// Polars: `polars_plan::dsl::options::JoinOptions as core::default::Default`.
 #[rune::function(free, path = W_polars_plan__dsl__options__JoinOptions::default_)]
 fn p_b6362d08___options__joinoptions_as_core__default__default() -> W_polars_plan__dsl__options__JoinOptions { W_polars_plan__dsl__options__JoinOptions(<polars_plan::dsl::JoinOptions>::default()) }
@@ -8720,6 +8946,10 @@ fn p_14522c8e_sl__options__joinoptionsir_as_core__clone__clone(this: &W_polars_p
 /// Polars: `polars_plan::dsl::options::JoinOptionsIR as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_132b820a___options__joinoptionsir_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__JoinOptionsIR, other: &W_polars_plan__dsl__options__JoinOptionsIR) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_plan::dsl::options::JoinOptionsIR as core::convert::From<polars_plan::dsl::options::JoinOptions>`. from_join_options(value: JoinOptions) -> JoinOptionsIR
+#[rune::function(free, path = W_polars_plan__dsl__options__JoinOptionsIR::from_join_options)]
+fn f_42c75cd3_ptions__polars_plan__dsl__options__joinoptionsir(value: &W_polars_plan__dsl__options__JoinOptions) -> W_polars_plan__dsl__options__JoinOptionsIR { let __r = <polars_plan::dsl::JoinOptionsIR as From<polars_plan::dsl::JoinOptions>>::from(value.0.clone()); W_polars_plan__dsl__options__JoinOptionsIR(__r) }
 /// Polars: `polars_plan::dsl::options::JoinOptionsIR as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_e49f8368__dsl__options__joinoptionsir_as_core__fmt__debug(this: &W_polars_plan__dsl__options__JoinOptionsIR, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -8780,6 +9010,10 @@ fn p_6066993e_dsl__options__unionoptions_as_core__clone__clone(this: &W_polars_p
 /// Polars: `polars_plan::dsl::options::UnionOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_1f4fb1f5_l__options__unionoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__UnionOptions, other: &W_polars_plan__dsl__options__UnionOptions) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_plan::dsl::options::UnionOptions as core::convert::From<polars_plan::dsl::options::UnionArgs>`. from_union_args(value: UnionArgs) -> UnionOptions
+#[rune::function(free, path = W_polars_plan__dsl__options__UnionOptions::from_union_args)]
+fn f_7dbe83ab_ionargs__polars_plan__dsl__options__unionoptions(value: &W_polars_plan__dsl__options__UnionArgs) -> W_polars_plan__dsl__options__UnionOptions { let __r = <polars_plan::dsl::UnionOptions as From<polars_plan::dsl::UnionArgs>>::from(value.0.clone()); W_polars_plan__dsl__options__UnionOptions(__r) }
 /// Polars: `polars_plan::dsl::options::UnionOptions as core::default::Default`.
 #[rune::function(free, path = W_polars_plan__dsl__options__UnionOptions::default_)]
 fn p_a0fa611d__options__unionoptions_as_core__default__default() -> W_polars_plan__dsl__options__UnionOptions { W_polars_plan__dsl__options__UnionOptions(<polars_plan::dsl::UnionOptions>::default()) }
@@ -9026,6 +9260,18 @@ fn p_6614de86___selector__datatypeselector_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_83726194_selector__datatypeselector_as_core__fmt__display(this: &W_polars_plan__dsl__selector__DataTypeSelector, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::ops::arith::SubAssign`.
+#[rune::function(instance, protocol = SUB_ASSIGN)]
+fn p_c2c47655__datatypeselector_as_core__ops__arith__subassign(this: &mut W_polars_plan__dsl__selector__DataTypeSelector, rhs: &W_polars_plan__dsl__selector__DataTypeSelector) { <polars_plan::dsl::DataTypeSelector as core::ops::SubAssign>::sub_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::ops::bit::BitAndAssign`.
+#[rune::function(instance, protocol = BIT_AND_ASSIGN)]
+fn p_f2c23cb8_datatypeselector_as_core__ops__bit__bitandassign(this: &mut W_polars_plan__dsl__selector__DataTypeSelector, rhs: &W_polars_plan__dsl__selector__DataTypeSelector) { <polars_plan::dsl::DataTypeSelector as core::ops::BitAndAssign>::bitand_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::ops::bit::BitOrAssign`.
+#[rune::function(instance, protocol = BIT_OR_ASSIGN)]
+fn p_b3a2c320__datatypeselector_as_core__ops__bit__bitorassign(this: &mut W_polars_plan__dsl__selector__DataTypeSelector, rhs: &W_polars_plan__dsl__selector__DataTypeSelector) { <polars_plan::dsl::DataTypeSelector as core::ops::BitOrAssign>::bitor_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::ops::bit::BitXorAssign`.
+#[rune::function(instance, protocol = BIT_XOR_ASSIGN)]
+fn p_70c4f4e3_datatypeselector_as_core__ops__bit__bitxorassign(this: &mut W_polars_plan__dsl__selector__DataTypeSelector, rhs: &W_polars_plan__dsl__selector__DataTypeSelector) { <polars_plan::dsl::DataTypeSelector as core::ops::BitXorAssign>::bitxor_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::dsl::selector::Selector as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_11ec609b_n__dsl__selector__selector_as_core__clone__clone(this: &W_polars_plan__dsl__selector__Selector) -> W_polars_plan__dsl__selector__Selector { W_polars_plan__dsl__selector__Selector(this.0.clone()) }
@@ -9038,12 +9284,28 @@ fn p_1b0117fa_lan__dsl__selector__selector_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::selector::Selector as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_c8de88ec_n__dsl__selector__selector_as_core__fmt__display(this: &W_polars_plan__dsl__selector__Selector, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::selector::Selector as core::ops::arith::SubAssign`.
+#[rune::function(instance, protocol = SUB_ASSIGN)]
+fn p_cae05586_elector__selector_as_core__ops__arith__subassign(this: &mut W_polars_plan__dsl__selector__Selector, rhs: &W_polars_plan__dsl__selector__Selector) { <polars_plan::dsl::Selector as core::ops::SubAssign>::sub_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::Selector as core::ops::bit::BitAndAssign`.
+#[rune::function(instance, protocol = BIT_AND_ASSIGN)]
+fn p_978c27f1_lector__selector_as_core__ops__bit__bitandassign(this: &mut W_polars_plan__dsl__selector__Selector, rhs: &W_polars_plan__dsl__selector__Selector) { <polars_plan::dsl::Selector as core::ops::BitAndAssign>::bitand_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::Selector as core::ops::bit::BitOrAssign`.
+#[rune::function(instance, protocol = BIT_OR_ASSIGN)]
+fn p_44dd694a_elector__selector_as_core__ops__bit__bitorassign(this: &mut W_polars_plan__dsl__selector__Selector, rhs: &W_polars_plan__dsl__selector__Selector) { <polars_plan::dsl::Selector as core::ops::BitOrAssign>::bitor_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::Selector as core::ops::bit::BitXorAssign`.
+#[rune::function(instance, protocol = BIT_XOR_ASSIGN)]
+fn p_97d785e3_lector__selector_as_core__ops__bit__bitxorassign(this: &mut W_polars_plan__dsl__selector__Selector, rhs: &W_polars_plan__dsl__selector__Selector) { <polars_plan::dsl::Selector as core::ops::BitXorAssign>::bitxor_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_9ee32a45_dsl__selector__timeunitset_as_core__clone__clone(this: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { W_polars_plan__dsl__selector__TimeUnitSet(this.0.clone()) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_8101c898_l__selector__timeunitset_as_core__cmp__partialeq(this: &W_polars_plan__dsl__selector__TimeUnitSet, other: &W_polars_plan__dsl__selector__TimeUnitSet) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::convert::From<polars_core::datatypes::temporal::time_unit::TimeUnit>`. from_time_unit(value: TimeUnit) -> TimeUnitSet
+#[rune::function(free, path = W_polars_plan__dsl__selector__TimeUnitSet::from_time_unit)]
+fn f_312cd853_imeunit__polars_plan__dsl__selector__timeunitset(value: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> W_polars_plan__dsl__selector__TimeUnitSet { let __r = <polars_plan::dsl::TimeUnitSet as From<polars_core::datatypes::TimeUnit>>::from(value.0.clone()); W_polars_plan__dsl__selector__TimeUnitSet(__r) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_3b86c614___dsl__selector__timeunitset_as_core__fmt__debug(this: &W_polars_plan__dsl__selector__TimeUnitSet, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -9053,15 +9315,30 @@ fn p_9d113f22_dsl__selector__timeunitset_as_core__fmt__display(this: &W_polars_p
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_131cc460___selector__timeunitset_as_core__ops__arith__sub(this: &W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__dsl__selector__TimeUnitSet(__r) }
+/// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::arith::SubAssign`.
+#[rune::function(instance, protocol = SUB_ASSIGN)]
+fn p_343279b0_ctor__timeunitset_as_core__ops__arith__subassign(this: &mut W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) { <polars_plan::dsl::TimeUnitSet as core::ops::SubAssign>::sub_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::bit::BitAnd`.
 #[rune::function(instance, protocol = BIT_AND)]
 fn p_dbe35a29__selector__timeunitset_as_core__ops__bit__bitand(this: &W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { let __r = this.0.clone() & rhs.0.clone(); W_polars_plan__dsl__selector__TimeUnitSet(__r) }
+/// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::bit::BitAndAssign`.
+#[rune::function(instance, protocol = BIT_AND_ASSIGN)]
+fn p_38eabd7d_tor__timeunitset_as_core__ops__bit__bitandassign(this: &mut W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) { <polars_plan::dsl::TimeUnitSet as core::ops::BitAndAssign>::bitand_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::bit::BitOr`.
 #[rune::function(instance, protocol = BIT_OR)]
 fn p_7d0cc2e0___selector__timeunitset_as_core__ops__bit__bitor(this: &W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { let __r = this.0.clone() | rhs.0.clone(); W_polars_plan__dsl__selector__TimeUnitSet(__r) }
+/// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::bit::BitOrAssign`.
+#[rune::function(instance, protocol = BIT_OR_ASSIGN)]
+fn p_2d83fa6e_ctor__timeunitset_as_core__ops__bit__bitorassign(this: &mut W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) { <polars_plan::dsl::TimeUnitSet as core::ops::BitOrAssign>::bitor_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::bit::BitXor`.
 #[rune::function(instance, protocol = BIT_XOR)]
 fn p_2f527ea2__selector__timeunitset_as_core__ops__bit__bitxor(this: &W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { let __r = this.0.clone() ^ rhs.0.clone(); W_polars_plan__dsl__selector__TimeUnitSet(__r) }
+/// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::bit::BitXorAssign`.
+#[rune::function(instance, protocol = BIT_XOR_ASSIGN)]
+fn p_31098c8a_tor__timeunitset_as_core__ops__bit__bitxorassign(this: &mut W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) { <polars_plan::dsl::TimeUnitSet as core::ops::BitXorAssign>::bitxor_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::bit::Not`.
+#[rune::function(instance, path = not_)]
+fn p_9b478329_sl__selector__timeunitset_as_core__ops__bit__not(this: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { W_polars_plan__dsl__selector__TimeUnitSet(<polars_plan::dsl::TimeUnitSet as core::ops::Not>::not(this.0.clone())) }
 /// Polars: `polars_plan::dsl::selector::TimeZoneSet as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_06ece4c0_dsl__selector__timezoneset_as_core__clone__clone(this: &W_polars_plan__dsl__selector__TimeZoneSet) -> W_polars_plan__dsl__selector__TimeZoneSet { W_polars_plan__dsl__selector__TimeZoneSet(this.0.clone()) }
@@ -9089,21 +9366,40 @@ fn p_15aad8a9___frame__opt_state__optflags_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_0e7083fb_me__opt_state__optflags_as_core__ops__arith__sub(this: &W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) -> W_polars_plan__frame__opt_state__OptFlags { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__frame__opt_state__OptFlags(__r) }
+/// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::arith::SubAssign`.
+#[rune::function(instance, protocol = SUB_ASSIGN)]
+fn p_7feccd84_t_state__optflags_as_core__ops__arith__subassign(this: &mut W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) { <polars_plan::frame::AllowedOptimizations as core::ops::SubAssign>::sub_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::bit::BitAnd`.
 #[rune::function(instance, protocol = BIT_AND)]
 fn p_196558ab_e__opt_state__optflags_as_core__ops__bit__bitand(this: &W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) -> W_polars_plan__frame__opt_state__OptFlags { let __r = this.0.clone() & rhs.0.clone(); W_polars_plan__frame__opt_state__OptFlags(__r) }
+/// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::bit::BitAndAssign`.
+#[rune::function(instance, protocol = BIT_AND_ASSIGN)]
+fn p_5ed2bd4f__state__optflags_as_core__ops__bit__bitandassign(this: &mut W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) { <polars_plan::frame::AllowedOptimizations as core::ops::BitAndAssign>::bitand_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::bit::BitOr`.
 #[rune::function(instance, protocol = BIT_OR)]
 fn p_5e7255e3_me__opt_state__optflags_as_core__ops__bit__bitor(this: &W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) -> W_polars_plan__frame__opt_state__OptFlags { let __r = this.0.clone() | rhs.0.clone(); W_polars_plan__frame__opt_state__OptFlags(__r) }
+/// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::bit::BitOrAssign`.
+#[rune::function(instance, protocol = BIT_OR_ASSIGN)]
+fn p_813a6143_t_state__optflags_as_core__ops__bit__bitorassign(this: &mut W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) { <polars_plan::frame::AllowedOptimizations as core::ops::BitOrAssign>::bitor_assign(&mut this.0, rhs.0.clone()) }
 /// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::bit::BitXor`.
 #[rune::function(instance, protocol = BIT_XOR)]
 fn p_746fb4a8_e__opt_state__optflags_as_core__ops__bit__bitxor(this: &W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) -> W_polars_plan__frame__opt_state__OptFlags { let __r = this.0.clone() ^ rhs.0.clone(); W_polars_plan__frame__opt_state__OptFlags(__r) }
+/// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::bit::BitXorAssign`.
+#[rune::function(instance, protocol = BIT_XOR_ASSIGN)]
+fn p_30e7106c__state__optflags_as_core__ops__bit__bitxorassign(this: &mut W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) { <polars_plan::frame::AllowedOptimizations as core::ops::BitXorAssign>::bitxor_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::bit::Not`.
+#[rune::function(instance, path = not_)]
+fn p_2f786a5f_rame__opt_state__optflags_as_core__ops__bit__not(this: &W_polars_plan__frame__opt_state__OptFlags) -> W_polars_plan__frame__opt_state__OptFlags { W_polars_plan__frame__opt_state__OptFlags(<polars_plan::frame::AllowedOptimizations as core::ops::Not>::not(this.0.clone())) }
 /// Polars: `polars_plan::plans::lit::LiteralValue as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b84db21d___plans__lit__literalvalue_as_core__clone__clone(this: &W_polars_plan__plans__lit__LiteralValue) -> W_polars_plan__plans__lit__LiteralValue { W_polars_plan__plans__lit__LiteralValue(this.0.clone()) }
 /// Polars: `polars_plan::plans::lit::LiteralValue as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_f26c06a8_plans__lit__literalvalue_as_core__cmp__partialeq(this: &W_polars_plan__plans__lit__LiteralValue, other: &W_polars_plan__plans__lit__LiteralValue) -> bool { this.0 == other.0 }
+/// 
+/// Polars: `polars_plan::plans::lit::LiteralValue as core::convert::From<polars_core::scalar::Scalar>`. from_scalar(value: Scalar) -> LiteralValue
+#[rune::function(free, path = W_polars_plan__plans__lit__LiteralValue::from_scalar)]
+fn f_74158adf_r__scalar__polars_plan__plans__lit__literalvalue(value: &W_polars_core__scalar__Scalar) -> W_polars_plan__plans__lit__LiteralValue { let __r = <polars_plan::plans::LiteralValue as From<polars_core::scalar::Scalar>>::from(value.0.clone()); W_polars_plan__plans__lit__LiteralValue(__r) }
 /// Polars: `polars_plan::plans::lit::LiteralValue as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_11de42d8_an__plans__lit__literalvalue_as_core__fmt__debug(this: &W_polars_plan__plans__lit__LiteralValue, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -14122,10 +14418,16 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_c4daae80___flags__statisticsflags_as_core__cmp__partialeq)?;
     m.function_meta(p_62787664_rray__flags__statisticsflags_as_core__fmt__debug)?;
     m.function_meta(p_886ce722__flags__statisticsflags_as_core__ops__arith__sub)?;
+    m.function_meta(p_cd414ea0___statisticsflags_as_core__ops__arith__subassign)?;
     m.function_meta(p_ab0a3a03_flags__statisticsflags_as_core__ops__bit__bitand)?;
+    m.function_meta(p_5dddbb56__statisticsflags_as_core__ops__bit__bitandassign)?;
     m.function_meta(p_f622b23b__flags__statisticsflags_as_core__ops__bit__bitor)?;
+    m.function_meta(p_a93bcafa___statisticsflags_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_1d20eb63_flags__statisticsflags_as_core__ops__bit__bitxor)?;
+    m.function_meta(p_94eab3be__statisticsflags_as_core__ops__bit__bitxorassign)?;
+    m.function_meta(p_2c1f07d0_y__flags__statisticsflags_as_core__ops__bit__not)?;
     m.function_meta(p_4b377447___flags__statisticsflagsim_as_core__clone__clone)?;
+    m.function_meta(f_6c1cc0dc_rs_core__chunked_array__flags__statisticsflagsim)?;
     m.function_meta(p_9171defa_ay__flags__statisticsflagsim_as_core__fmt__debug)?;
     m.function_meta(p_ed688b19_array__ops__explodeoptions_as_core__clone__clone)?;
     m.function_meta(p_3147d860_ray__ops__explodeoptions_as_core__cmp__partialeq)?;
@@ -14139,10 +14441,12 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_3ba76a74_rch_sorted__searchsortedside_as_core__fmt__debug)?;
     m.function_meta(p_83e30ef3_tions__sortmultipleoptions_as_core__clone__clone)?;
     m.function_meta(p_e25a91e9_ons__sortmultipleoptions_as_core__cmp__partialeq)?;
+    m.function_meta(f_5e279452_d_array__ops__sort__options__sortmultipleoptions)?;
     m.function_meta(p_a57c33b4_s__sortmultipleoptions_as_core__default__default)?;
     m.function_meta(p_ea4106e7_options__sortmultipleoptions_as_core__fmt__debug)?;
     m.function_meta(p_61ae14b9_sort__options__sortoptions_as_core__clone__clone)?;
     m.function_meta(p_e1ddcfaf_rt__options__sortoptions_as_core__cmp__partialeq)?;
+    m.function_meta(f_638ca6dd___chunked_array__ops__sort__options__sortoptions)?;
     m.function_meta(p_a52bb73a___options__sortoptions_as_core__default__default)?;
     m.function_meta(p_7b063c10___sort__options__sortoptions_as_core__fmt__debug)?;
     m.function_meta(p_825e24bc_atatypes__binaryoffsettype_as_core__clone__clone)?;
@@ -14171,6 +14475,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_158069ff_ypes__dtype__compatlevel_as_core__cmp__partialeq)?;
     m.function_meta(p_2c9ef818_atatypes__dtype__compatlevel_as_core__fmt__debug)?;
     m.function_meta(p_d5beb85c_datatypes__dtype__datatype_as_core__clone__clone)?;
+    m.function_meta(f_c3e73ac8_hysical__polars_core__datatypes__dtype__datatype)?;
     m.function_meta(p_19f7b58a___datatypes__dtype__datatype_as_core__fmt__debug)?;
     m.function_meta(p_67693477_datatypes__dtype__datatype_as_core__fmt__display)?;
     m.function_meta(p_81cfac00_atypes__dtype__unknownkind_as_core__clone__clone)?;
@@ -14182,6 +14487,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_e4f351db_ore__datatypes__field__field_as_core__fmt__debug)?;
     m.function_meta(p_80377a00_poral__time_unit__timeunit_as_core__clone__clone)?;
     m.function_meta(p_d10b8ff0_ral__time_unit__timeunit_as_core__cmp__partialeq)?;
+    m.function_meta(f_111727c1_s_core__datatypes__temporal__time_unit__timeunit)?;
     m.function_meta(p_27f8cf16_emporal__time_unit__timeunit_as_core__fmt__debug)?;
     m.function_meta(p_d802bb4e_poral__time_unit__timeunit_as_core__fmt__display)?;
     m.function_meta(p_6b512183_poral__time_zone__timezone_as_core__clone__clone)?;
@@ -14197,6 +14503,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_ec06cb05_me__uniquekeepstrategy_as_core__default__default)?;
     m.function_meta(p_df0f79ba_e__frame__uniquekeepstrategy_as_core__fmt__debug)?;
     m.function_meta(p_2d1c06dd_ore__frame__column__column_as_core__clone__clone)?;
+    m.function_meta(f_d59c4694_scalarcolumn__polars_core__frame__column__column)?;
+    m.function_meta(f_c2c2954f_ries__series__polars_core__frame__column__column)?;
     m.function_meta(p_68160b34__frame__column__column_as_core__default__default)?;
     m.function_meta(p_b0308067__core__frame__column__column_as_core__fmt__debug)?;
     m.function_meta(p_202b4483_lumn__scalar__scalarcolumn_as_core__clone__clone)?;
@@ -14220,13 +14528,34 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6c713403_roup_by__position__groupsidx_as_core__fmt__debug)?;
     m.function_meta(p_f2af2bd7_p_by__position__groupstype_as_core__clone__clone)?;
     m.function_meta(p_6aaaae02_by__position__groupstype_as_core__cmp__partialeq)?;
+    m.function_meta(f_20ff3b55_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(p_4abb1f5b___position__groupstype_as_core__default__default)?;
     m.function_meta(p_05114a8e_oup_by__position__groupstype_as_core__fmt__debug)?;
     m.function_meta(p_8fba6366_olars_core__scalar__scalar_as_core__clone__clone)?;
     m.function_meta(p_dfbeeb25_ars_core__scalar__scalar_as_core__cmp__partialeq)?;
+    m.function_meta(f_31ac90bc__convert__from_bool__polars_core__scalar__scalar)?;
+    m.function_meta(f_189669ed_e__convert__from_i8__polars_core__scalar__scalar)?;
+    m.function_meta(f_6eadeb82___convert__from_i16__polars_core__scalar__scalar)?;
+    m.function_meta(f_21a9319d___convert__from_i32__polars_core__scalar__scalar)?;
+    m.function_meta(f_ec4941ed___convert__from_i64__polars_core__scalar__scalar)?;
+    m.function_meta(f_656f3763__convert__from_i128__polars_core__scalar__scalar)?;
+    m.function_meta(f_aac00ffc_e__convert__from_u8__polars_core__scalar__scalar)?;
+    m.function_meta(f_d523b654___convert__from_u16__polars_core__scalar__scalar)?;
+    m.function_meta(f_098dabe6___convert__from_u32__polars_core__scalar__scalar)?;
+    m.function_meta(f_fd3b73b9___convert__from_u64__polars_core__scalar__scalar)?;
+    m.function_meta(f_9094405f__convert__from_u128__polars_core__scalar__scalar)?;
+    m.function_meta(f_4c936eae_tils__float16__pf16__polars_core__scalar__scalar)?;
+    m.function_meta(f_7d7e39ba___convert__from_f32__polars_core__scalar__scalar)?;
+    m.function_meta(f_cdfd9a75___convert__from_f64__polars_core__scalar__scalar)?;
+    m.function_meta(f_3dcdf569__pl_str__plsmallstr__polars_core__scalar__scalar)?;
+    m.function_meta(f_a8fb684b_alloc__vec__vec_u8___polars_core__scalar__scalar)?;
     m.function_meta(p_921cc534_s_core__scalar__scalar_as_core__default__default)?;
     m.function_meta(p_d8ae41dd_polars_core__scalar__scalar_as_core__fmt__debug)?;
     m.function_meta(p_6e2f06bb_olars_core__series__series_as_core__clone__clone)?;
+    m.function_meta(f_36f6b8e5___date__datechunked__polars_core__series__series)?;
+    m.function_meta(f_5e9e47be_me__datetimechunked__polars_core__series__series)?;
+    m.function_meta(f_0c440bdc_on__durationchunked__polars_core__series__series)?;
+    m.function_meta(f_d04b837a___time__timechunked__polars_core__series__series)?;
     m.function_meta(p_137ab81d_s_core__series__series_as_core__default__default)?;
     m.function_meta(p_fe4a7b06_polars_core__series__series_as_core__fmt__debug)?;
     m.function_meta(p_75fab2ca_olars_core__series__series_as_core__fmt__display)?;
@@ -14305,6 +14634,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_cde553ac_re__inner__polarsobjectstore_as_core__fmt__debug)?;
     m.function_meta(p_4385af8b_ad__options__commentprefix_as_core__clone__clone)?;
     m.function_meta(p_48c7623e___options__commentprefix_as_core__cmp__partialeq)?;
+    m.function_meta(f_814edb37_tr__polars_io__csv__read__options__commentprefix)?;
     m.function_meta(p_c17308f9_read__options__commentprefix_as_core__fmt__debug)?;
     m.function_meta(p_b4f20c5d_read__options__csvencoding_as_core__clone__clone)?;
     m.function_meta(p_71feb059_ad__options__csvencoding_as_core__cmp__partialeq)?;
@@ -14400,6 +14730,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_70e9c2a0_specializedcolumnpredicate_as_core__clone__clone)?;
     m.function_meta(p_08ee17ad___specializedcolumnpredicate_as_core__fmt__debug)?;
     m.function_meta(p_3fef77d3_ars_lazy__frame__lazyframe_as_core__clone__clone)?;
+    m.function_meta(f_2c963957_sl__plan__dslplan__polars_lazy__frame__lazyframe)?;
+    m.function_meta(f_b48e0cf2_rame__lazygroupby__polars_lazy__frame__lazyframe)?;
     m.function_meta(p_a84e4ccb_lazy__frame__lazyframe_as_core__default__default)?;
     m.function_meta(p_cb1b5ce7_s_lazy__frame__lazygroupby_as_core__clone__clone)?;
     m.function_meta(p_d1f34284___exitable__inprocessquery_as_core__clone__clone)?;
@@ -14412,6 +14744,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_e7b7ad11_join__args__crossjoinoptions_as_core__fmt__debug)?;
     m.function_meta(p_825f7566_rame__join__args__joinargs_as_core__clone__clone)?;
     m.function_meta(p_e3090232_me__join__args__joinargs_as_core__cmp__partialeq)?;
+    m.function_meta(f_eca8bc8e_ointype__polars_ops__frame__join__args__joinargs)?;
     m.function_meta(p_6b89875b___join__args__joinargs_as_core__default__default)?;
     m.function_meta(p_ed3df13c__frame__join__args__joinargs_as_core__fmt__debug)?;
     m.function_meta(p_1847cab9__join__args__joinbuildside_as_core__clone__clone)?;
@@ -14449,8 +14782,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_062dee50_n__dsl__arity__chainedwhen_as_core__clone__clone)?;
     m.function_meta(p_62894699_ars_plan__dsl__arity__then_as_core__clone__clone)?;
     m.function_meta(p_da204555_ars_plan__dsl__arity__when_as_core__clone__clone)?;
+    m.function_meta(f_7634057c_lplan__polars_plan__dsl__builder_dsl__dslbuilder)?;
     m.function_meta(p_3c38cd1e_atatype_expr__datatypeexpr_as_core__clone__clone)?;
     m.function_meta(p_539294e9_atype_expr__datatypeexpr_as_core__cmp__partialeq)?;
+    m.function_meta(f_784f7fc3_e__polars_plan__dsl__datatype_expr__datatypeexpr)?;
     m.function_meta(p_d8b814de__datatype_expr__datatypeexpr_as_core__fmt__debug)?;
     m.function_meta(p_22d2fa83_s_plan__dsl__expr__aggexpr_as_core__clone__clone)?;
     m.function_meta(p_716df085_plan__dsl__expr__aggexpr_as_core__cmp__partialeq)?;
@@ -14463,6 +14798,16 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_b4a2eade__plan__dsl__expr__excluded_as_core__fmt__display)?;
     m.function_meta(p_e7eb8c1f_lars_plan__dsl__expr__expr_as_core__clone__clone)?;
     m.function_meta(p_a16a848c_rs_plan__dsl__expr__expr_as_core__cmp__partialeq)?;
+    m.function_meta(f_62a06d30_dsl__expr__aggexpr__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_02db65b1_convert__from__str__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_1c0f328d__convert__from_f32__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_13f336b4__convert__from_f64__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_7ac3fb8b__convert__from_i32__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_76a03f7d__convert__from_i64__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_83d7ea78__convert__from_u32__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_bca03067__convert__from_u64__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_607b99ec_convert__from_bool__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_e3c623c0_selector__selector__polars_plan__dsl__expr__expr)?;
     m.function_meta(p_426f233f__plan__dsl__expr__expr_as_core__default__default)?;
     m.function_meta(p_a564fb06_polars_plan__dsl__expr__expr_as_core__fmt__debug)?;
     m.function_meta(p_7a4794c5_lars_plan__dsl__expr__expr_as_core__fmt__display)?;
@@ -14506,9 +14851,14 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_53601a2c_sl__file_scan__scanflags_as_core__cmp__partialeq)?;
     m.function_meta(p_85813242_n__dsl__file_scan__scanflags_as_core__fmt__debug)?;
     m.function_meta(p_e3a6c61b_l__file_scan__scanflags_as_core__ops__arith__sub)?;
+    m.function_meta(p_c969a7b2_e_scan__scanflags_as_core__ops__arith__subassign)?;
     m.function_meta(p_465cffe6___file_scan__scanflags_as_core__ops__bit__bitand)?;
+    m.function_meta(p_75cd3730__scan__scanflags_as_core__ops__bit__bitandassign)?;
     m.function_meta(p_58ff7fa2_l__file_scan__scanflags_as_core__ops__bit__bitor)?;
+    m.function_meta(p_8529449e_e_scan__scanflags_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_989e9306___file_scan__scanflags_as_core__ops__bit__bitxor)?;
+    m.function_meta(p_22b5ae1a__scan__scanflags_as_core__ops__bit__bitxorassign)?;
+    m.function_meta(p_a7747898_dsl__file_scan__scanflags_as_core__ops__bit__not)?;
     m.function_meta(p_6effb034_file_scan__tablestatistics_as_core__clone__clone)?;
     m.function_meta(p_9478666d___file_scan__tablestatistics_as_core__fmt__debug)?;
     m.function_meta(p_47fe215a_file_scan__unifiedscanargs_as_core__clone__clone)?;
@@ -14527,6 +14877,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_989abb62_eletion__deletionfileslist_as_core__fmt__display)?;
     m.function_meta(p_9dafb1cf_unction_expr__functionexpr_as_core__clone__clone)?;
     m.function_meta(p_85dc10ee_ction_expr__functionexpr_as_core__cmp__partialeq)?;
+    m.function_meta(f_88b19c4c_n__polars_plan__dsl__function_expr__functionexpr)?;
+    m.function_meta(f_ca164dbb_n__polars_plan__dsl__function_expr__functionexpr)?;
+    m.function_meta(f_15df9d3a_n__polars_plan__dsl__function_expr__functionexpr)?;
+    m.function_meta(f_5968e4dc_n__polars_plan__dsl__function_expr__functionexpr)?;
     m.function_meta(p_04edafd8__function_expr__functionexpr_as_core__fmt__debug)?;
     m.function_meta(p_866e4150_unction_expr__functionexpr_as_core__fmt__display)?;
     m.function_meta(p_5ed25721_pr__binary__binaryfunction_as_core__clone__clone)?;
@@ -14583,10 +14937,12 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_3ed1a351_dsl__options__hconcatoptions_as_core__fmt__debug)?;
     m.function_meta(p_d1b87977__dsl__options__joinoptions_as_core__clone__clone)?;
     m.function_meta(p_23e3f8fc_sl__options__joinoptions_as_core__cmp__partialeq)?;
+    m.function_meta(f_552f08ae_ptionsir__polars_plan__dsl__options__joinoptions)?;
     m.function_meta(p_b6362d08___options__joinoptions_as_core__default__default)?;
     m.function_meta(p_be60fb93_n__dsl__options__joinoptions_as_core__fmt__debug)?;
     m.function_meta(p_14522c8e_sl__options__joinoptionsir_as_core__clone__clone)?;
     m.function_meta(p_132b820a___options__joinoptionsir_as_core__cmp__partialeq)?;
+    m.function_meta(f_42c75cd3_ptions__polars_plan__dsl__options__joinoptionsir)?;
     m.function_meta(p_e49f8368__dsl__options__joinoptionsir_as_core__fmt__debug)?;
     m.function_meta(p_0dcf7f16_options__jointypeoptionsir_as_core__clone__clone)?;
     m.function_meta(p_ef7eb037_tions__jointypeoptionsir_as_core__cmp__partialeq)?;
@@ -14607,6 +14963,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_f0bbec70_lan__dsl__options__unionargs_as_core__fmt__debug)?;
     m.function_meta(p_6066993e_dsl__options__unionoptions_as_core__clone__clone)?;
     m.function_meta(p_1f4fb1f5_l__options__unionoptions_as_core__cmp__partialeq)?;
+    m.function_meta(f_7dbe83ab_ionargs__polars_plan__dsl__options__unionoptions)?;
     m.function_meta(p_a0fa611d__options__unionoptions_as_core__default__default)?;
     m.function_meta(p_d9afe383___dsl__options__unionoptions_as_core__fmt__debug)?;
     m.function_meta(p_75df6b5f_l__options__unpivotargsdsl_as_core__clone__clone)?;
@@ -14689,18 +15046,32 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_e47b821f_lector__datatypeselector_as_core__cmp__partialeq)?;
     m.function_meta(p_6614de86___selector__datatypeselector_as_core__fmt__debug)?;
     m.function_meta(p_83726194_selector__datatypeselector_as_core__fmt__display)?;
+    m.function_meta(p_c2c47655__datatypeselector_as_core__ops__arith__subassign)?;
+    m.function_meta(p_f2c23cb8_datatypeselector_as_core__ops__bit__bitandassign)?;
+    m.function_meta(p_b3a2c320__datatypeselector_as_core__ops__bit__bitorassign)?;
+    m.function_meta(p_70c4f4e3_datatypeselector_as_core__ops__bit__bitxorassign)?;
     m.function_meta(p_11ec609b_n__dsl__selector__selector_as_core__clone__clone)?;
     m.function_meta(p_100e5c07__dsl__selector__selector_as_core__cmp__partialeq)?;
     m.function_meta(p_1b0117fa_lan__dsl__selector__selector_as_core__fmt__debug)?;
     m.function_meta(p_c8de88ec_n__dsl__selector__selector_as_core__fmt__display)?;
+    m.function_meta(p_cae05586_elector__selector_as_core__ops__arith__subassign)?;
+    m.function_meta(p_978c27f1_lector__selector_as_core__ops__bit__bitandassign)?;
+    m.function_meta(p_44dd694a_elector__selector_as_core__ops__bit__bitorassign)?;
+    m.function_meta(p_97d785e3_lector__selector_as_core__ops__bit__bitxorassign)?;
     m.function_meta(p_9ee32a45_dsl__selector__timeunitset_as_core__clone__clone)?;
     m.function_meta(p_8101c898_l__selector__timeunitset_as_core__cmp__partialeq)?;
+    m.function_meta(f_312cd853_imeunit__polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(p_3b86c614___dsl__selector__timeunitset_as_core__fmt__debug)?;
     m.function_meta(p_9d113f22_dsl__selector__timeunitset_as_core__fmt__display)?;
     m.function_meta(p_131cc460___selector__timeunitset_as_core__ops__arith__sub)?;
+    m.function_meta(p_343279b0_ctor__timeunitset_as_core__ops__arith__subassign)?;
     m.function_meta(p_dbe35a29__selector__timeunitset_as_core__ops__bit__bitand)?;
+    m.function_meta(p_38eabd7d_tor__timeunitset_as_core__ops__bit__bitandassign)?;
     m.function_meta(p_7d0cc2e0___selector__timeunitset_as_core__ops__bit__bitor)?;
+    m.function_meta(p_2d83fa6e_ctor__timeunitset_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_2f527ea2__selector__timeunitset_as_core__ops__bit__bitxor)?;
+    m.function_meta(p_31098c8a_tor__timeunitset_as_core__ops__bit__bitxorassign)?;
+    m.function_meta(p_9b478329_sl__selector__timeunitset_as_core__ops__bit__not)?;
     m.function_meta(p_06ece4c0_dsl__selector__timezoneset_as_core__clone__clone)?;
     m.function_meta(p_1135ac58_l__selector__timezoneset_as_core__cmp__partialeq)?;
     m.function_meta(p_651a00da___dsl__selector__timezoneset_as_core__fmt__debug)?;
@@ -14710,11 +15081,17 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_daa4d180_e__opt_state__optflags_as_core__default__default)?;
     m.function_meta(p_15aad8a9___frame__opt_state__optflags_as_core__fmt__debug)?;
     m.function_meta(p_0e7083fb_me__opt_state__optflags_as_core__ops__arith__sub)?;
+    m.function_meta(p_7feccd84_t_state__optflags_as_core__ops__arith__subassign)?;
     m.function_meta(p_196558ab_e__opt_state__optflags_as_core__ops__bit__bitand)?;
+    m.function_meta(p_5ed2bd4f__state__optflags_as_core__ops__bit__bitandassign)?;
     m.function_meta(p_5e7255e3_me__opt_state__optflags_as_core__ops__bit__bitor)?;
+    m.function_meta(p_813a6143_t_state__optflags_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_746fb4a8_e__opt_state__optflags_as_core__ops__bit__bitxor)?;
+    m.function_meta(p_30e7106c__state__optflags_as_core__ops__bit__bitxorassign)?;
+    m.function_meta(p_2f786a5f_rame__opt_state__optflags_as_core__ops__bit__not)?;
     m.function_meta(p_b84db21d___plans__lit__literalvalue_as_core__clone__clone)?;
     m.function_meta(p_f26c06a8_plans__lit__literalvalue_as_core__cmp__partialeq)?;
+    m.function_meta(f_74158adf_r__scalar__polars_plan__plans__lit__literalvalue)?;
     m.function_meta(p_11de42d8_an__plans__lit__literalvalue_as_core__fmt__debug)?;
     m.function_meta(f_68b1dcf4__builder__list__binary__listbinarychunkedbuilder)?;
     m.function_meta(f_1b76067b_uilder__list__boolean__listbooleanchunkedbuilder)?;

@@ -154,6 +154,18 @@ Policies for generated bindings:
   item is discarded. `&mut self` iterators are not bound. Items that do
   not map (arrow-internal arrays, bare slices) leave the callable
   unsupported with the item named.
+- Constructors and operators (record 0078): a Rust `From<X>` impl on a
+  wrapped type is the constructor `Type::from_<source>(x)`
+  (`polars::Scalar::from_i8(2)`, `polars::Column::from_series(s)`); a
+  by-reference impl is its own `from_<source>_ref`
+  (`polars::SortOptions::from_sort_multiple_options_ref(o)`). Integer sources
+  are checked (`from_i8(128)` is a `ConversionError`); `f32` sources
+  are cast from the script's float (`from_f32(0.1)` holds the `f32`
+  rounding, `1e40` is infinity), as the Rust call would. The flag and
+  selector types support `-=`, `&=`, `|=` and `^=` in place, the right
+  operand unchanged; `x |= x` is refused by Rune's borrow check with no
+  mutation. Rune has no unary `!` for external types, so the complement
+  is `x.not_()`, the receiver unchanged.
 - Errors: `PolarsResult<T>` is a Rune `Result` whose error is a
   `polars::Error` with `kind()` and `message()`; `kind()` is the variant
   name Rust matches on.
