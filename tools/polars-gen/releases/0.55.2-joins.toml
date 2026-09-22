@@ -90,3 +90,445 @@ reason = "Debug output shows runtime state"
 alias = "StructChunked"
 methods = ["get", "first", "last", "first_null", "first_non_null", "last_non_null", "iter", "no_null_iter"]
 cite = "polars-arrow-0.55.2 array/static_array.rs:52,80 no_call_const on StructArray"
+
+# record 0079: mutable closure arguments, by what Polars does with the writes
+[[callback_mutable]]
+path = "polars_plan::dsl::expr::Expr::map_many"
+param = "function"
+contract = "vector"
+cite = "polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards"
+[[callback_mutable]]
+path = "polars_plan::dsl::expr::Expr::apply_many"
+param = "function"
+contract = "vector"
+cite = "polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards"
+[[callback_mutable]]
+path = "polars_plan::dsl::map_multiple"
+param = "function"
+contract = "vector"
+cite = "polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards"
+[[callback_mutable]]
+path = "polars_plan::dsl::apply_multiple"
+param = "function"
+contract = "vector"
+cite = "polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards"
+[[callback_mutable]]
+path = "polars_core::chunked_array::ChunkedArray::apply_into_string_amortized"
+param = "f"
+contract = "result buffer"
+cite = "polars-core-0.55.2/src/chunked_array/ops/apply.rs:71-92: `buf.clear(); f(v, &mut buf); mutarr.push_value(&buf)` per element"
+
+# record 0079: where each feasible operation invokes its closure, from the pinned sources (per closure parameter)
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_as_ints"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/bit_repr.rs:211,226,240: `let out = f(&s)` on the bit representation, before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_in_place"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/apply.rs:183-189: chunks rebuilt through `apply_in_place_impl` (`:120`), which maps every value with `f` before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_into_string_amortized"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/apply.rs:71-92: `f(v, &mut buf)` per element before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_mut"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/apply.rs:193-205: values mapped in place through `downcast_iter_mut` before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_to_inner"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/list/mod.rs:167 and array/mod.rs:167: `let out: Series = func(elements)?` before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::for_each"
+param = "op"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/for_each.rs:7-14: `arr.iter().for_each(&mut op)` per chunk before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::try_apply_fields"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/struct_/mod.rs:351-360: `.map(func).collect()` over the fields before returning"
+[[callback_invocation]]
+path = "polars_core::datatypes::dtype::DataType::map_leaves"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/datatypes/dtype.rs:408-424: recursive descent ending in `f(self)` at every leaf, before returning"
+[[callback_invocation]]
+path = "polars_core::datatypes::dtype::DataType::try_visit_with"
+param = "visitor_fn"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/datatypes/dtype.rs:1466-1473: `try_mutate_with` calls `visitor_fn` at every node before returning"
+[[callback_invocation]]
+path = "polars_core::datatypes::dtype::DataType::visit_with"
+param = "visitor_fn"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/datatypes/dtype.rs:1458-1464: delegates to `try_visit_with`, which walks the type through `try_mutate_with` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_binary_elementwise"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1781-1795: delegates to the `try_` form before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_binary_elementwise"
+param = "f_lb"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1781-1795: delegates to the `try_` form before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_binary_elementwise"
+param = "f_rb"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1781-1795: delegates to the `try_` form before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_broadcasting_binary_elementwise"
+param = "op"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1737-1743: delegates to the `try_` form before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_unary_elementwise"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1720-1722: delegates to the `try_` form, `f(s)` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::map_unary_elementwise_to_bool"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1703-1708: delegates to the `try_` form, `f(s)` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_binary_elementwise"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1796-1830: `f`, `f_lb` or `f_rb` called per variant pair before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_binary_elementwise"
+param = "f_lb"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1796-1830: `f`, `f_lb` or `f_rb` called per variant pair before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_binary_elementwise"
+param = "f_rb"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1796-1830: `f`, `f_lb` or `f_rb` called per variant pair before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_broadcasting_binary_elementwise"
+param = "op"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1744-1780: `op(lhs, rhs)` per broadcast case before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_unary_elementwise"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1723-1735: `f(s)` per column variant before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_map_unary_elementwise_to_bool"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1710-1718: `f(s)` on the series or the scalar's single-value series before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::scalar::ScalarColumn::map_scalar"
+param = "map_scalar"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/scalar.rs:315-318: `self.scalar = map_scalar(take(&mut self.scalar))` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::dataframe::DataFrame::apply_columns"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/mod.rs:122-128: `slf.columns().iter().map(func).collect()` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::dataframe::DataFrame::apply_columns_par"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/mod.rs:144-150: `RAYON.install(|| ... par_iter().map(func).collect())` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::dataframe::DataFrame::try_apply_columns"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/mod.rs:108-119: `slf.columns().iter().map(func).collect()` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::dataframe::DataFrame::try_apply_columns_par"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/mod.rs:130-142: `RAYON.install(|| ... par_iter().map(func).collect())` before returning"
+[[callback_invocation]]
+path = "polars_error::PolarsError::wrap_msg"
+param = "func"
+invocation = "immediate"
+cite = "polars-error-0.55.2/src/lib.rs:298-315: `func(msg)` on the variant's message before returning"
+[[callback_invocation]]
+path = "polars_io::csv::read::options::CsvReadOptions::map_parse_options"
+param = "map_func"
+invocation = "immediate"
+cite = "polars-io-0.55.2/src/csv/read/options.rs:277-283: `self.parse_options = Arc::new(map_func(parse_options))` before returning"
+[[callback_invocation]]
+path = "polars_lazy::scan::csv::LazyCsvReader::map_parse_options"
+param = "map_func"
+invocation = "immediate"
+cite = "polars-lazy-0.55.2/src/scan/csv.rs:34-39: delegates to `CsvReadOptions::map_parse_options`, invoked before returning"
+[[callback_invocation]]
+path = "polars_lazy::scan::csv::LazyCsvReader::with_schema_modify"
+param = "f"
+invocation = "immediate"
+cite = "polars-lazy-0.55.2/src/scan/csv.rs:277-357: the schema is inferred and `let mut schema = f(schema)?` (`:348`) before returning"
+[[callback_invocation]]
+path = "polars_plan::dsl::apply_multiple"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1739: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::apply_multiple"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1739: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::agg_with_fmt_str"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:501: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::agg_with_fmt_str"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:501: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:582: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:582: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply_many"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:593: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply_many"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:593: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply_with_fmt_str"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:526: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply_with_fmt_str"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:526: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_expr"
+param = "f"
+invocation = "immediate"
+cite = "polars-plan-0.55.2/src/plans/iterator.rs:164-167: `self.rewrite(&mut ExprMapper { f: ... })` walks the expression before returning"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_many"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:554: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_many"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:554: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_with_fmt_str"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_with_fmt_str"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::try_map_expr"
+param = "f"
+invocation = "immediate"
+cite = "polars-plan-0.55.2/src/plans/iterator.rs:169-171: `self.rewrite(&mut ExprMapper { f })` walks the expression before returning"
+[[callback_invocation]]
+path = "polars_plan::dsl::map_multiple"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1711: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::map_multiple"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1711: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::udf::infer_udf_output_dtype"
+param = "f"
+invocation = "immediate"
+cite = "polars-plan-0.55.2/src/dsl/udf.rs:54-90: `f(&params)` on dummy columns (`:83`) before returning"
+[[callback_invocation]]
+path = "polars_plan::dsl::udf::try_infer_udf_output_dtype"
+param = "f"
+invocation = "immediate"
+cite = "polars-plan-0.55.2/src/dsl/udf.rs:93-100: delegates to `infer_udf_output_dtype`, invoked before returning"
+
+# record 0079: every method of a plan-holding type whose result is not the plan, classified as an execution sink or not
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:746-757: `collect_with_engine` after `to_alp_optimized` (schema resolution, then execution)"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect_all_with_engine"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:711: optimizes and executes every plan"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect_concurrently"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp_optimized` then execution on a thread"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect_with_engine"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp_optimized` then execution"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::profile"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:823: executes the plan and times its nodes"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect_schema"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp` (DSL to IR conversion resolves every field)"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::describe_plan"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:218-219: `self.clone().to_alp()?.describe()`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::describe_plan_tree"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:223-224: `to_alp()?.describe_tree_format()`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::describe_optimized_plan"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:230-231: `to_alp_optimized()?.describe()`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::describe_optimized_plan_tree"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:237-238: `to_alp_optimized()?.describe_tree_format()`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::explain"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:245: `describe_optimized_plan` or `describe_plan`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::explain_all"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:702: converts every plan to IR"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::optimize"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:500-506: `optimize_with_scratch` converts to IR"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::to_alp"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:515-520: `to_alp(...)`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::to_alp_optimized"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:508-513: `optimize_with_scratch`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::schema_with_arenas"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: converts to IR into the given arenas"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::set_cached_arena"
+sink = "none"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: stores arenas, converts nothing"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::compute_schema"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/plans/schema.rs:21-30: `to_alp(self.clone(), ..., OptFlags::schema_only())` (reproduced by Codex: three output-field invocations)"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::describe"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/plan.rs:247-249: `self.clone().to_alp()?.describe()`"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::describe_tree_format"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/plan.rs:251-253: `to_alp()?.describe_tree_format()`"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::display"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/plan.rs:255-263: `self.clone().to_alp()?`"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::to_alp"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/plan.rs:265-275: DSL to IR conversion"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::to_field"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/expr/mod.rs:438: converts the expression to an AExpr against the schema and resolves its field"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::binary"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1651: returns a namespace holding the expression"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::cat"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1679: returns a namespace holding the expression"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::list"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs: returns a namespace holding the expression"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::struct_"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs: returns a namespace holding the expression"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::nodes"
+sink = "none"
+cite = "polars-plan-0.55.2/src/plans/iterator.rs:153: collects references to sub-expressions"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::nodes_owned"
+sink = "none"
+cite = "polars-plan-0.55.2/src/plans/iterator.rs: collects sub-expressions"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::extract_i64"
+sink = "none"
+cite = "polars-plan-0.55.2/src/plans/lit.rs:279: reads a literal, no conversion"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::extract_usize"
+sink = "none"
+cite = "polars-plan-0.55.2/src/plans/lit.rs: reads a literal, no conversion"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::name"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1667: returns the name namespace holding the expression"
