@@ -897,6 +897,46 @@ fn f_8f8522cd_to_datetime_polars_core__datatypes__int64chunked(this: &W_polars_c
 #[rune::function(instance, path = into_duration)]
 fn f_0bd32d26_to_duration_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, timeunit: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> W_polars_core__chunked_array__logical__duration__DurationChunked { let __r = <polars_core::datatypes::Int64Chunked>::into_duration(this.0.clone(), timeunit.0.clone()); W_polars_core__chunked_array__logical__duration__DurationChunked(__r) }
 /// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of float (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_6e652bac_null_iter_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<f64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Float32Chunked>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>((__r as f64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of float (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_f120d94b_null_iter_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<f64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Float64Chunked>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>(__r)) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_145e04d4_o_null_iter_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int16Chunked>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_2427e313_o_null_iter_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int32Chunked>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_55746b89_o_null_iter_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int64Chunked>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>(__r)) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_b05d8500_no_null_iter_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int8Chunked>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_212e482d__null_iter_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt16Chunked>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_1519b0e0_null_iter_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::IdxCa>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_2633d165__null_iter_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt64Chunked>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::into_no_null_iter`. into_no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_no_null_iter)]
+fn f_85612247_o_null_iter_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt8Chunked>::into_no_null_iter(__arg0); support::materialize_exact(__it, "into_no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
 /// Polars: `polars_core::chunked_array::ChunkedArray::into_time`. into_time() -> TimeChunked
 #[rune::function(instance, path = into_time)]
 fn f_4f5f93f0___into_time_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__chunked_array__logical__time__TimeChunked { let __r = <polars_core::datatypes::Int64Chunked>::into_time(this.0.clone()); W_polars_core__chunked_array__logical__time__TimeChunked(__r) }
@@ -1220,6 +1260,54 @@ fn f_8981b3e1_orted_flag_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
 #[rune::function(instance, path = is_sorted_flag)]
 fn f_6a2539a6_sorted_flag_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::UInt8Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of bool (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_6620f712_ray__iter_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Vec<Option<bool>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::BooleanChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some(__r), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of float (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_f2cb0703_ray__iter_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<Option<f64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Float32Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as f64)), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of float (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_48852a88_ray__iter_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<Option<f64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Float64Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some(__r), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_b3a0eee5_array__iter_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int16Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_19a424aa_array__iter_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int32Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_b4c8101d_array__iter_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int64Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some(__r), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_00651695_darray__iter_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int8Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of string (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_571516d2_rray__iter_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<Vec<Option<String>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::StringChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some(__r.to_string()), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_fa1ab42f_rray__iter_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt16Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_f8160d12_ray__iter_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::IdxCa>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_53606ce2_rray__iter_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt64Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_afd4c2e4_array__iter_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt8Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })) })?; Ok(__r) }
 /// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of bool
 #[rune::function(instance, path = last)]
@@ -1508,6 +1596,58 @@ fn f_a642e907_y__new_vec_polars_core__datatypes__uint64chunked(name: &str, v: Ve
 /// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> UInt8Chunked (fallible)
 #[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::new_vec)]
 fn f_c323b7fc_ay__new_vec_polars_core__datatypes__uint8chunked(name: &str, v: Vec<i64>) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::new_vec(p::PlSmallStr::from(name), v.into_iter().map(|v| Ok::<_, Error>(support::narrow::<u8>(v, "v")?)).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of bool (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_8871973f_null_iter_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Vec<bool>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::BooleanChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>(__r)) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of float (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_687529e1_null_iter_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<f64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Float32Chunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>((__r as f64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of float (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_39a21946_null_iter_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<f64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Float64Chunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>(__r)) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_0c068c5f_o_null_iter_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int16Chunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_870c5302_o_null_iter_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int32Chunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_5aabd22c_o_null_iter_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int64Chunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>(__r)) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_66b2870c_no_null_iter_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::Int8Chunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of string (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_3510fd36__null_iter_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<Vec<String>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::StringChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>(__r.to_string())) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_8a709582__null_iter_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt16Chunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_2aeb594e_null_iter_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::IdxCa>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_a1ce8c77__null_iter_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt64Chunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_88aac8f9_o_null_iter_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt8Chunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>((__r as i64))) })?; Ok(__r) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_series_iter`. no_null_series_iter() -> vector of Series (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_series_iter)]
+fn f_7923990f__series_iter_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> Result<Vec<W_polars_core__series__Series>, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || { let __it = <polars_core::datatypes::ListChunked>::no_null_series_iter(__arg0); support::materialize_exact(__it, "no_null_series_iter", |__r| Ok::<_, Error>(W_polars_core__series__Series(__r))) }).map_err(Error::engine)??; Ok(__r) }
 /// Return the number of null values in the ChunkedArray.
 /// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int
 #[rune::function(instance, path = null_count)]
@@ -1848,6 +1988,10 @@ fn f_b3adb3bc_ered_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::row_decode_unordered`. row_decode_unordered(fields: vector of Field) -> result of StructChunked (fallible)
 #[rune::function(instance, path = row_decode_unordered)]
 fn f_c96ca912_ered_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, fields: Vec<rune::Value>) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __t0 = fields.into_iter().map(|v| Ok::<_, Error>(support::take::<W_polars_core__datatypes__field__Field>(&v, "v")?.0)).collect::<Result<Vec<_>, Error>>()?; let __r = <polars_core::datatypes::BinaryOffsetChunked>::row_decode_unordered(&this.0, &__t0[..]); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__chunked_array__struct___StructChunked(__r) }) }
+/// 
+/// Polars: `polars_core::chunked_array::ChunkedArray::series_iter`. series_iter() -> vector of option of Series (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = series_iter)]
+fn f_4a4254a4__series_iter_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> Result<Vec<Option<W_polars_core__series__Series>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || { let __it = <polars_core::datatypes::ListChunked>::series_iter(__arg0); support::materialize_exact(__it, "series_iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some(W_polars_core__series__Series(__r)), None => None })) }).map_err(Error::engine)??; Ok(__r) }
 /// 
 /// Polars: `polars_core::chunked_array::ChunkedArray::set_fast_explode`. set_fast_explode() -> unit
 #[rune::function(instance, path = set_fast_explode)]
@@ -3956,6 +4100,10 @@ fn f_a3a7c6e0_licated_polars_core__frame__dataframe__dataframe(this: &DataFrame)
 /// Polars: `polars_core::frame::dataframe::DataFrame::is_unique`. is_unique() -> result of BooleanChunked (fallible)
 #[rune::function(instance, path = is_unique)]
 fn f_6cb1f85a__unique_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || <polars::frame::DataFrame>::is_unique(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BooleanChunked(__r) }) }
+/// 
+/// Polars: `polars_core::frame::dataframe::DataFrame::materialized_column_iter`. materialized_column_iter() -> vector of Series (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = materialized_column_iter)]
+fn f_efed42b9_mn_iter_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Result<Vec<W_polars_core__series__Series>, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || { let __it = <polars::frame::DataFrame>::materialized_column_iter(__arg0); support::materialize_exact(__it, "materialized_column_iter", |__r| Ok::<_, Error>({ let __r = (__r).clone(); W_polars_core__series__Series(__r) })) }).map_err(Error::engine)??; Ok(__r) }
 /// The highest number of chunks for any column.
 /// Polars: `polars_core::frame::dataframe::DataFrame::max_n_chunks`. max_n_chunks() -> int
 #[rune::function(instance, path = max_n_chunks)]
@@ -9503,6 +9651,22 @@ fn f_5ae5b7ea_core__series__implementations__null__nullchunked(this: &W_polars_c
 /// Polars: `polars_core::series::series_trait::SeriesTrait::xor_reduce`. xor_reduce() -> result of Scalar (fallible)
 #[rune::function(instance, path = xor_reduce)]
 fn f_897302b6_it__xor_reduce_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &*this.0; let __r = crate::engine::run(move || <dyn polars::series::SeriesTrait>::xor_reduce(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// 
+/// Polars: `polars_core::utils::Container::chunk_lengths`. chunk_lengths() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = chunk_lengths)]
+fn f_7e496dcf_lengths_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || { let __it = <polars::frame::DataFrame as polars_core::utils::Container>::chunk_lengths(__arg0); support::materialize_unknown(__it, "chunk_lengths", |__r| Ok::<_, Error>((__r as i64))) }).map_err(Error::engine)??; Ok(__r) }
+/// 
+/// Polars: `polars_core::utils::Container::chunk_lengths`. chunk_lengths() -> vector of int (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = chunk_lengths)]
+fn f_b898cea7_ainer__chunk_lengths_polars_core__series__series(this: &W_polars_core__series__Series) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || { let __it = <polars::series::Series as polars_core::utils::Container>::chunk_lengths(__arg0); support::materialize_unknown(__it, "chunk_lengths", |__r| Ok::<_, Error>((__r as i64))) }).map_err(Error::engine)??; Ok(__r) }
+/// 
+/// Polars: `polars_core::utils::Container::iter_chunks`. iter_chunks() -> vector of DataFrame (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_chunks)]
+fn f_29f5aca8__chunks_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Result<Vec<DataFrame>, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || { let __it = <polars::frame::DataFrame as polars_core::utils::Container>::iter_chunks(__arg0); support::materialize_unknown(__it, "iter_chunks", |__r| Ok::<_, Error>(DataFrame(__r))) }).map_err(Error::engine)??; Ok(__r) }
+/// 
+/// Polars: `polars_core::utils::Container::iter_chunks`. iter_chunks() -> vector of Series (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_chunks)]
+fn f_e120fe2a_ntainer__iter_chunks_polars_core__series__series(this: &W_polars_core__series__Series) -> Result<Vec<W_polars_core__series__Series>, Error> { let __arg0 = &this.0; let __r = crate::engine::run(move || { let __it = <polars::series::Series as polars_core::utils::Container>::iter_chunks(__arg0); support::materialize_unknown(__it, "iter_chunks", |__r| Ok::<_, Error>(W_polars_core__series__Series(__r))) }).map_err(Error::engine)??; Ok(__r) }
 /// Note, technically shouldn't be under the `IntoCredentialProvider` trait, but it's here for convenience.
 /// Polars: `polars_io::cloud::credential_provider::IntoCredentialProvider::storage_update_options`. storage_update_options() -> result of vector of tuple of string, string (fallible)
 #[rune::function(instance, path = storage_update_options)]
@@ -12348,6 +12512,16 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_ecfb1929___into_date_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_8f8522cd_to_datetime_polars_core__datatypes__int64chunked)?;
     m.function_meta(f_0bd32d26_to_duration_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_6e652bac_null_iter_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_f120d94b_null_iter_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_145e04d4_o_null_iter_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_2427e313_o_null_iter_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_55746b89_o_null_iter_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_b05d8500_no_null_iter_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_212e482d__null_iter_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_1519b0e0_null_iter_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_2633d165__null_iter_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_85612247_o_null_iter_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_4f5f93f0___into_time_polars_core__datatypes__int64chunked)?;
     m.function_meta(f_e81f9ac9_mpty_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_55ea070b___is_empty_polars_core__datatypes__binarychunked)?;
@@ -12429,6 +12603,18 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_21304674_rted_flag_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_8981b3e1_orted_flag_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_6a2539a6_sorted_flag_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_6620f712_ray__iter_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_f2cb0703_ray__iter_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_48852a88_ray__iter_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_b3a0eee5_array__iter_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_19a424aa_array__iter_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_b4c8101d_array__iter_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_00651695_darray__iter_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_571516d2_rray__iter_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_fa1ab42f_rray__iter_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_f8160d12_ray__iter_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_53606ce2_rray__iter_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_afd4c2e4_array__iter_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_993b62fc_ray__last_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_da365613_ray__last_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_4fe719ad_ray__last_polars_core__datatypes__float64chunked)?;
@@ -12501,6 +12687,19 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5f88be6f___new_vec_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_a642e907_y__new_vec_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_c323b7fc_ay__new_vec_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_8871973f_null_iter_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_687529e1_null_iter_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_39a21946_null_iter_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_0c068c5f_o_null_iter_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_870c5302_o_null_iter_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_5aabd22c_o_null_iter_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_66b2870c_no_null_iter_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_3510fd36__null_iter_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_8a709582__null_iter_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_2aeb594e_null_iter_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_a1ce8c77__null_iter_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_88aac8f9_o_null_iter_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_7923990f__series_iter_polars_core__datatypes__listchunked)?;
     m.function_meta(f_7d14d47b_ount_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_dc1963e9_null_count_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_680f49a3_ull_count_polars_core__datatypes__booleanchunked)?;
@@ -12586,6 +12785,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_d07b1504_ray__rename_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_b3adb3bc_ered_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_c96ca912_ered_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_4a4254a4__series_iter_polars_core__datatypes__listchunked)?;
     m.function_meta(f_993c040d_fast_explode_polars_core__datatypes__listchunked)?;
     m.function_meta(f_91dcee93_list_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_275ea9e4_plode_list_polars_core__datatypes__binarychunked)?;
@@ -13113,6 +13313,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_a3139f0b__struct_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_a3a7c6e0_licated_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_6cb1f85a__unique_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_efed42b9_mn_iter_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_9fad7fd8__chunks_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_87c43093_me__new_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_aecd59c5_m_index_polars_core__frame__dataframe__dataframe)?;
@@ -14651,6 +14852,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_6407b502_it__var_reduce_polars_core__series__series_deref)?;
     m.function_meta(f_5ae5b7ea_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_897302b6_it__xor_reduce_polars_core__series__series_deref)?;
+    m.function_meta(f_7e496dcf_lengths_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_b898cea7_ainer__chunk_lengths_polars_core__series__series)?;
+    m.function_meta(f_29f5aca8__chunks_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_e120fe2a_ntainer__iter_chunks_polars_core__series__series)?;
     m.function_meta(f_c4e341b0_cloud__credential_provider__plcredentialprovider)?;
     m.function_meta(f_67da5d37__credential_provider__credentialproviderfunction)?;
     m.function_meta(f_87471c27_me__intolazy__lazy_polars_lazy__frame__lazyframe)?;

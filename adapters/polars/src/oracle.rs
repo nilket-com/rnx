@@ -14,6 +14,11 @@ use rnx::rune;
 pub enum Repr {
 	Text(String),
 	Frame { head: String, rows: Vec<String> },
+	/// A materialized sequence (record 0077): one representation per
+	/// element, in order, so equal-length sequences whose element texts
+	/// would join alike stay apart; options and tuples nest as sequences
+	/// tagged by their first element.
+	Seq(Vec<Repr>),
 }
 
 impl Repr {
@@ -22,12 +27,15 @@ impl Repr {
 		match self {
 			Repr::Text(s) => s.clone(),
 			Repr::Frame { head, rows } => format!("{head}; rows=[{}]", rows.join(" | ")),
+			// length-framed elements keep the text injective
+			Repr::Seq(items) => format!("[{}]", items.iter().map(|i| { let t = i.to_text(); format!("{}:{t}", t.len()) }).collect::<Vec<_>>().join(", ")),
 		}
 	}
 	pub fn prefixed(self, prefix: &str) -> Repr {
 		match self {
 			Repr::Text(s) => Repr::Text(format!("{prefix}{s}")),
 			Repr::Frame { head, rows } => Repr::Frame { head: format!("{prefix}{head}"), rows },
+			Repr::Seq(items) => Repr::Seq(std::iter::once(Repr::Text(prefix.to_string())).chain(items).collect()),
 		}
 	}
 }
@@ -529,6 +537,29 @@ mod controls {
 		let ld = p::Series::new("l".into(), [b.clone()]);
 		assert_ne!(series_repr(&lc), series_repr(&ld));
 		assert_eq!(series_repr(&la), series_repr(&p::Series::new("l".into(), [valid.clone()])));
+	}
+	#[test]
+	fn sequences_are_compared_structurally() {
+		let t = |s: &str| Repr::Text(s.to_string());
+		// equal-length string vectors whose joined text would collide
+		let a = Repr::Seq(vec![t("a, b"), t("c")]);
+		let b = Repr::Seq(vec![t("a"), t("b, c")]);
+		assert_ne!(a, b);
+		assert_ne!(a.to_text(), b.to_text(), "the framed text is injective too");
+		assert_eq!(ok(ORDERED, &v(a.clone()), None, &v(b.clone()), &v(b.clone())).0, Outcome::Mismatch);
+		assert_eq!(ok(ORDERED, &v(a.clone()), None, &v(a.clone()), &v(a.clone())).0, Outcome::Match);
+		// a changed element, reordered elements, an option distinction
+		assert_ne!(Repr::Seq(vec![t("1"), t("2")]), Repr::Seq(vec![t("1"), t("3")]));
+		assert_ne!(Repr::Seq(vec![t("1"), t("2")]), Repr::Seq(vec![t("2"), t("1")]));
+		assert_eq!(ok(UNORDERED, &v(Repr::Seq(vec![t("1"), t("2")])), None, &v(Repr::Seq(vec![t("2"), t("1")])), &v(Repr::Seq(vec![t("2"), t("1")]))).0, Outcome::Mismatch, "a sequence is ordered under every policy");
+		assert_ne!(Repr::Seq(vec![Repr::Seq(vec![t("Some"), t("1")])]), Repr::Seq(vec![t("None")]));
+		// a changed cell in a nested series element
+		let s1 = series_repr(&p::Series::new("x".into(), [1i64, 2, 3]));
+		let s2 = series_repr(&p::Series::new("x".into(), [1i64, 2, 4]));
+		assert_ne!(Repr::Seq(vec![s1.clone()]), Repr::Seq(vec![s2]));
+		assert_eq!(Repr::Seq(vec![s1.clone()]), Repr::Seq(vec![s1]));
+		// a length difference
+		assert_ne!(Repr::Seq(vec![t("1")]), Repr::Seq(vec![t("1"), t("1")]));
 	}
 	#[test]
 	fn setup_is_a_stage_not_a_message() {
