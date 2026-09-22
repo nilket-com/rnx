@@ -1,0 +1,10 @@
+Int8 via cast: ERR cannot create series from Int8
+not implemented for dtype Int8
+Int8 via full_null: PANIC not implemented for dtype Int8
+not implemented for dtype Int8
+Int8 via new_empty: PANIC not implemented for dtype Int8
+Int8 via from_any_values: ERR constructing a Series with data type Int8 from AnyValues is not supported
+UInt16 via from_any_values: ERR constructing a Series with data type UInt16 from AnyValues is not supported
+BinaryOffset via cast: ok dtype=Binary len=2 nulls=0
+BinaryOffset via from_any_values: ok dtype=BinaryOffset len=1 nulls=0
+BinaryOffset via full_null: ok dtype=BinaryOffset len=2 nulls=2
