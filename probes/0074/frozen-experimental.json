@@ -1,12 +1,11 @@
 {
- "label": "EXPERIMENTAL: record 0077 rerun of the 0074 probe with rc2.toml; not the accepted 0074 manifest",
  "accepted_generator_revision": "98885e0",
- "written_at_revision": "c30e1535fa0a978f319e6b874f0b8c4bdc994a06",
+ "written_at_revision": "bd3733c5348ec185607fc7e95aefa51dab2b6778",
  "inputs": {
   "generator": {
    "pattern": "tools/polars-gen/src/*.rs",
    "files": 3,
-   "sha256": "725097bf21a9a45c7cdfa697a5fd0b9a2c1a6dae1b0da067d76fc25e9db3944f"
+   "sha256": "b5b37b2c663a55b9f1a593dd8d881de4c3d23225b1363906c0bffaf34c307393"
   },
   "generator_manifest": {
    "pattern": "tools/polars-gen/Cargo.toml",
@@ -41,17 +40,17 @@
   "adapter_generated": {
    "pattern": "adapters/polars/src/generated/*.rs",
    "files": 6,
-   "sha256": "59eebe36ee4d6fb773a4fe4fc79b8408e24dafea0c98b99f91cbee26021d54f8"
+   "sha256": "b899cd58f2c694e0282706a33f4f10bd2892476c33854185294adc24da6e32ea"
   },
   "adapter_tests": {
    "pattern": "adapters/polars/tests/*",
    "files": 6,
-   "sha256": "16e34cb8349fe2a89c4479a2a580b1ada82f828bb23930af3ac6fea10224d76c"
+   "sha256": "697ba8e9600033fde39029ef767778a104ceabc674e704a7cce30bea42c74753"
   },
   "adapter_manifest": {
    "pattern": "adapters/polars/Cargo.toml",
    "files": 1,
-   "sha256": "f7e16d593597faeec1f068943ea6dc480848c54bcbe750edd8dae667c0390a6e"
+   "sha256": "ee36adc5ff4ee249dd8616235a895c3eae5078c3d06bb651f14373e41b4045e1"
   },
   "baseline_inventory": {
    "pattern": "probes/0072/out/0.55.2-adapter/result/inventory.json",
@@ -71,12 +70,12 @@
   "baseline_surface": {
    "pattern": "adapters/polars/surface.json",
    "files": 1,
-   "sha256": "24af51a3ce282ab82c7011a749fa732834fb6d2905efc93cace0983f73fd636b"
+   "sha256": "da3b877dcea2992d581105f898f01f00f396391f460ac18094d0fdd2a2113775"
   },
   "baseline_oracle_results": {
    "pattern": "adapters/polars/oracle-results.json",
    "files": 1,
-   "sha256": "dc9346518dcf789e70641197c840d043d43f313d56f574a3892f58572248b391"
+   "sha256": "5f72d06a8d97c43803607c1d0723c237a87e3d3097941cc9b69d9974d5c65285"
   },
   "doc_lock": {
    "pattern": "probes/0074/locks/doc-rc2.lock",

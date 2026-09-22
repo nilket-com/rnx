@@ -21,7 +21,7 @@ surface, results = json.load(open(sys.argv[1])), json.load(open(sys.argv[2]))
 status = {r["id"]: r["status"] for r in results["results"]}
 entries = [e for e in surface["entries"] if e["status"] != "out_of_scope"]  # the 710 internal-crate callables are counted apart
 total = len(entries)
-available = value = markers = unsupported = 0
+available = value = markers = unsupported = duplicates = 0
 hand: list[str] = []
 for e in entries:
     if e["status"] == "generated":
@@ -32,14 +32,17 @@ for e in entries:
         if e["reason"].startswith("hand-written"):
             available += 1
             hand.append(e["canonical_path"])
+        elif e.get("counterpart"):
+            duplicates += 1  # the same rustdoc impl listed on a second type's page, its retained listing generated (record 0078)
         else:
             markers += 1
     elif e["status"] == "unsupported":
         unsupported += 1
-assert available + markers + unsupported == total
+assert available + markers + duplicates + unsupported == total
 print(f"| operations counted (API crates; {len(surface['entries']) - total} internal-crate callables apart) | {total} |")
 print(f"| available to a script | {available} ({available * 100 // total}%) |")
 print(f"| value-tested on at least one receiver, by the oracle | {value} ({value * 100 // total}%); plus {len(hand)} hand-written equivalents evidenced by the hand-written suites |")
 print(f"| remaining: unsupported operations, each with a reason | {unsupported} ({unsupported * 100 // total}%) |")
 print(f"| marker entries with no operation of their own, reported apart | {markers} |")
+print(f"| duplicate listings of one impl on a second type's page, reported apart | {duplicates} |")
 print("hand-written equivalents: " + ", ".join(p.split("::")[-2] + "::" + p.split("::")[-1] for p in hand))
