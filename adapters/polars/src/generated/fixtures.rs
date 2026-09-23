@@ -15,8 +15,8 @@ pub mod values {
     use polars::prelude::*;
     pub fn series_bool() -> p::Series { p::Series::new("x".into(), [true, false, true]) }
     pub fn series_str() -> p::Series { p::Series::new("x".into(), ["a", "bb", "ccc"]) }
-    pub fn series_binary() -> p::Series { p::Series::new("x".into(), [&b"ab"[..], b"c", b""]) }
-    pub fn series_binary_offset() -> p::Series { p::Series::from_any_values_and_dtype("x".into(), &[p::AnyValue::Binary(b"ab"), p::AnyValue::Binary(b"c"), p::AnyValue::Binary(b"")], &p::DataType::BinaryOffset, true).unwrap() }
+    pub fn series_binary() -> p::Series { p::Series::new("x".into(), [&b"ab"[..], b"\x00\xff", b""]) }
+    pub fn series_binary_offset() -> p::Series { p::Series::from_any_values_and_dtype("x".into(), &[p::AnyValue::Binary(b"ab"), p::AnyValue::Binary(b"\x00\xff"), p::AnyValue::Binary(b"")], &p::DataType::BinaryOffset, true).unwrap() }
     pub fn series_i8() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::Int8).unwrap() }
     pub fn series_i16() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::Int16).unwrap() }
     pub fn series_i32() -> p::Series { p::Series::new("x".into(), [1i32, 2, 3]) }
