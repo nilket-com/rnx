@@ -163,6 +163,13 @@ first chunk. Rechunk first, or use `downcast_get(0)` or `chunks()`. The copy
 counts one slot, plus its cells, plus its payload bytes against the
 materialize bound.
 
+Chunk iteration (record 0103): `ca.downcast_iter()` on the same fourteen
+wrappers returns every chunk in iterator order, as `chunks()` does. The
+result is a vector of chunks, each a vector of options. It is copied whole
+before the call returns, and no iterator or Arrow array reaches the script.
+The whole result is bounded as with `chunks()`: chunks plus cells plus
+payload bytes, checked before copying.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the

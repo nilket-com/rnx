@@ -241,6 +241,19 @@ array, at the top level. It maps it through
 are the single-array cores that 0101's indexed copiers now delegate to.
 Polars's own one-chunk assertion runs first and is kept.
 
+Record 0103's `[[iter_snapshots]]` entry maps `downcast_iter`. The check
+compares the exact canonical text
+`impl DoubleEndedIterator<Item = &T::Array>`. It does not use `Ty::render`,
+which prints only an `impl` type's trait paths and drops the item. With the
+pair's kind in scope, `World::ret` inspects the parsed bound for exactly one
+`DoubleEndedIterator` whose item is a shared borrow of the pair's own array.
+The binding calls `downcast_iter` once. `support::iter_snapshot*` then
+preflights `this.0.chunks()` with typed downcasts and one bound on chunks
+plus cells plus bytes (`payload_preflight` and `numeric_preflight`, shared
+with 0100). It drives the iterator, re-counts against the same total, and
+refuses if the iterator yields a different number of chunks than were
+counted.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an
