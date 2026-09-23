@@ -81,6 +81,14 @@ an `OutOfBounds` error when `null_on_oob` is false, and input nulls stay null.
 calling Polars (which would otherwise panic) and returns an `OutOfBounds`
 error, and a negative `target_len` is a `ConversionError`.
 
+Left subtraction (record 0092): `ca.lhs_sub(x)` computes `x - ca` on the ten
+numeric wrappers. `x` is taken as the array's own element type: an integer
+that does not fit it is a `ConversionError` (the `Int64` binding takes any
+script integer), `Float32` casts with `as f32`, `Float64` passes directly.
+Integer results wrap as in Polars (`0 - 1` on `UInt8` is `255`). A
+`UInt64Chunked` value above `i64::MAX` currently reads back through `get` as a
+negative script integer; that conversion is under audit.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn

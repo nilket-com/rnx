@@ -780,3 +780,13 @@ types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type"
 guard_param = "target_len"
 guard = "below_idx_max"
 cite = "polars-ops 0.55.2 series/ops/index.rs:21-82 (to_u64/to_i64 total for these types; out-of-range values get a false validity bit)"
+
+# Record 0092: lhs_sub's `N: Num + NumCast` is bound to the pair's own native,
+# so Polars's NumCast::from(lhs).expect(..) is a same-type cast and cannot fail.
+[[method_scalar_generics]]
+key = "polars_core:3719"
+path = "polars_core::chunked_array::ChunkedArray::lhs_sub"
+generic = "N"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-core 0.55.2 series/arithmetic/borrowed.rs:836-843; polars-compute arithmetic signed.rs:80-82, unsigned.rs:68-70 (wrapping_sub), float.rs:59-65"

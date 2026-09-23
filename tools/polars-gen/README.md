@@ -112,6 +112,17 @@ the binding's `pre` statements (`support::below_idx_max`), so an invalid
 value is an `OutOfBounds` error before the call; other parameters, and other
 entries, are unaffected, and the scope clears after the instantiation.
 
+Record 0092's `[[method_scalar_generics]]` entries (inventory `key`,
+`path`, the function `generic`, owner `types` and their `natives`,
+citation) let a family-census method whose only function generic is a
+scalar parameter (`lhs_sub<N: Num + NumCast>`) be proved like any other
+method: the census no longer marks its pairs unresolved, applicability
+decides them, and each proven pair binds `N` to that pair's native type by
+position. The entry fails closed (`MethodScalarGeneric::check`): exactly one
+function generic, used only as a whole parameter type and never in the
+return, and paired `types`/`natives`; a proven pair whose type is not
+listed is refused by name.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an
