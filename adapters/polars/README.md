@@ -147,6 +147,14 @@ Every payload byte also counts one slot, so the bound covers chunks plus
 cells plus bytes. It counts bytes, not characters. List and Struct chunks are
 still refused.
 
+Indexed chunks (record 0101): `ca.downcast_get(i)` on the same fourteen
+wrappers returns chunk `i`, not row `i`, as an owned vector of options.
+Past the last chunk it returns `None`. An empty array's chunk 0 is present
+and empty, `Some([])`. Only that chunk is copied, and only that chunk counts
+against the materialize bound: one slot, plus its cells, plus its payload
+bytes. So one chunk of a large array can be read. A negative index is a
+`ConversionError`.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the

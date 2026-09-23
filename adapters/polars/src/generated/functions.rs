@@ -421,6 +421,48 @@ fn f_beee4fec_data_views_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
 fn f_ca40b0a4__data_views_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt8Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of binary_offset values (copied, bounded with payload bytes) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_f37a496c__get_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, idx: i64) -> Result<Option<Vec<Option<Vec<i64>>>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot_binary_offset(__r, "downcast_get")?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of binary values (copied, bounded with payload bytes) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_5f228c2d_wncast_get_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, idx: i64) -> Result<Option<Vec<Option<Vec<i64>>>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot_binview(__r, "downcast_get")?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of bool values (copied, bounded with payload bytes) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_7d636903_ncast_get_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, idx: i64) -> Result<Option<Vec<Option<bool>>>, Error> { let __r = <polars_core::datatypes::BooleanChunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot_bool(__r, "downcast_get")?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of float (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_822c3ea3_ncast_get_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, idx: i64) -> Result<Option<Vec<Option<f64>>>, Error> { let __r = <polars_core::datatypes::Float32Chunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<f32, _>(__r, "downcast_get", |__r| Ok::<_, Error>((__r as f64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of float (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_bb7c42dd_ncast_get_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, idx: i64) -> Result<Option<Vec<Option<f64>>>, Error> { let __r = <polars_core::datatypes::Float64Chunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<f64, _>(__r, "downcast_get", |__r| Ok::<_, Error>(__r))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_8b3bd85b_owncast_get_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, idx: i64) -> Result<Option<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::Int16Chunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<i16, _>(__r, "downcast_get", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_250f6bba_owncast_get_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, idx: i64) -> Result<Option<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::Int32Chunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<i32, _>(__r, "downcast_get", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_47250409_owncast_get_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, idx: i64) -> Result<Option<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::Int64Chunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<i64, _>(__r, "downcast_get", |__r| Ok::<_, Error>(__r))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_78af463b_downcast_get_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, idx: i64) -> Result<Option<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::Int8Chunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<i8, _>(__r, "downcast_get", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of str values (copied, bounded with payload bytes) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_d01a2c0b_wncast_get_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, idx: i64) -> Result<Option<Vec<Option<String>>>, Error> { let __r = <polars_core::datatypes::StringChunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot_str(__r, "downcast_get")?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_99619c66_wncast_get_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, idx: i64) -> Result<Option<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<u16, _>(__r, "downcast_get", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_7f7ab93d_ncast_get_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, idx: i64) -> Result<Option<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::IdxCa>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<u32, _>(__r, "downcast_get", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of int (checked into range) (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_90e75725_wncast_get_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, idx: i64) -> Result<Option<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<u64, _>(__r, "downcast_get", |__r| Ok::<_, Error>(support::widen::<u64>(__r, "downcast_get")?))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_get)]
+fn f_40c53556_owncast_get_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, idx: i64) -> Result<Option<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot::<u8, _>(__r, "downcast_get", |__r| Ok::<_, Error>((__r as i64)))?) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
 fn f_77e8d615_ices_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<Vec<Vec<i64>>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BinaryOffsetChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?))?), None => None }))() })?; Ok(__r) }
@@ -13401,6 +13443,20 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_fda919eb_ata_views_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_beee4fec_data_views_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_ca40b0a4__data_views_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_f37a496c__get_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_5f228c2d_wncast_get_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_7d636903_ncast_get_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_822c3ea3_ncast_get_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_bb7c42dd_ncast_get_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_8b3bd85b_owncast_get_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_250f6bba_owncast_get_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_47250409_owncast_get_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_78af463b_downcast_get_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_d01a2c0b_wncast_get_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_99619c66_wncast_get_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_7f7ab93d_ncast_get_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_90e75725_wncast_get_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_40c53556_owncast_get_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_77e8d615_ices_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_92e85b83_ast_slices_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_cfdfc94b_st_slices_polars_core__datatypes__booleanchunked)?;

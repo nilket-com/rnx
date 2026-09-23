@@ -222,6 +222,16 @@ cells and payload bytes with checked arithmetic. `payload_snapshot_budget`
 checks chunks plus cells plus bytes before any allocation, and the core
 re-counts while copying.
 
+Record 0101's `[[indexed_chunk_snapshots]]` entry maps `downcast_get`. It
+must be exactly `&self, usize -> Option<&T::Array>` on
+`ChunkedArray<T: PolarsDataType>`, and its pairs come from the 0099 and 0100
+tables. With the pair's kind in scope, `World::ret` accepts only
+`Option<&Array>` of that pair's own concrete array, at the top level. It
+maps it through `support::indexed_snapshot::<N, _>` for numeric pairs, or
+`support::indexed_snapshot_{bool,str,binview,binary_offset}` otherwise. These
+bound one chunk slot plus its cells plus its bytes, and copy nothing for
+`None`.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

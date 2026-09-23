@@ -296,6 +296,39 @@ fn chunk_snapshot_drift_is_refused_by_name() {
 	assert_eq!(pairs(&surface).iter().filter(|(_, d)| d.contains("chunk snapshot: return alloc::vec::Vec<polars_arrow::array::ArrayRef> is not")).count(), 16);
 }
 
+/// Record 0101: the indexed-chunk gate on the real generator. A blank
+/// citation or a String pair given the binary kind refuses all 16 by name
+/// with no text; without the Int64 pair 13 bind and Int64 is named; an
+/// inventory whose `downcast_get` returns a non-optional borrow refuses all.
+#[test]
+fn indexed_chunk_drift_is_refused_by_name() {
+	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
+	let at = shipped.find("key = \"polars_core:3509\"").expect("the downcast_get entry");
+	let cite = at + shipped[at..].find("cite = ").unwrap();
+	let end = cite + shipped[cite..].find('\n').unwrap();
+	let count = |f: &str| f.matches("ChunkedArray::downcast_get`").count();
+	let pairs = |surface: &serde_json::Value| surface["instantiation"]["pairs"].as_array().unwrap().iter().filter(|p| p["key"] == "polars_core:3509").map(|p| (p["alias"].as_str().unwrap().to_string(), p["disposition"].as_str().unwrap().to_string())).collect::<Vec<_>>();
+	let (surface, functions) = generate_release(&format!("{}cite = \" \"{}", &shipped[..cite], &shipped[end..]), "indexed-uncited");
+	assert_eq!(count(&functions), 0);
+	assert_eq!(pairs(&surface).iter().filter(|(_, d)| d.contains("indexed chunk snapshot: no citation")).count(), 16);
+	let mispaired = shipped[at..cite].replace("[\"polars_core::datatypes::StringType\", \"str\"]", "[\"polars_core::datatypes::StringType\", \"binary\"]");
+	assert_ne!(mispaired, shipped[at..cite]);
+	let (surface, functions) = generate_release(&shipped.replacen(&shipped[at..cite], &mispaired, 1), "indexed-mispaired");
+	assert_eq!(count(&functions), 0);
+	assert_eq!(pairs(&surface).iter().filter(|(_, d)| d.contains("nor a listed scalar owner and its kind")).count(), 16);
+	let without = shipped[at..cite].replace(", [\"polars_core::datatypes::Int64Type\", \"i64\"]", "");
+	assert_ne!(without, shipped[at..cite]);
+	let (surface, functions) = generate_release(&shipped.replacen(&shipped[at..cite], &without, 1), "indexed-unlisted");
+	assert_eq!(count(&functions), 13);
+	assert!(pairs(&surface).iter().any(|(a, d)| a.ends_with("::Int64Chunked") && d.contains("indexed chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>` is not a listed pair")));
+	let mut inv: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(inventory()).unwrap()).unwrap();
+	let c = inv["callables"].as_array_mut().unwrap().iter_mut().find(|c| c["key"] == "polars_core:3509").unwrap();
+	c["ret_canonical"] = "&T::Array".into();
+	let (surface, functions) = generate_with(&shipped, Some(&serde_json::to_string(&inv).unwrap()), "indexed-borrowed");
+	assert_eq!(count(&functions), 0);
+	assert_eq!(pairs(&surface).iter().filter(|(_, d)| d.contains("indexed chunk snapshot: return &T::Array is not")).count(), 16);
+}
+
 fn generate_with_natives(key: &str, natives: &str, dir: &str) -> (serde_json::Value, String) {
 	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
 	let at = shipped.find(&format!("key = \"{key}\"")).expect("the entry");

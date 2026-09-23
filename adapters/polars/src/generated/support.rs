@@ -239,6 +239,66 @@ pub(crate) fn chunk_snapshot_binary_offset(chunks: &[polars_arrow::array::ArrayR
 	payload_snapshot::<polars_arrow::array::BinaryArray<i64>, [u8], Vec<i64>>(chunks, method, "BinaryArray<i64>", |a| Box::new(a.iter()), <[u8]>::len, |b| b.iter().map(|x| *x as i64).collect())
 }
 
+/// Record 0101: one selected numeric chunk from `downcast_get`, owned. An
+/// absent chunk is `None` and copies nothing; a present one costs one chunk
+/// slot plus its cells against the inclusive bound, checked before
+/// allocation and re-counted while copying. Only this chunk is touched.
+pub(crate) fn indexed_snapshot<N: polars_arrow::types::NativeType, U>(a: Option<&polars_arrow::array::PrimitiveArray<N>>, method: &str, mut conv: impl FnMut(N) -> Result<U, Error>) -> Result<Option<Vec<Option<U>>>, Error> {
+	let Some(a) = a else { return Ok(None) };
+	let total = snapshot_budget(1, a.len(), method)?;
+	let mut used = 1usize;
+	let mut out = Vec::with_capacity(a.len());
+	for x in a.iter() {
+		used = used.checked_add(1).filter(|u| *u <= total).ok_or_else(|| Error("MaterializeLimit".into(), format!("{method}: more slots copied than the {total} counted, within the bound of {}", materialize_limit())))?;
+		out.push(match x { Some(x) => Some(conv(*x)?), None => None });
+	}
+	Ok(Some(out))
+}
+
+/// Record 0101: the single-array core of the indexed payload snapshots:
+/// cells and payload bytes of this one chunk summed with checked steps,
+/// bounded (one chunk slot + cells + bytes) before allocation, re-counted
+/// while copying; nothing partial.
+fn payload_one<A, V: ?Sized, U>(a: &A, method: &str, cells: usize, iter: impl for<'a> Fn(&'a A) -> Box<dyn Iterator<Item = Option<&'a V>> + 'a>, size: impl Fn(&V) -> usize, copy: impl Fn(&V) -> U) -> Result<Vec<Option<U>>, Error> {
+	let mut bytes = 0usize;
+	for v in iter(a).flatten() {
+		bytes = payload_count_step(1, cells, bytes, size(v), PayloadCount::Bytes, method)?;
+	}
+	let total = payload_snapshot_budget(1, cells, bytes, method)?;
+	let recount = || Error("MaterializeLimit".into(), format!("{method}: more slots copied than the {total} counted, within the bound of {}", materialize_limit()));
+	let mut used = 1usize;
+	let mut out = Vec::with_capacity(cells);
+	for v in iter(a) {
+		used = used.checked_add(1).filter(|u| *u <= total).ok_or_else(recount)?;
+		out.push(match v {
+			Some(v) => {
+				used = used.checked_add(size(v)).filter(|u| *u <= total).ok_or_else(recount)?;
+				Some(copy(v))
+			}
+			None => None,
+		});
+	}
+	Ok(out)
+}
+/// Record 0101: one selected Boolean chunk (no payload bytes).
+pub(crate) fn indexed_snapshot_bool(a: Option<&polars_arrow::array::BooleanArray>, method: &str) -> Result<Option<Vec<Option<bool>>>, Error> {
+	const T: bool = true;
+	const F: bool = false;
+	a.map(|a| payload_one::<polars_arrow::array::BooleanArray, bool, bool>(a, method, a.len(), |a| Box::new(a.iter().map(|b| b.map(|b| if b { &T } else { &F }))), |_| 0, |b| *b)).transpose()
+}
+/// Record 0101: one selected string chunk, UTF-8 bytes counted.
+pub(crate) fn indexed_snapshot_str(a: Option<&polars_arrow::array::Utf8ViewArray>, method: &str) -> Result<Option<Vec<Option<String>>>, Error> {
+	a.map(|a| payload_one::<polars_arrow::array::Utf8ViewArray, str, String>(a, method, a.len(), |a| Box::new(a.iter()), str::len, str::to_string)).transpose()
+}
+/// Record 0101: one selected binary-view chunk, raw bytes as script integers.
+pub(crate) fn indexed_snapshot_binview(a: Option<&polars_arrow::array::BinaryViewArray>, method: &str) -> Result<Option<Vec<Option<Vec<i64>>>>, Error> {
+	a.map(|a| payload_one::<polars_arrow::array::BinaryViewArray, [u8], Vec<i64>>(a, method, a.len(), |a| Box::new(a.iter()), <[u8]>::len, |b| b.iter().map(|x| *x as i64).collect())).transpose()
+}
+/// Record 0101: one selected offset-binary chunk, raw bytes as script integers.
+pub(crate) fn indexed_snapshot_binary_offset(a: Option<&polars_arrow::array::BinaryArray<i64>>, method: &str) -> Result<Option<Vec<Option<Vec<i64>>>>, Error> {
+	a.map(|a| payload_one::<polars_arrow::array::BinaryArray<i64>, [u8], Vec<i64>>(a, method, a.len(), |a| Box::new(a.iter()), <[u8]>::len, |b| b.iter().map(|x| *x as i64).collect())).transpose()
+}
+
 /// Record 0097: `head`, `limit` and `tail` reach Polars's `slice_offsets`,
 /// which panics when the receiver is longer than `i64::MAX` (possible with
 /// shared-buffer appends, record 0093). Checked before the call.
@@ -1016,6 +1076,38 @@ mod bits_tests {
 		assert_eq!(chunk_snapshot_bool(&empties[..1], "m").unwrap_err().0, "ConversionError");
 		limit(0);
 		let _ = f;
+	}
+
+	#[test]
+	fn indexed_snapshots_copy_one_chunk_under_the_bound() {
+		let _s = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+		use polars_arrow::array::{BinaryArray, BinaryViewArray, BooleanArray, PrimitiveArray, Utf8ViewArray};
+		limit(0);
+		let n = PrimitiveArray::<i32>::from([Some(1), None, Some(3)]);
+		assert_eq!(indexed_snapshot::<i32, i64>(Some(&n), "m", |x| Ok(x as i64)).unwrap(), Some(vec![Some(1), None, Some(3)]));
+		assert_eq!(indexed_snapshot::<i32, i64>(None, "m", |x| Ok(x as i64)).unwrap(), None, "an absent chunk copies nothing");
+		let empty = PrimitiveArray::<i32>::from_vec(vec![]);
+		assert_eq!(indexed_snapshot::<i32, i64>(Some(&empty), "m", |x| Ok(x as i64)).unwrap(), Some(vec![]), "a present empty chunk is Some([])");
+		// 1 chunk + 3 cells = 4 slots
+		limit(3);
+		assert_eq!(indexed_snapshot::<i32, i64>(Some(&n), "m", |x| Ok(x as i64)).unwrap_err().1, "m: 1 chunks and 3 cells (4 slots), more than the bound of 3");
+		assert_eq!(indexed_snapshot::<i32, i64>(None, "m", |x| Ok(x as i64)).unwrap(), None, "None under a small bound");
+		limit(4);
+		assert!(indexed_snapshot::<i32, i64>(Some(&n), "m", |x| Ok(x as i64)).is_ok());
+		// payload: "é日本", "", null = 1 + 3 + 8 = 12 slots
+		let s = Utf8ViewArray::from_slice([Some("é日本"), Some(""), None]);
+		limit(11);
+		assert_eq!(indexed_snapshot_str(Some(&s), "m").unwrap_err().1, "m: 1 chunks, 3 cells and 8 bytes (12 slots), more than the bound of 11");
+		limit(12);
+		assert_eq!(indexed_snapshot_str(Some(&s), "m").unwrap(), Some(vec![Some("é日本".to_string()), Some(String::new()), None]));
+		limit(0);
+		let b = BinaryViewArray::from_slice([Some(&[0u8, 255][..]), None]);
+		assert_eq!(indexed_snapshot_binview(Some(&b), "m").unwrap(), Some(vec![Some(vec![0, 255]), None]));
+		let o = BinaryArray::<i64>::from([Some(&[0xc3u8, 0x28][..])]);
+		assert_eq!(indexed_snapshot_binary_offset(Some(&o), "m").unwrap(), Some(vec![Some(vec![0xc3, 0x28])]));
+		let f = BooleanArray::from([Some(true), None]);
+		assert_eq!(indexed_snapshot_bool(Some(&f), "m").unwrap(), Some(vec![Some(true), None]));
+		assert_eq!(indexed_snapshot_bool(None, "m").unwrap(), None);
 	}
 
 	#[test]
