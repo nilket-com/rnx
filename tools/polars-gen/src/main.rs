@@ -1313,6 +1313,24 @@ fn method_scalar_generic_self_test() {
     ] {
         assert!(e.check(&c).is_err(), "{label} must fail closed");
     }
+    // record 0095: lhs_div and lhs_rem reuse the fixed table for all ten
+    // numeric types; each scalar class resolves to its own native
+    let all_types = ["Int8Type", "Int16Type", "Int32Type", "Int64Type", "UInt8Type", "UInt16Type", "UInt32Type", "UInt64Type", "Float32Type", "Float64Type"].map(|t| format!("polars_core::datatypes::{t}"));
+    let all_natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"];
+    for name in ["lhs_div", "lhs_rem"] {
+        let e = MethodScalarGeneric { key: "k".into(), path: format!("{ca}::{name}"), generic: "N".into(), types: all_types.to_vec(), natives: all_natives.iter().map(|n| n.to_string()).collect(), cite: "t".into() };
+        let mut c = ok.clone();
+        c.name = name.into();
+        c.canonical_path = format!("{ca}::{name}");
+        assert!(e.check(&c).is_ok(), "{name}: the shipped shape passes");
+        for (t, n) in [("Int8Type", "i8"), ("UInt32Type", "u32"), ("Int64Type", "i64"), ("UInt64Type", "u64"), ("Float32Type", "f32"), ("Float64Type", "f64")] {
+            assert_eq!(e.native_for(&format!("{ca}<polars_core::datatypes::{t}>")), Some(n), "{name}: {t}");
+        }
+        assert_eq!(e.native_for(&format!("{ca}<polars_core::datatypes::BooleanType>")), None, "{name}: a nonnumeric type has no native");
+        let mut swapped = e.clone();
+        swapped.natives.swap(0, 3);
+        assert!(swapped.check(&c).is_err(), "{name}: Int8Type with i64 fails closed");
+    }
     println!("method-scalar-generic self-test: ok");
 }
 

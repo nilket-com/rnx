@@ -87,6 +87,16 @@ that does not fit it is a `ConversionError` (the `Int64` binding takes any
 script integer), `Float32` casts with `as f32`, `Float64` passes directly.
 Integer results wrap as in Polars (`0 - 1` on `UInt8` is `255`).
 
+Left division and remainder (record 0095): `ca.lhs_div(x)` computes `x / ca`
+and `ca.lhs_rem(x)` computes `x % ca` on the same ten numeric wrappers, with
+the same scalar rule as `lhs_sub`. On the integer wrappers, division
+floors, as in Python (`-7 / 2` is `-4`), and the remainder takes the
+divisor's sign (`-7 % 3` is `2`). A zero divisor gives null, never a panic,
+and `MIN / -1` wraps to `MIN`. On `Float32` and `Float64` both are IEEE, so a
+zero divisor gives `inf`, `-inf` or `NaN`, not null. The remainder is
+`x - d * floor(x / d)`, so `7 % inf` is `NaN`. Nulls in the array stay
+null.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the
