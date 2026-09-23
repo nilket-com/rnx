@@ -104,6 +104,17 @@ pub(crate) fn materialize_exact_with<I: ExactSizeIterator, T>(it: I, limit: usiz
 	materialize_unknown_with(it, limit, method, conv)
 }
 
+/// Record 0096: the whole result of a null-aware vector return, checked
+/// against the (inclusive) bound from the receiver's length before Polars
+/// allocates either branch.
+pub(crate) fn null_aware_bound(n: usize, method: &str) -> Result<(), Error> {
+	let limit = materialize_limit();
+	if n > limit {
+		return Err(Error("MaterializeLimit".into(), format!("{method}: {n} items, more than the bound of {limit}")));
+	}
+	Ok(())
+}
+
 // Record 0082: a borrowed slice is copied into an owned vector under the
 // materialize bound, counted cumulatively over every slice copied while
 // the outermost guard is held: one binding's direct return, its nested
@@ -759,6 +770,18 @@ mod bits_tests {
 		let wrong = bitmap_from_bools(&rune::to_value(vec![rune::to_value(1i64).unwrap()]).unwrap(), "m", None).unwrap_err();
 		assert_eq!(wrong.0, "ConversionError");
 		assert_eq!(depth().0, 0);
+	}
+
+	#[test]
+	fn the_null_aware_bound_is_inclusive() {
+		let _s = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+		limit(3);
+		assert!(null_aware_bound(3, "m").is_ok());
+		let e = null_aware_bound(4, "m").unwrap_err();
+		assert_eq!((e.0.as_str(), e.1.as_str()), ("MaterializeLimit", "m: 4 items, more than the bound of 3"));
+		limit(0);
+		assert!(null_aware_bound(MATERIALIZE_LIMIT, "m").is_ok() && null_aware_bound(MATERIALIZE_LIMIT + 1, "m").is_err(), "0 restores the production bound");
+		assert!(null_aware_bound(0, "m").is_ok());
 	}
 
 	#[test]

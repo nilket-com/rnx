@@ -3016,6 +3016,46 @@ fn f_d6238444_ay__to_vec_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of int
 #[rune::function(instance, path = to_vec)]
 fn f_8d29dc80_ray__to_vec_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Vec<Option<i64>> { let __r = <polars_core::datatypes::UInt8Chunked>::to_vec(&this.0); { let mut __v = Vec::new(); for __r in __r { __v.push(match __r { Some(__r) => Some((__r as i64)), None => None }); } __v } }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of float (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_f7d58c06_ull_aware_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<Option<f64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::Float32Chunked>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some((__r as f64)))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as f64)), None => None })).collect::<Result<Vec<_>, Error>>())?) }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of float (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_54a654dd_ull_aware_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<Option<f64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::Float64Chunked>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some(__r))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some(__r), None => None })).collect::<Result<Vec<_>, Error>>())?) }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of int (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_56f827ce__null_aware_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<Option<i64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::Int16Chunked>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some((__r as i64)))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })).collect::<Result<Vec<_>, Error>>())?) }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of int (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_89c6b534__null_aware_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<Option<i64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::Int32Chunked>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some((__r as i64)))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })).collect::<Result<Vec<_>, Error>>())?) }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of int (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_670a1d3d__null_aware_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<Option<i64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::Int64Chunked>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some(__r))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some(__r), None => None })).collect::<Result<Vec<_>, Error>>())?) }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of int (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_7f52a749_c_null_aware_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<Option<i64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::Int8Chunked>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some((__r as i64)))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })).collect::<Result<Vec<_>, Error>>())?) }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of int (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_50bcd530_null_aware_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<Option<i64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::UInt16Chunked>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some((__r as i64)))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })).collect::<Result<Vec<_>, Error>>())?) }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of int (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_8498dc1f_ull_aware_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<Option<i64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::IdxCa>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some((__r as i64)))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })).collect::<Result<Vec<_>, Error>>())?) }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of int (checked into range) (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_f34cb029_null_aware_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<Option<i64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::UInt64Chunked>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some(support::widen::<u64>(__r, "to_vec_null_aware")?))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some(support::widen::<u64>(__r, "to_vec_null_aware")?), None => None })).collect::<Result<Vec<_>, Error>>())?) }
+/// Convert to a [`Vec`] but don't return [`Option<T::Native>`] if there are no null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_vec_null_aware`. to_vec_null_aware() -> vector of option of int (both Polars branches; bounded before the call) (fallible)
+#[rune::function(instance, path = to_vec_null_aware)]
+fn f_f93b5634__null_aware_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Option<i64>>, Error> { support::null_aware_bound(this.0.len(), "to_vec_null_aware")?; let __r = <polars_core::datatypes::UInt8Chunked>::to_vec_null_aware(&this.0); Ok(__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some((__r as i64)))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })).collect::<Result<Vec<_>, Error>>())?) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::try_apply_fields`. try_apply_fields(func: callback) -> result of StructChunked (fallible)
 #[rune::function(instance, path = try_apply_fields)]
 fn f_f763d516_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, func: rune::runtime::Function) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __cb_func = support::callback::install("StructChunked::try_apply_fields", func)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: &polars::series::Series| { support::callback::bridge::<_, W_polars_core__series__Series>("StructChunked::try_apply_fields", &__cb_func, ({ let __r = __cb_a0; { let __r = (__r).clone(); W_polars_core__series__Series(__r) } },)).and_then(|__cb_result| support::callback::convert("StructChunked::try_apply_fields", || Ok::<_, Error>(__cb_result.0.clone()))).map_err(support::callback::compute_error) }; let __r = crate::engine::run("polars::StructChunked::try_apply_fields", move || <polars::chunked_array::StructChunked>::try_apply_fields(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__chunked_array__struct___StructChunked(__r) }) }
@@ -13785,6 +13825,16 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_4e24be5f_y__to_vec_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_d6238444_ay__to_vec_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_8d29dc80_ray__to_vec_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_f7d58c06_ull_aware_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_54a654dd_ull_aware_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_56f827ce__null_aware_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_89c6b534__null_aware_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_670a1d3d__null_aware_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_7f52a749_c_null_aware_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_50bcd530_null_aware_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_8498dc1f_ull_aware_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_f34cb029_null_aware_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_f93b5634__null_aware_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_f763d516_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_dde81979_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_93362f13_type_polars_core__datatypes__binaryoffsetchunked)?;

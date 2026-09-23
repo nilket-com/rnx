@@ -810,6 +810,16 @@ types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type"
 natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
 cite = "polars-core 0.55.2 series/arithmetic/borrowed.rs:852-856 (wrapping_mod_scalar_lhs); polars-compute 0.55.2 arithmetic/signed.rs:199-208, unsigned.rs:127-136, float.rs:101-103 (lhs - x * floor(lhs / x)); polars-utils floor_divmod.rs:39-68"
 
+# Record 0096: to_vec_null_aware returns Left(Vec<T::Native>) exactly when
+# null_count() == 0, else Right(to_vec()); both branches own their elements.
+# The binding merges them into one Vec<Option<script value>>, checking the
+# receiver length against the materialize bound before the call.
+[[null_aware_returns]]
+key = "polars_core:3658"
+path = "polars_core::chunked_array::ChunkedArray::to_vec_null_aware"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+cite = "polars-core 0.55.2 chunked_array/to_vec.rs:15-27 (Left: values copied from every chunk when null_count() == 0; Right: to_vec(), lines 7-13)"
+
 # Record 0093: usize results proven to be a length of, or index into, a Vec or
 # IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
 # read-back converts with a range check. ChunkedArray lengths are NOT here:

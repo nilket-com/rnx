@@ -165,6 +165,29 @@ fn an_unlisted_scalar_type_is_refused_by_name() {
 	assert!(!int64["disposition"].as_str().unwrap().starts_with("proven"), "{int64}");
 }
 
+/// Record 0096: the real generator on a modified release file. An entry
+/// without a citation lifts nothing and emits no text; an entry without
+/// `Int64Type` binds the other nine and refuses Int64 by name.
+#[test]
+fn null_aware_entries_fail_closed_and_refuse_unlisted_types() {
+	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
+	let at = shipped.find("key = \"polars_core:3658\"").expect("the to_vec_null_aware entry");
+	let entry = &shipped[at..at + shipped[at..].find("\n\n").unwrap()];
+	let pairs = |surface: &serde_json::Value| surface["instantiation"]["pairs"].as_array().unwrap().iter().filter(|p| p["key"] == "polars_core:3658").cloned().collect::<Vec<_>>();
+	let cite_at = entry.find("cite = ").unwrap();
+	let uncited = format!("{}cite = \" \"", &entry[..cite_at]);
+	let (surface, functions) = generate_release(&shipped.replacen(entry, &uncited, 1), "null-aware-uncited");
+	assert!(!functions.contains("to_vec_null_aware"), "no binding text");
+	let refused: Vec<_> = pairs(&surface).into_iter().filter(|p| p["disposition"].as_str().unwrap().contains("null-aware return: no citation")).collect();
+	assert_eq!(refused.len(), 10, "every numeric pair names the malformed entry");
+	let fixed = entry.replace("\"polars_core::datatypes::Int64Type\", ", "");
+	assert_ne!(fixed, entry);
+	let (surface, functions) = generate_release(&shipped.replacen(entry, &fixed, 1), "null-aware-unlisted");
+	assert_eq!(functions.matches("#[rune::function(instance, path = to_vec_null_aware)]").count(), 9);
+	let int64 = pairs(&surface).into_iter().find(|p| p["alias"].as_str().is_some_and(|a| a.ends_with("::Int64Chunked"))).unwrap();
+	assert!(int64["disposition"].as_str().unwrap().contains("null-aware return: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>` is not a listed type"), "{int64}");
+}
+
 fn generate_with_natives(key: &str, natives: &str, dir: &str) -> (serde_json::Value, String) {
 	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
 	let at = shipped.find(&format!("key = \"{key}\"")).expect("the entry");
