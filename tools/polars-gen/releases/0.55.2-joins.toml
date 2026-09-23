@@ -732,3 +732,21 @@ cite = "polars-core 0.55.2 chunked_array/list/mod.rs:47-82 (Borrowed when the in
 key = "polars_core:3641"
 path = "polars_core::chunked_array::ChunkedArray::to_physical_repr"
 cite = "polars-core 0.55.2 chunked_array/struct_/mod.rs:138-170 (Borrowed when fields are physical)"
+
+# Record 0089: integer arg extrema, T inferred from the wrapped argument.
+# Floats are excluded: arg_max_numeric sends a sorted float to an unchecked
+# path whose precondition a script can violate by setting the sorted flag.
+[[free_instantiations]]
+key = "polars_core:3153"
+path = "polars_core::chunked_array::arg_min_max::arg_min_numeric"
+callee = "polars::chunked_array::arg_min_max::arg_min_numeric"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type"]
+cite = "polars-core 0.55.2 chunked_array/arg_min_max.rs:41-52,163-283"
+[[free_instantiations]]
+key = "polars_core:3155"
+path = "polars_core::chunked_array::arg_min_max::arg_max_numeric"
+callee = "polars::chunked_array::arg_min_max::arg_max_numeric"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type"]
+cite = "polars-core 0.55.2 chunked_array/arg_min_max.rs:54-80 (float sorted branch excluded), 163-283"

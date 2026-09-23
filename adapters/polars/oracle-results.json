@@ -1,5 +1,5 @@
 {
-  "cases": 2180,
+  "cases": 2196,
   "results": [
     {
       "detail": "false",
@@ -11538,15 +11538,15 @@
       "unordered": false
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
       "id": "polars_lazy__frame__lazyframe__unique",
       "path": "polars_lazy::frame::LazyFrame::unique",
       "policy": "unordered: default arguments [Polars documents unique as order-unspecified unless maintain_order is set]",
-      "status": "row_order_differs",
+      "status": "match",
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
@@ -13723,6 +13723,70 @@
     },
     {
       "detail": "Some(1:2)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int8chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:2)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int16chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:2)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int32chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:2)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int64chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:2)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__uint8chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:2)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__uint16chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:2)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__idxca",
+      "path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:2)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__uint64chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__arg_min_max__arg_max_str",
       "path": "polars_core::chunked_array::arg_min_max::arg_max_str",
       "policy": "ordered (operation not listed as unordered)",
@@ -13749,6 +13813,70 @@
       "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__arg_min_max__arg_min_bool",
       "path": "polars_core::chunked_array::arg_min_max::arg_min_bool",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:0)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int8chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:0)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int16chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:0)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int32chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:0)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int64chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:0)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__uint8chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:0)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__uint16chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:0)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__idxca",
+      "path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:0)",
+      "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__uint64chunked",
+      "path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -17445,8 +17573,8 @@
   "tally": {
     "both_error": 98,
     "both_panic": 17,
-    "match": 2063,
-    "row_order_differs": 2
+    "match": 2080,
+    "row_order_differs": 1
   },
-  "verified": 2180
+  "verified": 2196
 }

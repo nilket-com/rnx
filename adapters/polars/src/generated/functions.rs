@@ -7105,6 +7105,30 @@ fn g_99d96092_hunked_array__arg_min_max__arg_max_binary_offset(ca: &W_polars_cor
 /// Polars: `polars_core::chunked_array::arg_min_max::arg_max_bool`. arg_max_bool(ca: BooleanChunked) -> option of int
 #[rune::function(path = arg_max_bool)]
 fn g_50adcf23_s_core__chunked_array__arg_min_max__arg_max_bool(ca: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = polars::chunked_array::arg_min_max::arg_max_bool(&ca.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_max_numeric`. arg_max_numeric(ca: Int8Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::arg_max_numeric)]
+fn f_a80099bd__max_numeric_polars_core__datatypes__int8chunked(ca: &W_polars_core__datatypes__Int8Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_max_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_max_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_max_numeric`. arg_max_numeric(ca: Int16Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::arg_max_numeric)]
+fn f_887ab5af_max_numeric_polars_core__datatypes__int16chunked(ca: &W_polars_core__datatypes__Int16Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_max_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_max_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_max_numeric`. arg_max_numeric(ca: Int32Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::arg_max_numeric)]
+fn f_7e761049_max_numeric_polars_core__datatypes__int32chunked(ca: &W_polars_core__datatypes__Int32Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_max_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_max_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_max_numeric`. arg_max_numeric(ca: Int64Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::arg_max_numeric)]
+fn f_f08ebbcc_max_numeric_polars_core__datatypes__int64chunked(ca: &W_polars_core__datatypes__Int64Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_max_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_max_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_max_numeric`. arg_max_numeric(ca: UInt8Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::arg_max_numeric)]
+fn f_8bca978f_max_numeric_polars_core__datatypes__uint8chunked(ca: &W_polars_core__datatypes__UInt8Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_max_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_max_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_max_numeric`. arg_max_numeric(ca: UInt16Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::arg_max_numeric)]
+fn f_6289b1b6_ax_numeric_polars_core__datatypes__uint16chunked(ca: &W_polars_core__datatypes__UInt16Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_max_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_max_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_max_numeric`. arg_max_numeric(ca: IdxCa) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::arg_max_numeric)]
+fn f_99e74b17_x_numeric_polars_core__datatypes__aliases__idxca(ca: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_max_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_max_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_max_numeric`. arg_max_numeric(ca: UInt64Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::arg_max_numeric)]
+fn f_206c145e_ax_numeric_polars_core__datatypes__uint64chunked(ca: &W_polars_core__datatypes__UInt64Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_max_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_max_numeric")?), None => None }) }
 /// Polars: `polars_core::chunked_array::arg_min_max::arg_max_str`. arg_max_str(ca: StringChunked) -> option of int
 #[rune::function(path = arg_max_str)]
 fn g_7b20ef0e_rs_core__chunked_array__arg_min_max__arg_max_str(ca: &W_polars_core__datatypes__StringChunked) -> Option<i64> { let __r = polars::chunked_array::arg_min_max::arg_max_str(&ca.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
@@ -7117,6 +7141,30 @@ fn g_957b281f_hunked_array__arg_min_max__arg_min_binary_offset(ca: &W_polars_cor
 /// Polars: `polars_core::chunked_array::arg_min_max::arg_min_bool`. arg_min_bool(ca: BooleanChunked) -> option of int
 #[rune::function(path = arg_min_bool)]
 fn g_5edbb209_s_core__chunked_array__arg_min_max__arg_min_bool(ca: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = polars::chunked_array::arg_min_max::arg_min_bool(&ca.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_min_numeric`. arg_min_numeric(ca: Int8Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::arg_min_numeric)]
+fn f_337a0a6e__min_numeric_polars_core__datatypes__int8chunked(ca: &W_polars_core__datatypes__Int8Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_min_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_min_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_min_numeric`. arg_min_numeric(ca: Int16Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::arg_min_numeric)]
+fn f_62a1119b_min_numeric_polars_core__datatypes__int16chunked(ca: &W_polars_core__datatypes__Int16Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_min_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_min_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_min_numeric`. arg_min_numeric(ca: Int32Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::arg_min_numeric)]
+fn f_4910c939_min_numeric_polars_core__datatypes__int32chunked(ca: &W_polars_core__datatypes__Int32Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_min_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_min_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_min_numeric`. arg_min_numeric(ca: Int64Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::arg_min_numeric)]
+fn f_486f2106_min_numeric_polars_core__datatypes__int64chunked(ca: &W_polars_core__datatypes__Int64Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_min_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_min_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_min_numeric`. arg_min_numeric(ca: UInt8Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::arg_min_numeric)]
+fn f_ee231b6a_min_numeric_polars_core__datatypes__uint8chunked(ca: &W_polars_core__datatypes__UInt8Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_min_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_min_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_min_numeric`. arg_min_numeric(ca: UInt16Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::arg_min_numeric)]
+fn f_cc933755_in_numeric_polars_core__datatypes__uint16chunked(ca: &W_polars_core__datatypes__UInt16Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_min_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_min_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_min_numeric`. arg_min_numeric(ca: IdxCa) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::arg_min_numeric)]
+fn f_da83bc9d_n_numeric_polars_core__datatypes__aliases__idxca(ca: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_min_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_min_numeric")?), None => None }) }
+/// Polars: `polars_core::chunked_array::arg_min_max::arg_min_numeric`. arg_min_numeric(ca: UInt64Chunked) -> option of int (checked into range) (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::arg_min_numeric)]
+fn f_ffb0a807_in_numeric_polars_core__datatypes__uint64chunked(ca: &W_polars_core__datatypes__UInt64Chunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_min_numeric(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_min_numeric")?), None => None }) }
 /// Polars: `polars_core::chunked_array::arg_min_max::arg_min_str`. arg_min_str(ca: StringChunked) -> option of int
 #[rune::function(path = arg_min_str)]
 fn g_2ad96fc3_rs_core__chunked_array__arg_min_max__arg_min_str(ca: &W_polars_core__datatypes__StringChunked) -> Option<i64> { let __r = polars::chunked_array::arg_min_max::arg_min_str(&ca.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
@@ -14665,10 +14713,26 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_bfdaf8a8_core__chunked_array__arg_min_max__arg_max_binary)?;
     m.function_meta(g_99d96092_hunked_array__arg_min_max__arg_max_binary_offset)?;
     m.function_meta(g_50adcf23_s_core__chunked_array__arg_min_max__arg_max_bool)?;
+    m.function_meta(f_a80099bd__max_numeric_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_887ab5af_max_numeric_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_7e761049_max_numeric_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_f08ebbcc_max_numeric_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_8bca978f_max_numeric_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_6289b1b6_ax_numeric_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_99e74b17_x_numeric_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_206c145e_ax_numeric_polars_core__datatypes__uint64chunked)?;
     m.function_meta(g_7b20ef0e_rs_core__chunked_array__arg_min_max__arg_max_str)?;
     m.function_meta(g_3e992452_core__chunked_array__arg_min_max__arg_min_binary)?;
     m.function_meta(g_957b281f_hunked_array__arg_min_max__arg_min_binary_offset)?;
     m.function_meta(g_5edbb209_s_core__chunked_array__arg_min_max__arg_min_bool)?;
+    m.function_meta(f_337a0a6e__min_numeric_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_62a1119b_min_numeric_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_4910c939_min_numeric_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_486f2106_min_numeric_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_ee231b6a_min_numeric_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_cc933755_in_numeric_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_da83bc9d_n_numeric_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_ffb0a807_in_numeric_polars_core__datatypes__uint64chunked)?;
     m.function_meta(g_2ad96fc3_rs_core__chunked_array__arg_min_max__arg_min_str)?;
     m.function_meta(g_0a80a9ff__chunked_array__ops__aggregate__sum_output_dtype)?;
     m.function_meta(g_98a5600d__core__chunked_array__ops__bit_repr__reinterpret)?;

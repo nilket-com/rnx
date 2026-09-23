@@ -52,6 +52,15 @@ handed back its receiver unchanged or built a new array. The receiver is not
 modified, and a physical conversion of a logical dtype (a list of dates, a
 struct with a date field) really changes the dtype, as in Polars.
 
+Generic free functions (record 0089): `arg_min_numeric` and `arg_max_numeric`
+are static functions on each integer wrapper
+(`polars::Int64Chunked::arg_max_numeric(ca)`, likewise `Int8`, `Int16`,
+`Int32`, `UInt8`, `UInt16`, `IdxCa`, `UInt64`); the element type comes from the
+wrapper, so the script never names it. They return the index of the extremum,
+or `None` for an empty or all-null array, and honour the sorted flag exactly as
+Polars does. Floats are not offered: Polars takes an unchecked path for a
+sorted float.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn

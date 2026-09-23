@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 329,
-    "generated": 2100,
+    "generated": 2102,
     "out_of_scope": 710,
-    "unsupported": 1932
+    "unsupported": 1930
   },
   "entries": [
     {
@@ -61066,13 +61066,82 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int8Chunked::arg_max_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int16Chunked::arg_max_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int32Chunked::arg_max_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int64Chunked::arg_max_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt8Chunked::arg_max_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt16Chunked::arg_max_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__idxca",
+          "receiver": "polars_core::datatypes::aliases::IdxCa",
+          "route": "free instantiation",
+          "rune": "polars::IdxCa::arg_max_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_max_numeric__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt64Chunked::arg_max_numeric"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+      "execution": "case (on 8 of 8 receivers)",
+      "fallible": true,
       "key": "polars_core:3155",
       "kind": "free_fn",
-      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+      "note": "instantiated on 8 of 8 listed types (polars-core 0.55.2 chunked_array/arg_min_max.rs:54-80 (float sorted branch excluded), 163-283)",
+      "rune": "polars::Int8Chunked::arg_max_numeric polars::Int16Chunked::arg_max_numeric polars::Int32Chunked::arg_max_numeric polars::Int64Chunked::arg_max_numeric polars::UInt8Chunked::arg_max_numeric polars::UInt16Chunked::arg_max_numeric polars::IdxCa::arg_max_numeric polars::UInt64Chunked::arg_max_numeric",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>) -> core::option::Option<usize>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -61173,13 +61242,82 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int8Chunked::arg_min_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int16Chunked::arg_min_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int32Chunked::arg_min_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int64Chunked::arg_min_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt8Chunked::arg_min_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt16Chunked::arg_min_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__idxca",
+          "receiver": "polars_core::datatypes::aliases::IdxCa",
+          "route": "free instantiation",
+          "rune": "polars::IdxCa::arg_min_numeric"
+        },
+        {
+          "case_id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__arg_min_max__arg_min_numeric__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt64Chunked::arg_min_numeric"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+      "execution": "case (on 8 of 8 receivers)",
+      "fallible": true,
       "key": "polars_core:3153",
       "kind": "free_fn",
-      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+      "note": "instantiated on 8 of 8 listed types (polars-core 0.55.2 chunked_array/arg_min_max.rs:41-52,163-283)",
+      "rune": "polars::Int8Chunked::arg_min_numeric polars::Int16Chunked::arg_min_numeric polars::Int32Chunked::arg_min_numeric polars::Int64Chunked::arg_min_numeric polars::UInt8Chunked::arg_min_numeric polars::UInt16Chunked::arg_min_numeric polars::IdxCa::arg_min_numeric polars::UInt64Chunked::arg_min_numeric",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>) -> core::option::Option<usize>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -140017,7 +140155,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2180,
+  "oracle_cases": 2196,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -143035,7 +143173,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "29dabea069db826c1c2980c2811e8cfa3baa7f2e6cf6d29804c6a35b1c77e8f0",
+    "sha256": "0510c4944449d264a409516fbc84515e9c9e37f3d62e36afe155d7459cbaa1c5",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",
