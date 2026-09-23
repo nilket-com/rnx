@@ -232,6 +232,15 @@ maps it through `support::indexed_snapshot::<N, _>` for numeric pairs, or
 bound one chunk slot plus its cells plus its bytes, and copy nothing for
 `None`.
 
+Record 0102's `[[array_snapshots]]` entry maps `downcast_as_array`. It
+must be exactly `&self -> &T::Array` on `ChunkedArray<T: PolarsDataType>`,
+with no parameters, and its pairs come from the same tables. With the
+pair's kind in scope, `World::ret` accepts only `&Array` of that pair's own
+array, at the top level. It maps it through
+`support::array_snapshot::<N, _>` or `support::array_snapshot_{kind}`. These
+are the single-array cores that 0101's indexed copiers now delegate to.
+Polars's own one-chunk assertion runs first and is kept.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

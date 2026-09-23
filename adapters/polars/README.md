@@ -155,6 +155,14 @@ against the materialize bound: one slot, plus its cells, plus its payload
 bytes. So one chunk of a large array can be read. A negative index is a
 `ConversionError`.
 
+Single arrays (record 0102): `ca.downcast_as_array()` on the same fourteen
+wrappers returns the array's one chunk as an owned vector of options. An
+empty array gives `[]`. As in Polars, an array with more than one chunk, or
+none, fails Polars's one-chunk assertion and panics. It does not return the
+first chunk. Rechunk first, or use `downcast_get(0)` or `chunks()`. The copy
+counts one slot, plus its cells, plus its payload bytes against the
+materialize bound.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the

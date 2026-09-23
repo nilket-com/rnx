@@ -421,6 +421,62 @@ fn f_beee4fec_data_views_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
 fn f_ca40b0a4__data_views_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt8Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of binary_offset values (copied, bounded with payload bytes) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_aa88a0f6_rray_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Vec<Option<Vec<i64>>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::downcast_as_array(&this.0); Ok(support::array_snapshot_binary_offset(__r, "downcast_as_array")?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of binary values (copied, bounded with payload bytes) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_1d6d44d3_t_as_array_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Vec<Option<Vec<i64>>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::downcast_as_array(&this.0); Ok(support::array_snapshot_binview(__r, "downcast_as_array")?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of bool values (copied, bounded with payload bytes) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_af99b138__as_array_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Vec<Option<bool>>, Error> { let __r = <polars_core::datatypes::BooleanChunked>::downcast_as_array(&this.0); Ok(support::array_snapshot_bool(__r, "downcast_as_array")?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of float (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_f14b7880__as_array_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<Option<f64>>, Error> { let __r = <polars_core::datatypes::Float32Chunked>::downcast_as_array(&this.0); Ok(support::array_snapshot::<f32, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>((__r as f64)))?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of float (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_d891415f__as_array_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<Option<f64>>, Error> { let __r = <polars_core::datatypes::Float64Chunked>::downcast_as_array(&this.0); Ok(support::array_snapshot::<f64, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>(__r))?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_1652e719_st_as_array_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<Option<i64>>, Error> { let __r = <polars_core::datatypes::Int16Chunked>::downcast_as_array(&this.0); Ok(support::array_snapshot::<i16, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_1874efef_st_as_array_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<Option<i64>>, Error> { let __r = <polars_core::datatypes::Int32Chunked>::downcast_as_array(&this.0); Ok(support::array_snapshot::<i32, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_251e130e_st_as_array_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<Option<i64>>, Error> { let __r = <polars_core::datatypes::Int64Chunked>::downcast_as_array(&this.0); Ok(support::array_snapshot::<i64, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>(__r))?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_6c6a7a82_ast_as_array_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<Option<i64>>, Error> { let __r = <polars_core::datatypes::Int8Chunked>::downcast_as_array(&this.0); Ok(support::array_snapshot::<i8, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of str values (copied, bounded with payload bytes) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_e93e9873_t_as_array_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<Vec<Option<String>>, Error> { let __r = <polars_core::datatypes::StringChunked>::downcast_as_array(&this.0); Ok(support::array_snapshot_str(__r, "downcast_as_array")?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_46cb5811_t_as_array_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<Option<i64>>, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::downcast_as_array(&this.0); Ok(support::array_snapshot::<u16, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_e3242048__as_array_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<Option<i64>>, Error> { let __r = <polars_core::datatypes::IdxCa>::downcast_as_array(&this.0); Ok(support::array_snapshot::<u32, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of int (checked into range) (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_78613238_t_as_array_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<Option<i64>>, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::downcast_as_array(&this.0); Ok(support::array_snapshot::<u64, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>(support::widen::<u64>(__r, "downcast_as_array")?))?) }
+/// # Panics Panics if `self.chunks().len() != 1`.
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_as_array`. downcast_as_array() -> the single array as a vector of option of int (copied, bounded) (fallible)
+#[rune::function(instance, path = downcast_as_array)]
+fn f_57c4acc8_st_as_array_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Option<i64>>, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::downcast_as_array(&this.0); Ok(support::array_snapshot::<u8, _>(__r, "downcast_as_array", |__r| Ok::<_, Error>((__r as i64)))?) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_get`. downcast_get(idx: int) -> option of the selected chunk as a vector of option of binary_offset values (copied, bounded with payload bytes) (fallible)
 #[rune::function(instance, path = downcast_get)]
 fn f_f37a496c__get_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, idx: i64) -> Result<Option<Vec<Option<Vec<i64>>>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::downcast_get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(support::indexed_snapshot_binary_offset(__r, "downcast_get")?) }
@@ -13443,6 +13499,20 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_fda919eb_ata_views_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_beee4fec_data_views_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_ca40b0a4__data_views_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_aa88a0f6_rray_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_1d6d44d3_t_as_array_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_af99b138__as_array_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_f14b7880__as_array_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_d891415f__as_array_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_1652e719_st_as_array_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_1874efef_st_as_array_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_251e130e_st_as_array_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_6c6a7a82_ast_as_array_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_e93e9873_t_as_array_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_46cb5811_t_as_array_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_e3242048__as_array_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_78613238_t_as_array_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_57c4acc8_st_as_array_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_f37a496c__get_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_5f228c2d_wncast_get_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_7d636903_ncast_get_polars_core__datatypes__booleanchunked)?;
