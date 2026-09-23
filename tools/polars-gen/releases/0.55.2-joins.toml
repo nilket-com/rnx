@@ -11,6 +11,12 @@
 name = "0.55.2"
 source = "crates.io =0.55.2"
 api_crates = ["polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error"]
+# Record 0085: validity bitmap returns copied into an owned Vec<bool>;
+# only these paths, every other Bitmap stays refused.
+bitmap_returns = [
+    "polars_core::chunked_array::ChunkedArray::rechunk_validity",  # polars-core 0.55.2 chunked_array/ops/chunkops.rs:199-216
+    "polars_core::chunked_array::ChunkedArray::iter_validities",   # polars-core 0.55.2 chunked_array/mod.rs:411-418
+]
 
 # The inventory this policy belongs to; the generator refuses any other.
 [provenance]

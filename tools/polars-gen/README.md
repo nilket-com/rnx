@@ -52,6 +52,14 @@ other members. `Into<(…)>` tuple conversions, return-only generics,
 closure bounds and the release file's `[[refused]]` paths (each with the
 source contract a binding would have to validate) stay refused.
 
+Record 0085 maps a validity `Bitmap` return, direct, optional or as
+iterator items, to an owned `Vec<bool>` through `support::copy_bits`,
+which shares the cumulative materialize bound with 0082's slice copies
+(one `SliceBudget` guard spans a whole iterator). The rule applies only to
+the canonical paths in the release file's `bitmap_returns` list
+(`ChunkedArray::rechunk_validity`, `ChunkedArray::iter_validities`); every
+other `Bitmap`, every bitmap input and every Arrow array stays refused.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

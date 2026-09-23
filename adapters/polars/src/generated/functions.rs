@@ -1456,6 +1456,70 @@ fn f_53606ce2_rray__iter_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = iter)]
 fn f_afd4c2e4_array__iter_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt8Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })) })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_3019352f_ties_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryOffsetChunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_3cc68261_validities_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryChunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_65088e38_alidities_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BooleanChunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_d70ed809_alidities_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Float32Chunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_fa5dd9fa_alidities_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Float64Chunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_9a650d9e__validities_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int16Chunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_fc0fc16b__validities_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int32Chunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_9a558c84__validities_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int64Chunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_b8d7e568_r_validities_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int8Chunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_7aa2df0f_r_validities_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::ListChunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_6877cc8b_validities_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::StringChunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_df740639_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars::chunked_array::StructChunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_0aab2164_validities_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt16Chunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_2be2451a_alidities_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::IdxCa>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_bcb2bb33_validities_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt64Chunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
+/// Get the buffer of bits representing null values
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter_validities`. iter_validities() -> vector of option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_validities)]
+fn f_878d1dcc__validities_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Option<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt8Chunked>::iter_validities(__arg0); support::materialize_exact(__it, "iter_validities", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "iter_validities")? }), None => None })) } })?; Ok(__r) }
 /// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = last)]
@@ -2002,6 +2066,54 @@ fn f_5ed52617_echunk_mut_polars_core__datatypes__uint64chunked(this: &mut W_pola
 /// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
 #[rune::function(instance, path = rechunk_mut)]
 fn f_499e300c_rechunk_mut_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked) -> () { let __arg0 = &mut this.0; let __r = crate::engine::infallible(crate::engine::run("polars::UInt8Chunked::rechunk_mut", move || <polars_core::datatypes::UInt8Chunked>::rechunk_mut(__arg0)), "polars::UInt8Chunked::rechunk_mut"); __r }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_75648edf_dity_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::BinaryOffsetChunked::rechunk_validity", move || <polars_core::datatypes::BinaryOffsetChunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_97a2d745_k_validity_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::BinaryChunked::rechunk_validity", move || <polars_core::datatypes::BinaryChunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_57e31ee2__validity_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::BooleanChunked::rechunk_validity", move || <polars_core::datatypes::BooleanChunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_1c869afb__validity_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Float32Chunked::rechunk_validity", move || <polars_core::datatypes::Float32Chunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_d60283d5__validity_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Float64Chunked::rechunk_validity", move || <polars_core::datatypes::Float64Chunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_0a973632_nk_validity_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Int16Chunked::rechunk_validity", move || <polars_core::datatypes::Int16Chunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_c27ca2c9_nk_validity_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Int32Chunked::rechunk_validity", move || <polars_core::datatypes::Int32Chunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_fbf9cd91_nk_validity_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Int64Chunked::rechunk_validity", move || <polars_core::datatypes::Int64Chunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_5d9060b5_unk_validity_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Int8Chunked::rechunk_validity", move || <polars_core::datatypes::Int8Chunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_58b778d8_unk_validity_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::ListChunked::rechunk_validity", move || <polars_core::datatypes::ListChunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_1626d2b7_k_validity_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::StringChunked::rechunk_validity", move || <polars_core::datatypes::StringChunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_dc823c23_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::StructChunked::rechunk_validity", move || <polars::chunked_array::StructChunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_44b4df6f_k_validity_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::UInt16Chunked::rechunk_validity", move || <polars_core::datatypes::UInt16Chunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_43039962__validity_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::IdxCa::rechunk_validity", move || <polars_core::datatypes::IdxCa>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_96d394bc_k_validity_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::UInt64Chunked::rechunk_validity", move || <polars_core::datatypes::UInt64Chunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_validity`. rechunk_validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = rechunk_validity)]
+fn f_1cc74e55_nk_validity_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Option<Vec<bool>>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::UInt8Chunked::rechunk_validity", move || <polars_core::datatypes::UInt8Chunked>::rechunk_validity(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some(support::copy_bits(&__r, "rechunk_validity")?), None => None }) }
 /// Get a reference to the field.
 /// Polars: `polars_core::chunked_array::ChunkedArray::ref_field`. ref_field() -> Field
 #[rune::function(instance, path = ref_field)]
@@ -12715,6 +12827,22 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_f8160d12_ray__iter_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_53606ce2_rray__iter_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_afd4c2e4_array__iter_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_3019352f_ties_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_3cc68261_validities_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_65088e38_alidities_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_d70ed809_alidities_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_fa5dd9fa_alidities_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_9a650d9e__validities_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_fc0fc16b__validities_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_9a558c84__validities_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_b8d7e568_r_validities_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_7aa2df0f_r_validities_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_6877cc8b_validities_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_df740639_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_0aab2164_validities_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_2be2451a_alidities_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_bcb2bb33_validities_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_878d1dcc__validities_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_acadcdb7_last_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_89fc131c_rray__last_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_993b62fc_ray__last_polars_core__datatypes__booleanchunked)?;
@@ -12857,6 +12985,22 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_12f6c4fe_chunk_mut_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_5ed52617_echunk_mut_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_499e300c_rechunk_mut_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_75648edf_dity_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_97a2d745_k_validity_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_57e31ee2__validity_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_1c869afb__validity_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_d60283d5__validity_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_0a973632_nk_validity_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_c27ca2c9_nk_validity_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_fbf9cd91_nk_validity_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_5d9060b5_unk_validity_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_58b778d8_unk_validity_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_1626d2b7_k_validity_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_dc823c23_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_44b4df6f_k_validity_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_43039962__validity_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_96d394bc_k_validity_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_1cc74e55_nk_validity_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_1e89cafd_ield_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_93b03741__ref_field_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_32feb96a_ref_field_polars_core__datatypes__booleanchunked)?;

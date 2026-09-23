@@ -116,20 +116,34 @@ impl SliceBudget {
 impl Drop for SliceBudget {
 	fn drop(&mut self) { SLICE_BUDGET.with(|b| { let (depth, used) = b.get(); b.set((depth - 1, used)); }); }
 }
-pub(crate) fn copy_slice<T: Clone, U>(slice: &[T], method: &str, mut conv: impl FnMut(T) -> Result<U, Error>) -> Result<Vec<U>, Error> {
-	let _guard = SliceBudget::enter();
+/// Reserve `n` elements of the cumulative bound, or refuse naming what
+/// would have been copied; checked with `n > limit - used`, before any
+/// allocation.
+fn reserve(n: usize, what: &str, method: &str) -> Result<(), Error> {
 	let limit = materialize_limit();
 	let used = SLICE_BUDGET.with(|b| b.get().1);
-	let n = slice.len();
-	if n > limit || used + n > limit {
-		return Err(Error("MaterializeLimit".into(), format!("{method}: {n} slice elements with {used} already copied, more than the bound of {limit}")));
+	if used > limit || n > limit - used {
+		return Err(Error("MaterializeLimit".into(), format!("{method}: {n} {what} with {used} already copied, more than the bound of {limit}")));
 	}
 	SLICE_BUDGET.with(|b| { let (depth, _) = b.get(); b.set((depth, used + n)); });
+	Ok(())
+}
+pub(crate) fn copy_slice<T: Clone, U>(slice: &[T], method: &str, mut conv: impl FnMut(T) -> Result<U, Error>) -> Result<Vec<U>, Error> {
+	let _guard = SliceBudget::enter();
+	let n = slice.len();
+	reserve(n, "slice elements", method)?;
 	let mut out = Vec::with_capacity(n);
 	for e in slice {
 		out.push(conv(e.clone())?);
 	}
 	Ok(out)
+}
+/// Record 0085: a validity bitmap's logical bits, in order, under the same
+/// cumulative bound (one call's bitmaps share it).
+pub(crate) fn copy_bits(bitmap: &polars_arrow::bitmap::Bitmap, method: &str) -> Result<Vec<bool>, Error> {
+	let _guard = SliceBudget::enter();
+	reserve(bitmap.len(), "validity bits", method)?;
+	Ok(bitmap.iter().collect())
 }
 
 pub(crate) fn materialize_unknown_with<I: Iterator, T>(mut it: I, limit: usize, method: &str, mut conv: impl FnMut(I::Item) -> Result<T, Error>) -> Result<Vec<T>, Error> {
@@ -585,5 +599,46 @@ mod callback_tests {
 		assert_eq!((failure.op.as_str(), failure.cause.as_str()), ("inner", "typed marker"));
 		assert!(!inside_after);
 		assert_eq!(left, 3);
+	}
+}
+
+#[cfg(all(test, feature = "test-support"))]
+mod bits_tests {
+	//! Record 0085: the bit copy shares the cumulative bound, refuses before
+	//! allocating, and the guard is restored after success, error and unwind.
+	use super::*;
+	use polars_arrow::bitmap::Bitmap;
+	static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
+	fn limit(n: usize) { TEST_LIMIT.store(n, std::sync::atomic::Ordering::SeqCst); }
+	fn depth() -> (usize, usize) { SLICE_BUDGET.with(|b| b.get()) }
+
+	#[test]
+	fn bits_copy_in_order_under_one_cumulative_bound() {
+		let _s = SERIAL.lock().unwrap();
+		let a = Bitmap::from([true, false, true]);
+		limit(5);
+		let outer = SliceBudget::enter();
+		assert_eq!(copy_bits(&a, "m").unwrap(), vec![true, false, true]);
+		let e = copy_bits(&a, "m").unwrap_err();
+		assert_eq!(e.1, "m: 3 validity bits with 3 already copied, more than the bound of 5");
+		drop(outer);
+		assert_eq!(depth().0, 0);
+		assert_eq!(copy_bits(&Bitmap::new(), "m").unwrap(), Vec::<bool>::new(), "an empty bitmap is an empty vector");
+		limit(0);
+	}
+
+	#[test]
+	fn the_guard_is_restored_after_an_unwind() {
+		let _s = SERIAL.lock().unwrap();
+		limit(3);
+		let r = std::panic::catch_unwind(|| {
+			let _g = SliceBudget::enter();
+			copy_bits(&Bitmap::from([true, true]), "m").unwrap();
+			panic!("inside the guarded call");
+		});
+		assert!(r.is_err());
+		assert_eq!(depth().0, 0, "the guard depth is restored while unwinding");
+		assert_eq!(copy_bits(&Bitmap::from([true, true, true]), "m").unwrap().len(), 3, "a new call gets the whole bound");
+		limit(0);
 	}
 }
