@@ -1,5 +1,5 @@
 {
-  "cases": 1976,
+  "cases": 2003,
   "results": [
     {
       "detail": "false",
@@ -61,6 +61,70 @@
       "detail": "recv=x:Struct({'x': Int64, 'y': String, 'z': Float64}):len=6:rows=[valid, valid, valid, valid, valid, valid]:{x:Int64:[Int64(1), Int64(2), Int64(3), Int64(1), Int64(2), Int64(3)]; y:String:[String(\"a\"), String(\"b\"), String(\"c\"), String(\"a\"), String(\"b\"), String(\"c\")]; z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5), Float64(1.5), Float64(2.5), Float64(3.5)]};ret=()",
       "id": "polars_core__chunked_array__chunkedarray__append_owned__on__structchunked",
       "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "cb:Float32:[Float32(1.5), Float32(2.5), Float32(3.5)]",
+      "id": "polars_core__chunked_array__chunkedarray__apply_as_ints__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::apply_as_ints",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "cb:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]",
+      "id": "polars_core__chunked_array__chunkedarray__apply_as_ints__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::apply_as_ints",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(2.5), Float32(3.5), Float32(4.5)]",
+      "id": "polars_core__chunked_array__chunkedarray__apply_in_place__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(3), Int64(4)]",
+      "id": "polars_core__chunked_array__chunkedarray__apply_in_place__on__int64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:String:[String(\"1!\"), String(\"2!\"), String(\"3!\")]",
+      "id": "polars_core__chunked_array__chunkedarray__apply_into_string_amortized__on__int64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::apply_into_string_amortized",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Float32:[Float32(2.5), Float32(3.5), Float32(4.5)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__apply_mut__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::apply_mut",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Int64:[Int64(2), Int64(3), Int64(4)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__apply_mut__on__int64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::apply_mut",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:List(Int64):[List(:Int64:[Int64(1), Int64(2)]), List(:Int64:[Int64(3)])]",
+      "id": "polars_core__chunked_array__chunkedarray__apply_to_inner__on__listchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::apply_to_inner",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -4690,6 +4754,14 @@
       "unordered": false
     },
     {
+      "detail": "Duplicate",
+      "id": "polars_core__chunked_array__chunkedarray__try_apply_fields__on__structchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::try_apply_fields",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
       "detail": "shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
       "id": "polars_core__chunked_array__chunkedarray__unnest__on__structchunked",
       "path": "polars_core::chunked_array::ChunkedArray::unnest",
@@ -6146,6 +6218,14 @@
       "unordered": false
     },
     {
+      "detail": "Float64",
+      "id": "polars_core__datatypes__dtype__datatype__map_leaves",
+      "path": "polars_core::datatypes::dtype::DataType::map_leaves",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "false",
       "id": "polars_core__datatypes__dtype__datatype__matches_schema_type",
       "path": "polars_core::datatypes::dtype::DataType::matches_schema_type",
@@ -6349,6 +6429,14 @@
       "detail": "recv=x:Int64:[Int64(1), Int64(2), Int64(3), Int64(1), Int64(2), Int64(3)];ret=()",
       "id": "polars_core__frame__column__column__append_owned",
       "path": "polars_core::frame::column::Column::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "cb:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__frame__column__column__apply_unary_elementwise",
+      "path": "polars_core::frame::column::Column::apply_unary_elementwise",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -7106,6 +7194,14 @@
       "unordered": false
     },
     {
+      "detail": "cb:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__frame__column__column__try_apply_unary_elementwise",
+      "path": "polars_core::frame::column::Column::try_apply_unary_elementwise",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "None",
       "id": "polars_core__frame__column__column__try_binary",
       "path": "polars_core::frame::column::Column::try_binary",
@@ -7394,11 +7490,11 @@
       "unordered": false
     },
     {
-      "detail": "ScalarColumn { name: \"x\", scalar: Scalar { dtype: Int64, value: Int64(1) }, length: 2, materialized: OnceLock(<uninit>) }",
+      "detail": "assertion failed: series.len() <= 1",
       "id": "polars_core__frame__column__scalar__scalarcolumn__from_single_value_series",
       "path": "polars_core::frame::column::scalar::ScalarColumn::from_single_value_series",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "match",
+      "status": "both_panic",
       "unordered": false
     },
     {
@@ -7557,6 +7653,22 @@
       "detail": "recv=shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))];ret=()",
       "id": "polars_core__frame__dataframe__dataframe__align_chunks_par",
       "path": "polars_core::frame::dataframe::DataFrame::align_chunks_par",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[39:cb:Int64:[Int64(1), Int64(2), Int64(3)], 49:cb:String:[String(\"a\"), String(\"b\"), String(\"c\")], 53:cb:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
+      "id": "polars_core__frame__dataframe__dataframe__apply_columns",
+      "path": "polars_core::frame::dataframe::DataFrame::apply_columns",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[39:cb:Int64:[Int64(1), Int64(2), Int64(3)], 49:cb:String:[String(\"a\"), String(\"b\"), String(\"c\")], 53:cb:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
+      "id": "polars_core__frame__dataframe__dataframe__apply_columns_par",
+      "path": "polars_core::frame::dataframe::DataFrame::apply_columns_par",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -8018,11 +8130,11 @@
       "unordered": false
     },
     {
-      "detail": "shape=(2, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (<get error: index 1 is out of bounds for sequence of length 1>, <get error: index 1 is out of bounds for sequence of length 1>, <get error: index 1 is out of bounds for sequence of length 1>)]",
+      "detail": "called `Result::unwrap()` on an `Err` value: ShapeMismatch(ErrString(\"height of column 'x' (1) does not match DataFrame height (2)\"))",
       "id": "polars_core__frame__dataframe__dataframe__slice_par",
       "path": "polars_core::frame::dataframe::DataFrame::slice_par",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "match",
+      "status": "both_panic",
       "unordered": false
     },
     {
@@ -8055,6 +8167,22 @@
       "path": "polars_core::frame::dataframe::DataFrame::take",
       "policy": "ordered (operation not listed as unordered)",
       "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "[39:cb:Int64:[Int64(1), Int64(2), Int64(3)], 49:cb:String:[String(\"a\"), String(\"b\"), String(\"c\")], 53:cb:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
+      "id": "polars_core__frame__dataframe__dataframe__try_apply_columns",
+      "path": "polars_core::frame::dataframe::DataFrame::try_apply_columns",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[39:cb:Int64:[Int64(1), Int64(2), Int64(3)], 49:cb:String:[String(\"a\"), String(\"b\"), String(\"c\")], 53:cb:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
+      "id": "polars_core__frame__dataframe__dataframe__try_apply_columns_par",
+      "path": "polars_core::frame::dataframe::DataFrame::try_apply_columns_par",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
       "unordered": false
     },
     {
@@ -9674,11 +9802,11 @@
       "unordered": false
     },
     {
-      "detail": "ColumnStats { field: Field { name: \"x\", dtype: Int64 }, null_count: None, min_value: Some(shape: (3,)\nSeries: 'x' [i64]\n[\n\t1\n\t2\n\t3\n]), max_value: Some(shape: (3,)\nSeries: 'x' [i64]\n[\n\t1\n\t2\n\t3\n]) }",
+      "detail": "assertion `left == right` failed\n  left: 3\n right: 1",
       "id": "polars_io__predicates__columnstats__from_column_literal",
       "path": "polars_io::predicates::ColumnStats::from_column_literal",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "match",
+      "status": "both_panic",
       "unordered": false
     },
     {
@@ -10554,6 +10682,14 @@
       "unordered": false
     },
     {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__expr__expr__agg_with_fmt_str",
+      "path": "polars_plan::dsl::expr::Expr::agg_with_fmt_str",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "selected shape=(1, 1); columns=[x:Boolean,]; rows=[(Boolean(true))]",
       "id": "polars_plan__dsl__expr__expr__all",
       "path": "polars_plan::dsl::expr::Expr::all",
@@ -10581,6 +10717,30 @@
       "detail": "selected shape=(6, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3)) | (Int64(1)) | (Int64(2)) | (Int64(3))]",
       "id": "polars_plan__dsl__expr__expr__append",
       "path": "polars_plan::dsl::expr::Expr::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__expr__expr__apply",
+      "path": "polars_plan::dsl::expr::Expr::apply",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__expr__expr__apply_many",
+      "path": "polars_plan::dsl::expr::Expr::apply_many",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__expr__expr__apply_with_fmt_str",
+      "path": "polars_plan::dsl::expr::Expr::apply_with_fmt_str",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -10970,9 +11130,25 @@
       "unordered": false
     },
     {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__expr__expr__map",
+      "path": "polars_plan::dsl::expr::Expr::map",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(-1)) | (Int64(-2)) | (Int64(-3))]",
       "id": "polars_plan__dsl__expr__expr__map_binary",
       "path": "polars_plan::dsl::expr::Expr::map_binary",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__expr__expr__map_many",
+      "path": "polars_plan::dsl::expr::Expr::map_many",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -10997,6 +11173,14 @@
       "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(-1)) | (Int64(-2)) | (Int64(-3))]",
       "id": "polars_plan__dsl__expr__expr__map_unary",
       "path": "polars_plan::dsl::expr::Expr::map_unary",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__expr__expr__map_with_fmt_str",
+      "path": "polars_plan::dsl::expr::Expr::map_with_fmt_str",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -12658,6 +12842,14 @@
       "unordered": false
     },
     {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__apply_multiple",
+      "path": "polars_plan::dsl::apply_multiple",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "selected shape=(3, 1); columns=[x:Boolean,]; rows=[(Boolean(true)) | (Boolean(true)) | (Boolean(true))]",
       "id": "polars_plan__dsl__arity__binary_expr",
       "path": "polars_plan::dsl::arity::binary_expr",
@@ -12893,6 +13085,30 @@
       "detail": "selected shape=(1, 1); columns=[x:Int64,]; rows=[(Int64(6))]",
       "id": "polars_plan__dsl__functions__syntactic_sugar__sum",
       "path": "polars_plan::dsl::functions::syntactic_sugar::sum",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__map_multiple",
+      "path": "polars_plan::dsl::map_multiple",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(5:Int64)",
+      "id": "polars_plan__dsl__udf__infer_udf_output_dtype",
+      "path": "polars_plan::dsl::udf::infer_udf_output_dtype",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Int64",
+      "id": "polars_plan__dsl__udf__try_infer_udf_output_dtype",
+      "path": "polars_plan::dsl::udf::try_infer_udf_output_dtype",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -15811,11 +16027,11 @@
     }
   ],
   "tally": {
-    "both_error": 93,
-    "both_panic": 23,
+    "both_error": 94,
+    "both_panic": 26,
     "fixture_failed": 156,
-    "match": 1702,
+    "match": 1725,
     "row_order_differs": 2
   },
-  "verified": 1820
+  "verified": 1847
 }

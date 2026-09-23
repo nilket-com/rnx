@@ -88,7 +88,7 @@ reason = "Debug output shows runtime state"
 # (record 0077, iterator returns) reach `iter` and `values_iter`.
 [[instantiation.exclude]]
 alias = "StructChunked"
-methods = ["get", "first", "last", "first_null", "first_non_null", "last_non_null", "iter", "no_null_iter"]
+methods = ["get", "first", "last", "first_null", "first_non_null", "last_non_null", "iter", "no_null_iter", "for_each", "apply_into_string_amortized"]
 cite = "polars-arrow-0.55.2 array/static_array.rs:52,80 no_call_const on StructArray"
 
 # record 0079: mutable closure arguments, by what Polars does with the writes
@@ -532,3 +532,133 @@ cite = "polars-plan-0.55.2/src/plans/lit.rs: reads a literal, no conversion"
 path = "polars_plan::dsl::expr::Expr::name"
 sink = "none"
 cite = "polars-plan-0.55.2/src/dsl/mod.rs:1667: returns the name namespace holding the expression"
+[[callback_safe]]
+path = "polars_core::series::Series::with_name"
+cite = "polars-core 0.55.2 series/mod.rs:289 calls rename on a cloned Series; no value work or pool"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::with_name"
+cite = "polars-core 0.55.2 frame/column/mod.rs:227 delegates to metadata rename"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::rename"
+cite = "polars-core 0.55.2 frame/column/mod.rs:233 delegates to Series or Scalar name metadata"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::name"
+cite = "polars-core 0.55.2 frame/column/mod.rs:211 selects the stored name"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::len"
+cite = "polars-core 0.55.2 frame/column/mod.rs:219 selects the stored length"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::null_count"
+cite = "polars-core 0.55.2 frame/column/mod.rs:617 reads array null-count metadata or the scalar flag"
+
+[[callback_safe]]
+path = "polars_core::series::series_trait::SeriesTrait::name"
+cite = "polars-core 0.55.2 series/series_trait.rs:223 reads the stored name"
+
+[[callback_safe]]
+path = "polars_core::series::series_trait::SeriesTrait::len"
+cite = "polars-core 0.55.2 series/series_trait.rs:307 reads the stored length"
+
+[[callback_safe]]
+path = "polars_core::series::series_trait::SeriesTrait::dtype"
+cite = "polars-core 0.55.2 series/series_trait.rs:231 reads the field dtype"
+
+[[callback_safe]]
+path = "polars_core::series::series_trait::SeriesTrait::null_count"
+cite = "polars-core 0.55.2 series/series_trait.rs:448 reads chunk null-count metadata"
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::series::Series)->polars_core::series::Series"
+rune = '|s| s.with_name("cb")'
+rust = '|s: &p::Series| s.clone().with_name("cb".into())'
+uses = ["polars::Series::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::series::Series)->polars_error::PolarsResult<polars_core::series::Series>"
+rune = '|s| s.with_name("cb")'
+rust = '|s: &p::Series| Ok(s.clone().with_name("cb".into()))'
+uses = ["polars::Series::with_name"]
+
+[[callback_recipe]]
+signature = "FnMut(&polars_core::series::Series)->polars_error::PolarsResult<polars_core::series::Series>"
+rune = '|s| s.with_name("cb")'
+rust = '|s: &p::Series| Ok(s.clone().with_name("cb".into()))'
+uses = ["polars::Series::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(polars_core::series::Series)->polars_error::PolarsResult<polars_core::series::Series>"
+rune = '|s| s.with_name("cb")'
+rust = '|s: p::Series| Ok(s.with_name("cb".into()))'
+uses = ["polars::Series::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::frame::column::Column)->polars_core::frame::column::Column"
+rune = '|c| c.with_name("cb")'
+rust = '|c: &p::Column| c.clone().with_name("cb".into())'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(polars_core::frame::column::Column)->polars_error::PolarsResult<polars_core::frame::column::Column>"
+rune = '|c| c.with_name("cb")'
+rust = '|c: p::Column| Ok(c.with_name("cb".into()))'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::frame::column::Column)->polars_error::PolarsResult<polars_core::frame::column::Column>"
+rune = '|c| c.with_name("cb")'
+rust = '|c: &p::Column| Ok(c.clone().with_name("cb".into()))'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&mut [polars_core::frame::column::Column])->polars_error::PolarsResult<polars_core::frame::column::Column>"
+rune = '|cols| cols[0].with_name("cb")'
+rust = '|cols: &mut [p::Column]| Ok(cols[0].clone().with_name("cb".into()))'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&[polars_core::frame::column::Column])->polars_error::PolarsResult<polars_core::frame::column::Column>"
+rune = '|cols| cols[0].with_name("cb")'
+rust = '|cols: &[p::Column]| Ok(cols[0].clone().with_name("cb".into()))'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::schema::Schema,&polars_core::datatypes::field::Field)->polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+rune = '|s, f| f.with_dtype(polars::DataType::Float64())'
+rust = '|_s: &p::Schema, f: &p::Field| Ok(f.clone().with_dtype(p::DataType::Float64))'
+uses = ["polars::Field::with_dtype"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::schema::Schema,&[polars_core::datatypes::field::Field])->polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+rune = '|s, fields| fields[0].with_dtype(polars::DataType::Float64())'
+rust = '|_s: &p::Schema, fields: &[p::Field]| Ok(fields[0].clone().with_dtype(p::DataType::Float64))'
+uses = ["polars::Field::with_dtype"]
+
+[[callback_recipe]]
+signature = "Fn(i64)->i64"
+rune = '|x| x + 1'
+rust = '|x: i64| x + 1'
+
+[[callback_recipe]]
+signature = "Fn(f32)->f32"
+rune = '|x| x + 1.0'
+rust = '|x: f32| x + 1.0'
+
+[[callback_recipe]]
+signature = "FnOnce(&str)->alloc::string::String"
+rune = '|s| s + "!"'
+rust = '|s: &str| format!("{s}!")'
+
+[[callback_recipe]]
+signature = "FnMut(i64,&mut alloc::string::String)->()"
+rune = '|x| `${x}!`'
+rust = '|x: i64, buf: &mut String| buf.push_str(&format!("{x}!"))'
+
+[[callback_recipe]]
+signature = "FnMut(polars_core::datatypes::dtype::DataType)->polars_core::datatypes::dtype::DataType"
+rune = '|_| polars::DataType::Float64()'
+rust = '|_: p::DataType| p::DataType::Float64'

@@ -39,6 +39,10 @@ struct Release {
     callback_invocation: Vec<CallbackInvocation>,
     #[serde(default)]
     callback_sink: Vec<CallbackSink>,
+    #[serde(default)]
+    callback_safe: Vec<CallbackSafe>,
+    #[serde(default)]
+    callback_recipe: Vec<CallbackRecipe>,
     /// Record 0076: which alias families get instantiated bindings; empty
     /// means every family. The shipped set under the launch budget is
     /// recorded here, as the recipe that selected it.
@@ -520,7 +524,9 @@ impl World {
     fn substitute_signature(&self, c: &Callable, identity: &str, subst: &BTreeMap<String, String>) -> Result<(Vec<String>, Option<String>), String> {
         let mut s2 = subst.clone();
         s2.insert("Self".into(), identity.to_string());
+        let generic_bounds = generics_map(c);
         let one = |t: &str| -> Result<String, String> {
+            let t = generic_bounds.get(t).map(String::as_str).unwrap_or(t);
             let t = subst_params(t, &s2);
             let t = self.resolve_projections(&t)?;
             // an associated-type constraint key (`Item = …`) is not a parameter
@@ -679,7 +685,8 @@ fn instantiation_census(world: &World, inv: &Inventory) -> Vec<PairRecord> {
         if c.kind != "inherent" || c.impl_head.is_none() || !OWNERS.contains(&c.owner.as_str()) { continue; }
         let Some(ids) = by_base.get(&c.owner) else { continue };
         for (identity, alias) in ids {
-            if !c.generics_canonical.is_empty() {
+            let closure_generics: BTreeSet<&str> = c.params.iter().filter(|p| closure_signature(c, p).is_some()).map(|p| p.ty_canonical.as_str()).collect();
+            if c.generics_canonical.iter().any(|(name, _)| !closure_generics.contains(name.as_str())) {
                 out.push(PairRecord { key: c.key.clone(), method: c.canonical_path.clone(), identity: identity.clone(), alias: alias.clone(), family: family(world, identity), result: Applicability::Unresolved("function-level generics are out of this record's scope".into()), signature: None, eligible: !matches!(c.bucket.as_str(), "unsupported" | "unknown"), disposition: None });
                 continue;
             }
@@ -762,6 +769,21 @@ struct CallbackSink {
     cite: String,
 }
 
+#[derive(Clone, Debug, serde::Deserialize)]
+struct CallbackSafe {
+    path: String,
+    cite: String,
+}
+
+#[derive(Clone, Debug, serde::Deserialize)]
+struct CallbackRecipe {
+    signature: String,
+    rune: String,
+    rust: String,
+    #[serde(default)]
+    uses: Vec<String>,
+}
+
 /// One closure parameter as the inventory spells it: the `Fn` kind, the
 /// argument and return types, and whether the bound requires `'static`
 /// (a signature fact; the invocation comes from the audit).
@@ -803,7 +825,7 @@ fn closure_signature(c: &Callable, p: &Param) -> Option<ClosureSig> {
     let generics = generics_map(c);
     let bare = p.ty_canonical.trim().trim_start_matches("&mut ").trim_start_matches('&').trim();
     let text = generics.get(bare).cloned().unwrap_or_else(|| p.ty_canonical.clone());
-    if text.contains("Udf") {
+    if text.contains("dyn ") && text.contains("Udf") {
         return Some(ClosureSig { param: p.name.clone(), kind: "Udf".into(), args: vec![], ret: String::new(), static_bound: true, udf: true });
     }
     let mut t = text.trim();
@@ -986,10 +1008,17 @@ fn callback_census(world: &World, inv: &Inventory, entries: &[Entry]) -> serde_j
         };
         *disp.entry(disposition.clone()).or_insert(0) += 1;
         let today = by_key.get(c.key.as_str()).map(|e| e.status.to_string()).unwrap_or_else(|| "not emitted".into());
+        let after_emission = match by_key.get(c.key.as_str()) {
+            Some(e) if e.status == "generated" => "generated".to_string(),
+            Some(e) if per_family && !e.exceptions.is_empty() => format!("pair refused: {}", e.reason.as_deref().unwrap_or("see exceptions")),
+            Some(e) => format!("refused: {}", e.reason.as_deref().unwrap_or(e.status)),
+            None => "refused: not eligible for emission".into(),
+        };
+        assert!(disposition.starts_with("feasible") || after_emission != "generated", "callback audit refused {} but it acquired a binding", c.canonical_path);
         rows.push(serde_json::json!({
             "key": c.key, "owner": c.owner, "name": c.name, "canonical_path": c.canonical_path, "bucket": c.bucket,
             "closures": closures.iter().map(|s| format!("{}: {}({}) -> {}", s.param, s.kind, s.args.join(", "), s.ret)).collect::<Vec<_>>(),
-            "invocation": invocation, "mutable_contracts": contracts, "disposition": disposition, "refusals": refusals, "unresolved": unresolved, "today": today,
+            "invocation": invocation, "mutable_contracts": contracts, "disposition": disposition, "refusals": refusals, "unresolved": unresolved, "today": today, "disposition after emission": after_emission,
         }));
     }
     let unrouted = sinks.iter().filter(|s| s["status"] == "generated" && s["routed_today"] == false && s["sink"] != "none").count();
@@ -1051,7 +1080,7 @@ fn callback_self_test() {
         supporting: vec![sup(series, &["Clone", "Debug"]), sup(column, &["Clone", "Debug"]), sup(field, &["Clone", "Debug"]), sup(expr, &["Clone", "Debug"]), sup("polars_core::schema::Schema", &["Clone", "Debug"]), sup("polars_core::datatypes::StringChunked", &["Clone"]), sup("polars_lazy::frame::LazyFrame", &["Clone"]), sup("polars_core::frame::dataframe::DataFrame", &["Clone", "Debug"])],
         provenance: None,
     };
-    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope { families: vec!["numeric".into()], exclude: vec![] }, api_crates: vec!["polars_core".into(), "polars_plan".into(), "polars_lazy".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![] };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope { families: vec!["numeric".into()], exclude: vec![] }, api_crates: vec!["polars_core".into(), "polars_plan".into(), "polars_lazy".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     release.callback_mutable.push(CallbackMutable { path: format!("{expr}::map_many"), param: "function".into(), contract: "vector".into(), cite: "t".into() });
     release.callback_mutable.push(CallbackMutable { path: format!("{ca}::apply_into_string_amortized"), param: "f".into(), contract: "result buffer".into(), cite: "t".into() });
     // the source audit: every feasible closure gets its invocation; `stored`
@@ -1100,10 +1129,27 @@ fn callback_self_test() {
     let sinks = census["sinks"]["bindings"].as_array().unwrap();
     assert!(sinks.iter().any(|s| s["key"] == "sink") && !sinks.iter().any(|s| s["key"] == "plan"), "collect is a classified sink, filter (returns the plan) is not a candidate");
     assert!(census["sinks"]["unclassified"].as_array().unwrap().is_empty());
+    let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+    let mut emitted = empty();
+    emit_callable(&world, &mut emitted, inv.callables.iter().find(|c| c.key == "ok").unwrap(), &["callback"]);
+    assert_eq!(emitted.entries[0].status, "generated");
+    assert!(emitted.functions.contains("engine::run"), "an immediate callback is routed in emitted code");
+    let mut no_invocation = release.clone();
+    no_invocation.callback_invocation.retain(|a| a.path != format!("{column}::apply_unary_elementwise"));
+    let world_no_invocation = World::new(&inv, &no_invocation, &["callback"]);
+    let mut refused = empty();
+    emit_callable(&world_no_invocation, &mut refused, inv.callables.iter().find(|c| c.key == "ok").unwrap(), &["callback"]);
+    assert_eq!(refused.entries[0].status, "unsupported", "missing invocation audit must stop emission");
     // removing the classification of one execution path makes every stored operation unresolved, immediate ones stay feasible
     let mut fewer = release.clone();
     fewer.callback_sink.retain(|k| !k.path.ends_with("::collect_schema"));
     let world2 = World::new(&inv, &fewer, &["mechanical", "conversion", "callback"]);
+    let mut guarded = empty();
+    emit_callable(&world2, &mut guarded, inv.callables.iter().find(|c| c.key == "stored").unwrap(), &["callback"]);
+    assert_eq!(guarded.entries[0].status, "unsupported", "missing sink classification must stop a stored binding");
+    let mut immediate = empty();
+    emit_callable(&world2, &mut immediate, inv.callables.iter().find(|c| c.key == "ok").unwrap(), &["callback"]);
+    assert_eq!(immediate.entries[0].status, "generated", "independently audited immediate callback remains bound");
     let census2 = callback_census(&world2, &inv, &[]);
     let row2 = |key: &str| census2["rows"].as_array().unwrap().iter().find(|r| r["key"] == key).unwrap().clone();
     assert_eq!(census2["sinks"]["unclassified"][0], "polars_lazy::frame::LazyFrame::collect_schema");
@@ -1122,6 +1168,53 @@ fn callback_self_test() {
 /// that call and its failures are translated only at that boundary.
 fn routed_for_callbacks(c: &Callable) -> bool {
     c.params.iter().any(|p| closure_signature(c, p).is_some()) || routed(&c.name, Some(&c.owner), &c.params, c.ret_canonical.as_deref())
+}
+
+fn routed_binding(world: &World, c: &Callable, owner: Option<&str>) -> bool {
+    if world.release.callback_safe.iter().any(|safe| safe.path == c.canonical_path) {
+        return false;
+    }
+    if world.release.callback_sink.iter().any(|sink| sink.path == c.canonical_path && sink.sink != "none") {
+        return true;
+    }
+    c.params.iter().any(|p| closure_signature(c, p).is_some()) || routed(&c.name, owner, &c.params, c.ret_canonical.as_deref())
+}
+
+fn binding_route_reason(world: &World, c: &Callable, routed: bool) -> Option<String> {
+    if world.release.callback_safe.iter().any(|safe| safe.path == c.canonical_path) { return Some("callback-safe (audited)".into()); }
+    if c.params.iter().any(|p| closure_signature(c, p).is_some()) { return Some("callback".into()); }
+    if world.release.callback_sink.iter().any(|sink| sink.path == c.canonical_path && sink.sink != "none") { return Some("executes callbacks".into()); }
+    if routed { Some("engine thread".into()) } else { None }
+}
+
+/// The source audit is an admission rule. A missing invocation or execution
+/// path cannot acquire a binding merely because its Rust types map.
+fn callback_gate(world: &World, c: &Callable) -> Result<(), String> {
+    if c.params.iter().any(|p| closure_signature(c, p).is_some()) {
+        if let Some(disposition) = world.callback_dispositions.get(&c.key) {
+            if !disposition.starts_with("feasible") { return Err(disposition.clone()); }
+        }
+    }
+    for p in &c.params {
+        let Some(sig) = closure_signature(c, p) else { continue };
+        let Some(audit) = world.release.callback_invocation.iter().find(|a| a.path == c.canonical_path && a.param == p.name) else {
+            return Err(format!("{}: invocation not audited", p.name));
+        };
+        if audit.invocation == "stored" {
+            if !world.callback_unclassified_sinks.is_empty() {
+                return Err(format!("{}: unclassified execution path(s): {}", p.name, world.callback_unclassified_sinks.join(", ")));
+            }
+            for group in &audit.sinks {
+                if !world.callback_sink_groups.contains(group) { return Err(format!("{}: sink group `{group}` has no classified member", p.name)); }
+            }
+        }
+        for arg in &sig.args {
+            if arg.trim().starts_with("&mut ") && !world.release.callback_mutable.iter().any(|m| m.path == c.canonical_path && m.param == p.name) {
+                return Err(format!("{}: mutable argument `{arg}` has no audited contract", p.name));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn conversion_census(entries: &[Entry], inv: &Inventory, from_names: &BTreeMap<String, String>) -> serde_json::Value {
@@ -1208,7 +1301,7 @@ fn wrapper_self_test() {
             sup("polars_dtype::categorical::CatSize", "type_alias", Some("u32")),
         ],
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let w = World::new(&inv, &release, &["mechanical"]);
     let idx = &w.wrappers["polars_core::datatypes::aliases::IdxCa"];
     let u32c = &w.wrappers["polars_core::datatypes::UInt32Chunked"];
@@ -1300,7 +1393,7 @@ fn applicability_self_test() {
             sup("polars_core::datatypes::StringChunked", "type_alias", Some(&format!("{ca}<polars_core::datatypes::StringType>"))),
         ],
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let w = World::new(&inv, &release, &["mechanical"]);
     let i64c = format!("{ca}<polars_core::datatypes::Int64Type>");
     let boolc = format!("{ca}<polars_core::datatypes::BooleanType>");
@@ -1465,7 +1558,7 @@ fn from_emission_self_test() {
         supporting: vec![sup(owner, &["Clone", "Debug", "PartialEq"]), sup(dtype, &["Clone", "Debug", "PartialEq", "Default"]), sup(field, &["Clone", "Debug", "PartialEq", "Default"])],
         provenance: None,
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let world = World::new(&inv, &release, &["mechanical", "conversion"]);
     let mut out = Emitted { from_names: plan_from_names(&inv), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
     let buckets = ["mechanical", "conversion"];
@@ -1653,6 +1746,9 @@ struct Wrapper {
 
 struct World {
     release: Release,
+    callback_dispositions: BTreeMap<String, String>,
+    callback_unclassified_sinks: Vec<String>,
+    callback_sink_groups: BTreeSet<String>,
     /// Counter for per-binding temporaries.
     tmp: std::cell::Cell<usize>,
     types: BTreeMap<String, Supporting>,
@@ -1791,7 +1887,9 @@ impl World {
                 }
             }
         }
-        let mut w = World { release: release.clone(), tmp: std::cell::Cell::new(0), types, wrappers: BTreeMap::new(), ambiguous_prelude, clonable, impls, deref_targets: BTreeMap::new(), deref_mut: BTreeSet::new(), by_identity: BTreeMap::new() };
+        let callback_unclassified_sinks = inv.callables.iter().filter(|c| release.is_api(&c.krate) && plan_holder_non_plan_method(c) && !release.callback_sink.iter().any(|s| s.path == c.canonical_path)).map(|c| c.canonical_path.clone()).collect();
+        let callback_sink_groups = release.callback_sink.iter().filter(|s| s.sink != "none").map(|s| s.sink.clone()).collect();
+        let mut w = World { release: release.clone(), callback_dispositions: BTreeMap::new(), callback_unclassified_sinks, callback_sink_groups, tmp: std::cell::Cell::new(0), types, wrappers: BTreeMap::new(), ambiguous_prelude, clonable, impls, deref_targets: BTreeMap::new(), deref_mut: BTreeSet::new(), by_identity: BTreeMap::new() };
         w.assign_wrappers(&mentioned);
         for (path, wr) in &w.wrappers {
             if wr.rule == "alias" && wr.identity.contains('<') && wr.aliases.first().is_some_and(|a| a == path) {
@@ -1827,6 +1925,12 @@ impl World {
             }
         }
         w.clonable.extend(more);
+        let callback_rows = callback_census(&w, inv, &[]);
+        for row in callback_rows["rows"].as_array().into_iter().flatten() {
+            if let (Some(key), Some(disposition)) = (row["key"].as_str(), row["disposition"].as_str()) {
+                w.callback_dispositions.insert(key.into(), disposition.into());
+            }
+        }
         w
     }
 
@@ -2236,7 +2340,8 @@ impl World {
                         return Err(Unsupported("vector of borrows", t.render()));
                     }
                     let (ity, conv) = by_value(&inner, "v");
-                    Ok(shaped(ok_arg(&format!("Vec<{ity}>"), format!("{name}.into_iter().map(|v| Ok::<_, Error>({conv})).collect::<Result<Vec<_>, Error>>()?"), &format!("vector of {}", inner.doc))?, format!("vec({})", inner.shape)))
+                    let typed = if ity == "rune::Value" { String::new() } else { format!("let v: {ity} = support::borrow_element(&v, \"{name}\")?; ") };
+                    Ok(shaped(ok_arg("rune::Value", format!("support::borrow_vec(&{name}, \"{name}\")?.into_iter().map(|v| {{ {typed}Ok::<_, Error>({conv}) }}).collect::<Result<Vec<_>, Error>>()?"), &format!("vector of {}", inner.doc))?, format!("vec({})", inner.shape)))
                 }
                 "core::result::Result" => Err(Unsupported("result argument", t.render())),
                 "polars_error::PolarsResult" => Err(Unsupported("result argument", t.render())),
@@ -2290,9 +2395,10 @@ impl World {
                         return Err(Unsupported("slice of borrows", t.render()));
                     }
                     let (ity, conv) = by_value(&inner, "v");
-                    let owned = format!("{name}.into_iter().map(|v| Ok::<_, Error>({conv})).collect::<Result<Vec<_>, Error>>()?");
+                    let typed = if ity == "rune::Value" { String::new() } else { format!("let v: {ity} = support::borrow_element(&v, \"{name}\")?; ") };
+                    let owned = format!("support::borrow_vec(&{name}, \"{name}\")?.into_iter().map(|v| {{ {typed}Ok::<_, Error>({conv}) }}).collect::<Result<Vec<_>, Error>>()?");
                     let tmp = self.tmp();
-                    let mut a = ok_arg(&format!("Vec<{ity}>"), format!("&{tmp}[..]"), &format!("vector of {}", inner.doc))?;
+                    let mut a = ok_arg("rune::Value", format!("&{tmp}[..]"), &format!("vector of {}", inner.doc))?;
                     a.fallible = true;
                     a.pre = vec![format!("let {tmp} = {owned};")];
                     a.shape = format!("vec({})", inner.shape);
@@ -2555,6 +2661,103 @@ fn by_value(a: &Arg, name: &str) -> (String, String) {
     (a.rust_ty.clone(), a.conv.clone())
 }
 
+/// Map a Polars callback argument into an owned Rune value. Slices are
+/// copied as vectors of wrapped values; mutable slices are deliberately
+/// one-way, under the release file's audited vector contract.
+fn callback_input(world: &World, t: &Ty, var: &str, owner: Option<&str>) -> Result<String, Unsupported> {
+    match t {
+        Ty::Ref { inner, .. } if matches!(&**inner, Ty::Slice(_)) => {
+            let Ty::Slice(elem) = &**inner else { unreachable!() };
+            let mapped = world.ret(elem, owner, 0)?;
+            if mapped.fallible || mapped.materialize.is_some() { return Err(Unsupported("callback slice element", t.render())); }
+            Ok(format!("{var}.iter().map(|__r| {{ let __r = __r.clone(); {} }}).collect::<Vec<_>>()", mapped.conv))
+        }
+        Ty::Path { path, args } if path == "alloc::vec::Vec" && args.len() == 1 => {
+            let mapped = world.ret(&args[0], owner, 0)?;
+            if mapped.fallible || mapped.materialize.is_some() { return Err(Unsupported("callback vector element", t.render())); }
+            Ok(format!("{var}.iter().map(|__r| {{ let __r = __r.clone(); {} }}).collect::<Vec<_>>()", mapped.conv))
+        }
+        _ => {
+            let mapped = world.ret(t, owner, 0)?;
+            if mapped.fallible || mapped.materialize.is_some() { return Err(Unsupported("callback argument", t.render())); }
+            Ok(format!("{{ let __r = {var}; {} }}", mapped.conv))
+        }
+    }
+}
+
+fn callback_rust_type(world: &World, raw: &str, owner: Option<&str>) -> String {
+    let mut result = raw.replace("Self", owner.unwrap_or("Self")).replace("alloc::string::String", "String").replace("alloc::vec::Vec", "Vec");
+    let mut paths: Vec<_> = world.wrappers.iter().collect();
+    paths.sort_by_key(|(path, _)| std::cmp::Reverse(path.len()));
+    for (path, wrapper) in paths {
+        result = result.replace(path, &wrapper.spell);
+    }
+    result
+}
+
+fn callback_arg(world: &World, c: &Callable, sig: &ClosureSig, name: &str, owner: Option<&str>) -> Result<Arg, Unsupported> {
+    if sig.udf { return Err(Unsupported("callback Udf", sig.param.clone())); }
+    let operation = if let Some(o) = owner { format!("{}::{}", last(o), c.name) } else { c.name.clone() };
+    let audit = world.release.callback_mutable.iter().find(|m| m.path == c.canonical_path && m.param == sig.param);
+    let copy_bound = c.params.iter().find(|p| sanitize(&p.name) == name).is_some_and(|p| p.ty_canonical.contains("Copy")) || c.generics_canonical.iter().any(|(key, bound)| key == &c.params.iter().find(|p| sanitize(&p.name) == name).map(|p| p.ty_canonical.clone()).unwrap_or_default() && bound.contains("Copy"));
+    let mut params = Vec::new();
+    let mut values = Vec::new();
+    let mut buffer: Option<String> = None;
+    for (i, raw) in sig.args.iter().enumerate() {
+        let t = ty::parse(raw);
+        let var = format!("__cb_a{i}");
+        let rust_type = callback_rust_type(world, raw, owner);
+        params.push(format!("{var}: {rust_type}"));
+        if let Ty::Ref { mutable: true, inner } = &t {
+            if matches!(&**inner, Ty::Path { path, .. } if path == "alloc::string::String") && audit.is_some_and(|a| a.contract == "result buffer") {
+                buffer = Some(var);
+                continue;
+            }
+            if !matches!(&**inner, Ty::Slice(_)) || !audit.is_some_and(|a| a.contract == "vector") {
+                return Err(Unsupported("callback mutable contract", raw.clone()));
+            }
+        }
+        values.push(callback_input(world, &t, &var, owner)?);
+    }
+    let args = if values.is_empty() { "()".to_string() } else { format!("({},)", values.join(", ")) };
+    let result = ty::parse(&sig.ret);
+    let (inner, polars_result) = match &result {
+        Ty::Path { path, args } if path == "polars_error::PolarsResult" && args.len() == 1 => (&args[0], true),
+        _ => (&result, false),
+    };
+    let result_ty = if buffer.is_some() { "String".to_string() } else {
+        let mapping = world.arg(inner, "__cb_result", &BTreeMap::new(), owner, 0)?;
+        let rune_type = mapping.rust_ty.strip_prefix("&mut ").or_else(|| mapping.rust_ty.strip_prefix('&')).unwrap_or(&mapping.rust_ty).to_string();
+        rune_type
+    };
+    let bridge_ref = if copy_bound { format!("__cb_{name}_ref") } else { format!("&__cb_{name}") };
+    let bridge = format!("support::callback::bridge::<_, {result_ty}>(\"{operation}\", {bridge_ref}, {args})");
+    let converted = if let Some(buffer) = buffer {
+        format!("{bridge}.map(|text| {{ *{buffer} = text; }})")
+    } else if matches!(inner, Ty::Tuple(ts) if ts.is_empty()) {
+        bridge
+    } else {
+        let mapping = world.arg(inner, "__cb_result", &BTreeMap::new(), owner, 0)?;
+        let conv = mapping.conv;
+        format!("{bridge}.and_then(|__cb_result| support::callback::convert(\"{operation}\", || Ok::<_, Error>({conv})))")
+    };
+    let delivered = if polars_result { format!("{converted}.map_err(support::callback::compute_error)") } else { format!("{converted}.unwrap_or_else(support::callback::unwind)") };
+    let closure = format!("move |{}| {{ {delivered} }}", params.join(", "));
+    let borrow = c.params.iter().find(|p| sanitize(&p.name) == name).map(|p| p.ty_canonical.as_str()).unwrap_or("");
+    let (conv, declaration) = if borrow.starts_with("&mut ") {
+        (format!("&mut __cb_callable_{name}"), Some(format!("let mut __cb_callable_{name} = {closure};")))
+    } else if borrow.starts_with('&') {
+        (format!("&__cb_callable_{name}"), Some(format!("let __cb_callable_{name} = {closure};")))
+    } else { (closure, None) };
+    let mut arg = ok_arg("rune::runtime::Function", conv, "callback")?;
+    arg.fallible = true;
+    arg.pre.push(format!("let __cb_{name} = support::callback::install(\"{operation}\", {name})?;"));
+    if copy_bound { arg.pre.push(format!("let __cb_{name}_ref = __cb_{name}.as_ref();")); }
+    if let Some(declaration) = declaration { arg.pre.push(declaration); }
+    arg.shape = format!("callback:{}({})->{}", sig.kind, sig.args.join(","), sig.ret);
+    Ok(arg)
+}
+
 // ---------------------------------------------------------------- emission
 
 #[derive(serde::Serialize, Clone)]
@@ -2606,6 +2809,10 @@ struct Binding {
     /// `inherent`, `free`, `protocol`, `implementor` (a trait method on a
     /// wrapped implementor).
     route: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    route_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reentry: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     disposition: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -2708,20 +2915,20 @@ impl Emitted {
         self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "adapted", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: Some(reason.into()), rune: Some(rune.into()), note: None, bindings: vec![], exceptions: vec![], counterpart: None });
     }
     fn generated(&mut self, c: &Callable, rune: &str, note: Option<String>) {
-        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: None, rune: Some(rune.into()), note, bindings: vec![Binding { id: binding_id(&c.canonical_path, None, true), rune: rune.into(), receiver: None, route: "inherent", disposition: None, case_id: None, callee: None, info: None }], exceptions: vec![], counterpart: None });
+        self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: None, signature: signature_of(c), execution: None, oracle: None, reason: None, rune: Some(rune.into()), note, bindings: vec![Binding { id: binding_id(&c.canonical_path, None, true), rune: rune.into(), receiver: None, route: "inherent", route_reason: None, reentry: None, disposition: None, case_id: None, callee: None, info: None }], exceptions: vec![], counterpart: None });
     }
     fn generated_with(&mut self, c: &Callable, rune: &str, note: Option<String>, info: OracleInfo) {
         let fallible = info.fallible;
         let route = match c.kind.as_str() { "inherent" => "inherent", "free_fn" => "free", "foreign_trait_impl" => "protocol", _ => "implementor" };
         let receiver = info.owner.as_ref().map(|(o, _)| o.clone());
-        let bindings = vec![Binding { id: binding_id(&c.canonical_path, receiver.as_deref(), true), rune: rune.into(), receiver, route, disposition: None, case_id: None, callee: None, info: None }];
+        let bindings = vec![Binding { id: binding_id(&c.canonical_path, receiver.as_deref(), true), rune: rune.into(), receiver, route, route_reason: None, reentry: None, disposition: None, case_id: None, callee: None, info: None }];
         self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: Some(fallible), signature: signature_of(c), execution: None, oracle: Some(info), reason: None, rune: Some(rune.into()), note, bindings, exceptions: vec![], counterpart: None });
     }
     /// A trait method bound on several implementors: one binding per
     /// implementor, the entry's status counting the callable once.
     fn generated_on(&mut self, c: &Callable, per: &[(String, String, &'static str, Option<String>)], info: OracleInfo) {
         let fallible = info.fallible;
-        let bindings: Vec<Binding> = per.iter().enumerate().map(|(i, (rune, owner, route, callee))| Binding { id: binding_id(&c.canonical_path, Some(owner), i == 0), rune: rune.clone(), receiver: Some(owner.clone()), route, disposition: None, case_id: None, callee: callee.clone(), info: None }).collect();
+        let bindings: Vec<Binding> = per.iter().enumerate().map(|(i, (rune, owner, route, callee))| Binding { id: binding_id(&c.canonical_path, Some(owner), i == 0), rune: rune.clone(), receiver: Some(owner.clone()), route, route_reason: None, reentry: None, disposition: None, case_id: None, callee: callee.clone(), info: None }).collect();
         let rune = per.iter().map(|(r, _, _, _)| r.as_str()).collect::<Vec<_>>().join(" ");
         self.entries.push(Entry { key: c.key.clone(), canonical_path: c.canonical_path.clone(), kind: c.kind.clone(), bucket: c.bucket.clone(), status: "generated", fallible: Some(fallible), signature: signature_of(c), execution: None, oracle: Some(info), reason: None, rune: Some(rune), note: None, bindings, exceptions: vec![], counterpart: None });
     }
@@ -2794,6 +3001,10 @@ fn rune_path(w: &Wrapper) -> String {
 /// instantiation scope, and proven pairs the mapping rules refuse, are
 /// route exceptions with their reason.
 fn emit_instantiations(world: &World, out: &mut Emitted, c: &Callable, pairs: &[&PairRecord]) {
+    if let Err(reason) = callback_gate(world, c) {
+        out.unsupported(c, "callback audit", &reason);
+        return;
+    }
     let scope = &world.release.instantiation.families;
     let mut done: Vec<(String, String, &'static str, Option<String>)> = Vec::new();
     let mut infos: Vec<OracleInfo> = Vec::new();
@@ -2836,6 +3047,7 @@ fn emit_instantiations(world: &World, out: &mut Emitted, c: &Callable, pairs: &[
         syn.impl_head = None;
         syn.impl_bounds.clear();
         syn.impl_where.clear();
+        syn.generics_canonical.clear(); // closure bounds are now in the substituted parameter types
         let before = out.entries.len();
         emit_method(world, out, &syn, &p.alias, None, false);
         let e = out.entries.pop().unwrap();
@@ -2859,6 +3071,8 @@ fn emit_instantiations(world: &World, out: &mut Emitted, c: &Callable, pairs: &[
     let info = first_info.unwrap();
     out.generated_on(c, &done, info);
     let e = out.entries.last_mut().unwrap();
+    let reason = binding_route_reason(world, c, true);
+    for binding in &mut e.bindings { binding.route_reason = reason.clone(); binding.reentry = Some(if e.fallible == Some(true) { "error" } else { "unwind" }.into()); }
     for (b, i) in e.bindings.iter_mut().zip(infos) {
         b.info = Some(i);
         // one canonical path can carry several callables (one per impl
@@ -2882,7 +3096,7 @@ fn materialized_call(m: &Materialize, callee_call: &str, name: &str, route: bool
         IterWrap::Option => format!("(|| Ok::<_, Error>(match {callee_call} {{ Some(__it) => Some({helper}(__it, \"{name}\", {conv})?), None => None }}))()"),
     };
     if route {
-        format!("crate::engine::run(move || {inner}).map_err(Error::engine)??")
+        format!("crate::engine::run(\"{name}\", move || {inner}).map_err(Error::engine)??")
     } else {
         format!("({inner})?")
     }
@@ -2891,6 +3105,10 @@ fn materialized_call(m: &Materialize, callee_call: &str, name: &str, route: bool
 /// Generate one method/function binding. `owner` is the canonical owner
 /// type (for methods) and `trait_spell` the trait for UFCS calls.
 fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str]) {
+    if let Err(reason) = callback_gate(world, c) {
+        out.unsupported(c, "callback audit", &reason);
+        return;
+    }
     if !buckets.contains(&c.bucket.as_str()) {
         out.unsupported(c, "bucket", c.bucket.clone().as_str());
         return;
@@ -2950,7 +3168,13 @@ fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str
                 // every generated receiver is a binding with its own case
                 info.implementors = infos.iter().filter_map(|i| i.owner.clone()).collect();
                 out.generated_on(c, &done, info);
-                out.entries.last_mut().unwrap().exceptions = exceptions;
+                let entry = out.entries.last_mut().unwrap();
+                for binding in &mut entry.bindings {
+                    let route = routed_binding(world, c, binding.receiver.as_deref());
+                    binding.route_reason = binding_route_reason(world, c, route);
+                    if route { binding.reentry = Some(if entry.fallible == Some(true) { "error" } else { "unwind" }.into()); }
+                }
+                entry.exceptions = exceptions;
             } else {
                 out.generated(c, &done.iter().map(|(r, _, _, _)| r.as_str()).collect::<Vec<_>>().join(" "), None);
             }
@@ -3004,7 +3228,11 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
     let generics = generics_map(c);
     let mut params = Vec::new();
     for p in &c.params {
-        match world.arg(&ty::parse(&p.ty_canonical), &sanitize(&p.name), &generics, Some(owner), 0) {
+        let mapped = match closure_signature(c, p) {
+            Some(sig) => callback_arg(world, c, &sig, &sanitize(&p.name), Some(owner)),
+            None => world.arg(&ty::parse(&p.ty_canonical), &sanitize(&p.name), &generics, Some(owner), 0),
+        };
+        match mapped {
             Ok(a) => params.push((sanitize(&p.name), a)),
             Err(Unsupported(why, what)) => {
                 out.unsupported(c, why, &format!("{} ({what})", p.name));
@@ -3058,7 +3286,7 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
             other => { out.unsupported(c, "deref route needs a receiver", other); return; }
         }
     }
-    let (recv_sig, recv_expr, recv_note) = match c.receiver.as_str() {
+    let (recv_sig, mut recv_expr, recv_note) = match c.receiver.as_str() {
         "none" => ("".to_string(), None, None),
         "self" if !world.clonable.contains(owner) => {
             out.unsupported(c, "receiver consumes a non-Clone type", owner);
@@ -3074,6 +3302,8 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
             return;
         }
     };
+    let commit_receiver = c.receiver == "&mut self" && matches!(c.name.as_str(), "apply_mut" | "apply_in_place") && c.params.iter().any(|p| closure_signature(c, p).is_some());
+    if commit_receiver { recv_expr = Some("&mut __work".into()); }
     let idx = out.fn_index;
     out.fn_index += 1;
     // trait methods are emitted once per implementor: the owner is part of the identity
@@ -3090,9 +3320,10 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
     }
     args.extend(params.iter().map(|(_, a)| a.conv.clone()));
     let sig: Vec<String> = std::iter::once(recv_sig).filter(|s| !s.is_empty()).chain(params.iter().map(|(n, a)| format!("{n}: {}", a.rust_ty))).collect();
-    let route = routed(&rust_name, Some(owner), &c.params, c.ret_canonical.as_deref());
+    let route = routed_binding(world, c, Some(owner));
     let fallible = fallible || params.iter().any(|(_, a)| a.pre.iter().any(|p| p.contains('?')));
-    let pre: String = params.iter().flat_map(|(_, a)| a.pre.iter()).map(|p| format!("{p} ")).collect();
+    let mut pre: String = params.iter().filter(|(_, a)| a.shape.starts_with("callback:")).chain(params.iter().filter(|(_, a)| !a.shape.starts_with("callback:"))).flat_map(|(_, a)| a.pre.iter()).map(|p| format!("{p} ")).collect();
+    if commit_receiver { pre.push_str("let mut __work = this.0.clone(); "); }
     let ret_ty = if fallible { format!("Result<{}, Error>", ret.rust_ty) } else { ret.rust_ty.clone() };
     let body_conv = if fallible { format!("Ok({})", ret.conv) } else { ret.conv.clone() };
     let attr = if c.receiver == "none" { format!("#[rune::function(free, path = {}::{name})]", w.rust) } else { format!("#[rune::function(instance, path = {name})]") };
@@ -3118,12 +3349,14 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
             pre.push_str(&format!("let __arg{i} = {a}; "));
             hoisted.push(format!("__arg{i}"));
         }
-        let join = if fallible { ".map_err(Error::engine)?" } else { ".unwrap_or_else(|e| panic!(\"polars engine thread: {e}\"))" };
-        (pre, format!("crate::engine::run(move || {callee}({})){join}", hoisted.join(", ")))
+        let call = format!("crate::engine::run(\"{rune}\", move || {callee}({}))", hoisted.join(", "));
+        (pre, if fallible { format!("{call}.map_err(Error::engine)?") } else { format!("crate::engine::infallible({call}, \"{rune}\")") })
     } else {
         (pre, format!("{callee}({})", args.join(", ")))
     };
-    writeln!(out.functions, "/// {doc}\n/// Polars: `{}`. {}\n{attr}\nfn {ident}({}) -> {ret_ty} {{ {pre}let __r = {call}; {body_conv} }}", c.canonical_path, summary, sig.join(", ")).unwrap();
+    let commit = if commit_receiver { "this.0 = __work; " } else { "" };
+    let docline = if doc.is_empty() { String::new() } else { format!("/// {doc}\n") };
+    writeln!(out.functions, "{docline}/// Polars: `{}`. {}\n{attr}\nfn {ident}({}) -> {ret_ty} {{ {pre}let __r = {call}; {commit}{body_conv} }}", c.canonical_path, summary, sig.join(", ")).unwrap();
     out.registrations.push(format!("m.function_meta({ident})?;"));
     out.catalogue.push((rune.clone(), if doc.is_empty() { summary.clone() } else { format!("{summary}: {doc}") }));
     out.taken.insert(key, c.canonical_path.clone());
@@ -3153,6 +3386,10 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
         deref: false,
     };
     out.generated_with(c, &rune, note, info);
+    if let Some(binding) = out.entries.last_mut().unwrap().bindings.first_mut() {
+        binding.route_reason = binding_route_reason(world, c, route);
+        if route { binding.reentry = Some(if fallible { "error" } else { "unwind" }.into()); }
+    }
 }
 
 fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
@@ -3183,7 +3420,11 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
     let generics = generics_map(c);
     let mut params = Vec::new();
     for p in &c.params {
-        match world.arg(&ty::parse(&p.ty_canonical), &sanitize(&p.name), &generics, None, 0) {
+        let mapped = match closure_signature(c, p) {
+            Some(sig) => callback_arg(world, c, &sig, &sanitize(&p.name), None),
+            None => world.arg(&ty::parse(&p.ty_canonical), &sanitize(&p.name), &generics, None, 0),
+        };
+        match mapped {
             Ok(a) => params.push((sanitize(&p.name), a)),
             Err(Unsupported(why, what)) => {
                 out.unsupported(c, why, &format!("{} ({what})", p.name));
@@ -3209,9 +3450,9 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
         out.unsupported(c, "arity", &format!("free function with {} parameters; Rune binds at most {FREE_ARITY}", params.len()));
         return;
     }
-    let route = routed(&rust_name, None, &c.params, c.ret_canonical.as_deref());
+    let route = routed_binding(world, c, None);
     let fallible = ret.fallible || params.iter().any(|(_, a)| a.fallible || a.pre.iter().any(|p| p.contains('?')));
-    let pre: String = params.iter().flat_map(|(_, a)| a.pre.iter()).map(|p| format!("{p} ")).collect();
+    let pre: String = params.iter().filter(|(_, a)| a.shape.starts_with("callback:")).chain(params.iter().filter(|(_, a)| !a.shape.starts_with("callback:"))).flat_map(|(_, a)| a.pre.iter()).map(|p| format!("{p} ")).collect();
     let idx = out.fn_index;
     out.fn_index += 1;
     let ident = rust_ident("g", &c.canonical_path, idx);
@@ -3237,12 +3478,13 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
             pre.push_str(&format!("let __arg{i} = {a}; "));
             hoisted.push(format!("__arg{i}"));
         }
-        let join = if fallible { ".map_err(Error::engine)?" } else { ".unwrap_or_else(|e| panic!(\"polars engine thread: {e}\"))" };
-        (pre, format!("crate::engine::run(move || {spelled}({})){join}", hoisted.join(", ")))
+        let call = format!("crate::engine::run(\"polars::{name}\", move || {spelled}({}))", hoisted.join(", "));
+        (pre, if fallible { format!("{call}.map_err(Error::engine)?") } else { format!("crate::engine::infallible({call}, \"polars::{name}\")") })
     } else {
         (pre, format!("{spelled}({})", args.join(", ")))
     };
-    writeln!(out.functions, "/// {doc}\n/// Polars: `{}`. {}\n#[rune::function(path = {name})]\nfn {ident}({}) -> {ret_ty} {{ {pre}let __r = {call}; {body_conv} }}", c.canonical_path, summary, sig.join(", ")).unwrap();
+    let docline = if doc.is_empty() { String::new() } else { format!("/// {doc}\n") };
+    writeln!(out.functions, "{docline}/// Polars: `{}`. {}\n#[rune::function(path = {name})]\nfn {ident}({}) -> {ret_ty} {{ {pre}let __r = {call}; {body_conv} }}", c.canonical_path, summary, sig.join(", ")).unwrap();
     out.registrations.push(format!("m.function_meta({ident})?;"));
     let rune = format!("polars::{name}");
     out.catalogue.push((rune.clone(), if doc.is_empty() { summary.clone() } else { format!("{summary}: {doc}") }));
@@ -3266,6 +3508,10 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
         deref: false,
     };
     out.generated_with(c, &rune, if notes.is_empty() { None } else { Some(notes.join("; ")) }, info);
+    if let Some(binding) = out.entries.last_mut().unwrap().bindings.first_mut() {
+        binding.route_reason = binding_route_reason(world, c, route);
+        if route { binding.reentry = Some(if fallible { "error" } else { "unwind" }.into()); }
+    }
 }
 
 /// Record 0078: assignment operators with their Rune protocols.
@@ -3696,7 +3942,7 @@ fn main() {
         std::process::exit(2);
     }
     let check = args.iter().any(|a| a == "--check");
-    let buckets: Vec<String> = args.iter().position(|a| a == "--buckets").map(|i| args[i + 1].split(',').map(|s| s.to_string()).collect()).unwrap_or_else(|| vec!["mechanical".into(), "conversion".into(), "option_struct".into()]);
+    let buckets: Vec<String> = args.iter().position(|a| a == "--buckets").map(|i| args[i + 1].split(',').map(|s| s.to_string()).collect()).unwrap_or_else(|| vec!["mechanical".into(), "conversion".into(), "option_struct".into(), "callback".into()]);
     let buckets: Vec<&str> = buckets.iter().map(|s| s.as_str()).collect();
     let inv: Inventory = serde_json::from_str(&std::fs::read_to_string(&args[1]).expect("inventory")).expect("inventory json");
     let release_path = args.iter().position(|a| a == "--release").map(|i| PathBuf::from(&args[i + 1])).unwrap_or_else(|| { eprintln!("--release <file> is required"); std::process::exit(2) });
@@ -3776,7 +4022,8 @@ fn main() {
                         if bs.iter().any(|(r, _)| *r == p.alias) { "emitted".to_string() }
                         else if let Some((_, why)) = xs.iter().find(|(r, _)| *r == p.alias) {
                             if why.starts_with("excluded by the release file") { format!("excluded: {why}") } else if why.starts_with("not shipped") { why.to_string() } else { format!("refused: {why}") }
-                        } else { format!("no disposition: entry {status} ({})", reason.unwrap_or("")) }
+                        } else if *status == "unsupported" { format!("refused: {}", reason.unwrap_or("entry unsupported")) }
+                        else { format!("no disposition: entry {status} ({})", reason.unwrap_or("")) }
                     } else {
                         "no disposition: no entry for the callable".to_string()
                     }
@@ -4409,6 +4656,12 @@ fn staged(fixtures: &[(String, String)], body: &str) -> String {
 }
 
 fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String, String, Vec<(String, String)>, serde_json::Value) {
+    for recipe in &world.release.callback_recipe {
+        for used in &recipe.uses {
+            let safe = entries.iter().any(|entry| entry.status == "generated" && entry.bindings.iter().any(|binding| &binding.rune == used && binding.route_reason.as_deref() != Some("engine thread") && binding.route_reason.as_deref() != Some("executes callbacks") && binding.route_reason.as_deref() != Some("callback")));
+            assert!(safe, "callback recipe {} calls routed or missing binding {used}", recipe.signature);
+        }
+    }
     let mut debuggable: BTreeSet<String> = inv.supporting.iter().filter(|s| s.derived.iter().any(|d| d == "Debug")).map(|s| s.canonical_path.clone()).collect();
     let mut defaultable: BTreeSet<String> = inv.supporting.iter().filter(|s| s.derived.iter().any(|d| d == "Default")).map(|s| s.canonical_path.clone()).collect();
     for c in &inv.callables {
@@ -4572,6 +4825,13 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
         let mut rust_args = Vec::new();
         let mut missing = None;
         for (shape, canonical) in &info.params {
+            if let Some(signature) = shape.strip_prefix("callback:") {
+                match world.release.callback_recipe.iter().find(|r| r.signature == signature) {
+                    Some(recipe) => { rune_args.push(recipe.rune.clone()); rust_args.push(recipe.rust.clone()); }
+                    None => { missing = Some(format!("no callback-safe recipe for the closure signature ({signature})")); break; }
+                }
+                continue;
+            }
             match (o.rune_value(shape), o.rust_value(&ty::parse(canonical), &info.generics, owner, 0)) {
                 (Some(a), Some(b)) => {
                     rune_args.push(a);
@@ -4624,8 +4884,11 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
         let mut fixtures: Vec<(String, String)> = Vec::new();
         let mut passed = Vec::new();
         for (i, a) in rust_args.iter().enumerate() {
-            fixtures.push((format!("__a{i}"), a.clone()));
-            passed.push(format!("__a{i}"));
+            let callback = info.params[i].0.starts_with("callback:");
+            let raw = info.params[i].1.as_str();
+            let mut_borrow = callback && raw.starts_with("&mut ");
+            fixtures.push((format!("{}__a{i}", if mut_borrow { "mut " } else { "" }), a.clone()));
+            passed.push(format!("{}__a{i}", if mut_borrow { "&mut " } else if callback && raw.starts_with('&') { "&" } else { "" }));
         }
         let args_s = passed.join(", ");
         let (script, fmt, oracle) = if mutating {

@@ -129,7 +129,7 @@ mod tests {
 	}
 	#[test]
 	fn header_and_data_use_same_open_file() {
-		crate::engine::run(|| {
+		crate::engine::run("files::csv_roundtrip", || {
 			let temp = Temp::new();
 			let path = temp.0.join("input.csv");
 			std::fs::write(&path, "k,v\na,7\n").unwrap();
@@ -178,7 +178,7 @@ mod tests {
 	}
 	#[test]
 	fn failed_write_and_flush_leave_created_file() {
-		crate::engine::run(|| {
+		crate::engine::run("files::csv_partial", || {
 			let temp = Temp::new();
 			for (name, left, flush) in [
 				("partial", Some(16), None),

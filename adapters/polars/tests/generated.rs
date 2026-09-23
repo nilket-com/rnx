@@ -130,7 +130,7 @@ fn deref_route_controls() {
 
 /// The buckets this stage generates and the release input the committed
 /// module was generated from; kept in one place with the drift test.
-const BUCKETS: &str = "mechanical,conversion,option_struct";
+const BUCKETS: &str = "mechanical,conversion,option_struct,callback";
 const RELEASE_FILE: &str = "0.55.2-joins.toml";
 
 /// Every eligible callable of the API crates has exactly one status.
@@ -249,4 +249,3 @@ fn every_callable_is_accounted_for() {
 	assert_eq!(proven_disp.values().sum::<usize>(), proven, "proven-pair dispositions must partition the proven pairs");
 	eprintln!("proven pairs: {proven_disp:?}");
 }
-

@@ -177,15 +177,20 @@ Policies for generated bindings:
   (expressions, options, dtypes) runs directly. An engine thread that
   cannot start is a panic with a clear message; it does not change a
   binding's Rust fallibility. The one non-`Send` type, `AmortSeries`, is
-  listed and not routed.
-- Callbacks are not generated in this stage. Record 0079 settled their
-  contract without binding any (`plans/0079_polars_callbacks.md`,
-  "Contract"): 41 operations feasible (`surface.json` under
-  `callbacks`), every callback-taking binding routed, constants-only
-  captures, failures translated at the engine boundary and named after
-  the installing operation, no routed calls from a callback, commit on
-  success for in-place applies, an opt-in per-invocation instruction
-  budget and no preemption. Record 0080 generates from it.
+  listed and not routed. The available audited name, length and null-count
+  metadata methods on Series and Column, along with `with_name` and
+  `rename`, run directly, including inside callbacks.
+- Callback bindings accept Rune functions and closures with constant
+  captures. A capture that cannot cross threads returns `CallbackCapture`.
+  Every callback binding and every classified execution or schema sink runs
+  through the engine boundary. A routed method called inside a callback
+  fails that callback with the refused method named; an outer binding
+  returns `CallbackError` and a hand-written sink returns the same text as
+  its string error. `apply_mut` commits to its receiver only after every
+  callback succeeds. `polars::set_callback_budget(n)` sets the instruction
+  allowance per invocation; `0` removes the allowance. It cannot preempt a
+  blocking native call. Vector arguments borrow the script's vector and
+  clone its elements, leaving both usable after the binding returns.
 
 `polars::version()` returns the Rust `polars` crate version the executable
 was built with (`"0.55.2"`). Rust and Python Polars use separate version
