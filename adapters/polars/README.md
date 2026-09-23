@@ -46,6 +46,12 @@ one per chunk in order (an empty array can still have one empty chunk). The
 lengths are copied under the materialize bound, each checked to fit a script
 integer, and the vector is the script's own.
 
+Owned results (record 0088): `rechunk()` and the List and Struct
+`to_physical_repr()` return a new wrapper the script owns, whether Polars
+handed back its receiver unchanged or built a new array. The receiver is not
+modified, and a physical conversion of a logical dtype (a list of dates, a
+struct with a date field) really changes the dtype, as in Polars.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn

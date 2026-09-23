@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 329,
-    "generated": 2097,
+    "generated": 2100,
     "out_of_scope": 710,
-    "unsupported": 1935
+    "unsupported": 1932
   },
   "entries": [
     {
@@ -22234,95 +22234,178 @@
       "status": "unsupported"
     },
     {
-      "bucket": "generic",
-      "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
-      "exceptions": [
+      "bindings": [
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::BinaryOffsetChunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__binaryoffsetchunked",
+          "disposition": "case (fixture via producer Series::binary_offset on series_binary_offset)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__binaryoffsetchunked",
           "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryOffsetChunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::BinaryChunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__binarychunked",
+          "disposition": "case (fixture via producer Series::binary on series_binary)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__binarychunked",
           "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryChunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::BooleanChunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__booleanchunked",
           "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BooleanChunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Float32Chunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__float32chunked",
           "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Float64Chunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__float64chunked",
           "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int16Chunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__int16chunked",
           "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int32Chunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__int32chunked",
           "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int64Chunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__int64chunked",
           "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int8Chunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__int8chunked",
           "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::ListChunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__listchunked",
+          "disposition": "case (fixture via producer Series::list on series_list)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__listchunked",
           "receiver": "polars_core::datatypes::ListChunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ListChunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::StringChunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__stringchunked",
+          "disposition": "case (fixture via producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__stringchunked",
           "receiver": "polars_core::datatypes::StringChunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StringChunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::chunked_array::struct_::StructChunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__structchunked",
+          "disposition": "case (fixture via producer Series::struct_ on series_struct)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__structchunked",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StructChunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::UInt16Chunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__uint16chunked",
           "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::aliases::IdxCa>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__idxca",
           "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::UInt64Chunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__uint64chunked",
           "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::rechunk"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::UInt8Chunked>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__rechunk__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__chunkedarray__rechunk__on__uint8chunked",
           "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "instantiation"
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::rechunk"
         }
       ],
+      "bucket": "generic",
+      "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+      "execution": "case (on 16 of 16 receivers)",
+      "fallible": false,
       "key": "polars_core:3434",
       "kind": "inherent",
-      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
+      "note": "instantiated on 16 of 16 alias identities",
+      "rune": "polars::BinaryOffsetChunked::rechunk polars::BinaryChunked::rechunk polars::BooleanChunked::rechunk polars::Float32Chunked::rechunk polars::Float64Chunked::rechunk polars::Int16Chunked::rechunk polars::Int32Chunked::rechunk polars::Int64Chunked::rechunk polars::Int8Chunked::rechunk polars::ListChunked::rechunk polars::StringChunked::rechunk polars::StructChunked::rechunk polars::UInt16Chunked::rechunk polars::IdxCa::rechunk polars::UInt64Chunked::rechunk polars::UInt8Chunked::rechunk",
       "signature": "() -> alloc::borrow::Cow<Self>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -25471,6 +25554,18 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__to_physical_repr__on__listchunked",
+          "disposition": "case (fixture via producer Series::list on series_list)",
+          "id": "polars_core__chunked_array__chunkedarray__to_physical_repr__on__listchunked",
+          "receiver": "polars_core::datatypes::ListChunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ListChunked::to_physical_repr"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ChunkedArray::to_physical_repr",
       "exceptions": [
@@ -25520,11 +25615,6 @@
           "route": "instantiation"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::ListChunked>)",
-          "receiver": "polars_core::datatypes::ListChunked",
-          "route": "instantiation"
-        },
-        {
           "reason": "rejected: head argument `polars_core::datatypes::ListType` is not `polars_core::datatypes::StringType`",
           "receiver": "polars_core::datatypes::StringChunked",
           "route": "instantiation"
@@ -25555,13 +25645,28 @@
           "route": "instantiation"
         }
       ],
+      "execution": "case (fixture via producer Series::list on series_list)",
+      "fallible": false,
       "key": "polars_core:3611",
       "kind": "inherent",
-      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
+      "note": "instantiated on 1 of 16 alias identities",
+      "rune": "polars::ListChunked::to_physical_repr",
       "signature": "() -> alloc::borrow::Cow<polars_core::datatypes::ListChunked>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__to_physical_repr__on__structchunked",
+          "disposition": "case (fixture via producer Series::struct_ on series_struct)",
+          "id": "polars_core__chunked_array__chunkedarray__to_physical_repr__on__structchunked",
+          "receiver": "polars_core::chunked_array::struct_::StructChunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StructChunked::to_physical_repr"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ChunkedArray::to_physical_repr",
       "exceptions": [
@@ -25621,11 +25726,6 @@
           "route": "instantiation"
         },
         {
-          "reason": "unsupported: foreign type: return (alloc::borrow::Cow<polars_core::chunked_array::struct_::StructChunked>)",
-          "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
-        },
-        {
           "reason": "rejected: head argument `polars_core::datatypes::StructType` is not `polars_core::datatypes::UInt16Type`",
           "receiver": "polars_core::datatypes::UInt16Chunked",
           "route": "instantiation"
@@ -25646,11 +25746,14 @@
           "route": "instantiation"
         }
       ],
+      "execution": "case (fixture via producer Series::struct_ on series_struct)",
+      "fallible": false,
       "key": "polars_core:3641",
       "kind": "inherent",
-      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
+      "note": "instantiated on 1 of 16 alias identities",
+      "rune": "polars::StructChunked::to_physical_repr",
       "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::struct_::StructChunked>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -125944,7 +126047,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::BinaryOffsetChunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
@@ -125955,7 +126058,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryChunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::BinaryChunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
@@ -125966,7 +126069,7 @@
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::BooleanChunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
@@ -125977,7 +126080,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Float32Chunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
@@ -125988,7 +126091,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Float64Chunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
@@ -125999,7 +126102,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int16Chunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
@@ -126010,7 +126113,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int32Chunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
@@ -126021,7 +126124,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int64Chunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
@@ -126032,7 +126135,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int8Chunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
@@ -126043,7 +126146,7 @@
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::ListChunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
@@ -126054,7 +126157,7 @@
       },
       {
         "alias": "polars_core::datatypes::StringChunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::StringChunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
@@ -126065,7 +126168,7 @@
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::chunked_array::struct_::StructChunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
@@ -126076,7 +126179,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::UInt16Chunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
@@ -126087,7 +126190,7 @@
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::aliases::IdxCa>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
@@ -126098,7 +126201,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::UInt64Chunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
@@ -126109,7 +126212,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::UInt8Chunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
@@ -130795,7 +130898,7 @@
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::ListChunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
@@ -130993,7 +131096,7 @@
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::chunked_array::struct_::StructChunked>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
@@ -138578,10 +138681,10 @@
       },
       "pairs": 3544,
       "proven_dispositions": {
-        "emitted": 875,
+        "emitted": 893,
         "excluded": 12,
         "not eligible": 188,
-        "refused": 196
+        "refused": 178
       }
     }
   },
@@ -139914,7 +140017,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2162,
+  "oracle_cases": 2180,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -142932,7 +143035,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "27d9dc6b7e661e170d55ddeec82ea5cc5a000888857e92bfb5c1102870232e2d",
+    "sha256": "29dabea069db826c1c2980c2811e8cfa3baa7f2e6cf6d29804c6a35b1c77e8f0",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",

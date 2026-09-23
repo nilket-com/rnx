@@ -41,6 +41,10 @@ pub(crate) const MATERIALIZE_LIMIT: usize = 1 << 20;
 
 #[cfg(feature = "test-support")]
 static TEST_LIMIT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+/// Unit tests that set or read `TEST_LIMIT` hold this lock, so a test that
+/// lowers the bound cannot race one that expects the production value.
+#[cfg(all(test, feature = "test-support"))]
+pub(crate) static LIMIT_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 /// The bound in force: the production constant, or under `test-support`
 /// the override set by `polars::set_materialize_limit` (0 = production).
@@ -459,6 +463,7 @@ mod materialize_tests {
 
 	#[test]
 	fn production_limit_is_the_default() {
+		let _limit = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 		assert_eq!(materialize_limit(), MATERIALIZE_LIMIT);
 		let v: Vec<usize> = materialize_unknown(0..10usize, "m", Ok).unwrap();
 		assert_eq!(v.len(), 10);
@@ -466,6 +471,7 @@ mod materialize_tests {
 
 	#[test]
 	fn a_routed_iterator_is_driven_on_the_engine_thread_under_a_tokio_runtime() {
+		let _limit = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 		let rt = tokio::runtime::Builder::new_current_thread().build().unwrap();
 		let names = rt.block_on(async {
 			crate::engine::run("support::borrowed_iterator", move || {
@@ -634,13 +640,13 @@ mod bits_tests {
 	//! allocating, and the guard is restored after success, error and unwind.
 	use super::*;
 	use polars_arrow::bitmap::Bitmap;
-	static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
+	use super::LIMIT_LOCK as SERIAL;
 	fn limit(n: usize) { TEST_LIMIT.store(n, std::sync::atomic::Ordering::SeqCst); }
 	fn depth() -> (usize, usize) { SLICE_BUDGET.with(|b| b.get()) }
 
 	#[test]
 	fn bits_copy_in_order_under_one_cumulative_bound() {
-		let _s = SERIAL.lock().unwrap();
+		let _s = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 		let a = Bitmap::from([true, false, true]);
 		limit(5);
 		let outer = SliceBudget::enter();
@@ -655,7 +661,7 @@ mod bits_tests {
 
 	#[test]
 	fn masks_are_built_in_order_and_checked_before_polars() {
-		let _s = SERIAL.lock().unwrap();
+		let _s = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 		let v = |bits: &[bool]| rune::to_value(bits.iter().map(|b| rune::to_value(*b).unwrap()).collect::<Vec<_>>()).unwrap();
 		let m = bitmap_from_bools(&v(&[true, false, true]), "m", Some(3)).unwrap();
 		assert_eq!(m.iter().collect::<Vec<_>>(), vec![true, false, true]);
@@ -686,7 +692,7 @@ mod bits_tests {
 
 	#[test]
 	fn the_guard_is_restored_after_an_unwind() {
-		let _s = SERIAL.lock().unwrap();
+		let _s = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 		limit(3);
 		let r = std::panic::catch_unwind(|| {
 			let _g = SliceBudget::enter();

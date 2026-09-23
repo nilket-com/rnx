@@ -79,6 +79,14 @@ each item with a range check instead of `as i64`. The oracle frames the
 Rust side by the listed return type. Any other `Map`, and every Arrow array
 return, stays refused.
 
+Record 0088's `[[cow_returns]]` entries (inventory `key`, `path`,
+citation; the key because `to_physical_repr` shares its canonical path
+across implementations) admit a `Cow<Self>` or `Cow<Wrapped>` return whose
+inner type is a wrapped, `Clone` type: the result is made owned with
+`into_owned()` inside the call, and inside the engine closure when the
+binding is routed, then wrapped. Any other `Cow`, and a `Cow` of an
+unwrapped or Arrow type, stays refused.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

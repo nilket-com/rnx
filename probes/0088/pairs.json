@@ -1,0 +1,182 @@
+[
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::BinaryOffsetChunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::BinaryOffsetChunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::BinaryChunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::BinaryChunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::BooleanChunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::BooleanChunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::Float32Chunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Float32Chunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::Float64Chunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Float64Chunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::Int16Chunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int16Chunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::Int32Chunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int32Chunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::Int64Chunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int64Chunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::Int8Chunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::Int8Chunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::ListChunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::ListChunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::StringChunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::StringChunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::chunked_array::struct_::StructChunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::chunked_array::struct_::StructChunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::UInt16Chunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::UInt16Chunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::aliases::IdxCa",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::aliases::IdxCa>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::UInt64Chunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::UInt64Chunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3434",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk",
+  "alias": "polars_core::datatypes::UInt8Chunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::UInt8Chunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3611",
+  "method": "polars_core::chunked_array::ChunkedArray::to_physical_repr",
+  "alias": "polars_core::datatypes::ListChunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::datatypes::ListChunked>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::datatypes::ListChunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3641",
+  "method": "polars_core::chunked_array::ChunkedArray::to_physical_repr",
+  "alias": "polars_core::chunked_array::struct_::StructChunked",
+  "signature": "() -> alloc::borrow::Cow<polars_core::chunked_array::struct_::StructChunked>",
+  "before": "refused: unsupported: foreign type: return (alloc::borrow::Cow<polars_core::chunked_array::struct_::StructChunked>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ }
+]

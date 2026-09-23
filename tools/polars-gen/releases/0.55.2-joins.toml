@@ -717,3 +717,18 @@ cite = "polars-core 0.55.2 chunked_array/from.rs:219-225 (the bits are the Boole
 path = "polars_core::chunked_array::ChunkedArray::chunk_lengths"
 item = "usize"
 cite = "polars-core 0.55.2 chunked_array/mod.rs:61 (ChunkLenIter = Map<Iter<ArrayRef>, fn(&ArrayRef) -> usize>), :472-475"
+
+# Record 0088: Cow<Wrapped> returns made owned inside the call (by key, since
+# to_physical_repr's canonical path is shared by several impls).
+[[cow_returns]]
+key = "polars_core:3434"
+path = "polars_core::chunked_array::ChunkedArray::rechunk"
+cite = "polars-core 0.55.2 chunked_array/ops/chunkops.rs:162-182 (Borrowed for one chunk, Owned after concatenation; object branch not compiled)"
+[[cow_returns]]
+key = "polars_core:3611"
+path = "polars_core::chunked_array::ChunkedArray::to_physical_repr"
+cite = "polars-core 0.55.2 chunked_array/list/mod.rs:47-82 (Borrowed when the inner dtype is physical)"
+[[cow_returns]]
+key = "polars_core:3641"
+path = "polars_core::chunked_array::ChunkedArray::to_physical_repr"
+cite = "polars-core 0.55.2 chunked_array/struct_/mod.rs:138-170 (Borrowed when fields are physical)"
