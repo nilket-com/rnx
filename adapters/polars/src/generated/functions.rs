@@ -1168,6 +1168,70 @@ fn f_4402ae7f__has_nulls_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::has_nulls`. has_nulls() -> bool
 #[rune::function(instance, path = has_nulls)]
 fn f_725e49b4___has_nulls_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> bool { let __r = <polars_core::datatypes::UInt8Chunked>::has_nulls(&this.0); __r }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> BinaryOffsetChunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_a6a4fdd8_head_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::BinaryOffsetChunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BinaryOffsetChunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> BinaryChunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_d07e1e02_rray__head_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::BinaryChunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BinaryChunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> BooleanChunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_da1fcc73_ray__head_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::BooleanChunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> Float32Chunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_29fb1926_ray__head_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::Float32Chunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> Float64Chunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_f3a9beaa_ray__head_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::Float64Chunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> Int16Chunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_4b25c598_array__head_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::Int16Chunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> Int32Chunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_90c73e5d_array__head_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::Int32Chunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> Int64Chunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_5841204d_array__head_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::Int64Chunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> Int8Chunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_93a1f648_darray__head_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::Int8Chunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> ListChunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_7aa63005_darray__head_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__ListChunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::ListChunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__ListChunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> StringChunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_19e7adab_rray__head_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__StringChunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::StringChunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__StringChunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> StructChunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_0b4c225f_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, length: Option<i64>) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars::chunked_array::StructChunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__chunked_array__struct___StructChunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> UInt16Chunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_62a3f34d_rray__head_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::UInt16Chunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> IdxCa (fallible)
+#[rune::function(instance, path = head)]
+fn f_604daaac_ray__head_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, length: Option<i64>) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::IdxCa>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> UInt64Chunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_61dfb222_rray__head_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::UInt64Chunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// Get the head of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::head`. head(length: option of int) -> UInt8Chunked (fallible)
+#[rune::function(instance, path = head)]
+fn f_9c545ede_array__head_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { support::signed_len(this.0.len(), "head")?; let __r = <polars_core::datatypes::UInt8Chunked>::head(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
 /// Get the inner data type of the list.
 /// Polars: `polars_core::chunked_array::ChunkedArray::inner_dtype`. inner_dtype() -> DataType
 #[rune::function(instance, path = inner_dtype)]
@@ -1927,6 +1991,70 @@ fn f_650f8940_y__lhs_sub_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::lhs_sub`. lhs_sub(lhs: int) -> UInt8Chunked (fallible)
 #[rune::function(instance, path = lhs_sub)]
 fn f_61319fc9_ay__lhs_sub_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, lhs: i64) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::lhs_sub(&this.0, support::narrow::<u8>(lhs, "lhs")?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> BinaryOffsetChunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_a440d9e4_imit_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, num_elements: i64) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::BinaryOffsetChunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__BinaryOffsetChunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> BinaryChunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_b593e7fb_ray__limit_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, num_elements: i64) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::BinaryChunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__BinaryChunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> BooleanChunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_33be9c0b_ay__limit_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, num_elements: i64) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::BooleanChunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> Float32Chunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_aa3edc1a_ay__limit_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, num_elements: i64) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::Float32Chunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> Float64Chunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_19f08a38_ay__limit_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, num_elements: i64) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::Float64Chunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> Int16Chunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_fc7dcee4_rray__limit_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, num_elements: i64) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::Int16Chunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> Int32Chunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_7c465dd9_rray__limit_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, num_elements: i64) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::Int32Chunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> Int64Chunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_cba83f0d_rray__limit_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, num_elements: i64) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::Int64Chunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> Int8Chunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_9ef085e7_array__limit_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, num_elements: i64) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::Int8Chunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> ListChunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_668eea7a_array__limit_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, num_elements: i64) -> Result<W_polars_core__datatypes__ListChunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::ListChunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__ListChunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> StringChunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_274a79f2_ray__limit_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, num_elements: i64) -> Result<W_polars_core__datatypes__StringChunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::StringChunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__StringChunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> StructChunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_5648d6a3_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, num_elements: i64) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars::chunked_array::StructChunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__chunked_array__struct___StructChunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> UInt16Chunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_b7acbc50_ray__limit_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, num_elements: i64) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::UInt16Chunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> IdxCa (fallible)
+#[rune::function(instance, path = limit)]
+fn f_4df7a9de_ay__limit_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, num_elements: i64) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::IdxCa>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> UInt64Chunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_63c989fa_ray__limit_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, num_elements: i64) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::UInt64Chunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// Take a view of top n elements
+/// Polars: `polars_core::chunked_array::ChunkedArray::limit`. limit(num_elements: int) -> UInt8Chunked (fallible)
+#[rune::function(instance, path = limit)]
+fn f_d6f15e33_rray__limit_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, num_elements: i64) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { support::signed_len(this.0.len(), "limit")?; let __r = <polars_core::datatypes::UInt8Chunked>::limit(&this.0, support::narrow::<usize>(num_elements, "num_elements")?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::max`. max() -> option of bool
 #[rune::function(instance, path = max)]
 fn f_b3d21805_rray__max_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::max(&this.0); match __r { Some(__r) => Some(__r), None => None } }
@@ -2968,6 +3096,70 @@ fn f_90a02bb6_lars_core__chunked_array__struct___structchunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::sum`. sum() -> option of int
 #[rune::function(instance, path = sum)]
 fn f_c93b6cdd_rray__sum_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::sum(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> BinaryOffsetChunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_3c619063_tail_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::BinaryOffsetChunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BinaryOffsetChunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> BinaryChunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_e2eba092_rray__tail_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::BinaryChunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BinaryChunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> BooleanChunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_6ab0d76f_ray__tail_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::BooleanChunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> Float32Chunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_5f4aa03c_ray__tail_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::Float32Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> Float64Chunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_d79db4a0_ray__tail_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::Float64Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> Int16Chunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_da395ecc_array__tail_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::Int16Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> Int32Chunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_b9b6aedf_array__tail_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::Int32Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> Int64Chunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_efdb6b0a_array__tail_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::Int64Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> Int8Chunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_6bbad785_darray__tail_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::Int8Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> ListChunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_eeec1606_darray__tail_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__ListChunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::ListChunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__ListChunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> StringChunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_698a3c4f_rray__tail_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, length: Option<i64>) -> Result<W_polars_core__datatypes__StringChunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::StringChunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__StringChunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> StructChunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_05febaa2_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, length: Option<i64>) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars::chunked_array::StructChunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__chunked_array__struct___StructChunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> UInt16Chunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_352f2fa6_rray__tail_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::UInt16Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> IdxCa (fallible)
+#[rune::function(instance, path = tail)]
+fn f_d2eb67e4_ray__tail_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, length: Option<i64>) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::IdxCa>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> UInt64Chunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_8c23becc_rray__tail_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::UInt64Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// Get the tail of the [`ChunkedArray`]
+/// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> UInt8Chunked (fallible)
+#[rune::function(instance, path = tail)]
+fn f_1ba932c9_array__tail_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::UInt8Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
 /// Convert the datatype of the list into the physical datatype.
 /// Polars: `polars_core::chunked_array::ChunkedArray::to_physical_repr`. to_physical_repr() -> ListChunked (owned)
 #[rune::function(instance, path = to_physical_repr)]
@@ -13333,6 +13525,22 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_ebc7d520_has_nulls_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_4402ae7f__has_nulls_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_725e49b4___has_nulls_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_a6a4fdd8_head_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_d07e1e02_rray__head_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_da1fcc73_ray__head_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_29fb1926_ray__head_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_f3a9beaa_ray__head_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_4b25c598_array__head_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_90c73e5d_array__head_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_5841204d_array__head_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_93a1f648_darray__head_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_7aa63005_darray__head_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_19e7adab_rray__head_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_0b4c225f_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_62a3f34d_rray__head_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_604daaac_ray__head_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_61dfb222_rray__head_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_9c545ede_array__head_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_b4d37819__inner_dtype_polars_core__datatypes__listchunked)?;
     m.function_meta(f_108456de_inner_length_polars_core__datatypes__listchunked)?;
     m.function_meta(f_ecfb1929___into_date_polars_core__datatypes__int32chunked)?;
@@ -13534,6 +13742,22 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_8218a350___lhs_sub_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_650f8940_y__lhs_sub_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_61319fc9_ay__lhs_sub_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_a440d9e4_imit_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_b593e7fb_ray__limit_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_33be9c0b_ay__limit_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_aa3edc1a_ay__limit_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_19f08a38_ay__limit_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_fc7dcee4_rray__limit_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_7c465dd9_rray__limit_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_cba83f0d_rray__limit_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_9ef085e7_array__limit_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_668eea7a_array__limit_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_274a79f2_ray__limit_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_5648d6a3_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_b7acbc50_ray__limit_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_4df7a9de_ay__limit_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_63c989fa_ray__limit_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_d6f15e33_rray__limit_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_b3d21805_rray__max_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_5c0178bd_max_binary_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_6988d52c_ray__mean_polars_core__datatypes__booleanchunked)?;
@@ -13813,6 +14037,22 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_bd0d16bd_y__split_at_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_90a02bb6_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_c93b6cdd_rray__sum_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_3c619063_tail_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_e2eba092_rray__tail_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_6ab0d76f_ray__tail_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_5f4aa03c_ray__tail_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_d79db4a0_ray__tail_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_da395ecc_array__tail_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_b9b6aedf_array__tail_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_efdb6b0a_array__tail_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_6bbad785_darray__tail_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_eeec1606_darray__tail_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_698a3c4f_rray__tail_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_05febaa2_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_352f2fa6_rray__tail_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_d2eb67e4_ray__tail_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_8c23becc_rray__tail_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_1ba932c9_array__tail_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_785727f8_hysical_repr_polars_core__datatypes__listchunked)?;
     m.function_meta(f_3b917589_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_34949b18_y__to_vec_polars_core__datatypes__float32chunked)?;

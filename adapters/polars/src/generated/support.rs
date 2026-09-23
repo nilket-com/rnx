@@ -104,6 +104,16 @@ pub(crate) fn materialize_exact_with<I: ExactSizeIterator, T>(it: I, limit: usiz
 	materialize_unknown_with(it, limit, method, conv)
 }
 
+/// Record 0097: `head`, `limit` and `tail` reach Polars's `slice_offsets`,
+/// which panics when the receiver is longer than `i64::MAX` (possible with
+/// shared-buffer appends, record 0093). Checked before the call.
+pub(crate) fn signed_len(n: usize, method: &str) -> Result<(), Error> {
+	if n > i64::MAX as usize {
+		return Err(Error::conversion(&format!("{method}: receiver length {n} is beyond i64::MAX, the range of Polars's slice offsets")));
+	}
+	Ok(())
+}
+
 /// Record 0096: the whole result of a null-aware vector return, checked
 /// against the (inclusive) bound from the receiver's length before Polars
 /// allocates either branch.
@@ -770,6 +780,15 @@ mod bits_tests {
 		let wrong = bitmap_from_bools(&rune::to_value(vec![rune::to_value(1i64).unwrap()]).unwrap(), "m", None).unwrap_err();
 		assert_eq!(wrong.0, "ConversionError");
 		assert_eq!(depth().0, 0);
+	}
+
+	#[test]
+	fn the_signed_length_guard_is_exact() {
+		assert!(signed_len(0, "m").is_ok());
+		assert!(signed_len(i64::MAX as usize, "m").is_ok(), "exactly i64::MAX is within Polars's contract");
+		let e = signed_len(i64::MAX as usize + 1, "m").unwrap_err();
+		assert_eq!((e.0.as_str(), e.1.as_str()), ("ConversionError", "m: receiver length 9223372036854775808 is beyond i64::MAX, the range of Polars's slice offsets"));
+		assert!(signed_len(usize::MAX, "m").is_err());
 	}
 
 	#[test]

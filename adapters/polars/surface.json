@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 329,
-    "generated": 2109,
+    "generated": 2112,
     "out_of_scope": 710,
-    "unsupported": 1923
+    "unsupported": 1920
   },
   "entries": [
     {
@@ -16108,95 +16108,178 @@
       "status": "generated"
     },
     {
-      "bucket": "generic",
-      "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
-      "exceptions": [
+      "bindings": [
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__binaryoffsetchunked",
+          "disposition": "case (fixture via producer Series::binary_offset on series_binary_offset)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__binaryoffsetchunked",
           "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryOffsetChunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__binarychunked",
+          "disposition": "case (fixture via producer Series::binary on series_binary)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__binarychunked",
           "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryChunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__booleanchunked",
           "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BooleanChunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__float32chunked",
           "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__float64chunked",
           "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__int16chunked",
           "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__int32chunked",
           "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__int64chunked",
           "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__int8chunked",
           "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__listchunked",
+          "disposition": "case (fixture via producer Series::list on series_list)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__listchunked",
           "receiver": "polars_core::datatypes::ListChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ListChunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__stringchunked",
+          "disposition": "case (fixture via producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__stringchunked",
           "receiver": "polars_core::datatypes::StringChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StringChunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__structchunked",
+          "disposition": "case (fixture via producer Series::struct_ on series_struct)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__structchunked",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StructChunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__uint16chunked",
           "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__idxca",
           "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__uint64chunked",
           "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::head"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__head__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__chunkedarray__head__on__uint8chunked",
           "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::head"
         }
       ],
+      "bucket": "generic",
+      "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+      "execution": "case (on 16 of 16 receivers)",
+      "fallible": true,
       "key": "polars_core:3500",
       "kind": "inherent",
-      "reason": "bucket: generic (no proven instantiation)",
+      "note": "instantiated on 16 of 16 alias identities",
+      "rune": "polars::BinaryOffsetChunked::head polars::BinaryChunked::head polars::BooleanChunked::head polars::Float32Chunked::head polars::Float64Chunked::head polars::Int16Chunked::head polars::Int32Chunked::head polars::Int64Chunked::head polars::Int8Chunked::head polars::ListChunked::head polars::StringChunked::head polars::StructChunked::head polars::UInt16Chunked::head polars::IdxCa::head polars::UInt64Chunked::head polars::UInt8Chunked::head",
       "signature": "(core::option::Option<usize>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -19655,95 +19738,178 @@
       "status": "generated"
     },
     {
-      "bucket": "generic",
-      "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
-      "exceptions": [
+      "bindings": [
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__binaryoffsetchunked",
+          "disposition": "case (fixture via producer Series::binary_offset on series_binary_offset)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__binaryoffsetchunked",
           "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryOffsetChunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__binarychunked",
+          "disposition": "case (fixture via producer Series::binary on series_binary)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__binarychunked",
           "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryChunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__booleanchunked",
           "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BooleanChunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__float32chunked",
           "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__float64chunked",
           "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__int16chunked",
           "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__int32chunked",
           "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__int64chunked",
           "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__int8chunked",
           "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__listchunked",
+          "disposition": "case (fixture via producer Series::list on series_list)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__listchunked",
           "receiver": "polars_core::datatypes::ListChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ListChunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__stringchunked",
+          "disposition": "case (fixture via producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__stringchunked",
           "receiver": "polars_core::datatypes::StringChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StringChunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__structchunked",
+          "disposition": "case (fixture via producer Series::struct_ on series_struct)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__structchunked",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StructChunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__uint16chunked",
           "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__idxca",
           "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__uint64chunked",
           "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::limit"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__limit__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__chunkedarray__limit__on__uint8chunked",
           "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::limit"
         }
       ],
+      "bucket": "generic",
+      "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+      "execution": "case (on 16 of 16 receivers)",
+      "fallible": true,
       "key": "polars_core:3499",
       "kind": "inherent",
-      "reason": "bucket: generic (no proven instantiation)",
+      "note": "instantiated on 16 of 16 alias identities",
+      "rune": "polars::BinaryOffsetChunked::limit polars::BinaryChunked::limit polars::BooleanChunked::limit polars::Float32Chunked::limit polars::Float64Chunked::limit polars::Int16Chunked::limit polars::Int32Chunked::limit polars::Int64Chunked::limit polars::Int8Chunked::limit polars::ListChunked::limit polars::StringChunked::limit polars::StructChunked::limit polars::UInt16Chunked::limit polars::IdxCa::limit polars::UInt64Chunked::limit polars::UInt8Chunked::limit",
       "signature": "(usize) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -25446,95 +25612,178 @@
       "status": "generated"
     },
     {
-      "bucket": "generic",
-      "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
-      "exceptions": [
+      "bindings": [
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__binaryoffsetchunked",
+          "disposition": "case (fixture via producer Series::binary_offset on series_binary_offset)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__binaryoffsetchunked",
           "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryOffsetChunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__binarychunked",
+          "disposition": "case (fixture via producer Series::binary on series_binary)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__binarychunked",
           "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryChunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__booleanchunked",
           "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BooleanChunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__float32chunked",
           "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__float64chunked",
           "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__int16chunked",
           "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__int32chunked",
           "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__int64chunked",
           "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__int8chunked",
           "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__listchunked",
+          "disposition": "case (fixture via producer Series::list on series_list)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__listchunked",
           "receiver": "polars_core::datatypes::ListChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ListChunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__stringchunked",
+          "disposition": "case (fixture via producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__stringchunked",
           "receiver": "polars_core::datatypes::StringChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StringChunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__structchunked",
+          "disposition": "case (fixture via producer Series::struct_ on series_struct)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__structchunked",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StructChunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__uint16chunked",
           "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__idxca",
           "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__uint64chunked",
           "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::tail"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "case_id": "polars_core__chunked_array__chunkedarray__tail__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__chunkedarray__tail__on__uint8chunked",
           "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::tail"
         }
       ],
+      "bucket": "generic",
+      "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+      "execution": "case (on 16 of 16 receivers)",
+      "fallible": true,
       "key": "polars_core:3501",
       "kind": "inherent",
-      "reason": "bucket: generic (no proven instantiation)",
+      "note": "instantiated on 16 of 16 alias identities",
+      "rune": "polars::BinaryOffsetChunked::tail polars::BinaryChunked::tail polars::BooleanChunked::tail polars::Float32Chunked::tail polars::Float64Chunked::tail polars::Int16Chunked::tail polars::Int32Chunked::tail polars::Int64Chunked::tail polars::Int8Chunked::tail polars::ListChunked::tail polars::StringChunked::tail polars::StructChunked::tail polars::UInt16Chunked::tail polars::IdxCa::tail polars::UInt64Chunked::tail polars::UInt8Chunked::tail",
       "signature": "(core::option::Option<usize>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -116967,179 +117216,179 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::BinaryChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::StringChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
         "key": "polars_core:3500",
         "method": "polars_core::chunked_array::ChunkedArray::head",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
@@ -121719,179 +121968,179 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::BinaryChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::StringChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
         "key": "polars_core:3499",
         "method": "polars_core::chunked_array::ChunkedArray::limit",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(usize) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
@@ -130695,179 +130944,179 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::BinaryChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::StringChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
         "key": "polars_core:3501",
         "method": "polars_core::chunked_array::ChunkedArray::tail",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> core::marker::Sized"
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
@@ -139233,19 +139482,19 @@
     "summary": {
       "by_family": {
         "all": {
-          "proven": 1301,
+          "proven": 1349,
           "rejected": 1619,
-          "unresolved": 624
+          "unresolved": 576
         },
         "boolean": {
-          "proven": 83,
+          "proven": 86,
           "rejected": 98,
-          "unresolved": 26
+          "unresolved": 23
         },
         "list-struct": {
-          "proven": 177,
+          "proven": 183,
           "rejected": 185,
-          "unresolved": 52
+          "unresolved": 46
         },
         "logical": {
           "proven": 22,
@@ -139253,24 +139502,24 @@
           "unresolved": 156
         },
         "numeric": {
-          "proven": 808,
+          "proven": 838,
           "rejected": 950,
-          "unresolved": 312
+          "unresolved": 282
         },
         "string-binary": {
-          "proven": 211,
+          "proven": 220,
           "rejected": 332,
-          "unresolved": 78
+          "unresolved": 69
         }
       },
       "eligible": {
-        "proven": 1113,
+        "proven": 1161,
         "rejected": 1403,
-        "unresolved": 620
+        "unresolved": 572
       },
       "exception_reasons": {
         "": 4,
-        "function-level generics are out of this record's scope": 388,
+        "function-level generics are out of this record's scope": 340,
         "head argument": 1389,
         "no impl of": 56,
         "no recorded": 16,
@@ -139281,7 +139530,7 @@
       },
       "pairs": 3544,
       "proven_dispositions": {
-        "emitted": 933,
+        "emitted": 981,
         "excluded": 12,
         "not eligible": 188,
         "refused": 168
@@ -140617,7 +140866,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2281,
+  "oracle_cases": 2329,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -143567,7 +143816,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "29ab5ef1f104e22b622a91cc1b8edaa40f1ec4f042c7acbfd77f5346653ac649",
+    "sha256": "87bf2a1ca8646ade106ddd414af549ef8d83b0d73d5030bc28ab3c6dafe3b908",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",
