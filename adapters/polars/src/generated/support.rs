@@ -142,6 +142,15 @@ pub(crate) fn copy_slice<T: Clone, U>(slice: &[T], method: &str, mut conv: impl 
 	}
 	Ok(out)
 }
+/// Record 0091: an index length Polars asserts is below `IdxSize::MAX`,
+/// checked first so a script gets an error instead of a panic.
+pub(crate) fn below_idx_max(v: usize, method: &str, param: &str) -> Result<usize, Error> {
+	let max = p::IdxSize::MAX as usize;
+	if v >= max {
+		return Err(Error("OutOfBounds".into(), format!("{method}: {param} {v} must be below {max}")));
+	}
+	Ok(v)
+}
 /// Record 0087: an unsigned count or size as a script integer, refused
 /// rather than wrapped when it exceeds `i64::MAX`.
 pub(crate) fn widen<T: TryInto<i64> + std::fmt::Display + Copy>(v: T, method: &str) -> Result<i64, Error> {

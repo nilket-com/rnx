@@ -139,6 +139,12 @@ struct FreeInstantiation {
     /// order, for `T::Native` in the parameters (empty when unused).
     #[serde(default)]
     natives: Vec<String>,
+    /// Record 0091: a parameter checked before the call, and the check
+    /// (`below_idx_max`: the converted `usize` must be `< IdxSize::MAX`).
+    #[serde(default)]
+    guard_param: Option<String>,
+    #[serde(default)]
+    guard: Option<String>,
     cite: String,
 }
 #[derive(serde::Deserialize, Clone)]
@@ -1175,7 +1181,7 @@ fn native_substitution_self_test() {
     let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_ops".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], iterator_returns: vec![], cow_returns: vec![], free_instantiations: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let types = vec!["polars_core::datatypes::Int8Type".to_string(), "polars_core::datatypes::UInt32Type".into(), "polars_core::datatypes::Float32Type".into()];
     let natives = vec!["i8".to_string(), "u32".into(), "f32".into()];
-    for (k, n) in [("peaks", "peak"), ("residual", "other")] { release.free_instantiations.push(FreeInstantiation { key: k.into(), path: format!("polars_ops::m::{n}"), callee: format!("polars::m::{n}"), generic: "T".into(), types: types.clone(), natives: natives.clone(), cite: "t".into() }); }
+    for (k, n) in [("peaks", "peak"), ("residual", "other")] { release.free_instantiations.push(FreeInstantiation { key: k.into(), path: format!("polars_ops::m::{n}"), callee: format!("polars::m::{n}"), generic: "T".into(), types: types.clone(), natives: natives.clone(), guard_param: None, guard: None, cite: "t".into() }); }
     let world = World::new(&inv, &release, &["mechanical", "generic_fn"]);
     let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
     let emit = |key: &str| { let mut e = empty(); emit_callable(&world, &mut e, inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical", "generic_fn"]); (e.entries[0].clone(), e.functions) };
@@ -1187,6 +1193,42 @@ fn native_substitution_self_test() {
     let (e, _) = emit("residual");
     assert_eq!(e.status, "unsupported", "an unresolved associated type keeps the function refused: {:?}", e.reason);
     assert!(e.exceptions.iter().all(|x| x.reason.contains("remains in a parameter")), "{:?}", e.exceptions.iter().map(|x| &x.reason).collect::<Vec<_>>());
+    // record 0091: a guarded usize parameter is checked in `pre`, only for its listed function
+    let mut g = release.clone();
+    g.free_instantiations.clear();
+    let guard_inv = Inventory { callables: vec![
+        mk("guarded", "bound", vec![("ca", &arr), ("target_len", "usize"), ("flag", "bool")]),
+        mk("plain", "unguarded", vec![("ca", &arr), ("target_len", "usize")]),
+    ], supporting: inv.supporting.clone(), provenance: None };
+    g.free_instantiations.push(FreeInstantiation { key: "guarded".into(), path: "polars_ops::m::bound".into(), callee: "polars::m::bound".into(), generic: "T".into(), types: vec!["polars_core::datatypes::Int8Type".into()], natives: vec![], guard_param: Some("target_len".into()), guard: Some("below_idx_max".into()), cite: "t".into() });
+    g.free_instantiations.push(FreeInstantiation { key: "plain".into(), path: "polars_ops::m::unguarded".into(), callee: "polars::m::unguarded".into(), generic: "T".into(), types: vec!["polars_core::datatypes::Int8Type".into()], natives: vec![], guard_param: None, guard: None, cite: "t".into() });
+    let gw = World::new(&guard_inv, &g, &["mechanical", "generic_fn"]);
+    let gemit = |key: &str| { let mut e = empty(); emit_callable(&gw, &mut e, guard_inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical", "generic_fn"]); (e.entries[0].clone(), e.functions) };
+    let (e, f) = gemit("guarded");
+    assert_eq!(e.status, "generated", "{:?}", e.reason);
+    assert!(f.contains("let __guarded_target_len = support::below_idx_max(support::narrow::<usize>(target_len, \"target_len\")?, \"bound\", \"target_len\")?;") && f.contains("polars::m::bound(&ca.0, __guarded_target_len, flag)"), "the guard runs before the call: {f}");
+    let (e, f) = gemit("plain");
+    assert_eq!(e.status, "generated", "{:?}", e.reason);
+    assert!(!f.contains("below_idx_max"), "no guard on an unlisted parameter: {f}");
+    assert!(gw.arg_guard.borrow().is_none(), "the guard scope never outlives its instantiation");
+    // fail closed: every malformed guard refuses the whole function, nothing unguarded is emitted
+    for (label, param, check) in [
+        ("guard without parameter", None, Some("below_idx_max")),
+        ("parameter without guard", Some("target_len"), None),
+        ("parameter that does not exist", Some("target_length"), Some("below_idx_max")),
+        ("parameter that is not usize", Some("flag"), Some("below_idx_max")),
+        ("unknown guard", Some("target_len"), Some("below_something")),
+    ] {
+        let mut bad = g.clone();
+        bad.free_instantiations[0].guard_param = param.map(String::from);
+        bad.free_instantiations[0].guard = check.map(String::from);
+        let bw = World::new(&guard_inv, &bad, &["mechanical", "generic_fn"]);
+        let mut e = empty();
+        emit_callable(&bw, &mut e, guard_inv.callables.iter().find(|c| c.key == "guarded").unwrap(), &["mechanical", "generic_fn"]);
+        assert_eq!(e.entries[0].status, "unsupported", "{label}: must refuse, got {:?}", e.entries[0].reason);
+        assert!(e.functions.is_empty(), "{label}: no binding text at all: {}", e.functions);
+        assert!(e.entries[0].reason.as_deref().unwrap_or("").contains("guard"), "{label}: {:?}", e.entries[0].reason);
+    }
     println!("native-substitution self-test: ok");
 }
 
@@ -1226,7 +1268,7 @@ fn free_instantiation_self_test() {
         provenance: None,
     };
     let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], iterator_returns: vec![], cow_returns: vec![], free_instantiations: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
-    release.free_instantiations.push(FreeInstantiation { key: "listed".into(), path: "polars_core::m::arg_lo".into(), callee: "polars::m::arg_lo".into(), generic: "T".into(), types: vec!["polars_core::datatypes::Int64Type".into(), "polars_core::datatypes::UInt32Type".into(), "polars_core::datatypes::Float32Type".into()], natives: vec![], cite: "t".into() });
+    release.free_instantiations.push(FreeInstantiation { key: "listed".into(), path: "polars_core::m::arg_lo".into(), callee: "polars::m::arg_lo".into(), generic: "T".into(), types: vec!["polars_core::datatypes::Int64Type".into(), "polars_core::datatypes::UInt32Type".into(), "polars_core::datatypes::Float32Type".into()], natives: vec![], guard_param: None, guard: None, cite: "t".into() });
     let world = World::new(&inv, &release, &["mechanical", "generic_fn"]);
     let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
     let emit = |key: &str| { let mut e = empty(); emit_callable(&world, &mut e, inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical", "generic_fn"]); (e.entries[0].clone(), e.functions) };
@@ -2349,6 +2391,9 @@ struct World {
     cow_ok: std::cell::Cell<bool>,
     /// Record 0089: while set, a `usize` return converts with `support::widen`.
     widen_usize: std::cell::Cell<bool>,
+    /// Record 0091: (operation, parameter, check) while emitting a guarded
+    /// free instantiation.
+    arg_guard: std::cell::RefCell<Option<(String, String, String)>>,
     /// Record 0087: rendered return type of each listed iterator-return
     /// callable, to its item, so the oracle can frame the Rust result.
     iter_return_items: BTreeMap<String, String>,
@@ -2490,7 +2535,7 @@ impl World {
         }
         let callback_unclassified_sinks = inv.callables.iter().filter(|c| release.is_api(&c.krate) && plan_holder_non_plan_method(c) && !release.callback_sink.iter().any(|s| s.path == c.canonical_path)).map(|c| c.canonical_path.clone()).collect();
         let callback_sink_groups = release.callback_sink.iter().filter(|s| s.sink != "none").map(|s| s.sink.clone()).collect();
-        let mut w = World { release: release.clone(), callback_dispositions: BTreeMap::new(), callback_unclassified_sinks, callback_sink_groups, tmp: std::cell::Cell::new(0), bitmap_ok: std::cell::Cell::new(false), bitmap_input: std::cell::RefCell::new(None), iter_return: std::cell::RefCell::new(None), cow_ok: std::cell::Cell::new(false), widen_usize: std::cell::Cell::new(false), iter_return_items: inv.callables.iter().filter_map(|c| release.iterator_returns.iter().find(|r| r.path == c.canonical_path).and_then(|r| c.ret_canonical.as_ref().map(|t| (ty::parse(t).render(), r.item.clone())))).collect(), types, wrappers: BTreeMap::new(), ambiguous_prelude, clonable, impls, deref_targets: BTreeMap::new(), deref_mut: BTreeSet::new(), by_identity: BTreeMap::new() };
+        let mut w = World { release: release.clone(), callback_dispositions: BTreeMap::new(), callback_unclassified_sinks, callback_sink_groups, tmp: std::cell::Cell::new(0), bitmap_ok: std::cell::Cell::new(false), bitmap_input: std::cell::RefCell::new(None), iter_return: std::cell::RefCell::new(None), cow_ok: std::cell::Cell::new(false), widen_usize: std::cell::Cell::new(false), arg_guard: std::cell::RefCell::new(None), iter_return_items: inv.callables.iter().filter_map(|c| release.iterator_returns.iter().find(|r| r.path == c.canonical_path).and_then(|r| c.ret_canonical.as_ref().map(|t| (ty::parse(t).render(), r.item.clone())))).collect(), types, wrappers: BTreeMap::new(), ambiguous_prelude, clonable, impls, deref_targets: BTreeMap::new(), deref_mut: BTreeSet::new(), by_identity: BTreeMap::new() };
         w.assign_wrappers(&mentioned);
         for (path, wr) in &w.wrappers {
             if wr.rule == "alias" && wr.identity.contains('<') && wr.aliases.first().is_some_and(|a| a == path) {
@@ -2916,6 +2961,15 @@ impl World {
                 "i64" => ok_arg("i64", name.into(), "int"),
                 "f64" => ok_arg("f64", name.into(), "float"),
                 "f32" => ok_arg("f64", format!("({name} as f32)"), "float"),
+                // record 0091: a guarded parameter is converted and checked in `pre`,
+                // before the call and before any receiver borrow
+                "usize" if self.arg_guard.borrow().as_ref().is_some_and(|(_, param, _)| param == name) => {
+                    let (op, _, check) = self.arg_guard.borrow().clone().unwrap();
+                    if check != "below_idx_max" { return Err(Unsupported("unknown argument guard", check)); }
+                    let mut a = ok_arg("i64", format!("__guarded_{name}"), "int (checked below the index maximum)")?;
+                    a.pre.push(format!("let __guarded_{name} = support::below_idx_max(support::narrow::<usize>({name}, \"{name}\")?, \"{op}\", \"{name}\")?;"));
+                    Ok(a)
+                }
                 p if INT_NARROW.contains(&p) => ok_arg("i64", format!("support::narrow::<{p}>({name}, \"{name}\")?"), "int"),
                 "polars_utils::index::IdxSize" => ok_arg("i64", format!("support::narrow::<p::IdxSize>({name}, \"{name}\")?"), "int"),
                 "char" => ok_arg("&str", format!("support::one_char({name}, \"{name}\")?"), "one-character string"),
@@ -4171,6 +4225,24 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
     }
 }
 
+/// Record 0091: the shape a `[[free_instantiations]]` guard must have: both
+/// fields or neither, a known check, and a parameter of the callable whose
+/// type is `usize` (the only type the check is defined for).
+fn guard_shape(f: &FreeInstantiation, c: &Callable) -> Result<(), String> {
+    match (&f.guard_param, &f.guard) {
+        (None, None) => Ok(()),
+        (Some(_), None) | (None, Some(_)) => Err(format!("`{}`: guard_param and guard must be given together", f.path)),
+        (Some(param), Some(check)) => {
+            if check != "below_idx_max" { return Err(format!("`{}`: unknown guard `{check}`", f.path)); }
+            match c.params.iter().find(|p| sanitize(&p.name) == *param) {
+                None => Err(format!("`{}`: guard_param `{param}` is not a parameter", f.path)),
+                Some(p) if p.ty_canonical.trim() != "usize" => Err(format!("`{}`: guard_param `{param}` is `{}`, not `usize`", f.path, p.ty_canonical)),
+                Some(_) => Ok(()),
+            }
+        }
+    }
+}
+
 /// Record 0090: replace `from` in `ty` only where it stands as a whole token:
 /// not preceded by an identifier character or `:`, not followed by one.
 fn replace_token(ty: &str, from: &str, to: &str) -> String {
@@ -4198,8 +4270,16 @@ fn replace_token(ty: &str, from: &str, to: &str) -> String {
 /// `usize` result converts with a range check.
 fn emit_free_instantiations(world: &World, out: &mut Emitted, c: &Callable) {
     let f = world.release.free_instantiations.iter().find(|f| f.key == c.key && f.path == c.canonical_path).unwrap().clone();
+    // record 0091 review: a guard must be complete, known, and name one of the
+    // callable's `usize` parameters, or nothing is emitted (fail closed)
+    if let Err(why) = guard_shape(&f, c) {
+        out.unsupported(c, "free instantiation guard", &why);
+        return;
+    }
     struct Widen<'a>(&'a std::cell::Cell<bool>);
     impl Drop for Widen<'_> { fn drop(&mut self) { self.0.set(false); } }
+    struct Guard<'a>(&'a std::cell::RefCell<Option<(String, String, String)>>);
+    impl Drop for Guard<'_> { fn drop(&mut self) { *self.0.borrow_mut() = None; } }
     let mut done: Vec<(String, String, &'static str, Option<String>)> = Vec::new();
     let mut infos: Vec<OracleInfo> = Vec::new();
     let mut exceptions: Vec<RouteException> = Vec::new();
@@ -4229,6 +4309,10 @@ fn emit_free_instantiations(world: &World, out: &mut Emitted, c: &Callable) {
         }
         world.widen_usize.set(true);
         let _widen = Widen(&world.widen_usize);
+        if let (Some(param), Some(check)) = (&f.guard_param, &f.guard) {
+            *world.arg_guard.borrow_mut() = Some((c.name.clone(), param.clone(), check.clone()));
+        }
+        let _guard = Guard(&world.arg_guard);
         let before = out.entries.len();
         emit_method_with(world, out, &syn, &alias, None, false, Some(&f.callee));
         let e = out.entries.pop().unwrap();
@@ -5001,6 +5085,8 @@ const TYPED_FIXTURES: &[(&str, &str, &str, &str, &[&str])] = &[
     ("polars_core::series::Series", "series_u16", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::UInt16).unwrap()", "crate_oracle::series_repr(v)", &["u16"]),
     ("polars_core::series::Series", "series_u32", "p::Series::new(\"x\".into(), [1u32, 2, 3])", "crate_oracle::series_repr(v)", &["u32", "idx"]),
     ("polars_core::series::Series", "series_u64", "p::Series::new(\"x\".into(), [1u64, 2, 3])", "crate_oracle::series_repr(v)", &["u64"]),
+    // record 0091: values beyond u32 and at u64::MAX, which a script integer cannot spell; feeds no producer
+    ("polars_core::series::Series", "series_u64_extremes", "p::Series::new(\"x\".into(), [u64::MAX, 4_294_967_297u64, 1])", "crate_oracle::series_repr(v)", &[]),
     ("polars_core::series::Series", "series_f32", "p::Series::new(\"x\".into(), [1.5f32, 2.5, 3.5])", "crate_oracle::series_repr(v)", &["f32"]),
     ("polars_core::series::Series", "series_f64", "p::Series::new(\"x\".into(), [1.5f64, 2.5, 3.5])", "crate_oracle::series_repr(v)", &["f64"]),
     ("polars_core::series::Series", "series_struct", "p::IntoSeries::into_series(df().into_struct(\"x\".into()))", "crate_oracle::series_repr(v)", &["struct_"]),

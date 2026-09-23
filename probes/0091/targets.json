@@ -1,0 +1,154 @@
+[
+ {
+  "key": "polars_ops:1057",
+  "function": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+  "callee": "polars::prelude::convert_and_bound_idx_ca",
+  "signature": "fn convert_and_bound_idx_ca<T>(ca: &ChunkedArray<T>, target_len: usize, null_on_oob: bool) -> PolarsResult<IdxCa>",
+  "bounds": [
+   "T: PolarsIntegerType",
+   "T::Native: ToPrimitive"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int8Type",
+  "native": "i8",
+  "wrapper": "Int8Chunked",
+  "branch": "signed (to_i64 total)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int8Chunked::convert_and_bound_idx_ca",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:1057",
+  "function": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+  "callee": "polars::prelude::convert_and_bound_idx_ca",
+  "signature": "fn convert_and_bound_idx_ca<T>(ca: &ChunkedArray<T>, target_len: usize, null_on_oob: bool) -> PolarsResult<IdxCa>",
+  "bounds": [
+   "T: PolarsIntegerType",
+   "T::Native: ToPrimitive"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int16Type",
+  "native": "i16",
+  "wrapper": "Int16Chunked",
+  "branch": "signed (to_i64 total)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int16Chunked::convert_and_bound_idx_ca",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:1057",
+  "function": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+  "callee": "polars::prelude::convert_and_bound_idx_ca",
+  "signature": "fn convert_and_bound_idx_ca<T>(ca: &ChunkedArray<T>, target_len: usize, null_on_oob: bool) -> PolarsResult<IdxCa>",
+  "bounds": [
+   "T: PolarsIntegerType",
+   "T::Native: ToPrimitive"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int32Type",
+  "native": "i32",
+  "wrapper": "Int32Chunked",
+  "branch": "signed (to_i64 total)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int32Chunked::convert_and_bound_idx_ca",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:1057",
+  "function": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+  "callee": "polars::prelude::convert_and_bound_idx_ca",
+  "signature": "fn convert_and_bound_idx_ca<T>(ca: &ChunkedArray<T>, target_len: usize, null_on_oob: bool) -> PolarsResult<IdxCa>",
+  "bounds": [
+   "T: PolarsIntegerType",
+   "T::Native: ToPrimitive"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int64Type",
+  "native": "i64",
+  "wrapper": "Int64Chunked",
+  "branch": "signed (to_i64 total)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int64Chunked::convert_and_bound_idx_ca",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:1057",
+  "function": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+  "callee": "polars::prelude::convert_and_bound_idx_ca",
+  "signature": "fn convert_and_bound_idx_ca<T>(ca: &ChunkedArray<T>, target_len: usize, null_on_oob: bool) -> PolarsResult<IdxCa>",
+  "bounds": [
+   "T: PolarsIntegerType",
+   "T::Native: ToPrimitive"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt8Type",
+  "native": "u8",
+  "wrapper": "UInt8Chunked",
+  "branch": "unsigned (to_u64 total)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt8Chunked::convert_and_bound_idx_ca",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:1057",
+  "function": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+  "callee": "polars::prelude::convert_and_bound_idx_ca",
+  "signature": "fn convert_and_bound_idx_ca<T>(ca: &ChunkedArray<T>, target_len: usize, null_on_oob: bool) -> PolarsResult<IdxCa>",
+  "bounds": [
+   "T: PolarsIntegerType",
+   "T::Native: ToPrimitive"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt16Type",
+  "native": "u16",
+  "wrapper": "UInt16Chunked",
+  "branch": "unsigned (to_u64 total)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt16Chunked::convert_and_bound_idx_ca",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:1057",
+  "function": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+  "callee": "polars::prelude::convert_and_bound_idx_ca",
+  "signature": "fn convert_and_bound_idx_ca<T>(ca: &ChunkedArray<T>, target_len: usize, null_on_oob: bool) -> PolarsResult<IdxCa>",
+  "bounds": [
+   "T: PolarsIntegerType",
+   "T::Native: ToPrimitive"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt32Type",
+  "native": "u32",
+  "wrapper": "IdxCa",
+  "branch": "unsigned (to_u64 total)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::IdxCa::convert_and_bound_idx_ca",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:1057",
+  "function": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+  "callee": "polars::prelude::convert_and_bound_idx_ca",
+  "signature": "fn convert_and_bound_idx_ca<T>(ca: &ChunkedArray<T>, target_len: usize, null_on_oob: bool) -> PolarsResult<IdxCa>",
+  "bounds": [
+   "T: PolarsIntegerType",
+   "T::Native: ToPrimitive"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt64Type",
+  "native": "u64",
+  "wrapper": "UInt64Chunked",
+  "branch": "unsigned (to_u64 total)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt64Chunked::convert_and_bound_idx_ca",
+  "oracle": "match"
+ }
+]

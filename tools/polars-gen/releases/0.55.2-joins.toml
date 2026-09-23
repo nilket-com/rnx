@@ -768,3 +768,15 @@ generic = "T"
 types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
 natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
 cite = "polars-ops 0.55.2 chunked_array/peaks.rs:36-60 (shift_and_fill by 1 and -1, tot_lt/tot_gt kernels); record 0090"
+
+# Record 0091: integer index conversion; target_len is checked below
+# IdxSize::MAX before the call (Polars asserts it, index.rs:32).
+[[free_instantiations]]
+key = "polars_ops:1057"
+path = "polars_ops::series::ops::index::convert_and_bound_idx_ca"
+callee = "polars::prelude::convert_and_bound_idx_ca"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type"]
+guard_param = "target_len"
+guard = "below_idx_max"
+cite = "polars-ops 0.55.2 series/ops/index.rs:21-82 (to_u64/to_i64 total for these types; out-of-range values get a false validity bit)"

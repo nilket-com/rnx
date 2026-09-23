@@ -72,6 +72,15 @@ ones return the mask directly. A `Float32` boundary is the script float cast
 with `as f32`, so NaN and infinities pass through and a large finite value
 becomes infinite.
 
+Index conversion (record 0091): `convert_and_bound_idx_ca(ca, target_len,
+null_on_oob)` is a static function on the eight integer wrappers. It turns the
+values into gather indices for an array of `target_len` rows: signed values
+from `-target_len` count from the end, anything out of range becomes null, or
+an `OutOfBounds` error when `null_on_oob` is false, and input nulls stay null.
+`target_len` must be below `IdxSize::MAX`; the adapter checks this before
+calling Polars (which would otherwise panic) and returns an `OutOfBounds`
+error, and a negative `target_len` is a `ConversionError`.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn
