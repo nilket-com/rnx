@@ -183,6 +183,14 @@ script's array stays usable. The size bound (chunks plus cells plus payload
 bytes) is checked on the script's array before that clone is made. So an
 array too large to copy is refused without cloning it.
 
+Chunk layout (record 0106): `ca.layout()` on the same fourteen wrappers
+returns a pair: the name of the variant Polars chose, and its chunks as
+vectors of options. The name is `SingleNoNull` or `Single` for one chunk,
+without or with nulls. It is `MultiNoNull` or `Multi` for several chunks,
+without or with nulls in any of them. The name is the one Polars returned;
+it is not inferred from the data. An empty array is `SingleNoNull` with one
+empty chunk. The payload is bounded before the call, like `chunks()`.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the

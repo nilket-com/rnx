@@ -954,6 +954,16 @@ path = "polars_core::chunked_array::ChunkedArray::downcast_into_iter"
 pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
 cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:53-61 (mem::take(&mut self.chunks), each Box cast to T::Array); ChunkedArray Clone at chunked_array/mod.rs:996-1008; arrays per datatypes/mod.rs:181-232"
 
+# Record 0106: layout() returns ChunkedArrayLayout<'_, T>: SingleNoNull/Single
+# (&T::Array, one chunk) or MultiNoNull/Multi (&ChunkedArray<T>). The binding
+# preflights the receiver's chunks before the call, then reports the variant
+# by name with its payload copied under that total; List/Struct refused.
+[[layout_snapshots]]
+key = "polars_core:3706"
+path = "polars_core::chunked_array::ChunkedArray::layout"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/mod.rs:919-924 (ChunkedArrayLayout) and 926-946 (layout: one chunk -> Single/SingleNoNull by null_count, else Multi/MultiNoNull by all chunks' null_count); arrays per datatypes/mod.rs:181-232"
+
 # Record 0093: usize results proven to be a length of, or index into, a Vec or
 # IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
 # read-back converts with a range check. ChunkedArray lengths are NOT here:

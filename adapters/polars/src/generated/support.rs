@@ -383,6 +383,56 @@ pub(crate) fn owned_snapshot_binary_offset(chunks: &[polars_arrow::array::ArrayR
 	owned_copy(chunks, total, it, method, binary_offset_cells, <[u8]>::len, bytes_as_ints)
 }
 
+/// Record 0106: `ChunkedArray::layout`, after its preflight: the variant
+/// Polars returned, as its name, and its payload (the one array of a
+/// `Single*` variant, every chunk of a `Multi*` one) copied under the same
+/// total, each chunk checked against the preflight's. A `Single*` variant
+/// must match a one-chunk preflight and a `Multi*` one the whole sequence;
+/// the tag is allocated only after the copy succeeds.
+fn layout_parts<'a, T: polars_core::datatypes::PolarsDataType>(l: polars_core::chunked_array::ChunkedArrayLayout<'a, T>) -> (&'static str, Box<dyn Iterator<Item = Result<&'a T::Array, Error>> + 'a>) {
+	use polars_core::chunked_array::ChunkedArrayLayout as L;
+	match l {
+		L::SingleNoNull(a) => ("SingleNoNull", Box::new(std::iter::once(Ok(a)))),
+		L::Single(a) => ("Single", Box::new(std::iter::once(Ok(a)))),
+		L::MultiNoNull(ca) => ("MultiNoNull", Box::new(ca.downcast_iter().map(Ok))),
+		L::Multi(ca) => ("Multi", Box::new(ca.downcast_iter().map(Ok))),
+	}
+}
+/// Record 0106: `layout` on a numeric owner.
+pub(crate) fn layout_snapshot<'a, T, N, U>(chunks: &[polars_arrow::array::ArrayRef], total: usize, l: polars_core::chunked_array::ChunkedArrayLayout<'a, T>, method: &str, conv: impl Fn(N) -> Result<U, Error>) -> Result<(String, Vec<Vec<Option<U>>>), Error>
+where
+	T: polars_core::datatypes::PolarsDataType<Array = polars_arrow::array::PrimitiveArray<N>>,
+	N: polars_arrow::types::NativeType,
+{
+	let (tag, items) = layout_parts(l);
+	let out = iter_copy::<polars_arrow::array::PrimitiveArray<N>, N, U>(chunks, total, items, method, |a| Box::new(a.iter()), |_| 0, |x| conv(*x))?;
+	Ok((tag.to_string(), out))
+}
+/// Record 0106: `layout` on the Boolean owner.
+pub(crate) fn layout_snapshot_bool(chunks: &[polars_arrow::array::ArrayRef], total: usize, l: polars_core::chunked_array::ChunkedArrayLayout<'_, polars_core::datatypes::BooleanType>, method: &str) -> Result<(String, Vec<Vec<Option<bool>>>), Error> {
+	let (tag, items) = layout_parts(l);
+	let out = iter_copy(chunks, total, items, method, bool_cells, |_| 0, |b| Ok(*b))?;
+	Ok((tag.to_string(), out))
+}
+/// Record 0106: `layout` on the String owner (UTF-8 bytes counted).
+pub(crate) fn layout_snapshot_str(chunks: &[polars_arrow::array::ArrayRef], total: usize, l: polars_core::chunked_array::ChunkedArrayLayout<'_, polars_core::datatypes::StringType>, method: &str) -> Result<(String, Vec<Vec<Option<String>>>), Error> {
+	let (tag, items) = layout_parts(l);
+	let out = iter_copy(chunks, total, items, method, str_cells, str::len, |v| Ok(v.to_string()))?;
+	Ok((tag.to_string(), out))
+}
+/// Record 0106: `layout` on the Binary owner (raw bytes).
+pub(crate) fn layout_snapshot_binview(chunks: &[polars_arrow::array::ArrayRef], total: usize, l: polars_core::chunked_array::ChunkedArrayLayout<'_, polars_core::datatypes::BinaryType>, method: &str) -> Result<(String, Vec<Vec<Option<Vec<i64>>>>), Error> {
+	let (tag, items) = layout_parts(l);
+	let out = iter_copy(chunks, total, items, method, binview_cells, <[u8]>::len, bytes_as_ints)?;
+	Ok((tag.to_string(), out))
+}
+/// Record 0106: `layout` on the BinaryOffset owner (raw bytes).
+pub(crate) fn layout_snapshot_binary_offset(chunks: &[polars_arrow::array::ArrayRef], total: usize, l: polars_core::chunked_array::ChunkedArrayLayout<'_, polars_core::datatypes::BinaryOffsetType>, method: &str) -> Result<(String, Vec<Vec<Option<Vec<i64>>>>), Error> {
+	let (tag, items) = layout_parts(l);
+	let out = iter_copy(chunks, total, items, method, binary_offset_cells, <[u8]>::len, bytes_as_ints)?;
+	Ok((tag.to_string(), out))
+}
+
 /// Record 0100: the shared core of the payload snapshots. A preflight over
 /// the borrowed chunks downcasts each (a typed error names the expected
 /// array) and sums cells and payload bytes with checked arithmetic, without
@@ -1470,6 +1520,36 @@ mod bits_tests {
 		assert_eq!(owned_snapshot_str(&strings, t, vec![Utf8ViewArray::from_slice([Some("abc")])].into_iter(), "m").unwrap(), vec![vec![Some("abc".to_string())]]);
 		// checked addition without a huge array
 		assert!(payload_count_step(1, usize::MAX, 0, 1, PayloadCount::Cells, "m").is_err());
+	}
+
+	#[test]
+	fn layout_snapshots_report_the_variant_and_check_its_shape() {
+		let _s = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+		use polars_core::chunked_array::ChunkedArrayLayout as L;
+		use polars_core::prelude::{Int64Chunked, NewChunkedArray};
+		limit(0);
+		let conv = |x: i64| Ok(x);
+		let one = Int64Chunked::from_slice("x".into(), &[1, 2]);
+		let t = preflight_numeric::<i64>(one.chunks(), "m").unwrap();
+		assert_eq!(layout_snapshot(one.chunks(), t, one.layout(), "m", conv).unwrap(), ("SingleNoNull".to_string(), vec![vec![Some(1), Some(2)]]));
+		let mut two = Int64Chunked::from_slice("x".into(), &[1]);
+		two.append(&Int64Chunked::from_slice_options("x".into(), &[None, Some(3)])).unwrap();
+		let t2 = preflight_numeric::<i64>(two.chunks(), "m").unwrap();
+		assert_eq!(layout_snapshot(two.chunks(), t2, two.layout(), "m", conv).unwrap(), ("Multi".to_string(), vec![vec![Some(1)], vec![None, Some(3)]]));
+		// a Single variant against a two-chunk preflight is a changed shape
+		let a = one.downcast_iter().next().unwrap();
+		assert_eq!(layout_snapshot(two.chunks(), t2, L::<polars_core::datatypes::Int64Type>::Single(a), "m", conv).unwrap_err().1, "m: chunk 0 has 2 cells, 1 were counted");
+		// a Multi variant of a different array against this preflight
+		assert_eq!(layout_snapshot(one.chunks(), t, L::Multi(&two), "m", conv).unwrap_err().1, "m: chunk 0 has 1 cells, 2 were counted");
+		// zero chunks, built by the safe from_chunk_iter: Polars reports MultiNoNull with no chunks
+		let zero = Int64Chunked::from_chunk_iter("x".into(), std::iter::empty::<polars_arrow::array::PrimitiveArray<i64>>());
+		assert_eq!(zero.chunks().len(), 0);
+		let tz = preflight_numeric::<i64>(zero.chunks(), "m").unwrap();
+		assert_eq!(layout_snapshot(zero.chunks(), tz, zero.layout(), "m", conv).unwrap(), ("MultiNoNull".to_string(), vec![]));
+		// the bound is the preflight's
+		limit(4);
+		assert_eq!(preflight_numeric::<i64>(two.chunks(), "m").unwrap_err().1, "m: 2 chunks and 3 cells (5 slots), more than the bound of 4");
+		limit(0);
 	}
 
 	#[test]

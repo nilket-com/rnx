@@ -1,0 +1,178 @@
+{
+ "record": "0106",
+ "key": "polars_core:3706",
+ "signature": "pub fn layout(&self) -> ChunkedArrayLayout<'_, T> (impl<T> ChunkedArray<T> where T: PolarsDataType)",
+ "source": {
+  "enum": "polars-core 0.55.2 chunked_array/mod.rs:919-924 (SingleNoNull(&T::Array), Single(&T::Array), MultiNoNull(&ChunkedArray<T>), Multi(&ChunkedArray<T>))",
+  "layout": "mod.rs:926-946 (one chunk: SingleNoNull if its null_count is 0 else Single; otherwise MultiNoNull if every chunk has null_count 0 else Multi)"
+ },
+ "variant_probe": {
+  "one chunk, no null": "SingleNoNull",
+  "one chunk with a null": "Single",
+  "two chunks, no nulls": "MultiNoNull",
+  "two chunks, null in the later one": "Multi",
+  "empty receiver (one empty chunk)": "SingleNoNull, []",
+  "zero chunks via safe ChunkedArray::from_chunk_iter(empty)": "MultiNoNull, [] (support unit test)"
+ },
+ "pairs": [
+  {
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "T_Array": "BinaryArray<i64>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::BinaryOffsetType>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "T_Array": "BinaryViewArray",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::BinaryType>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "T_Array": "BooleanArray",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::BooleanType>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "T_Array": "PrimitiveArray<f32>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Float32Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "T_Array": "PrimitiveArray<f64>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Float64Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "T_Array": "PrimitiveArray<i16>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int16Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "T_Array": "PrimitiveArray<i32>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int32Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "T_Array": "PrimitiveArray<i64>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int64Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "T_Array": "PrimitiveArray<i8>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int8Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "T_Array": "ListArray<i64>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::ListType>)",
+   "after": "refused: refused: layout snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>` is not a listed pair",
+   "decision": "refused (List/Struct cells are arrays or rows of fields: nested-value policy needed)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "T_Array": "Utf8ViewArray",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::StringType>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "T_Array": "StructArray",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::StructType>)",
+   "after": "refused: refused: layout snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>` is not a listed pair",
+   "decision": "refused (List/Struct cells are arrays or rows of fields: nested-value policy needed)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "T_Array": "PrimitiveArray<u16>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt16Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "T_Array": "PrimitiveArray<u32>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt32Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "T_Array": "PrimitiveArray<u64>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt64Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "T_Array": "PrimitiveArray<u8>",
+   "before": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt8Type>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  }
+ ],
+ "counts": {
+  "pairs": 16,
+  "emitted": 14,
+  "refused": 2,
+  "oracle_match": 14
+ },
+ "refused_proven_pairs": {
+  "before": 84,
+  "after": 70
+ },
+ "unresolved_pool": {
+  "before": 564,
+  "after": 564
+ },
+ "retained_0105_binary_sha256": "b831bcc5e98b3d2f41c1d18dc47022ed177f09ef364821bd02a6c492e91d5ccd"
+}

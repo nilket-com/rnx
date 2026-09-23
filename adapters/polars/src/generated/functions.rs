@@ -2111,6 +2111,48 @@ fn f_88b33383_t_non_null_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::last_non_null`. last_non_null() -> option of int (checked into range) (fallible)
 #[rune::function(instance, path = last_non_null)]
 fn f_b2bd4cd3_st_non_null_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Option<i64>, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::last_non_null(&this.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "last_non_null")?), None => None }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of binary_offset values (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_04d7122d_yout_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<(String, Vec<Vec<Option<Vec<i64>>>>), Error> { let __total = support::preflight_binary_offset(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::BinaryOffsetChunked>::layout(&this.0); Ok(support::layout_snapshot_binary_offset(this.0.chunks(), __total, __r, "layout")?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of binary values (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_8010bebb_ay__layout_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<(String, Vec<Vec<Option<Vec<i64>>>>), Error> { let __total = support::preflight_binview(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::BinaryChunked>::layout(&this.0); Ok(support::layout_snapshot_binview(this.0.chunks(), __total, __r, "layout")?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of bool values (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_94d20343_y__layout_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<(String, Vec<Vec<Option<bool>>>), Error> { let __total = support::preflight_bool(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::BooleanChunked>::layout(&this.0); Ok(support::layout_snapshot_bool(this.0.chunks(), __total, __r, "layout")?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of float (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_8c2deaca_y__layout_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<(String, Vec<Vec<Option<f64>>>), Error> { let __total = support::preflight_numeric::<f32>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::Float32Chunked>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::Float32Type, f32, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>((__r as f64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of float (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_14d5dd99_y__layout_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<(String, Vec<Vec<Option<f64>>>), Error> { let __total = support::preflight_numeric::<f64>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::Float64Chunked>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::Float64Type, f64, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>(__r))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of int (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_d8222119_ray__layout_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<(String, Vec<Vec<Option<i64>>>), Error> { let __total = support::preflight_numeric::<i16>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::Int16Chunked>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::Int16Type, i16, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of int (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_54c400d5_ray__layout_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<(String, Vec<Vec<Option<i64>>>), Error> { let __total = support::preflight_numeric::<i32>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::Int32Chunked>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::Int32Type, i32, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of int (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_f487dc1a_ray__layout_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<(String, Vec<Vec<Option<i64>>>), Error> { let __total = support::preflight_numeric::<i64>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::Int64Chunked>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::Int64Type, i64, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>(__r))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of int (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_bc6f3106_rray__layout_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<(String, Vec<Vec<Option<i64>>>), Error> { let __total = support::preflight_numeric::<i8>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::Int8Chunked>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::Int8Type, i8, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of str values (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_68ff752f_ay__layout_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<(String, Vec<Vec<Option<String>>>), Error> { let __total = support::preflight_str(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::StringChunked>::layout(&this.0); Ok(support::layout_snapshot_str(this.0.chunks(), __total, __r, "layout")?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of int (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_f2a2b46a_ay__layout_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<(String, Vec<Vec<Option<i64>>>), Error> { let __total = support::preflight_numeric::<u16>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::UInt16Chunked>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::UInt16Type, u16, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of int (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_e09c6c5f_y__layout_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<(String, Vec<Vec<Option<i64>>>), Error> { let __total = support::preflight_numeric::<u32>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::IdxCa>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::UInt32Type, u32, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of int (checked into range) (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_e942854e_ay__layout_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<(String, Vec<Vec<Option<i64>>>), Error> { let __total = support::preflight_numeric::<u64>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::UInt64Chunked>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::UInt64Type, u64, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>(support::widen::<u64>(__r, "layout")?))?) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::layout`. layout() -> tuple of the layout variant's name and its chunks, each a vector of option of int (bounded before the call) (fallible)
+#[rune::function(instance, path = layout)]
+fn f_057046fd_ray__layout_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<(String, Vec<Vec<Option<i64>>>), Error> { let __total = support::preflight_numeric::<u8>(this.0.chunks(), "layout")?; let __r = <polars_core::datatypes::UInt8Chunked>::layout(&this.0); Ok(support::layout_snapshot::<polars_core::datatypes::UInt8Type, u8, _>(this.0.chunks(), __total, __r, "layout", |__r| Ok::<_, Error>((__r as i64)))?) }
 /// Get the length of the ChunkedArray
 /// Polars: `polars_core::chunked_array::ChunkedArray::len`. len() -> int (checked into range) (fallible)
 #[rune::function(instance, path = len)]
@@ -14106,6 +14148,20 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_cf66e647__non_null_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_88b33383_t_non_null_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_b2bd4cd3_st_non_null_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_04d7122d_yout_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_8010bebb_ay__layout_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_94d20343_y__layout_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_8c2deaca_y__layout_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_14d5dd99_y__layout_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_d8222119_ray__layout_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_54c400d5_ray__layout_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_f487dc1a_ray__layout_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_bc6f3106_rray__layout_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_68ff752f_ay__layout_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_f2a2b46a_ay__layout_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_e09c6c5f_y__layout_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_e942854e_ay__layout_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_057046fd_ray__layout_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_4383c850__len_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_ee83bda7_array__len_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_238cd0a9_rray__len_polars_core__datatypes__booleanchunked)?;
