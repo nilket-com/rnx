@@ -61,6 +61,17 @@ or `None` for an empty or all-null array, and honour the sorted flag exactly as
 Polars does. Floats are not offered: Polars takes an unchecked path for a
 sorted float.
 
+Peaks (record 0090): `peak_max_with_start_end` and `peak_min_with_start_end`
+are static functions on the ten numeric wrappers (the eight integers, `IdxCa`
+included, and `Float32`/`Float64`). They take the array and two optional
+boundary values compared against the first and last elements, and return a
+`BooleanChunked`. An integer boundary that does not fit the wrapper's element
+type (256 for `UInt8`, a negative for an unsigned type) is a
+`ConversionError`; those bindings return a result, while the `Int64` and float
+ones return the mask directly. A `Float32` boundary is the script float cast
+with `as f32`, so NaN and infinities pass through and a large finite value
+becomes infinite.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn

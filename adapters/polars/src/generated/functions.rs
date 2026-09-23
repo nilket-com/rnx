@@ -7280,6 +7280,86 @@ fn g_faa3ae57_polars_ops__chunked_array__binary__get__bin_get(ca: &W_polars_core
 /// Polars: `polars_ops::chunked_array::list::get::lst_get`. lst_get(ca: ListChunked, index: Int64Chunked, null_on_oob: bool) -> result of Column (fallible)
 #[rune::function(path = lst_get)]
 fn g_a0fa797b_polars_ops__chunked_array__list__get__lst_get(ca: &W_polars_core__datatypes__ListChunked, index: &W_polars_core__datatypes__Int64Chunked, null_on_oob: bool) -> Result<W_polars_core__frame__column__Column, Error> { let __arg0 = &ca.0; let __arg1 = &index.0; let __arg2 = null_on_oob; let __r = crate::engine::run("polars::lst_get", move || polars_ops::chunked_array::list::lst_get(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__frame__column__Column(__r) }) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: Int8Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::peak_max_with_start_end)]
+fn f_0579fbd9_th_start_end_polars_core__datatypes__int8chunked(ca: &W_polars_core__datatypes__Int8Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<i8>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<i8>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: Int16Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::peak_max_with_start_end)]
+fn f_222f312d_h_start_end_polars_core__datatypes__int16chunked(ca: &W_polars_core__datatypes__Int16Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<i16>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<i16>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: Int32Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::peak_max_with_start_end)]
+fn f_2c3ad893_h_start_end_polars_core__datatypes__int32chunked(ca: &W_polars_core__datatypes__Int32Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<i32>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<i32>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: Int64Chunked, start: option of int, end: option of int) -> BooleanChunked
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::peak_max_with_start_end)]
+fn f_c14623c2_h_start_end_polars_core__datatypes__int64chunked(ca: &W_polars_core__datatypes__Int64Chunked, start: Option<i64>, end: Option<i64>) -> W_polars_core__datatypes__BooleanChunked { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some(v), None => None }, match end { Some(v) => Some(v), None => None }); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: UInt8Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::peak_max_with_start_end)]
+fn f_897d2851_h_start_end_polars_core__datatypes__uint8chunked(ca: &W_polars_core__datatypes__UInt8Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<u8>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<u8>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: UInt16Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::peak_max_with_start_end)]
+fn f_3b6fafb3__start_end_polars_core__datatypes__uint16chunked(ca: &W_polars_core__datatypes__UInt16Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<u16>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<u16>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: IdxCa, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::peak_max_with_start_end)]
+fn f_d23d1792_start_end_polars_core__datatypes__aliases__idxca(ca: &W_polars_core__datatypes__aliases__IdxCa, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<u32>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<u32>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: UInt64Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::peak_max_with_start_end)]
+fn f_fd43897e__start_end_polars_core__datatypes__uint64chunked(ca: &W_polars_core__datatypes__UInt64Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<u64>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<u64>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: Float32Chunked, start: option of float, end: option of float) -> BooleanChunked
+#[rune::function(free, path = W_polars_core__datatypes__Float32Chunked::peak_max_with_start_end)]
+fn f_592f0402_start_end_polars_core__datatypes__float32chunked(ca: &W_polars_core__datatypes__Float32Chunked, start: Option<f64>, end: Option<f64>) -> W_polars_core__datatypes__BooleanChunked { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some((v as f32)), None => None }, match end { Some(v) => Some((v as f32)), None => None }); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a boolean mask of the local maximum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_max_with_start_end`. peak_max_with_start_end(ca: Float64Chunked, start: option of float, end: option of float) -> BooleanChunked
+#[rune::function(free, path = W_polars_core__datatypes__Float64Chunked::peak_max_with_start_end)]
+fn f_beb978ed_start_end_polars_core__datatypes__float64chunked(ca: &W_polars_core__datatypes__Float64Chunked, start: Option<f64>, end: Option<f64>) -> W_polars_core__datatypes__BooleanChunked { let __r = polars::prelude::peaks::peak_max_with_start_end(&ca.0, match start { Some(v) => Some(v), None => None }, match end { Some(v) => Some(v), None => None }); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: Int8Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::peak_min_with_start_end)]
+fn f_a020c490_th_start_end_polars_core__datatypes__int8chunked(ca: &W_polars_core__datatypes__Int8Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<i8>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<i8>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: Int16Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::peak_min_with_start_end)]
+fn f_7248ad2c_h_start_end_polars_core__datatypes__int16chunked(ca: &W_polars_core__datatypes__Int16Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<i16>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<i16>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: Int32Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::peak_min_with_start_end)]
+fn f_d4540a3f_h_start_end_polars_core__datatypes__int32chunked(ca: &W_polars_core__datatypes__Int32Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<i32>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<i32>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: Int64Chunked, start: option of int, end: option of int) -> BooleanChunked
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::peak_min_with_start_end)]
+fn f_406fedab_h_start_end_polars_core__datatypes__int64chunked(ca: &W_polars_core__datatypes__Int64Chunked, start: Option<i64>, end: Option<i64>) -> W_polars_core__datatypes__BooleanChunked { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some(v), None => None }, match end { Some(v) => Some(v), None => None }); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: UInt8Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::peak_min_with_start_end)]
+fn f_d7968763_h_start_end_polars_core__datatypes__uint8chunked(ca: &W_polars_core__datatypes__UInt8Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<u8>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<u8>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: UInt16Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::peak_min_with_start_end)]
+fn f_2a7c0fb8__start_end_polars_core__datatypes__uint16chunked(ca: &W_polars_core__datatypes__UInt16Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<u16>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<u16>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: IdxCa, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::peak_min_with_start_end)]
+fn f_860401ed_start_end_polars_core__datatypes__aliases__idxca(ca: &W_polars_core__datatypes__aliases__IdxCa, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<u32>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<u32>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: UInt64Chunked, start: option of int, end: option of int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::peak_min_with_start_end)]
+fn f_9a5797d5__start_end_polars_core__datatypes__uint64chunked(ca: &W_polars_core__datatypes__UInt64Chunked, start: Option<i64>, end: Option<i64>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some(support::narrow::<u64>(v, "v")?), None => None }, match end { Some(v) => Some(support::narrow::<u64>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: Float32Chunked, start: option of float, end: option of float) -> BooleanChunked
+#[rune::function(free, path = W_polars_core__datatypes__Float32Chunked::peak_min_with_start_end)]
+fn f_2f709fef_start_end_polars_core__datatypes__float32chunked(ca: &W_polars_core__datatypes__Float32Chunked, start: Option<f64>, end: Option<f64>) -> W_polars_core__datatypes__BooleanChunked { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some((v as f32)), None => None }, match end { Some(v) => Some((v as f32)), None => None }); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Get a boolean mask of the local minimum peaks.
+/// Polars: `polars_ops::chunked_array::peaks::peak_min_with_start_end`. peak_min_with_start_end(ca: Float64Chunked, start: option of float, end: option of float) -> BooleanChunked
+#[rune::function(free, path = W_polars_core__datatypes__Float64Chunked::peak_min_with_start_end)]
+fn f_1bf7ff63_start_end_polars_core__datatypes__float64chunked(ca: &W_polars_core__datatypes__Float64Chunked, start: Option<f64>, end: Option<f64>) -> W_polars_core__datatypes__BooleanChunked { let __r = polars::prelude::peaks::peak_min_with_start_end(&ca.0, match start { Some(v) => Some(v), None => None }, match end { Some(v) => Some(v), None => None }); W_polars_core__datatypes__BooleanChunked(__r) }
 /// Polars: `polars_ops::series::ops::bitwise::count_ones`. count_ones(s: Series) -> result of Series (fallible)
 #[rune::function(path = count_ones)]
 fn g_4cd8aa76_polars_ops__series__ops__bitwise__count_ones(s: &W_polars_core__series__Series) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &s.0; let __r = crate::engine::run("polars::count_ones", move || polars_ops::prelude::count_ones(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
@@ -14768,6 +14848,26 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_d97a5826_olars_lazy__dsl__functions__concat_lf_horizontal)?;
     m.function_meta(g_faa3ae57_polars_ops__chunked_array__binary__get__bin_get)?;
     m.function_meta(g_a0fa797b_polars_ops__chunked_array__list__get__lst_get)?;
+    m.function_meta(f_0579fbd9_th_start_end_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_222f312d_h_start_end_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_2c3ad893_h_start_end_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_c14623c2_h_start_end_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_897d2851_h_start_end_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_3b6fafb3__start_end_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_d23d1792_start_end_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_fd43897e__start_end_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_592f0402_start_end_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_beb978ed_start_end_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_a020c490_th_start_end_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_7248ad2c_h_start_end_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_d4540a3f_h_start_end_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_406fedab_h_start_end_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_d7968763_h_start_end_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_2a7c0fb8__start_end_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_860401ed_start_end_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_9a5797d5__start_end_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_2f709fef_start_end_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_1bf7ff63_start_end_polars_core__datatypes__float64chunked)?;
     m.function_meta(g_4cd8aa76_polars_ops__series__ops__bitwise__count_ones)?;
     m.function_meta(g_1c6597e6_polars_ops__series__ops__bitwise__count_zeros)?;
     m.function_meta(g_acceaca5_polars_ops__series__ops__bitwise__leading_ones)?;
