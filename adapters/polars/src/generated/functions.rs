@@ -1345,6 +1345,30 @@ fn f_a0bcbe06___is_empty_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::is_empty`. is_empty() -> bool
 #[rune::function(instance, path = is_empty)]
 fn f_3cf392dd_y__is_empty_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> bool { let __r = <polars_core::datatypes::UInt8Chunked>::is_empty(&this.0); __r }
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_finite`. is_finite() -> BooleanChunked
+#[rune::function(instance, path = is_finite)]
+fn f_41644f17_is_finite_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float32Chunked>::is_finite(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_finite`. is_finite() -> BooleanChunked
+#[rune::function(instance, path = is_finite)]
+fn f_3b10f51f_is_finite_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float64Chunked>::is_finite(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_infinite`. is_infinite() -> BooleanChunked
+#[rune::function(instance, path = is_infinite)]
+fn f_c35886cb__infinite_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float32Chunked>::is_infinite(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_infinite`. is_infinite() -> BooleanChunked
+#[rune::function(instance, path = is_infinite)]
+fn f_d6cc5e88__infinite_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float64Chunked>::is_infinite(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_nan`. is_nan() -> BooleanChunked
+#[rune::function(instance, path = is_nan)]
+fn f_4b1f46b9_y__is_nan_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float32Chunked>::is_nan(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_nan`. is_nan() -> BooleanChunked
+#[rune::function(instance, path = is_nan)]
+fn f_cd4878a0_y__is_nan_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float64Chunked>::is_nan(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_nan`. is_not_nan() -> BooleanChunked
+#[rune::function(instance, path = is_not_nan)]
+fn f_f916a0a6_s_not_nan_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float32Chunked>::is_not_nan(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::is_not_nan`. is_not_nan() -> BooleanChunked
+#[rune::function(instance, path = is_not_nan)]
+fn f_de8dce25_s_not_nan_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__BooleanChunked { let __r = <polars_core::datatypes::Float64Chunked>::is_not_nan(&this.0); W_polars_core__datatypes__BooleanChunked(__r) }
 /// Get a mask of the valid values.
 /// Polars: `polars_core::chunked_array::ChunkedArray::is_not_null`. is_not_null() -> BooleanChunked
 #[rune::function(instance, path = is_not_null)]
@@ -2219,6 +2243,14 @@ fn f_88aac8f9_o_null_iter_polars_core__datatypes__uint8chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::no_null_series_iter`. no_null_series_iter() -> vector of Series (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = no_null_series_iter)]
 fn f_7923990f__series_iter_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> Result<Vec<W_polars_core__series__Series>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("no_null_series_iter", move || { let __it = <polars_core::datatypes::ListChunked>::no_null_series_iter(__arg0); support::materialize_exact(__it, "no_null_series_iter", |__r| Ok::<_, Error>(W_polars_core__series__Series(__r))) }).map_err(Error::engine)??; Ok(__r) }
+/// Convert missing values to `NaN` values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::none_to_nan`. none_to_nan() -> Float32Chunked
+#[rune::function(instance, path = none_to_nan)]
+fn f_4a173df7_ne_to_nan_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__Float32Chunked { let __r = <polars_core::datatypes::Float32Chunked>::none_to_nan(&this.0); W_polars_core__datatypes__Float32Chunked(__r) }
+/// Convert missing values to `NaN` values.
+/// Polars: `polars_core::chunked_array::ChunkedArray::none_to_nan`. none_to_nan() -> Float64Chunked
+#[rune::function(instance, path = none_to_nan)]
+fn f_8be924f3_ne_to_nan_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__Float64Chunked { let __r = <polars_core::datatypes::Float64Chunked>::none_to_nan(&this.0); W_polars_core__datatypes__Float64Chunked(__r) }
 /// Return the number of null values in the ChunkedArray.
 /// Polars: `polars_core::chunked_array::ChunkedArray::null_count`. null_count() -> int (checked into range) (fallible)
 #[rune::function(instance, path = null_count)]
@@ -3160,6 +3192,12 @@ fn f_8c23becc_rray__tail_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::tail`. tail(length: option of int) -> UInt8Chunked (fallible)
 #[rune::function(instance, path = tail)]
 fn f_1ba932c9_array__tail_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, length: Option<i64>) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { support::signed_len(this.0.len(), "tail")?; let __r = <polars_core::datatypes::UInt8Chunked>::tail(&this.0, match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_canonical`. to_canonical() -> Float32Chunked
+#[rune::function(instance, path = to_canonical)]
+fn f_94b52f63_canonical_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__Float32Chunked { let __r = <polars_core::datatypes::Float32Chunked>::to_canonical(&this.0); W_polars_core__datatypes__Float32Chunked(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_canonical`. to_canonical() -> Float64Chunked
+#[rune::function(instance, path = to_canonical)]
+fn f_d48a945d_canonical_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__Float64Chunked { let __r = <polars_core::datatypes::Float64Chunked>::to_canonical(&this.0); W_polars_core__datatypes__Float64Chunked(__r) }
 /// Convert the datatype of the list into the physical datatype.
 /// Polars: `polars_core::chunked_array::ChunkedArray::to_physical_repr`. to_physical_repr() -> ListChunked (owned)
 #[rune::function(instance, path = to_physical_repr)]
@@ -13573,6 +13611,14 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_4a066c03__is_empty_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_a0bcbe06___is_empty_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_3cf392dd_y__is_empty_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_41644f17_is_finite_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_3b10f51f_is_finite_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_c35886cb__infinite_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_d6cc5e88__infinite_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_4b1f46b9_y__is_nan_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_cd4878a0_y__is_nan_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_f916a0a6_s_not_nan_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_de8dce25_s_not_nan_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_52ef558a_null_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_079323fb_s_not_null_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_364d0428__not_null_polars_core__datatypes__booleanchunked)?;
@@ -13804,6 +13850,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_a1ce8c77__null_iter_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_88aac8f9_o_null_iter_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_7923990f__series_iter_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_4a173df7_ne_to_nan_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_8be924f3_ne_to_nan_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_7d14d47b_ount_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_dc1963e9_null_count_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_680f49a3_ull_count_polars_core__datatypes__booleanchunked)?;
@@ -14053,6 +14101,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_d2eb67e4_ray__tail_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_8c23becc_rray__tail_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_1ba932c9_array__tail_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_94b52f63_canonical_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_d48a945d_canonical_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_785727f8_hysical_repr_polars_core__datatypes__listchunked)?;
     m.function_meta(f_3b917589_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_34949b18_y__to_vec_polars_core__datatypes__float32chunked)?;

@@ -212,6 +212,49 @@ fn sized_self_drift_is_refused_by_name() {
 	assert_eq!(functions.matches("ChunkedArray::limit`").count(), 16, "limit is unaffected");
 }
 
+/// Record 0098: the external-bound gate on the real generator. Run A's
+/// inventory drops `Canonical` from `to_canonical` and adds an external bound
+/// to `is_nan`; its release file swaps `is_finite`'s natives and lists only
+/// Float32 for `is_infinite`. Run B's inventory replaces `Canonical`. Each
+/// fault is named on its pairs, with no binding text, and every other
+/// float method still binds on both types.
+#[test]
+fn external_bound_drift_is_refused_by_name() {
+	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
+	let entry = |key: &str| { let at = shipped.find(&format!("key = \"{key}\"")).unwrap(); let end = at + shipped[at..].find("cite = ").unwrap(); (at, end) };
+	let mut release = shipped.clone();
+	let (a, b) = entry("polars_core:3548");
+	release.replace_range(a..b, &shipped[a..b].replace("[[\"polars_core::datatypes::Float32Type\", \"f32\"], [\"polars_core::datatypes::Float64Type\", \"f64\"]]", "[[\"polars_core::datatypes::Float32Type\", \"f64\"], [\"polars_core::datatypes::Float64Type\", \"f32\"]]"));
+	let (a, b) = { let at = release.find("key = \"polars_core:3549\"").unwrap(); (at, at + release[at..].find("cite = ").unwrap()) };
+	let fixed = release[a..b].replace(", [\"polars_core::datatypes::Float64Type\", \"f64\"]", "");
+	assert_ne!(fixed, release[a..b]);
+	release.replace_range(a..b, &fixed);
+	let base: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(inventory()).unwrap()).unwrap();
+	let edit = |inv: &mut serde_json::Value, key: &str, wh: serde_json::Value| { let c = inv["callables"].as_array_mut().unwrap().iter_mut().find(|c| c["key"] == key).unwrap(); c["impl_where"] = wh; };
+	let mut inv = base.clone();
+	edit(&mut inv, "polars_core:3554", serde_json::json!(["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]));
+	edit(&mut inv, "polars_core:3546", serde_json::json!(["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float", "T::Native: core::fmt::LowerExp"]));
+	let (surface, functions) = generate_with(&release, Some(&serde_json::to_string(&inv).unwrap()), "external-bound-drift");
+	let pairs = |surface: &serde_json::Value, key: &str| surface["instantiation"]["pairs"].as_array().unwrap().iter().filter(|p| p["key"] == key && p["alias"].as_str().unwrap().contains("Float")).map(|p| p["disposition"].as_str().unwrap().to_string()).collect::<Vec<_>>();
+	let count = |f: &str, m: &str| f.matches(&format!("ChunkedArray::{m}`")).count();
+	for (key, method, why) in [("polars_core:3554", "to_canonical", "external bound: where-clauses"), ("polars_core:3546", "is_nan", "external bound: where-clauses"), ("polars_core:3548", "is_finite", "is not a float type and its native")] {
+		let p = pairs(&surface, key);
+		assert_eq!(p.len(), 2, "{method}");
+		assert!(p.iter().all(|d| d.contains(why)), "{method}: {p:?}");
+		assert_eq!(count(&functions, method), 0, "{method}: no binding text");
+	}
+	let infinite = pairs(&surface, "polars_core:3549");
+	assert!(infinite.iter().any(|d| d == "emitted") && infinite.iter().any(|d| d.contains("external bound: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>` is not a listed pair")), "{infinite:?}");
+	assert_eq!(count(&functions, "is_infinite"), 1, "only the listed Float32 pair binds");
+	for m in ["is_not_nan", "none_to_nan"] { assert_eq!(count(&functions, m), 2, "{m} is unaffected"); }
+	let mut inv = base;
+	edit(&mut inv, "polars_core:3554", serde_json::json!(["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float + polars_core::other::Canonical"]));
+	let (surface, functions) = generate_with(&shipped, Some(&serde_json::to_string(&inv).unwrap()), "external-bound-replaced");
+	assert!(pairs(&surface, "polars_core:3554").iter().all(|d| d.contains("external bound: where-clauses")));
+	assert_eq!(count(&functions, "to_canonical"), 0);
+	assert_eq!(count(&functions, "is_finite"), 2, "the shipped entries bind");
+}
+
 fn generate_with_natives(key: &str, natives: &str, dir: &str) -> (serde_json::Value, String) {
 	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
 	let at = shipped.find(&format!("key = \"{key}\"")).expect("the entry");

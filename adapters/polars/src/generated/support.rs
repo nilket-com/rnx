@@ -210,6 +210,28 @@ pub(crate) fn hash_from_token(s: &str, method: &str) -> Result<u64, Error> {
 	Err(Error::conversion(&format!("{method}: hash must be 16 lowercase hex digits, got {shown:?}{more}")))
 }
 
+/// Record 0098: the exact bits of a script's float or boolean array, read
+/// from the wrapper a binding returned, for tests that must not rely on
+/// formatted text (NaN payloads, the sign of zero).
+#[cfg(feature = "test-support")]
+pub mod float_bits {
+	use super::super::types::{W_polars_core__datatypes__BooleanChunked, W_polars_core__datatypes__Float32Chunked, W_polars_core__datatypes__Float64Chunked};
+	use rnx::rune;
+	pub fn f64s(v: &rune::Value) -> Result<Vec<Option<u64>>, String> {
+		v.borrow_ref::<W_polars_core__datatypes__Float64Chunked>().map_err(|e| e.to_string()).map(|w| w.0.iter().map(|x| x.map(f64::to_bits)).collect())
+	}
+	pub fn f32s(v: &rune::Value) -> Result<Vec<Option<u32>>, String> {
+		v.borrow_ref::<W_polars_core__datatypes__Float32Chunked>().map_err(|e| e.to_string()).map(|w| w.0.iter().map(|x| x.map(f32::to_bits)).collect())
+	}
+	pub fn bools(v: &rune::Value) -> Result<Vec<Option<bool>>, String> {
+		v.borrow_ref::<W_polars_core__datatypes__BooleanChunked>().map_err(|e| e.to_string()).map(|w| w.0.iter().collect())
+	}
+	/// The number of chunks of a returned float array.
+	pub fn f64_chunks(v: &rune::Value) -> Result<usize, String> {
+		v.borrow_ref::<W_polars_core__datatypes__Float64Chunked>().map_err(|e| e.to_string()).map(|w| w.0.chunks().len())
+	}
+}
+
 /// Record 0094: receiver fixtures for the categorical hash methods. Polars
 /// hands these out as `Arc`s from registries that keep only weak
 /// references; the wrappers own the value, so each fixture is built and

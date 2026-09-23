@@ -1,0 +1,1564 @@
+{
+ "record": "0098",
+ "source": {
+  "float_impl": "polars-core 0.55.2 chunked_array/float.rs:11-44 (T: PolarsFloatType, T::Native: Float)",
+  "canonical_impl": "float.rs:71-79 (T::Native: Float + Canonical)",
+  "canonical_for_f32_f64": "float.rs:57-68",
+  "float_for_f32_f64": "num-traits impl Float for f32/f64",
+  "canonical_bits": "polars-utils total_ord.rs:27-48 (0x7fc00000, 0x7ff8000000000000)",
+  "set_at_nulls": "polars-arrow legacy/kernels/set.rs:16-38"
+ },
+ "pairs": [
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "native": "f32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "native": "f64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "native": "i16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "native": "i32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "native": "i64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "native": "i8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "native": "u16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "native": "u32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "native": "u64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3548",
+   "method": "is_finite",
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "native": "u8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "native": "f32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "native": "f64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "native": "i16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "native": "i32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "native": "i64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "native": "i8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "native": "u16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "native": "u32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "native": "u64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3549",
+   "method": "is_infinite",
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "native": "u8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "native": "f32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "native": "f64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "native": "i16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "native": "i32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "native": "i64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "native": "i8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "native": "u16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "native": "u32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "native": "u64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3546",
+   "method": "is_nan",
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "native": "u8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "native": "f32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "native": "f64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "native": "i16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "native": "i32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "native": "i64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "native": "i8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "native": "u16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "native": "u32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "native": "u64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3547",
+   "method": "is_not_nan",
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "native": "u8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "native": "f32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "native": "f64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "native": "i16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "native": "i32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "native": "i64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "native": "i8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "native": "u16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "native": "u32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "native": "u64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3550",
+   "method": "none_to_nan",
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "native": "u8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryOffsetType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BinaryType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::BooleanType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "native": "f32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "native": "f64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "unresolved: trait `num_traits::float::Float` is outside the inventory",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "native": "i16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "native": "i32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "native": "i64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "native": "i8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::Int8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::ListType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StringType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "native": null,
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::StructType`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "native": "u16",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt16Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "native": "u32",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt32Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "native": "u64",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt64Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "key": "polars_core:3554",
+   "method": "to_canonical",
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "native": "u8",
+   "impl_where": [
+    "T: polars_core::datatypes::PolarsFloatType",
+    "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"
+   ],
+   "return": "Self",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsFloatType` for `polars_core::datatypes::UInt8Type`",
+   "decision": "rejected (owner bound)",
+   "oracle": "no case"
+  }
+ ],
+ "counts": {
+  "pairs": 96,
+  "rejected (owner bound)": 84,
+  "emitted": 12,
+  "oracle_match": 12
+ },
+ "unresolved_pool": {
+  "before": 576,
+  "after": 564
+ },
+ "refused_proven_pairs": {
+  "before": 168,
+  "after": 168
+ },
+ "retained_0097_binary_sha256": "1cc4c452688d71dcb545e2d1dc78bc4929897d284a48f54da625b6c347122aec"
+}

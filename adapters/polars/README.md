@@ -119,6 +119,14 @@ signed, so these methods refuse a receiver longer than `i64::MAX` with a
 `ConversionError` before the call. That length can only come from 0093's
 shared-buffer appends.
 
+Float checks (record 0098): `Float32Chunked` and `Float64Chunked` have
+`is_nan()`, `is_not_nan()`, `is_finite()` and `is_infinite()`, which return a
+`BooleanChunked`. A null stays null in each result. `is_not_nan` is true on
+infinities, but `is_finite` is false on them. `none_to_nan()` replaces nulls
+with a valid NaN and leaves every other value's bits alone. `to_canonical()`
+turns −0.0 into +0.0 and every NaN into the canonical quiet NaN, and keeps
+nulls. Each returns a new array the script owns.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the

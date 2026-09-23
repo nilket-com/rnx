@@ -841,6 +841,60 @@ path = "polars_core::chunked_array::ChunkedArray::tail"
 params = ["core::option::Option<usize>"]
 cite = "polars-core 0.55.2 chunked_array/ops/chunkops.rs:299-308 (slice(-(len as i64), len), len = min(len or 10, self.len())); slice at :252, slice_offsets at utils/mod.rs:340-357"
 
+# Record 0098: six float methods whose only unprovable impl bound is the
+# external `T::Native: num_traits::float::Float` (and `Canonical` for
+# to_canonical, a polars trait implemented for f32/f64 at float.rs:57-68).
+# f32 and f64 implement num_traits Float. Discharged for Float32/Float64 only;
+# `T: PolarsFloatType` is still proven (and rejects the other families).
+[[external_bounds]]
+key = "polars_core:3546"
+path = "polars_core::chunked_array::ChunkedArray::is_nan"
+ret = "polars_core::datatypes::BooleanChunked"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:16-21 (is_nan bitmap with the input validity); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3547"
+path = "polars_core::chunked_array::ChunkedArray::is_not_nan"
+ret = "polars_core::datatypes::BooleanChunked"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:22-28 (is_not_nan bitmap with the input validity); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3548"
+path = "polars_core::chunked_array::ChunkedArray::is_finite"
+ret = "polars_core::datatypes::BooleanChunked"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:29-31 (unary_elementwise_values, x.is_finite()); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3549"
+path = "polars_core::chunked_array::ChunkedArray::is_infinite"
+ret = "polars_core::datatypes::BooleanChunked"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:32-34 (unary_elementwise_values, x.is_infinite()); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3550"
+path = "polars_core::chunked_array::ChunkedArray::none_to_nan"
+ret = "Self"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:36-43 (set_at_nulls with T::Native::nan()); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3554"
+path = "polars_core::chunked_array::ChunkedArray::to_canonical"
+ret = "Self"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"]
+discharge = ["T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:71-78 (unary_elementwise_values, v.canonical()); Canonical for f32/f64 at float.rs:57-68; impl<T: PolarsFloatType> where T::Native: Float + Canonical at float.rs:71-75"
+
 # Record 0093: usize results proven to be a length of, or index into, a Vec or
 # IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
 # read-back converts with a range check. ChunkedArray lengths are NOT here:
