@@ -791,6 +791,25 @@ types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type"
 natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
 cite = "polars-core 0.55.2 series/arithmetic/borrowed.rs:836-843; polars-compute arithmetic signed.rs:80-82, unsigned.rs:68-70 (wrapping_sub), float.rs:59-65"
 
+# Record 0095: left division and remainder. Integer zero denominators are
+# masked to null and never divided (signed: wrapping_floor_div_mod returns
+# (0, 0), MIN / -1 wraps; unsigned: guarded); floats are IEEE. Probed on all
+# ten types in debug and release (probes/0095).
+[[method_scalar_generics]]
+key = "polars_core:3722"
+path = "polars_core::chunked_array::ChunkedArray::lhs_div"
+generic = "N"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-core 0.55.2 series/arithmetic/borrowed.rs:845-849 (legacy_div_scalar_lhs); polars-compute 0.55.2 arithmetic/mod.rs:65-76, signed.rs:131-140, unsigned.rs:97-106, float.rs:117-119 (true division); polars-utils floor_divmod.rs:39-68"
+[[method_scalar_generics]]
+key = "polars_core:3723"
+path = "polars_core::chunked_array::ChunkedArray::lhs_rem"
+generic = "N"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-core 0.55.2 series/arithmetic/borrowed.rs:852-856 (wrapping_mod_scalar_lhs); polars-compute 0.55.2 arithmetic/signed.rs:199-208, unsigned.rs:127-136, float.rs:101-103 (lhs - x * floor(lhs / x)); polars-utils floor_divmod.rs:39-68"
+
 # Record 0093: usize results proven to be a length of, or index into, a Vec or
 # IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
 # read-back converts with a range check. ChunkedArray lengths are NOT here:

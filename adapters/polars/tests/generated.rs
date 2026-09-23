@@ -132,15 +132,53 @@ fn a_wrong_feature_set_under_the_right_configuration_is_refused() {
 /// and leaves its pairs unresolved.
 #[test]
 fn a_mispaired_scalar_native_emits_no_binding() {
+	let (surface, functions) = generate_with_natives("polars_core:3719", "[\"i64\", \"i16\", \"i32\", \"i64\", \"u8\", \"u16\", \"u32\", \"u64\", \"f32\", \"f64\"", "mispaired-native");
+	let entry = surface["entries"].as_array().unwrap().iter().find(|e| e["key"] == "polars_core:3719").unwrap();
+	assert_eq!(entry["status"], "unsupported", "{entry}");
+	for p in surface["instantiation"]["pairs"].as_array().unwrap().iter().filter(|p| p["key"] == "polars_core:3719") {
+		assert!(p["disposition"].as_str().unwrap().starts_with("unresolved"), "{p}");
+	}
+	assert!(!functions.contains("lhs_sub"), "no lhs_sub binding text");
+	// record 0095: the same fail-closed check guards lhs_div, and one bad entry does not touch its neighbour
+	let (surface, functions) = generate_with_natives("polars_core:3722", "[\"i64\", \"i16\", \"i32\", \"i64\", \"u8\", \"u16\", \"u32\", \"u64\", \"f32\", \"f64\"", "mispaired-native-div");
+	let entry = surface["entries"].as_array().unwrap().iter().find(|e| e["key"] == "polars_core:3722").unwrap();
+	assert_eq!(entry["status"], "unsupported", "{entry}");
+	assert!(!functions.contains("lhs_div"), "no lhs_div binding text");
+	assert_eq!(functions.matches("#[rune::function(instance, path = lhs_rem)]").count(), 10, "lhs_rem is unaffected");
+}
+
+/// Record 0095: a type left out of the entry is refused by name while the
+/// listed types still bind.
+#[test]
+fn an_unlisted_scalar_type_is_refused_by_name() {
 	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
-	let at = shipped.find("key = \"polars_core:3719\"").expect("the lhs_sub entry");
+	let at = shipped.find("key = \"polars_core:3723\"").expect("the lhs_rem entry");
+	let entry = &shipped[at..at + shipped[at..].find("cite = ").unwrap()];
+	let fixed = entry.replace("\"polars_core::datatypes::Int64Type\", ", "").replace("\"i64\", ", "");
+	assert_ne!(fixed, entry, "the Int64 pair was listed");
+	let (surface, functions) = generate_release(&shipped.replacen(entry, &fixed, 1), "unlisted-scalar-type");
+	let entry = surface["entries"].as_array().unwrap().iter().find(|e| e["key"] == "polars_core:3723").unwrap();
+	assert_eq!(entry["status"], "generated", "{entry}");
+	assert_eq!(functions.matches("#[rune::function(instance, path = lhs_rem)]").count(), 9, "nine listed types still bind");
+	assert!(!functions.contains("lhs_rem_polars_core__datatypes__int64chunked"), "no Int64 lhs_rem binding");
+	let int64 = surface["instantiation"]["pairs"].as_array().unwrap().iter().find(|p| p["key"] == "polars_core:3723" && p["alias"].as_str().is_some_and(|a| a.ends_with("::Int64Chunked"))).expect("the Int64 pair");
+	assert!(!int64["disposition"].as_str().unwrap().starts_with("proven"), "{int64}");
+}
+
+fn generate_with_natives(key: &str, natives: &str, dir: &str) -> (serde_json::Value, String) {
+	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
+	let at = shipped.find(&format!("key = \"{key}\"")).expect("the entry");
 	let from = at + shipped[at..].find("natives = [").unwrap();
 	let to = from + shipped[from..].find(']').unwrap();
-	let bad = format!("{}natives = [\"i64\", \"i16\", \"i32\", \"i64\", \"u8\", \"u16\", \"u32\", \"u64\", \"f32\", \"f64\"{}", &shipped[..from], &shipped[to..]);
-	let dir = root().join("target/0073/mispaired-native");
+	generate_release(&format!("{}natives = {natives}{}", &shipped[..from], &shipped[to..]), dir)
+}
+
+/// Runs the real generator on a modified copy of the shipped release file.
+fn generate_release(release: &str, name: &str) -> (serde_json::Value, String) {
+	let dir = root().join("target/0073").join(name);
 	let _ = std::fs::remove_dir_all(&dir);
 	std::fs::create_dir_all(&dir).unwrap();
-	std::fs::write(dir.join("release.toml"), bad).unwrap();
+	std::fs::write(dir.join("release.toml"), release).unwrap();
 	let status = Command::new("cargo")
 		.args(["run", "-q", "--locked", "--manifest-path"])
 		.arg(root().join("tools/polars-gen/Cargo.toml"))
@@ -153,14 +191,8 @@ fn a_mispaired_scalar_native_emits_no_binding() {
 		.status()
 		.expect("run polars-gen");
 	assert!(status.success());
-	let surface: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("surface.json")).unwrap()).unwrap();
-	let entry = surface["entries"].as_array().unwrap().iter().find(|e| e["key"] == "polars_core:3719").unwrap();
-	assert_eq!(entry["status"], "unsupported", "{entry}");
-	for p in surface["instantiation"]["pairs"].as_array().unwrap().iter().filter(|p| p["key"] == "polars_core:3719") {
-		assert!(p["disposition"].as_str().unwrap().starts_with("unresolved"), "{p}");
-	}
-	let functions = std::fs::read_to_string(dir.join("src/generated/functions.rs")).unwrap();
-	assert!(!functions.contains("lhs_sub"), "no lhs_sub binding text");
+	let surface = serde_json::from_str(&std::fs::read_to_string(dir.join("surface.json")).unwrap()).unwrap();
+	(surface, std::fs::read_to_string(dir.join("src/generated/functions.rs")).unwrap())
 }
 
 /// Record 0076 gate 2 controls on the committed surface: the deref route

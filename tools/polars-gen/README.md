@@ -149,6 +149,11 @@ path keeps the checked integer rule. The oracle formats a listed return as
 hex and passes the Rust side's `2u64` as the token `"0000000000000002"`.
 The categorical receiver fixtures live in `support::categorical_fixtures`.
 
+Record 0095 adds `lhs_div` and `lhs_rem` as two more
+`[[method_scalar_generics]]` entries on the same ten types and natives. No
+generator rule changed. Their zero, null, `MIN / -1` and float behaviour was
+probed on every type in debug and release (`probes/0095`).
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an
