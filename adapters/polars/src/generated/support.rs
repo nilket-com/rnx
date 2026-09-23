@@ -171,7 +171,62 @@ pub(crate) fn below_idx_max(v: usize, method: &str, param: &str) -> Result<usize
 pub(crate) fn widen<T: TryInto<i64> + std::fmt::Display + Copy>(v: T, method: &str) -> Result<i64, Error> {
 	v.try_into().map_err(|_| Error::conversion(&format!("{method}: {v} does not fit a script integer")))
 }
-/// Record 0086: the length of a script vector, without copying it.
+/// Record 0094: a categorical hash as its exact token, 16 lowercase
+/// hexadecimal digits, so every `u64` reaches the script unchanged.
+pub(crate) fn hash_token(v: u64) -> String {
+	format!("{v:016x}")
+}
+/// Record 0094: a hash token back to its `u64`. Only the canonical form is
+/// accepted (exactly 16 ASCII digits `0-9a-f`, no prefix or sign); anything
+/// else is a `ConversionError` before Polars sees a value.
+pub(crate) fn hash_from_token(s: &str, method: &str) -> Result<u64, Error> {
+	let b = s.as_bytes();
+	if b.len() == 16 && b.iter().all(|c| matches!(c, b'0'..=b'9' | b'a'..=b'f')) {
+		return Ok(b.iter().fold(0u64, |acc, c| (acc << 4) | u64::from(if c.is_ascii_digit() { c - b'0' } else { c - b'a' + 10 })));
+	}
+	let shown: String = s.chars().take(24).collect();
+	let more = if s.chars().count() > 24 { "..." } else { "" };
+	Err(Error::conversion(&format!("{method}: hash must be 16 lowercase hex digits, got {shown:?}{more}")))
+}
+
+/// Record 0094: receiver fixtures for the categorical hash methods. Polars
+/// hands these out as `Arc`s from registries that keep only weak
+/// references; the wrappers own the value, so each fixture is built and
+/// unwrapped under one lock, which leaves no other strong reference for a
+/// concurrent build to share. The names are fixed so both sides of a paired
+/// case hash alike; the mapping's lookup hasher has a fixed seed for the
+/// same reason.
+#[cfg(feature = "test-support")]
+pub mod categorical_fixtures {
+	use polars_dtype::categorical::{CategoricalMapping, CategoricalPhysical, Categories, FrozenCategories};
+	use polars_utils::aliases::{PlSeedableRandomStateQuality, SeedableFromU64SeedExt};
+	use std::sync::{Arc, Mutex};
+	static BUILD: Mutex<()> = Mutex::new(());
+	/// A named `Categories`; its stable hash is in the upper half of `u64`.
+	pub fn categories() -> Categories {
+		let _g = BUILD.lock().unwrap_or_else(|e| e.into_inner());
+		Arc::try_unwrap(Categories::new("rnx-0094-5".into(), "rnx".into(), CategoricalPhysical::U32)).unwrap_or_else(|_| panic!("fixture: categories are shared"))
+	}
+	/// Two frozen categories; the combined hash is in the upper half of `u64`.
+	pub fn frozen_categories() -> FrozenCategories {
+		let _g = BUILD.lock().unwrap_or_else(|e| e.into_inner());
+		Arc::try_unwrap(FrozenCategories::new(["rnx-0094-5", "b"]).expect("fixture: unique strings")).unwrap_or_else(|_| panic!("fixture: frozen categories are shared"))
+	}
+	/// The lookup hasher every mapping fixture uses.
+	pub fn lookup_hasher() -> PlSeedableRandomStateQuality {
+		PlSeedableRandomStateQuality::seed_from_u64(94)
+	}
+	/// A mapping holding `rnx-0094-2` (id 0; stored and lookup hashes in the
+	/// upper half) and `rnx-0094-1` (id 1; both in the lower half), room for 16.
+	pub fn mapping() -> CategoricalMapping {
+		let m = CategoricalMapping::with_hasher(16, lookup_hasher());
+		m.insert_cat("rnx-0094-2").expect("fixture: insert");
+		m.insert_cat("rnx-0094-1").expect("fixture: insert");
+		m
+	}
+}
+
+
 pub(crate) fn vec_len(value: &rune::Value, name: &str) -> Result<usize, Error> {
 	value.borrow_ref::<rune::runtime::Vec>().map(|v| v.len()).map_err(|_| Error::conversion(&format!("{name}: expected a vector")))
 }
@@ -704,6 +759,26 @@ mod bits_tests {
 		let wrong = bitmap_from_bools(&rune::to_value(vec![rune::to_value(1i64).unwrap()]).unwrap(), "m", None).unwrap_err();
 		assert_eq!(wrong.0, "ConversionError");
 		assert_eq!(depth().0, 0);
+	}
+
+	#[test]
+	fn hash_tokens_are_exact_and_strict() {
+		for v in [0u64, 1, i64::MAX as u64, i64::MAX as u64 + 1, u64::MAX, 0x0123_4567_89ab_cdef] {
+			let t = hash_token(v);
+			assert_eq!(t.len(), 16);
+			assert_eq!(t, format!("{v:016x}"));
+			assert_eq!(hash_from_token(&t, "m").unwrap(), v, "{t}");
+		}
+		assert_eq!(hash_token(0), "0000000000000000");
+		assert_eq!(hash_token(u64::MAX), "ffffffffffffffff");
+		assert_eq!(hash_token(i64::MAX as u64 + 1), "8000000000000000");
+		for bad in ["", "0", "000000000000000", "00000000000000000", "FFFFFFFFFFFFFFFF", "0x00000000000000", "+000000000000000", "-000000000000001", " 000000000000000", "000000000000000g", "00000000000000é", "０000000000000000"] {
+			let e = hash_from_token(bad, "m").unwrap_err();
+			assert_eq!(e.0, "ConversionError", "{bad:?}");
+			assert!(e.1.starts_with("m: hash must be 16 lowercase hex digits"), "{bad:?}: {}", e.1);
+		}
+		let long = hash_from_token(&"a".repeat(1000), "m").unwrap_err().1;
+		assert_eq!(long, format!("m: hash must be 16 lowercase hex digits, got {:?}...", "a".repeat(24)), "a long token is shown truncated");
 	}
 
 	#[test]

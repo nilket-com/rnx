@@ -1,5 +1,5 @@
 {
-  "cases": 2234,
+  "cases": 2251,
   "results": [
     {
       "detail": "false",
@@ -10786,6 +10786,142 @@
       "unordered": false
     },
     {
+      "detail": "e6acb8345c472361",
+      "id": "polars_dtype__categorical__categories__hash",
+      "path": "polars_dtype::categorical::Categories::hash",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rnx-0094-5",
+      "id": "polars_dtype__categorical__categories__name",
+      "path": "polars_dtype::categorical::Categories::name",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "rnx",
+      "id": "polars_dtype__categorical__categories__namespace",
+      "path": "polars_dtype::categorical::Categories::namespace",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "U32",
+      "id": "polars_dtype__categorical__categories__physical",
+      "path": "polars_dtype::categorical::Categories::physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "908462c41b6455c3",
+      "id": "polars_dtype__categorical__frozencategories__hash",
+      "path": "polars_dtype::categorical::FrozenCategories::hash",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "U8",
+      "id": "polars_dtype__categorical__frozencategories__physical",
+      "path": "polars_dtype::categorical::FrozenCategories::physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__cat_to_hash",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_hash",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__cat_to_str",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_str",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__get_cat",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::get_cat",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__get_cat_with_hash",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::get_cat_with_hash",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "2",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__insert_cat",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::insert_cat",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "2",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__insert_cat_with_hash",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::insert_cat_with_hash",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=CategoricalMapping { max_categories: 16, upper_bound: 2 };ret=false",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__is_empty",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::is_empty",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=CategoricalMapping { max_categories: 16, upper_bound: 2 };ret=2",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__len",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::len",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "16",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__max_categories",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::max_categories",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "2",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__num_cats_upper_bound",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::num_cats_upper_bound",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=CategoricalMapping { max_categories: 2, upper_bound: 2 };ret=()",
+      "id": "polars_dtype__categorical__mapping__categoricalmapping__set_max_categories",
+      "path": "polars_dtype::categorical::mapping::CategoricalMapping::set_max_categories",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "ControllerConfig { window: 1s, init_byte_budget: 33554432, floor_byte_budget: 8388608, request_budget: 512, control_interval: 100ms, budget_resize_threshold: 0.05 }",
       "id": "polars_io__cloud__concurrency__concurrencycontroller__config",
       "path": "polars_io::cloud::concurrency::ConcurrencyController::config",
@@ -11618,7 +11754,7 @@
       "unordered": false
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
       "id": "polars_lazy__frame__lazyframe__unique",
       "path": "polars_lazy::frame::LazyFrame::unique",
       "policy": "unordered: default arguments [Polars documents unique as order-unspecified unless maintain_order is set]",
@@ -11626,7 +11762,7 @@
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
@@ -17877,8 +18013,8 @@
   "tally": {
     "both_error": 98,
     "both_panic": 17,
-    "match": 2117,
+    "match": 2134,
     "row_order_differs": 2
   },
-  "verified": 2234
+  "verified": 2251
 }

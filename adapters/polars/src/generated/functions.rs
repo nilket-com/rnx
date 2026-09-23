@@ -5241,9 +5241,9 @@ fn f_7c8f6fc7_s_polars_dtype__categorical__categoricalphysical(this: &W_polars_d
 #[rune::function(free, path = W_polars_dtype__categorical__CategoricalPhysical::smallest_physical)]
 fn f_9db68486_l_polars_dtype__categorical__categoricalphysical(num_cats: i64) -> Result<W_polars_dtype__categorical__CategoricalPhysical, Error> { let __r = <polars_dtype::categorical::CategoricalPhysical>::smallest_physical(support::narrow::<usize>(num_cats, "num_cats")?); Ok({ let __r = __r.map_err(Error::from)?; W_polars_dtype__categorical__CategoricalPhysical(__r) }) }
 /// A stable hash of this Categories object, not the contained categories.
-/// Polars: `polars_dtype::categorical::Categories::hash`. hash() -> int (checked into range) (fallible)
+/// Polars: `polars_dtype::categorical::Categories::hash`. hash() -> string (a hash token: 16 lowercase hex digits)
 #[rune::function(instance, path = hash)]
-fn f_9335d54b_ries__hash_polars_dtype__categorical__categories(this: &W_polars_dtype__categorical__Categories) -> Result<i64, Error> { let __r = <polars_dtype::categorical::Categories>::hash(&this.0); Ok(support::widen::<u64>(__r, "hash")?) }
+fn f_9335d54b_ries__hash_polars_dtype__categorical__categories(this: &W_polars_dtype__categorical__Categories) -> String { let __r = <polars_dtype::categorical::Categories>::hash(&this.0); support::hash_token(__r) }
 /// The name of this Categories object.
 /// Polars: `polars_dtype::categorical::Categories::name`. name() -> string
 #[rune::function(instance, path = name)]
@@ -5257,17 +5257,17 @@ fn f_ffb95af8__namespace_polars_dtype__categorical__categories(this: &W_polars_d
 #[rune::function(instance, path = physical)]
 fn f_01bb8b27___physical_polars_dtype__categorical__categories(this: &W_polars_dtype__categorical__Categories) -> W_polars_dtype__categorical__CategoricalPhysical { let __r = <polars_dtype::categorical::Categories>::physical(&this.0); W_polars_dtype__categorical__CategoricalPhysical(__r) }
 /// A stable hash of the categories.
-/// Polars: `polars_dtype::categorical::FrozenCategories::hash`. hash() -> int (checked into range) (fallible)
+/// Polars: `polars_dtype::categorical::FrozenCategories::hash`. hash() -> string (a hash token: 16 lowercase hex digits)
 #[rune::function(instance, path = hash)]
-fn f_c647d91d_hash_polars_dtype__categorical__frozencategories(this: &W_polars_dtype__categorical__FrozenCategories) -> Result<i64, Error> { let __r = <polars_dtype::categorical::FrozenCategories>::hash(&this.0); Ok(support::widen::<u64>(__r, "hash")?) }
+fn f_c647d91d_hash_polars_dtype__categorical__frozencategories(this: &W_polars_dtype__categorical__FrozenCategories) -> String { let __r = <polars_dtype::categorical::FrozenCategories>::hash(&this.0); support::hash_token(__r) }
 /// The physical dtype of the category ids.
 /// Polars: `polars_dtype::categorical::FrozenCategories::physical`. physical() -> CategoricalPhysical
 #[rune::function(instance, path = physical)]
 fn f_529fe702_ical_polars_dtype__categorical__frozencategories(this: &W_polars_dtype__categorical__FrozenCategories) -> W_polars_dtype__categorical__CategoricalPhysical { let __r = <polars_dtype::categorical::FrozenCategories>::physical(&this.0); W_polars_dtype__categorical__CategoricalPhysical(__r) }
 /// Try to convert a categorical id to the hash of its corresponding string, returning None if the string is not in the data structure.
-/// Polars: `polars_dtype::categorical::mapping::CategoricalMapping::cat_to_hash`. cat_to_hash(cat: int) -> option of int (checked into range) (fallible)
+/// Polars: `polars_dtype::categorical::mapping::CategoricalMapping::cat_to_hash`. cat_to_hash(cat: int) -> option of string (a hash token: 16 lowercase hex digits) (fallible)
 #[rune::function(instance, path = cat_to_hash)]
-fn f_904f5f9d__dtype__categorical__mapping__categoricalmapping(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, cat: i64) -> Result<Option<i64>, Error> { let __r = <polars_dtype::categorical::CategoricalMapping>::cat_to_hash(&this.0, support::narrow::<u32>(cat, "cat")?); Ok(match __r { Some(__r) => Some(support::widen::<u64>(__r, "cat_to_hash")?), None => None }) }
+fn f_904f5f9d__dtype__categorical__mapping__categoricalmapping(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, cat: i64) -> Result<Option<String>, Error> { let __r = <polars_dtype::categorical::CategoricalMapping>::cat_to_hash(&this.0, support::narrow::<u32>(cat, "cat")?); Ok(match __r { Some(__r) => Some(support::hash_token(__r)), None => None }) }
 /// Try to convert a categorical id to its corresponding string, returning None if the string is not in the data structure.
 /// Polars: `polars_dtype::categorical::mapping::CategoricalMapping::cat_to_str`. cat_to_str(cat: int) -> option of string (fallible)
 #[rune::function(instance, path = cat_to_str)]
@@ -5277,17 +5277,17 @@ fn f_68357a93__dtype__categorical__mapping__categoricalmapping(this: &W_polars_d
 #[rune::function(instance, path = get_cat)]
 fn f_73a9899b__dtype__categorical__mapping__categoricalmapping(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str) -> Option<i64> { let __r = <polars_dtype::categorical::CategoricalMapping>::get_cat(&this.0, s); match __r { Some(__r) => Some((__r as i64)), None => None } }
 /// Same as get_cat, but with the hash pre-computed.
-/// Polars: `polars_dtype::categorical::mapping::CategoricalMapping::get_cat_with_hash`. get_cat_with_hash(s: string, hash: int) -> option of int (fallible)
+/// Polars: `polars_dtype::categorical::mapping::CategoricalMapping::get_cat_with_hash`. get_cat_with_hash(s: string, hash: string (a hash token: 16 lowercase hex digits)) -> option of int (fallible)
 #[rune::function(instance, path = get_cat_with_hash)]
-fn f_e2c067f8__dtype__categorical__mapping__categoricalmapping(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str, hash: i64) -> Result<Option<i64>, Error> { let __r = <polars_dtype::categorical::CategoricalMapping>::get_cat_with_hash(&this.0, s, support::narrow::<u64>(hash, "hash")?); Ok(match __r { Some(__r) => Some((__r as i64)), None => None }) }
+fn f_e2c067f8__dtype__categorical__mapping__categoricalmapping(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str, hash: &str) -> Result<Option<i64>, Error> { let __hash_hash = support::hash_from_token(hash, "get_cat_with_hash")?; let __r = <polars_dtype::categorical::CategoricalMapping>::get_cat_with_hash(&this.0, s, __hash_hash); Ok(match __r { Some(__r) => Some((__r as i64)), None => None }) }
 /// Convert a string to a categorical id.
 /// Polars: `polars_dtype::categorical::mapping::CategoricalMapping::insert_cat`. insert_cat(s: string) -> result of int (fallible)
 #[rune::function(instance, path = insert_cat)]
 fn f_59366fa9__dtype__categorical__mapping__categoricalmapping(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str) -> Result<i64, Error> { let __r = <polars_dtype::categorical::CategoricalMapping>::insert_cat(&this.0, s); Ok({ let __r = __r.map_err(Error::from)?; (__r as i64) }) }
 /// Same as to_cat, but with the hash pre-computed.
-/// Polars: `polars_dtype::categorical::mapping::CategoricalMapping::insert_cat_with_hash`. insert_cat_with_hash(s: string, hash: int) -> result of int (fallible)
+/// Polars: `polars_dtype::categorical::mapping::CategoricalMapping::insert_cat_with_hash`. insert_cat_with_hash(s: string, hash: string (a hash token: 16 lowercase hex digits)) -> result of int (fallible)
 #[rune::function(instance, path = insert_cat_with_hash)]
-fn f_faa7a6ca__dtype__categorical__mapping__categoricalmapping(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str, hash: i64) -> Result<i64, Error> { let __r = <polars_dtype::categorical::CategoricalMapping>::insert_cat_with_hash(&this.0, s, support::narrow::<u64>(hash, "hash")?); Ok({ let __r = __r.map_err(Error::from)?; (__r as i64) }) }
+fn f_faa7a6ca__dtype__categorical__mapping__categoricalmapping(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str, hash: &str) -> Result<i64, Error> { let __hash_hash = support::hash_from_token(hash, "insert_cat_with_hash")?; let __r = <polars_dtype::categorical::CategoricalMapping>::insert_cat_with_hash(&this.0, s, __hash_hash); Ok({ let __r = __r.map_err(Error::from)?; (__r as i64) }) }
 /// Polars: `polars_dtype::categorical::mapping::CategoricalMapping::is_empty`. is_empty() -> bool
 #[rune::function(instance, path = is_empty)]
 fn f_1ad84ab3__dtype__categorical__mapping__categoricalmapping(this: &mut W_polars_dtype__categorical__mapping__CategoricalMapping) -> bool { let __r = <polars_dtype::categorical::CategoricalMapping>::is_empty(&mut this.0); __r }

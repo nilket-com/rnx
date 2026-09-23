@@ -824,3 +824,41 @@ cite = "polars-core 0.55.2 frame/mod.rs:451-457: the maximum of the columns' n_c
 key = "polars_core:7598"
 path = "polars_core::frame::dataframe::DataFrame::first_col_n_chunks"
 cite = "polars-core 0.55.2 frame/mod.rs:442-448: the first series column's n_chunks, 0 or 1 otherwise"
+
+# Record 0094: categorical hashes cross the script boundary as exact
+# 16-digit lowercase hex tokens (support::hash_token / hash_from_token).
+# Two hash domains: the stored fixed-state hash (Categories::hash,
+# FrozenCategories::hash, cat_to_hash) and the mapping's seeded lookup hash
+# (the *_with_hash parameters); a token from one is not valid for the other.
+[[hash_tokens]]
+key = "polars_dtype:309"
+path = "polars_dtype::categorical::Categories::hash"
+direction = "return"
+source = "u64"
+cite = "polars-dtype 0.55.2 categorical/mod.rs:188-190: PlFixedStateQuality::default().hash_one(&self.id)"
+[[hash_tokens]]
+key = "polars_dtype:377"
+path = "polars_dtype::categorical::FrozenCategories::hash"
+direction = "return"
+source = "u64"
+cite = "polars-dtype 0.55.2 categorical/mod.rs:309-311: the combined PlFixedStateQuality hash of the strings (mod.rs:249-257)"
+[[hash_tokens]]
+key = "polars_dtype:33"
+path = "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_hash"
+direction = "return"
+source = "Option<u64>"
+cite = "polars-dtype 0.55.2 categorical/mapping.rs:115-117: the stored PlFixedStateQuality hash (mapping.rs:85)"
+[[hash_tokens]]
+key = "polars_dtype:27"
+path = "polars_dtype::categorical::mapping::CategoricalMapping::get_cat_with_hash"
+direction = "parameter"
+param = "hash"
+source = "u64"
+cite = "polars-dtype 0.55.2 categorical/mapping.rs:60-62: str_to_cat lookup under the caller's hash; get_cat passes self.hasher.hash_one(s) (mapping.rs:53-56)"
+[[hash_tokens]]
+key = "polars_dtype:30"
+path = "polars_dtype::categorical::mapping::CategoricalMapping::insert_cat_with_hash"
+direction = "parameter"
+param = "hash"
+source = "u64"
+cite = "polars-dtype 0.55.2 categorical/mapping.rs:73-92: str_to_cat insert under the caller's hash; insert_cat passes self.hasher.hash_one(s) (mapping.rs:66-69)"

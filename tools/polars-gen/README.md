@@ -135,6 +135,20 @@ formats those types with the same check, so a wrapping binding is a
 mismatch. `probes/0093/census.py` classifies every read-back as checked or
 bounded, with its route.
 
+Record 0094's `[[hash_tokens]]` entries (inventory `key`, canonical
+`path`, `direction` `return` or `parameter`, the parameter's name, the
+`source` type `u64` or `Option<u64>`, citation) carry a categorical hash as
+an exact 16-digit lowercase hex token. A return goes through
+`support::hash_token`. A parameter is parsed by `support::hash_from_token`
+before the call and passes the bits to Polars unchanged.
+`hash_token_scope` checks every matching entry before any binding text is
+emitted. A malformed entry refuses the callable. That covers a type
+mismatch, a missing or wrong parameter, a missing citation, an unknown
+direction, or a return entry that names a parameter. An unlisted key or
+path keeps the checked integer rule. The oracle formats a listed return as
+hex and passes the Rust side's `2u64` as the token `"0000000000000002"`.
+The categorical receiver fixtures live in `support::categorical_fixtures`.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

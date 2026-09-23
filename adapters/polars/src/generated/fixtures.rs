@@ -50,6 +50,9 @@ pub mod values {
     pub fn dtype() -> p::DataType { p::DataType::Int64 }
     pub fn field() -> p::Field { p::Field::new("x".into(), p::DataType::Int64) }
     pub fn null_chunked() -> p::NullChunked { p::Series::new_null("x".into(), 2).null().unwrap().clone() }
+    pub fn categories() -> polars_dtype::categorical::Categories { crate::generated::support::categorical_fixtures::categories() }
+    pub fn frozen_categories() -> polars_dtype::categorical::FrozenCategories { crate::generated::support::categorical_fixtures::frozen_categories() }
+    pub fn categorical_mapping() -> polars_dtype::categorical::CategoricalMapping { crate::generated::support::categorical_fixtures::mapping() }
     pub fn group_by() -> p::LazyGroupBy { lf().group_by_stable([p::col("y")]) }
 }
 
@@ -69,6 +72,12 @@ fn fx_dtype() -> W_polars_core__datatypes__dtype__DataType { W_polars_core__data
 fn fx_field() -> W_polars_core__datatypes__field__Field { W_polars_core__datatypes__field__Field(values::field()) }
 #[rune::function(path = null_chunked)]
 fn fx_null_chunked() -> W_polars_core__series__implementations__null__NullChunked { W_polars_core__series__implementations__null__NullChunked(values::null_chunked()) }
+#[rune::function(path = categories)]
+fn fx_categories() -> W_polars_dtype__categorical__Categories { W_polars_dtype__categorical__Categories(values::categories()) }
+#[rune::function(path = frozen_categories)]
+fn fx_frozen_categories() -> W_polars_dtype__categorical__FrozenCategories { W_polars_dtype__categorical__FrozenCategories(values::frozen_categories()) }
+#[rune::function(path = categorical_mapping)]
+fn fx_categorical_mapping() -> W_polars_dtype__categorical__mapping__CategoricalMapping { W_polars_dtype__categorical__mapping__CategoricalMapping(values::categorical_mapping()) }
 #[rune::function(path = group_by)]
 fn fx_group_by() -> LazyGroupBy { LazyGroupBy(values::group_by()) }
 #[rune::function(path = series_bool)]
@@ -229,6 +238,8 @@ pub fn show_w_polars_core__series__ops__nullbehavior(v: &rune::Value) -> Result<
 pub fn show_w_polars_core__series__series_trait__issorted(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__series__series_trait__IsSorted>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_dtype::categorical::CategoricalPhysical` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_dtype__categorical__categoricalphysical(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_dtype__categorical__CategoricalPhysical>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_dtype::categorical::mapping::CategoricalMapping` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_dtype__categorical__mapping__categoricalmapping(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_dtype__categorical__mapping__CategoricalMapping>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::cloud::concurrency::ControllerConfig` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_io__cloud__concurrency__controllerconfig(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__cloud__concurrency__ControllerConfig>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::cloud::concurrency::admission::InFlightBudget` held in a Rune value, for the oracle tests.
@@ -377,6 +388,9 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(fx_dtype)?;
     m.function_meta(fx_field)?;
     m.function_meta(fx_null_chunked)?;
+    m.function_meta(fx_categories)?;
+    m.function_meta(fx_frozen_categories)?;
+    m.function_meta(fx_categorical_mapping)?;
     m.function_meta(fx_group_by)?;
     m.function_meta(fx_series_bool)?;
     m.function_meta(fx_series_str)?;
