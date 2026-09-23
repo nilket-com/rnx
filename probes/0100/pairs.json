@@ -1,0 +1,81 @@
+{
+ "record": "0100",
+ "key": "polars_core:3681",
+ "signature": "pub fn chunks(&self) -> &Vec<ArrayRef>",
+ "source": {
+  "chunks": "polars-core 0.55.2 chunked_array/mod.rs:478-481",
+  "arrays": "datatypes/mod.rs:229-232 (StringType Utf8ViewArray, BinaryType BinaryViewArray, BinaryOffsetType BinaryArray<i64>, BooleanType BooleanArray)"
+ },
+ "boundary_probe": "empty receiver = one empty chunk (1[]); a mid-array empty chunk (append drops it) is covered by support::payload_snapshots_count_chunks_cells_and_bytes",
+ "pairs": [
+  {
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "arrow_array": "BinaryArray<i64>",
+   "before": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>` is not a listed pair",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "arrow_array": "BinaryViewArray",
+   "before": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>` is not a listed pair",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "arrow_array": "BooleanArray",
+   "before": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>` is not a listed pair",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "arrow_array": "ListArray<i64>",
+   "before": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>` is not a listed pair",
+   "after": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>` is not a listed pair",
+   "decision": "refused (List/Struct need nested-value policies: each cell is itself an array or a row of fields)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "arrow_array": "Utf8ViewArray",
+   "before": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>` is not a listed pair",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "arrow_array": "StructArray",
+   "before": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>` is not a listed pair",
+   "after": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>` is not a listed pair",
+   "decision": "refused (List/Struct need nested-value policies: each cell is itself an array or a row of fields)",
+   "oracle": "no case"
+  }
+ ],
+ "counts": {
+  "remaining_pairs": 6,
+  "emitted": 4,
+  "refused": 2,
+  "oracle_match": 4
+ },
+ "refused_proven_pairs": {
+  "before": 158,
+  "after": 154
+ },
+ "unresolved_pool": {
+  "before": 564,
+  "after": 564
+ },
+ "retained_0099_binary_sha256": "81aa89a4b481d8d19116a2f585a23792ba1058cd27df4a44653bc4af4f84d2b1"
+}

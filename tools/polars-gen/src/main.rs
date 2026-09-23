@@ -171,6 +171,16 @@ struct ChunkSnapshot {
 }
 /// Record 0099: the exact canonical return a chunk snapshot maps.
 const CHUNKS_RETURN: &str = "&alloc::vec::Vec<polars_arrow::array::ArrayRef>";
+/// Record 0100: the non-numeric owners a chunk snapshot admits, with their
+/// kind (polars-core datatypes/mod.rs:229-232: Utf8ViewArray,
+/// BinaryViewArray, BinaryArray<i64>, BooleanArray), the support copier,
+/// the script element type, the Arrow array and the oracle's element type.
+const SCALAR_CHUNKS: &[(&str, &str, &str, &str, &str, &str)] = &[
+    ("polars_core::datatypes::BooleanType", "bool", "support::chunk_snapshot_bool", "bool", "polars_arrow::array::BooleanArray", "bool"),
+    ("polars_core::datatypes::StringType", "str", "support::chunk_snapshot_str", "String", "polars_arrow::array::Utf8ViewArray", "alloc::string::String"),
+    ("polars_core::datatypes::BinaryType", "binary", "support::chunk_snapshot_binview", "Vec<i64>", "polars_arrow::array::BinaryViewArray", "alloc::vec::Vec<u8>"),
+    ("polars_core::datatypes::BinaryOffsetType", "binary_offset", "support::chunk_snapshot_binary_offset", "Vec<i64>", "polars_arrow::array::BinaryArray<i64>", "alloc::vec::Vec<u8>"),
+];
 impl ChunkSnapshot {
     /// Fail closed on anything but the cited shape: `&self` with no
     /// parameters or method generics on `ChunkedArray<T>` with exactly
@@ -193,8 +203,8 @@ impl ChunkSnapshot {
             return Err("no listed pair".into());
         }
         for (i, (t, n)) in self.pairs.iter().enumerate() {
-            if !NUMERIC_NATIVES.iter().any(|(nt, nn)| nt == t && nn == n) {
-                return Err(format!("`{t}` with `{n}` is not a numeric type and its native"));
+            if !NUMERIC_NATIVES.iter().any(|(nt, nn)| nt == t && nn == n) && !SCALAR_CHUNKS.iter().any(|(st, sk, ..)| st == t && sk == n) {
+                return Err(format!("`{t}` with `{n}` is not a numeric type and its native, nor a listed scalar owner and its kind"));
             }
             if self.pairs[..i].iter().any(|(u, _)| u == t) {
                 return Err(format!("`{t}` is listed twice"));
@@ -1784,14 +1794,20 @@ fn chunk_snapshot_self_test() {
         ("an owned vector", mk("alloc::vec::Vec<polars_arrow::array::ArrayRef>"), good.clone(), "is not &alloc::vec::Vec"),
         ("another Arrow return", mk("&polars_arrow::array::ArrayRef"), good.clone(), "is not &alloc::vec::Vec"),
         ("no pair", good_c.clone(), entry(vec![], "t"), "no listed pair"),
-        ("a nonnumeric pair", good_c.clone(), entry(pairs(vec![("StringType", "str")]), "t"), "is not a numeric type and its native"),
+        ("an unlisted nonnumeric owner", good_c.clone(), entry(pairs(vec![("StructType", "struct")]), "t"), "is not a numeric type and its native"),
         ("a mispaired native", good_c.clone(), entry(pairs(vec![("Int8Type", "i64")]), "t"), "is not a numeric type and its native"),
         ("a duplicate pair", good_c.clone(), entry(pairs(vec![("Int8Type", "i8"), ("Int8Type", "i8")]), "t"), "is listed twice"),
+        // record 0100: a scalar owner must carry its own kind
+        ("String as binary", good_c.clone(), entry(pairs(vec![("StringType", "binary")]), "t"), "nor a listed scalar owner and its kind"),
+        ("Boolean as a number", good_c.clone(), entry(pairs(vec![("BooleanType", "u8")]), "t"), "nor a listed scalar owner and its kind"),
+        ("List", good_c.clone(), entry(pairs(vec![("ListType", "list")]), "t"), "nor a listed scalar owner and its kind"),
     ] {
         let r = e.check(&c);
         assert!(r.as_ref().is_err_and(|m| m.contains(why)), "{label}: {r:?}");
     }
     let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], iterator_returns: vec![], cow_returns: vec![], free_instantiations: vec![], method_scalar_generics: vec![], bounded_readbacks: vec![], hash_tokens: vec![], null_aware_returns: vec![], sized_self_methods: vec![], external_bounds: vec![], chunk_snapshots: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let scalars = entry(pairs(vec![("BooleanType", "bool"), ("StringType", "str"), ("BinaryType", "binary"), ("BinaryOffsetType", "binary_offset")]), "t");
+    assert!(scalars.check(&good_c).is_ok(), "the four scalar owners with their kinds pass");
     assert!(chunk_snapshot_entry(&release, &good_c).is_none());
     release.chunk_snapshots = vec![good.clone(), good];
     assert!(matches!(chunk_snapshot_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice"));
@@ -1819,6 +1835,12 @@ fn chunk_snapshot_self_test() {
         let (status, reason, f) = emit(key, Some(native));
         assert_eq!(status, "generated", "{key}: {reason}");
         assert!(f.contains("-> Result<Vec<Vec<Option<i64>>>, Error>") && f.contains(&format!("support::chunk_snapshot::<{native}, _>(__r, \"chunks\", |__r| Ok::<_, Error>({elem}))?")), "{key}: {f}");
+    }
+    // record 0100: each scalar kind has its own copier and element type
+    for (kind, copier, elem) in [("bool", "support::chunk_snapshot_bool", "bool"), ("str", "support::chunk_snapshot_str", "String"), ("binary", "support::chunk_snapshot_binview", "Vec<i64>"), ("binary_offset", "support::chunk_snapshot_binary_offset", "Vec<i64>")] {
+        let (status, reason, f) = emit("i8", Some(kind));
+        assert_eq!(status, "generated", "{kind}: {reason}");
+        assert!(f.contains(&format!("-> Result<Vec<Vec<Option<{elem}>>>, Error>")) && f.contains(&format!("{copier}(__r, \"chunks\")?")), "{kind}: {f}");
     }
     for (key, native) in [("owned", Some("i8")), ("nested", Some("i8")), ("one", Some("i8")), ("unscoped", None)] {
         let (status, reason, f) = emit(key, native);
@@ -4271,6 +4293,10 @@ impl World {
                 if !is_chunks {
                     return Err(Unsupported("chunk snapshot", format!("{} is not &Vec<ArrayRef>", t.render())));
                 }
+                // record 0100: a Boolean, string or binary owner has its own copier
+                if let Some((_, kind, copier, elem, _, _)) = SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == native) {
+                    return Ok(Ret { materialize: None, rust_ty: format!("Vec<Vec<Option<{elem}>>>"), conv: format!("{copier}(__r, \"__OP__\")?"), fallible: true, doc: format!("vector of chunks, each a vector of option of {kind} values (copied, chunk boundaries kept, bounded with payload bytes)") });
+                }
                 let e = self.ret(&Ty::Path { path: native.clone(), args: vec![] }, owner, depth + 1)?;
                 if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
                     return Err(Unsupported("chunk snapshot", format!("element {native} is not a scalar")));
@@ -5273,7 +5299,7 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
     let mut pre: String = params.iter().filter(|(_, a)| a.shape.starts_with("callback:")).chain(params.iter().filter(|(_, a)| !a.shape.starts_with("callback:"))).flat_map(|(_, a)| a.pre.iter()).map(|p| format!("{p} ")).collect();
     if commit_receiver { pre.push_str("let mut __work = this.0.clone(); "); }
     // record 0099: the chunk borrow ends with the call, so the copy must happen in it
-    if world.chunk_snapshot.borrow().is_some() && (routed_binding(world, c, Some(owner)) || !ret.conv.starts_with("support::chunk_snapshot::<") || c.receiver != "&self") {
+    if world.chunk_snapshot.borrow().is_some() && (routed_binding(world, c, Some(owner)) || !ret.conv.starts_with("support::chunk_snapshot") || c.receiver != "&self") {
         out.unsupported(c, "chunk snapshot", "needs an unrouted `&self` call and the chunk-snapshot conversion");
         return;
     }
@@ -6235,6 +6261,11 @@ const TYPED_FIXTURES: &[(&str, &str, &str, &str, &[&str])] = &[
     ("polars_core::series::Series", "series_u64", "p::Series::new(\"x\".into(), [1u64, 2, 3])", "crate_oracle::series_repr(v)", &["u64"]),
     // record 0091: values beyond u32 and at u64::MAX, which a script integer cannot spell; feeds no producer
     ("polars_core::series::Series", "series_u64_extremes", "p::Series::new(\"x\".into(), [u64::MAX, 4_294_967_297u64, 1])", "crate_oracle::series_repr(v)", &[]),
+    // record 0100: two chunks each, feeding no producer: multibyte, empty and null strings;
+    // zero, non-UTF-8, empty and null bytes (view and offset binary)
+    ("polars_core::series::Series", "series_str_mixed", "{ let mut s = p::Series::new(\"x\".into(), [Some(\"é日本\"), Some(\"\")]); s.append(&p::Series::new(\"x\".into(), [None, Some(\"z\")])).unwrap(); s }", "crate_oracle::series_repr(v)", &[]),
+    ("polars_core::series::Series", "series_binary_mixed", "{ let mut s = p::Series::new(\"x\".into(), [Some(&b\"\\xc3\\x28\"[..]), Some(&b\"\"[..])]); s.append(&p::Series::new(\"x\".into(), [None, Some(&b\"\\x00\\x00\\xff\"[..])])).unwrap(); s }", "crate_oracle::series_repr(v)", &[]),
+    ("polars_core::series::Series", "series_binary_offset_mixed", "{ let mut s = p::Series::from_any_values_and_dtype(\"x\".into(), &[p::AnyValue::Binary(b\"\\xc3\\x28\"), p::AnyValue::Binary(b\"\")], &p::DataType::BinaryOffset, true).unwrap(); s.append(&p::Series::from_any_values_and_dtype(\"x\".into(), &[p::AnyValue::Null, p::AnyValue::Binary(b\"\\x00\\x00\\xff\")], &p::DataType::BinaryOffset, true).unwrap()).unwrap(); s }", "crate_oracle::series_repr(v)", &[]),
     // record 0098: two chunks of float specials (±0, distinct NaN payloads of both signs, ±inf, nulls); feed no producer
     ("polars_core::series::Series", "series_f64_specials", "{ let mut s = p::Series::new(\"x\".into(), [Some(1.5f64), Some(-0.0), Some(0.0), Some(f64::from_bits(0x7ff8_0000_0000_0001)), None]); s.append(&p::Series::new(\"x\".into(), [Some(f64::NEG_INFINITY), Some(f64::INFINITY), Some(f64::from_bits(0xfff0_0000_0000_0123)), None, Some(-2.5)])).unwrap(); s }", "crate_oracle::series_repr(v)", &[]),
     ("polars_core::series::Series", "series_f32_specials", "{ let mut s = p::Series::new(\"x\".into(), [Some(1.5f32), Some(-0.0), Some(0.0), Some(f32::from_bits(0x7fc0_0001)), None]); s.append(&p::Series::new(\"x\".into(), [Some(f32::NEG_INFINITY), Some(f32::INFINITY), Some(f32::from_bits(0xff80_0123)), None, Some(-2.5)])).unwrap(); s }", "crate_oracle::series_repr(v)", &[]),
@@ -6688,6 +6719,12 @@ impl<'a> Oracle<'a> {
             // record 0099: a listed chunk list frames as the nested options the script receives
             Ty::Ref { inner, .. } if depth == 0 && self.chunk_native.borrow().is_some() && matches!(&**inner, Ty::Path { path, args } if path == "alloc::vec::Vec" && args.len() == 1 && ["polars_arrow::array::ArrayRef", "alloc::boxed::Box<dyn polars_arrow::array::Array>"].contains(&args[0].render().as_str())) => {
                 let n = self.chunk_native.borrow().clone().unwrap();
+                // record 0100: a scalar owner's chunks, as the owned nested options the script receives
+                if let Some((_, _, _, _, array, oracle_elem)) = SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == n) {
+                    let nested = ty::parse(&format!("alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{oracle_elem}>>>"));
+                    let own = match n.as_str() { "bool" => "x", "str" => "x.map(|v| v.to_string())", _ => "x.map(|v| v.to_vec())" };
+                    return self.oracle_fmt(&nested, owner, depth + 1).map(|f| format!("{{ let __r: Vec<Vec<Option<_>>> = __r.iter().map(|a| a.as_any().downcast_ref::<{array}>().expect(\"oracle: a {n} chunk\").iter().map(|x| {own}).collect()).collect(); {f} }}"));
+                }
                 let nested = ty::parse(&format!("alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{n}>>>"));
                 self.oracle_fmt(&nested, owner, depth + 1).map(|f| format!("{{ let __r: Vec<Vec<Option<{n}>>> = __r.iter().map(|a| a.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<{n}>>().expect(\"oracle: a numeric chunk\").iter().map(|x| x.copied()).collect()).collect(); {f} }}"))
             }

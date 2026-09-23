@@ -26,6 +26,9 @@ pub mod values {
     pub fn series_u32() -> p::Series { p::Series::new("x".into(), [1u32, 2, 3]) }
     pub fn series_u64() -> p::Series { p::Series::new("x".into(), [1u64, 2, 3]) }
     pub fn series_u64_extremes() -> p::Series { p::Series::new("x".into(), [u64::MAX, 4_294_967_297u64, 1]) }
+    pub fn series_str_mixed() -> p::Series { { let mut s = p::Series::new("x".into(), [Some("é日本"), Some("")]); s.append(&p::Series::new("x".into(), [None, Some("z")])).unwrap(); s } }
+    pub fn series_binary_mixed() -> p::Series { { let mut s = p::Series::new("x".into(), [Some(&b"\xc3\x28"[..]), Some(&b""[..])]); s.append(&p::Series::new("x".into(), [None, Some(&b"\x00\x00\xff"[..])])).unwrap(); s } }
+    pub fn series_binary_offset_mixed() -> p::Series { { let mut s = p::Series::from_any_values_and_dtype("x".into(), &[p::AnyValue::Binary(b"\xc3\x28"), p::AnyValue::Binary(b"")], &p::DataType::BinaryOffset, true).unwrap(); s.append(&p::Series::from_any_values_and_dtype("x".into(), &[p::AnyValue::Null, p::AnyValue::Binary(b"\x00\x00\xff")], &p::DataType::BinaryOffset, true).unwrap()).unwrap(); s } }
     pub fn series_f64_specials() -> p::Series { { let mut s = p::Series::new("x".into(), [Some(1.5f64), Some(-0.0), Some(0.0), Some(f64::from_bits(0x7ff8_0000_0000_0001)), None]); s.append(&p::Series::new("x".into(), [Some(f64::NEG_INFINITY), Some(f64::INFINITY), Some(f64::from_bits(0xfff0_0000_0000_0123)), None, Some(-2.5)])).unwrap(); s } }
     pub fn series_f32_specials() -> p::Series { { let mut s = p::Series::new("x".into(), [Some(1.5f32), Some(-0.0), Some(0.0), Some(f32::from_bits(0x7fc0_0001)), None]); s.append(&p::Series::new("x".into(), [Some(f32::NEG_INFINITY), Some(f32::INFINITY), Some(f32::from_bits(0xff80_0123)), None, Some(-2.5)])).unwrap(); s } }
     pub fn series_u64_boundary() -> p::Series { p::Series::new("x".into(), [Some(i64::MAX as u64), Some(i64::MAX as u64 + 1), Some(u64::MAX), None]) }
@@ -108,6 +111,12 @@ fn fx_series_u32() -> W_polars_core__series__Series { W_polars_core__series__Ser
 fn fx_series_u64() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u64()) }
 #[rune::function(path = series_u64_extremes)]
 fn fx_series_u64_extremes() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u64_extremes()) }
+#[rune::function(path = series_str_mixed)]
+fn fx_series_str_mixed() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_str_mixed()) }
+#[rune::function(path = series_binary_mixed)]
+fn fx_series_binary_mixed() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_binary_mixed()) }
+#[rune::function(path = series_binary_offset_mixed)]
+fn fx_series_binary_offset_mixed() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_binary_offset_mixed()) }
 #[rune::function(path = series_f64_specials)]
 fn fx_series_f64_specials() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_f64_specials()) }
 #[rune::function(path = series_f32_specials)]
@@ -411,6 +420,9 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(fx_series_u32)?;
     m.function_meta(fx_series_u64)?;
     m.function_meta(fx_series_u64_extremes)?;
+    m.function_meta(fx_series_str_mixed)?;
+    m.function_meta(fx_series_binary_mixed)?;
+    m.function_meta(fx_series_binary_offset_mixed)?;
     m.function_meta(fx_series_f64_specials)?;
     m.function_meta(fx_series_f32_specials)?;
     m.function_meta(fx_series_u64_boundary)?;

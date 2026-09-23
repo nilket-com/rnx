@@ -136,6 +136,17 @@ copying, the chunks plus their cells are checked against the materialize
 bound, one slot each. A `UInt64` value above `i64::MAX` fails the whole call
 with a `ConversionError`.
 
+Record 0100 extends `chunks()` to the Boolean, String, Binary and
+BinaryOffset wrappers:
+- Boolean cells are bools.
+- String cells are owned UTF-8 strings.
+- Binary cells are vectors of byte integers 0 to 255. They stay raw, so zero
+  and non-UTF-8 bytes are kept.
+
+Every payload byte also counts one slot, so the bound covers chunks plus
+cells plus bytes. It counts bytes, not characters. List and Struct chunks are
+still refused.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the
