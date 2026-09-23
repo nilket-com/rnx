@@ -213,6 +213,15 @@ it through `support::chunk_snapshot::<N, _>`, which:
 A routed binding is refused, because the chunk borrow must end inside the
 call. The oracle frames the list as the same nested options.
 
+Record 0100 admits the Boolean, String, Binary and BinaryOffset owners from
+the fixed `SCALAR_CHUNKS` table. Each owner is paired with its kind: `bool`,
+`str`, `binary` or `binary_offset`. Each kind has its own copier
+(`support::chunk_snapshot_{bool,str,binview,binary_offset}`). The copiers
+share one core, which downcasts every chunk with a typed error, then sums
+cells and payload bytes with checked arithmetic. `payload_snapshot_budget`
+checks chunks plus cells plus bytes before any allocation, and the core
+re-counts while copying.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

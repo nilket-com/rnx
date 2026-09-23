@@ -255,8 +255,10 @@ fn external_bound_drift_is_refused_by_name() {
 	assert_eq!(count(&functions, "is_finite"), 2, "the shipped entries bind");
 }
 
-/// Record 0099: the chunk-snapshot gate on the real generator. Without the
-/// Int64 pair nine bind and Int64 is named; a blank citation, or an
+/// Record 0099: the chunk-snapshot gate on the real generator (13 of the
+/// 14 shipped pairs are listed below the one removed). Without the
+/// Int64 pair the others bind and Int64 is named; a String pair given the
+/// binary kind refuses all 16; without Boolean 13 bind; a blank citation, or an
 /// inventory whose `chunks` returns an owned vector, refuses all ten by
 /// name with no binding text.
 #[test]
@@ -270,8 +272,19 @@ fn chunk_snapshot_drift_is_refused_by_name() {
 	let without = shipped[at..cite].replace(", [\"polars_core::datatypes::Int64Type\", \"i64\"]", "");
 	assert_ne!(without, shipped[at..cite]);
 	let (surface, functions) = generate_release(&shipped.replacen(&shipped[at..cite], &without, 1), "chunk-snapshot-unlisted");
-	assert_eq!(count(&functions), 9);
+	assert_eq!(count(&functions), 13);
 	assert!(pairs(&surface).iter().any(|(a, d)| a.ends_with("::Int64Chunked") && d.contains("chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>` is not a listed pair")));
+	// record 0100: a scalar owner with the wrong kind is named; without Boolean, 13 bind
+	let mispaired = shipped[at..cite].replace("[\"polars_core::datatypes::StringType\", \"str\"]", "[\"polars_core::datatypes::StringType\", \"binary\"]");
+	assert_ne!(mispaired, shipped[at..cite]);
+	let (surface, functions) = generate_release(&shipped.replacen(&shipped[at..cite], &mispaired, 1), "chunk-snapshot-mispaired");
+	assert_eq!(count(&functions), 0, "a malformed entry emits no text");
+	assert_eq!(pairs(&surface).iter().filter(|(_, d)| d.contains("is not a numeric type and its native, nor a listed scalar owner and its kind")).count(), 16);
+	let no_bool = shipped[at..cite].replace(", [\"polars_core::datatypes::BooleanType\", \"bool\"]", "");
+	assert_ne!(no_bool, shipped[at..cite]);
+	let (surface, functions) = generate_release(&shipped.replacen(&shipped[at..cite], &no_bool, 1), "chunk-snapshot-no-bool");
+	assert_eq!(count(&functions), 13);
+	assert!(pairs(&surface).iter().any(|(a, d)| a.ends_with("::BooleanChunked") && d.contains("is not a listed pair")));
 	let (surface, functions) = generate_release(&format!("{}cite = \" \"{}", &shipped[..cite], &shipped[end..]), "chunk-snapshot-uncited");
 	assert_eq!(count(&functions), 0, "no binding text");
 	assert_eq!(pairs(&surface).iter().filter(|(_, d)| d.contains("chunk snapshot: no citation")).count(), 16);
