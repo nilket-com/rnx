@@ -906,6 +906,15 @@ path = "polars_core::chunked_array::ChunkedArray::chunks"
 pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
 cite = "polars-core 0.55.2 chunked_array/mod.rs:478-481 (&self.chunks); numeric T::Array = PrimitiveArray<T::Native> via impl_polars_num_datatype at datatypes/mod.rs:181-227; record 0100: String/Binary/BinaryOffset/Boolean arrays Utf8ViewArray, BinaryViewArray, BinaryArray<i64>, BooleanArray at datatypes/mod.rs:229-232, copied with payload bytes counted"
 
+# Record 0101: downcast_get(idx) borrows one chunk as T::Array, or None past
+# the last chunk. The binding copies only that chunk (one chunk slot + cells
+# + payload bytes against the bound); List and Struct stay refused.
+[[indexed_chunk_snapshots]]
+key = "polars_core:3509"
+path = "polars_core::chunked_array::ChunkedArray::downcast_get"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:104-110 (self.chunks.get(idx)? then the T::Array cast); arrays per datatypes/mod.rs:181-232 (records 0099, 0100)"
+
 # Record 0093: usize results proven to be a length of, or index into, a Vec or
 # IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
 # read-back converts with a range check. ChunkedArray lengths are NOT here:
