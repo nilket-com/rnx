@@ -138,6 +138,11 @@ pub(crate) fn copy_slice<T: Clone, U>(slice: &[T], method: &str, mut conv: impl 
 	}
 	Ok(out)
 }
+/// Record 0087: an unsigned count or size as a script integer, refused
+/// rather than wrapped when it exceeds `i64::MAX`.
+pub(crate) fn widen<T: TryInto<i64> + std::fmt::Display + Copy>(v: T, method: &str) -> Result<i64, Error> {
+	v.try_into().map_err(|_| Error::conversion(&format!("{method}: {v} does not fit a script integer")))
+}
 /// Record 0086: the length of a script vector, without copying it.
 pub(crate) fn vec_len(value: &rune::Value, name: &str) -> Result<usize, Error> {
 	value.borrow_ref::<rune::runtime::Vec>().map(|v| v.len()).map_err(|_| Error::conversion(&format!("{name}: expected a vector")))
@@ -669,6 +674,14 @@ mod bits_tests {
 		let wrong = bitmap_from_bools(&rune::to_value(vec![rune::to_value(1i64).unwrap()]).unwrap(), "m", None).unwrap_err();
 		assert_eq!(wrong.0, "ConversionError");
 		assert_eq!(depth().0, 0);
+	}
+
+	#[test]
+	fn counts_widen_with_a_range_check() {
+		assert_eq!(widen::<usize>(7, "m").unwrap(), 7);
+		assert_eq!(widen::<usize>(i64::MAX as usize, "m").unwrap(), i64::MAX);
+		let over = widen::<usize>(i64::MAX as usize + 1, "m").unwrap_err();
+		assert_eq!((over.0.as_str(), over.1.as_str()), ("ConversionError", "m: 9223372036854775808 does not fit a script integer"));
 	}
 
 	#[test]

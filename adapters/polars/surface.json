@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 329,
-    "generated": 2096,
+    "generated": 2097,
     "out_of_scope": 710,
-    "unsupported": 1936
+    "unsupported": 1935
   },
   "entries": [
     {
@@ -10060,95 +10060,178 @@
       "status": "generated"
     },
     {
-      "bucket": "generic",
-      "canonical_path": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
-      "exceptions": [
+      "bindings": [
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__binaryoffsetchunked",
+          "disposition": "case (fixture via producer Series::binary_offset on series_binary_offset)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__binaryoffsetchunked",
           "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryOffsetChunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__binarychunked",
+          "disposition": "case (fixture via producer Series::binary on series_binary)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__binarychunked",
           "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryChunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__booleanchunked",
           "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BooleanChunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__float32chunked",
           "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__float64chunked",
           "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int16chunked",
           "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int32chunked",
           "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int64chunked",
           "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int8chunked",
           "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__listchunked",
+          "disposition": "case (fixture via producer Series::list on series_list)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__listchunked",
           "receiver": "polars_core::datatypes::ListChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ListChunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__stringchunked",
+          "disposition": "case (fixture via producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__stringchunked",
           "receiver": "polars_core::datatypes::StringChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StringChunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__structchunked",
+          "disposition": "case (fixture via producer Series::struct_ on series_struct)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__structchunked",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StructChunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__uint16chunked",
           "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__idxca",
           "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__uint64chunked",
           "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::chunk_lengths"
         },
         {
-          "reason": "unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+          "case_id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__uint8chunked",
           "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "instantiation"
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::chunk_lengths"
         }
       ],
+      "bucket": "generic",
+      "canonical_path": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+      "execution": "case (on 16 of 16 receivers)",
+      "fallible": true,
       "key": "polars_core:3680",
       "kind": "inherent",
-      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
+      "note": "instantiated on 16 of 16 alias identities",
+      "rune": "polars::BinaryOffsetChunked::chunk_lengths polars::BinaryChunked::chunk_lengths polars::BooleanChunked::chunk_lengths polars::Float32Chunked::chunk_lengths polars::Float64Chunked::chunk_lengths polars::Int16Chunked::chunk_lengths polars::Int32Chunked::chunk_lengths polars::Int64Chunked::chunk_lengths polars::Int8Chunked::chunk_lengths polars::ListChunked::chunk_lengths polars::StringChunked::chunk_lengths polars::StructChunked::chunk_lengths polars::UInt16Chunked::chunk_lengths polars::IdxCa::chunk_lengths polars::UInt64Chunked::chunk_lengths polars::UInt8Chunked::chunk_lengths",
       "signature": "() -> polars_core::chunked_array::ChunkLenIter",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -105973,7 +106056,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
@@ -105984,7 +106067,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryChunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
@@ -105995,7 +106078,7 @@
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
@@ -106006,7 +106089,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
@@ -106017,7 +106100,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
@@ -106028,7 +106111,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
@@ -106039,7 +106122,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
@@ -106050,7 +106133,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
@@ -106061,7 +106144,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
@@ -106072,7 +106155,7 @@
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
@@ -106083,7 +106166,7 @@
       },
       {
         "alias": "polars_core::datatypes::StringChunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
@@ -106094,7 +106177,7 @@
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
@@ -106105,7 +106188,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
@@ -106116,7 +106199,7 @@
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
@@ -106127,7 +106210,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
@@ -106138,7 +106221,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
@@ -138495,10 +138578,10 @@
       },
       "pairs": 3544,
       "proven_dispositions": {
-        "emitted": 859,
+        "emitted": 875,
         "excluded": 12,
         "not eligible": 188,
-        "refused": 212
+        "refused": 196
       }
     }
   },
@@ -139831,7 +139914,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2146,
+  "oracle_cases": 2162,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -142849,7 +142932,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "018f559c5d7d8c8faba8a32c4b859ca5185a3331cc5a976dba6dc4bfa6ab2a83",
+    "sha256": "27d9dc6b7e661e170d55ddeec82ea5cc5a000888857e92bfb5c1102870232e2d",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",

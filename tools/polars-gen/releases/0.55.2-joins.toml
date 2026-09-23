@@ -711,3 +711,9 @@ cite = "polars-core 0.55.2 chunked_array/from.rs:186-194; polars-arrow 0.55.2 ar
 path = "polars_core::chunked_array::ChunkedArray::from_bitmap"
 length = "none"
 cite = "polars-core 0.55.2 chunked_array/from.rs:219-225 (the bits are the Boolean values)"
+
+# Record 0087: concrete iterator returns materialized as owned integer vectors.
+[[iterator_returns]]
+path = "polars_core::chunked_array::ChunkedArray::chunk_lengths"
+item = "usize"
+cite = "polars-core 0.55.2 chunked_array/mod.rs:61 (ChunkLenIter = Map<Iter<ArrayRef>, fn(&ArrayRef) -> usize>), :472-475"

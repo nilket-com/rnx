@@ -70,6 +70,15 @@ receiver borrow) and returns `ShapeMismatch` before Polars is called. The
 oracle's mask fixtures are sized by shape (`mask3`, `mask1`). Struct
 receivers are excluded by `[[instantiation.exclude]]`.
 
+Record 0087's `[[iterator_returns]]` entries (path, integer `item`,
+citation) let a listed callable's concrete iterator return, which rustdoc
+records as a `Map` behind an alias such as `ChunkLenIter`, materialize as an
+exact-size iterator inside the call: `support::materialize_exact` refuses an
+over-bound count before consuming anything, and `support::widen` converts
+each item with a range check instead of `as i64`. The oracle frames the
+Rust side by the listed return type. Any other `Map`, and every Arrow array
+return, stays refused.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an
