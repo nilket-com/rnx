@@ -1,0 +1,322 @@
+[
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::BinaryOffsetChunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::BinaryChunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::BooleanChunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::Float32Chunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::Float64Chunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::Int16Chunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::Int32Chunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::Int64Chunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::Int8Chunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::ListChunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::StringChunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::chunked_array::struct_::StructChunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::UInt16Chunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::aliases::IdxCa",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::UInt64Chunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3676",
+  "method": "polars_core::chunked_array::ChunkedArray::iter_validities",
+  "alias": "polars_core::datatypes::UInt8Chunked",
+  "signature": "() -> impl core::iter::traits::exact_size::ExactSizeIterator<Item = core::option::Option<&polars_arrow::bitmap::immutable::Bitmap>> + core::iter::traits::double_ended::DoubleEndedIterator",
+  "audit": "candidate",
+  "before": "refused: unsupported: iterator item: return (unreachable polars type: polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::BinaryOffsetChunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::BinaryChunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::BooleanChunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::Float32Chunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::Float64Chunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::Int16Chunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::Int32Chunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::Int64Chunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::Int8Chunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::ListChunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::StringChunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::chunked_array::struct_::StructChunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::UInt16Chunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::aliases::IdxCa",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::UInt64Chunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3495",
+  "method": "polars_core::chunked_array::ChunkedArray::rechunk_validity",
+  "alias": "polars_core::datatypes::UInt8Chunked",
+  "signature": "() -> core::option::Option<polars_arrow::bitmap::immutable::Bitmap>",
+  "audit": "candidate",
+  "before": "refused: unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+  "after": "emitted",
+  "oracle": "match"
+ }
+]

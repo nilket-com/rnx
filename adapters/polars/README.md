@@ -25,6 +25,13 @@ script passes a vector: owned items are handed over by value, and string or
 byte items are borrowed from the script's values only for the duration of
 the call (`builder.append_values_iter(["a", "bc"])`).
 
+Validity bitmaps (record 0085): `rechunk_validity()` returns an optional
+vector of bools, one per row, and `iter_validities()` a vector with one
+optional vector per chunk. `None` means the chunk has no validity mask (all
+rows valid); it is never an empty vector. The bits are copied under the
+materialize bound, counted across every chunk of one call, and the vectors
+are the script's own.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn
