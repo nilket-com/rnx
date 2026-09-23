@@ -735,6 +735,9 @@ fn f_88d58c22___for_each_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::for_each`. for_each(op: callback) -> unit (fallible)
 #[rune::function(instance, path = for_each)]
 fn f_b88ea59a_y__for_each_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, op: rune::runtime::Function) -> Result<(), Error> { let __cb_op = support::callback::install("UInt8Chunked::for_each", op)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: core::option::Option<u8>| { support::callback::bridge::<_, ()>("UInt8Chunked::for_each", &__cb_op, ({ let __r = __cb_a0; match __r { Some(__r) => Some((__r as i64)), None => None } },)).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::UInt8Chunked::for_each", move || <polars_core::datatypes::UInt8Chunked>::for_each(__arg0, __arg1)).map_err(Error::engine)?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_bitmap`. from_bitmap(name: string, bitmap: vector of bool (a validity mask, copied)) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__BooleanChunked::from_bitmap)]
+fn f_6287e413_om_bitmap_polars_core__datatypes__booleanchunked(name: &str, bitmap: rune::Value) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = <polars_core::datatypes::BooleanChunked>::from_bitmap(p::PlSmallStr::from(name), support::bitmap_from_bools(&bitmap, "BooleanChunked::from_bitmap", None)?); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::from_columns`. from_columns(name: string, length: int, fields: vector of Column) -> result of StructChunked (fallible)
 #[rune::function(free, path = W_polars_core__chunked_array__struct___StructChunked::from_columns)]
 fn f_1843bac0_lars_core__chunked_array__struct___structchunked(name: &str, length: i64, fields: rune::Value) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __t0 = support::borrow_vec(&fields, "fields")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__frame__column__Column>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __arg0 = p::PlSmallStr::from(name); let __arg1 = support::narrow::<usize>(length, "length")?; let __arg2 = &__t0[..]; let __r = crate::engine::run("polars::StructChunked::from_columns", move || <polars::chunked_array::StructChunked>::from_columns(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__chunked_array__struct___StructChunked(__r) }) }
@@ -778,6 +781,46 @@ fn f_6ae50374___from_vec_polars_core__datatypes__uint64chunked(name: &str, v: ru
 /// Polars: `polars_core::chunked_array::ChunkedArray::from_vec`. from_vec(name: string, v: vector of int) -> UInt8Chunked (fallible)
 #[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::from_vec)]
 fn f_5012e7cb_y__from_vec_polars_core__datatypes__uint8chunked(name: &str, v: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::from_vec(p::PlSmallStr::from(name), support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of float, buffer: option of vector of bool (a validity mask, copied)) -> Float32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float32Chunked::from_vec_validity)]
+fn f_1cdfd0a6__validity_polars_core__datatypes__float32chunked(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::Float32Chunked>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "values")?; Ok::<_, Error>((v as f32)) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "Float32Chunked::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of float, buffer: option of vector of bool (a validity mask, copied)) -> Float64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float64Chunked::from_vec_validity)]
+fn f_0e6d6b79__validity_polars_core__datatypes__float64chunked(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::Float64Chunked>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "Float64Chunked::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of int, buffer: option of vector of bool (a validity mask, copied)) -> Int16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::from_vec_validity)]
+fn f_4950bb57_ec_validity_polars_core__datatypes__int16chunked(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::Int16Chunked>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<i16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "Int16Chunked::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of int, buffer: option of vector of bool (a validity mask, copied)) -> Int32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::from_vec_validity)]
+fn f_8942d480_ec_validity_polars_core__datatypes__int32chunked(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::Int32Chunked>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<i32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "Int32Chunked::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of int, buffer: option of vector of bool (a validity mask, copied)) -> Int64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::from_vec_validity)]
+fn f_48d29222_ec_validity_polars_core__datatypes__int64chunked(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::Int64Chunked>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "Int64Chunked::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of int, buffer: option of vector of bool (a validity mask, copied)) -> Int8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::from_vec_validity)]
+fn f_a42a5e13_vec_validity_polars_core__datatypes__int8chunked(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::Int8Chunked>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<i8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "Int8Chunked::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of int, buffer: option of vector of bool (a validity mask, copied)) -> UInt16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::from_vec_validity)]
+fn f_64edc82e_c_validity_polars_core__datatypes__uint16chunked(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::UInt16Chunked>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<u16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "UInt16Chunked::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of int, buffer: option of vector of bool (a validity mask, copied)) -> IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::from_vec_validity)]
+fn f_a03853ae__validity_polars_core__datatypes__aliases__idxca(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::IdxCa>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<u32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "IdxCa::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of int, buffer: option of vector of bool (a validity mask, copied)) -> UInt64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::from_vec_validity)]
+fn f_b186022b_c_validity_polars_core__datatypes__uint64chunked(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::UInt64Chunked>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<u64>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "UInt64Chunked::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// Create a new ChunkedArray from a Vec and a validity mask.
+/// Polars: `polars_core::chunked_array::ChunkedArray::from_vec_validity`. from_vec_validity(name: string, values: vector of int, buffer: option of vector of bool (a validity mask, copied)) -> UInt8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::from_vec_validity)]
+fn f_94de7743_ec_validity_polars_core__datatypes__uint8chunked(name: &str, values: rune::Value, buffer: Option<rune::Value>) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __mask_len = support::vec_len(&values, "values")?; let __r = <polars_core::datatypes::UInt8Chunked>::from_vec_validity(p::PlSmallStr::from(name), support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?, match buffer { Some(v) => Some(support::bitmap_from_bools(&v, "UInt8Chunked::from_vec_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::full_null_like`. full_null_like(ca: BinaryOffsetChunked, length: int) -> BinaryOffsetChunked (fallible)
 #[rune::function(free, path = W_polars_core__datatypes__BinaryOffsetChunked::full_null_like)]
 fn f_45bb2e7b_like_polars_core__datatypes__binaryoffsetchunked(ca: &W_polars_core__datatypes__BinaryOffsetChunked, length: i64) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::full_null_like(&ca.0, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BinaryOffsetChunked(__r)) }
@@ -2434,6 +2477,51 @@ fn f_6fedd6e6_orted_flag_polars_core__datatypes__uint64chunked(this: &mut W_pola
 /// Polars: `polars_core::chunked_array::ChunkedArray::set_sorted_flag`. set_sorted_flag(sorted: IsSorted) -> unit
 #[rune::function(instance, path = set_sorted_flag)]
 fn f_e36b20d8_sorted_flag_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> () { let __r = <polars_core::datatypes::UInt8Chunked>::set_sorted_flag(&mut this.0, sorted.0.clone()); __r }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_70827a08_dity_polars_core__datatypes__binaryoffsetchunked(this: &mut W_polars_core__datatypes__BinaryOffsetChunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::BinaryOffsetChunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "BinaryOffsetChunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_74f62e8e_t_validity_polars_core__datatypes__binarychunked(this: &mut W_polars_core__datatypes__BinaryChunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::BinaryChunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "BinaryChunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_d2f0d327__validity_polars_core__datatypes__booleanchunked(this: &mut W_polars_core__datatypes__BooleanChunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::BooleanChunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "BooleanChunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_4a147754__validity_polars_core__datatypes__float32chunked(this: &mut W_polars_core__datatypes__Float32Chunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Float32Chunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Float32Chunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_8080901a__validity_polars_core__datatypes__float64chunked(this: &mut W_polars_core__datatypes__Float64Chunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Float64Chunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Float64Chunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_346535c1_et_validity_polars_core__datatypes__int16chunked(this: &mut W_polars_core__datatypes__Int16Chunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Int16Chunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Int16Chunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_c1fcbad5_et_validity_polars_core__datatypes__int32chunked(this: &mut W_polars_core__datatypes__Int32Chunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Int32Chunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Int32Chunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_6344dc8f_et_validity_polars_core__datatypes__int64chunked(this: &mut W_polars_core__datatypes__Int64Chunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Int64Chunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Int64Chunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_e8796274_set_validity_polars_core__datatypes__int8chunked(this: &mut W_polars_core__datatypes__Int8Chunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Int8Chunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Int8Chunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_ce629a99_set_validity_polars_core__datatypes__listchunked(this: &mut W_polars_core__datatypes__ListChunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::ListChunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "ListChunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_c143b97d_t_validity_polars_core__datatypes__stringchunked(this: &mut W_polars_core__datatypes__StringChunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::StringChunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "StringChunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_c404dfc0_t_validity_polars_core__datatypes__uint16chunked(this: &mut W_polars_core__datatypes__UInt16Chunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::UInt16Chunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "UInt16Chunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_e2a66e94__validity_polars_core__datatypes__aliases__idxca(this: &mut W_polars_core__datatypes__aliases__IdxCa, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::IdxCa>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "IdxCa::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_ff8f0c2e_t_validity_polars_core__datatypes__uint64chunked(this: &mut W_polars_core__datatypes__UInt64Chunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::UInt64Chunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "UInt64Chunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::set_validity`. set_validity(validity: option of vector of bool (a validity mask, copied)) -> unit (fallible)
+#[rune::function(instance, path = set_validity)]
+fn f_3a9c8bd6_et_validity_polars_core__datatypes__uint8chunked(this: &mut W_polars_core__datatypes__UInt8Chunked, validity: Option<rune::Value>) -> Result<(), Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::UInt8Chunked>::set_validity(&mut this.0, match validity { Some(v) => Some(support::bitmap_from_bools(&v, "UInt8Chunked::set_validity", Some(__mask_len))?), None => None }); Ok(__r) }
 /// Shrink the capacity of this array to fit its length.
 /// Polars: `polars_core::chunked_array::ChunkedArray::shrink_to_fit`. shrink_to_fit() -> unit
 #[rune::function(instance, path = shrink_to_fit)]
@@ -2921,6 +3009,51 @@ fn f_b1f221c2_orted_flag_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::with_sorted_flag`. with_sorted_flag(sorted: IsSorted) -> UInt8Chunked
 #[rune::function(instance, path = with_sorted_flag)]
 fn f_b7b48b8e_sorted_flag_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, sorted: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__datatypes__UInt8Chunked { let __r = <polars_core::datatypes::UInt8Chunked>::with_sorted_flag(&this.0, sorted.0.clone()); W_polars_core__datatypes__UInt8Chunked(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> BinaryOffsetChunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_f0db6a8a_dity_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::BinaryOffsetChunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "BinaryOffsetChunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__BinaryOffsetChunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> BinaryChunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_46a7cfb1_h_validity_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::BinaryChunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "BinaryChunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__BinaryChunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> BooleanChunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_40e7db5e__validity_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::BooleanChunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "BooleanChunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> Float32Chunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_4caa5864__validity_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Float32Chunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Float32Chunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> Float64Chunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_eb2b67b5__validity_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Float64Chunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Float64Chunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> Int16Chunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_58926777_th_validity_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Int16Chunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Int16Chunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> Int32Chunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_e4c6932a_th_validity_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Int32Chunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Int32Chunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> Int64Chunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_46186a9a_th_validity_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Int64Chunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Int64Chunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> Int8Chunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_61860ddd_ith_validity_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::Int8Chunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "Int8Chunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> ListChunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_03214938_ith_validity_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__ListChunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::ListChunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "ListChunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__ListChunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> StringChunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_01355059_h_validity_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::StringChunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "StringChunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__StringChunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> UInt16Chunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_8e6a5dae_h_validity_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::UInt16Chunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "UInt16Chunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> IdxCa (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_7cfe2c65__validity_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::IdxCa>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "IdxCa::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> UInt64Chunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_8b2d011d_h_validity_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::UInt64Chunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "UInt64Chunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::with_validity`. with_validity(validity: option of vector of bool (a validity mask, copied)) -> UInt8Chunked (fallible)
+#[rune::function(instance, path = with_validity)]
+fn f_f038914a_th_validity_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, validity: Option<rune::Value>) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __mask_len = this.0.len(); let __r = <polars_core::datatypes::UInt8Chunked>::with_validity(this.0.clone(), match validity { Some(v) => Some(support::bitmap_from_bools(&v, "UInt8Chunked::with_validity", Some(__mask_len))?), None => None }); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
 /// Combine the validities of two structs.
 /// Polars: `polars_core::chunked_array::ChunkedArray::zip_outer_validity`. zip_outer_validity(other: StructChunked) -> unit
 #[rune::function(instance, path = zip_outer_validity)]
@@ -12622,6 +12755,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_c87c4e46__for_each_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_88d58c22___for_each_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_b88ea59a_y__for_each_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_6287e413_om_bitmap_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_1843bac0_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_74afc3ef__from_vec_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_24d6a163__from_vec_polars_core__datatypes__float64chunked)?;
@@ -12633,6 +12767,16 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_400af4bb__from_vec_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_6ae50374___from_vec_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_5012e7cb_y__from_vec_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_1cdfd0a6__validity_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_0e6d6b79__validity_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_4950bb57_ec_validity_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_8942d480_ec_validity_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_48d29222_ec_validity_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_a42a5e13_vec_validity_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_64edc82e_c_validity_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_a03853ae__validity_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_b186022b_c_validity_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_94de7743_ec_validity_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_45bb2e7b_like_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_a1cfb9fb__null_like_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_fc9d1711_null_like_polars_core__datatypes__booleanchunked)?;
@@ -13086,6 +13230,21 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_59e84479_rted_flag_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_6fedd6e6_orted_flag_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_e36b20d8_sorted_flag_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_70827a08_dity_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_74f62e8e_t_validity_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_d2f0d327__validity_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_4a147754__validity_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_8080901a__validity_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_346535c1_et_validity_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_c1fcbad5_et_validity_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_6344dc8f_et_validity_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_e8796274_set_validity_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_ce629a99_set_validity_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_c143b97d_t_validity_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_c404dfc0_t_validity_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_e2a66e94__validity_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_ff8f0c2e_t_validity_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_3a9c8bd6_et_validity_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_eda00a8d__fit_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_d820f5f7_ink_to_fit_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_aa269f5f_nk_to_fit_polars_core__datatypes__booleanchunked)?;
@@ -13213,6 +13372,21 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_3013acc3_rted_flag_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_b1f221c2_orted_flag_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_b7b48b8e_sorted_flag_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_f0db6a8a_dity_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_46a7cfb1_h_validity_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_40e7db5e__validity_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_4caa5864__validity_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_eb2b67b5__validity_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_58926777_th_validity_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_e4c6932a_th_validity_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_46186a9a_th_validity_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_61860ddd_ith_validity_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_03214938_ith_validity_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_01355059_h_validity_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_8e6a5dae_h_validity_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_7cfe2c65__validity_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_8b2d011d_h_validity_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_f038914a_th_validity_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_6a5930a5_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_21fa0918_d_array__builder__boolean__booleanchunkedbuilder)?;
     m.function_meta(f_56da4a7e_lder__list__anonymous__anonymousownedlistbuilder)?;

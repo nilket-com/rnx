@@ -103,6 +103,10 @@ reason = "Debug output shows runtime state"
 # (record 0077, iterator returns) reach `iter` and `values_iter`.
 [[instantiation.exclude]]
 alias = "StructChunked"
+methods = ["set_validity", "with_validity"]
+cite = "polars-core 0.55.2 chunked_array/mod.rs:619-622 asserts the receiver is not a struct (set_outer_validity instead); record 0086"
+[[instantiation.exclude]]
+alias = "StructChunked"
 methods = ["get", "first", "last", "first_null", "first_non_null", "last_non_null", "iter", "no_null_iter", "for_each", "apply_into_string_amortized"]
 cite = "polars-arrow-0.55.2 array/static_array.rs:52,80 no_call_const on StructArray"
 
@@ -688,3 +692,22 @@ cite = "polars-core 0.55.2 src/chunked_array/mod.rs:845-866; probes/0083/probe B
 path = "polars_plan::dsl::file_scan::FileScanIR::gather_after_filter"
 reason = "surviving_indices must be ascending indices into the pre-filter source list and first_file_dropped must agree with them; Polars indexes the cached metadata directly and FileScanIR does not record the pre-filter length, so a binding cannot validate either (review of record 0084)"
 cite = "polars-plan 0.55.2 src/dsl/file_scan/mod.rs:186-218; polars-mem-engine src/scan_predicate/functions.rs:494-500"
+
+# Record 0086: validity bitmap inputs built from a script Vec<bool>, the
+# length checked before Polars sees it (Polars asserts or panics instead).
+[[bitmap_inputs]]
+path = "polars_core::chunked_array::ChunkedArray::set_validity"
+length = "receiver"
+cite = "polars-core 0.55.2 chunked_array/mod.rs:618-634 (assert_eq!(self.len(), v.len()); Struct asserts)"
+[[bitmap_inputs]]
+path = "polars_core::chunked_array::ChunkedArray::with_validity"
+length = "receiver"
+cite = "polars-core 0.55.2 chunked_array/mod.rs:636-639 (calls set_validity)"
+[[bitmap_inputs]]
+path = "polars_core::chunked_array::ChunkedArray::from_vec_validity"
+length = "values"
+cite = "polars-core 0.55.2 chunked_array/from.rs:186-194; polars-arrow 0.55.2 array/primitive/mod.rs:465-477 (new unwraps try_new's length check)"
+[[bitmap_inputs]]
+path = "polars_core::chunked_array::ChunkedArray::from_bitmap"
+length = "none"
+cite = "polars-core 0.55.2 chunked_array/from.rs:219-225 (the bits are the Boolean values)"

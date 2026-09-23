@@ -41,6 +41,10 @@ struct Release {
     /// optional or as iterator items) is copied into an owned `Vec<bool>`.
     #[serde(default)]
     bitmap_returns: Vec<String>,
+    /// Record 0086: canonical paths whose one `Bitmap` parameter is built
+    /// from a script `Vec<bool>`, with the length it must equal.
+    #[serde(default)]
+    bitmap_inputs: Vec<BitmapInput>,
     /// Record 0079: mutable closure arguments with an audited read-back contract.
     #[serde(default)]
     callback_mutable: Vec<CallbackMutable>,
@@ -107,6 +111,14 @@ struct Unordered {
 struct ExcludedOracle {
     path: String,
     reason: String,
+}
+#[derive(serde::Deserialize, Clone)]
+struct BitmapInput {
+    path: String,
+    /// `receiver` (the receiver's total length), `values` (the length of
+    /// the parameter named `values`) or `none`.
+    length: String,
+    cite: String,
 }
 #[derive(serde::Deserialize, Clone)]
 struct RefusedOperation {
@@ -1080,6 +1092,62 @@ fn callback_census(world: &World, inv: &Inventory, entries: &[Entry]) -> serde_j
     })
 }
 
+/// Record 0086 gate 2 controls, from a synthetic inventory: a listed
+/// callable's `Bitmap` parameter is built from a script `Vec<bool>` with
+/// its length rule (receiver, values, none), directly or optionally; an
+/// unlisted bitmap input, an unlisted bitmap output and an Arrow array stay
+/// refused, and the scope is clear after emission.
+fn bitmap_input_self_test() {
+    let series = "polars_core::series::Series";
+    let bitmap = "polars_arrow::bitmap::immutable::Bitmap";
+    let sup = |path: &str| Supporting {
+        key: path.to_string(), kind: "struct".into(), canonical_path: path.to_string(),
+        found_paths: vec![format!("polars::{}", path.rsplit("::").next().unwrap())], crate_paths: vec![path.to_string()],
+        public_fields: 0, fields_canonical: vec![], variant_shapes: vec![], variant_payloads: vec![], generic: false, lifetime: false, hidden: false,
+        derived: vec!["Clone".into(), "Debug".into()], alias_target: None, implementors: vec![], impls: vec![],
+    };
+    let mk = |key: &str, name: &str, receiver: &str, params: Vec<(&str, &str)>, ret: Option<&str>| Callable {
+        key: key.into(), kind: "inherent".into(), krate: "polars_core".into(), owner: series.into(), name: name.into(), canonical_path: format!("{series}::{name}"),
+        found_paths: vec![], crate_paths: vec![], receiver: receiver.into(), params: params.iter().map(|(n, t)| Param { name: n.to_string(), ty: t.to_string(), ty_canonical: t.to_string() }).collect(),
+        ret: None, ret_canonical: ret.map(String::from), generics_canonical: vec![],
+        impl_for: None, impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic: false, is_unsafe: false, is_async: false,
+        deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "mechanical".into(), rules: vec![],
+    };
+    let opt = format!("core::option::Option<{bitmap}>");
+    let inv = Inventory {
+        callables: vec![
+            mk("set", "set_mask", "&mut self", vec![("validity", &opt)], None),
+            mk("values", "from_values_mask", "none", vec![("name", "polars_utils::pl_str::PlSmallStr"), ("values", "alloc::vec::Vec<i64>"), ("buffer", &opt)], Some(series)),
+            mk("bits", "from_bits", "none", vec![("name", "polars_utils::pl_str::PlSmallStr"), ("bitmap", bitmap)], Some(series)),
+            mk("unlisted_in", "other_mask", "&mut self", vec![("validity", &opt)], None),
+            mk("unlisted_out", "mask_out", "&self", vec![], Some(&opt)),
+            mk("array", "with_chunk", "&self", vec![("arr", "polars_arrow::array::PrimitiveArray<i64>")], Some(series)),
+        ],
+        supporting: vec![sup(series)],
+        provenance: None,
+    };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    for (n, l) in [("set_mask", "receiver"), ("from_values_mask", "values"), ("from_bits", "none")] { release.bitmap_inputs.push(BitmapInput { path: format!("{series}::{n}"), length: l.into(), cite: "t".into() }); }
+    let world = World::new(&inv, &release, &["mechanical"]);
+    let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+    let emit = |key: &str| { let mut e = empty(); emit_callable(&world, &mut e, inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical"]); (e.entries[0].status.clone(), e.entries[0].reason.clone().unwrap_or_default(), e.functions) };
+    let (status, reason, f) = emit("set");
+    assert_eq!(status, "generated", "{reason}");
+    assert!(f.contains("let __mask_len = this.0.len();") && f.contains("None => None") && f.contains("support::bitmap_from_bools(&v, \"Series::set_mask\", Some(__mask_len))?"), "an optional receiver-length mask; None stays None: {f}");
+    let (status, reason, f) = emit("values");
+    assert_eq!(status, "generated", "{reason}");
+    assert!(f.contains("let __mask_len = support::vec_len(&values, \"values\")?;"), "a values-length mask: {f}");
+    let (status, reason, f) = emit("bits");
+    assert_eq!(status, "generated", "{reason}");
+    assert!(f.contains("support::bitmap_from_bools(&bitmap, \"Series::from_bits\", None)?"), "no length rule: {f}");
+    for key in ["unlisted_in", "unlisted_out", "array"] {
+        let (status, reason, _) = emit(key);
+        assert_eq!(status, "unsupported", "{key} must stay refused, got {reason}");
+    }
+    assert!(world.bitmap_input.borrow().is_none() && !world.bitmap_ok.get(), "the bitmap scope never outlives its callable");
+    println!("bitmap-input self-test: ok");
+}
+
 /// Record 0085 gate 2 controls, from a synthetic inventory: a validity
 /// `Bitmap` return maps to an owned `Vec<bool>` only for the paths the
 /// release lists, directly, optionally and as iterator items (one bound
@@ -1115,7 +1183,7 @@ fn bitmap_self_test() {
         supporting: vec![sup(series)],
         provenance: None,
     };
-    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     for n in ["bits", "maybe_bits", "bits_per_chunk", "with_bits"] { release.bitmap_returns.push(format!("{series}::{n}")); }
     let world = World::new(&inv, &release, &["mechanical"]);
     let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
@@ -1185,7 +1253,7 @@ fn generic_input_self_test() {
         supporting: vec![sup(frame), sup(expr), sup(field)],
         provenance: None,
     };
-    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     release.refused.push(RefusedOperation { path: format!("{frame}::refused_by_release"), reason: "validated first".into(), cite: "t".into() });
     let world = World::new(&inv, &release, &["mechanical", "generic_fn"]);
     let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
@@ -1259,7 +1327,7 @@ fn slice_self_test() {
         supporting: vec![sup(series), sup(field)],
         provenance: None,
     };
-    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     release.callback_invocation.push(CallbackInvocation { path: format!("{series}::each_bytes"), param: "f".into(), invocation: "immediate".into(), sinks: vec![], cite: "t".into() });
     let world = World::new(&inv, &release, &["mechanical", "callback"]);
     let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
@@ -1334,7 +1402,7 @@ fn callback_self_test() {
         supporting: vec![sup(series, &["Clone", "Debug"]), sup(column, &["Clone", "Debug"]), sup(field, &["Clone", "Debug"]), sup(expr, &["Clone", "Debug"]), sup("polars_core::schema::Schema", &["Clone", "Debug"]), sup("polars_core::datatypes::StringChunked", &["Clone"]), sup("polars_lazy::frame::LazyFrame", &["Clone"]), sup("polars_core::frame::dataframe::DataFrame", &["Clone", "Debug"])],
         provenance: None,
     };
-    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope { families: vec!["numeric".into()], exclude: vec![] }, api_crates: vec!["polars_core".into(), "polars_plan".into(), "polars_lazy".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope { families: vec!["numeric".into()], exclude: vec![] }, api_crates: vec!["polars_core".into(), "polars_plan".into(), "polars_lazy".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     release.callback_mutable.push(CallbackMutable { path: format!("{expr}::map_many"), param: "function".into(), contract: "vector".into(), cite: "t".into() });
     release.callback_mutable.push(CallbackMutable { path: format!("{ca}::apply_into_string_amortized"), param: "f".into(), contract: "result buffer".into(), cite: "t".into() });
     // the source audit: every feasible closure gets its invocation; `stored`
@@ -1555,7 +1623,7 @@ fn wrapper_self_test() {
             sup("polars_dtype::categorical::CatSize", "type_alias", Some("u32")),
         ],
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let w = World::new(&inv, &release, &["mechanical"]);
     let idx = &w.wrappers["polars_core::datatypes::aliases::IdxCa"];
     let u32c = &w.wrappers["polars_core::datatypes::UInt32Chunked"];
@@ -1647,7 +1715,7 @@ fn applicability_self_test() {
             sup("polars_core::datatypes::StringChunked", "type_alias", Some(&format!("{ca}<polars_core::datatypes::StringType>"))),
         ],
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let w = World::new(&inv, &release, &["mechanical"]);
     let i64c = format!("{ca}<polars_core::datatypes::Int64Type>");
     let boolc = format!("{ca}<polars_core::datatypes::BooleanType>");
@@ -1778,6 +1846,7 @@ fn from_naming_self_test() {
     slice_self_test();
     generic_input_self_test();
     bitmap_self_test();
+    bitmap_input_self_test();
 }
 
 /// Record 0078 gate 1 controls, from a synthetic inventory through the
@@ -1815,7 +1884,7 @@ fn from_emission_self_test() {
         supporting: vec![sup(owner, &["Clone", "Debug", "PartialEq"]), sup(dtype, &["Clone", "Debug", "PartialEq", "Default"]), sup(field, &["Clone", "Debug", "PartialEq", "Default"])],
         provenance: None,
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let world = World::new(&inv, &release, &["mechanical", "conversion"]);
     let mut out = Emitted { from_names: plan_from_names(&inv), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
     let buckets = ["mechanical", "conversion"];
@@ -2011,6 +2080,9 @@ struct World {
     /// Record 0085: set while emitting a callable the release file lists
     /// under `bitmap_returns`; only then may a validity `Bitmap` return map.
     bitmap_ok: std::cell::Cell<bool>,
+    /// Record 0086: (operation, length rule) while emitting a listed
+    /// bitmap-input callable.
+    bitmap_input: std::cell::RefCell<Option<(String, String)>>,
     types: BTreeMap<String, Supporting>,
     wrappers: BTreeMap<String, Wrapper>,
     ambiguous_prelude: BTreeSet<String>,
@@ -2149,7 +2221,7 @@ impl World {
         }
         let callback_unclassified_sinks = inv.callables.iter().filter(|c| release.is_api(&c.krate) && plan_holder_non_plan_method(c) && !release.callback_sink.iter().any(|s| s.path == c.canonical_path)).map(|c| c.canonical_path.clone()).collect();
         let callback_sink_groups = release.callback_sink.iter().filter(|s| s.sink != "none").map(|s| s.sink.clone()).collect();
-        let mut w = World { release: release.clone(), callback_dispositions: BTreeMap::new(), callback_unclassified_sinks, callback_sink_groups, tmp: std::cell::Cell::new(0), bitmap_ok: std::cell::Cell::new(false), types, wrappers: BTreeMap::new(), ambiguous_prelude, clonable, impls, deref_targets: BTreeMap::new(), deref_mut: BTreeSet::new(), by_identity: BTreeMap::new() };
+        let mut w = World { release: release.clone(), callback_dispositions: BTreeMap::new(), callback_unclassified_sinks, callback_sink_groups, tmp: std::cell::Cell::new(0), bitmap_ok: std::cell::Cell::new(false), bitmap_input: std::cell::RefCell::new(None), types, wrappers: BTreeMap::new(), ambiguous_prelude, clonable, impls, deref_targets: BTreeMap::new(), deref_mut: BTreeSet::new(), by_identity: BTreeMap::new() };
         w.assign_wrappers(&mentioned);
         for (path, wr) in &w.wrappers {
             if wr.rule == "alias" && wr.identity.contains('<') && wr.aliases.first().is_some_and(|a| a == path) {
@@ -2551,6 +2623,23 @@ impl World {
     fn arg(&self, t: &Ty, name: &str, generics: &BTreeMap<String, String>, owner: Option<&str>, depth: u8) -> Result<Arg, Unsupported> {
         if depth > 6 {
             return Err(Unsupported("nesting", t.render()));
+        }
+        // record 0086: a listed callable's validity bitmap from a script Vec<bool>
+        if let Ty::Path { path, args } = t {
+            if path == "polars_arrow::bitmap::immutable::Bitmap" && args.is_empty() {
+                if let Some((op, length)) = self.bitmap_input.borrow().clone() {
+                    let (pre, expect, shape) = match length.as_str() {
+                        // the oracle's receiver fixtures have 3 rows, the List one 2
+                        "receiver" => (Some("let __mask_len = this.0.len();".to_string()), "Some(__mask_len)", if owner.is_some_and(|o| o.ends_with("::ListChunked")) { "mask2" } else { "mask3" }),
+                        "values" => (Some("let __mask_len = support::vec_len(&values, \"values\")?;".to_string()), "Some(__mask_len)", "mask1"),
+                        _ => (None, "None", "mask3"),
+                    };
+                    let mut a = ok_arg("rune::Value", format!("support::bitmap_from_bools(&{name}, \"{op}\", {expect})?"), "vector of bool (a validity mask, copied)")?;
+                    a.pre.extend(pre);
+                    a.shape = shape.into();
+                    return Ok(a);
+                }
+            }
         }
         match t {
             Ty::Path { path, args } => match path.as_str() {
@@ -3472,10 +3561,11 @@ fn bucket_admitted(buckets: &[&str], c: &Callable) -> bool {
 /// Generate one method/function binding. `owner` is the canonical owner
 /// type (for methods) and `trait_spell` the trait for UFCS calls.
 fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str]) {
-    struct BitmapScope<'a>(&'a std::cell::Cell<bool>);
-    impl Drop for BitmapScope<'_> { fn drop(&mut self) { self.0.set(false); } }
+    struct BitmapScope<'a>(&'a std::cell::Cell<bool>, &'a std::cell::RefCell<Option<(String, String)>>);
+    impl Drop for BitmapScope<'_> { fn drop(&mut self) { self.0.set(false); *self.1.borrow_mut() = None; } }
     world.bitmap_ok.set(world.release.bitmap_returns.iter().any(|p| *p == c.canonical_path));
-    let _bitmap_scope = BitmapScope(&world.bitmap_ok);
+    *world.bitmap_input.borrow_mut() = world.release.bitmap_inputs.iter().find(|b| b.path == c.canonical_path).map(|b| (format!("{}::{}", last(&c.owner), c.name), b.length.clone()));
+    let _bitmap_scope = BitmapScope(&world.bitmap_ok, &world.bitmap_input);
     if let Err(reason) = callback_gate(world, c) {
         out.unsupported(c, "callback audit", &reason);
         return;
@@ -3566,10 +3656,11 @@ fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trai
 fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trait_spell: Option<&str>, deref: bool, callee_override: Option<&str>) {
     world.tmp.set(0);
     // record 0085: instantiated pairs reach here without `emit_callable`
-    struct BitmapScope<'a>(&'a std::cell::Cell<bool>);
-    impl Drop for BitmapScope<'_> { fn drop(&mut self) { self.0.set(false); } }
+    struct BitmapScope<'a>(&'a std::cell::Cell<bool>, &'a std::cell::RefCell<Option<(String, String)>>);
+    impl Drop for BitmapScope<'_> { fn drop(&mut self) { self.0.set(false); *self.1.borrow_mut() = None; } }
     world.bitmap_ok.set(world.release.bitmap_returns.iter().any(|p| *p == c.canonical_path));
-    let _bitmap_scope = BitmapScope(&world.bitmap_ok);
+    *world.bitmap_input.borrow_mut() = world.release.bitmap_inputs.iter().find(|b| b.path == c.canonical_path).map(|b| (format!("{}::{}", last(&c.owner), c.name), b.length.clone()));
+    let _bitmap_scope = BitmapScope(&world.bitmap_ok, &world.bitmap_input);
     if c.is_async {
         out.unsupported(c, "async", &c.name);
         return;
@@ -4580,6 +4671,9 @@ struct Oracle<'a> {
     recipes: BTreeMap<String, Recipe>,
     /// Types that got no recipe, with the reason.
     no_recipe: BTreeMap<String, String>,
+    /// Record 0086: the length of the Rust mask fixture for the argument
+    /// being paired (3 for a receiver-length mask, 1 for a values-length one).
+    mask_len: std::cell::Cell<usize>,
 }
 
 impl<'a> Oracle<'a> {
@@ -4595,6 +4689,10 @@ impl<'a> Oracle<'a> {
             "float" => Some("1.5".into()),
             "string" => Some("\"x\"".into()),
             "unit" => Some("()".into()),
+            // record 0086: masks sized to the receiver fixtures (3 rows) or the one-element values fixture
+            "mask3" => Some("[true, false, true]".into()),
+            "mask1" => Some("[false]".into()),
+            "mask2" => Some("[true, false]".into()),
             _ => {
                 if let Some(c) = shape.strip_prefix("W:") {
                     return self.rune_wrapped(c);
@@ -4843,6 +4941,7 @@ impl<'a> Oracle<'a> {
                 "char" => Some("'x'".into()),
                 "alloc::string::String" => Some("\"x\".to_string()".into()),
                 "polars_utils::pl_str::PlSmallStr" => Some("p::PlSmallStr::from(\"x\")".into()),
+                "polars_arrow::bitmap::immutable::Bitmap" => Some(match self.mask_len.get() { 1 => "polars_arrow::bitmap::Bitmap::from([false])".into(), 2 => "polars_arrow::bitmap::Bitmap::from([true, false])".into(), _ => "polars_arrow::bitmap::Bitmap::from([true, false, true])".into() }),
                 "core::option::Option" if args.len() == 1 => self.rust_value(&args[0], generics, owner, depth + 1).map(|v| format!("Some({v})")),
                 "alloc::vec::Vec" if args.len() == 1 => self.rust_value(&args[0], generics, owner, depth + 1).map(|v| format!("vec![{v}]")),
                 "Self" => self.rust_value(&Ty::Path { path: owner?.to_string(), args: vec![] }, generics, owner, depth + 1),
@@ -5074,7 +5173,7 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
         .filter(|e| e.status == "generated")
         .filter_map(|e| e.canonical_path.strip_suffix(" as core::default::Default").map(|s| s.to_string()))
         .collect();
-    let mut o = Oracle { world, debuggable, defaultable, default_bound, shown: std::cell::RefCell::new(BTreeSet::new()), recipes: BTreeMap::new(), no_recipe: BTreeMap::new() };
+    let mut o = Oracle { world, debuggable, defaultable, default_bound, shown: std::cell::RefCell::new(BTreeSet::new()), recipes: BTreeMap::new(), no_recipe: BTreeMap::new(), mask_len: std::cell::Cell::new(3) };
     o.derive_recipes(entries);
     let mut cases = Vec::new();
     let mut skipped: Vec<(String, String)> = Vec::new();
@@ -5225,6 +5324,7 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
                 }
                 continue;
             }
+            o.mask_len.set(if shape.contains("mask1") { 1 } else if shape.contains("mask2") { 2 } else { 3 });
             match (o.rune_value(shape), o.rust_value(&ty::parse(canonical), &info.generics, owner, 0)) {
                 (Some(a), Some(b)) => {
                     rune_args.push(a);

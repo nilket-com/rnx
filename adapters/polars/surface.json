@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 329,
-    "generated": 2092,
+    "generated": 2096,
     "out_of_scope": 710,
-    "unsupported": 1940
+    "unsupported": 1936
   },
   "entries": [
     {
@@ -13699,6 +13699,18 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_bitmap__on__booleanchunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_bitmap__on__booleanchunked",
+          "receiver": "polars_core::datatypes::BooleanChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BooleanChunked::from_bitmap"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ChunkedArray::from_bitmap",
       "exceptions": [
@@ -13710,11 +13722,6 @@
         {
           "reason": "rejected: head argument `polars_core::datatypes::BooleanType` is not `polars_core::datatypes::BinaryType`",
           "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: bitmap (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::BooleanChunked",
           "route": "instantiation"
         },
         {
@@ -13783,11 +13790,14 @@
           "route": "instantiation"
         }
       ],
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:3591",
       "kind": "inherent",
-      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
+      "note": "instantiated on 1 of 16 alias identities",
+      "rune": "polars::BooleanChunked::from_bitmap",
       "signature": "(polars_utils::pl_str::PlSmallStr, polars_arrow::bitmap::immutable::Bitmap) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -14310,6 +14320,108 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__float32chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__float32chunked",
+          "receiver": "polars_core::datatypes::Float32Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::from_vec_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__float64chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__float64chunked",
+          "receiver": "polars_core::datatypes::Float64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::from_vec_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__int16chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::from_vec_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__int32chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::from_vec_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__int64chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::from_vec_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__int8chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::from_vec_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__uint16chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::from_vec_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__idxca",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__idxca",
+          "receiver": "polars_core::datatypes::aliases::IdxCa",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::from_vec_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__uint64chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::from_vec_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__uint8chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__chunkedarray__from_vec_validity__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::from_vec_validity"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ChunkedArray::from_vec_validity",
       "exceptions": [
@@ -14329,36 +14441,6 @@
           "route": "instantiation"
         },
         {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
-        },
-        {
           "reason": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::ListType`",
           "receiver": "polars_core::datatypes::ListChunked",
           "route": "instantiation"
@@ -14372,33 +14454,16 @@
           "reason": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StructType`",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
           "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "instantiation"
         }
       ],
+      "execution": "case (on 10 of 10 receivers)",
+      "fallible": true,
       "key": "polars_core:3587",
       "kind": "inherent",
-      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
+      "note": "instantiated on 10 of 16 alias identities",
+      "rune": "polars::Float32Chunked::from_vec_validity polars::Float64Chunked::from_vec_validity polars::Int16Chunked::from_vec_validity polars::Int32Chunked::from_vec_validity polars::Int64Chunked::from_vec_validity polars::Int8Chunked::from_vec_validity polars::UInt16Chunked::from_vec_validity polars::IdxCa::from_vec_validity polars::UInt64Chunked::from_vec_validity polars::UInt8Chunked::from_vec_validity",
       "signature": "(polars_utils::pl_str::PlSmallStr, alloc::vec::Vec<T::Native>, core::option::Option<polars_arrow::bitmap::immutable::Bitmap>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -24171,95 +24236,175 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__binaryoffsetchunked",
+          "disposition": "case (fixture via producer Series::binary_offset on series_binary_offset)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__binaryoffsetchunked",
+          "receiver": "polars_core::datatypes::BinaryOffsetChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryOffsetChunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__binarychunked",
+          "disposition": "case (fixture via producer Series::binary on series_binary)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__binarychunked",
+          "receiver": "polars_core::datatypes::BinaryChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryChunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__booleanchunked",
+          "receiver": "polars_core::datatypes::BooleanChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BooleanChunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__float32chunked",
+          "receiver": "polars_core::datatypes::Float32Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__float64chunked",
+          "receiver": "polars_core::datatypes::Float64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__listchunked",
+          "disposition": "case (fixture via producer Series::list on series_list)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__listchunked",
+          "receiver": "polars_core::datatypes::ListChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ListChunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__stringchunked",
+          "disposition": "case (fixture via producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__stringchunked",
+          "receiver": "polars_core::datatypes::StringChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StringChunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__idxca",
+          "receiver": "polars_core::datatypes::aliases::IdxCa",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::set_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__set_validity__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__chunkedarray__set_validity__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::set_validity"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ChunkedArray::set_validity",
       "exceptions": [
         {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::ListChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::StringChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+          "reason": "excluded by the release file: polars-core 0.55.2 chunked_array/mod.rs:619-622 asserts the receiver is not a struct (set_outer_validity instead); record 0086",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::UInt8Chunked",
           "route": "instantiation"
         }
       ],
+      "execution": "case (on 15 of 15 receivers)",
+      "fallible": true,
       "key": "polars_core:3695",
       "kind": "inherent",
-      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
+      "note": "instantiated on 15 of 16 alias identities",
+      "rune": "polars::BinaryOffsetChunked::set_validity polars::BinaryChunked::set_validity polars::BooleanChunked::set_validity polars::Float32Chunked::set_validity polars::Float64Chunked::set_validity polars::Int16Chunked::set_validity polars::Int32Chunked::set_validity polars::Int64Chunked::set_validity polars::Int8Chunked::set_validity polars::ListChunked::set_validity polars::StringChunked::set_validity polars::UInt16Chunked::set_validity polars::IdxCa::set_validity polars::UInt64Chunked::set_validity polars::UInt8Chunked::set_validity",
       "signature": "(core::option::Option<polars_arrow::bitmap::immutable::Bitmap>) -> ()",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -27179,95 +27324,175 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__binaryoffsetchunked",
+          "disposition": "case (fixture via producer Series::binary_offset on series_binary_offset)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__binaryoffsetchunked",
+          "receiver": "polars_core::datatypes::BinaryOffsetChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryOffsetChunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__binarychunked",
+          "disposition": "case (fixture via producer Series::binary on series_binary)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__binarychunked",
+          "receiver": "polars_core::datatypes::BinaryChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryChunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__booleanchunked",
+          "receiver": "polars_core::datatypes::BooleanChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BooleanChunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__float32chunked",
+          "receiver": "polars_core::datatypes::Float32Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__float64chunked",
+          "receiver": "polars_core::datatypes::Float64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__listchunked",
+          "disposition": "case (fixture via producer Series::list on series_list)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__listchunked",
+          "receiver": "polars_core::datatypes::ListChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ListChunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__stringchunked",
+          "disposition": "case (fixture via producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__stringchunked",
+          "receiver": "polars_core::datatypes::StringChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StringChunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__idxca",
+          "receiver": "polars_core::datatypes::aliases::IdxCa",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::with_validity"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__with_validity__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__chunkedarray__with_validity__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::with_validity"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ChunkedArray::with_validity",
       "exceptions": [
         {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::ListChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::StringChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+          "reason": "excluded by the release file: polars-core 0.55.2 chunked_array/mod.rs:619-622 asserts the receiver is not a struct (set_outer_validity instead); record 0086",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
-          "receiver": "polars_core::datatypes::UInt8Chunked",
           "route": "instantiation"
         }
       ],
+      "execution": "case (on 15 of 15 receivers)",
+      "fallible": true,
       "key": "polars_core:3696",
       "kind": "inherent",
-      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
+      "note": "instantiated on 15 of 16 alias identities",
+      "rune": "polars::BinaryOffsetChunked::with_validity polars::BinaryChunked::with_validity polars::BooleanChunked::with_validity polars::Float32Chunked::with_validity polars::Float64Chunked::with_validity polars::Int16Chunked::with_validity polars::Int32Chunked::with_validity polars::Int64Chunked::with_validity polars::Int8Chunked::with_validity polars::ListChunked::with_validity polars::StringChunked::with_validity polars::UInt16Chunked::with_validity polars::IdxCa::with_validity polars::UInt64Chunked::with_validity polars::UInt8Chunked::with_validity",
       "signature": "(core::option::Option<polars_arrow::bitmap::immutable::Bitmap>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -111754,7 +111979,7 @@
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "refused: unsupported: unreachable polars type: bitmap (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
@@ -113525,7 +113750,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
@@ -113536,7 +113761,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
@@ -113547,7 +113772,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
@@ -113558,7 +113783,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
@@ -113569,7 +113794,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
@@ -113580,7 +113805,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
@@ -113624,7 +113849,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
@@ -113635,7 +113860,7 @@
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
@@ -113646,7 +113871,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
@@ -113657,7 +113882,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: buffer (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
@@ -128628,7 +128853,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
@@ -128639,7 +128864,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
@@ -128650,7 +128875,7 @@
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
@@ -128661,7 +128886,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
@@ -128672,7 +128897,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
@@ -128683,7 +128908,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
@@ -128694,7 +128919,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
@@ -128705,7 +128930,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
@@ -128716,7 +128941,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
@@ -128727,7 +128952,7 @@
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
@@ -128738,7 +128963,7 @@
       },
       {
         "alias": "polars_core::datatypes::StringChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
@@ -128749,7 +128974,7 @@
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "excluded: excluded by the release file: polars-core 0.55.2 chunked_array/mod.rs:619-622 asserts the receiver is not a struct (set_outer_validity instead); record 0086",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
@@ -128760,7 +128985,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
@@ -128771,7 +128996,7 @@
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
@@ -128782,7 +129007,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
@@ -128793,7 +129018,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
@@ -135140,7 +135365,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
@@ -135151,7 +135376,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
@@ -135162,7 +135387,7 @@
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
@@ -135173,7 +135398,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
@@ -135184,7 +135409,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
@@ -135195,7 +135420,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
@@ -135206,7 +135431,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
@@ -135217,7 +135442,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
@@ -135228,7 +135453,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
@@ -135239,7 +135464,7 @@
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
@@ -135250,7 +135475,7 @@
       },
       {
         "alias": "polars_core::datatypes::StringChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
@@ -135261,7 +135486,7 @@
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "excluded: excluded by the release file: polars-core 0.55.2 chunked_array/mod.rs:619-622 asserts the receiver is not a struct (set_outer_validity instead); record 0086",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
@@ -135272,7 +135497,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
@@ -135283,7 +135508,7 @@
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
@@ -135294,7 +135519,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
@@ -135305,7 +135530,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "refused: unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
@@ -138270,10 +138495,10 @@
       },
       "pairs": 3544,
       "proven_dispositions": {
-        "emitted": 818,
-        "excluded": 10,
+        "emitted": 859,
+        "excluded": 12,
         "not eligible": 188,
-        "refused": 255
+        "refused": 212
       }
     }
   },
@@ -139606,7 +139831,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2105,
+  "oracle_cases": 2146,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -142624,7 +142849,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "d5690ece09bea2f54773cc6fe53b89286fcd1dd6e61838a4a5cf95bdd0dbcbe2",
+    "sha256": "018f559c5d7d8c8faba8a32c4b859ca5185a3331cc5a976dba6dc4bfa6ab2a83",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",
