@@ -7405,6 +7405,38 @@ fn g_ac4e4093_ars_ops__series__ops__horizontal__min_horizontal(columns: rune::Va
 /// Polars: `polars_ops::series::ops::horizontal::sum_horizontal`. sum_horizontal(columns: vector of Column, null_strategy: NullStrategy) -> result of option of Column (fallible)
 #[rune::function(path = sum_horizontal)]
 fn g_cf6c3c0b_ars_ops__series__ops__horizontal__sum_horizontal(columns: rune::Value, null_strategy: &W_polars_ops__series__ops__horizontal__NullStrategy) -> Result<Option<W_polars_core__frame__column__Column>, Error> { let __t0 = support::borrow_vec(&columns, "columns")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__frame__column__Column>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &__t0[..]; let __arg1 = null_strategy.0.clone(); let __r = crate::engine::run("polars::sum_horizontal", move || polars_ops::prelude::sum_horizontal(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; match __r { Some(__r) => Some(W_polars_core__frame__column__Column(__r)), None => None } }) }
+/// UNSIGNED conversion: - `0 <= v < target_len`  → `Some(v)` - `v >= target_len`      → `None`
+/// Polars: `polars_ops::series::ops::index::convert_and_bound_idx_ca`. convert_and_bound_idx_ca(ca: Int8Chunked, target_len: int (checked below the index maximum), null_on_oob: bool) -> result of IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::convert_and_bound_idx_ca)]
+fn f_e8fbf3c9_bound_idx_ca_polars_core__datatypes__int8chunked(ca: &W_polars_core__datatypes__Int8Chunked, target_len: i64, null_on_oob: bool) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __guarded_target_len = support::below_idx_max(support::narrow::<usize>(target_len, "target_len")?, "convert_and_bound_idx_ca", "target_len")?; let __r = polars::prelude::convert_and_bound_idx_ca(&ca.0, __guarded_target_len, null_on_oob); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// UNSIGNED conversion: - `0 <= v < target_len`  → `Some(v)` - `v >= target_len`      → `None`
+/// Polars: `polars_ops::series::ops::index::convert_and_bound_idx_ca`. convert_and_bound_idx_ca(ca: Int16Chunked, target_len: int (checked below the index maximum), null_on_oob: bool) -> result of IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::convert_and_bound_idx_ca)]
+fn f_9b1424ac_ound_idx_ca_polars_core__datatypes__int16chunked(ca: &W_polars_core__datatypes__Int16Chunked, target_len: i64, null_on_oob: bool) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __guarded_target_len = support::below_idx_max(support::narrow::<usize>(target_len, "target_len")?, "convert_and_bound_idx_ca", "target_len")?; let __r = polars::prelude::convert_and_bound_idx_ca(&ca.0, __guarded_target_len, null_on_oob); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// UNSIGNED conversion: - `0 <= v < target_len`  → `Some(v)` - `v >= target_len`      → `None`
+/// Polars: `polars_ops::series::ops::index::convert_and_bound_idx_ca`. convert_and_bound_idx_ca(ca: Int32Chunked, target_len: int (checked below the index maximum), null_on_oob: bool) -> result of IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::convert_and_bound_idx_ca)]
+fn f_3e43b2b6_ound_idx_ca_polars_core__datatypes__int32chunked(ca: &W_polars_core__datatypes__Int32Chunked, target_len: i64, null_on_oob: bool) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __guarded_target_len = support::below_idx_max(support::narrow::<usize>(target_len, "target_len")?, "convert_and_bound_idx_ca", "target_len")?; let __r = polars::prelude::convert_and_bound_idx_ca(&ca.0, __guarded_target_len, null_on_oob); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// UNSIGNED conversion: - `0 <= v < target_len`  → `Some(v)` - `v >= target_len`      → `None`
+/// Polars: `polars_ops::series::ops::index::convert_and_bound_idx_ca`. convert_and_bound_idx_ca(ca: Int64Chunked, target_len: int (checked below the index maximum), null_on_oob: bool) -> result of IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::convert_and_bound_idx_ca)]
+fn f_50436821_ound_idx_ca_polars_core__datatypes__int64chunked(ca: &W_polars_core__datatypes__Int64Chunked, target_len: i64, null_on_oob: bool) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __guarded_target_len = support::below_idx_max(support::narrow::<usize>(target_len, "target_len")?, "convert_and_bound_idx_ca", "target_len")?; let __r = polars::prelude::convert_and_bound_idx_ca(&ca.0, __guarded_target_len, null_on_oob); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// UNSIGNED conversion: - `0 <= v < target_len`  → `Some(v)` - `v >= target_len`      → `None`
+/// Polars: `polars_ops::series::ops::index::convert_and_bound_idx_ca`. convert_and_bound_idx_ca(ca: UInt8Chunked, target_len: int (checked below the index maximum), null_on_oob: bool) -> result of IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::convert_and_bound_idx_ca)]
+fn f_f1761778_ound_idx_ca_polars_core__datatypes__uint8chunked(ca: &W_polars_core__datatypes__UInt8Chunked, target_len: i64, null_on_oob: bool) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __guarded_target_len = support::below_idx_max(support::narrow::<usize>(target_len, "target_len")?, "convert_and_bound_idx_ca", "target_len")?; let __r = polars::prelude::convert_and_bound_idx_ca(&ca.0, __guarded_target_len, null_on_oob); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// UNSIGNED conversion: - `0 <= v < target_len`  → `Some(v)` - `v >= target_len`      → `None`
+/// Polars: `polars_ops::series::ops::index::convert_and_bound_idx_ca`. convert_and_bound_idx_ca(ca: UInt16Chunked, target_len: int (checked below the index maximum), null_on_oob: bool) -> result of IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::convert_and_bound_idx_ca)]
+fn f_277a2ce2_und_idx_ca_polars_core__datatypes__uint16chunked(ca: &W_polars_core__datatypes__UInt16Chunked, target_len: i64, null_on_oob: bool) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __guarded_target_len = support::below_idx_max(support::narrow::<usize>(target_len, "target_len")?, "convert_and_bound_idx_ca", "target_len")?; let __r = polars::prelude::convert_and_bound_idx_ca(&ca.0, __guarded_target_len, null_on_oob); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// UNSIGNED conversion: - `0 <= v < target_len`  → `Some(v)` - `v >= target_len`      → `None`
+/// Polars: `polars_ops::series::ops::index::convert_and_bound_idx_ca`. convert_and_bound_idx_ca(ca: IdxCa, target_len: int (checked below the index maximum), null_on_oob: bool) -> result of IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::convert_and_bound_idx_ca)]
+fn f_afbe797d_nd_idx_ca_polars_core__datatypes__aliases__idxca(ca: &W_polars_core__datatypes__aliases__IdxCa, target_len: i64, null_on_oob: bool) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __guarded_target_len = support::below_idx_max(support::narrow::<usize>(target_len, "target_len")?, "convert_and_bound_idx_ca", "target_len")?; let __r = polars::prelude::convert_and_bound_idx_ca(&ca.0, __guarded_target_len, null_on_oob); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// UNSIGNED conversion: - `0 <= v < target_len`  → `Some(v)` - `v >= target_len`      → `None`
+/// Polars: `polars_ops::series::ops::index::convert_and_bound_idx_ca`. convert_and_bound_idx_ca(ca: UInt64Chunked, target_len: int (checked below the index maximum), null_on_oob: bool) -> result of IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::convert_and_bound_idx_ca)]
+fn f_47963ef2_und_idx_ca_polars_core__datatypes__uint64chunked(ca: &W_polars_core__datatypes__UInt64Chunked, target_len: i64, null_on_oob: bool) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __guarded_target_len = support::below_idx_max(support::narrow::<usize>(target_len, "target_len")?, "convert_and_bound_idx_ca", "target_len")?; let __r = polars::prelude::convert_and_bound_idx_ca(&ca.0, __guarded_target_len, null_on_oob); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
 /// Convert arbitrary integer Series into IdxCa, using `target_len` as logical length.
 /// Polars: `polars_ops::series::ops::index::convert_and_bound_index`. convert_and_bound_index(s: Series, target_len: int, null_on_oob: bool) -> result of IdxCa (fallible)
 #[rune::function(path = convert_and_bound_index)]
@@ -14882,6 +14914,14 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_f64a7595_rs_ops__series__ops__horizontal__mean_horizontal)?;
     m.function_meta(g_ac4e4093_ars_ops__series__ops__horizontal__min_horizontal)?;
     m.function_meta(g_cf6c3c0b_ars_ops__series__ops__horizontal__sum_horizontal)?;
+    m.function_meta(f_e8fbf3c9_bound_idx_ca_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_9b1424ac_ound_idx_ca_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_3e43b2b6_ound_idx_ca_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_50436821_ound_idx_ca_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_f1761778_ound_idx_ca_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_277a2ce2_und_idx_ca_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_afbe797d_nd_idx_ca_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_47963ef2_und_idx_ca_polars_core__datatypes__uint64chunked)?;
     m.function_meta(g_b93a138f_ops__series__ops__index__convert_and_bound_index)?;
     m.function_meta(g_f9d50185__series__ops__linear_space__new_linear_space_f32)?;
     m.function_meta(g_f9359b86__series__ops__linear_space__new_linear_space_f64)?;

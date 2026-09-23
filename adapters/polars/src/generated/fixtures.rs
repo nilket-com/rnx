@@ -25,6 +25,7 @@ pub mod values {
     pub fn series_u16() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::UInt16).unwrap() }
     pub fn series_u32() -> p::Series { p::Series::new("x".into(), [1u32, 2, 3]) }
     pub fn series_u64() -> p::Series { p::Series::new("x".into(), [1u64, 2, 3]) }
+    pub fn series_u64_extremes() -> p::Series { p::Series::new("x".into(), [u64::MAX, 4_294_967_297u64, 1]) }
     pub fn series_f32() -> p::Series { p::Series::new("x".into(), [1.5f32, 2.5, 3.5]) }
     pub fn series_f64() -> p::Series { p::Series::new("x".into(), [1.5f64, 2.5, 3.5]) }
     pub fn series_struct() -> p::Series { p::IntoSeries::into_series(df().into_struct("x".into())) }
@@ -93,6 +94,8 @@ fn fx_series_u16() -> W_polars_core__series__Series { W_polars_core__series__Ser
 fn fx_series_u32() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u32()) }
 #[rune::function(path = series_u64)]
 fn fx_series_u64() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u64()) }
+#[rune::function(path = series_u64_extremes)]
+fn fx_series_u64_extremes() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u64_extremes()) }
 #[rune::function(path = series_f32)]
 fn fx_series_f32() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_f32()) }
 #[rune::function(path = series_f64)]
@@ -384,6 +387,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(fx_series_u16)?;
     m.function_meta(fx_series_u32)?;
     m.function_meta(fx_series_u64)?;
+    m.function_meta(fx_series_u64_extremes)?;
     m.function_meta(fx_series_f32)?;
     m.function_meta(fx_series_f64)?;
     m.function_meta(fx_series_struct)?;

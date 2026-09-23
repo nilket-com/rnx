@@ -105,6 +105,13 @@ parameter afterwards makes that type a named exception. The substituted
 scalars then map through the ordinary argument rules (checked narrowing
 for narrower integers, `as f32` for `f32`).
 
+Record 0091 lets a `[[free_instantiations]]` entry name a
+`guard_param` and a `guard`; the only guard is `below_idx_max`. While that
+entry is emitted, the named `usize` parameter is converted and checked in
+the binding's `pre` statements (`support::below_idx_max`), so an invalid
+value is an `OutOfBounds` error before the call; other parameters, and other
+entries, are unaffected, and the scope clears after the instantiation.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an
