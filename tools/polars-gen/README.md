@@ -123,6 +123,18 @@ function generic, used only as a whole parameter type and never in the
 return, and paired `types`/`natives`; a proven pair whose type is not
 listed is refused by name.
 
+Record 0093 checks every integer read-back. `World::ret` converts `u64`,
+`usize`, `isize`, `i128` and `u128` with `support::widen` (fallible, named by
+the method) on every return route, and a callback argument of those types
+fails the callback through `support::callback::unwind` instead of wrapping.
+Only an exact `[[bounded_readbacks]]` entry (inventory `key`, canonical
+`path`, source citation) keeps a plain `usize` read-back, through
+`support::bounded_usize`, which a compile-time `usize` width assertion and a
+debug assertion guard. A name alone never qualifies. The oracle's Rust side
+formats those types with the same check, so a wrapping binding is a
+mismatch. `probes/0093/census.py` classifies every read-back as checked or
+bounded, with its route.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

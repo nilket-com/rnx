@@ -27,7 +27,7 @@ fn run(script: &str) -> String {
 }
 
 const HELPERS: &str = r#"
-    fn show(ca) { let s = []; let i = 0; while i < ca.len() { s.push(match ca.get(i).unwrap() { Some(v) => `${v}`, None => "n" }); i = i + 1; } s.iter().fold("", |a, b| if a == "" { b } else { a + "," + b }) }
+    fn show(ca) { let s = []; let i = 0; while i < ca.len().unwrap() { s.push(match ca.get(i) { Ok(Some(v)) => `${v}`, Ok(None) => "n", Err(e) => e.kind() }); i = i + 1; } s.iter().fold("", |a, b| if a == "" { b } else { a + "," + b }) }
 "#;
 fn show<T: p::PolarsNumericType>(ca: &p::ChunkedArray<T>) -> String where T::Native: std::fmt::Display {
     (0..ca.len()).map(|i| ca.get(i).map_or("n".into(), |v| v.to_string())).collect::<Vec<_>>().join(",")
@@ -46,13 +46,11 @@ macro_rules! rust_float_row {
         format!("{} {} {} {} {} {}", show_float(&ca.lhs_sub(l[0])), show_float(&ca.lhs_sub(l[1])), show_float(&ca.lhs_sub(l[2])), show_float(&nulls.lhs_sub(l[0])), empty.lhs_sub(l[0]).len(), show_float(&ca))
     }};
 }
-/// A `UInt64Chunked` as the script reads it back today: the generated `get`
-/// converts `u64` with `as i64`, so a value above `i64::MAX` reads as its
-/// two's-complement negative. `lhs_sub` itself is exact; this is the
-/// generator-wide unchecked conversion audit (records 0087, 0092), made
-/// visible here rather than hidden.
+/// A `UInt64Chunked` as the script reads it back: since record 0093 the
+/// generated `get` widens `u64` with a range check, so a value above
+/// `i64::MAX` is a `ConversionError` rather than a wrapped negative.
 fn show_u64_as_script(ca: &p::UInt64Chunked) -> String {
-    (0..ca.len()).map(|i| ca.get(i).map_or("n".into(), |v| (v as i64).to_string())).collect::<Vec<_>>().join(",")
+    (0..ca.len()).map(|i| ca.get(i).map_or("n".into(), |v| i64::try_from(v).map_or("ConversionError".into(), |v| v.to_string()))).collect::<Vec<_>>().join(",")
 }
 
 /// One type: `lhs - [values]` for three scalars, a nullable array, an empty
@@ -64,7 +62,7 @@ fn rune_row(alias: &str, vals: &str, lhs: [&str; 3], u: &str) -> String {
             let ca = polars::{alias}::from_vec("x", {vals}).unwrap();
             let nulls = polars::{alias}::from_vec_validity("x", {vals}, Some([true, false, true])).unwrap();
             let empty = polars::{alias}::from_vec("x", []).unwrap();
-            let out = `${{show(ca.lhs_sub({a}){u})}} ${{show(ca.lhs_sub({b}){u})}} ${{show(ca.lhs_sub({c}){u})}} ${{show(nulls.lhs_sub({a}){u})}} ${{empty.lhs_sub({a}){u}.len()}}`;
+            let out = `${{show(ca.lhs_sub({a}){u})}} ${{show(ca.lhs_sub({b}){u})}} ${{show(ca.lhs_sub({c}){u})}} ${{show(nulls.lhs_sub({a}){u})}} ${{empty.lhs_sub({a}){u}.len().unwrap()}}`;
             `${{out}} ${{show(ca)}}`
         }}
     "#, a = lhs[0], b = lhs[1], c = lhs[2]))
@@ -131,8 +129,8 @@ fn out_of_range_scalars_are_refused_and_the_receiver_survives() {
         show(&s.i64().unwrap().lhs_sub(10i64))
     };
     let conv = "ConversionError ";
-    let max_script = { let s = p::Series::new("x".into(), [u64::MAX, 4_294_967_297u64, 1]); show_u64_as_script(&s.u64().unwrap().lhs_sub(5u64)) };
+    let max_script = "6,ConversionError,4";
     assert_eq!(got, format!("{}| 1,2 1,2 1,2 | {max_script} | {multi}", conv.repeat(6)));
     assert_eq!(max, "6,18446744069414584324,4", "u64 wraparound from 5 - u64::MAX, as Polars computes it");
-    assert_eq!(max_script, "6,-4294967292,4", "the script's read-back of 18446744069414584324 wraps (open audit)");
+    assert_eq!(max_script, "6,ConversionError,4", "record 0093: the script's read-back of 18446744069414584324 is a ConversionError, not a wrapped -4294967292");
 }

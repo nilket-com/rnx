@@ -38,12 +38,12 @@ fn set_and_with_validity_apply_checked_masks() {
             let ca = fx::series_i64().i64().unwrap();
             let m = [true, false, true];
             ca.set_validity(Some(m)).unwrap();
-            let after = `${mask(ca)} ${ca.null_count()} ${ca.get(1).unwrap() == None} ${m.len()}`;
+            let after = `${mask(ca)} ${ca.null_count().unwrap()} ${ca.get(1).unwrap() == None} ${m.len()}`;
             let short = ca.set_validity(Some([true, false]));
             let long = ca.set_validity(Some([true, true, true, true]));
             let kept = mask(ca);
             ca.set_validity(None).unwrap();
-            let cleared = `${mask(ca)} ${ca.null_count()}`;
+            let cleared = `${mask(ca)} ${ca.null_count().unwrap()}`;
             let all_false = ca.with_validity(Some([false, false, false])).unwrap();
             let s = fx::series_nulls();
             s.append(fx::series_i64()).unwrap();
@@ -51,7 +51,7 @@ fn set_and_with_validity_apply_checked_masks() {
             let chunks = two.with_validity(Some([true, true, true, false, true, true])).unwrap();
             let per = chunks.iter_validities().unwrap();
             match (short, long) {
-                (Err(a), Err(b)) => `${after} | ${a.kind()} ${a.message()} | ${b.message()} | ${kept} | ${cleared} | ${all_false.null_count()} ${mask(ca)} | ${per.len()} ${chunks.null_count()} ${mask(chunks)} ${mask(two)}`,
+                (Err(a), Err(b)) => `${after} | ${a.kind()} ${a.message()} | ${b.message()} | ${kept} | ${cleared} | ${all_false.null_count().unwrap()} ${mask(ca)} | ${per.len()} ${chunks.null_count().unwrap()} ${mask(chunks)} ${mask(two)}`,
                 _ => "unexpected".to_string(),
             }
         }
@@ -72,7 +72,7 @@ fn constructors_take_values_masks_and_boolean_bits() {
             let flags = polars::BooleanChunked::from_bitmap("b", [true, false, false, true]).unwrap();
             let none = polars::BooleanChunked::from_bitmap("b", []).unwrap();
             match bad {
-                Err(e) => `${mask(ca)} ${ca.null_count()} ${mask(plain)} ${e.message()} ${empty.len()} ${flags.len()} ${flags.get(0).unwrap() == Some(true)} ${flags.get(1).unwrap() == Some(false)} ${flags.null_count()} ${none.len()} ${values.len()}`,
+                Err(e) => `${mask(ca)} ${ca.null_count().unwrap()} ${mask(plain)} ${e.message()} ${empty.len().unwrap()} ${flags.len().unwrap()} ${flags.get(0).unwrap() == Some(true)} ${flags.get(1).unwrap() == Some(false)} ${flags.null_count().unwrap()} ${none.len().unwrap()} ${values.len()}`,
                 Ok(_) => "unexpected".to_string(),
             }
         }
@@ -92,7 +92,7 @@ fn the_mask_bound_is_exact_and_the_receiver_survives_a_refusal() {
             let at = ca.set_validity(Some([true, false, true])).is_ok();
             polars::set_materialize_limit(0);
             match over {
-                Err(e) => `${e.message()} | ${at} ${mask(ca)} ${ca.len()}`,
+                Err(e) => `${e.message()} | ${at} ${mask(ca)} ${ca.len().unwrap()}`,
                 Ok(_) => "unexpected".to_string(),
             }
         }

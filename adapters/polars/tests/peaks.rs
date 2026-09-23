@@ -32,7 +32,7 @@ fn mask(b: &p::BooleanChunked) -> String {
 }
 
 const HELPERS: &str = r#"
-    fn mask(b) { let s = ""; let i = 0; while i < b.len() { s = s + match b.get(i).unwrap() { Some(true) => "1", Some(false) => "0", None => "n" }; i = i + 1; } s }
+    fn mask(b) { let s = ""; let i = 0; while i < b.len().unwrap() { s = s + match b.get(i).unwrap() { Some(true) => "1", Some(false) => "0", None => "n" }; i = i + 1; } s }
 "#;
 
 /// Rune for one type: every scenario, joined with spaces. `lit` spells a
@@ -59,7 +59,7 @@ fn rune_script(alias: &str, lit: fn(i64) -> String) -> String {
                 mask(polars::{alias}::peak_max_with_start_end(nulls, None, None){u}),
                 mask(polars::{alias}::peak_min_with_start_end(nulls, Some({b5}), None){u}),
             ];
-            let kept = dup.len() == 5 && nulls.null_count() == 1 && dup.get(1).unwrap() == Some({three});
+            let kept = dup.len().unwrap() == 5 && nulls.null_count().unwrap() == 1 && dup.get(1).unwrap() == Some({three});
             out.iter().fold("", |a, b| a + b + " ") + `${{kept}}`
         }}
     "#, dup = v(&[1, 3, 2, 3, 1]), one = v(&[4]), nv = v(&[1, 0, 3, 1]), b0 = lit(0), b5 = lit(5), three = lit(3), u = u)
@@ -137,7 +137,7 @@ fn multi_chunk_boundaries_and_refusals() {
             let nan = mask(polars::Float32Chunked::peak_max_with_start_end(f, Some(0.0 / 0.0), Some(1.0 / 0.0)));
             let ninf = mask(polars::Float32Chunked::peak_max_with_start_end(f, Some(-1.0 / 0.0), Some(-1.0 / 0.0)));
             match (big, neg, i8o) {{
-                (Err(a), Err(b), Err(c)) => `${{a.kind()}} ${{b.kind()}} ${{c.kind()}} ${{nan}} ${{ninf}} ${{u.len()}}`,
+                (Err(a), Err(b), Err(c)) => `${{a.kind()}} ${{b.kind()}} ${{c.kind()}} ${{nan}} ${{ninf}} ${{u.len().unwrap()}}`,
                 _ => "unexpected".to_string(),
             }}
         }}

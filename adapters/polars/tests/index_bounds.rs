@@ -35,7 +35,7 @@ fn show(r: p::PolarsResult<p::IdxCa>) -> String {
     }
 }
 const HELPERS: &str = r#"
-    fn show(r) { match r { Ok(ca) => { let s = []; let i = 0; while i < ca.len() { s.push(match ca.get(i).unwrap() { Some(v) => `${v}`, None => "n" }); i = i + 1; } s.iter().fold("", |a, b| if a == "" { b } else { a + "," + b }) }, Err(_) => "E" } }
+    fn show(r) { match r { Ok(ca) => { let s = []; let i = 0; while i < ca.len().unwrap() { s.push(match ca.get(i).unwrap() { Some(v) => `${v}`, None => "n" }); i = i + 1; } s.iter().fold("", |a, b| if a == "" { b } else { a + "," + b }) }, Err(_) => "E" } }
 "#;
 
 macro_rules! rust_row {
@@ -55,7 +55,7 @@ fn rune_row(alias: &str, signed: bool) -> String {
             let nulls = polars::{alias}::from_vec_validity("x", [1, 9], Some([false, true])).unwrap();
             let f = |c, n, b| show(polars::{alias}::convert_and_bound_idx_ca(c, n, b));
             let out = `${{f(ca, 3, true)}} ${{f(ca, 3, false)}} ${{f(ca, 0, true)}} ${{f(nulls, 5, true)}} ${{f(nulls, 5, false)}}`;
-            if ca.len() > 0 && nulls.null_count() == 1 {{ out }} else {{ "input changed".to_string() }}
+            if ca.len().unwrap() > 0 && nulls.null_count().unwrap() == 1 {{ out }} else {{ "input changed".to_string() }}
         }}
     "#))
 }

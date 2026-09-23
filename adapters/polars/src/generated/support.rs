@@ -142,6 +142,21 @@ pub(crate) fn copy_slice<T: Clone, U>(slice: &[T], method: &str, mut conv: impl 
 	}
 	Ok(out)
 }
+// Record 0093: the generator reads `IdxSize` back with `as i64`, which is
+// exact only while `IdxSize` is `u32` (Polars without `bigidx`); a build that
+// widens it must fail here rather than wrap silently.
+const _: () = assert!(std::mem::size_of::<p::IdxSize>() <= 4, "IdxSize read-back assumes u32; enable checked widening for bigidx");
+
+// Record 0093: a proven-bounded `usize` (release `[[bounded_readbacks]]`:
+// the length of, or an index into, a `Vec`/`IndexMap`, so at most
+// `isize::MAX`) converts exactly with `as i64` on a target whose `usize` is at
+// most 64 bits; the debug assertion re-checks the proof at run time in tests.
+const _: () = assert!(std::mem::size_of::<usize>() <= 8, "bounded_usize assumes usize fits in 64 bits");
+pub(crate) fn bounded_usize(v: usize) -> i64 {
+	debug_assert!(v <= i64::MAX as usize, "a release-listed bounded read-back exceeded i64::MAX: {v}");
+	v as i64
+}
+
 /// Record 0091: an index length Polars asserts is below `IdxSize::MAX`,
 /// checked first so a script gets an error instead of a panic.
 pub(crate) fn below_idx_max(v: usize, method: &str, param: &str) -> Result<usize, Error> {
@@ -697,6 +712,21 @@ mod bits_tests {
 		assert_eq!(widen::<usize>(i64::MAX as usize, "m").unwrap(), i64::MAX);
 		let over = widen::<usize>(i64::MAX as usize + 1, "m").unwrap_err();
 		assert_eq!((over.0.as_str(), over.1.as_str()), ("ConversionError", "m: 9223372036854775808 does not fit a script integer"));
+		// record 0093: the synthetic extremes of every risky source type
+		assert_eq!(widen::<usize>(usize::MAX, "m").unwrap_err().1, format!("m: {} does not fit a script integer", usize::MAX));
+		assert_eq!(widen::<u64>(u64::MAX, "m").unwrap_err().0, "ConversionError");
+		assert_eq!(widen::<u64>(i64::MAX as u64, "m").unwrap(), i64::MAX);
+		assert_eq!(widen::<isize>(isize::MIN, "m").unwrap(), isize::MIN as i64);
+		assert_eq!(widen::<i128>(i64::MIN as i128 - 1, "m").unwrap_err().0, "ConversionError");
+		assert_eq!(widen::<u128>(u128::MAX, "m").unwrap_err().0, "ConversionError");
+		assert_eq!(bounded_usize(i64::MAX as usize), i64::MAX);
+	}
+
+	#[test]
+	#[cfg(debug_assertions)]
+	#[should_panic(expected = "bounded read-back")]
+	fn a_bounded_readback_out_of_range_trips_the_debug_assertion() {
+		bounded_usize(usize::MAX);
 	}
 
 	#[test]

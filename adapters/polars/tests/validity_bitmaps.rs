@@ -42,7 +42,7 @@ fn masks_nulls_and_chunks_keep_their_shape() {
             let whole = match two.rechunk_validity().unwrap() { Some(v) => bits(v), None => "none" };
             let valid = fx::series_i64().i64().unwrap();
             let unmasked = match valid.rechunk_validity().unwrap() { Some(_) => "mask", None => "none" };
-            `${single} ${per.len()} ${first} ${second} ${whole} ${unmasked} ${one.len()}`
+            `${single} ${per.len()} ${first} ${second} ${whole} ${unmasked} ${one.len().unwrap()}`
         }
     "#);
     assert_eq!(result, "101 2 101 none 101111 none 3");
@@ -68,7 +68,7 @@ fn the_bit_bound_is_exact_and_cumulative_across_chunks() {
             polars::set_materialize_limit(0);
             let again = one.rechunk_validity().is_ok();
             match (below, second) {
-                (Err(a), Err(b)) => `${at} ${a.kind()} ${a.message()} | ${b.message()} | ${both} ${again} ${two.len()}`,
+                (Err(a), Err(b)) => `${at} ${a.kind()} ${a.message()} | ${b.message()} | ${both} ${again} ${two.len().unwrap()}`,
                 _ => "unexpected".to_string(),
             }
         }

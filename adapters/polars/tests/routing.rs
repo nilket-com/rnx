@@ -70,7 +70,7 @@ fn generated_bindings_run() {
 		let out = vm.call(["main"], ()).unwrap();
 		rune::from_value::<String>(out).unwrap()
 	};
-	assert_eq!(run("pub fn main() { let d = polars::DataFrame::empty(); `${d.height()} ${d.width()}` }"), "0 0");
+	assert_eq!(run("pub fn main() { let d = polars::DataFrame::empty(); `${d.height().unwrap()} ${d.width()}` }"), "0 0");
 	let err = run("pub fn main() { let d = polars::DataFrame::empty(); match d.try_get_column_index(\"x\") { Ok(i) => `ok ${i}`, Err(e) => `${e.kind()}|${e}` } }");
 	assert!(err.starts_with("ColumnNotFound|") && err.contains("\"x\""), "{err}");
 }

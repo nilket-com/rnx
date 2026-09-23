@@ -114,7 +114,7 @@ fn a_callback_sees_a_byte_snapshot_and_its_failure_keeps_the_receiver() {
             polars::set_materialize_limit(0);
             let fine = ca.for_each(|b| {});
             match (seen, bounded, fine) {
-                (Err(a), Err(b), Ok(_)) => `${a.kind()} ${a.message()} | ${b.kind()} ${b.message()} | ${ca.len()}`,
+                (Err(a), Err(b), Ok(_)) => `${a.kind()} ${a.message()} | ${b.kind()} ${b.message()} | ${ca.len().unwrap()}`,
                 _ => "unexpected".to_string(),
             }
         }
@@ -136,7 +136,7 @@ fn callback_slices_share_one_bound_across_the_whole_call() {
             let fits = ca.for_each(|b| {});
             polars::set_materialize_limit(0);
             match (together, fits) {
-                (Err(e), Ok(_)) => `${e.kind()} ${e.message()} ${ca.len()}`,
+                (Err(e), Ok(_)) => `${e.kind()} ${e.message()} ${ca.len().unwrap()}`,
                 _ => "unexpected".to_string(),
             }
         }

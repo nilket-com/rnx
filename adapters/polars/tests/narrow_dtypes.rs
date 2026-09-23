@@ -37,7 +37,7 @@ fn narrow_integer_aliases_read_back_with_their_dtype() {
             let signed = i8.dtype().is_signed_integer() && i16.dtype().is_signed_integer() && u8.dtype().is_unsigned_integer() && u16.dtype().is_unsigned_integer();
             let values = i8.get(0).unwrap() == Some(1) && i8.get(2).unwrap() == Some(3)
                 && i16.get(1).unwrap() == Some(2) && u8.get(2).unwrap() == Some(3) && u16.get(0).unwrap() == Some(1);
-            let lengths = i8.len() == 3 && i16.len() == 3 && u8.len() == 3 && u16.len() == 3;
+            let lengths = i8.len().unwrap() == 3 && i16.len().unwrap() == 3 && u8.len().unwrap() == 3 && u16.len().unwrap() == 3;
             // each alias refuses the other widths: the four are distinct script types
             let distinct = fx::series_i8().i16().is_err() && fx::series_i16().i8().is_err() && fx::series_u8().u16().is_err() && fx::series_u16().u8().is_err();
             `${integer} ${signed} ${values} ${lengths} ${distinct}`
