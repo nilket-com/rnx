@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 329,
-    "generated": 2124,
+    "generated": 2125,
     "out_of_scope": 710,
-    "unsupported": 1908
+    "unsupported": 1907
   },
   "entries": [
     {
@@ -19545,95 +19545,170 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__binaryoffsetchunked",
+          "disposition": "case (fixture via producer Series::binary_offset on series_binary_offset)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__binaryoffsetchunked",
+          "receiver": "polars_core::datatypes::BinaryOffsetChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryOffsetChunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__binarychunked",
+          "disposition": "case (fixture via producer Series::binary on series_binary)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__binarychunked",
+          "receiver": "polars_core::datatypes::BinaryChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BinaryChunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__booleanchunked",
+          "receiver": "polars_core::datatypes::BooleanChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::BooleanChunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__float32chunked",
+          "receiver": "polars_core::datatypes::Float32Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__float64chunked",
+          "receiver": "polars_core::datatypes::Float64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__stringchunked",
+          "disposition": "case (fixture via producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__stringchunked",
+          "receiver": "polars_core::datatypes::StringChunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::StringChunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__idxca",
+          "receiver": "polars_core::datatypes::aliases::IdxCa",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::layout"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__layout__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__chunkedarray__layout__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::layout"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
       "exceptions": [
         {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::BinaryOffsetType>)",
-          "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::BinaryType>)",
-          "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::BooleanType>)",
-          "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Float32Type>)",
-          "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Float64Type>)",
-          "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int16Type>)",
-          "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int32Type>)",
-          "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int64Type>)",
-          "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int8Type>)",
-          "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::ListType>)",
+          "reason": "refused: layout snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>` is not a listed pair",
           "receiver": "polars_core::datatypes::ListChunked",
           "route": "instantiation"
         },
         {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::StringType>)",
-          "receiver": "polars_core::datatypes::StringChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::StructType>)",
+          "reason": "refused: layout snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>` is not a listed pair",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt16Type>)",
-          "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt32Type>)",
-          "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt64Type>)",
-          "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt8Type>)",
-          "receiver": "polars_core::datatypes::UInt8Chunked",
           "route": "instantiation"
         }
       ],
+      "execution": "case (on 14 of 14 receivers)",
+      "fallible": true,
       "key": "polars_core:3706",
       "kind": "inherent",
-      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
+      "note": "instantiated on 14 of 16 alias identities",
+      "rune": "polars::BinaryOffsetChunked::layout polars::BinaryChunked::layout polars::BooleanChunked::layout polars::Float32Chunked::layout polars::Float64Chunked::layout polars::Int16Chunked::layout polars::Int32Chunked::layout polars::Int64Chunked::layout polars::Int8Chunked::layout polars::StringChunked::layout polars::UInt16Chunked::layout polars::IdxCa::layout polars::UInt64Chunked::layout polars::UInt8Chunked::layout",
       "signature": "() -> polars_core::chunked_array::ChunkedArrayLayout<T>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -121628,7 +121703,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::BinaryOffsetType>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
@@ -121639,7 +121714,7 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryChunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::BinaryType>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
@@ -121650,7 +121725,7 @@
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::BooleanType>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
@@ -121661,7 +121736,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Float32Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
@@ -121672,7 +121747,7 @@
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Float64Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
@@ -121683,7 +121758,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int16Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
@@ -121694,7 +121769,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int32Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
@@ -121705,7 +121780,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int64Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
@@ -121716,7 +121791,7 @@
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::Int8Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
@@ -121727,7 +121802,7 @@
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::ListType>)",
+        "disposition": "refused: refused: layout snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>` is not a listed pair",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
@@ -121738,7 +121813,7 @@
       },
       {
         "alias": "polars_core::datatypes::StringChunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::StringType>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
@@ -121749,7 +121824,7 @@
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::StructType>)",
+        "disposition": "refused: refused: layout snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>` is not a listed pair",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
@@ -121760,7 +121835,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt16Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
@@ -121771,7 +121846,7 @@
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt32Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
@@ -121782,7 +121857,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt64Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
@@ -121793,7 +121868,7 @@
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "refused: unsupported: generic type: return (polars_core::chunked_array::ChunkedArrayLayout<polars_core::datatypes::UInt8Type>)",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
@@ -140070,10 +140145,10 @@
       },
       "pairs": 3544,
       "proven_dispositions": {
-        "emitted": 1077,
+        "emitted": 1091,
         "excluded": 12,
         "not eligible": 188,
-        "refused": 84
+        "refused": 70
       }
     }
   },
@@ -141407,7 +141482,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2425,
+  "oracle_cases": 2439,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -144357,7 +144432,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "271338e439074e54406a5a9cedbcb9fb07e45b11799131509ceb0533fe744d2b",
+    "sha256": "deb828aad356aba000ae915cc2b1faa1c8bcd27803352fe2673dc0fd6af32b47",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",

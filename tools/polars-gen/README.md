@@ -275,6 +275,17 @@ Polars. `support::owned_snapshot*` then streams each owned array through
 the shared `copy_chunk` and `finish_copy`, with 0103's per-chunk and
 final-total checks and no intermediate collection.
 
+Record 0106's `[[layout_snapshots]]` entry maps `layout`.
+`LayoutSnapshot::check` requires the recorded shape, including the
+`T: PolarsDataType` where-clause, and the exact `ChunkedArrayLayout<T>`
+return. With the pair in scope, `World::ret` requires
+`ChunkedArrayLayout<the pair's owner type>` exactly. The emitter inserts the
+kind's preflight before the call. `support::layout_snapshot*` matches the
+real variant, copies its one array or all its chunks through `iter_copy`
+against the preflight, and returns `(variant name, chunks)`. The oracle's
+script side frames this listed pair like the Rust tuple formatter; other
+tuple returns are still not compared.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an
