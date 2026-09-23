@@ -6,7 +6,7 @@ inventory (`probes/0072/out/<release>-adapter/result/inventory.json`).
     cargo run --manifest-path tools/polars-gen/Cargo.toml -- \
         probes/0072/out/0.55.2-adapter/result/inventory.json adapters/polars \
         --release tools/polars-gen/releases/0.55.2-joins.toml \
-        --buckets mechanical,conversion,option_struct
+        --buckets mechanical,conversion,option_struct,callback
 
 `--release` is required and names a file in `releases/`: the release's
 API-crate list, its `[provenance]` (the crates.io `release` or Git `rev`
@@ -76,6 +76,21 @@ qualification, inherent clash, fallible integer vs cast, unmappable
 source). The oracle's `From` cases with a wrapped, clonable source
 compare the source after the call as well as the result; the assignment
 cases use the mutating shape with a unit return.
+
+Record 0080 emits callback bindings from the 0079 census. Invocation,
+mutable-argument and sink audits in the release file gate emission; a
+missing audit leaves the operation unbound. Each Rune function is installed
+as a synchronized function before Polars work, then called through the
+guarded bridge under the current callback budget. Callback-taking bindings
+and classified sinks are routed; audited metadata methods in
+`[[callback_safe]]` remain usable inside callbacks. `[[callback_recipe]]`
+entries keyed by closure signature provide paired Rune and Rust closures
+for value-changing oracle cases. The generator checks every recipe's `uses`
+against the emitted route before making a case. `callbacks.rows` records
+the disposition after emission, and each binding records its route reason
+and how a re-entry refusal propagates. Vector parameters borrow the Rune
+container and its elements through `support::borrow_vec` and
+`support::borrow_element`; the caller can use both afterwards.
 
 Writes `adapters/polars/src/generated/` (types, functions, catalogue,
 fixtures), `adapters/polars/tests/generated_oracle.rs` and

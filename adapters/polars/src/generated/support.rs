@@ -16,9 +16,16 @@ pub struct Error(pub(crate) String, pub(crate) String);
 
 impl From<p::PolarsError> for Error {
 	fn from(e: p::PolarsError) -> Self {
-		let kind = format!("{e:?}");
-		let kind = kind.split(['(', ' ']).next().unwrap_or("Unknown").to_string();
-		Error(kind, e.to_string())
+		// The kind is the innermost error's: Polars wraps a failure in
+		// `Context`/`ExprContext` on some paths (`compute_schema`) and not
+		// on others (`collect`), and the wrapper is not a kind of its own.
+		let mut inner = &e;
+		while let p::PolarsError::Context { error, .. } | p::PolarsError::ExprContext { error, .. } = inner { inner = error; }
+		let kind = format!("{inner:?}");
+		let kind = kind.split(['(', ' ', '{']).next().unwrap_or("Unknown").to_string();
+		let message = e.to_string();
+		let kind = if kind == "ComputeError" && message.starts_with("callback ") { "CallbackError".into() } else { kind };
+		Error(kind, message)
 	}
 }
 
@@ -111,8 +118,11 @@ impl Error {
 		Error("ConversionError".into(), what.to_string())
 	}
 	/// The engine thread could not be started or joined.
-	pub(crate) fn engine(what: String) -> Error {
-		Error("EngineError".into(), what)
+	pub(crate) fn engine(failure: crate::engine::EngineFailure) -> Error {
+		match failure {
+			crate::engine::EngineFailure::NoThread(text) => Error("EngineError".into(), text),
+			crate::engine::EngineFailure::Callback(text) | crate::engine::EngineFailure::Reentry(text) => Error("CallbackError".into(), text),
+		}
 	}
 	#[rune::function(instance, path = kind)]
 	fn kind(&self) -> String {
@@ -151,8 +161,101 @@ pub(crate) fn take<W: Any + Clone>(v: &rune::Value, name: &str) -> Result<W, Err
 		.map_err(|_| Error::conversion(&format!("{name}: expected {}", std::any::type_name::<W>().rsplit("::").next().unwrap_or("value"))))
 }
 
+/// Clone a script vector's elements while preserving its container.
+pub(crate) fn borrow_vec(value: &rune::Value, name: &str) -> Result<Vec<rune::Value>, Error> {
+	let values = value.borrow_ref::<rune::runtime::Vec>()
+		.map_err(|_| Error::conversion(&format!("{name}: expected a vector")))?;
+	Ok(values.iter().cloned().collect())
+}
+
+pub(crate) trait BorrowRune: Sized {
+	fn borrow(value: &rune::Value, name: &str) -> Result<Self, Error>;
+}
+pub(crate) fn borrow_element<T: BorrowRune>(value: &rune::Value, name: &str) -> Result<T, Error> {
+	T::borrow(value, name)
+}
+impl BorrowRune for rune::Value {
+	fn borrow(value: &rune::Value, _: &str) -> Result<Self, Error> { Ok(value.clone()) }
+}
+macro_rules! borrow_copy {
+	($($ty:ty),*) => {$(
+		impl BorrowRune for $ty {
+			fn borrow(value: &rune::Value, name: &str) -> Result<Self, Error> {
+				rune::from_value(value.clone()).map_err(|e| Error::conversion(&format!("{name}: {e}")))
+			}
+		}
+	)*};
+}
+borrow_copy!(i64, f64, bool);
+impl BorrowRune for String {
+	fn borrow(value: &rune::Value, name: &str) -> Result<Self, Error> {
+		value.borrow_string_ref().map(|s| s.to_string()).map_err(|e| Error::conversion(&format!("{name}: {e}")))
+	}
+}
+impl<A: BorrowRune, B: BorrowRune> BorrowRune for (A, B) {
+	fn borrow(value: &rune::Value, name: &str) -> Result<Self, Error> {
+		let pair = value.borrow_ref::<rune::runtime::OwnedTuple>().map_err(|e| Error::conversion(&format!("{name}: {e}")))?;
+		if pair.len() != 2 { return Err(Error::conversion(&format!("{name}: expected a pair"))); }
+		Ok((A::borrow(&pair[0], name)?, B::borrow(&pair[1], name)?))
+	}
+}
+
+pub(crate) mod callback {
+	use super::{Error, rune};
+	use crate::engine::{self, CallbackFailure, CallbackGuard};
+	use rune::runtime::{Function, GuardedArgs, SyncFunction, FromValue};
+	use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
+
+	pub(super) static BUDGET: AtomicUsize = AtomicUsize::new(0);
+	const HALT_LIMITED: &str = "Halted for unexpected reason `limited`";
+
+	#[rune::function(path = set_callback_budget)]
+	pub(crate) fn set_callback_budget(n: i64) {
+		BUDGET.store(n.max(0) as usize, Ordering::SeqCst);
+	}
+	pub(crate) fn install(op: &str, f: Function) -> Result<Arc<SyncFunction>, Error> {
+		f.into_sync().map(Arc::new).map_err(|e| Error("CallbackCapture".into(), format!("callback {op}: a captured value is not a constant: {e}")))
+	}
+	pub(crate) fn bridge<A: GuardedArgs, R: FromValue>(op: &str, f: &SyncFunction, args: A) -> Result<R, CallbackFailure> {
+		if engine::in_callback() {
+			return Err(CallbackFailure { op: op.into(), cause: "nested callback: a callback invoked while another is running on this thread".into() });
+		}
+		let _guard = CallbackGuard::enter();
+		let budget = BUDGET.load(Ordering::SeqCst);
+		let (result, exhausted) = if budget > 0 {
+			rune::runtime::budget::with(budget, || {
+				let result = f.call::<rune::Value>(args);
+				let spent = result.is_err() && { let mut g = rune::runtime::budget::acquire(); !g.take() };
+				(result, spent)
+			}).call()
+		} else { (f.call::<rune::Value>(args), false) };
+		match result {
+			rune::runtime::VmResult::Ok(value) => {
+				let actual = value.type_info().to_string();
+				rune::from_value::<R>(value).map_err(|e| CallbackFailure { op: op.into(), cause: format!("wrong result type: expected {}, got {actual} ({e})", std::any::type_name::<R>()) })
+			}
+			rune::runtime::VmResult::Err(e) => {
+				let text = e.to_string();
+				let cause = if exhausted && text == HALT_LIMITED { format!("instruction budget {budget} exhausted") } else { format!("call failed: {text}") };
+				Err(CallbackFailure { op: op.into(), cause })
+			}
+		}
+	}
+	pub(crate) fn unwind<T>(failure: CallbackFailure) -> T {
+		std::panic::resume_unwind(Box::new(failure))
+	}
+	pub(crate) fn compute_error(failure: CallbackFailure) -> p::PolarsError {
+		p::PolarsError::ComputeError(failure.text().into())
+	}
+	pub(crate) fn convert<T>(op: &str, f: impl FnOnce() -> Result<T, Error>) -> Result<T, CallbackFailure> {
+		f().map_err(|e| CallbackFailure { op: op.into(), cause: format!("wrong result type: {}", e.1) })
+	}
+	use polars::prelude as p;
+}
+
 pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
 	m.ty::<Error>()?;
+	m.function_meta(callback::set_callback_budget)?;
 	m.function_meta(Error::kind)?;
 	m.function_meta(Error::message)?;
 	m.function_meta(Error::display)?;
@@ -286,7 +389,7 @@ mod materialize_tests {
 	fn a_routed_iterator_is_driven_on_the_engine_thread_under_a_tokio_runtime() {
 		let rt = tokio::runtime::Builder::new_current_thread().build().unwrap();
 		let names = rt.block_on(async {
-			crate::engine::run(move || {
+			crate::engine::run("support::borrowed_iterator", move || {
 				let owner = [1usize, 2, 3];
 				let it = owner.iter().map(|x| { let name = std::thread::current().name().map(|s| s.to_string()); (*x, name) });
 				let out: Vec<(usize, Option<String>)> = materialize_unknown(it, "m", Ok).unwrap();
@@ -297,5 +400,151 @@ mod materialize_tests {
 		});
 		assert_eq!(names.len(), 3);
 		assert!(names.iter().all(|(_, n)| n.as_deref() == Some("rnx-polars-engine")), "next must run on the engine thread: {names:?}");
+	}
+}
+
+#[cfg(all(test, feature = "test-support"))]
+mod callback_tests {
+	//! Direct bridge controls (plan 0080, gate 1): nested refusal before any
+	//! budget, restoration of the guard and of the outer allowance on the
+	//! calling thread after success, VM failure, native panic and typed
+	//! unwind under a nonzero inner budget, and exact-halt exhaustion.
+	use super::callback;
+	use crate::engine::{self, CallbackFailure, CallbackGuard};
+	use rnx::rune;
+	use rune::runtime::{Function, SyncFunction};
+	use std::sync::Arc;
+
+	static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+	#[rune::function(path = native_panic)]
+	fn native_panic() { panic!("native marker") }
+	#[rune::function(path = typed_unwind)]
+	fn typed_unwind() { callback::unwind::<()>(CallbackFailure { op: "inner".into(), cause: "typed marker".into() }) }
+
+	fn closure(body: &str) -> SyncFunction {
+		let mut probe = rune::Module::with_crate("probe").unwrap();
+		probe.function_meta(native_panic).unwrap();
+		probe.function_meta(typed_unwind).unwrap();
+		let mut context = rune::Context::with_default_modules().unwrap();
+		context.install(probe).unwrap();
+		let runtime = Arc::new(context.runtime().unwrap());
+		let mut sources = rune::Sources::new();
+		sources.insert(rune::Source::memory(format!("pub fn main() {{ {body} }}")).unwrap()).unwrap();
+		let unit = rune::prepare(&mut sources).with_context(&context).build().unwrap();
+		let mut vm = rune::Vm::new(runtime, Arc::new(unit));
+		let f: Function = rune::from_value(vm.call(["main"], ()).unwrap()).unwrap();
+		f.into_sync().unwrap()
+	}
+	/// Runs `body` on this thread under an outer allowance of `outer`
+	/// instructions and returns what it produced together with how many
+	/// units of that allowance are left afterwards: the bridge must hand
+	/// the outer allowance back exactly, whatever happened inside.
+	fn under_outer<T>(outer: usize, body: impl FnOnce() -> T) -> (T, usize) {
+		rune::runtime::budget::with(outer, || {
+			let out = body();
+			let mut guard = rune::runtime::budget::acquire();
+			let mut left = 0;
+			while left <= outer && guard.take() { left += 1; }
+			(out, left)
+		}).call()
+	}
+	fn set_budget(n: usize) { callback::BUDGET.store(n, std::sync::atomic::Ordering::SeqCst) }
+
+	#[test]
+	fn nested_callback_is_refused_before_any_budget() {
+		let _serial = SERIAL.lock().unwrap();
+		let f = closure("|x| x + 1");
+		set_budget(1);
+		let outer = CallbackGuard::enter();
+		let ((result, still_inside), left) = under_outer(3, || {
+			let r = callback::bridge::<_, i64>("nested", &f, (1i64,));
+			(r, engine::in_callback())
+		});
+		drop(outer);
+		set_budget(0);
+		let err = result.unwrap_err();
+		assert_eq!(err.op, "nested");
+		assert!(err.cause.starts_with("nested callback"), "{}", err.cause);
+		assert!(still_inside, "the refusal must not drop the running callback's guard");
+		assert!(!engine::in_callback());
+		assert_eq!(left, 3, "the outer allowance was touched by a refused nested call");
+	}
+
+	#[test]
+	fn success_restores_guard_and_outer_allowance() {
+		let _serial = SERIAL.lock().unwrap();
+		let f = closure("|x| x + 1");
+		set_budget(1000);
+		let ((value, inside_after), left) = under_outer(3, || {
+			let r = callback::bridge::<_, i64>("ok", &f, (1i64,));
+			(r, engine::in_callback())
+		});
+		set_budget(0);
+		assert_eq!(value.unwrap(), 2);
+		assert!(!inside_after);
+		assert_eq!(left, 3);
+	}
+
+	#[test]
+	fn vm_failure_restores_guard_and_outer_allowance() {
+		let _serial = SERIAL.lock().unwrap();
+		let f = closure(r#"|x| panic("vm marker")"#);
+		set_budget(1000);
+		let ((result, inside_after), left) = under_outer(3, || {
+			let r = callback::bridge::<_, i64>("vm", &f, (1i64,));
+			(r, engine::in_callback())
+		});
+		set_budget(0);
+		let err = result.unwrap_err();
+		assert!(err.cause.starts_with("call failed:") && err.cause.contains("vm marker"), "{}", err.cause);
+		assert!(!inside_after);
+		assert_eq!(left, 3);
+	}
+
+	#[test]
+	fn exhaustion_is_exact_halt_and_restores_outer_allowance() {
+		let _serial = SERIAL.lock().unwrap();
+		let f = closure("|x| { let n = 0; loop { n = n + 1; } }");
+		set_budget(1);
+		let ((result, inside_after), left) = under_outer(3, || {
+			let r = callback::bridge::<_, i64>("spin", &f, (1i64,));
+			(r, engine::in_callback())
+		});
+		set_budget(0);
+		assert_eq!(result.unwrap_err().cause, "instruction budget 1 exhausted");
+		assert!(!inside_after);
+		assert_eq!(left, 3);
+	}
+
+	#[test]
+	fn native_panic_under_inner_budget_restores_guard_and_outer_allowance() {
+		let _serial = SERIAL.lock().unwrap();
+		let f = closure("|x| probe::native_panic()");
+		set_budget(1000);
+		let ((payload, inside_after), left) = under_outer(3, || {
+			let p = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| callback::bridge::<_, i64>("native", &f, (1i64,)))).unwrap_err();
+			(p, engine::in_callback())
+		});
+		set_budget(0);
+		assert!(payload.downcast_ref::<CallbackFailure>().is_none(), "a native panic must not be mistaken for a typed unwind");
+		assert!(!inside_after, "the guard must be released while unwinding");
+		assert_eq!(left, 3);
+	}
+
+	#[test]
+	fn typed_unwind_under_inner_budget_crosses_the_bridge_and_restores() {
+		let _serial = SERIAL.lock().unwrap();
+		let f = closure("|x| probe::typed_unwind()");
+		set_budget(1000);
+		let ((payload, inside_after), left) = under_outer(3, || {
+			let p = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| callback::bridge::<_, i64>("outer", &f, (1i64,)))).unwrap_err();
+			(p, engine::in_callback())
+		});
+		set_budget(0);
+		let failure = payload.downcast::<CallbackFailure>().expect("the typed payload must cross the bridge intact");
+		assert_eq!((failure.op.as_str(), failure.cause.as_str()), ("inner", "typed marker"));
+		assert!(!inside_after);
+		assert_eq!(left, 3);
 	}
 }
