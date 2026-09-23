@@ -12,8 +12,10 @@ fn root() -> PathBuf {
 }
 
 fn inventory() -> PathBuf {
-	let p = root().join("probes/0072/out/0.55.2-adapter/result/inventory.json");
-	assert!(p.exists(), "missing {}: run probes/0072/run.sh report first", p.display());
+	// Record 0081: the adapter is documented with the four narrow integer
+	// dtype features; the 0080 `0.55.2-adapter` inventory stays as a baseline.
+	let p = root().join("probes/0072/out/0.55.2-adapter-narrow/result/inventory.json");
+	assert!(p.exists(), "missing {}: run probes/0072/inventory/doc.sh 0.55.2 adapter-narrow and extract it first", p.display());
 	p
 }
 
@@ -55,6 +57,71 @@ fn a_release_file_for_another_inventory_is_refused() {
 		let stderr = String::from_utf8_lossy(&out.stderr);
 		assert!(!out.status.success(), "{wrong} against the 0.55.2 inventory must be refused");
 		assert!(stderr.contains("refusing to generate"), "{wrong}: refusal must name the provenance mismatch, got: {stderr}");
+	}
+}
+
+/// Record 0081: the shipped release policy names the `adapter-narrow`
+/// configuration and its dtype features; the previous adapter inventory,
+/// documented without them, is refused so a feature change cannot be
+/// reported against the denominator that predates it.
+#[test]
+fn the_previous_feature_configuration_is_refused() {
+	let old = root().join("probes/0072/out/0.55.2-adapter/result/inventory.json");
+	assert!(old.exists(), "missing baseline {}", old.display());
+	let out = Command::new("cargo")
+		.args(["run", "-q", "--locked", "--manifest-path"])
+		.arg(root().join("tools/polars-gen/Cargo.toml"))
+		.arg("--")
+		.arg(old)
+		.arg(root().join("adapters/polars"))
+		.args(["--buckets", BUCKETS, "--release"])
+		.arg(root().join("tools/polars-gen/releases").join(RELEASE_FILE))
+		.arg("--check")
+		.env("CARGO_TARGET_DIR", root().join("target/0073"))
+		.output()
+		.expect("run polars-gen");
+	let stderr = String::from_utf8_lossy(&out.stderr);
+	assert!(!out.status.success(), "the 0.55.2-adapter inventory must be refused by the adapter-narrow policy");
+	assert!(stderr.contains("refusing to generate") && stderr.contains("adapter-narrow"), "refusal must name the configuration mismatch, got: {stderr}");
+}
+
+/// Record 0081: with the right configuration label, an inventory whose
+/// resolved feature set differs from the pinned one, by a missing base
+/// feature or by an extra feature, is refused on the feature set itself.
+#[test]
+fn a_wrong_feature_set_under_the_right_configuration_is_refused() {
+	let text = std::fs::read_to_string(inventory()).unwrap();
+	let mut inv: serde_json::Value = serde_json::from_str(&text).unwrap();
+	assert_eq!(inv["provenance"]["cfg"], "adapter-narrow");
+	let pinned: Vec<String> = inv["provenance"]["features"].as_array().unwrap().iter().map(|f| f.as_str().unwrap().to_string()).collect();
+	assert!(pinned.contains(&"lazy".to_string()) && pinned.contains(&"dtype-i8".to_string()), "{pinned:?}");
+	let dir = root().join("target/0073/wrong-features");
+	std::fs::create_dir_all(&dir).unwrap();
+	let variants: [(&str, Vec<String>); 2] = [
+		("missing-base", pinned.iter().filter(|f| *f != "lazy").cloned().collect()),
+		("extra", pinned.iter().cloned().chain(["dtype-i128".to_string()]).collect()),
+	];
+	for (name, features) in variants {
+		inv["provenance"]["features"] = serde_json::json!(features);
+		let path = dir.join(format!("{name}.json"));
+		std::fs::write(&path, serde_json::to_string(&inv).unwrap()).unwrap();
+		let out = Command::new("cargo")
+			.args(["run", "-q", "--locked", "--manifest-path"])
+			.arg(root().join("tools/polars-gen/Cargo.toml"))
+			.arg("--")
+			.arg(&path)
+			.arg(root().join("adapters/polars"))
+			.args(["--buckets", BUCKETS, "--release"])
+			.arg(root().join("tools/polars-gen/releases").join(RELEASE_FILE))
+			.arg("--check")
+			.env("CARGO_TARGET_DIR", root().join("target/0073"))
+			.output()
+			.expect("run polars-gen");
+		let stderr = String::from_utf8_lossy(&out.stderr);
+		assert!(!out.status.success(), "{name}: a wrong feature set under cfg adapter-narrow must be refused");
+		assert!(stderr.contains("refusing to generate") && stderr.contains("feature set"), "{name}: refusal must name the feature set, got: {stderr}");
+		let expected = if name == "missing-base" { "lacks [\"lazy\"]" } else { "adds [\"dtype-i128\"]" };
+		assert!(stderr.contains(expected), "{name}: refusal must name the difference {expected}, got: {stderr}");
 	}
 }
 

@@ -21,6 +21,8 @@ rm -rf "$out" "$host"; mkdir -p "$host/src" "$out" "$here/locks"
 FULL_OMIT=""
 case "$cfg" in
   adapter) features='default-features = false, features = ["lazy", "csv", "parquet"]' ;;
+  # Record 0081: the adapter's feature set with the four narrow integer dtypes.
+  adapter-narrow) features='default-features = false, features = ["lazy", "csv", "parquet", "dtype-i8", "dtype-i16", "dtype-u8", "dtype-u16"]' ;;
   full)
     cat > "$host/Cargo.toml" <<TOML
 [package]

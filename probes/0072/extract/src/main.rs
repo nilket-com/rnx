@@ -39,6 +39,13 @@ fn main() {
                     prov.insert(key.to_string(), v.clone());
                 }
             }
+            // Record 0081: the resolved feature set travels with the
+            // inventory, so a generator can refuse an inventory documented
+            // under a different feature configuration than its release
+            // policy names (the inventory is the coverage denominator).
+            if let Some(v) = pins.get("resolved_polars_features") {
+                prov.insert("features".to_string(), v.clone());
+            }
             if !prov.contains_key("release") && !prov.contains_key("rev") {
                 eprintln!("{}: neither `release` nor `rev` recorded; the inventory gets no provenance", pins_path.display());
                 serde_json::Value::Null

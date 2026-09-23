@@ -71,6 +71,16 @@ struct ReleaseProvenance {
     release: Option<String>,
     #[serde(default)]
     rev: Option<String>,
+    /// Record 0081: the documentation configuration (`cfg` in pins.json)
+    /// and the Polars features it must have resolved. When named, an
+    /// inventory documented under another configuration or without every
+    /// listed feature is refused: the inventory is the coverage
+    /// denominator, and a feature-only change must not be reported
+    /// against an inventory that predates it.
+    #[serde(default)]
+    cfg: Option<String>,
+    #[serde(default)]
+    features: Vec<String>,
 }
 #[derive(serde::Deserialize, Clone)]
 struct Unordered {
@@ -140,7 +150,25 @@ impl Release {
                 other => return Err(format!("release file `{}` is for rev {want}; the inventory records {other:?}", self.name)),
             }
         }
-        Ok(format!("release {:?} rev {:?} cfg {:?}", p.release, p.rev, p.cfg))
+        if let Some(want) = &self.provenance.cfg {
+            match &p.cfg {
+                Some(have) if have == want => {}
+                other => return Err(format!("release file `{}` is for configuration {want}; the inventory records {other:?}", self.name)),
+            }
+        }
+        if !self.provenance.features.is_empty() {
+            // The complete resolved set, compared exactly: a missing base
+            // feature or an extra one documents a different surface.
+            let Some(have) = &p.features else { return Err(format!("release file `{}` pins features {:?}; the inventory records no feature set (re-extract it with the record 0081 extractor)", self.name, self.provenance.features)) };
+            let want: std::collections::BTreeSet<&String> = self.provenance.features.iter().collect();
+            let have: std::collections::BTreeSet<&String> = have.iter().collect();
+            if want != have {
+                let missing: Vec<&&String> = want.difference(&have).collect();
+                let extra: Vec<&&String> = have.difference(&want).collect();
+                return Err(format!("release file `{}` pins the resolved feature set {:?}; the inventory's set lacks {missing:?} and adds {extra:?}", self.name, self.provenance.features));
+            }
+        }
+        Ok(format!("release {:?} rev {:?} cfg {:?} features {}", p.release, p.rev, p.cfg, p.features.as_ref().map_or("unrecorded".to_string(), |f| format!("{} resolved", f.len()))))
     }
 }
 
@@ -1672,13 +1700,13 @@ cite = "t"
     assert!(!r.policy("polars_lazy::frame::LazyFrame::cross_join", &p(&base)).0, "an unlisted operation is ordered");
     assert!(!r.policy("other::LazyFrame::join", &p(&with(&base, "polars::JoinArgs::default_()"))).0, "a same-named method elsewhere is not matched");
     // provenance: the release file must belong to the inventory
-    let inv = |release: Option<&str>, rev: Option<&str>| Inventory { callables: vec![], supporting: vec![], provenance: Some(model::Provenance { release: release.map(String::from), rev: rev.map(String::from), cfg: None }) };
+    let inv = |release: Option<&str>, rev: Option<&str>| Inventory { callables: vec![], supporting: vec![], provenance: Some(model::Provenance { release: release.map(String::from), rev: rev.map(String::from), cfg: None, features: None }) };
     assert!(r.check_provenance(&inv(Some("9.9.9"), None)).is_ok());
     assert!(r.check_provenance(&inv(Some("0.55.2"), None)).is_err(), "another release is refused");
     assert!(r.check_provenance(&inv(None, Some("abc"))).is_err(), "a Git inventory is refused by a release-pinned file");
     assert!(r.check_provenance(&Inventory { callables: vec![], supporting: vec![], provenance: None }).is_err(), "no provenance is refused");
     let mut g = r.clone();
-    g.provenance = ReleaseProvenance { release: None, rev: Some("abc".into()) };
+    g.provenance = ReleaseProvenance { release: None, rev: Some("abc".into()), cfg: None, features: vec![] };
     assert!(g.check_provenance(&inv(None, Some("abc"))).is_ok());
     assert!(g.check_provenance(&inv(None, Some("abd"))).is_err(), "another revision is refused");
     let mut n = r.clone();

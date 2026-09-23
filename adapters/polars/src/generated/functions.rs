@@ -7995,12 +7995,24 @@ fn f_1c0f328d__convert__from_f32__polars_plan__dsl__expr__expr(value: f64) -> Ex
 /// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<f64>`. from_f64(value: float) -> Expr
 #[rune::function(free, path = Expr::from_f64)]
 fn f_13f336b4__convert__from_f64__polars_plan__dsl__expr__expr(value: f64) -> Expr { let __r = <polars_plan::dsl::Expr as From<f64>>::from(value); Expr(__r) }
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<i8>`. from_i8(value: int) -> Expr (fallible)
+#[rune::function(free, path = Expr::from_i8)]
+fn f_f5875ec8___convert__from_i8__polars_plan__dsl__expr__expr(value: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr as From<i8>>::from(support::narrow::<i8>(value, "value")?); Ok(Expr(__r)) }
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<i16>`. from_i16(value: int) -> Expr (fallible)
+#[rune::function(free, path = Expr::from_i16)]
+fn f_9b400ba5__convert__from_i16__polars_plan__dsl__expr__expr(value: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr as From<i16>>::from(support::narrow::<i16>(value, "value")?); Ok(Expr(__r)) }
 /// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<i32>`. from_i32(value: int) -> Expr (fallible)
 #[rune::function(free, path = Expr::from_i32)]
 fn f_7ac3fb8b__convert__from_i32__polars_plan__dsl__expr__expr(value: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr as From<i32>>::from(support::narrow::<i32>(value, "value")?); Ok(Expr(__r)) }
 /// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<i64>`. from_i64(value: int) -> Expr
 #[rune::function(free, path = Expr::from_i64)]
 fn f_76a03f7d__convert__from_i64__polars_plan__dsl__expr__expr(value: i64) -> Expr { let __r = <polars_plan::dsl::Expr as From<i64>>::from(value); Expr(__r) }
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<u8>`. from_u8(value: int) -> Expr (fallible)
+#[rune::function(free, path = Expr::from_u8)]
+fn f_42fa414f___convert__from_u8__polars_plan__dsl__expr__expr(value: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr as From<u8>>::from(support::narrow::<u8>(value, "value")?); Ok(Expr(__r)) }
+/// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<u16>`. from_u16(value: int) -> Expr (fallible)
+#[rune::function(free, path = Expr::from_u16)]
+fn f_c6ee57a1__convert__from_u16__polars_plan__dsl__expr__expr(value: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr as From<u16>>::from(support::narrow::<u16>(value, "value")?); Ok(Expr(__r)) }
 /// Polars: `polars_plan::dsl::expr::Expr as core::convert::From<u32>`. from_u32(value: int) -> Expr (fallible)
 #[rune::function(free, path = Expr::from_u32)]
 fn f_83d7ea78__convert__from_u32__polars_plan__dsl__expr__expr(value: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr as From<u32>>::from(support::narrow::<u32>(value, "value")?); Ok(Expr(__r)) }
@@ -14301,8 +14313,12 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_02db65b1_convert__from__str__polars_plan__dsl__expr__expr)?;
     m.function_meta(f_1c0f328d__convert__from_f32__polars_plan__dsl__expr__expr)?;
     m.function_meta(f_13f336b4__convert__from_f64__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_f5875ec8___convert__from_i8__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_9b400ba5__convert__from_i16__polars_plan__dsl__expr__expr)?;
     m.function_meta(f_7ac3fb8b__convert__from_i32__polars_plan__dsl__expr__expr)?;
     m.function_meta(f_76a03f7d__convert__from_i64__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_42fa414f___convert__from_u8__polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_c6ee57a1__convert__from_u16__polars_plan__dsl__expr__expr)?;
     m.function_meta(f_83d7ea78__convert__from_u32__polars_plan__dsl__expr__expr)?;
     m.function_meta(f_bca03067__convert__from_u64__polars_plan__dsl__expr__expr)?;
     m.function_meta(f_607b99ec_convert__from_bool__polars_plan__dsl__expr__expr)?;

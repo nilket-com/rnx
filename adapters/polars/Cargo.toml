@@ -43,7 +43,7 @@ serde_json = "1"
 
 [dependencies]
 rnx = { path = "../..", default-features = false, features = ["count-allocations"] }
-polars = { version = "=0.55.2", default-features = false, features = ["lazy", "csv", "parquet"] }
+polars = { version = "=0.55.2", default-features = false, features = ["lazy", "csv", "parquet", "dtype-i8", "dtype-i16", "dtype-u8", "dtype-u16"] }
 # Record 0073: the generated bindings spell types by their public path
 # inside the defining crate. These are the crates the facade already links
 # under the features above; a direct dependency adds no feature.

@@ -4,6 +4,12 @@ A small synchronous Polars extension, staged through record 0058. Gate 2 covers
 CSV and Parquet; gate 3 adds bounded preview. Project/notebook integration
 is exercised by gate 4; the timing gate is recorded below; Linux regression results and platform limits follow. It is an independent workspace and does not add Polars to stock rnx.
 
+The Polars feature set is `lazy`, `csv`, `parquet` and, since record 0081,
+the four narrow integer dtypes `dtype-i8`, `dtype-i16`, `dtype-u8` and
+`dtype-u16`; the generated bindings, their oracle fixtures and the rustdoc
+inventory they are generated from (`probes/0072/out/0.55.2-adapter-narrow`)
+all describe that one build.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn

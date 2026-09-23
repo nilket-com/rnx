@@ -15,6 +15,12 @@ api_crates = ["polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_
 # The inventory this policy belongs to; the generator refuses any other.
 [provenance]
 release = "0.55.2"
+# Record 0081: the inventory must be the `adapter-narrow` documentation run
+# and must have resolved exactly this Polars feature set (pins.json
+# `resolved_polars_features`: the adapter's declared features and what
+# they pull in), compared as a whole.
+cfg = "adapter-narrow"
+features = ["csv", "dtype-categorical", "dtype-i16", "dtype-i8", "dtype-u16", "dtype-u8", "lazy", "parquet", "polars-io", "polars-lazy", "polars-ops", "polars-parquet", "streaming"]
 
 [[unordered]]
 path = "polars_lazy::frame::LazyFrame::unique"
