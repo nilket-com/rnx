@@ -1,0 +1,168 @@
+{
+ "record": "0104",
+ "key": "polars_core:3508",
+ "signature": "pub fn downcast_chunks(&self) -> Chunks<'_, T::Array>",
+ "source": "polars-core 0.55.2 chunked_array/ops/downcast.rs:10-47 (Chunks { chunks: &[ArrayRef] }: get(index) -> Option<&T> via the T::Array cast, len() = chunks.len()) and 99-102 (Chunks::new(&self.chunks))",
+ "view_probe": "[1,2,3] ++ [1,null,3]: len 2, get(0) [1,2,3], get(1) [1,null,3], get(2) None; empty receiver: len 1, get(0) [] ; a middle empty chunk, a shorter view, an absent in-range get and a changed shape are covered by support::view_snapshots_check_the_view_against_the_preflight",
+ "pairs": [
+  {
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "T_Array": "polars_arrow::array::binary::BinaryArray<i64>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::binary::BinaryArray<i64>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "T_Array": "polars_arrow::array::binview::BinaryViewArrayGeneric<[u8]>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::binview::BinaryViewArrayGeneric<[u8]>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "T_Array": "polars_arrow::array::boolean::BooleanArray",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::boolean::BooleanArray>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<f32>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<f32>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<f64>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<f64>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<i16>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<i16>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<i32>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<i32>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<i64>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<i64>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<i8>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<i8>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "T_Array": "polars_arrow::array::list::ListArray<i64>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::list::ListArray<i64>>)",
+   "after": "refused: refused: view snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>` is not a listed pair",
+   "decision": "refused (List/Struct cells are arrays or rows of fields: nested-value policy needed)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "T_Array": "polars_arrow::array::binview::BinaryViewArrayGeneric<str>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::binview::BinaryViewArrayGeneric<str>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "T_Array": "polars_arrow::array::struct_::StructArray",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::struct_::StructArray>)",
+   "after": "refused: refused: view snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>` is not a listed pair",
+   "decision": "refused (List/Struct cells are arrays or rows of fields: nested-value policy needed)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<u16>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<u16>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<u32>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<u32>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<u64>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<u64>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "T_Array": "polars_arrow::array::primitive::PrimitiveArray<u8>",
+   "before": "refused: unsupported: unreachable polars type: return (polars_core::chunked_array::ops::downcast::Chunks<polars_arrow::array::primitive::PrimitiveArray<u8>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  }
+ ],
+ "counts": {
+  "pairs": 16,
+  "emitted": 14,
+  "refused": 2,
+  "oracle_match": 14
+ },
+ "refused_proven_pairs": {
+  "before": 112,
+  "after": 98
+ },
+ "unresolved_pool": {
+  "before": 564,
+  "after": 564
+ },
+ "retained_0103_binary_sha256": "6eff4543390e7c37b56da7b258f57ddd0515128d244411c02a5c14817983f296"
+}
