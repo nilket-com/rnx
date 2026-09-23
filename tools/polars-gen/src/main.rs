@@ -1065,6 +1065,76 @@ fn callback_census(world: &World, inv: &Inventory, entries: &[Entry]) -> serde_j
     })
 }
 
+/// Record 0082 gate 2 controls, from a synthetic inventory: immutable
+/// borrowed slices are copied into bounded owned vectors as returns,
+/// as iterator items and as callback inputs; a mutable slice, an Arrow
+/// element and a slice of iterators stay refused.
+fn slice_self_test() {
+    fn sup(path: &str) -> Supporting {
+        Supporting {
+            key: path.to_string(), kind: "struct".into(), canonical_path: path.to_string(),
+            found_paths: vec![format!("polars::{}", path.rsplit("::").next().unwrap())], crate_paths: vec![path.to_string()],
+            public_fields: 0, fields_canonical: vec![], variant_shapes: vec![], variant_payloads: vec![], generic: false, lifetime: false, hidden: false,
+            derived: vec!["Clone".into(), "Debug".into()], alias_target: None, implementors: vec![], impls: vec![],
+        }
+    }
+    let series = "polars_core::series::Series";
+    let field = "polars_core::datatypes::field::Field";
+    let mk = |key: &str, name: &str, params: Vec<(&str, &str)>, generics: Vec<(&str, &str)>, ret: Option<&str>, bucket: &str| Callable {
+        key: key.into(), kind: "inherent".into(), krate: "polars_core".into(), owner: series.into(), name: name.into(), canonical_path: format!("{series}::{name}"),
+        found_paths: vec![], crate_paths: vec![], receiver: "&self".into(), params: params.iter().map(|(n, t)| Param { name: n.to_string(), ty: t.to_string(), ty_canonical: t.to_string() }).collect(),
+        ret: None, ret_canonical: ret.map(String::from), generics_canonical: generics.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(),
+        impl_for: None, impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic: false, is_unsafe: false, is_async: false,
+        deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: bucket.into(), rules: vec![],
+    };
+    let inv = Inventory {
+        callables: vec![
+            mk("ints", "ints", vec![], vec![], Some("&[i64]"), "mechanical"),
+            mk("bytes", "bytes", vec![], vec![], Some("&[u8]"), "mechanical"),
+            mk("opt", "opt", vec![], vec![], Some("core::option::Option<&[u8]>"), "mechanical"),
+            mk("fields", "fields", vec![], vec![], Some(&format!("&[{field}]")), "mechanical"),
+            mk("nested", "nested", vec![], vec![], Some("&[&[u8]]"), "mechanical"),
+            mk("items", "items", vec![], vec![], Some("impl core::iter::traits::iterator::Iterator<Item = &[i64]>"), "mechanical"),
+            mk("cb", "each_bytes", vec![("f", "F")], vec![("F", "core::ops::function::FnMut(core::option::Option<&[u8]>)")], None, "callback"),
+            mk("mutable", "mutable", vec![], vec![], Some("&mut [u8]"), "mechanical"),
+            mk("arrow", "arrow", vec![], vec![], Some("&[alloc::boxed::Box<dyn polars_arrow::array::Array>]"), "mechanical"),
+            mk("iters", "iters", vec![], vec![], Some("&[impl core::iter::traits::iterator::Iterator<Item = i64>]"), "mechanical"),
+        ],
+        supporting: vec![sup(series), sup(field)],
+        provenance: None,
+    };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    release.callback_invocation.push(CallbackInvocation { path: format!("{series}::each_bytes"), param: "f".into(), invocation: "immediate".into(), sinks: vec![], cite: "t".into() });
+    let world = World::new(&inv, &release, &["mechanical", "callback"]);
+    let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+    let emit = |key: &str| { let mut e = empty(); emit_callable(&world, &mut e, inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical", "callback"]); (e.entries[0].status.clone(), e.entries[0].reason.clone().unwrap_or_default(), e.functions) };
+    for key in ["ints", "bytes", "opt", "fields", "nested", "items"] {
+        let (status, reason, functions) = emit(key);
+        assert_eq!(status, "generated", "{key}: {reason}");
+        assert!(functions.contains("support::copy_slice(__r, \"") && functions.contains(&format!("\"{}\"", key.replace("ints", "ints"))), "{key}: the slice is copied under the bound, naming the operation:\n{functions}");
+        assert!(functions.contains("-> Result<"), "{key}: a bounded copy is fallible");
+    }
+    let (_, _, functions) = emit("nested");
+    assert_eq!(functions.matches("support::copy_slice(").count(), 2, "a slice of slices copies at both levels");
+    let (_, _, functions) = emit("items");
+    assert!(functions.contains("support::SliceBudget::enter()") && functions.contains("support::materialize_"), "iterator items share one cumulative bound over the materialized run");
+    let (status, reason, functions) = emit("cb");
+    assert_eq!(status, "generated", "cb: {reason}");
+    assert!(functions.contains("support::copy_slice(") && functions.contains("CallbackFailure { op: \"Series::each_bytes\""), "a callback's slice is a bounded snapshot whose refusal is the typed failure:\n{functions}");
+    // a mutable slice return falls under the pre-existing rule for `&mut`
+    // returns (the receiver is mutated in place, the binding returns unit):
+    // no slice is exposed and nothing is copied
+    let (status, _, functions) = emit("mutable");
+    assert_eq!(status, "generated");
+    assert!(!functions.contains("support::copy_slice(") && functions.contains("mutated in place"), "a mutable slice is never copied or exposed:\n{functions}");
+    for (key, why) in [("arrow", "foreign type"), ("iters", "iterator")] {
+        let (status, reason, _) = emit(key);
+        assert_eq!(status, "unsupported", "{key} must stay refused");
+        assert!(reason.contains(why), "{key}: refusal must say `{why}`, got {reason}");
+    }
+    println!("slice self-test: ok");
+}
+
 /// Record 0079 gate 1 controls, from a synthetic inventory: the closure
 /// classifier's dispositions and the sink rule.
 fn callback_self_test() {
@@ -1549,6 +1619,7 @@ fn from_naming_self_test() {
     println!("from-naming self-test: ok");
     from_emission_self_test();
     callback_self_test();
+    slice_self_test();
 }
 
 /// Record 0078 gate 1 controls, from a synthetic inventory through the
@@ -2594,7 +2665,9 @@ impl World {
                 }
                 Ok(Ret { materialize: None, rust_ty: format!("({})", tys.join(", ")), fallible, conv: format!("{{ let __t = __r; ({}) }}", convs.join(", ")), doc: format!("tuple of {}", docs.join(", ")) })
             }
-            Ty::Ref { inner, .. } => {
+            Ty::Ref { inner, mutable } => {
+                // record 0082: a mutable slice needs an audited write-back contract; not admitted
+                if *mutable && matches!(&**inner, Ty::Slice(_)) { return Err(Unsupported("mutable slice", t.render())); }
                 if let Ty::Path { path, .. } = &**inner {
                     let p = if path == "Self" { owner.unwrap_or("") } else { path.as_str() };
                     if self.wrappers.contains_key(p) && !self.clonable.contains(p) {
@@ -2667,7 +2740,15 @@ impl World {
             Ty::Generic(g) if g == "Self" => self.ret(&Ty::Path { path: "Self".into(), args: vec![] }, owner, depth + 1),
             Ty::Generic(_) => Err(Unsupported("generic return", t.render())),
             Ty::Impl(_) => self.ret_iterator(t, owner, depth),
-            Ty::Slice(_) => Err(Unsupported("bare slice", t.render())),
+            // Record 0082: an immutable borrowed slice is copied into an
+            // owned vector under the materialize bound (cumulative over the
+            // binding's slices); the script owns the result outright.
+            Ty::Slice(elem) => {
+                let x = self.ret(elem, owner, depth + 1).map_err(|Unsupported(why, what)| Unsupported("slice element", format!("{why}: {what}")))?;
+                if x.materialize.is_some() { return Err(Unsupported("slice element", "iterator".into())); }
+                let limit = 1usize << 20;
+                Ok(Ret { materialize: None, rust_ty: format!("Vec<{}>", x.rust_ty), fallible: true, conv: format!("support::copy_slice(__r, \"__OP__\", |__r| Ok::<_, Error>({}))?", x.conv), doc: format!("vector of {} (copied from a borrowed slice, at most {limit} elements)", x.doc) })
+            }
             Ty::Other(s) => Err(Unsupported("shape", s.clone())),
         }
     }
@@ -2707,7 +2788,13 @@ fn callback_input(world: &World, t: &Ty, var: &str, owner: Option<&str>) -> Resu
         }
         _ => {
             let mapped = world.ret(t, owner, 0)?;
-            if mapped.fallible || mapped.materialize.is_some() { return Err(Unsupported("callback argument", t.render())); }
+            if mapped.materialize.is_some() { return Err(Unsupported("callback argument", t.render())); }
+            if mapped.fallible {
+                // record 0082: only a bounded slice copy is fallible here; its
+                // refusal is the callback's typed failure, naming the operation
+                if !mapped.conv.contains("support::copy_slice(") { return Err(Unsupported("callback argument", t.render())); }
+                return Ok(format!("{{ let __r = {var}; match (|| Ok::<_, Error>({}))() {{ Ok(__v) => __v, Err(__e) => support::callback::unwind(crate::engine::CallbackFailure {{ op: \"__OP__\".into(), cause: __e.1 }}) }} }}", mapped.conv));
+            }
             Ok(format!("{{ let __r = {var}; {} }}", mapped.conv))
         }
     }
@@ -2745,7 +2832,7 @@ fn callback_arg(world: &World, c: &Callable, sig: &ClosureSig, name: &str, owner
                 return Err(Unsupported("callback mutable contract", raw.clone()));
             }
         }
-        values.push(callback_input(world, &t, &var, owner)?);
+        values.push(callback_input(world, &t, &var, owner)?.replace("__OP__", &operation));
     }
     let args = if values.is_empty() { "()".to_string() } else { format!("({},)", values.join(", ")) };
     let result = ty::parse(&sig.ret);
@@ -3117,12 +3204,14 @@ fn emit_instantiations(world: &World, out: &mut Emitted, c: &Callable, pairs: &[
 /// closure when the binding is routed; only the owned vector leaves it.
 fn materialized_call(m: &Materialize, callee_call: &str, name: &str, route: bool) -> String {
     let helper = match m.known { IterLen::Exact => "support::materialize_exact", IterLen::Trusted => "support::materialize_trusted", IterLen::Unknown => "support::materialize_unknown" };
-    let conv = format!("|__r| Ok::<_, Error>({})", m.elem_conv);
+    let conv = format!("|__r| Ok::<_, Error>({})", m.elem_conv.replace("__OP__", name));
     let inner = match m.wrap {
         IterWrap::Plain => format!("{{ let __it = {callee_call}; {helper}(__it, \"{name}\", {conv}) }}"),
         IterWrap::Result => format!("{{ let __it = {callee_call}.map_err(Error::from)?; {helper}(__it, \"{name}\", {conv}) }}"),
         IterWrap::Option => format!("(|| Ok::<_, Error>(match {callee_call} {{ Some(__it) => Some({helper}(__it, \"{name}\", {conv})?), None => None }}))()"),
     };
+    // record 0082: slice items count against one cumulative bound for the whole iterator
+    let inner = if m.elem_conv.contains("support::copy_slice(") { format!("{{ let __slices = support::SliceBudget::enter(); {inner} }}") } else { inner };
     if route {
         format!("crate::engine::run(\"{name}\", move || {inner}).map_err(Error::engine)??")
     } else {
@@ -3353,7 +3442,7 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
     let mut pre: String = params.iter().filter(|(_, a)| a.shape.starts_with("callback:")).chain(params.iter().filter(|(_, a)| !a.shape.starts_with("callback:"))).flat_map(|(_, a)| a.pre.iter()).map(|p| format!("{p} ")).collect();
     if commit_receiver { pre.push_str("let mut __work = this.0.clone(); "); }
     let ret_ty = if fallible { format!("Result<{}, Error>", ret.rust_ty) } else { ret.rust_ty.clone() };
-    let body_conv = if fallible { format!("Ok({})", ret.conv) } else { ret.conv.clone() };
+    let body_conv = if fallible { format!("Ok({})", ret.conv) } else { ret.conv.clone() }.replace("__OP__", &name);
     let attr = if c.receiver == "none" { format!("#[rune::function(free, path = {}::{name})]", w.rust) } else { format!("#[rune::function(instance, path = {name})]") };
     let doc = doc_line(c);
     let rune = format!("{}::{name}", rune_path(w));
@@ -3377,7 +3466,12 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
             pre.push_str(&format!("let __arg{i} = {a}; "));
             hoisted.push(format!("__arg{i}"));
         }
-        let call = format!("crate::engine::run(\"{rune}\", move || {callee}({}))", hoisted.join(", "));
+        // record 0082: a callback that copies slices does so on every
+        // invocation; one guard around the whole engine-thread call makes
+        // those copies share a single cumulative bound
+        let copies = args.iter().chain(std::iter::once(&pre)).any(|a| a.contains("support::copy_slice("));
+        let body = if copies { format!("{{ let __slices = support::SliceBudget::enter(); {callee}({}) }}", hoisted.join(", ")) } else { format!("{callee}({})", hoisted.join(", ")) };
+        let call = format!("crate::engine::run(\"{rune}\", move || {body})");
         (pre, if fallible { format!("{call}.map_err(Error::engine)?") } else { format!("crate::engine::infallible({call}, \"{rune}\")") })
     } else {
         (pre, format!("{callee}({})", args.join(", ")))
@@ -3487,7 +3581,7 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
     let sig: Vec<String> = params.iter().map(|(n, a)| format!("{n}: {}", a.rust_ty)).collect();
     let args: Vec<String> = params.iter().map(|(_, a)| a.conv.clone()).collect();
     let ret_ty = if fallible { format!("Result<{}, Error>", ret.rust_ty) } else { ret.rust_ty.clone() };
-    let body_conv = if fallible { format!("Ok({})", ret.conv) } else { ret.conv.clone() };
+    let body_conv = if fallible { format!("Ok({})", ret.conv) } else { ret.conv.clone() }.replace("__OP__", &name);
     let doc = doc_line(c);
     let arg_docs: Vec<String> = params.iter().map(|(n, a)| format!("{n}: {}", a.doc)).collect();
     let summary = format!("{name}({}) -> {}{}", arg_docs.join(", "), ret.doc, if fallible { " (fallible)" } else { "" });
@@ -3805,7 +3899,7 @@ fn emit_foreign(world: &World, out: &mut Emitted, c: &Callable) {
             };
             let fallible = ret.fallible || a.fallible;
             let ret_ty = if fallible { format!("Result<{}, Error>", ret.rust_ty) } else { ret.rust_ty.clone() };
-            let body = if fallible { format!("Ok({})", ret.conv) } else { ret.conv.clone() };
+            let body = if fallible { format!("Ok({})", ret.conv) } else { ret.conv.clone() }.replace("__OP__", &c.name);
             (format!("#[rune::function(instance, protocol = {proto})]\nfn {ident}(this: &{0}, rhs: {1}) -> {ret_ty} {{ let __r = this.0.clone() {op} {2}; {body} }}", w.rust, a.rust_ty, a.conv), *proto)
         }
         _ if !world.clonable.contains(owner) && OPS.iter().any(|(n, _, _)| *n == tname) => {
@@ -3889,7 +3983,7 @@ fn emit_struct_extras(world: &World, out: &mut Emitted, buckets: &[&str]) {
                     out.fn_index += 1;
                     let ident = rust_ident("s", &format!("{canonical}::{fname}"), idx);
                     let ret_ty = if r.fallible { format!("Result<{}, Error>", r.rust_ty) } else { r.rust_ty.clone() };
-                    let body = if r.fallible { format!("Ok({})", r.conv) } else { r.conv.clone() };
+                    let body = if r.fallible { format!("Ok({})", r.conv) } else { r.conv.clone() }.replace("__OP__", fname);
                     writeln!(out.functions, "/// Field `{fname}` of `{canonical}`.\n#[rune::function(instance, path = {fid})]\nfn {ident}(this: &{}) -> {ret_ty} {{ let __r = this.0.{fname}.clone(); {body} }}", w.rust).unwrap();
                     out.registrations.push(format!("m.function_meta({ident})?;"));
                     out.catalogue.push((format!("{}::{fid}", rune_path(w)), format!("{fid}() -> {}: field", r.doc)));
@@ -4152,8 +4246,8 @@ fn main() {
 const TYPED_FIXTURES: &[(&str, &str, &str, &str, &[&str])] = &[
     ("polars_core::series::Series", "series_bool", "p::Series::new(\"x\".into(), [true, false, true])", "crate_oracle::series_repr(v)", &["bool"]),
     ("polars_core::series::Series", "series_str", "p::Series::new(\"x\".into(), [\"a\", \"bb\", \"ccc\"])", "crate_oracle::series_repr(v)", &["str"]),
-    ("polars_core::series::Series", "series_binary", "p::Series::new(\"x\".into(), [&b\"ab\"[..], b\"c\", b\"\"])", "crate_oracle::series_repr(v)", &["binary"]),
-    ("polars_core::series::Series", "series_binary_offset", "p::Series::from_any_values_and_dtype(\"x\".into(), &[p::AnyValue::Binary(b\"ab\"), p::AnyValue::Binary(b\"c\"), p::AnyValue::Binary(b\"\")], &p::DataType::BinaryOffset, true).unwrap()", "crate_oracle::series_repr(v)", &["binary_offset"]),
+    ("polars_core::series::Series", "series_binary", "p::Series::new(\"x\".into(), [&b\"ab\"[..], b\"\\x00\\xff\", b\"\"])", "crate_oracle::series_repr(v)", &["binary"]),
+    ("polars_core::series::Series", "series_binary_offset", "p::Series::from_any_values_and_dtype(\"x\".into(), &[p::AnyValue::Binary(b\"ab\"), p::AnyValue::Binary(b\"\\x00\\xff\"), p::AnyValue::Binary(b\"\")], &p::DataType::BinaryOffset, true).unwrap()", "crate_oracle::series_repr(v)", &["binary_offset"]),
     ("polars_core::series::Series", "series_i8", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::Int8).unwrap()", "crate_oracle::series_repr(v)", &["i8"]),
     ("polars_core::series::Series", "series_i16", "p::Series::new(\"x\".into(), [1i64, 2, 3]).cast(&p::DataType::Int16).unwrap()", "crate_oracle::series_repr(v)", &["i16"]),
     ("polars_core::series::Series", "series_i32", "p::Series::new(\"x\".into(), [1i32, 2, 3])", "crate_oracle::series_repr(v)", &["i32"]),
@@ -4586,6 +4680,8 @@ impl<'a> Oracle<'a> {
             }
             Ty::Ref { inner, .. } if matches!(&**inner, Ty::Path { path, .. } if path == "str") => self.oracle_fmt(inner, owner, depth + 1),
             Ty::Ref { inner, .. } => self.oracle_fmt(inner, owner, depth + 1).map(|f| format!("{{ let __r = (__r).clone(); {f} }}")),
+            // record 0082: a borrowed slice frames its elements like a vector
+            Ty::Slice(elem) => self.oracle_fmt(elem, owner, depth + 1).map(|f| format!("format!(\"[{{}}]\", __r.iter().map(|__r| {{ let __r = __r.clone(); let e: String = {f}; format!(\"{{}}:{{e}}\", e.len()) }}).collect::<Vec<_>>().join(\", \"))")),
             Ty::Path { path, args } => match path.as_str() {
                 "bool" | "i64" | "f64" => Some("format!(\"{}\", __r)".into()),
                 "f32" => Some("format!(\"{}\", __r as f64)".into()),
@@ -4633,7 +4729,7 @@ impl<'a> Oracle<'a> {
                 }
                 if let Some(inner) = r.strip_prefix("Vec<").and_then(|s| s.strip_suffix('>')) {
                     let item_of = ret_canonical.and_then(|t| iterator_return(t)).map(|(i, _, _)| i);
-                    let ic = match ret_canonical { Some(Ty::Path { path, args }) if path == "alloc::vec::Vec" && args.len() == 1 => Some(&args[0]), _ => item_of.as_ref() };
+                    let ic = match ret_canonical { Some(Ty::Path { path, args }) if path == "alloc::vec::Vec" && args.len() == 1 => Some(&args[0]), Some(Ty::Ref { inner, .. }) if matches!(&**inner, Ty::Slice(_)) => match &**inner { Ty::Slice(e) => Some(&**e), _ => None }, _ => item_of.as_ref() };
                     let f = self.script_fmt(inner, ic, owner, depth + 1)?;
                     // length-framed elements: equal-length vectors whose element texts would join alike stay apart
                     return Some(format!("match rune::from_value::<Vec<rune::Value>>(v) {{ Ok(items) => items.into_iter().map(|v| {f}).collect::<Result<Vec<_>, _>>().map(|s| format!(\"[{{}}]\", s.iter().map(|e| format!(\"{{}}:{{e}}\", e.len())).collect::<Vec<_>>().join(\", \"))), Err(e) => Err(e.to_string()) }}"));

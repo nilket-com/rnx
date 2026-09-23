@@ -10,6 +10,12 @@ the four narrow integer dtypes `dtype-i8`, `dtype-i16`, `dtype-u8` and
 inventory they are generated from (`probes/0072/out/0.55.2-adapter-narrow`)
 all describe that one build.
 
+Borrowed slices (record 0082): a Polars method that returns or iterates
+`&[T]`, or hands a callback `&[u8]`, gives the script an owned vector
+copied under the materialize bound; the vector outlives its source and
+never aliases Polars storage. `polars::set_materialize_limit` (test
+support) bounds those copies too.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn

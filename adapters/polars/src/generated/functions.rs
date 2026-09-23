@@ -221,6 +221,131 @@ fn f_5318be76_ray__clear_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> UInt8Chunked
 #[rune::function(instance, path = clear)]
 fn f_0d3216e4_rray__clear_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__datatypes__UInt8Chunked { let __r = <polars_core::datatypes::UInt8Chunked>::clear(&this.0); W_polars_core__datatypes__UInt8Chunked(__r) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of float (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_43becd9e_ont_slice_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<f64>, Error> { let __r = <polars_core::datatypes::Float32Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as f64)))? } }) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of float (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_f848166f_ont_slice_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<f64>, Error> { let __r = <polars_core::datatypes::Float64Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>(__r))? } }) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_e97d9a0d__cont_slice_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int16Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_79474b40__cont_slice_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int32Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_1a8b717e__cont_slice_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int64Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>(__r))? } }) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_8d919f87___cont_slice_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int8Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_fe2b5d8f_cont_slice_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_b78cafe0_ont_slice_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::IdxCa>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_ca53460a_cont_slice_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+/// Returns the values of the array as a contiguous slice.
+/// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = cont_slice)]
+fn f_f42e8c71__cont_slice_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of float (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_521ecce7_ata_views_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<Vec<f64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Float32Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as f64)))? })) } })?; Ok(__r) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of float (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_e1e71a52_ata_views_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<Vec<f64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Float64Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>(__r))? })) } })?; Ok(__r) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_25cf5875__data_views_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int16Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_47f4306a__data_views_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int32Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_a1ded19f__data_views_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int64Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>(__r))? })) } })?; Ok(__r) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_fb3db0fd___data_views_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int8Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_fc4e8267_data_views_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt16Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_fda919eb_ata_views_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::IdxCa>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_beee4fec_data_views_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt64Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+/// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
+/// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = data_views)]
+fn f_ca40b0a4__data_views_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt8Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_77e8d615_ices_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<Vec<Vec<i64>>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BinaryOffsetChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_92e85b83_ast_slices_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<Vec<Vec<i64>>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BinaryChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of bool (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_cfdfc94b_st_slices_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Option<Vec<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BooleanChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of float (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_217857e9_st_slices_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Option<Vec<Vec<f64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Float32Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as f64)))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of float (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_e04a2cf2_st_slices_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Option<Vec<Vec<f64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Float64Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_a9c7cd5b_cast_slices_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int16Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_73d4718b_cast_slices_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int32Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_57dae7b3_cast_slices_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int64Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_51cda0e5_ncast_slices_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int8Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of string (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_79035acf_ast_slices_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<Option<Vec<Vec<String>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::StringChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r.to_string()))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of unit (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_14bcd624_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Result<Option<Vec<Vec<()>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars::chunked_array::StructChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_e20fe984_ast_slices_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::UInt16Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_deebdb59_st_slices_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::IdxCa>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_bf2587d7_ast_slices_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::UInt64Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = downcast_slices)]
+fn f_91d666d9_cast_slices_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::UInt8Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> BinaryOffsetChunked
 #[rune::function(instance, path = drop_nulls)]
 fn f_e3505c5c_ulls_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__BinaryOffsetChunked { let __r = <polars_core::datatypes::BinaryOffsetChunked>::drop_nulls(&this.0); W_polars_core__datatypes__BinaryOffsetChunked(__r) }
@@ -402,6 +527,14 @@ fn f_4acb9a72_lars_core__chunked_array__struct___structchunked(this: &W_polars_c
 #[rune::function(instance, path = fields_as_series)]
 fn f_e68762f7_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Vec<W_polars_core__series__Series> { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::StructChunked::fields_as_series", move || <polars::chunked_array::StructChunked>::fields_as_series(__arg0)), "polars::StructChunked::fields_as_series"); { let mut __v = Vec::new(); for __r in __r { __v.push(W_polars_core__series__Series(__r)); } __v } }
 /// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = first)]
+fn f_d1f96d32_irst_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::first(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = first)]
+fn f_ff5a841a_ray__first_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::first(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of bool
 #[rune::function(instance, path = first)]
 fn f_74b25ff0_ay__first_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::first(&this.0); match __r { Some(__r) => Some(__r), None => None } }
@@ -562,6 +695,12 @@ fn f_ec1f2f27__first_null_polars_core__datatypes__uint8chunked(this: &W_polars_c
 fn f_f29a47c2__true_idx_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::first_true_idx(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
 /// Polars: `polars_core::chunked_array::ChunkedArray::for_each`. for_each(op: callback) -> unit (fallible)
 #[rune::function(instance, path = for_each)]
+fn f_c7d41567_each_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, op: rune::runtime::Function) -> Result<(), Error> { let __cb_op = support::callback::install("BinaryOffsetChunked::for_each", op)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: core::option::Option<&[u8]>| { support::callback::bridge::<_, ()>("BinaryOffsetChunked::for_each", &__cb_op, ({ let __r = __cb_a0; match (|| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "BinaryOffsetChunked::for_each", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }))() { Ok(__v) => __v, Err(__e) => support::callback::unwind(crate::engine::CallbackFailure { op: "BinaryOffsetChunked::for_each".into(), cause: __e.1 }) } },)).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::BinaryOffsetChunked::for_each", move || { let __slices = support::SliceBudget::enter(); <polars_core::datatypes::BinaryOffsetChunked>::for_each(__arg0, __arg1) }).map_err(Error::engine)?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::for_each`. for_each(op: callback) -> unit (fallible)
+#[rune::function(instance, path = for_each)]
+fn f_f9ffbadf___for_each_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, op: rune::runtime::Function) -> Result<(), Error> { let __cb_op = support::callback::install("BinaryChunked::for_each", op)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: core::option::Option<&[u8]>| { support::callback::bridge::<_, ()>("BinaryChunked::for_each", &__cb_op, ({ let __r = __cb_a0; match (|| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "BinaryChunked::for_each", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }))() { Ok(__v) => __v, Err(__e) => support::callback::unwind(crate::engine::CallbackFailure { op: "BinaryChunked::for_each".into(), cause: __e.1 }) } },)).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::BinaryChunked::for_each", move || { let __slices = support::SliceBudget::enter(); <polars_core::datatypes::BinaryChunked>::for_each(__arg0, __arg1) }).map_err(Error::engine)?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::for_each`. for_each(op: callback) -> unit (fallible)
+#[rune::function(instance, path = for_each)]
 fn f_6fa99de4__for_each_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, op: rune::runtime::Function) -> Result<(), Error> { let __cb_op = support::callback::install("BooleanChunked::for_each", op)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: core::option::Option<bool>| { support::callback::bridge::<_, ()>("BooleanChunked::for_each", &__cb_op, ({ let __r = __cb_a0; match __r { Some(__r) => Some(__r), None => None } },)).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::BooleanChunked::for_each", move || <polars_core::datatypes::BooleanChunked>::for_each(__arg0, __arg1)).map_err(Error::engine)?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::for_each`. for_each(op: callback) -> unit (fallible)
 #[rune::function(instance, path = for_each)]
@@ -690,6 +829,14 @@ fn f_554a21ee_l_null_like_polars_core__datatypes__uint8chunked(ca: &W_polars_cor
 /// Polars: `polars_core::chunked_array::ChunkedArray::full_null_with_dtype`. full_null_with_dtype(name: string, length: int, inner_dtype: DataType) -> ListChunked (fallible)
 #[rune::function(free, path = W_polars_core__datatypes__ListChunked::full_null_with_dtype)]
 fn f_fc2c3e3e_l_with_dtype_polars_core__datatypes__listchunked(name: &str, length: i64, inner_dtype: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__datatypes__ListChunked, Error> { let __r = <polars_core::datatypes::ListChunked>::full_null_with_dtype(p::PlSmallStr::from(name), support::narrow::<usize>(length, "length")?, &inner_dtype.0); Ok(W_polars_core__datatypes__ListChunked(__r)) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = get)]
+fn f_2c247470__get_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, idx: i64) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "get", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+/// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
+/// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = get)]
+fn f_479ad018_array__get_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, idx: i64) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "get", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
 /// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
 /// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of bool (fallible)
 #[rune::function(instance, path = get)]
@@ -1267,6 +1414,12 @@ fn f_8981b3e1_orted_flag_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::is_sorted_flag`. is_sorted_flag() -> IsSorted
 #[rune::function(instance, path = is_sorted_flag)]
 fn f_6a2539a6_sorted_flag_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::UInt8Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_90de2556_iter_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Vec<Option<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryOffsetChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "iter", |__r| Ok::<_, Error>((__r as i64)))? }), None => None })) } })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_8a81c6a9_rray__iter_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Vec<Option<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "iter", |__r| Ok::<_, Error>((__r as i64)))? }), None => None })) } })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of bool (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = iter)]
 fn f_6620f712_ray__iter_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Vec<Option<bool>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::BooleanChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some(__r), None => None })) })?; Ok(__r) }
@@ -1303,6 +1456,14 @@ fn f_53606ce2_rray__iter_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of int (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = iter)]
 fn f_afd4c2e4_array__iter_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Option<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt8Chunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some((__r as i64)), None => None })) })?; Ok(__r) }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = last)]
+fn f_acadcdb7_last_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::last(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "last", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+/// # Panics Panics if the [`ChunkedArray`] is empty.
+/// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = last)]
+fn f_89fc131c_rray__last_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::last(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "last", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
 /// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of bool
 #[rune::function(instance, path = last)]
@@ -1478,12 +1639,18 @@ fn f_d2de4892_darray__len_polars_core__datatypes__uint8chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::max`. max() -> option of bool
 #[rune::function(instance, path = max)]
 fn f_b3d21805_rray__max_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::max(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// Polars: `polars_core::chunked_array::ChunkedArray::max_binary`. max_binary() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = max_binary)]
+fn f_5c0178bd_max_binary_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::max_binary(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "max_binary", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::mean`. mean() -> option of float
 #[rune::function(instance, path = mean)]
 fn f_6988d52c_ray__mean_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<f64> { let __r = <polars_core::datatypes::BooleanChunked>::mean(&this.0); match __r { Some(__r) => Some(__r), None => None } }
 /// Polars: `polars_core::chunked_array::ChunkedArray::min`. min() -> option of bool
 #[rune::function(instance, path = min)]
 fn f_d23720e6_rray__min_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::min(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// Polars: `polars_core::chunked_array::ChunkedArray::min_binary`. min_binary() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = min_binary)]
+fn f_7ef73f36_min_binary_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::min_binary(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "min_binary", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
 /// Name of the [`ChunkedArray`].
 /// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
 #[rune::function(instance, path = name)]
@@ -1588,6 +1755,12 @@ fn f_a642e907_y__new_vec_polars_core__datatypes__uint64chunked(name: &str, v: ru
 /// Polars: `polars_core::chunked_array::ChunkedArray::new_vec`. new_vec(name: string, v: vector of int) -> UInt8Chunked (fallible)
 #[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::new_vec)]
 fn f_c323b7fc_ay__new_vec_polars_core__datatypes__uint8chunked(name: &str, v: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::new_vec(p::PlSmallStr::from(name), support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_b9ec298c_iter_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryOffsetChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "no_null_iter", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = no_null_iter)]
+fn f_25f427d6__null_iter_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "no_null_iter", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of bool (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = no_null_iter)]
 fn f_8871973f_null_iter_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Vec<bool>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::BooleanChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>(__r)) })?; Ok(__r) }
@@ -2341,6 +2514,9 @@ fn f_33f2eb4c___split_at_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::split_at`. split_at(offset: int) -> tuple of UInt8Chunked, UInt8Chunked
 #[rune::function(instance, path = split_at)]
 fn f_bd0d16bd_y__split_at_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, offset: i64) -> (W_polars_core__datatypes__UInt8Chunked, W_polars_core__datatypes__UInt8Chunked) { let __r = <polars_core::datatypes::UInt8Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__UInt8Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__UInt8Chunked(__r) }) } }
+/// Polars: `polars_core::chunked_array::ChunkedArray::struct_fields`. struct_fields() -> vector of Field (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = struct_fields)]
+fn f_90a02bb6_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Result<Vec<W_polars_core__datatypes__field__Field>, Error> { let __r = <polars::chunked_array::StructChunked>::struct_fields(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(__r, "struct_fields", |__r| Ok::<_, Error>(W_polars_core__datatypes__field__Field(__r)))? }) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::sum`. sum() -> option of int
 #[rune::function(instance, path = sum)]
 fn f_c93b6cdd_rray__sum_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::sum(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
@@ -4054,6 +4230,9 @@ fn f_882f58a4__core__frame__group_by__position__grouppositions(this: &mut W_pola
 /// Polars: `polars_core::frame::group_by::position::GroupPositions::unroll`. unroll() -> GroupPositions
 #[rune::function(instance, path = unroll)]
 fn f_ca12876c__core__frame__group_by__position__grouppositions(this: &W_polars_core__frame__group_by__position__GroupPositions) -> W_polars_core__frame__group_by__position__GroupPositions { let __r = <polars_core::frame::group_by::GroupPositions>::unroll(this.0.clone()); W_polars_core__frame__group_by__position__GroupPositions(__r) }
+/// Polars: `polars_core::frame::group_by::position::GroupsIdx::first`. first() -> vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = first)]
+fn f_b9226f63_olars_core__frame__group_by__position__groupsidx(this: &W_polars_core__frame__group_by__position__GroupsIdx) -> Result<Vec<i64>, Error> { let __r = <polars_core::frame::group_by::GroupsIdx>::first(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Polars: `polars_core::frame::group_by::position::GroupsIdx::first_mut`. first_mut() -> unit (receiver mutated in place)
 #[rune::function(instance, path = first_mut)]
 fn f_9deda0de_olars_core__frame__group_by__position__groupsidx(this: &mut W_polars_core__frame__group_by__position__GroupsIdx) -> () { let __r = <polars_core::frame::group_by::GroupsIdx>::first_mut(&mut this.0); { let _ = __r; } }
@@ -6181,6 +6360,10 @@ fn f_486fb017_d_url_polars_plan__dsl__scan_sources__scansource(this: &W_polars_p
 /// Polars: `polars_plan::dsl::scan_sources::ScanSource::run_async`. run_async() -> bool
 #[rune::function(instance, path = run_async)]
 fn f_a4116ac3_async_polars_plan__dsl__scan_sources__scansource(this: &W_polars_plan__dsl__scan_sources__ScanSource) -> bool { let __r = <polars_plan::dsl::ScanSource>::run_async(&this.0); __r }
+/// Try cast the scan sources to [`ScanSources::Paths`]
+/// Polars: `polars_plan::dsl::scan_sources::ScanSources::as_paths`. as_paths() -> option of vector of PlRefPath (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = as_paths)]
+fn f_aff8ef04_aths_polars_plan__dsl__scan_sources__scansources(this: &W_polars_plan__dsl__scan_sources__ScanSources) -> Result<Option<Vec<W_polars_utils__pl_path__PlRefPath>>, Error> { let __r = <polars_plan::dsl::ScanSources>::as_paths(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "as_paths", |__r| Ok::<_, Error>(W_polars_utils__pl_path__PlRefPath(__r)))? }), None => None }) }
 /// Try get the first path in the scan sources
 /// Polars: `polars_plan::dsl::scan_sources::ScanSources::first_path`. first_path() -> option of PlRefPath
 #[rune::function(instance, path = first_path)]
@@ -6425,6 +6608,9 @@ fn f_c075b9ff_s__union_polars_plan__frame__opt_state__optflags(this: &W_polars_p
 /// Polars: `polars_plan::plans::lit::LiteralValue::bool`. bool() -> option of bool
 #[rune::function(instance, path = bool)]
 fn f_712d5af9_alue__bool_polars_plan__plans__lit__literalvalue(this: &W_polars_plan__plans__lit__LiteralValue) -> Option<bool> { let __r = <polars_plan::plans::LiteralValue>::bool(&this.0); match __r { Some(__r) => Some(__r), None => None } }
+/// Polars: `polars_plan::plans::lit::LiteralValue::extract_binary`. extract_binary() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = extract_binary)]
+fn f_e8c7d28f_act_binary_polars_plan__plans__lit__literalvalue(this: &W_polars_plan__plans__lit__LiteralValue) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_plan::plans::LiteralValue>::extract_binary(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "extract_binary", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
 /// Polars: `polars_plan::plans::lit::LiteralValue::extract_i64`. extract_i64() -> result of int (fallible)
 #[rune::function(instance, path = extract_i64)]
 fn f_508b2899_xtract_i64_polars_plan__plans__lit__literalvalue(this: &W_polars_plan__plans__lit__LiteralValue) -> Result<i64, Error> { let __r = <polars_plan::plans::LiteralValue>::extract_i64(&this.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
@@ -12080,6 +12266,41 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_25174840_ay__clear_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_5318be76_ray__clear_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_0d3216e4_rray__clear_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_43becd9e_ont_slice_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_f848166f_ont_slice_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_e97d9a0d__cont_slice_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_79474b40__cont_slice_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_1a8b717e__cont_slice_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_8d919f87___cont_slice_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_fe2b5d8f_cont_slice_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_b78cafe0_ont_slice_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_ca53460a_cont_slice_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_f42e8c71__cont_slice_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_521ecce7_ata_views_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_e1e71a52_ata_views_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_25cf5875__data_views_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_47f4306a__data_views_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_a1ded19f__data_views_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_fb3db0fd___data_views_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_fc4e8267_data_views_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_fda919eb_ata_views_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_beee4fec_data_views_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_ca40b0a4__data_views_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_77e8d615_ices_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_92e85b83_ast_slices_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_cfdfc94b_st_slices_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_217857e9_st_slices_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_e04a2cf2_st_slices_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_a9c7cd5b_cast_slices_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_73d4718b_cast_slices_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_57dae7b3_cast_slices_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_51cda0e5_ncast_slices_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_79035acf_ast_slices_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_14bcd624_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_e20fe984_ast_slices_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_deebdb59_st_slices_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_bf2587d7_ast_slices_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_91d666d9_cast_slices_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_e3505c5c_ulls_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_caa5dddc_drop_nulls_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_c8520198_rop_nulls_polars_core__datatypes__booleanchunked)?;
@@ -12131,6 +12352,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_7cc45e5e_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_4acb9a72_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_e68762f7_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_d1f96d32_irst_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_ff5a841a_ray__first_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_74b25ff0_ay__first_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_c2e1c0bd_ay__first_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_255aca72_ay__first_polars_core__datatypes__float64chunked)?;
@@ -12175,6 +12398,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_fa1600fa_first_null_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_ec1f2f27__first_null_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_f29a47c2__true_idx_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_c7d41567_each_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_f9ffbadf___for_each_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_6fa99de4__for_each_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_8fe5d796__for_each_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_25ac121e__for_each_polars_core__datatypes__float64chunked)?;
@@ -12215,6 +12440,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_24d36327__null_like_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_554a21ee_l_null_like_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_fc2c3e3e_l_with_dtype_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_2c247470__get_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_479ad018_array__get_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_82004a3f_rray__get_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_5f2b513f_rray__get_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_7a7de307_rray__get_polars_core__datatypes__float64chunked)?;
@@ -12376,6 +12603,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_21304674_rted_flag_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_8981b3e1_orted_flag_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_6a2539a6_sorted_flag_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_90de2556_iter_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_8a81c6a9_rray__iter_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_6620f712_ray__iter_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_f2cb0703_ray__iter_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_48852a88_ray__iter_polars_core__datatypes__float64chunked)?;
@@ -12388,6 +12617,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_f8160d12_ray__iter_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_53606ce2_rray__iter_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_afd4c2e4_array__iter_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_acadcdb7_last_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_89fc131c_rray__last_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_993b62fc_ray__last_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_da365613_ray__last_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_4fe719ad_ray__last_polars_core__datatypes__float64chunked)?;
@@ -12432,8 +12663,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_4cc5601e_array__len_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_d2de4892_darray__len_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_b3d21805_rray__max_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_5c0178bd_max_binary_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_6988d52c_ray__mean_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_d23720e6_rray__min_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_7ef73f36_min_binary_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_9dd410a2_name_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_bdd0a872_rray__name_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_40b25a00_ray__name_polars_core__datatypes__booleanchunked)?;
@@ -12460,6 +12693,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5f88be6f___new_vec_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_a642e907_y__new_vec_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_c323b7fc_ay__new_vec_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_b9ec298c_iter_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_25f427d6__null_iter_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_8871973f_null_iter_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_687529e1_null_iter_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_39a21946_null_iter_polars_core__datatypes__float64chunked)?;
@@ -12657,6 +12892,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_aeb815d5__split_at_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_33f2eb4c___split_at_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_bd0d16bd_y__split_at_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_90a02bb6_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_c93b6cdd_rray__sum_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_34949b18_y__to_vec_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_8d8f65f2_y__to_vec_polars_core__datatypes__float64chunked)?;
@@ -13154,6 +13390,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_4160001d__core__frame__group_by__position__grouppositions)?;
     m.function_meta(f_882f58a4__core__frame__group_by__position__grouppositions)?;
     m.function_meta(f_ca12876c__core__frame__group_by__position__grouppositions)?;
+    m.function_meta(f_b9226f63_olars_core__frame__group_by__position__groupsidx)?;
     m.function_meta(f_9deda0de_olars_core__frame__group_by__position__groupsidx)?;
     m.function_meta(f_a6b580d3_olars_core__frame__group_by__position__groupsidx)?;
     m.function_meta(f_db6994d3_olars_core__frame__group_by__position__groupsidx)?;
@@ -13741,6 +13978,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_9e394df9_urces_polars_plan__dsl__scan_sources__scansource)?;
     m.function_meta(f_486fb017_d_url_polars_plan__dsl__scan_sources__scansource)?;
     m.function_meta(f_a4116ac3_async_polars_plan__dsl__scan_sources__scansource)?;
+    m.function_meta(f_aff8ef04_aths_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_7b5f45d4_path_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_9cb35876___id_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_6a9d6805__url_polars_plan__dsl__scan_sources__scansources)?;
@@ -13807,6 +14045,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_6f207184___toggle_polars_plan__frame__opt_state__optflags)?;
     m.function_meta(f_c075b9ff_s__union_polars_plan__frame__opt_state__optflags)?;
     m.function_meta(f_712d5af9_alue__bool_polars_plan__plans__lit__literalvalue)?;
+    m.function_meta(f_e8c7d28f_act_binary_polars_plan__plans__lit__literalvalue)?;
     m.function_meta(f_508b2899_xtract_i64_polars_plan__plans__lit__literalvalue)?;
     m.function_meta(f_421087b6_xtract_str_polars_plan__plans__lit__literalvalue)?;
     m.function_meta(f_a0a5a55a_ract_usize_polars_plan__plans__lit__literalvalue)?;

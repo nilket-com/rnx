@@ -24,6 +24,19 @@ that cannot affect order, and a citation), and the oracle exclusions. `0.55.2.to
 the wrapper identity rules (equivalent aliases share one wrapper,
 same-name distinct types get distinct Rune paths).
 
+Record 0082 admits immutable borrowed slices: a `&[T]` return, an
+iterator item `&[T]`, or a callback argument (`&[u8]`, `Option<&[u8]>`)
+whose element has a script conversion is copied into an owned Rune
+vector by `support::copy_slice` before the binding returns or the
+callback is bridged, so the script owns the result and nothing borrows
+Polars storage. The copy is bounded by the materialize limit, counted
+cumulatively over every slice one binding copies (nested slices, every
+item of one iterator), checked before allocation, and refused as a
+`MaterializeLimit` error naming the operation; inside a callback the
+refusal is the callback's typed failure. A mutable slice, an Arrow
+array or bitmap element, and a slice of iterators stay refused with
+their reasons in the census.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

@@ -100,6 +100,38 @@ pub(crate) fn materialize_exact_with<I: ExactSizeIterator, T>(it: I, limit: usiz
 	materialize_unknown_with(it, limit, method, conv)
 }
 
+/// Record 0082: a borrowed slice is copied into an owned vector under the
+/// materialize bound, counted cumulatively over every slice copied while
+/// the outermost guard is held: one binding's direct return, its nested
+/// slices, or every item of one materialized iterator. The bound is
+/// checked before any allocation; nothing partial is returned.
+thread_local! { static SLICE_BUDGET: std::cell::Cell<(usize, usize)> = const { std::cell::Cell::new((0, 0)) }; }
+pub(crate) struct SliceBudget;
+impl SliceBudget {
+	pub(crate) fn enter() -> Self {
+		SLICE_BUDGET.with(|b| { let (depth, used) = b.get(); b.set((depth + 1, if depth == 0 { 0 } else { used })); });
+		Self
+	}
+}
+impl Drop for SliceBudget {
+	fn drop(&mut self) { SLICE_BUDGET.with(|b| { let (depth, used) = b.get(); b.set((depth - 1, used)); }); }
+}
+pub(crate) fn copy_slice<T: Clone, U>(slice: &[T], method: &str, mut conv: impl FnMut(T) -> Result<U, Error>) -> Result<Vec<U>, Error> {
+	let _guard = SliceBudget::enter();
+	let limit = materialize_limit();
+	let used = SLICE_BUDGET.with(|b| b.get().1);
+	let n = slice.len();
+	if n > limit || used + n > limit {
+		return Err(Error("MaterializeLimit".into(), format!("{method}: {n} slice elements with {used} already copied, more than the bound of {limit}")));
+	}
+	SLICE_BUDGET.with(|b| { let (depth, _) = b.get(); b.set((depth, used + n)); });
+	let mut out = Vec::with_capacity(n);
+	for e in slice {
+		out.push(conv(e.clone())?);
+	}
+	Ok(out)
+}
+
 pub(crate) fn materialize_unknown_with<I: Iterator, T>(mut it: I, limit: usize, method: &str, mut conv: impl FnMut(I::Item) -> Result<T, Error>) -> Result<Vec<T>, Error> {
 	let mut out: Vec<T> = Vec::new();
 	loop {
