@@ -61,7 +61,7 @@ fn lazy_and_expression_chains_take_expression_vectors() {
             // a list column is outside the adapter's collectable dtypes (record 0058), so the plan's schema is checked instead
             let listed = df.lazy().select_([polars::concat_list([polars::col("x"), polars::col("x")]).unwrap().alias("l")]).unwrap().logical_plan().compute_schema();
             let picked = df.lazy().select_([polars::cols(["x", "y"]).unwrap().as_expr()]).unwrap().collect().unwrap();
-            `${renamed.column("xx").is_ok()} ${grouped.height()} ${sorted.column("x").unwrap().i64().unwrap().get(0).unwrap() == Some(3)} ${over.height()} ${listed.is_ok()} ${picked.width()} ${by.len()}`
+            `${renamed.column("xx").is_ok()} ${grouped.height().unwrap()} ${sorted.column("x").unwrap().i64().unwrap().get(0).unwrap() == Some(3)} ${over.height().unwrap()} ${listed.is_ok()} ${picked.width()} ${by.len()}`
         }
     "#);
     assert_eq!(result, "true 3 true 3 true 2 1");
@@ -86,7 +86,7 @@ fn list_builders_take_script_vectors_borrowed_for_the_call() {
             ob.append_iter([Some(true), None]).unwrap();
             let o = ob.finish();
             let over = polars::ListBinaryChunkedBuilder::new("x", 1, 1).unwrap().append_values_iter([[256]]);
-            `${s.len()} ${b.len()} ${o.len()} ${strings[2]} ${bytes[0][1]} ${over.is_err()}`
+            `${s.len().unwrap()} ${b.len().unwrap()} ${o.len().unwrap()} ${strings[2]} ${bytes[0][1]} ${over.is_err()}`
         }
     "#);
     assert_eq!(result, "3 2 1 bc 255 true");

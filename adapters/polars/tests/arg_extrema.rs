@@ -62,7 +62,7 @@ fn integer_extrema_match_polars_across_shapes_and_sorted_flags() {
             let empty = polars::Int64Chunked::from_vec("x", []).unwrap();
             let all_null = polars::Int64Chunked::from_vec_validity("x", [7, 8], Some([false, false])).unwrap();
             let out = `${both(nulls)} ${both(two)} ${both(dup)} ${both(asc)} ${both(desc)} ${both(empty)} ${both(all_null)}`;
-            let kept = nulls.len() == 3 && nulls.null_count() == 1 && two.len() == 6;
+            let kept = nulls.len().unwrap() == 3 && nulls.null_count().unwrap() == 1 && two.len().unwrap() == 6;
             `${out}|${kept}`
         }
     "#);

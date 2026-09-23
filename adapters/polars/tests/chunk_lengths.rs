@@ -41,7 +41,7 @@ fn lengths_follow_the_chunks_and_outlive_the_receiver() {
             let same = lens.len() == s.n_chunks();
             let owned = { let tmp = s.rechunk().i64().unwrap(); tmp.chunk_lengths().unwrap() };
             let empty = fx::series_i64().slice(0, 0).unwrap().i64().unwrap().chunk_lengths().unwrap();
-            `${join(one)} ${join(lens)} ${sum} ${kept.len()} ${same} ${join(owned)} ${empty.len()}`
+            `${join(one)} ${join(lens)} ${sum} ${kept.len().unwrap()} ${same} ${join(owned)} ${empty.len()}`
         }
     "#);
     assert_eq!(result, "3, 3,3,1, 7 7 true 7, 1");
@@ -61,7 +61,7 @@ fn the_chunk_bound_is_exact_and_the_receiver_survives() {
             let over = ca.chunk_lengths();
             polars::set_materialize_limit(0);
             match over {
-                Err(e) => `${at} ${e.kind()} ${e.message()} | ${ca.chunk_lengths().unwrap().len()} ${ca.len()}`,
+                Err(e) => `${at} ${e.kind()} ${e.message()} | ${ca.chunk_lengths().unwrap().len()} ${ca.len().unwrap()}`,
                 Ok(_) => "unexpected".to_string(),
             }
         }

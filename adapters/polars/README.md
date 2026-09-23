@@ -85,9 +85,28 @@ Left subtraction (record 0092): `ca.lhs_sub(x)` computes `x - ca` on the ten
 numeric wrappers. `x` is taken as the array's own element type: an integer
 that does not fit it is a `ConversionError` (the `Int64` binding takes any
 script integer), `Float32` casts with `as f32`, `Float64` passes directly.
-Integer results wrap as in Polars (`0 - 1` on `UInt8` is `255`). A
-`UInt64Chunked` value above `i64::MAX` currently reads back through `get` as a
-negative script integer; that conversion is under audit.
+Integer results wrap as in Polars (`0 - 1` on `UInt8` is `255`).
+
+Integer read-back (record 0093): a script integer is an `i64`, so every
+`u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
+with a range check. A value outside `i64` is a `ConversionError` naming the
+method, never a wrapped negative. This applies to direct returns, options,
+tuples, vectors, iterators, copied slices and callback arguments; a callback
+argument that does not fit fails the call with a `CallbackError`. So
+`len()`, `null_count()`, `height()`, `shape()`, `get()` on `UInt64Chunked`,
+index-returning methods and `hash()` now return a result:
+
+```rune
+let n = series.len()?;
+let (rows, cols) = df.shape()?;
+```
+
+A `hash()` above `i64::MAX` is a `ConversionError`, which is about half of
+all hashes. Seven methods whose value is proven to fit keep a plain integer:
+`DataFrame::width`, `get_column_index`, `try_get_column_index`,
+`max_n_chunks` and `first_col_n_chunks`, `Column::n_chunks` and the series
+`n_chunks`. Each is listed in the release file with the source it is proven
+from. A same-named method on another type is not covered by that proof.
 
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml

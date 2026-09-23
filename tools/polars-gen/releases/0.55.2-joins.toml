@@ -790,3 +790,37 @@ generic = "N"
 types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
 natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
 cite = "polars-core 0.55.2 series/arithmetic/borrowed.rs:836-843; polars-compute arithmetic signed.rs:80-82, unsigned.rs:68-70 (wrapping_sub), float.rs:59-65"
+
+# Record 0093: usize results proven to be a length of, or index into, a Vec or
+# IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
+# read-back converts with a range check. ChunkedArray lengths are NOT here:
+# append only checked_adds (ops/append.rs:150-280), so a shared-buffer
+# self-append can exceed i64::MAX without violating any Polars check.
+[[bounded_readbacks]]
+key = "polars_core:7539"
+path = "polars_core::frame::dataframe::DataFrame::width"
+cite = "polars-core 0.55.2 frame/dataframe.rs:231-233: self.columns.len() (a Vec<Column>)"
+[[bounded_readbacks]]
+key = "polars_core:7620"
+path = "polars_core::frame::dataframe::DataFrame::get_column_index"
+cite = "polars-core 0.55.2 frame/mod.rs:1065-1074: schema.index_of (IndexMap::get_index_of, polars-schema schema.rs:375) or columns.iter().position — an index into a Vec/IndexMap"
+[[bounded_readbacks]]
+key = "polars_core:7621"
+path = "polars_core::frame::dataframe::DataFrame::try_get_column_index"
+cite = "polars-core 0.55.2 frame/mod.rs:1076-1079: get_column_index"
+[[bounded_readbacks]]
+key = "polars_core:11119"
+path = "polars_core::series::series_trait::SeriesTrait::n_chunks"
+cite = "polars-core 0.55.2 series/series_trait.rs:245-247: self.chunks().len() (a Vec<ArrayRef>); the only override, series/implementations/extension.rs:271-273, delegates to the storage series"
+[[bounded_readbacks]]
+key = "polars_core:7348"
+path = "polars_core::frame::column::Column::n_chunks"
+cite = "polars-core 0.55.2 frame/column/mod.rs:1833-1838: the series' n_chunks, or 1 for an unmaterialized scalar column"
+[[bounded_readbacks]]
+key = "polars_core:7599"
+path = "polars_core::frame::dataframe::DataFrame::max_n_chunks"
+cite = "polars-core 0.55.2 frame/mod.rs:451-457: the maximum of the columns' n_chunks (or 1), 0 when empty"
+[[bounded_readbacks]]
+key = "polars_core:7598"
+path = "polars_core::frame::dataframe::DataFrame::first_col_n_chunks"
+cite = "polars-core 0.55.2 frame/mod.rs:442-448: the first series column's n_chunks, 0 or 1 otherwise"

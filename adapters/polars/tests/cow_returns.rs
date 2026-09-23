@@ -37,7 +37,7 @@ fn rechunk_is_owned_from_both_branches() {
             let joined = multi.rechunk();
             let empty = fx::series_i64().slice(0, 0).unwrap().i64().unwrap().rechunk();
             let mask = match joined.rechunk_validity().unwrap() { Some(v) => bits(v), None => "none" };
-            `${single.len()} ${single.null_count()} ${single.chunk_lengths().unwrap().len()} | ${joined.len()} ${joined.chunk_lengths().unwrap().len()} ${joined.null_count()} ${mask} ${joined.get(3).unwrap() == Some(1)} | ${multi.chunk_lengths().unwrap().len()} ${multi.len()} | ${empty.len()}`
+            `${single.len().unwrap()} ${single.null_count().unwrap()} ${single.chunk_lengths().unwrap().len()} | ${joined.len().unwrap()} ${joined.chunk_lengths().unwrap().len()} ${joined.null_count().unwrap()} ${mask} ${joined.get(3).unwrap() == Some(1)} | ${multi.chunk_lengths().unwrap().len()} ${multi.len().unwrap()} | ${empty.len().unwrap()}`
         }
     "#);
     assert_eq!(result, "3 1 1 | 6 1 2 101101 true | 2 6 | 0");
@@ -56,7 +56,7 @@ fn physical_representations_convert_logical_inners_and_keep_physical_ones() {
             let st = dates.into_frame().into_struct("s");
             let pst = st.to_physical_repr();
             let field_temporal = |ca| ca.struct_fields().unwrap()[0].dtype().is_temporal();
-            `${inner(same)} ${same.len()} | ${inner(logical)} ${inner(converted)} ${converted.len()} | ${field_temporal(st)} ${field_temporal(pst)} ${pst.len()}`
+            `${inner(same)} ${same.len().unwrap()} | ${inner(logical)} ${inner(converted)} ${converted.len().unwrap()} | ${field_temporal(st)} ${field_temporal(pst)} ${pst.len().unwrap()}`
         }
     "#);
     assert_eq!(result, "false 1 | true false 1 | true false 3");

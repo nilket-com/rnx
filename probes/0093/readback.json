@@ -1,0 +1,2806 @@
+{
+ "checked_readbacks": 193,
+ "by_source": {
+  "usize": 164,
+  "u64": 29
+ },
+ "by_route": {
+  "tuple field": 12,
+  "direct": 88,
+  "option": 81,
+  "iterator item": 5,
+  "callback input": 4,
+  "slice element": 3
+ },
+ "bindings_with_checked_readback": 188,
+ "bounded_readbacks": 8,
+ "bounded_identities": [
+  "polars_core::frame::column::Column::n_chunks",
+  "polars_core::frame::dataframe::DataFrame::first_col_n_chunks",
+  "polars_core::frame::dataframe::DataFrame::get_column_index",
+  "polars_core::frame::dataframe::DataFrame::max_n_chunks",
+  "polars_core::frame::dataframe::DataFrame::try_get_column_index",
+  "polars_core::frame::dataframe::DataFrame::width",
+  "polars_core::series::series_trait::SeriesTrait::n_chunks"
+ ],
+ "bindings_whose_signature_became_fallible": 164,
+ "signature_changes": 164,
+ "remaining_plain_as_i64_sites": 141,
+ "remaining_as_i64_rule": "emitted only by World::ret for i8, i16, i32, u8, u16, u32 (INT_NARROW minus RISKY_INTS) and IdxSize (u32 without bigidx, asserted in support.rs); every range fits i64",
+ "preexisting_checked": "0087 chunk_lengths (widen::<usize>), 0089 arg_min/max_numeric (widen::<usize>), 0091 convert_and_bound_idx_ca returns IdxCa (no scalar read-back)",
+ "rows": [
+  {
+   "binding": "f_015f8452___count_polars_io__csv__read__parser__countlines",
+   "polars": "polars_io::csv::read::parser::CountLines::count",
+   "source": "usize",
+   "operation": "count",
+   "route": "tuple field",
+   "return_before": "Result<(i64, i64), Error>",
+   "return_after": "Result<(i64, i64), Error>"
+  },
+  {
+   "binding": "f_015f8452___count_polars_io__csv__read__parser__countlines",
+   "polars": "polars_io::csv::read::parser::CountLines::count",
+   "source": "usize",
+   "operation": "count",
+   "route": "tuple field",
+   "return_before": "Result<(i64, i64), Error>",
+   "return_after": "Result<(i64, i64), Error>"
+  },
+  {
+   "binding": "f_04adb37b_lars_core__frame__group_by__position__groupstype",
+   "polars": "polars_core::frame::group_by::position::GroupsType::num_elements",
+   "source": "usize",
+   "operation": "num_elements",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_07c6ac3a_null_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_0d2b7d61_edarray__len_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_0e778273_umn__n_unique_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::n_unique",
+   "source": "usize",
+   "operation": "n_unique",
+   "route": "direct",
+   "return_before": "Result<i64, Error>",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_0fe04c9d_t_non_null_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_108456de_inner_length_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::inner_length",
+   "source": "usize",
+   "operation": "inner_length",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_10e8e6e2_last_non_null_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_1600d182_ull_count_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_16b8c212___column__len_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_17595ef8_min_binary_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::arg_min_binary",
+   "source": "usize",
+   "operation": "arg_min_binary",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_1da3d3c6_o__cloud__concurrency__admission__inflightbudget",
+   "polars": "polars_io::cloud::concurrency::admission::InFlightBudget::floor_byte_budget",
+   "source": "u64",
+   "operation": "floor_byte_budget",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_1e5653e7_t_non_null_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_1f085c3e_t_non_null_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_1fac5277__dtype__categorical__mapping__categoricalmapping",
+   "polars": "polars_dtype::categorical::mapping::CategoricalMapping::max_categories",
+   "source": "usize",
+   "operation": "max_categories",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_206b837a_core__series__implementations__null__nullchunked",
+   "polars": "polars_core::series::series_trait::SeriesTrait::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_20e5b777_irst_null_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_224e077c_en_polars_core__frame__builder__dataframebuilder",
+   "polars": "polars_core::frame::builder::DataFrameBuilder::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_237286ca_riestrait__len_polars_core__series__series_deref",
+   "polars": "polars_core::series::series_trait::SeriesTrait::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_238cd0a9_rray__len_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_25f189cd_lars_core__chunked_array__struct___structchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_262a22f8_t_non_null_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_2633d165__null_iter_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
+   "source": "u64",
+   "operation": "into_no_null_iter",
+   "route": "iterator item",
+   "return_before": "Result<Vec<i64>, Error>",
+   "return_after": "Result<Vec<i64>, Error>"
+  },
+  {
+   "binding": "f_27c1fff7__first_null_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_2e15e612_ed_size_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::estimated_size",
+   "source": "usize",
+   "operation": "estimated_size",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_2f9a4dec_ries__estimated_size_polars_core__series__series",
+   "polars": "polars_core::series::Series::estimated_size",
+   "source": "usize",
+   "operation": "estimated_size",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_32b6ea43_first_null_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_37f57103_t_non_null_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_3bbc5822_rray__len_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_3c8f850e_num_trues_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::num_trues",
+   "source": "usize",
+   "operation": "num_trues",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_3caaebc7_rst_non_null_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_3dde8ffe_st_non_null_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_3f3c1b05_ng_level_polars_core__datatypes__dtype__datatype",
+   "polars": "polars_core::datatypes::dtype::DataType::nesting_level",
+   "source": "usize",
+   "operation": "nesting_level",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_40e51619__non_null_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_4185291c_core__series__implementations__null__nullchunked",
+   "polars": "polars_core::series::series_trait::SeriesTrait::n_unique",
+   "source": "usize",
+   "operation": "n_unique",
+   "route": "direct",
+   "return_before": "Result<i64, Error>",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_4383c850__len_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_45b85ca1_rait__n_unique_polars_core__series__series_deref",
+   "polars": "polars_core::series::series_trait::SeriesTrait::n_unique",
+   "source": "usize",
+   "operation": "n_unique",
+   "route": "direct",
+   "return_before": "Result<i64, Error>",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_46894b66__null_count_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_4846fc60__non_null_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_4967623d__non_null_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_4cc5601e_array__len_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_4d000f86__amortized_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::apply_into_string_amortized",
+   "source": "u64",
+   "operation": "UInt64Chunked::apply_into_string_amortized",
+   "route": "callback input",
+   "return_before": "Result<W_polars_core__datatypes__StringChunked, Error>",
+   "return_after": "Result<W_polars_core__datatypes__StringChunked, Error>"
+  },
+  {
+   "binding": "f_5033b955_ull_count_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_5354133a__non_null_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_53606ce2_rray__iter_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::iter",
+   "source": "u64",
+   "operation": "iter",
+   "route": "iterator item",
+   "return_before": "Result<Vec<Option<i64>>, Error>",
+   "return_after": "Result<Vec<Option<i64>>, Error>"
+  },
+  {
+   "binding": "f_53acd0c3_null_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_53df39a0_lars_core__frame__group_by__position__groupstype",
+   "polars": "polars_core::frame::group_by::position::GroupsType::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_56691913_null_count_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_5f1e13df__len_polars_core__series__builder__seriesbuilder",
+   "polars": "polars_core::series::builder::SeriesBuilder::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_5ff14cf0_core__series__implementations__null__nullchunked",
+   "polars": "polars_core::series::implementations::null::NullChunked::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_63ba4e0a_st_non_null_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_6451b040_st_non_null_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_651d79b4_max_binary_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::arg_max_binary",
+   "source": "usize",
+   "operation": "arg_max_binary",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_680f49a3_ull_count_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_68285b51_it__null_count_polars_core__series__series_deref",
+   "polars": "polars_core::series::series_trait::SeriesTrait::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_6b6ca383__dtype__categorical__mapping__categoricalmapping",
+   "polars": "polars_dtype::categorical::mapping::CategoricalMapping::num_cats_upper_bound",
+   "source": "usize",
+   "operation": "num_cats_upper_bound",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_6bb717b4__first_null_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_6cd2415a_core__series__implementations__null__nullchunked",
+   "polars": "polars_core::series::series_trait::SeriesTrait::as_single_ptr",
+   "source": "usize",
+   "operation": "as_single_ptr",
+   "route": "direct",
+   "return_before": "Result<i64, Error>",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_6eb30f7b_array__get_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::get",
+   "source": "u64",
+   "operation": "get",
+   "route": "option",
+   "return_before": "Result<Option<i64>, Error>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_71c3dea3_rray__len_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_723e7370_t_non_null_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_75da2dc9_darray__len_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_7694943e_ull_count_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_7922b604_rst_non_null_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_79a566c5_s__null_count_polars_io__predicates__columnstats",
+   "polars": "polars_io::predicates::ColumnStats::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_7bd9a878_false_idx_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_false_idx",
+   "source": "usize",
+   "operation": "first_false_idx",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_7c8f6fc7_s_polars_dtype__categorical__categoricalphysical",
+   "polars": "polars_dtype::categorical::CategoricalPhysical::max_categories",
+   "source": "usize",
+   "operation": "max_categories",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_7d14d47b_ount_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_7e496dcf_lengths_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::utils::Container::chunk_lengths",
+   "source": "usize",
+   "operation": "chunk_lengths",
+   "route": "iterator item",
+   "return_before": "Result<Vec<i64>, Error>",
+   "return_after": "Result<Vec<i64>, Error>"
+  },
+  {
+   "binding": "f_7fcc077c__dtype__categorical__mapping__categoricalmapping",
+   "polars": "polars_dtype::categorical::mapping::CategoricalMapping::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_80c05c8a_irst_null_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_84d772dc_n__null_count_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_86dbf92e_t_non_null_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_870338a8_nt_rows_polars_io__csv__read__parser__countlines",
+   "polars": "polars_io::csv::read::parser::CountLines::count_rows",
+   "source": "usize",
+   "operation": "count_rows",
+   "route": "tuple field",
+   "return_before": "Result<(i64, i64), Error>",
+   "return_after": "Result<(i64, i64), Error>"
+  },
+  {
+   "binding": "f_870338a8_nt_rows_polars_io__csv__read__parser__countlines",
+   "polars": "polars_io::csv::read::parser::CountLines::count_rows",
+   "source": "usize",
+   "operation": "count_rows",
+   "route": "tuple field",
+   "return_before": "Result<(i64, i64), Error>",
+   "return_after": "Result<(i64, i64), Error>"
+  },
+  {
+   "binding": "f_87fe29d8_lars_core__chunked_array__struct___structchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_8804f1dc_null_count_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_88b33383_t_non_null_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_88d58c22___for_each_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::for_each",
+   "source": "u64",
+   "operation": "UInt64Chunked::for_each",
+   "route": "callback input",
+   "return_before": "Result<(), Error>",
+   "return_after": "Result<(), Error>"
+  },
+  {
+   "binding": "f_8aa53060_y_in_place_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::apply_in_place",
+   "source": "u64",
+   "operation": "UInt64Chunked::apply_in_place",
+   "route": "callback input",
+   "return_before": "Result<W_polars_core__datatypes__UInt64Chunked, Error>",
+   "return_after": "Result<W_polars_core__datatypes__UInt64Chunked, Error>"
+  },
+  {
+   "binding": "f_8dda26e5_st_non_null_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_903ea040___first_null_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_904f5f9d__dtype__categorical__mapping__categoricalmapping",
+   "polars": "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_hash",
+   "source": "u64",
+   "operation": "cat_to_hash",
+   "route": "option",
+   "return_before": "Result<Option<i64>, Error>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_91613d77_rray__last_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last",
+   "source": "u64",
+   "operation": "last",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_921a5dfb___shape_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::shape",
+   "source": "usize",
+   "operation": "shape",
+   "route": "tuple field",
+   "return_before": "(i64, i64)",
+   "return_after": "Result<(i64, i64), Error>"
+  },
+  {
+   "binding": "f_921a5dfb___shape_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::shape",
+   "source": "usize",
+   "operation": "shape",
+   "route": "tuple field",
+   "return_before": "(i64, i64)",
+   "return_after": "Result<(i64, i64), Error>"
+  },
+  {
+   "binding": "f_9222f285_first_null_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_9335d54b_ries__hash_polars_dtype__categorical__categories",
+   "polars": "polars_dtype::categorical::Categories::hash",
+   "source": "u64",
+   "operation": "hash",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_938ab794_irst_non_null_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_996918b2_polars_core__frame__column__scalar__scalarcolumn",
+   "polars": "polars_core::frame::column::scalar::ScalarColumn::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_9a0b5d5c_darray__len_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_9b127f52__null_count_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_a0a5a55a_ract_usize_polars_plan__plans__lit__literalvalue",
+   "polars": "polars_plan::plans::lit::LiteralValue::extract_usize",
+   "source": "usize",
+   "operation": "extract_usize",
+   "route": "direct",
+   "return_before": "Result<i64, Error>",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_a0a694ef_array__len_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_a1ce8c77__null_iter_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::no_null_iter",
+   "source": "u64",
+   "operation": "no_null_iter",
+   "route": "iterator item",
+   "return_before": "Result<Vec<i64>, Error>",
+   "return_after": "Result<Vec<i64>, Error>"
+  },
+  {
+   "binding": "f_a4eaeb5e_o__cloud__concurrency__admission__inflightbudget",
+   "polars": "polars_io::cloud::concurrency::admission::InFlightBudget::current_byte_budget",
+   "source": "u64",
+   "operation": "current_byte_budget",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_a674df68__non_null_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_aaadc779___null_count_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_ab0c6435_st_non_null_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_adb640f9__apply_mut_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::apply_mut",
+   "source": "u64",
+   "operation": "UInt64Chunked::apply_mut",
+   "route": "callback input",
+   "return_before": "Result<(), Error>",
+   "return_after": "Result<(), Error>"
+  },
+  {
+   "binding": "f_af462f1b___first_null_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_affd9b11_darray__len_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_b26d9777_irst_null_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_b2bd4cd3_st_non_null_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_b898cea7_ainer__chunk_lengths_polars_core__series__series",
+   "polars": "polars_core::utils::Container::chunk_lengths",
+   "source": "usize",
+   "operation": "chunk_lengths",
+   "route": "iterator item",
+   "return_before": "Result<Vec<i64>, Error>",
+   "return_after": "Result<Vec<i64>, Error>"
+  },
+  {
+   "binding": "f_b8a4cf31_er__n_rows_polars_lazy__scan__csv__lazycsvreader",
+   "polars": "polars_lazy::scan::file_list_reader::LazyFileListReader::n_rows",
+   "source": "usize",
+   "operation": "n_rows",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_bc8385b3__height_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::height",
+   "source": "usize",
+   "operation": "height",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_bda22d01_null_count_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_beee4fec_data_views_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::data_views",
+   "source": "u64",
+   "operation": "data_views",
+   "route": "slice element",
+   "return_before": "Result<Vec<Vec<i64>>, Error>",
+   "return_after": "Result<Vec<Vec<i64>>, Error>"
+  },
+  {
+   "binding": "f_bf2587d7_ast_slices_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "source": "u64",
+   "operation": "downcast_slices",
+   "route": "slice element",
+   "return_before": "Result<Option<Vec<Vec<i64>>>, Error>",
+   "return_after": "Result<Option<Vec<Vec<i64>>>, Error>"
+  },
+  {
+   "binding": "f_c3a4c732_lan__dsl__file_scan__deletion__deletionfileslist",
+   "polars": "polars_plan::dsl::file_scan::deletion::DeletionFilesList::num_files_with_deletions",
+   "source": "usize",
+   "operation": "num_files_with_deletions",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_c647d91d_hash_polars_dtype__categorical__frozencategories",
+   "polars": "polars_dtype::categorical::FrozenCategories::hash",
+   "source": "u64",
+   "operation": "hash",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_c687d633_expr__extract_usize_polars_plan__dsl__expr__expr",
+   "polars": "polars_plan::dsl::expr::Expr::extract_usize",
+   "source": "usize",
+   "operation": "extract_usize",
+   "route": "direct",
+   "return_before": "Result<i64, Error>",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_c6e2983d_first_null_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_ca4452c3_irst_null_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_ca53460a_cont_slice_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::cont_slice",
+   "source": "u64",
+   "operation": "cont_slice",
+   "route": "slice element",
+   "return_before": "Result<Vec<i64>, Error>",
+   "return_after": "Result<Vec<i64>, Error>"
+  },
+  {
+   "binding": "f_cc18c7c5_rray__len_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_cc741fc7_ray__first_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first",
+   "source": "u64",
+   "operation": "first",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_cf66e647__non_null_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d1d99b43_st_non_null_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d296edd5_ount_polars_io__cloud__concurrency__model__model",
+   "polars": "polars_io::cloud::concurrency::model::Model::sample_count",
+   "source": "usize",
+   "operation": "sample_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_d2de4892_darray__len_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_d43ed425__first_null_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d4457f5f__non_null_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d6238444_ay__to_vec_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::to_vec",
+   "source": "u64",
+   "operation": "to_vec",
+   "route": "option",
+   "return_before": "Vec<Option<i64>>",
+   "return_after": "Result<Vec<Option<i64>>, Error>"
+  },
+  {
+   "binding": "f_d63eb2f9_null_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d8d0b899_ast_non_null_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d9196994___null_count_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_d924be8e__non_null_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_dc1963e9_null_count_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_dd6f3b7e__len_polars_plan__dsl__scan_sources__scansources",
+   "polars": "polars_plan::dsl::scan_sources::ScanSources::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_dff8073e__null_count_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_e42d1c76__null_count_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "source": "usize",
+   "operation": "null_count",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_e452e5d6_eries__as_single_ptr_polars_core__series__series",
+   "polars": "polars_core::series::Series::as_single_ptr",
+   "source": "usize",
+   "operation": "as_single_ptr",
+   "route": "direct",
+   "return_before": "Result<i64, Error>",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_ec1f2f27__first_null_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_ece4611d_array__len_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_ee83bda7_array__len_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_f29a47c2__true_idx_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_true_idx",
+   "source": "usize",
+   "operation": "first_true_idx",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_f3c912d3_um_falses_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::num_falses",
+   "source": "usize",
+   "operation": "num_falses",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_f4b3b377_edarray__len_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "source": "usize",
+   "operation": "len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_f837432c_ast_non_null_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "source": "usize",
+   "operation": "last_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_fa1600fa_first_null_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "source": "usize",
+   "operation": "first_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_ff3892e7_st_non_null_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "source": "usize",
+   "operation": "first_non_null",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_2ad96fc3_rs_core__chunked_array__arg_min_max__arg_min_str",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_min_str",
+   "source": "usize",
+   "operation": "arg_min_str",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_3e992452_core__chunked_array__arg_min_max__arg_min_binary",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_min_binary",
+   "source": "usize",
+   "operation": "arg_min_binary",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_50adcf23_s_core__chunked_array__arg_min_max__arg_max_bool",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_max_bool",
+   "source": "usize",
+   "operation": "arg_max_bool",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_5edbb209_s_core__chunked_array__arg_min_max__arg_min_bool",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_min_bool",
+   "source": "usize",
+   "operation": "arg_min_bool",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_7b20ef0e_rs_core__chunked_array__arg_min_max__arg_max_str",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_max_str",
+   "source": "usize",
+   "operation": "arg_max_str",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_957b281f_hunked_array__arg_min_max__arg_min_binary_offset",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_min_binary_offset",
+   "source": "usize",
+   "operation": "arg_min_binary_offset",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_99d96092_hunked_array__arg_min_max__arg_max_binary_offset",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_max_binary_offset",
+   "source": "usize",
+   "operation": "arg_max_binary_offset",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_9e6c78d8_rs_io__file_cache__cache__get_env_file_cache_ttl",
+   "polars": "polars_io::file_cache::cache::get_env_file_cache_ttl",
+   "source": "u64",
+   "operation": "get_env_file_cache_ttl",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "g_bf26c51b_concurrency_config__get_random_access_chunk_size",
+   "polars": "polars_io::cloud::concurrency_config::get_random_access_chunk_size",
+   "source": "usize",
+   "operation": "get_random_access_chunk_size",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "g_bfdaf8a8_core__chunked_array__arg_min_max__arg_max_binary",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_max_binary",
+   "source": "usize",
+   "operation": "arg_max_binary",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_dd07d9d7_polars_io__utils__other__materialize_projection",
+   "polars": "polars_io::utils::other::materialize_projection",
+   "source": "usize",
+   "operation": "materialize_projection",
+   "route": "direct",
+   "return_before": "Result<Option<Vec<i64>>, Error>",
+   "return_after": "Result<Option<Vec<i64>>, Error>"
+  },
+  {
+   "binding": "g_e8589e1f_ud__concurrency_config__get_streaming_chunk_size",
+   "polars": "polars_io::cloud::concurrency_config::get_streaming_chunk_size",
+   "source": "usize",
+   "operation": "get_streaming_chunk_size",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "g_ec762e7f_oud__concurrency_config__get_download_chunk_size",
+   "polars": "polars_io::cloud::concurrency_config::get_download_chunk_size",
+   "source": "usize",
+   "operation": "get_download_chunk_size",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_163baafc_itionedsinkoptionsir__approximate_bytes_per_file",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "u64",
+   "operation": "approximate_bytes_per_file",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_34316ff0_currency__admission__inflightstats__bytes_in_use",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "u64",
+   "operation": "bytes_in_use",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_36d673a2_ars_lazy__scan__parquet__scanargsparquet__n_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "n_rows",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_4276c421_rrency__admission__inflightstats__request_budget",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "request_budget",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_4c03947e_oud__concurrency_config__fetchconfig__chunk_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "chunk_size",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_4ceea245_o__csv__read__options__csvreadoptions__skip_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "skip_rows",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_4f55cc21_rtitionedsinkoptions__approximate_bytes_per_file",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "u64",
+   "operation": "approximate_bytes_per_file",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_528f509f_polars_plan__dsl__options__unionoptions__slice",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "slice",
+   "route": "tuple field",
+   "return_before": "Option<(i64, i64)>",
+   "return_after": "Result<Option<(i64, i64)>, Error>"
+  },
+  {
+   "binding": "s_5753f535_n__dsl__options__anonymousscanoptions__skip_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "skip_rows",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_5bc30f6f___cloud__dns__dnsresolverconfig__lookup_attempts",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "u64",
+   "operation": "lookup_attempts",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_6f721ec2_io__cloud__options__cloudoptions__file_cache_ttl",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "u64",
+   "operation": "file_cache_ttl",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_73a109cf_polars_io__cloud__concurrency__iosample__n_bytes",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "u64",
+   "operation": "n_bytes",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_740edee1_polars_io__options__hiveoptions__hive_start_idx",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "hive_start_idx",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_7c7535d0_ous_scan__scanargsanonymous__infer_schema_length",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "infer_schema_length",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_82fded4e_currency__admission__inflightstats__bytes_budget",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "u64",
+   "operation": "bytes_budget",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "u64",
+   "operation": "row_count",
+   "route": "tuple field",
+   "return_before": "Option<(i64, i64)>",
+   "return_after": "Result<Option<(i64, i64)>, Error>"
+  },
+  {
+   "binding": "s_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "u64",
+   "operation": "row_count",
+   "route": "tuple field",
+   "return_before": "Option<(i64, i64)>",
+   "return_after": "Result<Option<(i64, i64)>, Error>"
+  },
+  {
+   "binding": "s_96a3e170_te__options__parquetwriteoptions__data_page_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "data_page_size",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_9c88dc41___csv__read__options__csvreadoptions__chunk_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "chunk_size",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_9d4c75a1___csv__read__options__csvreadoptions__skip_lines",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "skip_lines",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_a5dd2ccf_rite__options__serializeoptions__float_precision",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "float_precision",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_a5f35e94_polars_plan__dsl__options__groupbyoptions__slice",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "slice",
+   "route": "tuple field",
+   "return_before": "Option<(i64, i64)>",
+   "return_after": "Result<Option<(i64, i64)>, Error>"
+  },
+  {
+   "binding": "s_bbffe52d_rency__admission__inflightstats__requests_in_use",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "requests_in_use",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_be3818ce_o__cloud__options__cloudretryconfig__max_retries",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "max_retries",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_c267367b_polars_plan__dsl__options__unionoptions__rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "rows",
+   "route": "option",
+   "return_before": "(Option<i64>, i64)",
+   "return_after": "Result<(Option<i64>, i64), Error>"
+  },
+  {
+   "binding": "s_c267367b_polars_plan__dsl__options__unionoptions__rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "rows",
+   "route": "tuple field",
+   "return_before": "(Option<i64>, i64)",
+   "return_after": "Result<(Option<i64>, i64), Error>"
+  },
+  {
+   "binding": "s_c4874374_o__csv__read__options__csvreadoptions__n_threads",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "n_threads",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_c6b1a220_polars_ops__frame__join__args__joinargs__slice",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "slice",
+   "route": "tuple field",
+   "return_before": "Option<(i64, i64)>",
+   "return_after": "Result<Option<(i64, i64)>, Error>"
+  },
+  {
+   "binding": "s_cabdca99__ipc__write__ipcwriteroptions__record_batch_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "record_batch_size",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_cee224b4_ad__options__csvreadoptions__infer_schema_length",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "infer_schema_length",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_d87fd27d_s_io__csv__read__options__csvreadoptions__n_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "n_rows",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_df47f49b__scan__anonymous_scan__scanargsanonymous__n_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "n_rows",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_f1935c50_an__anonymous_scan__scanargsanonymous__skip_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "skip_rows",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_f21a8e7f__options__csvreadoptions__skip_rows_after_header",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "skip_rows_after_header",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_f639c1c0_te__options__parquetwriteoptions__row_group_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "row_group_size",
+   "route": "option",
+   "return_before": "Option<i64>",
+   "return_after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_ffa312e3__dsl__file_scan__predicatefileskip__original_len",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "source": "usize",
+   "operation": "original_len",
+   "route": "direct",
+   "return_before": "i64",
+   "return_after": "Result<i64, Error>"
+  }
+ ],
+ "bounded": [
+  {
+   "binding": "f_0f5c0651__chunks_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::first_col_n_chunks",
+   "return_before": "i64",
+   "return_after": "i64"
+  },
+  {
+   "binding": "f_8667fcb7_n_index_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::try_get_column_index",
+   "return_before": "Result<i64, Error>",
+   "return_after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_9fad7fd8__chunks_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::max_n_chunks",
+   "return_before": "i64",
+   "return_after": "i64"
+  },
+  {
+   "binding": "f_b7597cbe_core__series__implementations__null__nullchunked",
+   "polars": "polars_core::series::series_trait::SeriesTrait::n_chunks",
+   "return_before": "i64",
+   "return_after": "i64"
+  },
+  {
+   "binding": "f_c9fed085_n_index_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::get_column_index",
+   "return_before": "Option<i64>",
+   "return_after": "Option<i64>"
+  },
+  {
+   "binding": "f_d6e5430b_umn__n_chunks_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::n_chunks",
+   "return_before": "i64",
+   "return_after": "i64"
+  },
+  {
+   "binding": "f_d8d3a8e8___width_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::width",
+   "return_before": "i64",
+   "return_after": "i64"
+  },
+  {
+   "binding": "f_de15bbfe_rait__n_chunks_polars_core__series__series_deref",
+   "polars": "polars_core::series::series_trait::SeriesTrait::n_chunks",
+   "return_before": "i64",
+   "return_after": "i64"
+  }
+ ],
+ "changes": [
+  {
+   "binding": "f_04adb37b_lars_core__frame__group_by__position__groupstype",
+   "polars": "polars_core::frame::group_by::position::GroupsType::num_elements",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_07c6ac3a_null_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_0d2b7d61_edarray__len_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_0fe04c9d_t_non_null_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_108456de_inner_length_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::inner_length",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_10e8e6e2_last_non_null_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_1600d182_ull_count_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_16b8c212___column__len_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_17595ef8_min_binary_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::arg_min_binary",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_1da3d3c6_o__cloud__concurrency__admission__inflightbudget",
+   "polars": "polars_io::cloud::concurrency::admission::InFlightBudget::floor_byte_budget",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_1e5653e7_t_non_null_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_1f085c3e_t_non_null_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_1fac5277__dtype__categorical__mapping__categoricalmapping",
+   "polars": "polars_dtype::categorical::mapping::CategoricalMapping::max_categories",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_206b837a_core__series__implementations__null__nullchunked",
+   "polars": "polars_core::series::series_trait::SeriesTrait::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_20e5b777_irst_null_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_224e077c_en_polars_core__frame__builder__dataframebuilder",
+   "polars": "polars_core::frame::builder::DataFrameBuilder::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_237286ca_riestrait__len_polars_core__series__series_deref",
+   "polars": "polars_core::series::series_trait::SeriesTrait::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_238cd0a9_rray__len_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_25f189cd_lars_core__chunked_array__struct___structchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_262a22f8_t_non_null_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_27c1fff7__first_null_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_2e15e612_ed_size_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::estimated_size",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_2f9a4dec_ries__estimated_size_polars_core__series__series",
+   "polars": "polars_core::series::Series::estimated_size",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_32b6ea43_first_null_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_37f57103_t_non_null_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_3bbc5822_rray__len_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_3c8f850e_num_trues_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::num_trues",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_3caaebc7_rst_non_null_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_3dde8ffe_st_non_null_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_3f3c1b05_ng_level_polars_core__datatypes__dtype__datatype",
+   "polars": "polars_core::datatypes::dtype::DataType::nesting_level",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_40e51619__non_null_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_4383c850__len_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_46894b66__null_count_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_4846fc60__non_null_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_4967623d__non_null_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_4cc5601e_array__len_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_5033b955_ull_count_polars_core__datatypes__float32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_5354133a__non_null_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_53acd0c3_null_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_53df39a0_lars_core__frame__group_by__position__groupstype",
+   "polars": "polars_core::frame::group_by::position::GroupsType::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_56691913_null_count_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_5f1e13df__len_polars_core__series__builder__seriesbuilder",
+   "polars": "polars_core::series::builder::SeriesBuilder::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_5ff14cf0_core__series__implementations__null__nullchunked",
+   "polars": "polars_core::series::implementations::null::NullChunked::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_63ba4e0a_st_non_null_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_6451b040_st_non_null_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_651d79b4_max_binary_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::arg_max_binary",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_680f49a3_ull_count_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_68285b51_it__null_count_polars_core__series__series_deref",
+   "polars": "polars_core::series::series_trait::SeriesTrait::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_6b6ca383__dtype__categorical__mapping__categoricalmapping",
+   "polars": "polars_dtype::categorical::mapping::CategoricalMapping::num_cats_upper_bound",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_6bb717b4__first_null_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_71c3dea3_rray__len_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_723e7370_t_non_null_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_75da2dc9_darray__len_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_7694943e_ull_count_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_7922b604_rst_non_null_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_79a566c5_s__null_count_polars_io__predicates__columnstats",
+   "polars": "polars_io::predicates::ColumnStats::null_count",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_7bd9a878_false_idx_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_false_idx",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_7c8f6fc7_s_polars_dtype__categorical__categoricalphysical",
+   "polars": "polars_dtype::categorical::CategoricalPhysical::max_categories",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_7d14d47b_ount_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_7fcc077c__dtype__categorical__mapping__categoricalmapping",
+   "polars": "polars_dtype::categorical::mapping::CategoricalMapping::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_80c05c8a_irst_null_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_84d772dc_n__null_count_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_86dbf92e_t_non_null_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_87fe29d8_lars_core__chunked_array__struct___structchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_8804f1dc_null_count_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_88b33383_t_non_null_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_8dda26e5_st_non_null_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_903ea040___first_null_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_91613d77_rray__last_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_921a5dfb___shape_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::shape",
+   "before": "(i64, i64)",
+   "after": "Result<(i64, i64), Error>"
+  },
+  {
+   "binding": "f_9222f285_first_null_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_9335d54b_ries__hash_polars_dtype__categorical__categories",
+   "polars": "polars_dtype::categorical::Categories::hash",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_938ab794_irst_non_null_polars_core__frame__column__column",
+   "polars": "polars_core::frame::column::Column::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_996918b2_polars_core__frame__column__scalar__scalarcolumn",
+   "polars": "polars_core::frame::column::scalar::ScalarColumn::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_9a0b5d5c_darray__len_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_9b127f52__null_count_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_a0a694ef_array__len_polars_core__datatypes__stringchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_a4eaeb5e_o__cloud__concurrency__admission__inflightbudget",
+   "polars": "polars_io::cloud::concurrency::admission::InFlightBudget::current_byte_budget",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_a674df68__non_null_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_aaadc779___null_count_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_ab0c6435_st_non_null_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_af462f1b___first_null_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_affd9b11_darray__len_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_b26d9777_irst_null_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_b2bd4cd3_st_non_null_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_b8a4cf31_er__n_rows_polars_lazy__scan__csv__lazycsvreader",
+   "polars": "polars_lazy::scan::file_list_reader::LazyFileListReader::n_rows",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_bc8385b3__height_polars_core__frame__dataframe__dataframe",
+   "polars": "polars_core::frame::dataframe::DataFrame::height",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_bda22d01_null_count_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_c3a4c732_lan__dsl__file_scan__deletion__deletionfileslist",
+   "polars": "polars_plan::dsl::file_scan::deletion::DeletionFilesList::num_files_with_deletions",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_c647d91d_hash_polars_dtype__categorical__frozencategories",
+   "polars": "polars_dtype::categorical::FrozenCategories::hash",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_c6e2983d_first_null_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_ca4452c3_irst_null_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_cc18c7c5_rray__len_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_cc741fc7_ray__first_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_cf66e647__non_null_polars_core__datatypes__aliases__idxca",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d1d99b43_st_non_null_polars_core__datatypes__int16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d296edd5_ount_polars_io__cloud__concurrency__model__model",
+   "polars": "polars_io::cloud::concurrency::model::Model::sample_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_d2de4892_darray__len_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_d43ed425__first_null_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d4457f5f__non_null_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d6238444_ay__to_vec_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::to_vec",
+   "before": "Vec<Option<i64>>",
+   "after": "Result<Vec<Option<i64>>, Error>"
+  },
+  {
+   "binding": "f_d63eb2f9_null_polars_core__datatypes__binaryoffsetchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d8d0b899_ast_non_null_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_d9196994___null_count_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_d924be8e__non_null_polars_core__datatypes__float64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_dc1963e9_null_count_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_dd6f3b7e__len_polars_plan__dsl__scan_sources__scansources",
+   "polars": "polars_plan::dsl::scan_sources::ScanSources::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_dff8073e__null_count_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_e42d1c76__null_count_polars_core__datatypes__int64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::null_count",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_ec1f2f27__first_null_polars_core__datatypes__uint8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_ece4611d_array__len_polars_core__datatypes__uint16chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_ee83bda7_array__len_polars_core__datatypes__binarychunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_f29a47c2__true_idx_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_true_idx",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_f3c912d3_um_falses_polars_core__datatypes__booleanchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::num_falses",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_f4b3b377_edarray__len_polars_core__datatypes__listchunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::len",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "f_f837432c_ast_non_null_polars_core__datatypes__int8chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::last_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_fa1600fa_first_null_polars_core__datatypes__uint64chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "f_ff3892e7_st_non_null_polars_core__datatypes__int32chunked",
+   "polars": "polars_core::chunked_array::ChunkedArray::first_non_null",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_2ad96fc3_rs_core__chunked_array__arg_min_max__arg_min_str",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_min_str",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_3e992452_core__chunked_array__arg_min_max__arg_min_binary",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_min_binary",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_50adcf23_s_core__chunked_array__arg_min_max__arg_max_bool",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_max_bool",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_5edbb209_s_core__chunked_array__arg_min_max__arg_min_bool",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_min_bool",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_7b20ef0e_rs_core__chunked_array__arg_min_max__arg_max_str",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_max_str",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_957b281f_hunked_array__arg_min_max__arg_min_binary_offset",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_min_binary_offset",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_99d96092_hunked_array__arg_min_max__arg_max_binary_offset",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_max_binary_offset",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_9e6c78d8_rs_io__file_cache__cache__get_env_file_cache_ttl",
+   "polars": "polars_io::file_cache::cache::get_env_file_cache_ttl",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "g_bf26c51b_concurrency_config__get_random_access_chunk_size",
+   "polars": "polars_io::cloud::concurrency_config::get_random_access_chunk_size",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "g_bfdaf8a8_core__chunked_array__arg_min_max__arg_max_binary",
+   "polars": "polars_core::chunked_array::arg_min_max::arg_max_binary",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "g_e8589e1f_ud__concurrency_config__get_streaming_chunk_size",
+   "polars": "polars_io::cloud::concurrency_config::get_streaming_chunk_size",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "g_ec762e7f_oud__concurrency_config__get_download_chunk_size",
+   "polars": "polars_io::cloud::concurrency_config::get_download_chunk_size",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_163baafc_itionedsinkoptionsir__approximate_bytes_per_file",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_34316ff0_currency__admission__inflightstats__bytes_in_use",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_36d673a2_ars_lazy__scan__parquet__scanargsparquet__n_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_4276c421_rrency__admission__inflightstats__request_budget",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_4c03947e_oud__concurrency_config__fetchconfig__chunk_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_4ceea245_o__csv__read__options__csvreadoptions__skip_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_4f55cc21_rtitionedsinkoptions__approximate_bytes_per_file",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_528f509f_polars_plan__dsl__options__unionoptions__slice",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<(i64, i64)>",
+   "after": "Result<Option<(i64, i64)>, Error>"
+  },
+  {
+   "binding": "s_5753f535_n__dsl__options__anonymousscanoptions__skip_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_5bc30f6f___cloud__dns__dnsresolverconfig__lookup_attempts",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_6f721ec2_io__cloud__options__cloudoptions__file_cache_ttl",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_73a109cf_polars_io__cloud__concurrency__iosample__n_bytes",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_740edee1_polars_io__options__hiveoptions__hive_start_idx",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_7c7535d0_ous_scan__scanargsanonymous__infer_schema_length",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_82fded4e_currency__admission__inflightstats__bytes_budget",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<(i64, i64)>",
+   "after": "Result<Option<(i64, i64)>, Error>"
+  },
+  {
+   "binding": "s_96a3e170_te__options__parquetwriteoptions__data_page_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_9c88dc41___csv__read__options__csvreadoptions__chunk_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_9d4c75a1___csv__read__options__csvreadoptions__skip_lines",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_a5dd2ccf_rite__options__serializeoptions__float_precision",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_a5f35e94_polars_plan__dsl__options__groupbyoptions__slice",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<(i64, i64)>",
+   "after": "Result<Option<(i64, i64)>, Error>"
+  },
+  {
+   "binding": "s_bbffe52d_rency__admission__inflightstats__requests_in_use",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_be3818ce_o__cloud__options__cloudretryconfig__max_retries",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_c267367b_polars_plan__dsl__options__unionoptions__rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "(Option<i64>, i64)",
+   "after": "Result<(Option<i64>, i64), Error>"
+  },
+  {
+   "binding": "s_c4874374_o__csv__read__options__csvreadoptions__n_threads",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_c6b1a220_polars_ops__frame__join__args__joinargs__slice",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<(i64, i64)>",
+   "after": "Result<Option<(i64, i64)>, Error>"
+  },
+  {
+   "binding": "s_cabdca99__ipc__write__ipcwriteroptions__record_batch_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_cee224b4_ad__options__csvreadoptions__infer_schema_length",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_d87fd27d_s_io__csv__read__options__csvreadoptions__n_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_df47f49b__scan__anonymous_scan__scanargsanonymous__n_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_f1935c50_an__anonymous_scan__scanargsanonymous__skip_rows",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_f21a8e7f__options__csvreadoptions__skip_rows_after_header",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  },
+  {
+   "binding": "s_f639c1c0_te__options__parquetwriteoptions__row_group_size",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "Option<i64>",
+   "after": "Result<Option<i64>, Error>"
+  },
+  {
+   "binding": "s_ffa312e3__dsl__file_scan__predicatefileskip__original_len",
+   "polars": "polars_plan::plans::lit::Literal::lit",
+   "before": "i64",
+   "after": "Result<i64, Error>"
+  }
+ ]
+}

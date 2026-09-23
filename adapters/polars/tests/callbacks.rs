@@ -174,7 +174,7 @@ fn failed_apply_keeps_sorted_nullable_receiver() {
             let ca = fx::series_nulls().i64().unwrap();
             ca.set_sorted_flag(polars::IsSorted::Ascending());
             let outcome = ca.apply_mut(|x| { if x == 3 { panic("late marker") } x + 1 });
-            `${outcome.is_err()} ${ca.get(0).unwrap() == Some(1)} ${ca.get(1).unwrap() == None} ${ca.get(2).unwrap() == Some(3)} ${ca.null_count()} ${ca.is_sorted_flag() == polars::IsSorted::Ascending()}`
+            `${outcome.is_err()} ${ca.get(0).unwrap() == Some(1)} ${ca.get(1).unwrap() == None} ${ca.get(2).unwrap() == Some(3)} ${ca.null_count().unwrap()} ${ca.is_sorted_flag() == polars::IsSorted::Ascending()}`
         }
     "#);
     assert_eq!(result, "true true true true 1 true");
@@ -194,7 +194,7 @@ fn routed_reentry_through_compute_schema_fails_outer_callback() {
             });
             match outcome {
                 Ok(_) => "allowed",
-                Err(e) => `${e.kind()} ${e.message()} ${c.len()}`,
+                Err(e) => `${e.kind()} ${e.message()} ${c.len().unwrap()}`,
             }
         }
     "#);
