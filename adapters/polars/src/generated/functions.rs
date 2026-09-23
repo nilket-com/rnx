@@ -2109,6 +2109,70 @@ fn f_140b2f46_mpty_chunks_polars_core__datatypes__uint8chunked(this: &mut W_pola
 /// Polars: `polars_core::chunked_array::ChunkedArray::rand_bernoulli`. rand_bernoulli(name: string, length: int, p: float) -> result of BooleanChunked (fallible)
 #[rune::function(free, path = W_polars_core__datatypes__BooleanChunked::rand_bernoulli)]
 fn f_89524280_bernoulli_polars_core__datatypes__booleanchunked(name: &str, length: i64, p: f64) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = <polars_core::datatypes::BooleanChunked>::rand_bernoulli(p::PlSmallStr::from(name), support::narrow::<usize>(length, "length")?, p); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BooleanChunked(__r) }) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> BinaryOffsetChunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_0a63fe03_hunk_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__BinaryOffsetChunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::BinaryOffsetChunked::rechunk", move || <polars_core::datatypes::BinaryOffsetChunked>::rechunk(__arg0).into_owned()), "polars::BinaryOffsetChunked::rechunk"); W_polars_core__datatypes__BinaryOffsetChunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> BinaryChunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_eba2f2b6_y__rechunk_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__datatypes__BinaryChunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::BinaryChunked::rechunk", move || <polars_core::datatypes::BinaryChunked>::rechunk(__arg0).into_owned()), "polars::BinaryChunked::rechunk"); W_polars_core__datatypes__BinaryChunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> BooleanChunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_daa2f777___rechunk_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__datatypes__BooleanChunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::BooleanChunked::rechunk", move || <polars_core::datatypes::BooleanChunked>::rechunk(__arg0).into_owned()), "polars::BooleanChunked::rechunk"); W_polars_core__datatypes__BooleanChunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> Float32Chunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_0994a9ff___rechunk_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__Float32Chunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Float32Chunked::rechunk", move || <polars_core::datatypes::Float32Chunked>::rechunk(__arg0).into_owned()), "polars::Float32Chunked::rechunk"); W_polars_core__datatypes__Float32Chunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> Float64Chunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_a05024f7___rechunk_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__Float64Chunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Float64Chunked::rechunk", move || <polars_core::datatypes::Float64Chunked>::rechunk(__arg0).into_owned()), "polars::Float64Chunked::rechunk"); W_polars_core__datatypes__Float64Chunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> Int16Chunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_093a0848_ay__rechunk_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__datatypes__Int16Chunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Int16Chunked::rechunk", move || <polars_core::datatypes::Int16Chunked>::rechunk(__arg0).into_owned()), "polars::Int16Chunked::rechunk"); W_polars_core__datatypes__Int16Chunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> Int32Chunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_f1187861_ay__rechunk_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__datatypes__Int32Chunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Int32Chunked::rechunk", move || <polars_core::datatypes::Int32Chunked>::rechunk(__arg0).into_owned()), "polars::Int32Chunked::rechunk"); W_polars_core__datatypes__Int32Chunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> Int64Chunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_a34a7e22_ay__rechunk_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__datatypes__Int64Chunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Int64Chunked::rechunk", move || <polars_core::datatypes::Int64Chunked>::rechunk(__arg0).into_owned()), "polars::Int64Chunked::rechunk"); W_polars_core__datatypes__Int64Chunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> Int8Chunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_6de973f0_ray__rechunk_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__datatypes__Int8Chunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Int8Chunked::rechunk", move || <polars_core::datatypes::Int8Chunked>::rechunk(__arg0).into_owned()), "polars::Int8Chunked::rechunk"); W_polars_core__datatypes__Int8Chunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> ListChunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_a459c95f_ray__rechunk_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__ListChunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::ListChunked::rechunk", move || <polars_core::datatypes::ListChunked>::rechunk(__arg0).into_owned()), "polars::ListChunked::rechunk"); W_polars_core__datatypes__ListChunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> StringChunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_ef3037af_y__rechunk_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__StringChunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::StringChunked::rechunk", move || <polars_core::datatypes::StringChunked>::rechunk(__arg0).into_owned()), "polars::StringChunked::rechunk"); W_polars_core__datatypes__StringChunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> StructChunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_0e91887a_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__chunked_array__struct___StructChunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::StructChunked::rechunk", move || <polars::chunked_array::StructChunked>::rechunk(__arg0).into_owned()), "polars::StructChunked::rechunk"); W_polars_core__chunked_array__struct___StructChunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> UInt16Chunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_694e6d61_y__rechunk_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__datatypes__UInt16Chunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::UInt16Chunked::rechunk", move || <polars_core::datatypes::UInt16Chunked>::rechunk(__arg0).into_owned()), "polars::UInt16Chunked::rechunk"); W_polars_core__datatypes__UInt16Chunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> IdxCa (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_456d2dec___rechunk_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__datatypes__aliases__IdxCa { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::IdxCa::rechunk", move || <polars_core::datatypes::IdxCa>::rechunk(__arg0).into_owned()), "polars::IdxCa::rechunk"); W_polars_core__datatypes__aliases__IdxCa(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> UInt64Chunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_53aed099_y__rechunk_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__datatypes__UInt64Chunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::UInt64Chunked::rechunk", move || <polars_core::datatypes::UInt64Chunked>::rechunk(__arg0).into_owned()), "polars::UInt64Chunked::rechunk"); W_polars_core__datatypes__UInt64Chunked(__r) }
+/// Rechunks this ChunkedArray, returning a new Cow::Owned ChunkedArray if it was rechunked or simply a Cow::Borrowed of itself if it was already a single chunk.
+/// Polars: `polars_core::chunked_array::ChunkedArray::rechunk`. rechunk() -> UInt8Chunked (owned)
+#[rune::function(instance, path = rechunk)]
+fn f_7f064bd7_ay__rechunk_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__datatypes__UInt8Chunked { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::UInt8Chunked::rechunk", move || <polars_core::datatypes::UInt8Chunked>::rechunk(__arg0).into_owned()), "polars::UInt8Chunked::rechunk"); W_polars_core__datatypes__UInt8Chunked(__r) }
 /// Rechunks this ChunkedArray in-place.
 /// Polars: `polars_core::chunked_array::ChunkedArray::rechunk_mut`. rechunk_mut() -> unit
 #[rune::function(instance, path = rechunk_mut)]
@@ -2784,6 +2848,14 @@ fn f_90a02bb6_lars_core__chunked_array__struct___structchunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::sum`. sum() -> option of int
 #[rune::function(instance, path = sum)]
 fn f_c93b6cdd_rray__sum_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::sum(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
+/// Convert the datatype of the list into the physical datatype.
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_physical_repr`. to_physical_repr() -> ListChunked (owned)
+#[rune::function(instance, path = to_physical_repr)]
+fn f_785727f8_hysical_repr_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__ListChunked { let __r = <polars_core::datatypes::ListChunked>::to_physical_repr(&this.0); { let __r = __r.into_owned(); W_polars_core__datatypes__ListChunked(__r) } }
+/// Convert a struct to the underlying physical datatype.
+/// Polars: `polars_core::chunked_array::ChunkedArray::to_physical_repr`. to_physical_repr() -> StructChunked (owned)
+#[rune::function(instance, path = to_physical_repr)]
+fn f_3b917589_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__chunked_array__struct___StructChunked { let __r = <polars::chunked_array::StructChunked>::to_physical_repr(&this.0); { let __r = __r.into_owned(); W_polars_core__chunked_array__struct___StructChunked(__r) } }
 /// Convert to a [`Vec`] of [`Option<T::Native>`].
 /// Polars: `polars_core::chunked_array::ChunkedArray::to_vec`. to_vec() -> vector of option of float
 #[rune::function(instance, path = to_vec)]
@@ -13193,6 +13265,22 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_8102d4be_pty_chunks_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_140b2f46_mpty_chunks_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_89524280_bernoulli_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_0a63fe03_hunk_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_eba2f2b6_y__rechunk_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_daa2f777___rechunk_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_0994a9ff___rechunk_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_a05024f7___rechunk_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_093a0848_ay__rechunk_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_f1187861_ay__rechunk_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_a34a7e22_ay__rechunk_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_6de973f0_ray__rechunk_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_a459c95f_ray__rechunk_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_ef3037af_y__rechunk_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_0e91887a_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_694e6d61_y__rechunk_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_456d2dec___rechunk_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_53aed099_y__rechunk_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_7f064bd7_ay__rechunk_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_611e73b2__mut_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_56db4fc9_echunk_mut_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_ec5e5374_chunk_mut_polars_core__datatypes__booleanchunked)?;
@@ -13375,6 +13463,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_bd0d16bd_y__split_at_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_90a02bb6_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_c93b6cdd_rray__sum_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_785727f8_hysical_repr_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_3b917589_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_34949b18_y__to_vec_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_8d8f65f2_y__to_vec_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_c3fb8102_ray__to_vec_polars_core__datatypes__int16chunked)?;
