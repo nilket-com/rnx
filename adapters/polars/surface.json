@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 329,
-    "generated": 2102,
+    "generated": 2104,
     "out_of_scope": 710,
-    "unsupported": 1930
+    "unsupported": 1928
   },
   "entries": [
     {
@@ -63009,13 +63009,98 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int8Chunked::peak_max_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int16Chunked::peak_max_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int32Chunked::peak_max_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int64Chunked::peak_max_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt8Chunked::peak_max_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt16Chunked::peak_max_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__idxca",
+          "receiver": "polars_core::datatypes::aliases::IdxCa",
+          "route": "free instantiation",
+          "rune": "polars::IdxCa::peak_max_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt64Chunked::peak_max_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__float32chunked",
+          "receiver": "polars_core::datatypes::Float32Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Float32Chunked::peak_max_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_ops__chunked_array__peaks__peak_max_with_start_end__on__float64chunked",
+          "receiver": "polars_core::datatypes::Float64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Float64Chunked::peak_max_with_start_end"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+      "execution": "case (on 10 of 10 receivers)",
+      "fallible": true,
       "key": "polars_ops:77",
       "kind": "free_fn",
-      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+      "note": "instantiated on 10 of 10 listed types (polars-ops 0.55.2 chunked_array/peaks.rs:36-60 (shift_and_fill by 1 and -1, tot_lt/tot_gt kernels); record 0090)",
+      "rune": "polars::Int8Chunked::peak_max_with_start_end polars::Int16Chunked::peak_max_with_start_end polars::Int32Chunked::peak_max_with_start_end polars::Int64Chunked::peak_max_with_start_end polars::UInt8Chunked::peak_max_with_start_end polars::UInt16Chunked::peak_max_with_start_end polars::IdxCa::peak_max_with_start_end polars::UInt64Chunked::peak_max_with_start_end polars::Float32Chunked::peak_max_with_start_end polars::Float64Chunked::peak_max_with_start_end",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, core::option::Option<T::Native>, core::option::Option<T::Native>) -> polars_core::datatypes::BooleanChunked",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -63027,13 +63112,98 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int8Chunked::peak_min_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int16Chunked::peak_min_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int32Chunked::peak_min_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Int64Chunked::peak_min_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt8Chunked::peak_min_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt16Chunked::peak_min_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__idxca",
+          "receiver": "polars_core::datatypes::aliases::IdxCa",
+          "route": "free instantiation",
+          "rune": "polars::IdxCa::peak_min_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::UInt64Chunked::peak_min_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__float32chunked",
+          "receiver": "polars_core::datatypes::Float32Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Float32Chunked::peak_min_with_start_end"
+        },
+        {
+          "case_id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_ops__chunked_array__peaks__peak_min_with_start_end__on__float64chunked",
+          "receiver": "polars_core::datatypes::Float64Chunked",
+          "route": "free instantiation",
+          "rune": "polars::Float64Chunked::peak_min_with_start_end"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+      "execution": "case (on 10 of 10 receivers)",
+      "fallible": true,
       "key": "polars_ops:81",
       "kind": "free_fn",
-      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+      "note": "instantiated on 10 of 10 listed types (polars-ops 0.55.2 chunked_array/peaks.rs:36-60 (shift_and_fill by 1 and -1, tot_lt/tot_gt kernels); record 0090)",
+      "rune": "polars::Int8Chunked::peak_min_with_start_end polars::Int16Chunked::peak_min_with_start_end polars::Int32Chunked::peak_min_with_start_end polars::Int64Chunked::peak_min_with_start_end polars::UInt8Chunked::peak_min_with_start_end polars::UInt16Chunked::peak_min_with_start_end polars::IdxCa::peak_min_with_start_end polars::UInt64Chunked::peak_min_with_start_end polars::Float32Chunked::peak_min_with_start_end polars::Float64Chunked::peak_min_with_start_end",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, core::option::Option<T::Native>, core::option::Option<T::Native>) -> polars_core::datatypes::BooleanChunked",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -140155,7 +140325,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2196,
+  "oracle_cases": 2216,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -143173,7 +143343,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "0510c4944449d264a409516fbc84515e9c9e37f3d62e36afe155d7459cbaa1c5",
+    "sha256": "941db8a4483ddbcaf1952c3daa07535ea866fa4307b82dbc00bb6b0f784af1d2",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",

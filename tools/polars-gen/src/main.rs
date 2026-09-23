@@ -135,6 +135,10 @@ struct FreeInstantiation {
     /// The generic parameter and its concrete types, one binding each.
     generic: String,
     types: Vec<String>,
+    /// Record 0090: the native scalar of each listed type, in the same
+    /// order, for `T::Native` in the parameters (empty when unused).
+    #[serde(default)]
+    natives: Vec<String>,
     cite: String,
 }
 #[derive(serde::Deserialize, Clone)]
@@ -1129,6 +1133,63 @@ fn callback_census(world: &World, inv: &Inventory, entries: &[Entry]) -> serde_j
     })
 }
 
+/// Record 0090 gate 2 controls: `T::Native` and `ChunkedArray<T>` are
+/// replaced only as whole tokens, per listed type (a narrow signed integer,
+/// `IdxCa`'s `u32`, `f32`), through `Option`; a spelling inside another
+/// path is left alone and refused as residual; a listed function whose
+/// parameter keeps an unresolved associated type is an exception.
+fn native_substitution_self_test() {
+    assert_eq!(replace_token("core::option::Option<T::Native>", "T::Native", "i8"), "core::option::Option<i8>");
+    assert_eq!(replace_token("polars_core::chunked_array::ChunkedArray<T>", "polars_core::chunked_array::ChunkedArray<T>", "polars_core::datatypes::Int8Chunked"), "polars_core::datatypes::Int8Chunked");
+    assert_eq!(replace_token("my::XT::Native", "T::Native", "i8"), "my::XT::Native", "a longer identifier is not the token");
+    assert_eq!(replace_token("T::NativeExt", "T::Native", "i8"), "T::NativeExt", "a longer name is not the token");
+    assert_eq!(replace_token("a::T::Native", "T::Native", "i8"), "a::T::Native", "a path segment is not the generic");
+    let ca = "polars_core::chunked_array::ChunkedArray";
+    let sup = |path: &str| Supporting {
+        key: path.to_string(), kind: "struct".into(), canonical_path: path.to_string(),
+        found_paths: vec![format!("polars::{}", path.rsplit("::").next().unwrap())], crate_paths: vec![path.to_string()],
+        public_fields: 0, fields_canonical: vec![], variant_shapes: vec![], variant_payloads: vec![], generic: false, lifetime: false, hidden: false,
+        derived: vec!["Clone".into(), "Debug".into()], alias_target: None, implementors: vec![], impls: vec![],
+    };
+    let alias = |path: &str, target: &str| { let mut a = sup(path); a.kind = "type_alias".into(); a.alias_target = Some(target.into()); a };
+    let mut generic = sup(ca); generic.generic = true;
+    let mk = |key: &str, name: &str, params: Vec<(&str, &str)>| Callable {
+        key: key.into(), kind: "free_fn".into(), krate: "polars_ops".into(), owner: String::new(), name: name.into(), canonical_path: format!("polars_ops::m::{name}"),
+        found_paths: vec![format!("polars::m::{name}")], crate_paths: vec![], receiver: "none".into(), params: params.iter().map(|(n, t)| Param { name: n.to_string(), ty: t.to_string(), ty_canonical: t.to_string() }).collect(),
+        ret: None, ret_canonical: Some("polars_core::datatypes::BooleanChunked".into()), generics_canonical: vec![("T".into(), "polars_core::datatypes::PolarsNumericType".into())],
+        impl_for: None, impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic: false, is_unsafe: false, is_async: false,
+        deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "generic".into(), rules: vec![],
+    };
+    let arr = format!("&{ca}<T>");
+    let inv = Inventory {
+        callables: vec![
+            mk("peaks", "peak", vec![("ca", &arr), ("start", "core::option::Option<T::Native>"), ("end", "core::option::Option<T::Native>")]),
+            mk("residual", "other", vec![("ca", &arr), ("v", "T::Physical")]),
+        ],
+        supporting: vec![generic, sup("polars_core::datatypes::BooleanChunked"),
+            alias("polars_core::datatypes::Int8Chunked", &format!("{ca}<polars_core::datatypes::Int8Type>")),
+            alias("polars_core::datatypes::aliases::IdxCa", &format!("{ca}<polars_core::datatypes::UInt32Type>")),
+            alias("polars_core::datatypes::Float32Chunked", &format!("{ca}<polars_core::datatypes::Float32Type>"))],
+        provenance: None,
+    };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_ops".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], iterator_returns: vec![], cow_returns: vec![], free_instantiations: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let types = vec!["polars_core::datatypes::Int8Type".to_string(), "polars_core::datatypes::UInt32Type".into(), "polars_core::datatypes::Float32Type".into()];
+    let natives = vec!["i8".to_string(), "u32".into(), "f32".into()];
+    for (k, n) in [("peaks", "peak"), ("residual", "other")] { release.free_instantiations.push(FreeInstantiation { key: k.into(), path: format!("polars_ops::m::{n}"), callee: format!("polars::m::{n}"), generic: "T".into(), types: types.clone(), natives: natives.clone(), cite: "t".into() }); }
+    let world = World::new(&inv, &release, &["mechanical", "generic_fn"]);
+    let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+    let emit = |key: &str| { let mut e = empty(); emit_callable(&world, &mut e, inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical", "generic_fn"]); (e.entries[0].clone(), e.functions) };
+    let (e, f) = emit("peaks");
+    assert_eq!(e.status, "generated", "{:?} {:?}", e.reason, e.exceptions.iter().map(|x| &x.reason).collect::<Vec<_>>());
+    assert_eq!(e.bindings.len(), 3, "{:?}", e.exceptions.iter().map(|x| &x.reason).collect::<Vec<_>>());
+    assert!(f.contains("support::narrow::<i8>") && f.contains("support::narrow::<u32>") && f.contains("(v as f32)") && f.contains("None => None"), "per-type natives through Option: {f}");
+    assert!(!f.contains("T::Native") && !f.contains("<T>"), "no generic left in any binding: {f}");
+    let (e, _) = emit("residual");
+    assert_eq!(e.status, "unsupported", "an unresolved associated type keeps the function refused: {:?}", e.reason);
+    assert!(e.exceptions.iter().all(|x| x.reason.contains("remains in a parameter")), "{:?}", e.exceptions.iter().map(|x| &x.reason).collect::<Vec<_>>());
+    println!("native-substitution self-test: ok");
+}
+
 /// Record 0089 gate 2 controls, from a synthetic inventory: a listed generic
 /// free function over `&ChunkedArray<T>` becomes a static function on each
 /// listed type's wrapper (including a type held by an alias such as
@@ -1165,7 +1226,7 @@ fn free_instantiation_self_test() {
         provenance: None,
     };
     let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], iterator_returns: vec![], cow_returns: vec![], free_instantiations: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
-    release.free_instantiations.push(FreeInstantiation { key: "listed".into(), path: "polars_core::m::arg_lo".into(), callee: "polars::m::arg_lo".into(), generic: "T".into(), types: vec!["polars_core::datatypes::Int64Type".into(), "polars_core::datatypes::UInt32Type".into(), "polars_core::datatypes::Float32Type".into()], cite: "t".into() });
+    release.free_instantiations.push(FreeInstantiation { key: "listed".into(), path: "polars_core::m::arg_lo".into(), callee: "polars::m::arg_lo".into(), generic: "T".into(), types: vec!["polars_core::datatypes::Int64Type".into(), "polars_core::datatypes::UInt32Type".into(), "polars_core::datatypes::Float32Type".into()], natives: vec![], cite: "t".into() });
     let world = World::new(&inv, &release, &["mechanical", "generic_fn"]);
     let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
     let emit = |key: &str| { let mut e = empty(); emit_callable(&world, &mut e, inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical", "generic_fn"]); (e.entries[0].clone(), e.functions) };
@@ -2045,6 +2106,7 @@ fn from_naming_self_test() {
     iterator_return_self_test();
     cow_return_self_test();
     free_instantiation_self_test();
+    native_substitution_self_test();
 }
 
 /// Record 0078 gate 1 controls, from a synthetic inventory through the
@@ -4109,6 +4171,25 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
     }
 }
 
+/// Record 0090: replace `from` in `ty` only where it stands as a whole token:
+/// not preceded by an identifier character or `:`, not followed by one.
+fn replace_token(ty: &str, from: &str, to: &str) -> String {
+    let ident = |c: char| c.is_alphanumeric() || c == '_';
+    let mut out = String::new();
+    let mut i = 0;
+    while let Some(k) = ty[i..].find(from) {
+        let at = i + k;
+        let end = at + from.len();
+        let before_ok = ty[..at].chars().next_back().is_none_or(|c| !ident(c) && c != ':');
+        let after_ok = ty[end..].chars().next().is_none_or(|c| !ident(c));
+        out.push_str(&ty[i..at]);
+        out.push_str(if before_ok && after_ok { to } else { from });
+        i = end;
+    }
+    out.push_str(&ty[i..]);
+    out
+}
+
 /// Record 0089: a generic free function instantiated once per concrete type
 /// the release file lists. `ChunkedArray<T>` in its parameters is spelled as
 /// that type's wrapper, the binding is a static function on the wrapper
@@ -4123,7 +4204,8 @@ fn emit_free_instantiations(world: &World, out: &mut Emitted, c: &Callable) {
     let mut infos: Vec<OracleInfo> = Vec::new();
     let mut exceptions: Vec<RouteException> = Vec::new();
     let generic_ca = format!("polars_core::chunked_array::ChunkedArray<{}>", f.generic);
-    for t in &f.types {
+    let native_of = format!("{}::Native", f.generic);
+    for (n, t) in f.types.iter().enumerate() {
         let identity = format!("polars_core::chunked_array::ChunkedArray<{t}>");
         let Some(alias) = world.by_identity.get(&identity).cloned() else {
             exceptions.push(RouteException { route: "free instantiation", receiver: t.clone(), reason: format!("no wrapper holds `{identity}`") });
@@ -4134,9 +4216,14 @@ fn emit_free_instantiations(world: &World, out: &mut Emitted, c: &Callable) {
         syn.bucket = "mechanical".into();
         syn.kind = "inherent".into();
         syn.receiver = "none".into();
-        for q in syn.params.iter_mut() { q.ty_canonical = q.ty_canonical.replace(&generic_ca, &alias); }
+        // record 0090: whole-token substitution only; a path or bound that merely
+        // contains the spelling is left alone and then refused as residual
+        for q in syn.params.iter_mut() {
+            q.ty_canonical = replace_token(&q.ty_canonical, &generic_ca, &alias);
+            if let Some(native) = f.natives.get(n) { q.ty_canonical = replace_token(&q.ty_canonical, &native_of, native); }
+        }
         syn.generics_canonical.clear();
-        if syn.params.iter().any(|q| mentions(&q.ty_canonical, &f.generic)) {
+        if syn.params.iter().any(|q| mentions(&q.ty_canonical, &f.generic) || q.ty_canonical.contains("::Native")) {
             exceptions.push(RouteException { route: "free instantiation", receiver: alias.clone(), reason: format!("`{}` remains in a parameter after substitution", f.generic) });
             continue;
         }

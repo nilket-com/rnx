@@ -1,0 +1,342 @@
+[
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int8Type",
+  "native": "i8",
+  "wrapper": "Int8Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int8Chunked::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int16Type",
+  "native": "i16",
+  "wrapper": "Int16Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int16Chunked::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int32Type",
+  "native": "i32",
+  "wrapper": "Int32Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int32Chunked::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int64Type",
+  "native": "i64",
+  "wrapper": "Int64Chunked",
+  "boundary": "direct",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int64Chunked::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt8Type",
+  "native": "u8",
+  "wrapper": "UInt8Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt8Chunked::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt16Type",
+  "native": "u16",
+  "wrapper": "UInt16Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt16Chunked::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt32Type",
+  "native": "u32",
+  "wrapper": "IdxCa",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::IdxCa::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt64Type",
+  "native": "u64",
+  "wrapper": "UInt64Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt64Chunked::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Float32Type",
+  "native": "f32",
+  "wrapper": "Float32Chunked",
+  "boundary": "as f32 from a script float",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Float32Chunked::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:77",
+  "function": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+  "signature": "fn peak_max_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Float64Type",
+  "native": "f64",
+  "wrapper": "Float64Chunked",
+  "boundary": "direct",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Float64Chunked::peak_max_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int8Type",
+  "native": "i8",
+  "wrapper": "Int8Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int8Chunked::peak_min_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int16Type",
+  "native": "i16",
+  "wrapper": "Int16Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int16Chunked::peak_min_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int32Type",
+  "native": "i32",
+  "wrapper": "Int32Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int32Chunked::peak_min_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int64Type",
+  "native": "i64",
+  "wrapper": "Int64Chunked",
+  "boundary": "direct",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int64Chunked::peak_min_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt8Type",
+  "native": "u8",
+  "wrapper": "UInt8Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt8Chunked::peak_min_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt16Type",
+  "native": "u16",
+  "wrapper": "UInt16Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt16Chunked::peak_min_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt32Type",
+  "native": "u32",
+  "wrapper": "IdxCa",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::IdxCa::peak_min_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt64Type",
+  "native": "u64",
+  "wrapper": "UInt64Chunked",
+  "boundary": "checked narrowing (fallible)",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt64Chunked::peak_min_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Float32Type",
+  "native": "f32",
+  "wrapper": "Float32Chunked",
+  "boundary": "as f32 from a script float",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Float32Chunked::peak_min_with_start_end",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_ops:81",
+  "function": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+  "signature": "fn peak_min_with_start_end<T>(ca: &ChunkedArray<T>, start: Option<T::Native>, end: Option<T::Native>) -> BooleanChunked",
+  "bounds": [
+   "ChunkedArray<T>: ChunkCompareIneq<&ChunkedArray<T>, Item = BooleanChunked>"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Float64Type",
+  "native": "f64",
+  "wrapper": "Float64Chunked",
+  "boundary": "direct",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Float64Chunked::peak_min_with_start_end",
+  "oracle": "match"
+ }
+]

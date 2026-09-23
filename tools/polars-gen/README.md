@@ -96,6 +96,15 @@ Polars function by its public path (Rust infers `T`), and a `usize` result
 converts through `support::widen`. A listed type no wrapper holds is a named
 exception; every other generic free function keeps its refusal.
 
+Record 0090 adds `natives` to those entries: the native scalar of each
+listed type, in order, which replaces `T::Native` in the parameters.
+Both substitutions (`ChunkedArray<T>` and `T::Native`) happen only where
+the spelling stands as a whole token (`replace_token`), so a path or name
+that merely contains it is left alone; any generic or `::Native` left in a
+parameter afterwards makes that type a named exception. The substituted
+scalars then map through the ordinary argument rules (checked narrowing
+for narrower integers, `as f32` for `f32`).
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

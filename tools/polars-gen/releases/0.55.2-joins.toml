@@ -750,3 +750,21 @@ callee = "polars::chunked_array::arg_min_max::arg_max_numeric"
 generic = "T"
 types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type"]
 cite = "polars-core 0.55.2 chunked_array/arg_min_max.rs:54-80 (float sorted branch excluded), 163-283"
+
+# Record 0090: numeric peaks with explicit boundaries; T::Native resolved per type.
+[[free_instantiations]]
+key = "polars_ops:77"
+path = "polars_ops::chunked_array::peaks::peak_max_with_start_end"
+callee = "polars::prelude::peaks::peak_max_with_start_end"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-ops 0.55.2 chunked_array/peaks.rs:36-60 (shift_and_fill by 1 and -1, tot_lt/tot_gt kernels); record 0090"
+[[free_instantiations]]
+key = "polars_ops:81"
+path = "polars_ops::chunked_array::peaks::peak_min_with_start_end"
+callee = "polars::prelude::peaks::peak_min_with_start_end"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-ops 0.55.2 chunked_array/peaks.rs:36-60 (shift_and_fill by 1 and -1, tot_lt/tot_gt kernels); record 0090"
