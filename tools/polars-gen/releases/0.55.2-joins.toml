@@ -820,6 +820,27 @@ path = "polars_core::chunked_array::ChunkedArray::to_vec_null_aware"
 types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
 cite = "polars-core 0.55.2 chunked_array/to_vec.rs:15-27 (Left: values copied from every chunk when null_count() == 0; Right: to_vec(), lines 7-13)"
 
+# Record 0097: limit/head/tail carry only `where Self: Sized` as a method-level
+# generic; on each concrete family pair they are ordinary `&self -> Self`
+# methods over ChunkedArray::slice (chunkops.rs:252). The binding checks the
+# receiver length is within i64::MAX first: slice_offsets
+# (utils/mod.rs:340-357) panics beyond it.
+[[sized_self_methods]]
+key = "polars_core:3499"
+path = "polars_core::chunked_array::ChunkedArray::limit"
+params = ["usize"]
+cite = "polars-core 0.55.2 chunked_array/ops/chunkops.rs:278-283 (slice(0, num_elements)); slice at :252, slice_offsets at utils/mod.rs:340-357"
+[[sized_self_methods]]
+key = "polars_core:3500"
+path = "polars_core::chunked_array::ChunkedArray::head"
+params = ["core::option::Option<usize>"]
+cite = "polars-core 0.55.2 chunked_array/ops/chunkops.rs:287-295 (slice(0, min(len or 10, self.len()))); slice at :252, slice_offsets at utils/mod.rs:340-357"
+[[sized_self_methods]]
+key = "polars_core:3501"
+path = "polars_core::chunked_array::ChunkedArray::tail"
+params = ["core::option::Option<usize>"]
+cite = "polars-core 0.55.2 chunked_array/ops/chunkops.rs:299-308 (slice(-(len as i64), len), len = min(len or 10, self.len())); slice at :252, slice_offsets at utils/mod.rs:340-357"
+
 # Record 0093: usize results proven to be a length of, or index into, a Vec or
 # IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
 # read-back converts with a range check. ChunkedArray lengths are NOT here:

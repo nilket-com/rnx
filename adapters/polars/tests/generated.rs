@@ -188,6 +188,30 @@ fn null_aware_entries_fail_closed_and_refuse_unlisted_types() {
 	assert!(int64["disposition"].as_str().unwrap().contains("null-aware return: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>` is not a listed type"), "{int64}");
 }
 
+/// Record 0097: the sized-self gate on the real generator. In a modified
+/// inventory `head` returns `PolarsResult<Self>`; in a modified release file
+/// `tail` has no citation. Neither emits any text, both name the fault on
+/// all 16 pairs, and `limit` still binds on all 16.
+#[test]
+fn sized_self_drift_is_refused_by_name() {
+	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
+	let at = shipped.find("key = \"polars_core:3501\"").expect("the tail entry");
+	let cite = at + shipped[at..].find("cite = ").unwrap();
+	let end = cite + shipped[cite..].find('\n').unwrap();
+	let release = format!("{}cite = \" \"{}", &shipped[..cite], &shipped[end..]);
+	let mut inv: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(inventory()).unwrap()).unwrap();
+	let head = inv["callables"].as_array_mut().unwrap().iter_mut().find(|c| c["key"] == "polars_core:3500").expect("head");
+	assert_eq!(head["ret_canonical"], "Self");
+	head["ret_canonical"] = "polars_error::PolarsResult<Self>".into();
+	let (surface, functions) = generate_with(&release, Some(&serde_json::to_string(&inv).unwrap()), "sized-self-drift");
+	let pairs = |key: &str| surface["instantiation"]["pairs"].as_array().unwrap().iter().filter(|p| p["key"] == key).map(|p| p["disposition"].as_str().unwrap().to_string()).collect::<Vec<_>>();
+	assert!(pairs("polars_core:3500").iter().all(|d| d.contains("sized-self method: return polars_error::PolarsResult<Self> is not Self")), "{:?}", pairs("polars_core:3500"));
+	assert!(pairs("polars_core:3501").iter().all(|d| d.contains("sized-self method: no citation")), "{:?}", pairs("polars_core:3501"));
+	assert_eq!(pairs("polars_core:3500").len(), 16);
+	assert!(!functions.contains("ChunkedArray::head`") && !functions.contains("ChunkedArray::tail`"), "no head or tail binding text");
+	assert_eq!(functions.matches("ChunkedArray::limit`").count(), 16, "limit is unaffected");
+}
+
 fn generate_with_natives(key: &str, natives: &str, dir: &str) -> (serde_json::Value, String) {
 	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
 	let at = shipped.find(&format!("key = \"{key}\"")).expect("the entry");
@@ -198,15 +222,25 @@ fn generate_with_natives(key: &str, natives: &str, dir: &str) -> (serde_json::Va
 
 /// Runs the real generator on a modified copy of the shipped release file.
 fn generate_release(release: &str, name: &str) -> (serde_json::Value, String) {
+	generate_with(release, None, name)
+}
+
+/// Runs the real generator on a modified release file and, if given, a
+/// modified copy of the inventory.
+fn generate_with(release: &str, inventory_json: Option<&str>, name: &str) -> (serde_json::Value, String) {
 	let dir = root().join("target/0073").join(name);
 	let _ = std::fs::remove_dir_all(&dir);
 	std::fs::create_dir_all(&dir).unwrap();
 	std::fs::write(dir.join("release.toml"), release).unwrap();
+	let inv = match inventory_json {
+		Some(text) => { let p = dir.join("inventory.json"); std::fs::write(&p, text).unwrap(); p }
+		None => inventory(),
+	};
 	let status = Command::new("cargo")
 		.args(["run", "-q", "--locked", "--manifest-path"])
 		.arg(root().join("tools/polars-gen/Cargo.toml"))
 		.arg("--")
-		.arg(inventory())
+		.arg(inv)
 		.arg(&dir)
 		.args(["--buckets", BUCKETS, "--release"])
 		.arg(dir.join("release.toml"))

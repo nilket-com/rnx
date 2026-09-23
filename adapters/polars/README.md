@@ -107,6 +107,18 @@ over-long array is a `MaterializeLimit` error that names the method, and
 Polars never allocates. A `UInt64` value above `i64::MAX` fails the whole
 call with 0093's `ConversionError`, leaving no partial vector.
 
+Head, limit and tail (record 0097): every typed array wrapper (the numeric
+ones, `IdxCa`, Boolean, String, Binary, BinaryOffset, List and Struct) has
+`ca.limit(n)`, `ca.head(n)` and `ca.tail(n)`. `head` and `tail` take
+`Some(n)` or `None`, which means 10. Each returns a new array of the same
+type. The receiver stays usable, and the result stays valid after the
+receiver is dropped. As in Polars, a length longer than the array gives
+the whole array, and 0 gives an empty one. A negative length is a
+`ConversionError`, and the receiver is unchanged. Polars's slice offsets are
+signed, so these methods refuse a receiver longer than `i64::MAX` with a
+`ConversionError` before the call. That length can only come from 0093's
+shared-buffer appends.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the

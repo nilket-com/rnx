@@ -167,6 +167,19 @@ only at the top level and converts both branches with the existing scalar rule, 
 Any other `Either` stays a refused foreign type. The oracle frames the
 result as the merged vector of options.
 
+Record 0097's `[[sized_self_methods]]` entries (inventory `key`,
+canonical `path`, the exact parameter types, citation) admit a
+`ChunkedArray` method whose only function-level generic is `Self: Sized`.
+`SizedSelfMethod::check` requires the `ChunkedArray` owner, a `&self`
+receiver, exactly that one generic, the listed parameters and a `Self`
+return. Any other shape, a blank citation or a double listing leaves the
+pairs unresolved with the fault named. So does a fallible or borrowed
+return, which would otherwise emit. A listed method's pairs go through
+ordinary applicability. `Self` becomes the pair's alias, and the method
+emitter inserts `support::signed_len(this.0.len(), ..)` before the call,
+because Polars's `slice_offsets` panics beyond `i64::MAX`. An unlisted
+`Self: Sized` method stays in the generic census.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

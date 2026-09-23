@@ -1,0 +1,761 @@
+{
+ "record": "0097",
+ "methods": {
+  "polars_core:3499": {
+   "name": "limit",
+   "signature": "pub fn limit(&self, num_elements: usize) -> Self where Self: Sized"
+  },
+  "polars_core:3500": {
+   "name": "head",
+   "signature": "pub fn head(&self, length: Option<usize>) -> Self where Self: Sized"
+  },
+  "polars_core:3501": {
+   "name": "tail",
+   "signature": "pub fn tail(&self, length: Option<usize>) -> Self where Self: Sized"
+  }
+ },
+ "owner_bound": "T: PolarsDataType (impl<T: PolarsDataType> ChunkedArray<T>)",
+ "source": {
+  "limit": "chunkops.rs:278-283",
+  "head": "chunkops.rs:287-295",
+  "tail": "chunkops.rs:299-308",
+  "slice": "chunkops.rs:252 (ChunkedArray::slice) -> :52-59 slice(..) -> slice_offsets",
+  "slice_offsets": "utils/mod.rs:340-357 (expect(\"array length larger than i64::MAX\"))"
+ },
+ "pairs": [
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "family": "string-binary",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::BinaryOffsetChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "family": "string-binary",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::BinaryChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "family": "boolean",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Float32Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Float64Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Int16Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Int32Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Int64Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Int8Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "family": "list-struct",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::ListChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "family": "string-binary",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::StringChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "family": "list-struct",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::chunked_array::struct_::StructChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::UInt16Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::aliases::IdxCa",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::UInt64Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3500",
+   "method": "polars_core::chunked_array::ChunkedArray::head",
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::UInt8Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "family": "string-binary",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::BinaryOffsetChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "family": "string-binary",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::BinaryChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "family": "boolean",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::Float32Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::Float64Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::Int16Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::Int32Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::Int64Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::Int8Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "family": "list-struct",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::ListChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "family": "string-binary",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::StringChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "family": "list-struct",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::chunked_array::struct_::StructChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::UInt16Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::aliases::IdxCa",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::UInt64Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3499",
+   "method": "polars_core::chunked_array::ChunkedArray::limit",
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "family": "numeric",
+   "params": [
+    "usize"
+   ],
+   "return": "polars_core::datatypes::UInt8Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "family": "string-binary",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::BinaryOffsetChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "family": "string-binary",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::BinaryChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "family": "boolean",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::BooleanChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Float32Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Float64Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Int16Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Int32Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Int64Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::Int8Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "family": "list-struct",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::ListChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "family": "string-binary",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::StringChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "family": "list-struct",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::chunked_array::struct_::StructChunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::UInt16Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::aliases::IdxCa",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::UInt64Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "key": "polars_core:3501",
+   "method": "polars_core::chunked_array::ChunkedArray::tail",
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "family": "numeric",
+   "params": [
+    "core::option::Option<usize>"
+   ],
+   "return": "polars_core::datatypes::UInt8Chunked",
+   "before": "unresolved: function-level generics are out of this record's scope",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  }
+ ],
+ "counts": {
+  "pairs": 48,
+  "emitted": 48,
+  "oracle_match": 48
+ },
+ "unresolved_pool": {
+  "before": 624,
+  "after": 576
+ },
+ "refused_proven_pairs": {
+  "before": 168,
+  "after": 168
+ },
+ "retained_0096_binary_sha256": "933bcee2e1cec0a004210e60f3bdea1426cb449bc06d32890693330d50827709"
+}
