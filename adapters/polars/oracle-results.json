@@ -1,5 +1,5 @@
 {
-  "cases": 2329,
+  "cases": 2341,
   "results": [
     {
       "detail": "false",
@@ -2707,6 +2707,70 @@
     },
     {
       "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_core__chunked_array__chunkedarray__is_finite__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::is_finite",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_core__chunked_array__chunkedarray__is_finite__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::is_finite",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_core__chunked_array__chunkedarray__is_infinite__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::is_infinite",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_core__chunked_array__chunkedarray__is_infinite__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::is_infinite",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_core__chunked_array__chunkedarray__is_nan__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::is_nan",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_core__chunked_array__chunkedarray__is_nan__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::is_nan",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_core__chunked_array__chunkedarray__is_not_nan__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::is_not_nan",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_core__chunked_array__chunkedarray__is_not_nan__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::is_not_nan",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
       "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__binaryoffsetchunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_not_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -4549,6 +4613,22 @@
       "detail": "[27::Int64:[Int64(1), Int64(2)], 17::Int64:[Int64(3)]]",
       "id": "polars_core__chunked_array__chunkedarray__no_null_series_iter__on__listchunked",
       "path": "polars_core::chunked_array::ChunkedArray::no_null_series_iter",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(1.5), Float32(2.5), Float32(3.5)]",
+      "id": "polars_core__chunked_array__chunkedarray__none_to_nan__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::none_to_nan",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]",
+      "id": "polars_core__chunked_array__chunkedarray__none_to_nan__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::none_to_nan",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -6397,6 +6477,22 @@
       "detail": "x:UInt8:[UInt8(2), UInt8(3)]",
       "id": "polars_core__chunked_array__chunkedarray__tail__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::tail",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(1.5), Float32(2.5), Float32(3.5)]",
+      "id": "polars_core__chunked_array__chunkedarray__to_canonical__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::to_canonical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]",
+      "id": "polars_core__chunked_array__chunkedarray__to_canonical__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::to_canonical",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -12378,7 +12474,7 @@
       "unordered": false
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
       "id": "polars_lazy__frame__lazyframe__unique",
       "path": "polars_lazy::frame::LazyFrame::unique",
       "policy": "unordered: default arguments [Polars documents unique as order-unspecified unless maintain_order is set]",
@@ -12386,7 +12482,7 @@
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
@@ -18637,8 +18733,8 @@
   "tally": {
     "both_error": 98,
     "both_panic": 17,
-    "match": 2212,
+    "match": 2224,
     "row_order_differs": 2
   },
-  "verified": 2329
+  "verified": 2341
 }

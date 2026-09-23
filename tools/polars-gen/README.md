@@ -180,6 +180,23 @@ emitter inserts `support::signed_len(this.0.len(), ..)` before the call,
 because Polars's `slice_offsets` panics beyond `i64::MAX`. An unlisted
 `Self: Sized` method stays in the generic census.
 
+Record 0098's `[[external_bounds]]` entries (inventory `key`, canonical
+`path`, the exact `ret`, the complete exact `where` list, the clauses to
+`discharge`, the `[type, native]` `pairs`, citation) let `applicability`
+treat a cited external `T::Native` bound as proven. Two examples are
+`num_traits::float::Float` and `Float + Canonical`. The bound counts only
+for the listed float pairs, and only once the inventory resolves
+`T::Native` to the listed native. `ExternalBound::check` requires:
+- the `ChunkedArray<T>` head with exactly `T: PolarsFloatType`
+- `&self` with no parameters or method generics
+- the listed return and the listed where-clauses exactly
+- discharges drawn from `T::Native` clauses
+- pairs from the fixed float table, with no duplicates
+
+Anything else leaves the pairs unresolved, with the fault named. The owner
+bound is still proven by the ordinary engine, which rejects every nonfloat
+family.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an
