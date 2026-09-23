@@ -87,6 +87,15 @@ inner type is a wrapped, `Clone` type: the result is made owned with
 binding is routed, then wrapped. Any other `Cow`, and a `Cow` of an
 unwrapped or Arrow type, stays refused.
 
+Record 0089's `[[free_instantiations]]` entries (inventory `key`, `path`,
+public `callee`, the `generic` name, its concrete `types`, citation)
+instantiate a generic free function once per listed type: `ChunkedArray<T>`
+in its parameters becomes the wrapper that holds that type, the binding is a
+static function on the wrapper that borrows its argument and calls the
+Polars function by its public path (Rust infers `T`), and a `usize` result
+converts through `support::widen`. A listed type no wrapper holds is a named
+exception; every other generic free function keeps its refusal.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

@@ -1,0 +1,258 @@
+[
+ {
+  "key": "polars_core:3153",
+  "function": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+  "signature": "fn arg_min_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int8Type",
+  "wrapper": "Int8Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int8Chunked::arg_min_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3153",
+  "function": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+  "signature": "fn arg_min_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int16Type",
+  "wrapper": "Int16Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int16Chunked::arg_min_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3153",
+  "function": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+  "signature": "fn arg_min_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int32Type",
+  "wrapper": "Int32Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int32Chunked::arg_min_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3153",
+  "function": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+  "signature": "fn arg_min_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int64Type",
+  "wrapper": "Int64Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int64Chunked::arg_min_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3153",
+  "function": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+  "signature": "fn arg_min_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt8Type",
+  "wrapper": "UInt8Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt8Chunked::arg_min_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3153",
+  "function": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+  "signature": "fn arg_min_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt16Type",
+  "wrapper": "UInt16Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt16Chunked::arg_min_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3153",
+  "function": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+  "signature": "fn arg_min_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt32Type",
+  "wrapper": "IdxCa",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::IdxCa::arg_min_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3153",
+  "function": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+  "signature": "fn arg_min_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt64Type",
+  "wrapper": "UInt64Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt64Chunked::arg_min_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3155",
+  "function": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+  "signature": "fn arg_max_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int8Type",
+  "wrapper": "Int8Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int8Chunked::arg_max_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3155",
+  "function": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+  "signature": "fn arg_max_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int16Type",
+  "wrapper": "Int16Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int16Chunked::arg_max_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3155",
+  "function": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+  "signature": "fn arg_max_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int32Type",
+  "wrapper": "Int32Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int32Chunked::arg_max_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3155",
+  "function": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+  "signature": "fn arg_max_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::Int64Type",
+  "wrapper": "Int64Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::Int64Chunked::arg_max_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3155",
+  "function": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+  "signature": "fn arg_max_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt8Type",
+  "wrapper": "UInt8Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt8Chunked::arg_max_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3155",
+  "function": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+  "signature": "fn arg_max_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt16Type",
+  "wrapper": "UInt16Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt16Chunked::arg_max_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3155",
+  "function": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+  "signature": "fn arg_max_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt32Type",
+  "wrapper": "IdxCa",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::IdxCa::arg_max_numeric",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3155",
+  "function": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+  "signature": "fn arg_max_numeric<T>(ca: &ChunkedArray<T>) -> Option<usize>",
+  "bounds": [
+   "T: PolarsNumericType",
+   "&[T::Native]: ArgMinMax"
+  ],
+  "before": "unsupported: generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
+  "T": "polars_core::datatypes::UInt64Type",
+  "wrapper": "UInt64Chunked",
+  "audit": "candidate",
+  "after": "emitted",
+  "binding": "polars::UInt64Chunked::arg_max_numeric",
+  "oracle": "match"
+ }
+]
