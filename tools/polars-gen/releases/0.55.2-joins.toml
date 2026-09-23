@@ -915,6 +915,15 @@ path = "polars_core::chunked_array::ChunkedArray::downcast_get"
 pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
 cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:104-110 (self.chunks.get(idx)? then the T::Array cast); arrays per datatypes/mod.rs:181-232 (records 0099, 0100)"
 
+# Record 0102: downcast_as_array asserts exactly one chunk (a Polars panic
+# otherwise, kept as is), then borrows it as T::Array. The binding copies that
+# one array (one chunk slot + cells + payload bytes); List/Struct stay refused.
+[[array_snapshots]]
+key = "polars_core:3510"
+path = "polars_core::chunked_array::ChunkedArray::downcast_as_array"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:112-118 (assert_eq!(self.chunks.len(), 1); downcast_get(0).unwrap()); arrays per datatypes/mod.rs:181-232 (records 0099-0101)"
+
 # Record 0093: usize results proven to be a length of, or index into, a Vec or
 # IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
 # read-back converts with a range check. ChunkedArray lengths are NOT here:
