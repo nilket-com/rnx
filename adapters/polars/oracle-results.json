@@ -1,5 +1,5 @@
 {
-  "cases": 2003,
+  "cases": 2007,
   "results": [
     {
       "detail": "false",
@@ -210,11 +210,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "x:Int16:[]",
       "id": "polars_core__chunked_array__chunkedarray__clear__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::clear",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -234,11 +234,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "x:Int8:[]",
       "id": "polars_core__chunked_array__chunkedarray__clear__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::clear",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -266,11 +266,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "x:UInt16:[]",
       "id": "polars_core__chunked_array__chunkedarray__clear__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::clear",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -290,11 +290,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "x:UInt8:[]",
       "id": "polars_core__chunked_array__chunkedarray__clear__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::clear",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -338,11 +338,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "x:Int16:[Int16(1), Int16(2), Int16(3)]",
       "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::drop_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -362,11 +362,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "x:Int8:[Int8(1), Int8(2), Int8(3)]",
       "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::drop_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -394,11 +394,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "x:UInt16:[UInt16(1), UInt16(2), UInt16(3)]",
       "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::drop_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -418,11 +418,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "x:UInt8:[UInt8(1), UInt8(2), UInt8(3)]",
       "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::drop_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -466,11 +466,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "Int16",
       "id": "polars_core__chunked_array__chunkedarray__dtype__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::dtype",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -490,11 +490,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "Int8",
       "id": "polars_core__chunked_array__chunkedarray__dtype__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::dtype",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -522,11 +522,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "UInt16",
       "id": "polars_core__chunked_array__chunkedarray__dtype__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::dtype",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -546,11 +546,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "UInt8",
       "id": "polars_core__chunked_array__chunkedarray__dtype__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::dtype",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -570,11 +570,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3), Int16(1), Int16(2), Int16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__extend__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::extend",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -594,19 +594,19 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3), Int8(1), Int8(2), Int8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__extend__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::extend",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3), UInt16(1), UInt16(2), UInt16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__extend__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::extend",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -626,11 +626,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3), UInt8(1), UInt8(2), UInt8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__extend__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::extend",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -730,11 +730,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -754,11 +754,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -770,11 +770,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -794,11 +794,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "Some(1:1)",
       "id": "polars_core__chunked_array__chunkedarray__first__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -850,11 +850,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -874,11 +874,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -898,11 +898,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -922,11 +922,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "Some(1:0)",
       "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -970,11 +970,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "None",
       "id": "polars_core__chunked_array__chunkedarray__first_null__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -994,11 +994,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "None",
       "id": "polars_core__chunked_array__chunkedarray__first_null__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1018,11 +1018,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "None",
       "id": "polars_core__chunked_array__chunkedarray__first_null__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1042,11 +1042,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "None",
       "id": "polars_core__chunked_array__chunkedarray__first_null__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::first_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1082,11 +1082,11 @@
       "unordered": false
     },
     {
-      "detail": "not implemented",
+      "detail": "x:Int16:[Int16(2)]",
       "id": "polars_core__chunked_array__chunkedarray__from_vec__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::from_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "both_panic",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1106,19 +1106,19 @@
       "unordered": false
     },
     {
-      "detail": "not implemented",
+      "detail": "x:Int8:[Int8(2)]",
       "id": "polars_core__chunked_array__chunkedarray__from_vec__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::from_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "both_panic",
+      "status": "match",
       "unordered": false
     },
     {
-      "detail": "not implemented",
+      "detail": "x:UInt16:[UInt16(2)]",
       "id": "polars_core__chunked_array__chunkedarray__from_vec__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::from_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "both_panic",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1138,11 +1138,11 @@
       "unordered": false
     },
     {
-      "detail": "not implemented",
+      "detail": "x:UInt8:[UInt8(2)]",
       "id": "polars_core__chunked_array__chunkedarray__from_vec__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::from_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "both_panic",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1186,11 +1186,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "x:Int16:[Null, Null]",
       "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::full_null_like",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1210,11 +1210,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "x:Int8:[Null, Null]",
       "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::full_null_like",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1242,11 +1242,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "x:UInt16:[Null, Null]",
       "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::full_null_like",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1266,11 +1266,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "x:UInt8:[Null, Null]",
       "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::full_null_like",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1306,11 +1306,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1330,11 +1330,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1346,11 +1346,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1370,11 +1370,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__get__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1426,11 +1426,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1450,11 +1450,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1482,11 +1482,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1506,11 +1506,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1554,11 +1554,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "StatisticsFlags(0x0)",
       "id": "polars_core__chunked_array__chunkedarray__get_flags__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1578,11 +1578,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "StatisticsFlags(0x0)",
       "id": "polars_core__chunked_array__chunkedarray__get_flags__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1610,11 +1610,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "StatisticsFlags(0x0)",
       "id": "polars_core__chunked_array__chunkedarray__get_flags__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1634,11 +1634,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "StatisticsFlags(0x0)",
       "id": "polars_core__chunked_array__chunkedarray__get_flags__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::get_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1714,11 +1714,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::has_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1738,11 +1738,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::has_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1770,11 +1770,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::has_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1794,11 +1794,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::has_nulls",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1850,11 +1850,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "[1:1, 1:2, 1:3]",
       "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1874,19 +1874,19 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "[1:1, 1:2, 1:3]",
       "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "[1:1, 1:2, 1:3]",
       "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1906,11 +1906,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "[1:1, 1:2, 1:3]",
       "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::into_no_null_iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1962,11 +1962,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__is_empty__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_empty",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -1986,11 +1986,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__is_empty__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_empty",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2018,11 +2018,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__is_empty__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_empty",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2042,11 +2042,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "false",
       "id": "polars_core__chunked_array__chunkedarray__is_empty__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_empty",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2090,11 +2090,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
       "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_not_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2114,11 +2114,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
       "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_not_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2146,11 +2146,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
       "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_not_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2170,11 +2170,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
       "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_not_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2218,11 +2218,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
       "id": "polars_core__chunked_array__chunkedarray__is_null__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2242,11 +2242,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
       "id": "polars_core__chunked_array__chunkedarray__is_null__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2274,11 +2274,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
       "id": "polars_core__chunked_array__chunkedarray__is_null__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2298,11 +2298,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
       "id": "polars_core__chunked_array__chunkedarray__is_null__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2346,11 +2346,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "true",
       "id": "polars_core__chunked_array__chunkedarray__is_optimal_aligned__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2370,11 +2370,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "true",
       "id": "polars_core__chunked_array__chunkedarray__is_optimal_aligned__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2402,11 +2402,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "true",
       "id": "polars_core__chunked_array__chunkedarray__is_optimal_aligned__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2426,11 +2426,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "true",
       "id": "polars_core__chunked_array__chunkedarray__is_optimal_aligned__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2474,11 +2474,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "Not",
       "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2498,11 +2498,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "Not",
       "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2530,11 +2530,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "Not",
       "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2554,11 +2554,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "Not",
       "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::is_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2586,11 +2586,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__iter__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2610,11 +2610,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__iter__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2626,11 +2626,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__iter__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2650,11 +2650,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__iter__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2682,11 +2682,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2706,11 +2706,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2722,11 +2722,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2746,11 +2746,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "Some(1:3)",
       "id": "polars_core__chunked_array__chunkedarray__last__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2794,11 +2794,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2818,11 +2818,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2842,11 +2842,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2866,11 +2866,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "Some(1:2)",
       "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::last_non_null",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2914,11 +2914,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "3",
       "id": "polars_core__chunked_array__chunkedarray__len__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::len",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2938,11 +2938,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "3",
       "id": "polars_core__chunked_array__chunkedarray__len__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::len",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2970,11 +2970,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "3",
       "id": "polars_core__chunked_array__chunkedarray__len__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::len",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -2994,11 +2994,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "3",
       "id": "polars_core__chunked_array__chunkedarray__len__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::len",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3066,11 +3066,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "x",
       "id": "polars_core__chunked_array__chunkedarray__name__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3090,11 +3090,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "x",
       "id": "polars_core__chunked_array__chunkedarray__name__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3122,11 +3122,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "x",
       "id": "polars_core__chunked_array__chunkedarray__name__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3146,11 +3146,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "x",
       "id": "polars_core__chunked_array__chunkedarray__name__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3170,11 +3170,11 @@
       "unordered": false
     },
     {
-      "detail": "not implemented",
+      "detail": "x:Int16:[Int16(2)]",
       "id": "polars_core__chunked_array__chunkedarray__new_vec__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::new_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "both_panic",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3194,19 +3194,19 @@
       "unordered": false
     },
     {
-      "detail": "not implemented",
+      "detail": "x:Int8:[Int8(2)]",
       "id": "polars_core__chunked_array__chunkedarray__new_vec__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::new_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "both_panic",
+      "status": "match",
       "unordered": false
     },
     {
-      "detail": "not implemented",
+      "detail": "x:UInt16:[UInt16(2)]",
       "id": "polars_core__chunked_array__chunkedarray__new_vec__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::new_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "both_panic",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3226,11 +3226,11 @@
       "unordered": false
     },
     {
-      "detail": "not implemented",
+      "detail": "x:UInt8:[UInt8(2)]",
       "id": "polars_core__chunked_array__chunkedarray__new_vec__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::new_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "both_panic",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3258,11 +3258,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "[1:1, 1:2, 1:3]",
       "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3282,11 +3282,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "[1:1, 1:2, 1:3]",
       "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3298,11 +3298,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "[1:1, 1:2, 1:3]",
       "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3322,11 +3322,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "[1:1, 1:2, 1:3]",
       "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::no_null_iter",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3378,11 +3378,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "0",
       "id": "polars_core__chunked_array__chunkedarray__null_count__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::null_count",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3402,11 +3402,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "0",
       "id": "polars_core__chunked_array__chunkedarray__null_count__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::null_count",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3434,11 +3434,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "0",
       "id": "polars_core__chunked_array__chunkedarray__null_count__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::null_count",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3458,11 +3458,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "0",
       "id": "polars_core__chunked_array__chunkedarray__null_count__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::null_count",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3522,11 +3522,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::prune_empty_chunks",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3546,11 +3546,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::prune_empty_chunks",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3578,11 +3578,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::prune_empty_chunks",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3602,11 +3602,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::prune_empty_chunks",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3658,11 +3658,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::rechunk_mut",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3682,11 +3682,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::rechunk_mut",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3714,11 +3714,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::rechunk_mut",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3738,11 +3738,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::rechunk_mut",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3786,11 +3786,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "Field { name: \"x\", dtype: Int16 }",
       "id": "polars_core__chunked_array__chunkedarray__ref_field__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::ref_field",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3810,11 +3810,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "Field { name: \"x\", dtype: Int8 }",
       "id": "polars_core__chunked_array__chunkedarray__ref_field__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::ref_field",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3842,11 +3842,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "Field { name: \"x\", dtype: UInt16 }",
       "id": "polars_core__chunked_array__chunkedarray__ref_field__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::ref_field",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3866,11 +3866,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "Field { name: \"x\", dtype: UInt8 }",
       "id": "polars_core__chunked_array__chunkedarray__ref_field__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::ref_field",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3914,11 +3914,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rename__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::rename",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3938,11 +3938,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rename__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::rename",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3970,11 +3970,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rename__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::rename",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -3994,11 +3994,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__rename__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::rename",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4058,11 +4058,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4082,11 +4082,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4114,11 +4114,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4138,11 +4138,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4186,11 +4186,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_flags__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4210,11 +4210,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_flags__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4242,11 +4242,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_flags__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4266,11 +4266,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_flags__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_flags",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4322,11 +4322,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4346,11 +4346,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4378,11 +4378,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4402,11 +4402,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::set_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4450,11 +4450,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::shrink_to_fit",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4474,11 +4474,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::shrink_to_fit",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4506,11 +4506,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::shrink_to_fit",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4530,11 +4530,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::shrink_to_fit",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4578,11 +4578,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "x:Int16:[Int16(3)]",
       "id": "polars_core__chunked_array__chunkedarray__slice__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::slice",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4602,11 +4602,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "x:Int8:[Int8(3)]",
       "id": "polars_core__chunked_array__chunkedarray__slice__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::slice",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4634,11 +4634,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "x:UInt16:[UInt16(3)]",
       "id": "polars_core__chunked_array__chunkedarray__slice__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::slice",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4658,11 +4658,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "x:UInt8:[UInt8(3)]",
       "id": "polars_core__chunked_array__chunkedarray__slice__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::slice",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4690,11 +4690,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4714,19 +4714,19 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4746,11 +4746,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "[9:Some(1:1), 9:Some(1:2), 9:Some(1:3)]",
       "id": "polars_core__chunked_array__chunkedarray__to_vec__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::to_vec",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4810,11 +4810,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "SchemaMismatch",
       "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::unpack_series_matching_type",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "both_error",
       "unordered": false
     },
     {
@@ -4834,11 +4834,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "SchemaMismatch",
       "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::unpack_series_matching_type",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "both_error",
       "unordered": false
     },
     {
@@ -4866,11 +4866,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "SchemaMismatch",
       "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::unpack_series_matching_type",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "both_error",
       "unordered": false
     },
     {
@@ -4890,11 +4890,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "SchemaMismatch",
       "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::unpack_series_matching_type",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "both_error",
       "unordered": false
     },
     {
@@ -4938,11 +4938,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::unset_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4962,11 +4962,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::unset_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -4994,11 +4994,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::unset_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5018,11 +5018,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3)];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::unset_fast_explode_list",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5074,11 +5074,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "x:Int16:[Int16(1), Int16(2), Int16(3)]",
       "id": "polars_core__chunked_array__chunkedarray__with_name__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5098,11 +5098,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "x:Int8:[Int8(1), Int8(2), Int8(3)]",
       "id": "polars_core__chunked_array__chunkedarray__with_name__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5130,11 +5130,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "x:UInt16:[UInt16(1), UInt16(2), UInt16(3)]",
       "id": "polars_core__chunked_array__chunkedarray__with_name__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5154,11 +5154,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "x:UInt8:[UInt8(1), UInt8(2), UInt8(3)]",
       "id": "polars_core__chunked_array__chunkedarray__with_name__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_name",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5202,11 +5202,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int16\\\"))\"",
+      "detail": "x:Int16:[Int16(1), Int16(2), Int16(3)]",
       "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__int16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5226,11 +5226,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from Int8\\\"))\"",
+      "detail": "x:Int8:[Int8(1), Int8(2), Int8(3)]",
       "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__int8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5258,11 +5258,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt16\\\"))\"",
+      "detail": "x:UInt16:[UInt16(1), UInt16(2), UInt16(3)]",
       "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__uint16chunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -5282,11 +5282,11 @@
       "unordered": false
     },
     {
-      "detail": "rune setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"; polars setup \"called `Result::unwrap()` on an `Err` value: ComputeError(ErrString(\\\"cannot create series from UInt8\\\"))\"",
+      "detail": "x:UInt8:[UInt8(1), UInt8(2), UInt8(3)]",
       "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__uint8chunked",
       "path": "polars_core::chunked_array::ChunkedArray::with_sorted_flag",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "fixture_failed",
+      "status": "match",
       "unordered": false
     },
     {
@@ -10234,11 +10234,11 @@
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
-      "status": "row_order_differs",
+      "status": "match",
       "unordered": true
     },
     {
@@ -12642,11 +12642,11 @@
       "unordered": false
     },
     {
-      "detail": "not implemented",
+      "detail": "x:UInt8:[UInt8(98), Null, Null]",
       "id": "polars_ops__chunked_array__binary__get__bin_get",
       "path": "polars_ops::chunked_array::binary::get::bin_get",
       "policy": "ordered (operation not listed as unordered)",
-      "status": "both_panic",
+      "status": "match",
       "unordered": false
     },
     {
@@ -14275,6 +14275,22 @@
     },
     {
       "detail": "selected shape=(1, 1); columns=[literal:Int32,]; rows=[(Int32(2))]",
+      "id": "polars_plan__dsl__expr__expr_as_core__convert__from_i8_",
+      "path": "polars_plan::dsl::expr::Expr as core::convert::From",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(1, 1); columns=[literal:Int32,]; rows=[(Int32(2))]",
+      "id": "polars_plan__dsl__expr__expr_as_core__convert__from_i16_",
+      "path": "polars_plan::dsl::expr::Expr as core::convert::From",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(1, 1); columns=[literal:Int32,]; rows=[(Int32(2))]",
       "id": "polars_plan__dsl__expr__expr_as_core__convert__from_i32_",
       "path": "polars_plan::dsl::expr::Expr as core::convert::From",
       "policy": "ordered (operation not listed as unordered)",
@@ -14284,6 +14300,22 @@
     {
       "detail": "selected shape=(1, 1); columns=[literal:Int32,]; rows=[(Int32(2))]",
       "id": "polars_plan__dsl__expr__expr_as_core__convert__from_i64_",
+      "path": "polars_plan::dsl::expr::Expr as core::convert::From",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(1, 1); columns=[literal:Int32,]; rows=[(Int32(2))]",
+      "id": "polars_plan__dsl__expr__expr_as_core__convert__from_u8_",
+      "path": "polars_plan::dsl::expr::Expr as core::convert::From",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(1, 1); columns=[literal:Int32,]; rows=[(Int32(2))]",
+      "id": "polars_plan__dsl__expr__expr_as_core__convert__from_u16_",
       "path": "polars_plan::dsl::expr::Expr as core::convert::From",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
@@ -16027,11 +16059,10 @@
     }
   ],
   "tally": {
-    "both_error": 94,
-    "both_panic": 26,
-    "fixture_failed": 156,
-    "match": 1725,
-    "row_order_differs": 2
+    "both_error": 98,
+    "both_panic": 17,
+    "match": 1891,
+    "row_order_differs": 1
   },
-  "verified": 1847
+  "verified": 2007
 }

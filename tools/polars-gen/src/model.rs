@@ -20,6 +20,9 @@ pub struct Provenance {
     pub rev: Option<String>,
     #[serde(default)]
     pub cfg: Option<String>,
+    /// Record 0081: the Polars features the documentation run resolved.
+    #[serde(default)]
+    pub features: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Clone)]

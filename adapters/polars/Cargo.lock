@@ -1734,6 +1734,7 @@ dependencies = [
  "polars-ops",
  "polars-parquet",
  "polars-sql",
+ "polars-time",
  "polars-utils",
  "version_check",
 ]

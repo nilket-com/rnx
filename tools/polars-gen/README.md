@@ -4,13 +4,16 @@ Generates the Polars adapter's Rune bindings from the record 0072
 inventory (`probes/0072/out/<release>-adapter/result/inventory.json`).
 
     cargo run --manifest-path tools/polars-gen/Cargo.toml -- \
-        probes/0072/out/0.55.2-adapter/result/inventory.json adapters/polars \
+        probes/0072/out/0.55.2-adapter-narrow/result/inventory.json adapters/polars \
         --release tools/polars-gen/releases/0.55.2-joins.toml \
         --buckets mechanical,conversion,option_struct,callback
 
 `--release` is required and names a file in `releases/`: the release's
 API-crate list, its `[provenance]` (the crates.io `release` or Git `rev`
-the inventory must record, or the generator refuses to run), the
+the inventory must record, or the generator refuses to run; since record
+0081 also the documentation configuration `cfg` and the Polars
+`features` the inventory must have resolved, so a feature change cannot
+be reported against an inventory that predates it), the
 operations whose row order is unspecified (by canonical path, with
 `args` giving the exact fixture expression per parameter or `*` for one
 that cannot affect order, and a citation), and the oracle exclusions. `0.55.2.toml` holds the record 0073 constants,

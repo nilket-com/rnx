@@ -16,7 +16,7 @@ a self-check in which an injected wrong oracle fails to fail the run.
 
 | part | what it does |
 |---|---|
-| `inventory/doc.sh <release> <adapter\|full>` | rustdoc JSON for `polars` and every `polars-*` crate it activates, into `out/<release>-<cfg>/` (cleared first, ignored by git) with `pins.json`; `full` is every declared feature; locks kept in `inventory/locks/` |
+| `inventory/doc.sh <release> <adapter\|adapter-narrow\|full>` | rustdoc JSON for `polars` and every `polars-*` crate it activates, into `out/<release>-<cfg>/` (cleared first, ignored by git) with `pins.json`; `adapter` is the 0072–0080 feature set, `adapter-narrow` (record 0081) adds the four narrow integer dtypes and is what the generator consumes, `full` is every declared feature; locks kept in `inventory/locks/` |
 | `control/` | extraction control: a facade over two dependencies with every re-export and item shape, `expected.json` written first, `check.py` compares |
 | `extract/` | `surface <docs-dir> polars <out>`: reachability walk, deduplication, classification by the rule table in `classify.rs`; writes `inventory.json`, `summary.json`, `summary.md` |
 | `samples/gen.py <inventory> --build [--release R] [--inject-failure sNNN] [--inject-broken-reuse sNNN]` | deterministic sample selection, generated Rune wrappers plus Rust oracle tests in `samples/harness`, compile loop, `results-<R>.json` with generator identity; callbacks go through `Function::into_sync` inside the wrapper, with constant-capture, native-capture and error-propagation controls; `--inject-failure` and `--inject-broken-reuse` are the self-checks; builds run `--locked` against `samples/locks/<release>.lock` |
