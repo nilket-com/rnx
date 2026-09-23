@@ -74,6 +74,9 @@ options = "JoinArgs::default()"
 cite = "polars-ops-0.55.2 join/args.rs:153 JoinArgs::default() takes maintain_order: Default::default() = None"
 
 [[excluded_oracle]]
+path = "polars_core::frame::dataframe::DataFrame::partition_by"
+reason = "the order of the partitions is unspecified (Polars documents only partition_by_stable as order-maintaining); the oracle's unordered policy covers rows within one frame, not a vector of frames (record 0084, observed run to run)"
+[[excluded_oracle]]
 path = "polars_core::chunked_array::ChunkedArray::row_decode_ordered"
 reason = "decodes arbitrary bytes as row-encoded data; the result differs run to run (record 0077, observed on BinaryOffsetChunked)"
 [[excluded_oracle]]
@@ -668,3 +671,14 @@ rust = '|x: i64, buf: &mut String| buf.push_str(&format!("{x}!"))'
 signature = "FnMut(polars_core::datatypes::dtype::DataType)->polars_core::datatypes::dtype::DataType"
 rune = '|_| polars::DataType::Float64()'
 rust = '|_: p::DataType| p::DataType::Float64'
+
+# Record 0084: operations the mapping rules would admit but the release
+# refuses until a binding validates the source contract at runtime.
+[[refused]]
+path = "polars_core::chunked_array::ChunkedArray::match_chunks"
+reason = "the single-chunk receiver and the chunk-length sum are debug_assert! only, before sliced_unchecked; a release binding would be undefined behaviour on bad input"
+cite = "polars-core 0.55.2 src/chunked_array/mod.rs:845-866; probes/0083/probe B"
+[[refused]]
+path = "polars_plan::dsl::file_scan::FileScanIR::gather_after_filter"
+reason = "surviving_indices must be ascending indices into the pre-filter source list and first_file_dropped must agree with them; Polars indexes the cached metadata directly and FileScanIR does not record the pre-filter length, so a binding cannot validate either (review of record 0084)"
+cite = "polars-plan 0.55.2 src/dsl/file_scan/mod.rs:186-218; polars-mem-engine src/scan_predicate/functions.rs:494-500"

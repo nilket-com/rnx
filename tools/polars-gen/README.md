@@ -6,7 +6,7 @@ inventory (`probes/0072/out/<release>-adapter/result/inventory.json`).
     cargo run --manifest-path tools/polars-gen/Cargo.toml -- \
         probes/0072/out/0.55.2-adapter-narrow/result/inventory.json adapters/polars \
         --release tools/polars-gen/releases/0.55.2-joins.toml \
-        --buckets mechanical,conversion,option_struct,callback
+        --buckets mechanical,conversion,option_struct,callback,generic_fn
 
 `--release` is required and names a file in `releases/`: the release's
 API-crate list, its `[provenance]` (the crates.io `release` or Git `rev`
@@ -36,6 +36,21 @@ item of one iterator), checked before allocation, and refused as a
 refusal is the callback's typed failure. A mutable slice, an Arrow
 array or bitmap element, and a slice of iterators stay refused with
 their reasons in the census.
+
+Record 0084 infers function-level generics from script values. A
+generic that appears only in another generic's bound is inferred with
+it (`I: IntoIterator<Item = S>, S: AsRef<str>` becomes `Vec<String>`;
+`E: AsRef<[IE]>, IE: Into<Expr>` becomes `Vec<Expr>`), and a vector
+element that would map to `&str` is carried as an owned `String`. A
+bare `Iterator`, `ExactSizeIterator`, `DoubleEndedIterator`,
+`TrustedLen` or `PolarsIterator` bound with an item type is lowered
+from a script vector: owned items through `Vec::into_iter()`, `&str`,
+`&[u8]` and their `Option` forms through a temporary the binding holds
+for the whole call. The `generic_fn` bucket token admits `generic`-bucket
+callables that carry function generics without opening the bucket to its
+other members. `Into<(…)>` tuple conversions, return-only generics,
+closure bounds and the release file's `[[refused]]` paths (each with the
+source contract a binding would have to validate) stay refused.
 
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation

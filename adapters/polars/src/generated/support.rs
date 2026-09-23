@@ -100,11 +100,11 @@ pub(crate) fn materialize_exact_with<I: ExactSizeIterator, T>(it: I, limit: usiz
 	materialize_unknown_with(it, limit, method, conv)
 }
 
-/// Record 0082: a borrowed slice is copied into an owned vector under the
-/// materialize bound, counted cumulatively over every slice copied while
-/// the outermost guard is held: one binding's direct return, its nested
-/// slices, or every item of one materialized iterator. The bound is
-/// checked before any allocation; nothing partial is returned.
+// Record 0082: a borrowed slice is copied into an owned vector under the
+// materialize bound, counted cumulatively over every slice copied while
+// the outermost guard is held: one binding's direct return, its nested
+// slices, or every item of one materialized iterator. The bound is
+// checked before any allocation; nothing partial is returned.
 thread_local! { static SLICE_BUDGET: std::cell::Cell<(usize, usize)> = const { std::cell::Cell::new((0, 0)) }; }
 pub(crate) struct SliceBudget;
 impl SliceBudget {
@@ -222,6 +222,13 @@ borrow_copy!(i64, f64, bool);
 impl BorrowRune for String {
 	fn borrow(value: &rune::Value, name: &str) -> Result<Self, Error> {
 		value.borrow_string_ref().map(|s| s.to_string()).map_err(|e| Error::conversion(&format!("{name}: {e}")))
+	}
+}
+/// Record 0084: an optional element of a script vector (`None` or `Some(v)`).
+impl<T: BorrowRune> BorrowRune for Option<T> {
+	fn borrow(value: &rune::Value, name: &str) -> Result<Self, Error> {
+		let inner: Option<rune::Value> = rune::from_value(value.clone()).map_err(|e| Error::conversion(&format!("{name}: {e}")))?;
+		inner.map(|v| T::borrow(&v, name)).transpose()
 	}
 }
 impl<A: BorrowRune, B: BorrowRune> BorrowRune for (A, B) {

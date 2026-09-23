@@ -224,128 +224,128 @@ fn f_0d3216e4_rray__clear_polars_core__datatypes__uint8chunked(this: &W_polars_c
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of float (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_43becd9e_ont_slice_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<f64>, Error> { let __r = <polars_core::datatypes::Float32Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as f64)))? } }) }
+fn f_43becd9e_ont_slice_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<f64>, Error> { let __r = <polars_core::datatypes::Float32Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as f64)))? }) }
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of float (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_f848166f_ont_slice_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<f64>, Error> { let __r = <polars_core::datatypes::Float64Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>(__r))? } }) }
+fn f_f848166f_ont_slice_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<f64>, Error> { let __r = <polars_core::datatypes::Float64Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>(__r))? }) }
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_e97d9a0d__cont_slice_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int16Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+fn f_e97d9a0d__cont_slice_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int16Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_79474b40__cont_slice_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int32Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+fn f_79474b40__cont_slice_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int32Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_1a8b717e__cont_slice_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int64Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>(__r))? } }) }
+fn f_1a8b717e__cont_slice_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int64Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>(__r))? }) }
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_8d919f87___cont_slice_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int8Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+fn f_8d919f87___cont_slice_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::Int8Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_fe2b5d8f_cont_slice_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+fn f_fe2b5d8f_cont_slice_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_b78cafe0_ont_slice_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::IdxCa>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+fn f_b78cafe0_ont_slice_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::IdxCa>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_ca53460a_cont_slice_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+fn f_ca53460a_cont_slice_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Returns the values of the array as a contiguous slice.
 /// Polars: `polars_core::chunked_array::ChunkedArray::cont_slice`. cont_slice() -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = cont_slice)]
-fn f_f42e8c71__cont_slice_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? } }) }
+fn f_f42e8c71__cont_slice_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<i64>, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::cont_slice(&this.0); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "cont_slice", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of float (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_521ecce7_ata_views_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<Vec<f64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Float32Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as f64)))? })) } })?; Ok(__r) }
+fn f_521ecce7_ata_views_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<Vec<f64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Float32Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as f64)))?)) } })?; Ok(__r) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of float (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_e1e71a52_ata_views_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<Vec<f64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Float64Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>(__r))? })) } })?; Ok(__r) }
+fn f_e1e71a52_ata_views_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<Vec<f64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Float64Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>(__r))?)) } })?; Ok(__r) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_25cf5875__data_views_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int16Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+fn f_25cf5875__data_views_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int16Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_47f4306a__data_views_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int32Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+fn f_47f4306a__data_views_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int32Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_a1ded19f__data_views_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int64Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>(__r))? })) } })?; Ok(__r) }
+fn f_a1ded19f__data_views_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int64Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>(__r))?)) } })?; Ok(__r) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_fb3db0fd___data_views_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int8Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+fn f_fb3db0fd___data_views_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::Int8Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_fc4e8267_data_views_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt16Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+fn f_fc4e8267_data_views_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt16Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_fda919eb_ata_views_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::IdxCa>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+fn f_fda919eb_ata_views_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::IdxCa>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_beee4fec_data_views_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt64Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+fn f_beee4fec_data_views_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt64Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
 /// Get slices of the underlying arrow data. NOTE: null values should be taken into account by the user of these slices as they are handled separately
 /// Polars: `polars_core::chunked_array::ChunkedArray::data_views`. data_views() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = data_views)]
-fn f_ca40b0a4__data_views_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt8Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+fn f_ca40b0a4__data_views_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::UInt8Chunked>::data_views(__arg0); support::materialize_unknown(__it, "data_views", |__r| Ok::<_, Error>(support::copy_slice(__r, "data_views", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_77e8d615_ices_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<Vec<Vec<i64>>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BinaryOffsetChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))? }))?), None => None }))() })?; Ok(__r) }
+fn f_77e8d615_ices_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<Vec<Vec<i64>>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BinaryOffsetChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_92e85b83_ast_slices_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<Vec<Vec<i64>>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BinaryChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))? }))?), None => None }))() })?; Ok(__r) }
+fn f_92e85b83_ast_slices_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<Vec<Vec<i64>>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BinaryChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of bool (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_cfdfc94b_st_slices_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Option<Vec<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BooleanChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))? }))?), None => None }))() })?; Ok(__r) }
+fn f_cfdfc94b_st_slices_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Option<Vec<Vec<bool>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::BooleanChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of float (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_217857e9_st_slices_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Option<Vec<Vec<f64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Float32Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as f64)))? }))?), None => None }))() })?; Ok(__r) }
+fn f_217857e9_st_slices_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Option<Vec<Vec<f64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Float32Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as f64)))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of float (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_e04a2cf2_st_slices_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Option<Vec<Vec<f64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Float64Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))? }))?), None => None }))() })?; Ok(__r) }
+fn f_e04a2cf2_st_slices_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Option<Vec<Vec<f64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Float64Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_a9c7cd5b_cast_slices_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int16Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+fn f_a9c7cd5b_cast_slices_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int16Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_73d4718b_cast_slices_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int32Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+fn f_73d4718b_cast_slices_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int32Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_57dae7b3_cast_slices_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int64Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))? }))?), None => None }))() })?; Ok(__r) }
+fn f_57dae7b3_cast_slices_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int64Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_51cda0e5_ncast_slices_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int8Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+fn f_51cda0e5_ncast_slices_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::Int8Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of string (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_79035acf_ast_slices_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<Option<Vec<Vec<String>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::StringChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r.to_string()))? }))?), None => None }))() })?; Ok(__r) }
+fn f_79035acf_ast_slices_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<Option<Vec<Vec<String>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::StringChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r.to_string()))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of unit (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_14bcd624_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Result<Option<Vec<Vec<()>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars::chunked_array::StructChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))? }))?), None => None }))() })?; Ok(__r) }
+fn f_14bcd624_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Result<Option<Vec<Vec<()>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars::chunked_array::StructChunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>(__r))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_e20fe984_ast_slices_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::UInt16Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+fn f_e20fe984_ast_slices_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::UInt16Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_deebdb59_st_slices_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::IdxCa>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+fn f_deebdb59_st_slices_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::IdxCa>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_bf2587d7_ast_slices_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::UInt64Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+fn f_bf2587d7_ast_slices_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::UInt64Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::downcast_slices`. downcast_slices() -> option of vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = downcast_slices)]
-fn f_91d666d9_cast_slices_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::UInt8Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))? }))?), None => None }))() })?; Ok(__r) }
+fn f_91d666d9_cast_slices_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Option<Vec<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); (|| Ok::<_, Error>(match <polars_core::datatypes::UInt8Chunked>::downcast_slices(__arg0) { Some(__it) => Some(support::materialize_unknown(__it, "downcast_slices", |__r| Ok::<_, Error>(support::copy_slice(__r, "downcast_slices", |__r| Ok::<_, Error>((__r as i64)))?))?), None => None }))() })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::drop_nulls`. drop_nulls() -> BinaryOffsetChunked
 #[rune::function(instance, path = drop_nulls)]
 fn f_e3505c5c_ulls_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__BinaryOffsetChunked { let __r = <polars_core::datatypes::BinaryOffsetChunked>::drop_nulls(&this.0); W_polars_core__datatypes__BinaryOffsetChunked(__r) }
@@ -529,11 +529,11 @@ fn f_e68762f7_lars_core__chunked_array__struct___structchunked(this: &W_polars_c
 /// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = first)]
-fn f_d1f96d32_irst_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::first(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+fn f_d1f96d32_irst_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::first(&this.0); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
 /// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = first)]
-fn f_ff5a841a_ray__first_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::first(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+fn f_ff5a841a_ray__first_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::first(&this.0); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
 /// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::first`. first() -> option of bool
 #[rune::function(instance, path = first)]
@@ -695,10 +695,10 @@ fn f_ec1f2f27__first_null_polars_core__datatypes__uint8chunked(this: &W_polars_c
 fn f_f29a47c2__true_idx_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::first_true_idx(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
 /// Polars: `polars_core::chunked_array::ChunkedArray::for_each`. for_each(op: callback) -> unit (fallible)
 #[rune::function(instance, path = for_each)]
-fn f_c7d41567_each_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, op: rune::runtime::Function) -> Result<(), Error> { let __cb_op = support::callback::install("BinaryOffsetChunked::for_each", op)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: core::option::Option<&[u8]>| { support::callback::bridge::<_, ()>("BinaryOffsetChunked::for_each", &__cb_op, ({ let __r = __cb_a0; match (|| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "BinaryOffsetChunked::for_each", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }))() { Ok(__v) => __v, Err(__e) => support::callback::unwind(crate::engine::CallbackFailure { op: "BinaryOffsetChunked::for_each".into(), cause: __e.1 }) } },)).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::BinaryOffsetChunked::for_each", move || { let __slices = support::SliceBudget::enter(); <polars_core::datatypes::BinaryOffsetChunked>::for_each(__arg0, __arg1) }).map_err(Error::engine)?; Ok(__r) }
+fn f_c7d41567_each_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, op: rune::runtime::Function) -> Result<(), Error> { let __cb_op = support::callback::install("BinaryOffsetChunked::for_each", op)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: core::option::Option<&[u8]>| { support::callback::bridge::<_, ()>("BinaryOffsetChunked::for_each", &__cb_op, ({ let __r = __cb_a0; match (|| Ok::<_, Error>(match __r { Some(__r) => Some(support::copy_slice(__r, "BinaryOffsetChunked::for_each", |__r| Ok::<_, Error>((__r as i64)))?), None => None }))() { Ok(__v) => __v, Err(__e) => support::callback::unwind(crate::engine::CallbackFailure { op: "BinaryOffsetChunked::for_each".into(), cause: __e.1 }) } },)).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::BinaryOffsetChunked::for_each", move || { let __slices = support::SliceBudget::enter(); <polars_core::datatypes::BinaryOffsetChunked>::for_each(__arg0, __arg1) }).map_err(Error::engine)?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::for_each`. for_each(op: callback) -> unit (fallible)
 #[rune::function(instance, path = for_each)]
-fn f_f9ffbadf___for_each_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, op: rune::runtime::Function) -> Result<(), Error> { let __cb_op = support::callback::install("BinaryChunked::for_each", op)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: core::option::Option<&[u8]>| { support::callback::bridge::<_, ()>("BinaryChunked::for_each", &__cb_op, ({ let __r = __cb_a0; match (|| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "BinaryChunked::for_each", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }))() { Ok(__v) => __v, Err(__e) => support::callback::unwind(crate::engine::CallbackFailure { op: "BinaryChunked::for_each".into(), cause: __e.1 }) } },)).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::BinaryChunked::for_each", move || { let __slices = support::SliceBudget::enter(); <polars_core::datatypes::BinaryChunked>::for_each(__arg0, __arg1) }).map_err(Error::engine)?; Ok(__r) }
+fn f_f9ffbadf___for_each_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, op: rune::runtime::Function) -> Result<(), Error> { let __cb_op = support::callback::install("BinaryChunked::for_each", op)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: core::option::Option<&[u8]>| { support::callback::bridge::<_, ()>("BinaryChunked::for_each", &__cb_op, ({ let __r = __cb_a0; match (|| Ok::<_, Error>(match __r { Some(__r) => Some(support::copy_slice(__r, "BinaryChunked::for_each", |__r| Ok::<_, Error>((__r as i64)))?), None => None }))() { Ok(__v) => __v, Err(__e) => support::callback::unwind(crate::engine::CallbackFailure { op: "BinaryChunked::for_each".into(), cause: __e.1 }) } },)).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::BinaryChunked::for_each", move || { let __slices = support::SliceBudget::enter(); <polars_core::datatypes::BinaryChunked>::for_each(__arg0, __arg1) }).map_err(Error::engine)?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::for_each`. for_each(op: callback) -> unit (fallible)
 #[rune::function(instance, path = for_each)]
 fn f_6fa99de4__for_each_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, op: rune::runtime::Function) -> Result<(), Error> { let __cb_op = support::callback::install("BooleanChunked::for_each", op)?; let __arg0 = &this.0; let __arg1 = move |__cb_a0: core::option::Option<bool>| { support::callback::bridge::<_, ()>("BooleanChunked::for_each", &__cb_op, ({ let __r = __cb_a0; match __r { Some(__r) => Some(__r), None => None } },)).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::BooleanChunked::for_each", move || <polars_core::datatypes::BooleanChunked>::for_each(__arg0, __arg1)).map_err(Error::engine)?; Ok(__r) }
@@ -832,11 +832,11 @@ fn f_fc2c3e3e_l_with_dtype_polars_core__datatypes__listchunked(name: &str, lengt
 /// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
 /// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = get)]
-fn f_2c247470__get_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, idx: i64) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "get", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+fn f_2c247470__get_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, idx: i64) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "get", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
 /// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
 /// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = get)]
-fn f_479ad018_array__get_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, idx: i64) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "get", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+fn f_479ad018_array__get_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, idx: i64) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::get(&this.0, support::narrow::<usize>(idx, "idx")?); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "get", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
 /// Get a single value from this [`ChunkedArray`]. If the return values is `None` this indicates a NULL value.
 /// Polars: `polars_core::chunked_array::ChunkedArray::get`. get(idx: int) -> option of bool (fallible)
 #[rune::function(instance, path = get)]
@@ -1416,10 +1416,10 @@ fn f_8981b3e1_orted_flag_polars_core__datatypes__uint64chunked(this: &W_polars_c
 fn f_6a2539a6_sorted_flag_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__series__series_trait__IsSorted { let __r = <polars_core::datatypes::UInt8Chunked>::is_sorted_flag(&this.0); W_polars_core__series__series_trait__IsSorted(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = iter)]
-fn f_90de2556_iter_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Vec<Option<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryOffsetChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "iter", |__r| Ok::<_, Error>((__r as i64)))? }), None => None })) } })?; Ok(__r) }
+fn f_90de2556_iter_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Vec<Option<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryOffsetChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some(support::copy_slice(__r, "iter", |__r| Ok::<_, Error>((__r as i64)))?), None => None })) } })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = iter)]
-fn f_8a81c6a9_rray__iter_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Vec<Option<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "iter", |__r| Ok::<_, Error>((__r as i64)))? }), None => None })) } })?; Ok(__r) }
+fn f_8a81c6a9_rray__iter_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Vec<Option<Vec<i64>>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some(support::copy_slice(__r, "iter", |__r| Ok::<_, Error>((__r as i64)))?), None => None })) } })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::iter`. iter() -> vector of option of bool (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = iter)]
 fn f_6620f712_ray__iter_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Vec<Option<bool>>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::BooleanChunked>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>(match __r { Some(__r) => Some(__r), None => None })) })?; Ok(__r) }
@@ -1459,11 +1459,11 @@ fn f_afd4c2e4_array__iter_polars_core__datatypes__uint8chunked(this: &W_polars_c
 /// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = last)]
-fn f_acadcdb7_last_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::last(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "last", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+fn f_acadcdb7_last_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked>::last(&this.0); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "last", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
 /// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = last)]
-fn f_89fc131c_rray__last_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::last(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "last", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+fn f_89fc131c_rray__last_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::last(&this.0); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "last", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
 /// # Panics Panics if the [`ChunkedArray`] is empty.
 /// Polars: `polars_core::chunked_array::ChunkedArray::last`. last() -> option of bool
 #[rune::function(instance, path = last)]
@@ -1641,7 +1641,7 @@ fn f_d2de4892_darray__len_polars_core__datatypes__uint8chunked(this: &W_polars_c
 fn f_b3d21805_rray__max_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::max(&this.0); match __r { Some(__r) => Some(__r), None => None } }
 /// Polars: `polars_core::chunked_array::ChunkedArray::max_binary`. max_binary() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = max_binary)]
-fn f_5c0178bd_max_binary_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::max_binary(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "max_binary", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+fn f_5c0178bd_max_binary_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::max_binary(&this.0); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "max_binary", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::mean`. mean() -> option of float
 #[rune::function(instance, path = mean)]
 fn f_6988d52c_ray__mean_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<f64> { let __r = <polars_core::datatypes::BooleanChunked>::mean(&this.0); match __r { Some(__r) => Some(__r), None => None } }
@@ -1650,7 +1650,7 @@ fn f_6988d52c_ray__mean_polars_core__datatypes__booleanchunked(this: &W_polars_c
 fn f_d23720e6_rray__min_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<bool> { let __r = <polars_core::datatypes::BooleanChunked>::min(&this.0); match __r { Some(__r) => Some(__r), None => None } }
 /// Polars: `polars_core::chunked_array::ChunkedArray::min_binary`. min_binary() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = min_binary)]
-fn f_7ef73f36_min_binary_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::min_binary(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "min_binary", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+fn f_7ef73f36_min_binary_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_core::datatypes::BinaryChunked>::min_binary(&this.0); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "min_binary", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
 /// Name of the [`ChunkedArray`].
 /// Polars: `polars_core::chunked_array::ChunkedArray::name`. name() -> string
 #[rune::function(instance, path = name)]
@@ -1757,10 +1757,10 @@ fn f_a642e907_y__new_vec_polars_core__datatypes__uint64chunked(name: &str, v: ru
 fn f_c323b7fc_ay__new_vec_polars_core__datatypes__uint8chunked(name: &str, v: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::new_vec(p::PlSmallStr::from(name), support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = no_null_iter)]
-fn f_b9ec298c_iter_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryOffsetChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "no_null_iter", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+fn f_b9ec298c_iter_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryOffsetChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>(support::copy_slice(__r, "no_null_iter", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = no_null_iter)]
-fn f_25f427d6__null_iter_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>({ let __r = (__r).clone(); support::copy_slice(__r, "no_null_iter", |__r| Ok::<_, Error>((__r as i64)))? })) } })?; Ok(__r) }
+fn f_25f427d6__null_iter_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<Vec<Vec<i64>>, Error> { let __arg0 = &this.0; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = <polars_core::datatypes::BinaryChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>(support::copy_slice(__r, "no_null_iter", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::no_null_iter`. no_null_iter() -> vector of bool (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = no_null_iter)]
 fn f_8871973f_null_iter_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<Vec<bool>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::BooleanChunked>::no_null_iter(__arg0); support::materialize_exact(__it, "no_null_iter", |__r| Ok::<_, Error>(__r)) })?; Ok(__r) }
@@ -2516,7 +2516,7 @@ fn f_33f2eb4c___split_at_polars_core__datatypes__uint64chunked(this: &W_polars_c
 fn f_bd0d16bd_y__split_at_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, offset: i64) -> (W_polars_core__datatypes__UInt8Chunked, W_polars_core__datatypes__UInt8Chunked) { let __r = <polars_core::datatypes::UInt8Chunked>::split_at(&this.0, offset); { let __t = __r; ({ let __r = __t.0; W_polars_core__datatypes__UInt8Chunked(__r) }, { let __r = __t.1; W_polars_core__datatypes__UInt8Chunked(__r) }) } }
 /// Polars: `polars_core::chunked_array::ChunkedArray::struct_fields`. struct_fields() -> vector of Field (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = struct_fields)]
-fn f_90a02bb6_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Result<Vec<W_polars_core__datatypes__field__Field>, Error> { let __r = <polars::chunked_array::StructChunked>::struct_fields(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(__r, "struct_fields", |__r| Ok::<_, Error>(W_polars_core__datatypes__field__Field(__r)))? }) }
+fn f_90a02bb6_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Result<Vec<W_polars_core__datatypes__field__Field>, Error> { let __r = <polars::chunked_array::StructChunked>::struct_fields(&this.0); Ok(support::copy_slice(__r, "struct_fields", |__r| Ok::<_, Error>(W_polars_core__datatypes__field__Field(__r)))?) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::sum`. sum() -> option of int
 #[rune::function(instance, path = sum)]
 fn f_c93b6cdd_rray__sum_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Option<i64> { let __r = <polars_core::datatypes::BooleanChunked>::sum(&this.0); match __r { Some(__r) => Some((__r as i64)), None => None } }
@@ -2822,12 +2822,27 @@ fn f_56da4a7e_lder__list__anonymous__anonymousownedlistbuilder(this: &mut W_pola
 /// Polars: `polars_core::chunked_array::builder::list::anonymous::AnonymousOwnedListBuilder::new`. new(name: string, capacity: int, inner_dtype: option of DataType) -> AnonymousOwnedListBuilder (fallible)
 #[rune::function(free, path = W_polars_core__chunked_array__builder__list__anonymous__AnonymousOwnedListBuilder::new)]
 fn f_ee06c05e_lder__list__anonymous__anonymousownedlistbuilder(name: &str, capacity: i64, inner_dtype: Option<rune::Value>) -> Result<W_polars_core__chunked_array__builder__list__anonymous__AnonymousOwnedListBuilder, Error> { let __r = <polars::chunked_array::builder::list::AnonymousOwnedListBuilder>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, match inner_dtype { Some(v) => Some(support::take::<W_polars_core__datatypes__dtype__DataType>(&v, "v")?.0), None => None }); Ok(W_polars_core__chunked_array__builder__list__anonymous__AnonymousOwnedListBuilder(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::append_trusted_len_iter`. append_trusted_len_iter(iter: vector of option of vector of int (iterated, items borrowed from the script's values for the call)) -> unit (fallible)
+#[rune::function(instance, path = append_trusted_len_iter)]
+fn f_130e8670__builder__list__binary__listbinarychunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListBinaryChunkedBuilder, iter: rune::Value) -> Result<(), Error> { let __hold_iter = support::borrow_vec(&iter, "iter")?.into_iter().map(|v| { let v: Option<rune::Value> = support::borrow_element(&v, "iter")?; Ok::<_, Error>(match v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListBinaryChunkedBuilder>::append_trusted_len_iter(&mut this.0, __hold_iter.iter().map(|o| o.as_deref())); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::append_values_iter`. append_values_iter(iter: vector of vector of int (iterated, items borrowed from the script's values for the call)) -> unit (fallible)
+#[rune::function(instance, path = append_values_iter)]
+fn f_51668a4a__builder__list__binary__listbinarychunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListBinaryChunkedBuilder, iter: rune::Value) -> Result<(), Error> { let __hold_iter = support::borrow_vec(&iter, "iter")?.into_iter().map(|v| { Ok::<_, Error>(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListBinaryChunkedBuilder>::append_values_iter(&mut this.0, __hold_iter.iter().map(Vec::as_slice)); Ok(__r) }
 /// Polars: `polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int) -> ListBinaryChunkedBuilder (fallible)
 #[rune::function(free, path = W_polars_core__chunked_array__builder__list__binary__ListBinaryChunkedBuilder::new)]
 fn f_e9277c52__builder__list__binary__listbinarychunkedbuilder(name: &str, capacity: i64, values_capacity: i64) -> Result<W_polars_core__chunked_array__builder__list__binary__ListBinaryChunkedBuilder, Error> { let __r = <polars::chunked_array::builder::list::ListBinaryChunkedBuilder>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?); Ok(W_polars_core__chunked_array__builder__list__binary__ListBinaryChunkedBuilder(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::append_trusted_len_iter`. append_trusted_len_iter(iter: vector of option of string (iterated, items borrowed from the script's values for the call)) -> unit (fallible)
+#[rune::function(instance, path = append_trusted_len_iter)]
+fn f_fea7758b__builder__list__binary__liststringchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder, iter: rune::Value) -> Result<(), Error> { let __hold_iter = support::borrow_vec(&iter, "iter")?.into_iter().map(|v| { let v: Option<String> = support::borrow_element(&v, "iter")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListStringChunkedBuilder>::append_trusted_len_iter(&mut this.0, __hold_iter.iter().map(Option::as_deref)); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::append_values_iter`. append_values_iter(iter: vector of string (iterated, items borrowed from the script's values for the call)) -> unit (fallible)
+#[rune::function(instance, path = append_values_iter)]
+fn f_44fb5d6c__builder__list__binary__liststringchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder, iter: rune::Value) -> Result<(), Error> { let __hold_iter = support::borrow_vec(&iter, "iter")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "iter")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListStringChunkedBuilder>::append_values_iter(&mut this.0, __hold_iter.iter().map(String::as_str)); Ok(__r) }
 /// Polars: `polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int) -> ListStringChunkedBuilder (fallible)
 #[rune::function(free, path = W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder::new)]
 fn f_59617b98__builder__list__binary__liststringchunkedbuilder(name: &str, capacity: i64, values_capacity: i64) -> Result<W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder, Error> { let __r = <polars::chunked_array::builder::list::ListStringChunkedBuilder>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?); Ok(W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::boolean::ListBooleanChunkedBuilder::append_iter`. append_iter(iter: vector of option of bool (iterated)) -> unit (fallible)
+#[rune::function(instance, path = append_iter)]
+fn f_acf7537a_uilder__list__boolean__listbooleanchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder, iter: rune::Value) -> Result<(), Error> { let __r = <polars::chunked_array::builder::list::ListBooleanChunkedBuilder>::append_iter(&mut this.0, (support::borrow_vec(&iter, "iter")?.into_iter().map(|v| { let v: Option<bool> = support::borrow_element(&v, "iter")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?).into_iter()); Ok(__r) }
 /// Polars: `polars_core::chunked_array::builder::list::boolean::ListBooleanChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int) -> ListBooleanChunkedBuilder (fallible)
 #[rune::function(free, path = W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder::new)]
 fn f_4b282770_uilder__list__boolean__listbooleanchunkedbuilder(name: &str, capacity: i64, values_capacity: i64) -> Result<W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder, Error> { let __r = <polars::chunked_array::builder::list::ListBooleanChunkedBuilder>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?); Ok(W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder(__r)) }
@@ -3917,6 +3932,10 @@ fn f_d2fc899b_e__drop_polars_core__frame__dataframe__dataframe(this: &DataFrame,
 /// Polars: `polars_core::frame::dataframe::DataFrame::drop_in_place`. drop_in_place(name: string) -> result of Column (fallible)
 #[rune::function(instance, path = drop_in_place)]
 fn f_fac5c3d8_n_place_polars_core__frame__dataframe__dataframe(this: &mut DataFrame, name: &str) -> Result<W_polars_core__frame__column__Column, Error> { let __arg0 = &mut this.0; let __arg1 = name; let __r = crate::engine::run("polars::DataFrame::drop_in_place", move || <polars::frame::DataFrame>::drop_in_place(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__frame__column__Column(__r) }) }
+/// Drop columns that are in `names`.
+/// Polars: `polars_core::frame::dataframe::DataFrame::drop_many`. drop_many(names: vector of string) -> DataFrame (fallible)
+#[rune::function(instance, path = drop_many)]
+fn f_3981939c_op_many_polars_core__frame__dataframe__dataframe(this: &DataFrame, names: rune::Value) -> Result<DataFrame, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&names, "names")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "names")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::DataFrame::drop_many", move || <polars::frame::DataFrame>::drop_many(__arg0, __arg1)).map_err(Error::engine)?; Ok(DataFrame(__r)) }
 /// Get the data types of the columns in the [`DataFrame`].
 /// Polars: `polars_core::frame::dataframe::DataFrame::dtypes`. dtypes() -> vector of DataType
 #[rune::function(instance, path = dtypes)]
@@ -3952,6 +3971,10 @@ fn f_33a49a5c_missing_polars_core__frame__dataframe__dataframe(this: &DataFrame,
 /// Polars: `polars_core::frame::dataframe::DataFrame::estimated_size`. estimated_size() -> int
 #[rune::function(instance, path = estimated_size)]
 fn f_2e15e612_ed_size_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> i64 { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::DataFrame::estimated_size", move || <polars::frame::DataFrame>::estimated_size(__arg0)), "polars::DataFrame::estimated_size"); (__r as i64) }
+/// Explode `DataFrame` to long format by exploding a column with Lists.
+/// Polars: `polars_core::frame::dataframe::DataFrame::explode`. explode(columns: vector of string, options: ExplodeOptions) -> result of DataFrame (fallible)
+#[rune::function(instance, path = explode)]
+fn f_24ff449d_explode_polars_core__frame__dataframe__dataframe(this: &DataFrame, columns: rune::Value, options: &W_polars_core__chunked_array__ops__ExplodeOptions) -> Result<DataFrame, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&columns, "columns")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "columns")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __arg2 = options.0.clone(); let __r = crate::engine::run("polars::DataFrame::explode", move || <polars::frame::DataFrame>::explode(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
 /// Polars: `polars_core::frame::dataframe::DataFrame::explode_impl`. explode_impl(columns: vector of Column, options: ExplodeOptions) -> result of DataFrame (fallible)
 #[rune::function(instance, path = explode_impl)]
 fn f_1389cbc6_de_impl_polars_core__frame__dataframe__dataframe(this: &DataFrame, columns: rune::Value, options: &W_polars_core__chunked_array__ops__ExplodeOptions) -> Result<DataFrame, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&columns, "columns")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__frame__column__Column>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __arg2 = options.0.clone(); let __r = crate::engine::run("polars::DataFrame::explode_impl", move || <polars::frame::DataFrame>::explode_impl(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
@@ -4062,6 +4085,14 @@ fn f_2f39e7e6_oadcast_polars_core__frame__dataframe__dataframe(height: i64, colu
 /// Polars: `polars_core::frame::dataframe::DataFrame::null_count`. null_count() -> DataFrame
 #[rune::function(instance, path = null_count)]
 fn f_3557f1ab_l_count_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> DataFrame { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::DataFrame::null_count", move || <polars::frame::DataFrame>::null_count(__arg0)), "polars::DataFrame::null_count"); DataFrame(__r) }
+/// Split into multiple DataFrames partitioned by groups
+/// Polars: `polars_core::frame::dataframe::DataFrame::partition_by`. partition_by(cols: vector of string, include_key: bool) -> result of vector of DataFrame (fallible)
+#[rune::function(instance, path = partition_by)]
+fn f_c0cad2d4_tion_by_polars_core__frame__dataframe__dataframe(this: &DataFrame, cols: rune::Value, include_key: bool) -> Result<Vec<DataFrame>, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&cols, "cols")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "cols")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?; let __arg2 = include_key; let __r = crate::engine::run("polars::DataFrame::partition_by", move || <polars::frame::DataFrame>::partition_by(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let mut __v = Vec::new(); for __r in __r { __v.push(DataFrame(__r)); } __v } }) }
+/// Split into multiple DataFrames partitioned by groups Order of the groups are maintained.
+/// Polars: `polars_core::frame::dataframe::DataFrame::partition_by_stable`. partition_by_stable(cols: vector of string, include_key: bool) -> result of vector of DataFrame (fallible)
+#[rune::function(instance, path = partition_by_stable)]
+fn f_3fc62e74__stable_polars_core__frame__dataframe__dataframe(this: &DataFrame, cols: rune::Value, include_key: bool) -> Result<Vec<DataFrame>, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&cols, "cols")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "cols")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?; let __arg2 = include_key; let __r = crate::engine::run("polars::DataFrame::partition_by_stable", move || <polars::frame::DataFrame>::partition_by_stable(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let mut __v = Vec::new(); for __r in __r { __v.push(DataFrame(__r)); } __v } }) }
 /// Rechunks all columns to only have a single chunk.
 /// Polars: `polars_core::frame::dataframe::DataFrame::rechunk_mut`. rechunk_mut() -> unit (receiver mutated in place)
 #[rune::function(instance, path = rechunk_mut)]
@@ -4105,10 +4136,18 @@ fn f_dc5b0b2a__schema_polars_core__frame__dataframe__dataframe(this: &DataFrame)
 /// Polars: `polars_core::frame::dataframe::DataFrame::schema_equal`. schema_equal(other: DataFrame) -> result of unit (fallible)
 #[rune::function(instance, path = schema_equal)]
 fn f_c8500704_a_equal_polars_core__frame__dataframe__dataframe(this: &DataFrame, other: &DataFrame) -> Result<(), Error> { let __arg0 = &this.0; let __arg1 = &other.0; let __r = crate::engine::run("polars::DataFrame::schema_equal", move || <polars::frame::DataFrame>::schema_equal(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Select column(s) from this [`DataFrame`] and return a new [`DataFrame`].
+/// Polars: `polars_core::frame::dataframe::DataFrame::select`. select_(names: vector of string) -> result of DataFrame (fallible)
+#[rune::function(instance, path = select_)]
+fn f_fe99728a__select_polars_core__frame__dataframe__dataframe(this: &DataFrame, names: rune::Value) -> Result<DataFrame, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&names, "names")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "names")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::DataFrame::select_", move || <polars::frame::DataFrame>::select(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
 /// Select a [`Series`] by index.
 /// Polars: `polars_core::frame::dataframe::DataFrame::select_at_idx`. select_at_idx(idx: int) -> option of Column (fallible)
 #[rune::function(instance, path = select_at_idx)]
 fn f_cd592380__at_idx_polars_core__frame__dataframe__dataframe(this: &DataFrame, idx: i64) -> Result<Option<W_polars_core__frame__column__Column>, Error> { let __arg0 = &this.0; let __arg1 = support::narrow::<usize>(idx, "idx")?; let __r = crate::engine::run("polars::DataFrame::select_at_idx", move || <polars::frame::DataFrame>::select_at_idx(__arg0, __arg1)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_core__frame__column__Column(__r) }), None => None }) }
+/// Select column(s) from this [`DataFrame`] and return them into a [`Vec`].
+/// Polars: `polars_core::frame::dataframe::DataFrame::select_to_vec`. select_to_vec(selection: vector of string) -> result of vector of Column (fallible)
+#[rune::function(instance, path = select_to_vec)]
+fn f_d34cc6ee__to_vec_polars_core__frame__dataframe__dataframe(this: &DataFrame, selection: rune::Value) -> Result<Vec<W_polars_core__frame__column__Column>, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&selection, "selection")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "selection")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::DataFrame::select_to_vec", move || <polars::frame::DataFrame>::select_to_vec(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let mut __v = Vec::new(); for __r in __r { __v.push(W_polars_core__frame__column__Column(__r)); } __v } }) }
 /// Polars: `polars_core::frame::dataframe::DataFrame::serialize_to_bytes`. serialize_to_bytes() -> result of vector of int (fallible)
 #[rune::function(instance, path = serialize_to_bytes)]
 fn f_177133a5_o_bytes_polars_core__frame__dataframe__dataframe(this: &mut DataFrame) -> Result<Vec<i64>, Error> { let __arg0 = &mut this.0; let __r = crate::engine::run("polars::DataFrame::serialize_to_bytes", move || <polars::frame::DataFrame>::serialize_to_bytes(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let mut __v = Vec::new(); for __r in __r { __v.push((__r as i64)); } __v } }) }
@@ -4139,10 +4178,18 @@ fn f_10440c30___slice_polars_core__frame__dataframe__dataframe(this: &DataFrame,
 /// Polars: `polars_core::frame::dataframe::DataFrame::slice_par`. slice_par(offset: int, length: int) -> DataFrame (fallible)
 #[rune::function(instance, path = slice_par)]
 fn f_df9c5483_ice_par_polars_core__frame__dataframe__dataframe(this: &DataFrame, offset: i64, length: i64) -> Result<DataFrame, Error> { let __arg0 = &this.0; let __arg1 = offset; let __arg2 = support::narrow::<usize>(length, "length")?; let __r = crate::engine::run("polars::DataFrame::slice_par", move || <polars::frame::DataFrame>::slice_par(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok(DataFrame(__r)) }
+/// Return a sorted clone of this [`DataFrame`].
+/// Polars: `polars_core::frame::dataframe::DataFrame::sort`. sort(by: vector of string, sort_options: SortMultipleOptions) -> result of DataFrame (fallible)
+#[rune::function(instance, path = sort)]
+fn f_4cea85c2_e__sort_polars_core__frame__dataframe__dataframe(this: &DataFrame, by: rune::Value, sort_options: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> Result<DataFrame, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&by, "by")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "by")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __arg2 = sort_options.0.clone(); let __r = crate::engine::run("polars::DataFrame::sort", move || <polars::frame::DataFrame>::sort(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
 /// This is the dispatch of Self::sort, and exists to reduce compile bloat by monomorphization.
 /// Polars: `polars_core::frame::dataframe::DataFrame::sort_impl`. sort_impl(by_column: vector of Column, sort_options: SortMultipleOptions, slice: option of tuple of int, int) -> result of DataFrame (fallible)
 #[rune::function(instance, path = sort_impl)]
 fn f_4f8ae889_rt_impl_polars_core__frame__dataframe__dataframe(this: &DataFrame, by_column: rune::Value, sort_options: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions, slice: Option<(i64, i64)>) -> Result<DataFrame, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&by_column, "by_column")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__frame__column__Column>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __arg2 = sort_options.0.clone(); let __arg3 = match slice { Some(v) => Some((v.0, support::narrow::<usize>(v.1, "v.1")?)), None => None }; let __r = crate::engine::run("polars::DataFrame::sort_impl", move || <polars::frame::DataFrame>::sort_impl(__arg0, __arg1, __arg2, __arg3)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
+/// Sort [`DataFrame`] in place.
+/// Polars: `polars_core::frame::dataframe::DataFrame::sort_in_place`. sort_in_place(by: vector of string, sort_options: SortMultipleOptions) -> result of unit (receiver mutated in place) (fallible)
+#[rune::function(instance, path = sort_in_place)]
+fn f_5b46bb7e_n_place_polars_core__frame__dataframe__dataframe(this: &mut DataFrame, by: rune::Value, sort_options: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = support::borrow_vec(&by, "by")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "by")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __arg2 = sort_options.0.clone(); let __r = crate::engine::run("polars::DataFrame::sort_in_place", move || <polars::frame::DataFrame>::sort_in_place(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let _ = __r.map_err(Error::from)?; }) }
 /// Split [`DataFrame`] at the given `offset`.
 /// Polars: `polars_core::frame::dataframe::DataFrame::split_at`. split_at(offset: int) -> tuple of DataFrame, DataFrame
 #[rune::function(instance, path = split_at)]
@@ -4232,7 +4279,7 @@ fn f_882f58a4__core__frame__group_by__position__grouppositions(this: &mut W_pola
 fn f_ca12876c__core__frame__group_by__position__grouppositions(this: &W_polars_core__frame__group_by__position__GroupPositions) -> W_polars_core__frame__group_by__position__GroupPositions { let __r = <polars_core::frame::group_by::GroupPositions>::unroll(this.0.clone()); W_polars_core__frame__group_by__position__GroupPositions(__r) }
 /// Polars: `polars_core::frame::group_by::position::GroupsIdx::first`. first() -> vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = first)]
-fn f_b9226f63_olars_core__frame__group_by__position__groupsidx(this: &W_polars_core__frame__group_by__position__GroupsIdx) -> Result<Vec<i64>, Error> { let __r = <polars_core::frame::group_by::GroupsIdx>::first(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))? }) }
+fn f_b9226f63_olars_core__frame__group_by__position__groupsidx(this: &W_polars_core__frame__group_by__position__GroupsIdx) -> Result<Vec<i64>, Error> { let __r = <polars_core::frame::group_by::GroupsIdx>::first(&this.0); Ok(support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))?) }
 /// Polars: `polars_core::frame::group_by::position::GroupsIdx::first_mut`. first_mut() -> unit (receiver mutated in place)
 #[rune::function(instance, path = first_mut)]
 fn f_9deda0de_olars_core__frame__group_by__position__groupsidx(this: &mut W_polars_core__frame__group_by__position__GroupsIdx) -> () { let __r = <polars_core::frame::group_by::GroupsIdx>::first_mut(&mut this.0); { let _ = __r; } }
@@ -5259,6 +5306,10 @@ fn f_176fe297__lazyframe__gather_polars_lazy__frame__lazyframe(this: &LazyFrame,
 /// Polars: `polars_lazy::frame::LazyFrame::get_current_optimizations`. get_current_optimizations() -> OptFlags
 #[rune::function(instance, path = get_current_optimizations)]
 fn f_0e20401f_rent_optimizations_polars_lazy__frame__lazyframe(this: &LazyFrame) -> W_polars_plan__frame__opt_state__OptFlags { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::LazyFrame::get_current_optimizations", move || <polars_lazy::frame::LazyFrame>::get_current_optimizations(__arg0)), "polars::LazyFrame::get_current_optimizations"); W_polars_plan__frame__opt_state__OptFlags(__r) }
+/// Similar to [`group_by`][`Self::group_by`], but order of the DataFrame is maintained.
+/// Polars: `polars_lazy::frame::LazyFrame::group_by_stable`. group_by_stable(by: vector of Expr) -> LazyGroupBy (fallible)
+#[rune::function(instance, path = group_by_stable)]
+fn f_5827cf99_e__group_by_stable_polars_lazy__frame__lazyframe(this: &LazyFrame, by: rune::Value) -> Result<LazyGroupBy, Error> { let __arg0 = this.0.clone(); let __arg1 = support::borrow_vec(&by, "by")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::LazyFrame::group_by_stable", move || <polars_lazy::frame::LazyFrame>::group_by_stable(__arg0, __arg1)).map_err(Error::engine)?; Ok(LazyGroupBy(__r)) }
 /// Inner join this query with another lazy query.
 /// Polars: `polars_lazy::frame::LazyFrame::inner_join`. inner_join(other: LazyFrame, left_on: Expr, right_on: Expr) -> LazyFrame
 #[rune::function(instance, path = inner_join)]
@@ -5315,6 +5366,10 @@ fn f_b43b3050_azyframe__quantile_polars_lazy__frame__lazyframe(this: &LazyFrame,
 /// Polars: `polars_lazy::frame::LazyFrame::remove`. remove(predicate: Expr) -> LazyFrame
 #[rune::function(instance, path = remove)]
 fn f_80e38e03__lazyframe__remove_polars_lazy__frame__lazyframe(this: &LazyFrame, predicate: &Expr) -> LazyFrame { let __arg0 = this.0.clone(); let __arg1 = predicate.0.clone(); let __r = crate::engine::infallible(crate::engine::run("polars::LazyFrame::remove", move || <polars_lazy::frame::LazyFrame>::remove(__arg0, __arg1)), "polars::LazyFrame::remove"); LazyFrame(__r) }
+/// Rename columns in the DataFrame.
+/// Polars: `polars_lazy::frame::LazyFrame::rename`. rename(existing: vector of string, new: vector of string, strict: bool) -> LazyFrame (fallible)
+#[rune::function(instance, path = rename)]
+fn f_b96ad877__lazyframe__rename_polars_lazy__frame__lazyframe(this: &LazyFrame, existing: rune::Value, new: rune::Value, strict: bool) -> Result<LazyFrame, Error> { let __arg0 = this.0.clone(); let __arg1 = support::borrow_vec(&existing, "existing")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "existing")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __arg2 = support::borrow_vec(&new, "new")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "new")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __arg3 = strict; let __r = crate::engine::run("polars::LazyFrame::rename", move || <polars_lazy::frame::LazyFrame>::rename(__arg0, __arg1, __arg2, __arg3)).map_err(Error::engine)?; Ok(LazyFrame(__r)) }
 /// Reverse the `DataFrame` from top to bottom.
 /// Polars: `polars_lazy::frame::LazyFrame::reverse`. reverse() -> LazyFrame
 #[rune::function(instance, path = reverse)]
@@ -6058,6 +6113,13 @@ fn f_f384d68e_r__expr__null_count_polars_plan__dsl__expr__expr(this: &Expr) -> E
 /// Polars: `polars_plan::dsl::expr::Expr::or`. or(expr: Expr) -> Expr
 #[rune::function(instance, path = or)]
 fn f_32af2bde_dsl__expr__expr__or_polars_plan__dsl__expr__expr(this: &Expr, expr: &Expr) -> Expr { let __r = <polars_plan::dsl::Expr>::or(this.0.clone(), expr.0.clone()); Expr(__r) }
+/// Apply window function over a subgroup. This is similar to a group_by + aggregation + self join. Or similar to [window functions in Postgres](https://www.post...
+/// Polars: `polars_plan::dsl::expr::Expr::over`. over(partition_by: vector of Expr) -> result of Expr (fallible)
+#[rune::function(instance, path = over)]
+fn f_b6295e5c_l__expr__expr__over_polars_plan__dsl__expr__expr(this: &Expr, partition_by: rune::Value) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr>::over(this.0.clone(), support::borrow_vec(&partition_by, "partition_by")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?); Ok({ let __r = __r.map_err(Error::from)?; Expr(__r) }) }
+/// Polars: `polars_plan::dsl::expr::Expr::over_with_options`. over_with_options(partition_by: option of vector of Expr, order_by: option of tuple of vector of Expr, SortOptions, mapping: WindowMapping) -> result of Expr (fallible)
+#[rune::function(instance, path = over_with_options)]
+fn f_3865441f___over_with_options_polars_plan__dsl__expr__expr(this: &Expr, partition_by: Option<rune::Value>, order_by: Option<(rune::Value, rune::Value)>, mapping: &W_polars_plan__dsl__options__WindowMapping) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr>::over_with_options(this.0.clone(), match partition_by { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?), None => None }, match order_by { Some(v) => Some((support::borrow_vec(&v.0, "v.0")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?, support::take::<W_polars_core__chunked_array__ops__sort__options__SortOptions>(&v.1, "v.1")?.0)), None => None }, mapping.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; Expr(__r) }) }
 /// Polars: `polars_plan::dsl::expr::Expr::peak_max`. peak_max() -> Expr
 #[rune::function(instance, path = peak_max)]
 fn f_cd209542_xpr__expr__peak_max_polars_plan__dsl__expr__expr(this: &Expr) -> Expr { let __r = <polars_plan::dsl::Expr>::peak_max(this.0.clone()); Expr(__r) }
@@ -6108,6 +6170,10 @@ fn f_fe5b9142___expr__expr__slice_polars_plan__dsl__expr__expr(this: &Expr, offs
 /// Polars: `polars_plan::dsl::expr::Expr::sort`. sort(options: SortOptions) -> Expr
 #[rune::function(instance, path = sort)]
 fn f_588b8c2c_l__expr__expr__sort_polars_plan__dsl__expr__expr(this: &Expr, options: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> Expr { let __arg0 = this.0.clone(); let __arg1 = options.0.clone(); let __r = crate::engine::infallible(crate::engine::run("polars::Expr::sort", move || <polars_plan::dsl::Expr>::sort(__arg0, __arg1)), "polars::Expr::sort"); Expr(__r) }
+/// Sort this column by the ordering of another column evaluated from given expr. Can also be used in a group_by context to sort the groups.
+/// Polars: `polars_plan::dsl::expr::Expr::sort_by`. sort_by(by: vector of Expr, sort_options: SortMultipleOptions) -> Expr (fallible)
+#[rune::function(instance, path = sort_by)]
+fn f_1a83eb01_expr__expr__sort_by_polars_plan__dsl__expr__expr(this: &Expr, by: rune::Value, sort_options: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> Result<Expr, Error> { let __arg0 = this.0.clone(); let __arg1 = support::borrow_vec(&by, "by")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __arg2 = sort_options.0.clone(); let __r = crate::engine::run("polars::Expr::sort_by", move || <polars_plan::dsl::Expr>::sort_by(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok(Expr(__r)) }
 /// Compute the square root of the given expression
 /// Polars: `polars_plan::dsl::expr::Expr::sqrt`. sqrt() -> Expr
 #[rune::function(instance, path = sqrt)]
@@ -6363,11 +6429,15 @@ fn f_a4116ac3_async_polars_plan__dsl__scan_sources__scansource(this: &W_polars_p
 /// Try cast the scan sources to [`ScanSources::Paths`]
 /// Polars: `polars_plan::dsl::scan_sources::ScanSources::as_paths`. as_paths() -> option of vector of PlRefPath (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = as_paths)]
-fn f_aff8ef04_aths_polars_plan__dsl__scan_sources__scansources(this: &W_polars_plan__dsl__scan_sources__ScanSources) -> Result<Option<Vec<W_polars_utils__pl_path__PlRefPath>>, Error> { let __r = <polars_plan::dsl::ScanSources>::as_paths(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "as_paths", |__r| Ok::<_, Error>(W_polars_utils__pl_path__PlRefPath(__r)))? }), None => None }) }
+fn f_aff8ef04_aths_polars_plan__dsl__scan_sources__scansources(this: &W_polars_plan__dsl__scan_sources__ScanSources) -> Result<Option<Vec<W_polars_utils__pl_path__PlRefPath>>, Error> { let __r = <polars_plan::dsl::ScanSources>::as_paths(&this.0); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "as_paths", |__r| Ok::<_, Error>(W_polars_utils__pl_path__PlRefPath(__r)))?), None => None }) }
 /// Try get the first path in the scan sources
 /// Polars: `polars_plan::dsl::scan_sources::ScanSources::first_path`. first_path() -> option of PlRefPath
 #[rune::function(instance, path = first_path)]
 fn f_7b5f45d4_path_polars_plan__dsl__scan_sources__scansources(this: &W_polars_plan__dsl__scan_sources__ScanSources) -> Option<W_polars_utils__pl_path__PlRefPath> { let __r = <polars_plan::dsl::ScanSources>::first_path(&this.0); match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_utils__pl_path__PlRefPath(__r) }), None => None } }
+/// Returns `None` if `self` is a `::File` variant.
+/// Polars: `polars_plan::dsl::scan_sources::ScanSources::gather`. gather(indices: vector of int (iterated)) -> option of ScanSources (fallible)
+#[rune::function(instance, path = gather)]
+fn f_0df4a794_ther_polars_plan__dsl__scan_sources__scansources(this: &W_polars_plan__dsl__scan_sources__ScanSources, indices: rune::Value) -> Result<Option<W_polars_plan__dsl__scan_sources__ScanSources>, Error> { let __r = <polars_plan::dsl::ScanSources>::gather(&this.0, (support::borrow_vec(&indices, "indices")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "indices")?; Ok::<_, Error>(support::narrow::<usize>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?).into_iter()); Ok(match __r { Some(__r) => Some(W_polars_plan__dsl__scan_sources__ScanSources(__r)), None => None }) }
 /// Turn the [`ScanSources`] into some kind of identifier
 /// Polars: `polars_plan::dsl::scan_sources::ScanSources::id`. id() -> string
 #[rune::function(instance, path = id)]
@@ -6610,7 +6680,7 @@ fn f_c075b9ff_s__union_polars_plan__frame__opt_state__optflags(this: &W_polars_p
 fn f_712d5af9_alue__bool_polars_plan__plans__lit__literalvalue(this: &W_polars_plan__plans__lit__LiteralValue) -> Option<bool> { let __r = <polars_plan::plans::LiteralValue>::bool(&this.0); match __r { Some(__r) => Some(__r), None => None } }
 /// Polars: `polars_plan::plans::lit::LiteralValue::extract_binary`. extract_binary() -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = extract_binary)]
-fn f_e8c7d28f_act_binary_polars_plan__plans__lit__literalvalue(this: &W_polars_plan__plans__lit__LiteralValue) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_plan::plans::LiteralValue>::extract_binary(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_slice(__r, "extract_binary", |__r| Ok::<_, Error>((__r as i64)))? }), None => None }) }
+fn f_e8c7d28f_act_binary_polars_plan__plans__lit__literalvalue(this: &W_polars_plan__plans__lit__LiteralValue) -> Result<Option<Vec<i64>>, Error> { let __r = <polars_plan::plans::LiteralValue>::extract_binary(&this.0); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "extract_binary", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
 /// Polars: `polars_plan::plans::lit::LiteralValue::extract_i64`. extract_i64() -> result of int (fallible)
 #[rune::function(instance, path = extract_i64)]
 fn f_508b2899_xtract_i64_polars_plan__plans__lit__literalvalue(this: &W_polars_plan__plans__lit__LiteralValue) -> Result<i64, Error> { let __r = <polars_plan::plans::LiteralValue>::extract_i64(&this.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
@@ -6711,6 +6781,9 @@ fn g_76f80cbd_rs_core__frame__horizontal__concat_df_horizontal(dfs: rune::Value,
 /// Polars: `polars_core::frame::row::coerce_dtype`. coerce_dtype(datatypes: vector of DataType) -> DataType (fallible)
 #[rune::function(path = coerce_dtype)]
 fn g_01526fbd_polars_core__frame__row__coerce_dtype(datatypes: rune::Value) -> Result<W_polars_core__datatypes__dtype__DataType, Error> { let __t0 = support::borrow_vec(&datatypes, "datatypes")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__datatypes__dtype__DataType>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __r = polars::frame::row::coerce_dtype(&__t0[..]); Ok(W_polars_core__datatypes__dtype__DataType(__r)) }
+/// Polars: `polars_core::frame::row::infer_schema`. infer_schema(iter: vector of vector of tuple of string, DataType (iterated), infer_schema_length: int) -> Schema (fallible)
+#[rune::function(path = infer_schema)]
+fn g_f3cd76ad_polars_core__frame__row__infer_schema(iter: rune::Value, infer_schema_length: i64) -> Result<W_polars_core__schema__Schema, Error> { let __r = polars::frame::row::infer_schema((support::borrow_vec(&iter, "iter")?.into_iter().map(|v| { Ok::<_, Error>(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: (String, rune::Value) = support::borrow_element(&v, "v")?; Ok::<_, Error>((p::PlSmallStr::from(v.0.as_str()), support::take::<W_polars_core__datatypes__dtype__DataType>(&v.1, "v.1")?.0)) }).collect::<Result<Vec<_>, Error>>()?) }).collect::<Result<Vec<_>, Error>>()?).into_iter(), support::narrow::<usize>(infer_schema_length, "infer_schema_length")?); Ok(W_polars_core__schema__Schema(__r)) }
 /// Polars: `polars_error::abort::register_polars_abort_mechanism`. register_polars_abort_mechanism() -> unit
 #[rune::function(path = register_polars_abort_mechanism)]
 fn g_6d478e2a_rs_error__abort__register_polars_abort_mechanism() -> () { let __r = polars::error::abort::register_polars_abort_mechanism(); __r }
@@ -6877,10 +6950,21 @@ fn g_1e9980c8_polars_plan__dsl__arity__when(condition: &Expr) -> W_polars_plan__
 /// Polars: `polars_plan::dsl::functions::coerce::as_struct`. as_struct(exprs: vector of Expr) -> Expr (fallible)
 #[rune::function(path = as_struct)]
 fn g_840c79a1_polars_plan__dsl__functions__coerce__as_struct(exprs: rune::Value) -> Result<Expr, Error> { let __r = polars_plan::dsl::functions::as_struct(support::borrow_vec(&exprs, "exprs")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?); Ok(Expr(__r)) }
+/// Collect expressions into a list, treating each expression's value as one element.
+/// Polars: `polars_plan::dsl::functions::concat::as_list`. as_list(s: vector of Expr) -> result of Expr (fallible)
+#[rune::function(path = as_list)]
+fn g_ab37fa21_polars_plan__dsl__functions__concat__as_list(s: rune::Value) -> Result<Expr, Error> { let __r = polars_plan::dsl::functions::as_list(support::borrow_vec(&s, "s")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?); Ok({ let __r = __r.map_err(Error::from)?; Expr(__r) }) }
 /// Horizontally concatenate columns into a single array-type column.
 /// Polars: `polars_plan::dsl::functions::concat::concat_arr`. concat_arr(input: vector of Expr) -> result of Expr (fallible)
 #[rune::function(path = concat_arr)]
 fn g_436d930f_polars_plan__dsl__functions__concat__concat_arr(input: rune::Value) -> Result<Expr, Error> { let __arg0 = support::borrow_vec(&input, "input")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::concat_arr", move || polars_plan::dsl::functions::concat_arr(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; Expr(__r) }) }
+/// Polars: `polars_plan::dsl::functions::concat::concat_expr`. concat_expr(s: vector of Expr, rechunk: bool) -> result of Expr (fallible)
+#[rune::function(path = concat_expr)]
+fn g_fc63e0dc_polars_plan__dsl__functions__concat__concat_expr(s: rune::Value, rechunk: bool) -> Result<Expr, Error> { let __arg0 = support::borrow_vec(&s, "s")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __arg1 = rechunk; let __r = crate::engine::run("polars::concat_expr", move || polars_plan::dsl::functions::concat_expr(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; Expr(__r) }) }
+/// Concat lists entries.
+/// Polars: `polars_plan::dsl::functions::concat::concat_list`. concat_list(s: vector of Expr) -> result of Expr (fallible)
+#[rune::function(path = concat_list)]
+fn g_d0bef017_polars_plan__dsl__functions__concat__concat_list(s: rune::Value) -> Result<Expr, Error> { let __arg0 = support::borrow_vec(&s, "s")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::concat_list", move || polars_plan::dsl::functions::concat_list(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; Expr(__r) }) }
 /// First column in a DataFrame.
 /// Polars: `polars_plan::dsl::functions::first`. first() -> Selector
 #[rune::function(path = first)]
@@ -6921,6 +7005,14 @@ fn g_4dcc80d0_polars_plan__dsl__functions__repeat__repeat(value: &Expr, n: &Expr
 /// Polars: `polars_plan::dsl::functions::selectors::all`. all() -> Selector
 #[rune::function(path = all)]
 fn g_453f0c56_polars_plan__dsl__functions__selectors__all() -> W_polars_plan__dsl__selector__Selector { let __r = polars_plan::dsl::functions::all(); W_polars_plan__dsl__selector__Selector(__r) }
+/// Select multiple columns by name.
+/// Polars: `polars_plan::dsl::functions::selectors::by_name`. by_name(names: vector of string, strict: bool, expand_patterns: bool) -> Selector (fallible)
+#[rune::function(path = by_name)]
+fn g_0badf41b_polars_plan__dsl__functions__selectors__by_name(names: rune::Value, strict: bool, expand_patterns: bool) -> Result<W_polars_plan__dsl__selector__Selector, Error> { let __r = polars_plan::dsl::functions::by_name(support::borrow_vec(&names, "names")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "names")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?, strict, expand_patterns); Ok(W_polars_plan__dsl__selector__Selector(__r)) }
+/// Select multiple columns by name.
+/// Polars: `polars_plan::dsl::functions::selectors::cols`. cols(names: vector of string) -> Selector (fallible)
+#[rune::function(path = cols)]
+fn g_9ee14ca6_polars_plan__dsl__functions__selectors__cols(names: rune::Value) -> Result<W_polars_plan__dsl__selector__Selector, Error> { let __r = polars_plan::dsl::functions::cols(support::borrow_vec(&names, "names")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "names")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_plan__dsl__selector__Selector(__r)) }
 /// Select multiple columns by dtype.
 /// Polars: `polars_plan::dsl::functions::selectors::dtype_col`. dtype_col(dtype: DataType) -> DataTypeSelector
 #[rune::function(path = dtype_col)]
@@ -12156,6 +12248,12 @@ fn w_1e2ce40d_polars_plan__dsl__udf__userdefinedfunction__name(this: &W_polars_p
 /// Variant `Scalar` of `polars_plan::plans::lit::LiteralValue`.
 #[rune::function(free, path = W_polars_plan__plans__lit__LiteralValue::Scalar)]
 fn v_3dcc1262_polars_plan__plans__lit__literalvalue__scalar(a0: &W_polars_core__scalar__Scalar) -> W_polars_plan__plans__lit__LiteralValue { W_polars_plan__plans__lit__LiteralValue(<polars_plan::plans::LiteralValue>::Scalar(a0.0.clone())) }
+/// Field `inner` of `polars_utils::index::NullableIdxSize`.
+#[rune::function(instance, path = inner)]
+fn s_75228286_polars_utils__index__nullableidxsize__inner(this: &W_polars_utils__index__NullableIdxSize) -> i64 { let __r = this.0.inner.clone(); (__r as i64) }
+/// Set field `inner` of `polars_utils::index::NullableIdxSize`, returning the updated value.
+#[rune::function(instance, path = with_inner)]
+fn w_75228286_polars_utils__index__nullableidxsize__inner(this: &W_polars_utils__index__NullableIdxSize, v: i64) -> Result<W_polars_utils__index__NullableIdxSize, Error> { let mut __o = this.0.clone(); __o.inner = support::narrow::<p::IdxSize>(v, "v")?; Ok(W_polars_utils__index__NullableIdxSize(__o)) }
 /// Variant `Abfs` of `polars_utils::pl_path::CloudScheme`.
 #[rune::function(free, path = W_polars_utils__pl_path__CloudScheme::Abfs)]
 fn v_51e48e15_polars_utils__pl_path__cloudscheme__abfs() -> W_polars_utils__pl_path__CloudScheme { W_polars_utils__pl_path__CloudScheme(<polars::polars_utils::pl_path::CloudScheme>::Abfs) }
@@ -12975,8 +13073,13 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_21fa0918_d_array__builder__boolean__booleanchunkedbuilder)?;
     m.function_meta(f_56da4a7e_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_ee06c05e_lder__list__anonymous__anonymousownedlistbuilder)?;
+    m.function_meta(f_130e8670__builder__list__binary__listbinarychunkedbuilder)?;
+    m.function_meta(f_51668a4a__builder__list__binary__listbinarychunkedbuilder)?;
     m.function_meta(f_e9277c52__builder__list__binary__listbinarychunkedbuilder)?;
+    m.function_meta(f_fea7758b__builder__list__binary__liststringchunkedbuilder)?;
+    m.function_meta(f_44fb5d6c__builder__list__binary__liststringchunkedbuilder)?;
     m.function_meta(f_59617b98__builder__list__binary__liststringchunkedbuilder)?;
+    m.function_meta(f_acf7537a_uilder__list__boolean__listbooleanchunkedbuilder)?;
     m.function_meta(f_4b282770_uilder__list__boolean__listbooleanchunkedbuilder)?;
     m.function_meta(f_6555f4d5_ray__builder__list__null__listnullchunkedbuilder)?;
     m.function_meta(f_5d35af8b_chunked_array__builder__null__nullchunkedbuilder)?;
@@ -13307,6 +13410,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_12bb6bc5__column_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_d2fc899b_e__drop_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_fac5c3d8_n_place_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_3981939c_op_many_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_d72ce74e__dtypes_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_67f62ad3___empty_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_a414353e__schema_polars_core__frame__dataframe__dataframe)?;
@@ -13316,6 +13420,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_27816f78__equals_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_33a49a5c_missing_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_2e15e612_ed_size_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_24ff449d_explode_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_1389cbc6_de_impl_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_30febe1c__extend_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_69bf17fa__fields_polars_core__frame__dataframe__dataframe)?;
@@ -13345,6 +13450,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_d6808a3e__height_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_2f39e7e6_oadcast_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_3557f1ab_l_count_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_c0cad2d4_tion_by_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_3fc62e74__stable_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_2298767a_unk_mut_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_da4bbddd_mut_par_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_386eddf4__rename_polars_core__frame__dataframe__dataframe)?;
@@ -13356,7 +13463,9 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5291c5ac_literal_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_dc5b0b2a__schema_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_c8500704_a_equal_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_fe99728a__select_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_cd592380__at_idx_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_d34cc6ee__to_vec_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_177133a5_o_bytes_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_921a5dfb___shape_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_324fdb5b_as_zero_polars_core__frame__dataframe__dataframe)?;
@@ -13365,7 +13474,9 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_4ecaa455__to_fit_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_10440c30___slice_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_df9c5483_ice_par_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_4cea85c2_e__sort_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_4f8ae889_rt_impl_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_5b46bb7e_n_place_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_b4e2c936_plit_at_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_2e746a43_ks_by_n_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_45685827_e__tail_polars_core__frame__dataframe__dataframe)?;
@@ -13679,6 +13790,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_3d6af112_zyframe__full_join_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_176fe297__lazyframe__gather_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_0e20401f_rent_optimizations_polars_lazy__frame__lazyframe)?;
+    m.function_meta(f_5827cf99_e__group_by_stable_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_e3a65720_yframe__inner_join_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_8cfccc4d_e__lazyframe__join_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_47bf6282_rame__join_builder_polars_lazy__frame__lazyframe)?;
@@ -13693,6 +13805,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_36525d02_lazyframe__profile_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_b43b3050_azyframe__quantile_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_80e38e03__lazyframe__remove_polars_lazy__frame__lazyframe)?;
+    m.function_meta(f_b96ad877__lazyframe__rename_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_14fb4665_lazyframe__reverse_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_a59ee825_rame__scan_parquet_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_febf35c4_an_parquet_sources_polars_lazy__frame__lazyframe)?;
@@ -13895,6 +14008,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_0cff232b_sl__expr__expr__not_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_f384d68e_r__expr__null_count_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_32af2bde_dsl__expr__expr__or_polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_b6295e5c_l__expr__expr__over_polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_3865441f___over_with_options_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_cd209542_xpr__expr__peak_max_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_5d9ac731_xpr__expr__peak_min_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_226b957b_sl__expr__expr__pow_polars_plan__dsl__expr__expr)?;
@@ -13908,6 +14023,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_ff69ec99_xpr__shift_and_fill_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_fe5b9142___expr__expr__slice_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_588b8c2c_l__expr__expr__sort_polars_plan__dsl__expr__expr)?;
+    m.function_meta(f_1a83eb01_expr__expr__sort_by_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_5984eac2_l__expr__expr__sqrt_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_a3d84d62_sl__expr__expr__std_polars_plan__dsl__expr__expr)?;
     m.function_meta(f_b2601601___expr__strict_cast_polars_plan__dsl__expr__expr)?;
@@ -13980,6 +14096,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_a4116ac3_async_polars_plan__dsl__scan_sources__scansource)?;
     m.function_meta(f_aff8ef04_aths_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_7b5f45d4_path_polars_plan__dsl__scan_sources__scansources)?;
+    m.function_meta(f_0df4a794_ther_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_9cb35876___id_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_6a9d6805__url_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_e8e58363_mpty_polars_plan__dsl__scan_sources__scansources)?;
@@ -14078,6 +14195,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_76fbb336_olars_core__frame__group_by__fmt_group_by_column)?;
     m.function_meta(g_76f80cbd_rs_core__frame__horizontal__concat_df_horizontal)?;
     m.function_meta(g_01526fbd_polars_core__frame__row__coerce_dtype)?;
+    m.function_meta(g_f3cd76ad_polars_core__frame__row__infer_schema)?;
     m.function_meta(g_6d478e2a_rs_error__abort__register_polars_abort_mechanism)?;
     m.function_meta(g_50804b73_polars_error__abort__try_raise_polars_abort)?;
     m.function_meta(g_352d0f0e_olars_io__cloud__concurrency__get_request_budget)?;
@@ -14127,7 +14245,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_8ec4647c_polars_plan__dsl__arity__ternary_expr)?;
     m.function_meta(g_1e9980c8_polars_plan__dsl__arity__when)?;
     m.function_meta(g_840c79a1_polars_plan__dsl__functions__coerce__as_struct)?;
+    m.function_meta(g_ab37fa21_polars_plan__dsl__functions__concat__as_list)?;
     m.function_meta(g_436d930f_polars_plan__dsl__functions__concat__concat_arr)?;
+    m.function_meta(g_fc63e0dc_polars_plan__dsl__functions__concat__concat_expr)?;
+    m.function_meta(g_d0bef017_polars_plan__dsl__functions__concat__concat_list)?;
     m.function_meta(g_b5a60f4d_polars_plan__dsl__functions__first)?;
     m.function_meta(g_8ca8f5ac_plan__dsl__functions__horizontal__all_horizontal)?;
     m.function_meta(g_0146a555_plan__dsl__functions__horizontal__any_horizontal)?;
@@ -14138,6 +14259,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_ac1d3f48_polars_plan__dsl__functions__nth)?;
     m.function_meta(g_4dcc80d0_polars_plan__dsl__functions__repeat__repeat)?;
     m.function_meta(g_453f0c56_polars_plan__dsl__functions__selectors__all)?;
+    m.function_meta(g_0badf41b_polars_plan__dsl__functions__selectors__by_name)?;
+    m.function_meta(g_9ee14ca6_polars_plan__dsl__functions__selectors__cols)?;
     m.function_meta(g_496ef150_olars_plan__dsl__functions__selectors__dtype_col)?;
     m.function_meta(g_cc7e36bd_lars_plan__dsl__functions__selectors__dtype_cols)?;
     m.function_meta(g_a1a04627_polars_plan__dsl__functions__selectors__element)?;
@@ -15842,6 +15965,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_1e2ce40d_polars_plan__dsl__udf__userdefinedfunction__name)?;
     m.function_meta(w_1e2ce40d_polars_plan__dsl__udf__userdefinedfunction__name)?;
     m.function_meta(v_3dcc1262_polars_plan__plans__lit__literalvalue__scalar)?;
+    m.function_meta(s_75228286_polars_utils__index__nullableidxsize__inner)?;
+    m.function_meta(w_75228286_polars_utils__index__nullableidxsize__inner)?;
     m.function_meta(v_51e48e15_polars_utils__pl_path__cloudscheme__abfs)?;
     m.function_meta(v_57a486b9_polars_utils__pl_path__cloudscheme__abfss)?;
     m.function_meta(v_e09bfb26_polars_utils__pl_path__cloudscheme__adl)?;

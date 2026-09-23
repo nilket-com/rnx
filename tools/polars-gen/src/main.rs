@@ -32,6 +32,11 @@ struct Release {
     unordered: Vec<Unordered>,
     #[serde(default)]
     excluded_oracle: Vec<ExcludedOracle>,
+    /// Record 0084: operations the release refuses to emit although the
+    /// mapping rules would admit them, each with the source contract that
+    /// the binding would have to validate first.
+    #[serde(default)]
+    refused: Vec<RefusedOperation>,
     /// Record 0079: mutable closure arguments with an audited read-back contract.
     #[serde(default)]
     callback_mutable: Vec<CallbackMutable>,
@@ -98,6 +103,12 @@ struct Unordered {
 struct ExcludedOracle {
     path: String,
     reason: String,
+}
+#[derive(serde::Deserialize, Clone)]
+struct RefusedOperation {
+    path: String,
+    reason: String,
+    cite: String,
 }
 
 impl Release {
@@ -1065,6 +1076,89 @@ fn callback_census(world: &World, inv: &Inventory, entries: &[Entry]) -> serde_j
     })
 }
 
+/// Record 0084 gate 2 controls, from a synthetic inventory: chained generic
+/// inference (`I: IntoIterator<Item = S>, S: AsRef<str>`; `E: AsRef<[IE]>,
+/// IE: Into<Expr>`), iterator inputs lowered from a script vector (owned
+/// items through `into_iter`, borrowed `&str`/`&[u8]`/`Option` items through
+/// a held temporary), and the refusals that stay: a tuple-with-`Field`
+/// item, a return-only generic, a closure bound, and a release-refused path.
+fn generic_input_self_test() {
+    fn sup(path: &str) -> Supporting {
+        Supporting {
+            key: path.to_string(), kind: "struct".into(), canonical_path: path.to_string(),
+            found_paths: vec![format!("polars::{}", path.rsplit("::").next().unwrap())], crate_paths: vec![path.to_string()],
+            public_fields: 0, fields_canonical: vec![], variant_shapes: vec![], variant_payloads: vec![], generic: false, lifetime: false, hidden: false,
+            derived: vec!["Clone".into(), "Debug".into()], alias_target: None, implementors: vec![], impls: vec![],
+        }
+    }
+    let frame = "polars_core::frame::dataframe::DataFrame";
+    let expr = "polars_plan::dsl::expr::Expr";
+    let field = "polars_core::datatypes::field::Field";
+    let mk = |key: &str, name: &str, params: Vec<(&str, &str)>, generics: Vec<(&str, &str)>, ret: Option<&str>| Callable {
+        key: key.into(), kind: "inherent".into(), krate: "polars_core".into(), owner: frame.into(), name: name.into(), canonical_path: format!("{frame}::{name}"),
+        found_paths: vec![], crate_paths: vec![], receiver: "&self".into(), params: params.iter().map(|(n, t)| Param { name: n.to_string(), ty: t.to_string(), ty_canonical: t.to_string() }).collect(),
+        ret: None, ret_canonical: ret.map(String::from), generics_canonical: generics.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(),
+        impl_for: None, impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic: false, is_unsafe: false, is_async: false,
+        deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "generic".into(), rules: vec![],
+    };
+    let into_iter = |item: &str| format!("core::iter::traits::collect::IntoIterator<Item = {item}>");
+    let iter = |item: &str| format!("core::iter::traits::iterator::Iterator<Item = {item}>");
+    let inv = Inventory {
+        callables: vec![
+            mk("chain", "pick", vec![("names", "I")], vec![("I", &into_iter("S")), ("S", "core::convert::AsRef<str>")], Some(frame)),
+            mk("chain_small", "drop_some", vec![("names", "I")], vec![("I", &into_iter("S")), ("S", "core::convert::Into<polars_utils::pl_str::PlSmallStr>")], Some(frame)),
+            mk("two_chains", "rename_some", vec![("existing", "I"), ("new", "J")], vec![("I", &into_iter("T")), ("J", &into_iter("S")), ("T", "core::convert::AsRef<str>"), ("S", "core::convert::AsRef<str>")], Some(frame)),
+            mk("exprs", "over_some", vec![("partition_by", "E")], vec![("E", "core::convert::AsRef<[IE]>"), ("IE", &format!("core::convert::Into<{expr}> + core::clone::Clone"))], Some(frame)),
+            mk("opt_exprs", "over_opt", vec![("partition_by", "core::option::Option<E>")], vec![("E", "core::convert::AsRef<[IE]>"), ("IE", &format!("core::convert::Into<{expr}> + core::clone::Clone"))], Some(frame)),
+            mk("owned_iter", "take_ids", vec![("ids", "I")], vec![("I", &iter("usize"))], Some(frame)),
+            mk("trusted", "take_flags", vec![("flags", "I")], vec![("I", &format!("{} + polars_arrow::trusted_len::TrustedLen", iter("core::option::Option<bool>")))], Some(frame)),
+            mk("strs", "take_strs", vec![("iter", "I")], vec![("I", &iter("&str"))], Some(frame)),
+            mk("bytes", "take_bytes", vec![("iter", "I")], vec![("I", &iter("&[u8]"))], Some(frame)),
+            mk("opt_strs", "take_opt_strs", vec![("iter", "I")], vec![("I", &format!("{} + polars_arrow::trusted_len::TrustedLen", iter("core::option::Option<&str>")))], Some(frame)),
+            mk("tuple_field", "with_fields", vec![("iter", "I")], vec![("I", &into_iter("F")), ("F", &format!("core::convert::Into<(polars_utils::pl_str::PlSmallStr, {field})>"))], Some(frame)),
+            mk("ret_only", "total", vec![], vec![("T", "num_traits::cast::NumCast")], Some("core::option::Option<T>")),
+            mk("closure", "each", vec![("f", "F")], vec![("F", "core::ops::function::FnMut(i64) -> i64")], None),
+            mk("policy", "refused_by_release", vec![("ids", "I")], vec![("I", &iter("usize"))], Some(frame)),
+        ],
+        supporting: vec![sup(frame), sup(expr), sup(field)],
+        provenance: None,
+    };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    release.refused.push(RefusedOperation { path: format!("{frame}::refused_by_release"), reason: "validated first".into(), cite: "t".into() });
+    let world = World::new(&inv, &release, &["mechanical", "generic_fn"]);
+    let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+    let emit = |key: &str| { let mut e = empty(); emit_callable(&world, &mut e, inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical", "generic_fn"]); (e.entries[0].status.clone(), e.entries[0].reason.clone().unwrap_or_default(), e.functions) };
+    for (key, must) in [
+        ("chain", vec!["let v: String = support::borrow_element", "collect::<Result<Vec<_>, Error>>()?"]),
+        ("chain_small", vec!["let v: String = support::borrow_element"]),
+        ("two_chains", vec!["borrow_vec(&existing, \"existing\")", "borrow_vec(&new, \"new\")"]),
+        ("exprs", vec!["support::take::<Expr>(&v, \"v\")?.0"]),
+        ("opt_exprs", vec!["Some(v) => Some(", "support::take::<Expr>(&v, \"v\")?.0"]),
+        ("owned_iter", vec![").into_iter()", "let v: i64 = support::borrow_element"]),
+        ("trusted", vec![").into_iter()", "let v: Option<bool> = support::borrow_element"]),
+        ("strs", vec!["let __hold_iter = ", "__hold_iter.iter().map(String::as_str)"]),
+        ("bytes", vec!["let __hold_iter = ", "__hold_iter.iter().map(Vec::as_slice)", "support::narrow::<u8>"]),
+        ("opt_strs", vec!["let __hold_iter = ", "__hold_iter.iter().map(Option::as_deref)"]),
+    ] {
+        let (status, reason, functions) = emit(key);
+        assert_eq!(status, "generated", "{key}: {reason}");
+        for m in must { assert!(functions.contains(m), "{key}: expected `{m}` in:\n{functions}"); }
+        assert!(!functions.contains("as_str()?"), "{key}: no vector of borrowed strings");
+    }
+    let (_, _, functions) = emit("chain");
+    assert!(!functions.contains("Vec<&str>") && !functions.contains("v.as_str()"), "the chained item is an owned String, never a borrowed vector element:\n{functions}");
+    for (key, why) in [("tuple_field", "tuple conversion"), ("ret_only", "generic parameter not inferable"), ("closure", "callback"), ("policy", "release policy")] {
+        let (status, reason, _) = emit(key);
+        assert_eq!(status, "unsupported", "{key} must stay refused, got {reason}");
+        assert!(reason.contains(why), "{key}: refusal must say `{why}`, got {reason}");
+    }
+    let plain = World::new(&inv, &release, &["mechanical"]);
+    let mut e = empty();
+    emit_callable(&plain, &mut e, inv.callables.iter().find(|c| c.key == "chain").unwrap(), &["mechanical"]);
+    assert_eq!(e.entries[0].status, "unsupported", "without the generic_fn token the generic bucket stays closed");
+    println!("generic-input self-test: ok");
+}
+
 /// Record 0082 gate 2 controls, from a synthetic inventory: immutable
 /// borrowed slices are copied into bounded owned vectors as returns,
 /// as iterator items and as callback inputs; a mutable slice, an Arrow
@@ -1103,7 +1197,7 @@ fn slice_self_test() {
         supporting: vec![sup(series), sup(field)],
         provenance: None,
     };
-    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     release.callback_invocation.push(CallbackInvocation { path: format!("{series}::each_bytes"), param: "f".into(), invocation: "immediate".into(), sinks: vec![], cite: "t".into() });
     let world = World::new(&inv, &release, &["mechanical", "callback"]);
     let empty = || Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
@@ -1178,7 +1272,7 @@ fn callback_self_test() {
         supporting: vec![sup(series, &["Clone", "Debug"]), sup(column, &["Clone", "Debug"]), sup(field, &["Clone", "Debug"]), sup(expr, &["Clone", "Debug"]), sup("polars_core::schema::Schema", &["Clone", "Debug"]), sup("polars_core::datatypes::StringChunked", &["Clone"]), sup("polars_lazy::frame::LazyFrame", &["Clone"]), sup("polars_core::frame::dataframe::DataFrame", &["Clone", "Debug"])],
         provenance: None,
     };
-    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope { families: vec!["numeric".into()], exclude: vec![] }, api_crates: vec!["polars_core".into(), "polars_plan".into(), "polars_lazy".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let mut release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope { families: vec!["numeric".into()], exclude: vec![] }, api_crates: vec!["polars_core".into(), "polars_plan".into(), "polars_lazy".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     release.callback_mutable.push(CallbackMutable { path: format!("{expr}::map_many"), param: "function".into(), contract: "vector".into(), cite: "t".into() });
     release.callback_mutable.push(CallbackMutable { path: format!("{ca}::apply_into_string_amortized"), param: "f".into(), contract: "result buffer".into(), cite: "t".into() });
     // the source audit: every feasible closure gets its invocation; `stored`
@@ -1399,7 +1493,7 @@ fn wrapper_self_test() {
             sup("polars_dtype::categorical::CatSize", "type_alias", Some("u32")),
         ],
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let w = World::new(&inv, &release, &["mechanical"]);
     let idx = &w.wrappers["polars_core::datatypes::aliases::IdxCa"];
     let u32c = &w.wrappers["polars_core::datatypes::UInt32Chunked"];
@@ -1491,7 +1585,7 @@ fn applicability_self_test() {
             sup("polars_core::datatypes::StringChunked", "type_alias", Some(&format!("{ca}<polars_core::datatypes::StringType>"))),
         ],
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let w = World::new(&inv, &release, &["mechanical"]);
     let i64c = format!("{ca}<polars_core::datatypes::Int64Type>");
     let boolc = format!("{ca}<polars_core::datatypes::BooleanType>");
@@ -1620,6 +1714,7 @@ fn from_naming_self_test() {
     from_emission_self_test();
     callback_self_test();
     slice_self_test();
+    generic_input_self_test();
 }
 
 /// Record 0078 gate 1 controls, from a synthetic inventory through the
@@ -1657,7 +1752,7 @@ fn from_emission_self_test() {
         supporting: vec![sup(owner, &["Clone", "Debug", "PartialEq"]), sup(dtype, &["Clone", "Debug", "PartialEq", "Default"]), sup(field, &["Clone", "Debug", "PartialEq", "Default"])],
         provenance: None,
     };
-    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
     let world = World::new(&inv, &release, &["mechanical", "conversion"]);
     let mut out = Emitted { from_names: plan_from_names(&inv), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
     let buckets = ["mechanical", "conversion"];
@@ -1968,7 +2063,7 @@ impl World {
         // canonical path: the admission test for internal-crate wrappers.
         let mut mentioned: BTreeSet<String> = BTreeSet::new();
         for c in &inv.callables {
-            if !buckets.contains(&c.bucket.as_str()) || !release.is_api(&c.krate) {
+            if !bucket_admitted(buckets, c) || !release.is_api(&c.krate) {
                 continue;
             }
             for t in c.params.iter().map(|p| p.ty_canonical.as_str()).chain(c.ret_canonical.as_deref()) {
@@ -2435,10 +2530,16 @@ impl World {
                 }
                 "alloc::vec::Vec" if args.len() == 1 => {
                     let inner = self.arg(&args[0], "v", generics, owner, depth + 1)?;
-                    if inner.borrow != 0 {
-                        return Err(Unsupported("vector of borrows", t.render()));
-                    }
-                    let (ity, conv) = by_value(&inner, "v");
+                    // record 0084: an element that maps to `&str` (`S: AsRef<str>`,
+                    // `Into<PlSmallStr>`) is carried as an owned `String`
+                    let (ity, conv) = if inner.rust_ty == "&str" && inner.borrow == 1 {
+                        ("String".to_string(), "v".to_string())
+                    } else {
+                        if inner.borrow != 0 {
+                            return Err(Unsupported("vector of borrows", t.render()));
+                        }
+                        by_value(&inner, "v")
+                    };
                     let typed = if ity == "rune::Value" { String::new() } else { format!("let v: {ity} = support::borrow_element(&v, \"{name}\")?; ") };
                     Ok(shaped(ok_arg("rune::Value", format!("support::borrow_vec(&{name}, \"{name}\")?.into_iter().map(|v| {{ {typed}Ok::<_, Error>({conv}) }}).collect::<Result<Vec<_>, Error>>()?"), &format!("vector of {}", inner.doc))?, format!("vec({})", inner.shape)))
                 }
@@ -2588,7 +2689,10 @@ impl World {
 
     fn bounds(&self, bounds: &[Bound], name: &str, generics: &BTreeMap<String, String>, owner: Option<&str>, depth: u8, t: &Ty) -> Result<Arg, Unsupported> {
         let neutral = ["core::marker::Send", "core::marker::Sync", "core::marker::Sized", "core::clone::Clone", "core::marker::Copy", "core::fmt::Debug", "core::marker::Unpin", "'static"];
+        const ITERATOR_BOUNDS: &[&str] = &["Iterator", "ExactSizeIterator", "DoubleEndedIterator", "TrustedLen", "PolarsIterator"];
         let mut target: Option<Ty> = None;
+        // record 0084: an iterator bound is lowered from a script vector
+        let mut iterator: Option<Ty> = None;
         for b in bounds {
             if neutral.contains(&b.path.as_str()) || b.path.starts_with('\'') {
                 continue;
@@ -2597,7 +2701,16 @@ impl World {
             if l.starts_with("Fn") {
                 return Err(Unsupported("callback", t.render()));
             }
-            if target.is_some() {
+            if ITERATOR_BOUNDS.contains(&l) {
+                match (&b.item, &iterator) {
+                    (Some(item), None) if target.is_none() => { iterator = Some((**item).clone()); continue; }
+                    (None, Some(_)) => continue, // `+ TrustedLen`, `+ ExactSizeIterator` beside the item-bearing bound
+                    (None, None) if target.is_none() && bounds.iter().any(|o| ITERATOR_BOUNDS.contains(&last(&o.path)) && o.item.is_some()) => continue,
+                    (None, None) => return Err(Unsupported("iterator without item", t.render())),
+                    _ => return Err(Unsupported("extra bound", t.render())),
+                }
+            }
+            if target.is_some() || iterator.is_some() {
                 return Err(Unsupported("extra bound", t.render()));
             }
             target = match l {
@@ -2608,6 +2721,9 @@ impl World {
                         Ty::Slice(e) if l == "AsRef" => Some(Ty::Path { path: "alloc::vec::Vec".into(), args: vec![(**e).clone()] }),
                         _ if l == "IntoVec" => Some(Ty::Path { path: "alloc::vec::Vec".into(), args: vec![inner.clone()] }),
                         _ if l == "AsRef" => Some(Ty::Ref { mutable: false, inner: Box::new(inner.clone()) }),
+                        // record 0084: `Into<(PlSmallStr, Field)>` and kin stay refused until a
+                        // tuple-and-wrapper input mapping is proven on a real binding
+                        Ty::Tuple(_) => return Err(Unsupported("tuple conversion", t.render())),
                         _ => Some(inner.clone()),
                     }
                 }
@@ -2618,6 +2734,9 @@ impl World {
                 _ => return Err(Unsupported("bound", t.render())),
             };
         }
+        if let Some(item) = iterator {
+            return self.iterator_input(&item, name, generics, owner, depth, t);
+        }
         match target {
             Some(tt) => {
                 let a = self.arg(&tt, name, generics, owner, depth + 1)?;
@@ -2626,6 +2745,53 @@ impl World {
             }
             None => Err(Unsupported("unbounded generic", t.render())),
         }
+    }
+
+    /// Record 0084: a generic iterator input. The script passes a vector;
+    /// owned items travel through `Vec<Item>::into_iter()` (which is also
+    /// `ExactSizeIterator` and `TrustedLen`); `&str`, `&[u8]` and their
+    /// `Option` forms are borrowed from an owned temporary that the
+    /// binding holds for the whole Polars call, so no Rust borrow reaches
+    /// a script value.
+    fn iterator_input(&self, item: &Ty, name: &str, generics: &BTreeMap<String, String>, owner: Option<&str>, depth: u8, t: &Ty) -> Result<Arg, Unsupported> {
+        let u8_ = Ty::Path { path: "u8".into(), args: vec![] };
+        let string = Ty::Path { path: "alloc::string::String".into(), args: vec![] };
+        let vec_u8 = Ty::Path { path: "alloc::vec::Vec".into(), args: vec![u8_.clone()] };
+        let opt = |x: Ty| Ty::Path { path: "core::option::Option".into(), args: vec![x] };
+        let is_str = |x: &Ty| matches!(x, Ty::Ref { mutable: false, inner } if matches!(&**inner, Ty::Path { path, .. } if path == "str"));
+        let is_bytes = |x: &Ty| matches!(x, Ty::Ref { mutable: false, inner } if matches!(&**inner, Ty::Slice(e) if **e == u8_));
+        let inner_opt = |x: &Ty| match x { Ty::Path { path, args } if path == "core::option::Option" && args.len() == 1 => Some(args[0].clone()), _ => None };
+        // (owned element type, how the temporary is borrowed per item)
+        let (owned, borrow_map): (Ty, Option<&str>) = if is_str(item) {
+            (string.clone(), Some("String::as_str"))
+        } else if is_bytes(item) {
+            (vec_u8.clone(), Some("Vec::as_slice"))
+        } else if let Some(i) = inner_opt(item) {
+            if is_str(&i) { (opt(string.clone()), Some("Option::as_deref")) }
+            else if is_bytes(&i) { (opt(vec_u8.clone()), Some("|o| o.as_deref()")) }
+            else if matches!(i, Ty::Ref { .. }) { return Err(Unsupported("iterator of borrowed items", t.render())); }
+            else { (item.clone(), None) }
+        } else if matches!(item, Ty::Ref { .. }) {
+            return Err(Unsupported("iterator of borrowed items", t.render()));
+        } else {
+            (item.clone(), None)
+        };
+        let vec = Ty::Path { path: "alloc::vec::Vec".into(), args: vec![owned] };
+        let mut a = self.arg(&vec, name, generics, owner, depth + 1)?;
+        let hold = format!("__hold_{}", sanitize(name));
+        match borrow_map {
+            Some(map) => {
+                a.pre.push(format!("let {hold} = {};", a.conv));
+                a.conv = format!("{hold}.iter().map({map})");
+                a.doc = format!("{} (iterated, items borrowed from the script's values for the call)", a.doc);
+            }
+            None => {
+                a.conv = format!("({}).into_iter()", a.conv);
+                a.doc = format!("{} (iterated)", a.doc);
+            }
+        }
+        a.shape = format!("iterator({})", a.shape);
+        Ok(a)
     }
 
     /// An iterator return, bare or wrapped in `Option`/`PolarsResult`:
@@ -2675,8 +2841,9 @@ impl World {
                     }
                 }
                 let x = self.ret(inner, owner, depth + 1)?;
-                // `&str` converts through `to_string`; cloning the reference is a no-op
-                if matches!(&**inner, Ty::Path { path, .. } if path == "str") {
+                // `&str` converts through `to_string`, and a slice is copied by
+                // `copy_slice` (record 0082): cloning the reference is a no-op
+                if matches!(&**inner, Ty::Path { path, .. } if path == "str") || matches!(&**inner, Ty::Slice(_)) {
                     return Ok(x);
                 }
                 Ok(Ret { materialize: None, rust_ty: x.rust_ty, fallible: x.fallible, conv: format!("{{ let __r = (__r).clone(); {} }}", x.conv), doc: x.doc })
@@ -3064,7 +3231,11 @@ fn unused_generic(c: &Callable) -> Option<String> {
         if g.starts_with("impl ") {
             continue; // rustdoc's synthetic parameter for an `impl Trait` argument
         }
-        let used = c.params.iter().any(|p| mentions(&p.ty_canonical, g));
+        // record 0084: a generic that only appears in another generic's bound
+        // (`I: IntoIterator<Item = S>`, `E: AsRef<[IE]>`) is inferred with it;
+        // whether that chain has a script mapping is decided by `bounds`
+        let used = c.params.iter().any(|p| mentions(&p.ty_canonical, g))
+            || c.generics_canonical.iter().any(|(h, b)| h != g && mentions(b, g));
         if !used {
             return Some(g.clone());
         }
@@ -3219,6 +3390,14 @@ fn materialized_call(m: &Materialize, callee_call: &str, name: &str, route: bool
     }
 }
 
+/// Record 0084: the `generic_fn` bucket token admits a `generic`-bucket
+/// callable only when it carries function-level generics, so the chained
+/// and iterator rules reach their targets without enabling the whole
+/// bucket (whose other members are generic for unrelated reasons).
+fn bucket_admitted(buckets: &[&str], c: &Callable) -> bool {
+    buckets.contains(&c.bucket.as_str()) || (c.bucket == "generic" && !c.generics_canonical.is_empty() && buckets.contains(&"generic_fn"))
+}
+
 /// Generate one method/function binding. `owner` is the canonical owner
 /// type (for methods) and `trait_spell` the trait for UFCS calls.
 fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str]) {
@@ -3226,7 +3405,7 @@ fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str
         out.unsupported(c, "callback audit", &reason);
         return;
     }
-    if !buckets.contains(&c.bucket.as_str()) {
+    if !bucket_admitted(buckets, c) {
         out.unsupported(c, "bucket", c.bucket.clone().as_str());
         return;
     }
@@ -3331,6 +3510,10 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
     let name = rune_name(&rust_name);
     if let Some(g) = unused_generic(c) {
         out.unsupported(c, "generic parameter not inferable from arguments", &g);
+        return;
+    }
+    if let Some(r) = world.release.refused.iter().find(|r| r.path == c.canonical_path) {
+        out.unsupported(c, "release policy", &format!("{} ({})", r.reason, r.cite));
         return;
     }
     if HAND_METHODS.iter().any(|(o, n)| *o == owner && *n == name) {
@@ -3528,6 +3711,10 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
     }
     if let Some(g) = unused_generic(c) {
         out.unsupported(c, "generic parameter not inferable from arguments", &g);
+        return;
+    }
+    if let Some(r) = world.release.refused.iter().find(|r| r.path == c.canonical_path) {
+        out.unsupported(c, "release policy", &format!("{} ({})", r.reason, r.cite));
         return;
     }
     let Some(spelled) = spell(&c.found_paths, &c.crate_paths, &name, &world.ambiguous_prelude) else {

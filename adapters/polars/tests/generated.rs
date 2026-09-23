@@ -197,7 +197,7 @@ fn deref_route_controls() {
 
 /// The buckets this stage generates and the release input the committed
 /// module was generated from; kept in one place with the drift test.
-const BUCKETS: &str = "mechanical,conversion,option_struct,callback";
+const BUCKETS: &str = "mechanical,conversion,option_struct,callback,generic_fn";
 const RELEASE_FILE: &str = "0.55.2-joins.toml";
 
 /// Every eligible callable of the API crates has exactly one status.
