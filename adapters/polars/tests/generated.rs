@@ -125,6 +125,44 @@ fn a_wrong_feature_set_under_the_right_configuration_is_refused() {
 	}
 }
 
+/// Record 0092 review: a `[[method_scalar_generics]]` entry whose native does
+/// not equal the type's `T::Native` (here `Int8Type` paired with `i64`) is
+/// refused whole, end to end: the real generator, run on a copy of the
+/// shipped release file into a scratch directory, emits no `lhs_sub` binding
+/// and leaves its pairs unresolved.
+#[test]
+fn a_mispaired_scalar_native_emits_no_binding() {
+	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
+	let at = shipped.find("key = \"polars_core:3719\"").expect("the lhs_sub entry");
+	let from = at + shipped[at..].find("natives = [").unwrap();
+	let to = from + shipped[from..].find(']').unwrap();
+	let bad = format!("{}natives = [\"i64\", \"i16\", \"i32\", \"i64\", \"u8\", \"u16\", \"u32\", \"u64\", \"f32\", \"f64\"{}", &shipped[..from], &shipped[to..]);
+	let dir = root().join("target/0073/mispaired-native");
+	let _ = std::fs::remove_dir_all(&dir);
+	std::fs::create_dir_all(&dir).unwrap();
+	std::fs::write(dir.join("release.toml"), bad).unwrap();
+	let status = Command::new("cargo")
+		.args(["run", "-q", "--locked", "--manifest-path"])
+		.arg(root().join("tools/polars-gen/Cargo.toml"))
+		.arg("--")
+		.arg(inventory())
+		.arg(&dir)
+		.args(["--buckets", BUCKETS, "--release"])
+		.arg(dir.join("release.toml"))
+		.env("CARGO_TARGET_DIR", root().join("target/0073"))
+		.status()
+		.expect("run polars-gen");
+	assert!(status.success());
+	let surface: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("surface.json")).unwrap()).unwrap();
+	let entry = surface["entries"].as_array().unwrap().iter().find(|e| e["key"] == "polars_core:3719").unwrap();
+	assert_eq!(entry["status"], "unsupported", "{entry}");
+	for p in surface["instantiation"]["pairs"].as_array().unwrap().iter().filter(|p| p["key"] == "polars_core:3719") {
+		assert!(p["disposition"].as_str().unwrap().starts_with("unresolved"), "{p}");
+	}
+	let functions = std::fs::read_to_string(dir.join("src/generated/functions.rs")).unwrap();
+	assert!(!functions.contains("lhs_sub"), "no lhs_sub binding text");
+}
+
 /// Record 0076 gate 2 controls on the committed surface: the deref route
 /// keeps receiver forms, retains inherent names, and a trait method bound
 /// on two receivers keeps two independent results.

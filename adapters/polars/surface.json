@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 329,
-    "generated": 2105,
+    "generated": 2106,
     "out_of_scope": 710,
-    "unsupported": 1927
+    "unsupported": 1926
   },
   "entries": [
     {
@@ -19399,95 +19399,150 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__float32chunked",
+          "receiver": "polars_core::datatypes::Float32Chunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float32Chunked::lhs_sub"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__float64chunked",
+          "receiver": "polars_core::datatypes::Float64Chunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Float64Chunked::lhs_sub"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int16Chunked::lhs_sub"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int32Chunked::lhs_sub"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int64Chunked::lhs_sub"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::Int8Chunked::lhs_sub"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt16Chunked::lhs_sub"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__idxca",
+          "disposition": "case (fixture via producer Series::idx on series_u32)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__idxca",
+          "receiver": "polars_core::datatypes::aliases::IdxCa",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IdxCa::lhs_sub"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt64Chunked::lhs_sub"
+        },
+        {
+          "case_id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__chunkedarray__lhs_sub__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::UInt8Chunked::lhs_sub"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
       "exceptions": [
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "reason": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryOffsetType`",
           "receiver": "polars_core::datatypes::BinaryOffsetChunked",
           "route": "instantiation"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "reason": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryType`",
           "receiver": "polars_core::datatypes::BinaryChunked",
           "route": "instantiation"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "reason": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BooleanType`",
           "receiver": "polars_core::datatypes::BooleanChunked",
           "route": "instantiation"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "reason": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::ListType`",
           "receiver": "polars_core::datatypes::ListChunked",
           "route": "instantiation"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "reason": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StringType`",
           "receiver": "polars_core::datatypes::StringChunked",
           "route": "instantiation"
         },
         {
-          "reason": "unresolved: function-level generics are out of this record's scope",
+          "reason": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StructType`",
           "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::aliases::IdxCa",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "instantiation"
-        },
-        {
-          "reason": "unresolved: function-level generics are out of this record's scope",
-          "receiver": "polars_core::datatypes::UInt8Chunked",
           "route": "instantiation"
         }
       ],
+      "execution": "case (on 10 of 10 receivers)",
+      "fallible": false,
       "key": "polars_core:3719",
       "kind": "inherent",
-      "reason": "bucket: generic (no proven instantiation)",
+      "note": "instantiated on 10 of 16 alias identities",
+      "rune": "polars::Float32Chunked::lhs_sub polars::Float64Chunked::lhs_sub polars::Int16Chunked::lhs_sub polars::Int32Chunked::lhs_sub polars::Int64Chunked::lhs_sub polars::Int8Chunked::lhs_sub polars::UInt16Chunked::lhs_sub polars::IdxCa::lhs_sub polars::UInt64Chunked::lhs_sub polars::UInt8Chunked::lhs_sub",
       "signature": "(N) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -121320,179 +121375,179 @@
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryOffsetType`",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "reason": "no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryOffsetType`",
+        "result": "Rejected"
       },
       {
         "alias": "polars_core::datatypes::BinaryChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryType`",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "reason": "no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryType`",
+        "result": "Rejected"
       },
       {
         "alias": "polars_core::datatypes::BooleanChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BooleanType`",
         "eligible": true,
         "family": "boolean",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "reason": "no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BooleanType`",
+        "result": "Rejected"
       },
       {
         "alias": "polars_core::datatypes::Float32Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>"
       },
       {
         "alias": "polars_core::datatypes::Float64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>"
       },
       {
         "alias": "polars_core::datatypes::Int16Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>"
       },
       {
         "alias": "polars_core::datatypes::Int32Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>"
       },
       {
         "alias": "polars_core::datatypes::Int64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>"
       },
       {
         "alias": "polars_core::datatypes::Int8Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>"
       },
       {
         "alias": "polars_core::datatypes::ListChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::ListType`",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "reason": "no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::ListType`",
+        "result": "Rejected"
       },
       {
         "alias": "polars_core::datatypes::StringChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StringType`",
         "eligible": true,
         "family": "string-binary",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "reason": "no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StringType`",
+        "result": "Rejected"
       },
       {
         "alias": "polars_core::chunked_array::struct_::StructChunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StructType`",
         "eligible": true,
         "family": "list-struct",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "reason": "no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StructType`",
+        "result": "Rejected"
       },
       {
         "alias": "polars_core::datatypes::UInt16Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>"
       },
       {
         "alias": "polars_core::datatypes::aliases::IdxCa",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>"
       },
       {
         "alias": "polars_core::datatypes::UInt64Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>"
       },
       {
         "alias": "polars_core::datatypes::UInt8Chunked",
-        "disposition": "unresolved: function-level generics are out of this record's scope",
+        "disposition": "emitted",
         "eligible": true,
         "family": "numeric",
         "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
         "key": "polars_core:3719",
         "method": "polars_core::chunked_array::ChunkedArray::lhs_sub",
-        "reason": "function-level generics are out of this record's scope",
-        "result": "Unresolved"
+        "result": "Proven",
+        "signature": "(num_traits::Num + num_traits::cast::NumCast) -> polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>"
       },
       {
         "alias": "polars_core::datatypes::BinaryOffsetChunked",
@@ -139010,19 +139065,19 @@
     "summary": {
       "by_family": {
         "all": {
-          "proven": 1271,
-          "rejected": 1601,
-          "unresolved": 672
+          "proven": 1281,
+          "rejected": 1607,
+          "unresolved": 656
         },
         "boolean": {
           "proven": 83,
-          "rejected": 95,
-          "unresolved": 29
+          "rejected": 96,
+          "unresolved": 28
         },
         "list-struct": {
           "proven": 177,
-          "rejected": 179,
-          "unresolved": 58
+          "rejected": 181,
+          "unresolved": 56
         },
         "logical": {
           "proven": 22,
@@ -139030,35 +139085,35 @@
           "unresolved": 156
         },
         "numeric": {
-          "proven": 778,
+          "proven": 788,
           "rejected": 950,
-          "unresolved": 342
+          "unresolved": 332
         },
         "string-binary": {
           "proven": 211,
-          "rejected": 323,
-          "unresolved": 87
+          "rejected": 326,
+          "unresolved": 84
         }
       },
       "eligible": {
-        "proven": 1083,
-        "rejected": 1385,
-        "unresolved": 668
+        "proven": 1093,
+        "rejected": 1391,
+        "unresolved": 652
       },
       "exception_reasons": {
         "": 4,
-        "function-level generics are out of this record's scope": 436,
+        "function-level generics are out of this record's scope": 420,
         "head argument": 1389,
         "no impl of": 56,
         "no recorded": 16,
-        "no recorded impl of": 208,
+        "no recorded impl of": 214,
         "trait": 42,
         "trait argument": 58,
         "unresolved: no recorded": 64
       },
       "pairs": 3544,
       "proven_dispositions": {
-        "emitted": 893,
+        "emitted": 903,
         "excluded": 12,
         "not eligible": 188,
         "refused": 178
@@ -140394,7 +140449,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2224,
+  "oracle_cases": 2234,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -143412,7 +143467,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "28f7fbbe8f52f3f2a30d39dea0dd316a2e2f4e4252d2e5819f3f8a9bd4ea1a7a",
+    "sha256": "cc2f4dfd4579cad9c72c4ed79fa5e323f4ab8703d3cf60982f449eb455247aec",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",
