@@ -1,0 +1,162 @@
+[
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::BinaryOffsetChunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::BinaryChunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::BooleanChunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::Float32Chunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::Float64Chunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::Int16Chunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::Int32Chunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::Int64Chunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::Int8Chunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::ListChunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::StringChunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::chunked_array::struct_::StructChunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::UInt16Chunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::aliases::IdxCa",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::UInt64Chunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ },
+ {
+  "key": "polars_core:3680",
+  "method": "polars_core::chunked_array::ChunkedArray::chunk_lengths",
+  "alias": "polars_core::datatypes::UInt8Chunked",
+  "signature": "() -> polars_core::chunked_array::ChunkLenIter",
+  "before": "refused: unsupported: foreign type: return (core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&ArrayRef) -> usize>)",
+  "audit": "candidate",
+  "after": "emitted",
+  "oracle": "match"
+ }
+]

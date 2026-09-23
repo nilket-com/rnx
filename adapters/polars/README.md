@@ -41,6 +41,11 @@ returns a `ShapeMismatch` error and nothing changes. `None` removes the mask;
 values themselves. Struct columns are excluded, as Polars asserts. The script's
 vector is only read.
 
+Chunk lengths (record 0087): `chunk_lengths()` returns a vector of integers,
+one per chunk in order (an empty array can still have one empty chunk). The
+lengths are copied under the materialize bound, each checked to fit a script
+integer, and the vector is the script's own.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn
