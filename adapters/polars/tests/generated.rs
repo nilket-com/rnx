@@ -255,6 +255,34 @@ fn external_bound_drift_is_refused_by_name() {
 	assert_eq!(count(&functions, "is_finite"), 2, "the shipped entries bind");
 }
 
+/// Record 0099: the chunk-snapshot gate on the real generator. Without the
+/// Int64 pair nine bind and Int64 is named; a blank citation, or an
+/// inventory whose `chunks` returns an owned vector, refuses all ten by
+/// name with no binding text.
+#[test]
+fn chunk_snapshot_drift_is_refused_by_name() {
+	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
+	let at = shipped.find("key = \"polars_core:3681\"").expect("the chunks entry");
+	let cite = at + shipped[at..].find("cite = ").unwrap();
+	let end = cite + shipped[cite..].find('\n').unwrap();
+	let count = |f: &str| f.matches("ChunkedArray::chunks`").count();
+	let pairs = |surface: &serde_json::Value| surface["instantiation"]["pairs"].as_array().unwrap().iter().filter(|p| p["key"] == "polars_core:3681").map(|p| (p["alias"].as_str().unwrap().to_string(), p["disposition"].as_str().unwrap().to_string())).collect::<Vec<_>>();
+	let without = shipped[at..cite].replace(", [\"polars_core::datatypes::Int64Type\", \"i64\"]", "");
+	assert_ne!(without, shipped[at..cite]);
+	let (surface, functions) = generate_release(&shipped.replacen(&shipped[at..cite], &without, 1), "chunk-snapshot-unlisted");
+	assert_eq!(count(&functions), 9);
+	assert!(pairs(&surface).iter().any(|(a, d)| a.ends_with("::Int64Chunked") && d.contains("chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>` is not a listed pair")));
+	let (surface, functions) = generate_release(&format!("{}cite = \" \"{}", &shipped[..cite], &shipped[end..]), "chunk-snapshot-uncited");
+	assert_eq!(count(&functions), 0, "no binding text");
+	assert_eq!(pairs(&surface).iter().filter(|(_, d)| d.contains("chunk snapshot: no citation")).count(), 16);
+	let mut inv: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(inventory()).unwrap()).unwrap();
+	let c = inv["callables"].as_array_mut().unwrap().iter_mut().find(|c| c["key"] == "polars_core:3681").unwrap();
+	c["ret_canonical"] = "alloc::vec::Vec<polars_arrow::array::ArrayRef>".into();
+	let (surface, functions) = generate_with(&shipped, Some(&serde_json::to_string(&inv).unwrap()), "chunk-snapshot-owned");
+	assert_eq!(count(&functions), 0, "no binding text");
+	assert_eq!(pairs(&surface).iter().filter(|(_, d)| d.contains("chunk snapshot: return alloc::vec::Vec<polars_arrow::array::ArrayRef> is not")).count(), 16);
+}
+
 fn generate_with_natives(key: &str, natives: &str, dir: &str) -> (serde_json::Value, String) {
 	let shipped = std::fs::read_to_string(root().join("tools/polars-gen/releases").join(RELEASE_FILE)).unwrap();
 	let at = shipped.find(&format!("key = \"{key}\"")).expect("the entry");

@@ -1,0 +1,173 @@
+{
+ "record": "0099",
+ "key": "polars_core:3681",
+ "path": "polars_core::chunked_array::ChunkedArray::chunks",
+ "signature": "pub fn chunks(&self) -> &Vec<ArrayRef>",
+ "owner_bound": "T: PolarsDataType",
+ "source": {
+  "chunks": "polars-core 0.55.2 chunked_array/mod.rs:478-481",
+  "numeric_arrays": "datatypes/mod.rs:181-227 (impl_polars_num_datatype: T::Array = PrimitiveArray<T::Native>)"
+ },
+ "boundary_probe": "direct Rust: [1,2,3] ++ [1,null,3] is chunks [3, 3]; Int64Chunked::from_vec(\"x\", []) is one empty chunk [0]; Polars append drops an empty chunk ([] then [5] is [1]), so a mid-array empty chunk is covered by the support unit test",
+ "pairs": [
+  {
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>` is not a listed pair",
+   "decision": "refused (not a listed numeric pair)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>` is not a listed pair",
+   "decision": "refused (not a listed numeric pair)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>` is not a listed pair",
+   "decision": "refused (not a listed numeric pair)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>` is not a listed pair",
+   "decision": "refused (not a listed numeric pair)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>` is not a listed pair",
+   "decision": "refused (not a listed numeric pair)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "refused: refused: chunk snapshot: `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>` is not a listed pair",
+   "decision": "refused (not a listed numeric pair)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "return": "&alloc::vec::Vec<polars_arrow::array::ArrayRef> (elements alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "before": "refused: unsupported: foreign type: return (alloc::boxed::Box<dyn polars_arrow::array::Array>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  }
+ ],
+ "counts": {
+  "pairs": 16,
+  "refused (not a listed numeric pair)": 6,
+  "emitted": 10,
+  "oracle_match": 10
+ },
+ "refused_proven_pairs": {
+  "before": 168,
+  "after": 158
+ },
+ "unresolved_pool": {
+  "before": 564,
+  "after": 564
+ },
+ "retained_0098_binary_sha256": "b2ef6c8fb68040f8b52a3788ddf496991193400ef207fa7298c5a15f2aa39a50"
+}

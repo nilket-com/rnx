@@ -127,6 +127,15 @@ with a valid NaN and leaves every other value's bits alone. `to_canonical()`
 turns −0.0 into +0.0 and every NaN into the canonical quiet NaN, and keeps
 nulls. Each returns a new array the script owns.
 
+Chunk snapshots (record 0099): `ca.chunks()` on the ten numeric wrappers
+returns a copy of the array's storage as a vector of chunks. Each chunk is
+a vector of options, with values and nulls in order. The outer vector keeps
+Polars's chunk boundaries, including the single empty chunk of an empty
+array. The copy is the script's own and outlives the receiver. Before
+copying, the chunks plus their cells are checked against the materialize
+bound, one slot each. A `UInt64` value above `i64::MAX` fails the whole call
+with a `ConversionError`.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the

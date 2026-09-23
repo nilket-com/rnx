@@ -197,6 +197,22 @@ Anything else leaves the pairs unresolved, with the fault named. The owner
 bound is still proven by the ordinary engine, which rejects every nonfloat
 family.
 
+Record 0099's `[[chunk_snapshots]]` entry (inventory `key`, canonical
+`path`, numeric `[type, native]` `pairs`, citation) maps
+`ChunkedArray::chunks`. It must be exactly `&self -> &Vec<ArrayRef>` on
+`ChunkedArray<T: PolarsDataType>`. `ChunkSnapshot::check` fails closed on
+anything else, and an unlisted pair is refused by name. With the pair's
+native in scope, `World::ret` accepts only that top-level return. It maps
+it through `support::chunk_snapshot::<N, _>`, which:
+- sums the cells with checked arithmetic
+- checks chunks plus cells against the inclusive bound before allocating
+- downcasts each chunk to `PrimitiveArray<N>`, with a typed error if that fails
+- re-counts while copying
+- converts each value with the existing scalar rule
+
+A routed binding is refused, because the chunk borrow must end inside the
+call. The oracle frames the list as the same nested options.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

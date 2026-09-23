@@ -104,6 +104,44 @@ pub(crate) fn materialize_exact_with<I: ExactSizeIterator, T>(it: I, limit: usiz
 	materialize_unknown_with(it, limit, method, conv)
 }
 
+/// Record 0099: the whole cost of a chunk snapshot, one slot per chunk and
+/// one per cell, against the inclusive materialize bound, with checked
+/// arithmetic, before anything is allocated.
+pub(crate) fn snapshot_budget(chunks: usize, cells: usize, method: &str) -> Result<usize, Error> {
+	let limit = materialize_limit();
+	match chunks.checked_add(cells) {
+		Some(t) if t <= limit => Ok(t),
+		Some(t) => Err(Error("MaterializeLimit".into(), format!("{method}: {chunks} chunks and {cells} cells ({t} slots), more than the bound of {limit}"))),
+		None => Err(Error("MaterializeLimit".into(), format!("{method}: {chunks} chunks and {cells} cells overflow the slot count, more than the bound of {limit}"))),
+	}
+}
+
+/// Record 0099: `ChunkedArray::chunks` as owned nested options: one inner
+/// vector per chunk (empty chunks kept), values and nulls in order, each
+/// value through the scalar rule. The total is bounded before allocation and
+/// counted again while copying; a chunk that is not `PrimitiveArray<N>` is a
+/// typed error, and nothing partial is returned.
+pub(crate) fn chunk_snapshot<N: polars_arrow::types::NativeType, U>(chunks: &[polars_arrow::array::ArrayRef], method: &str, mut conv: impl FnMut(N) -> Result<U, Error>) -> Result<Vec<Vec<Option<U>>>, Error> {
+	let cells = chunks.iter().try_fold(0usize, |acc, a| acc.checked_add(a.len()));
+	let cells = match cells {
+		Some(c) => c,
+		None => return Err(Error("MaterializeLimit".into(), format!("{method}: the cell count of {} chunks overflows, more than the bound of {}", chunks.len(), materialize_limit()))),
+	};
+	let total = snapshot_budget(chunks.len(), cells, method)?;
+	let mut out = Vec::with_capacity(chunks.len());
+	let mut used = 0usize;
+	for arr in chunks {
+		let arr = arr.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<N>>().ok_or_else(|| Error::conversion(&format!("{method}: a chunk is not a PrimitiveArray<{}>", std::any::type_name::<N>())))?;
+		used = used.checked_add(1 + arr.len()).filter(|u| *u <= total).ok_or_else(|| Error("MaterializeLimit".into(), format!("{method}: more slots copied than the {total} counted, within the bound of {}", materialize_limit())))?;
+		let mut v = Vec::with_capacity(arr.len());
+		for x in arr.iter() {
+			v.push(match x { Some(x) => Some(conv(*x)?), None => None });
+		}
+		out.push(v);
+	}
+	Ok(out)
+}
+
 /// Record 0097: `head`, `limit` and `tail` reach Polars's `slice_offsets`,
 /// which panics when the receiver is longer than `i64::MAX` (possible with
 /// shared-buffer appends, record 0093). Checked before the call.
@@ -802,6 +840,39 @@ mod bits_tests {
 		let wrong = bitmap_from_bools(&rune::to_value(vec![rune::to_value(1i64).unwrap()]).unwrap(), "m", None).unwrap_err();
 		assert_eq!(wrong.0, "ConversionError");
 		assert_eq!(depth().0, 0);
+	}
+
+	#[test]
+	fn the_snapshot_budget_counts_chunks_and_cells() {
+		let _s = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+		limit(7);
+		assert_eq!(snapshot_budget(2, 5, "m").unwrap(), 7, "exactly the bound");
+		let e = snapshot_budget(3, 5, "m").unwrap_err();
+		assert_eq!((e.0.as_str(), e.1.as_str()), ("MaterializeLimit", "m: 3 chunks and 5 cells (8 slots), more than the bound of 7"));
+		assert!(snapshot_budget(8, 0, "m").is_err(), "many empty chunks are counted");
+		assert!(snapshot_budget(7, 0, "m").is_ok());
+		let o = snapshot_budget(usize::MAX, 1, "m").unwrap_err();
+		assert_eq!(o.1, format!("m: {} chunks and 1 cells overflow the slot count, more than the bound of 7", usize::MAX));
+		limit(0);
+		assert!(snapshot_budget(MATERIALIZE_LIMIT, 0, "m").is_ok() && snapshot_budget(MATERIALIZE_LIMIT, 1, "m").is_err());
+	}
+
+	#[test]
+	fn chunk_snapshots_keep_boundaries_and_refuse_the_wrong_array() {
+		let _s = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+		limit(0);
+		let a: polars_arrow::array::ArrayRef = Box::new(polars_arrow::array::PrimitiveArray::<i32>::from([Some(1), None]));
+		let b: polars_arrow::array::ArrayRef = Box::new(polars_arrow::array::PrimitiveArray::<i32>::from_vec(vec![]));
+		let out = chunk_snapshot::<i32, i64>(&[a.clone(), b, a.clone()], "m", |x| Ok(x as i64)).unwrap();
+		assert_eq!(out, vec![vec![Some(1), None], vec![], vec![Some(1), None]]);
+		let e = chunk_snapshot::<i64, i64>(&[a.clone()], "m", Ok).unwrap_err();
+		assert_eq!(e.0, "ConversionError");
+		assert!(e.1.starts_with("m: a chunk is not a PrimitiveArray<i64>"), "{}", e.1);
+		limit(5);
+		assert!(chunk_snapshot::<i32, i64>(&[a.clone(), a.clone()], "m", |x| Ok(x as i64)).is_err(), "2 chunks + 4 cells = 6 > 5");
+		limit(6);
+		assert!(chunk_snapshot::<i32, i64>(&[a.clone(), a], "m", |x| Ok(x as i64)).is_ok());
+		limit(0);
 	}
 
 	#[test]

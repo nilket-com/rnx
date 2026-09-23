@@ -895,6 +895,16 @@ discharge = ["T::Native: num_traits::float::Float + polars_core::chunked_array::
 pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
 cite = "polars-core 0.55.2 chunked_array/float.rs:71-78 (unary_elementwise_values, v.canonical()); Canonical for f32/f64 at float.rs:57-68; impl<T: PolarsFloatType> where T::Native: Float + Canonical at float.rs:71-75"
 
+# Record 0099: ChunkedArray::chunks borrows the chunk vector; for the numeric
+# types every chunk is a PrimitiveArray<T::Native>. The binding copies each
+# chunk (empty ones kept) into owned nested options under one inclusive
+# budget of chunk slots plus cells, downcasting with a typed error.
+[[chunk_snapshots]]
+key = "polars_core:3681"
+path = "polars_core::chunked_array::ChunkedArray::chunks"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/mod.rs:478-481 (&self.chunks); numeric T::Array = PrimitiveArray<T::Native> via impl_polars_num_datatype at datatypes/mod.rs:181-227"
+
 # Record 0093: usize results proven to be a length of, or index into, a Vec or
 # IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
 # read-back converts with a range check. ChunkedArray lengths are NOT here:
