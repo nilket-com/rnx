@@ -1,0 +1,166 @@
+{
+ "record": "0096",
+ "key": "polars_core:3658",
+ "path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+ "signature": "pub fn to_vec_null_aware(&self) -> Either<Vec<T::Native>, Vec<Option<T::Native>>>",
+ "owner_bound": "T: PolarsNumericType",
+ "source": "polars-core 0.55.2 chunked_array/to_vec.rs:15-27 (Left iff null_count() == 0, values copied from every chunk; else Right(to_vec()), lines 7-13)",
+ "branch_proof": "tests/null_aware.rs: direct Rust calls on all ten wrappers give L for no-null and empty inputs, R for a null-containing input and a two-chunk receiver with a null (tag string LRLR per type); series_u64_extremes is L, series_u64_boundary is R",
+ "pairs": [
+  {
+   "alias": "polars_core::datatypes::BinaryOffsetChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "return_after_substitution": "not substituted (owner bound rejects T)",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryOffsetType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryOffsetType`",
+   "decision": "excluded (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::BinaryChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "return_after_substitution": "not substituted (owner bound rejects T)",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BinaryType`",
+   "decision": "excluded (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::BooleanChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BooleanType>",
+   "return_after_substitution": "not substituted (owner bound rejects T)",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BooleanType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::BooleanType`",
+   "decision": "excluded (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::Float32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float32Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<f32>, alloc::vec::Vec<core::option::Option<f32>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<f32>, alloc::vec::Vec<core::option::Option<f32>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Float64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Float64Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<f64>, alloc::vec::Vec<core::option::Option<f64>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<f64>, alloc::vec::Vec<core::option::Option<f64>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int16Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<i16>, alloc::vec::Vec<core::option::Option<i16>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<i16>, alloc::vec::Vec<core::option::Option<i16>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int32Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int32Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<i32>, alloc::vec::Vec<core::option::Option<i32>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<i32>, alloc::vec::Vec<core::option::Option<i32>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int64Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<i64>, alloc::vec::Vec<core::option::Option<i64>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<i64>, alloc::vec::Vec<core::option::Option<i64>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::Int8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::Int8Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<i8>, alloc::vec::Vec<core::option::Option<i8>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<i8>, alloc::vec::Vec<core::option::Option<i8>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::ListChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "return_after_substitution": "not substituted (owner bound rejects T)",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::ListType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::ListType`",
+   "decision": "excluded (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::StringChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "return_after_substitution": "not substituted (owner bound rejects T)",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StringType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StringType`",
+   "decision": "excluded (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::chunked_array::struct_::StructChunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "return_after_substitution": "not substituted (owner bound rejects T)",
+   "before": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StructType`",
+   "after": "rejected: no recorded impl of `polars_core::datatypes::PolarsNumericType` for `polars_core::datatypes::StructType`",
+   "decision": "excluded (owner bound)",
+   "oracle": "no case"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt16Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt16Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<u16>, alloc::vec::Vec<core::option::Option<u16>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<u16>, alloc::vec::Vec<core::option::Option<u16>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::aliases::IdxCa",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt32Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<u32>, alloc::vec::Vec<core::option::Option<u32>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<u32>, alloc::vec::Vec<core::option::Option<u32>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt64Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt64Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<u64>, alloc::vec::Vec<core::option::Option<u64>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<u64>, alloc::vec::Vec<core::option::Option<u64>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  },
+  {
+   "alias": "polars_core::datatypes::UInt8Chunked",
+   "identity": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::UInt8Type>",
+   "return_after_substitution": "either::Either<alloc::vec::Vec<u8>, alloc::vec::Vec<core::option::Option<u8>>>",
+   "before": "refused: unsupported: foreign type: return (either::Either<alloc::vec::Vec<u8>, alloc::vec::Vec<core::option::Option<u8>>>)",
+   "after": "emitted",
+   "decision": "emitted",
+   "oracle": "match"
+  }
+ ],
+ "counts": {
+  "pairs": 16,
+  "emitted": 10,
+  "excluded": 6,
+  "oracle_match": 10
+ },
+ "refused_proven_pairs": {
+  "before": 178,
+  "after": 168
+ },
+ "retained_0095_binary_sha256": "324f1a706390a7f1b257361b086dea5b0d681a8a63a2cf15b73cb5daf41c843b"
+}

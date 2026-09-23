@@ -154,6 +154,19 @@ Record 0095 adds `lhs_div` and `lhs_rem` as two more
 generator rule changed. Their zero, null, `MIN / -1` and float behaviour was
 probed on every type in debug and release (`probes/0095`).
 
+Record 0096's `[[null_aware_returns]]` entries (inventory `key`,
+canonical `path`, the owner `types`, citation) let a family method's exact
+`Either<Vec<T::Native>, Vec<Option<T::Native>>>` return bind on the listed
+types. `NullAwareReturn::check` fails closed on a missing citation, an
+empty list, a nonnumeric type or a duplicate. An unlisted proven pair is
+refused by name. So is a pair whose whole substituted return is not exactly
+that shape. With the pair's native in scope, `World::ret` accepts the shape
+only at the top level and converts both branches with the existing scalar rule, through
+`Either`'s inherent `either`. The method emitter first inserts
+`support::null_aware_bound(this.0.len(), ..)`, which runs before the call.
+Any other `Either` stays a refused foreign type. The oracle frames the
+result as the merged vector of options.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

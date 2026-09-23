@@ -97,6 +97,16 @@ zero divisor gives `inf`, `-inf` or `NaN`, not null. The remainder is
 `x - d * floor(x / d)`, so `7 % inf` is `NaN`. Nulls in the array stay
 null.
 
+Null-aware vectors (record 0096): `ca.to_vec_null_aware()` on the ten
+numeric wrappers returns one owned vector of options, with `None` exactly
+where the array is null, as `to_vec()` does. Polars internally picks a
+plain vector when there are no nulls; the script always sees options, so
+the two branches look the same apart from the `None`s. The whole result is
+checked against the materialize bound before Polars is called, so an
+over-long array is a `MaterializeLimit` error that names the method, and
+Polars never allocates. A `UInt64` value above `i64::MAX` fails the whole
+call with 0093's `ConversionError`, leaving no partial vector.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the
