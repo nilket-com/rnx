@@ -170,6 +170,12 @@ before the call returns, and no iterator or Arrow array reaches the script.
 The whole result is bounded as with `chunks()`: chunks plus cells plus
 payload bytes, checked before copying.
 
+Chunk views (record 0104): `ca.downcast_chunks()` on the same fourteen
+wrappers returns every chunk in index order, as `downcast_iter()` does. The
+result is an owned vector of chunks, each a vector of options. It is
+bounded the same way: chunks plus cells plus payload bytes, checked before
+copying.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the

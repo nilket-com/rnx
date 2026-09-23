@@ -254,6 +254,16 @@ with 0100). It drives the iterator, re-counts against the same total, and
 refuses if the iterator yields a different number of chunks than were
 counted.
 
+Record 0104's `[[view_snapshots]]` entry maps `downcast_chunks`. The check
+compares the exact canonical text `Chunks<T::Array>`. `World::ret` compares
+the parsed `Chunks<X>` argument with the pair's own array by type equality.
+The binding calls `downcast_chunks` once. `support::view_snapshot*` receives
+`this.0.chunks()`, the view's `len()` and a closure over `get(i)`, so Polars's
+`Chunks` type is never named. It preflights as in 0103 and refuses a view
+whose length differs from the preflight chunk count, or whose in-range `get`
+returns `None`. It then copies with 0103's per-chunk-length and final-total
+checks; `iter_copy` now takes fallible items.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

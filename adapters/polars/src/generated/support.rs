@@ -206,12 +206,13 @@ fn numeric_preflight<N: polars_arrow::types::NativeType>(chunks: &[polars_arrow:
 /// chunks; every chunk, cell and byte is re-counted against the preflight
 /// total, and an iterator that yields a different number of chunks than
 /// were counted is refused; nothing partial is returned.
-fn iter_copy<'a, A: polars_arrow::array::Array + 'a, V: ?Sized, U>(chunks: &[polars_arrow::array::ArrayRef], total: usize, it: impl Iterator<Item = &'a A>, method: &str, iter: impl for<'b> Fn(&'b A) -> Box<dyn Iterator<Item = Option<&'b V>> + 'b>, size: impl Fn(&V) -> usize, copy: impl Fn(&V) -> Result<U, Error>) -> Result<Vec<Vec<Option<U>>>, Error> {
+fn iter_copy<'a, A: polars_arrow::array::Array + 'a, V: ?Sized, U>(chunks: &[polars_arrow::array::ArrayRef], total: usize, it: impl Iterator<Item = Result<&'a A, Error>>, method: &str, iter: impl for<'b> Fn(&'b A) -> Box<dyn Iterator<Item = Option<&'b V>> + 'b>, size: impl Fn(&V) -> usize, copy: impl Fn(&V) -> Result<U, Error>) -> Result<Vec<Vec<Option<U>>>, Error> {
 	let recount = || Error("MaterializeLimit".into(), format!("{method}: more slots copied than the {total} counted, within the bound of {}", materialize_limit()));
 	let counted = chunks.len();
 	let mut used = 0usize;
 	let mut out = Vec::with_capacity(counted);
 	for a in it {
+		let a = a?;
 		if out.len() == counted {
 			return Err(Error::conversion(&format!("{method}: the iterator yielded more than the {counted} chunks counted")));
 		}
@@ -245,7 +246,7 @@ fn iter_copy<'a, A: polars_arrow::array::Array + 'a, V: ?Sized, U>(chunks: &[pol
 /// Record 0103: `downcast_iter` on a numeric owner.
 pub(crate) fn iter_snapshot<'a, N: polars_arrow::types::NativeType, U>(chunks: &[polars_arrow::array::ArrayRef], it: impl Iterator<Item = &'a polars_arrow::array::PrimitiveArray<N>>, method: &str, conv: impl Fn(N) -> Result<U, Error>) -> Result<Vec<Vec<Option<U>>>, Error> {
 	let total = numeric_preflight::<N>(chunks, method)?;
-	iter_copy::<polars_arrow::array::PrimitiveArray<N>, N, U>(chunks, total, it, method, |a| Box::new(a.iter()), |_| 0, |x| conv(*x))
+	iter_copy::<polars_arrow::array::PrimitiveArray<N>, N, U>(chunks, total, it.map(Ok), method, |a| Box::new(a.iter()), |_| 0, |x| conv(*x))
 }
 /// Record 0103: the cell iterators the typed copiers share (named
 /// functions, so each is generic over the borrow's lifetime).
@@ -269,22 +270,61 @@ fn bytes_as_ints(b: &[u8]) -> Result<Vec<i64>, Error> {
 /// Record 0103: `downcast_iter` on the Boolean owner.
 pub(crate) fn iter_snapshot_bool<'a>(chunks: &[polars_arrow::array::ArrayRef], it: impl Iterator<Item = &'a polars_arrow::array::BooleanArray>, method: &str) -> Result<Vec<Vec<Option<bool>>>, Error> {
 	let total = payload_preflight::<polars_arrow::array::BooleanArray, bool>(chunks, method, "BooleanArray", &bool_cells, &|_| 0)?;
-	iter_copy(chunks, total, it, method, bool_cells, |_| 0, |b| Ok(*b))
+	iter_copy(chunks, total, it.map(Ok), method, bool_cells, |_| 0, |b| Ok(*b))
 }
 /// Record 0103: `downcast_iter` on the String owner (UTF-8 bytes counted).
 pub(crate) fn iter_snapshot_str<'a>(chunks: &[polars_arrow::array::ArrayRef], it: impl Iterator<Item = &'a polars_arrow::array::Utf8ViewArray>, method: &str) -> Result<Vec<Vec<Option<String>>>, Error> {
 	let total = payload_preflight::<polars_arrow::array::Utf8ViewArray, str>(chunks, method, "Utf8ViewArray", &str_cells, &str::len)?;
-	iter_copy(chunks, total, it, method, str_cells, str::len, |v| Ok(v.to_string()))
+	iter_copy(chunks, total, it.map(Ok), method, str_cells, str::len, |v| Ok(v.to_string()))
 }
 /// Record 0103: `downcast_iter` on the Binary owner (raw bytes).
 pub(crate) fn iter_snapshot_binview<'a>(chunks: &[polars_arrow::array::ArrayRef], it: impl Iterator<Item = &'a polars_arrow::array::BinaryViewArray>, method: &str) -> Result<Vec<Vec<Option<Vec<i64>>>>, Error> {
 	let total = payload_preflight::<polars_arrow::array::BinaryViewArray, [u8]>(chunks, method, "BinaryViewArray", &binview_cells, &<[u8]>::len)?;
-	iter_copy(chunks, total, it, method, binview_cells, <[u8]>::len, bytes_as_ints)
+	iter_copy(chunks, total, it.map(Ok), method, binview_cells, <[u8]>::len, bytes_as_ints)
 }
 /// Record 0103: `downcast_iter` on the BinaryOffset owner (raw bytes).
 pub(crate) fn iter_snapshot_binary_offset<'a>(chunks: &[polars_arrow::array::ArrayRef], it: impl Iterator<Item = &'a polars_arrow::array::BinaryArray<i64>>, method: &str) -> Result<Vec<Vec<Option<Vec<i64>>>>, Error> {
 	let total = payload_preflight::<polars_arrow::array::BinaryArray<i64>, [u8]>(chunks, method, "BinaryArray<i64>", &binary_offset_cells, &<[u8]>::len)?;
-	iter_copy(chunks, total, it, method, binary_offset_cells, <[u8]>::len, bytes_as_ints)
+	iter_copy(chunks, total, it.map(Ok), method, binary_offset_cells, <[u8]>::len, bytes_as_ints)
+}
+
+/// Record 0104: Polars's indexed chunk view (`downcast_chunks`), read
+/// through its `len()` and `get(i)` in ascending order: the view's length
+/// must equal the preflight chunk count, and an in-range `get` that returns
+/// `None` is a typed refusal; the copy is 0103's (per-chunk length and final
+/// total checked against the preflight).
+fn view_items<'a, A: 'a>(chunks: &[polars_arrow::array::ArrayRef], len: usize, get: impl Fn(usize) -> Option<&'a A> + 'a, method: &str) -> Result<impl Iterator<Item = Result<&'a A, Error>> + 'a, Error> {
+	if len != chunks.len() {
+		return Err(Error::conversion(&format!("{method}: the view has {len} chunks, {} were counted", chunks.len())));
+	}
+	let m = method.to_string();
+	Ok((0..len).map(move |i| get(i).ok_or_else(|| Error::conversion(&format!("{m}: the view has no chunk {i} of {len}")))))
+}
+/// Record 0104: `downcast_chunks` on a numeric owner.
+pub(crate) fn view_snapshot<'a, N: polars_arrow::types::NativeType, U>(chunks: &[polars_arrow::array::ArrayRef], len: usize, get: impl Fn(usize) -> Option<&'a polars_arrow::array::PrimitiveArray<N>> + 'a, method: &str, conv: impl Fn(N) -> Result<U, Error>) -> Result<Vec<Vec<Option<U>>>, Error> {
+	let total = numeric_preflight::<N>(chunks, method)?;
+	let items = view_items(chunks, len, get, method)?;
+	iter_copy::<polars_arrow::array::PrimitiveArray<N>, N, U>(chunks, total, items, method, |a| Box::new(a.iter()), |_| 0, |x| conv(*x))
+}
+/// Record 0104: `downcast_chunks` on the Boolean owner.
+pub(crate) fn view_snapshot_bool<'a>(chunks: &[polars_arrow::array::ArrayRef], len: usize, get: impl Fn(usize) -> Option<&'a polars_arrow::array::BooleanArray> + 'a, method: &str) -> Result<Vec<Vec<Option<bool>>>, Error> {
+	let total = payload_preflight::<polars_arrow::array::BooleanArray, bool>(chunks, method, "BooleanArray", &bool_cells, &|_| 0)?;
+	iter_copy(chunks, total, view_items(chunks, len, get, method)?, method, bool_cells, |_| 0, |b| Ok(*b))
+}
+/// Record 0104: `downcast_chunks` on the String owner (UTF-8 bytes counted).
+pub(crate) fn view_snapshot_str<'a>(chunks: &[polars_arrow::array::ArrayRef], len: usize, get: impl Fn(usize) -> Option<&'a polars_arrow::array::Utf8ViewArray> + 'a, method: &str) -> Result<Vec<Vec<Option<String>>>, Error> {
+	let total = payload_preflight::<polars_arrow::array::Utf8ViewArray, str>(chunks, method, "Utf8ViewArray", &str_cells, &str::len)?;
+	iter_copy(chunks, total, view_items(chunks, len, get, method)?, method, str_cells, str::len, |v| Ok(v.to_string()))
+}
+/// Record 0104: `downcast_chunks` on the Binary owner (raw bytes).
+pub(crate) fn view_snapshot_binview<'a>(chunks: &[polars_arrow::array::ArrayRef], len: usize, get: impl Fn(usize) -> Option<&'a polars_arrow::array::BinaryViewArray> + 'a, method: &str) -> Result<Vec<Vec<Option<Vec<i64>>>>, Error> {
+	let total = payload_preflight::<polars_arrow::array::BinaryViewArray, [u8]>(chunks, method, "BinaryViewArray", &binview_cells, &<[u8]>::len)?;
+	iter_copy(chunks, total, view_items(chunks, len, get, method)?, method, binview_cells, <[u8]>::len, bytes_as_ints)
+}
+/// Record 0104: `downcast_chunks` on the BinaryOffset owner (raw bytes).
+pub(crate) fn view_snapshot_binary_offset<'a>(chunks: &[polars_arrow::array::ArrayRef], len: usize, get: impl Fn(usize) -> Option<&'a polars_arrow::array::BinaryArray<i64>> + 'a, method: &str) -> Result<Vec<Vec<Option<Vec<i64>>>>, Error> {
+	let total = payload_preflight::<polars_arrow::array::BinaryArray<i64>, [u8]>(chunks, method, "BinaryArray<i64>", &binary_offset_cells, &<[u8]>::len)?;
+	iter_copy(chunks, total, view_items(chunks, len, get, method)?, method, binary_offset_cells, <[u8]>::len, bytes_as_ints)
 }
 
 /// Record 0100: the shared core of the payload snapshots. A preflight over
@@ -1306,6 +1346,41 @@ mod bits_tests {
 		let b = BooleanArray::from([Some(false), None]);
 		let bc: Vec<ArrayRef> = vec![Box::new(b.clone())];
 		assert_eq!(iter_snapshot_bool(&bc, [&b].into_iter(), "m").unwrap(), vec![vec![Some(false), None]]);
+	}
+
+	#[test]
+	fn view_snapshots_check_the_view_against_the_preflight() {
+		let _s = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+		use polars_arrow::array::{ArrayRef, PrimitiveArray, Utf8ViewArray};
+		limit(0);
+		let a = PrimitiveArray::<i32>::from([Some(1), None]);
+		let e = PrimitiveArray::<i32>::from_vec(vec![]);
+		let chunks: Vec<ArrayRef> = vec![Box::new(a.clone()), Box::new(e.clone()), Box::new(a.clone())];
+		let arrays = [&a, &e, &a];
+		let conv = |x: i32| Ok(x as i64);
+		assert_eq!(view_snapshot::<i32, i64>(&chunks, 3, |i| arrays.get(i).copied(), "m", conv).unwrap(), vec![vec![Some(1), None], vec![], vec![Some(1), None]], "ascending order, the middle empty chunk kept");
+		// the view's length must be the preflight's
+		assert_eq!(view_snapshot::<i32, i64>(&chunks, 2, |i| arrays.get(i).copied(), "m", conv).unwrap_err().1, "m: the view has 2 chunks, 3 were counted");
+		// an absent in-range item is refused, not skipped
+		assert_eq!(view_snapshot::<i32, i64>(&chunks, 3, |i| if i == 1 { None } else { arrays.get(i).copied() }, "m", conv).unwrap_err().1, "m: the view has no chunk 1 of 3");
+		// a changed shape at the same index
+		let short = PrimitiveArray::<i32>::from([Some(9)]);
+		let changed = [&a, &e, &short];
+		assert_eq!(view_snapshot::<i32, i64>(&chunks, 3, |i| changed.get(i).copied(), "m", conv).unwrap_err().1, "m: chunk 2 has 1 cells, 2 were counted");
+		// whole-view bound: 3 + 4 = 7 slots; 50 empty chunks by their outer slots alone
+		limit(6);
+		assert_eq!(view_snapshot::<i32, i64>(&chunks, 3, |i| arrays.get(i).copied(), "m", conv).unwrap_err().1, "m: 3 chunks and 4 cells (7 slots), more than the bound of 6");
+		limit(7);
+		assert!(view_snapshot::<i32, i64>(&chunks, 3, |i| arrays.get(i).copied(), "m", conv).is_ok());
+		let empties: Vec<ArrayRef> = (0..50).map(|_| -> ArrayRef { Box::new(e.clone()) }).collect();
+		limit(49);
+		assert_eq!(view_snapshot::<i32, i64>(&empties, 50, |_| Some(&e), "m", conv).unwrap_err().1, "m: 50 chunks and 0 cells (50 slots), more than the bound of 49");
+		limit(0);
+		// wrong array in preflight, payload recount
+		let strings: Vec<ArrayRef> = vec![Box::new(Utf8ViewArray::from_slice([Some("abc")]))];
+		assert_eq!(view_snapshot::<i32, i64>(&strings, 1, |_| None, "m", conv).unwrap_err().0, "ConversionError");
+		let fewer = Utf8ViewArray::from_slice([Some("a")]);
+		assert_eq!(view_snapshot_str(&strings, 1, |_| Some(&fewer), "m").unwrap_err().1, "m: 3 slots copied, 5 were counted");
 	}
 
 	#[test]

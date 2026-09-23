@@ -934,6 +934,16 @@ path = "polars_core::chunked_array::ChunkedArray::downcast_iter"
 pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
 cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:63-70 (self.chunks.iter().map(|arr| cast to &T::Array)); arrays per datatypes/mod.rs:181-232 (records 0099-0102)"
 
+# Record 0104: downcast_chunks returns Chunks<'_, T::Array>, an indexed view
+# over the receiver's chunks (len, get). The binding preflights the same
+# receiver's chunks, checks view.len() against them, then reads get(i) in
+# order with 0103's per-chunk and final-total checks; List/Struct refused.
+[[view_snapshots]]
+key = "polars_core:3508"
+path = "polars_core::chunked_array::ChunkedArray::downcast_chunks"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:10-47 (Chunks: borrowed chunks, get(index) -> Option<&T>, len()) and 99-102 (downcast_chunks = Chunks::new(&self.chunks)); arrays per datatypes/mod.rs:181-232"
+
 # Record 0093: usize results proven to be a length of, or index into, a Vec or
 # IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
 # read-back converts with a range check. ChunkedArray lengths are NOT here:
