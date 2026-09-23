@@ -237,6 +237,46 @@ fn f_ff5a0c33_nk_lengths_polars_core__datatypes__uint64chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::chunk_lengths`. chunk_lengths() -> vector of int (materialized, at most 1048576 items, each checked into range) (fallible)
 #[rune::function(instance, path = chunk_lengths)]
 fn f_99a045bf_unk_lengths_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::datatypes::UInt8Chunked>::chunk_lengths(__arg0); support::materialize_exact(__it, "chunk_lengths", |__r| Ok::<_, Error>(support::widen::<usize>(__r, "chunk_lengths")?)) })?; Ok(__r) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of float (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_7d426721_y__chunks_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<Vec<Vec<Option<f64>>>, Error> { let __r = <polars_core::datatypes::Float32Chunked>::chunks(&this.0); Ok(support::chunk_snapshot::<f32, _>(__r, "chunks", |__r| Ok::<_, Error>((__r as f64)))?) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of float (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_c008cfa4_y__chunks_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<Vec<Vec<Option<f64>>>, Error> { let __r = <polars_core::datatypes::Float64Chunked>::chunks(&this.0); Ok(support::chunk_snapshot::<f64, _>(__r, "chunks", |__r| Ok::<_, Error>(__r))?) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of int (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_05185339_ray__chunks_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<Vec<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::Int16Chunked>::chunks(&this.0); Ok(support::chunk_snapshot::<i16, _>(__r, "chunks", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of int (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_2fdcc4a1_ray__chunks_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<Vec<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::Int32Chunked>::chunks(&this.0); Ok(support::chunk_snapshot::<i32, _>(__r, "chunks", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of int (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_e5b48f84_ray__chunks_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<Vec<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::Int64Chunked>::chunks(&this.0); Ok(support::chunk_snapshot::<i64, _>(__r, "chunks", |__r| Ok::<_, Error>(__r))?) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of int (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_a09dd49a_rray__chunks_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<Vec<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::Int8Chunked>::chunks(&this.0); Ok(support::chunk_snapshot::<i8, _>(__r, "chunks", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of int (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_6cfc958d_ay__chunks_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<Vec<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::UInt16Chunked>::chunks(&this.0); Ok(support::chunk_snapshot::<u16, _>(__r, "chunks", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of int (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_e6fc28e0_y__chunks_polars_core__datatypes__aliases__idxca(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<Vec<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::IdxCa>::chunks(&this.0); Ok(support::chunk_snapshot::<u32, _>(__r, "chunks", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of int (checked into range) (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_120566f5_ay__chunks_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<Vec<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::UInt64Chunked>::chunks(&this.0); Ok(support::chunk_snapshot::<u64, _>(__r, "chunks", |__r| Ok::<_, Error>(support::widen::<u64>(__r, "chunks")?))?) }
+/// A reference to the chunks
+/// Polars: `polars_core::chunked_array::ChunkedArray::chunks`. chunks() -> vector of chunks, each a vector of option of int (copied, chunk boundaries kept, bounded) (fallible)
+#[rune::function(instance, path = chunks)]
+fn f_cdc8483b_ray__chunks_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<Vec<Vec<Option<i64>>>, Error> { let __r = <polars_core::datatypes::UInt8Chunked>::chunks(&this.0); Ok(support::chunk_snapshot::<u8, _>(__r, "chunks", |__r| Ok::<_, Error>((__r as i64)))?) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::clear`. clear() -> BinaryOffsetChunked
 #[rune::function(instance, path = clear)]
 fn f_230a4bdb_lear_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__BinaryOffsetChunked { let __r = <polars_core::datatypes::BinaryOffsetChunked>::clear(&this.0); W_polars_core__datatypes__BinaryOffsetChunked(__r) }
@@ -13295,6 +13335,16 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_4c775322_k_lengths_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_ff5a0c33_nk_lengths_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_99a045bf_unk_lengths_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_7d426721_y__chunks_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_c008cfa4_y__chunks_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_05185339_ray__chunks_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_2fdcc4a1_ray__chunks_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_e5b48f84_ray__chunks_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_a09dd49a_rray__chunks_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_6cfc958d_ay__chunks_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_e6fc28e0_y__chunks_polars_core__datatypes__aliases__idxca)?;
+    m.function_meta(f_120566f5_ay__chunks_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_cdc8483b_ray__chunks_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_230a4bdb_lear_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_67c1d7f1_ray__clear_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_7101c6e5_ay__clear_polars_core__datatypes__booleanchunked)?;
