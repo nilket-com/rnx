@@ -32,6 +32,15 @@ rows valid); it is never an empty vector. The bits are copied under the
 materialize bound, counted across every chunk of one call, and the vectors
 are the script's own.
 
+Validity masks as input (record 0086): `set_validity`, `with_validity`,
+`from_vec_validity` and `BooleanChunked::from_bitmap` take a vector of bools.
+A mask for `set_validity` and `with_validity` must have one entry per row of
+the receiver, and one for `from_vec_validity` one per value; otherwise the call
+returns a `ShapeMismatch` error and nothing changes. `None` removes the mask;
+`Some([])` is an explicit empty mask. `from_bitmap` reads the bools as the
+values themselves. Struct columns are excluded, as Polars asserts. The script's
+vector is only read.
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn

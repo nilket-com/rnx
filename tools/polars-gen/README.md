@@ -60,6 +60,16 @@ the canonical paths in the release file's `bitmap_returns` list
 (`ChunkedArray::rechunk_validity`, `ChunkedArray::iter_validities`); every
 other `Bitmap`, every bitmap input and every Arrow array stays refused.
 
+Record 0086 adds the input side for the paths in the release file's
+`[[bitmap_inputs]]` entries, each with a `length` rule (`receiver`,
+`values` or `none`) and a source citation: the one `Bitmap` parameter is a
+script vector turned into a bitmap by `support::bitmap_from_bools`, which
+reserves the bits from the materialize bound, then compares the length with
+`this.0.len()` or the `values` vector (both taken in `pre`, before any
+receiver borrow) and returns `ShapeMismatch` before Polars is called. The
+oracle's mask fixtures are sized by shape (`mask3`, `mask1`). Struct
+receivers are excluded by `[[instantiation.exclude]]`.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an

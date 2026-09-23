@@ -138,6 +138,27 @@ pub(crate) fn copy_slice<T: Clone, U>(slice: &[T], method: &str, mut conv: impl 
 	}
 	Ok(out)
 }
+/// Record 0086: the length of a script vector, without copying it.
+pub(crate) fn vec_len(value: &rune::Value, name: &str) -> Result<usize, Error> {
+	value.borrow_ref::<rune::runtime::Vec>().map(|v| v.len()).map_err(|_| Error::conversion(&format!("{name}: expected a vector")))
+}
+/// Record 0086: an Arrow validity bitmap built from a script vector of
+/// bools. The length is checked against the bound before anything is
+/// copied, then against the length the operation requires, before Polars
+/// sees the bitmap; the script's vector is only read.
+pub(crate) fn bitmap_from_bools(value: &rune::Value, method: &str, expect: Option<usize>) -> Result<polars_arrow::bitmap::Bitmap, Error> {
+	let n = vec_len(value, method)?;
+	let _guard = SliceBudget::enter();
+	reserve(n, "mask bits", method)?;
+	if let Some(want) = expect {
+		if n != want {
+			return Err(Error("ShapeMismatch".into(), format!("{method}: the mask has {n} bits, expected {want}")));
+		}
+	}
+	let items = borrow_vec(value, method)?;
+	let bits: Vec<bool> = items.iter().map(|v| borrow_element::<bool>(v, method)).collect::<Result<_, _>>()?;
+	Ok(polars_arrow::bitmap::Bitmap::from_iter(bits))
+}
 /// Record 0085: a validity bitmap's logical bits, in order, under the same
 /// cumulative bound (one call's bitmaps share it).
 pub(crate) fn copy_bits(bitmap: &polars_arrow::bitmap::Bitmap, method: &str) -> Result<Vec<bool>, Error> {
@@ -625,6 +646,29 @@ mod bits_tests {
 		assert_eq!(depth().0, 0);
 		assert_eq!(copy_bits(&Bitmap::new(), "m").unwrap(), Vec::<bool>::new(), "an empty bitmap is an empty vector");
 		limit(0);
+	}
+
+	#[test]
+	fn masks_are_built_in_order_and_checked_before_polars() {
+		let _s = SERIAL.lock().unwrap();
+		let v = |bits: &[bool]| rune::to_value(bits.iter().map(|b| rune::to_value(*b).unwrap()).collect::<Vec<_>>()).unwrap();
+		let m = bitmap_from_bools(&v(&[true, false, true]), "m", Some(3)).unwrap();
+		assert_eq!(m.iter().collect::<Vec<_>>(), vec![true, false, true]);
+		assert_eq!(m.unset_bits(), 1);
+		assert_eq!(bitmap_from_bools(&v(&[]), "m", Some(0)).unwrap().len(), 0, "an explicit empty mask");
+		let short = bitmap_from_bools(&v(&[true, false]), "m", Some(3)).unwrap_err();
+		assert_eq!((short.0.as_str(), short.1.as_str()), ("ShapeMismatch", "m: the mask has 2 bits, expected 3"));
+		let long = bitmap_from_bools(&v(&[true; 4]), "m", Some(3)).unwrap_err();
+		assert_eq!(long.1, "m: the mask has 4 bits, expected 3");
+		limit(2);
+		let over = bitmap_from_bools(&v(&[true; 3]), "m", None).unwrap_err();
+		assert_eq!(over.1, "m: 3 mask bits with 0 already copied, more than the bound of 2");
+		limit(3);
+		assert!(bitmap_from_bools(&v(&[true; 3]), "m", None).is_ok(), "exactly at the bound");
+		limit(0);
+		let wrong = bitmap_from_bools(&rune::to_value(vec![rune::to_value(1i64).unwrap()]).unwrap(), "m", None).unwrap_err();
+		assert_eq!(wrong.0, "ConversionError");
+		assert_eq!(depth().0, 0);
 	}
 
 	#[test]
