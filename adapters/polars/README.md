@@ -93,20 +93,33 @@ with a range check. A value outside `i64` is a `ConversionError` naming the
 method, never a wrapped negative. This applies to direct returns, options,
 tuples, vectors, iterators, copied slices and callback arguments; a callback
 argument that does not fit fails the call with a `CallbackError`. So
-`len()`, `null_count()`, `height()`, `shape()`, `get()` on `UInt64Chunked`,
-index-returning methods and `hash()` now return a result:
+`len()`, `null_count()`, `height()`, `shape()`, `get()` on `UInt64Chunked`
+and index-returning methods now return a result:
 
 ```rune
 let n = series.len()?;
 let (rows, cols) = df.shape()?;
 ```
 
-A `hash()` above `i64::MAX` is a `ConversionError`, which is about half of
-all hashes. Seven methods whose value is proven to fit keep a plain integer:
+Seven methods whose value is proven to fit keep a plain integer:
 `DataFrame::width`, `get_column_index`, `try_get_column_index`,
 `max_n_chunks` and `first_col_n_chunks`, `Column::n_chunks` and the series
 `n_chunks`. Each is listed in the release file with the source it is proven
 from. A same-named method on another type is not covered by that proof.
+
+Categorical hash tokens (record 0094): five categorical hash methods carry
+the full `u64` as a string of exactly 16 lowercase hexadecimal digits, such
+as `"0000000000000000"` or `"ffffffffffffffff"`. `Categories::hash`,
+`FrozenCategories::hash` and `CategoricalMapping::cat_to_hash` return one.
+`get_cat_with_hash` and `insert_cat_with_hash` take one as `hash`. Any other
+spelling is a `ConversionError` before Polars is called: uppercase, a
+prefix, a sign, the wrong length or a non-hex character. These are two
+different hashes. The first three return a stable, fixed-state hash. The
+two `*_with_hash` methods expect the mapping's own lookup hash, which is
+what `get_cat` and `insert_cat` compute. A token from `cat_to_hash` is not a
+valid lookup hash. Polars files an insert under whatever hash it is given,
+so a wrong hash can give a string a second id. Other `u64` results stay
+checked integers.
 
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml

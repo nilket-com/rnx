@@ -45019,7 +45019,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__categories__hash",
+          "disposition": "case",
           "id": "polars_dtype__categorical__categories__hash",
           "receiver": "polars_dtype::categorical::Categories",
           "route": "inherent",
@@ -45028,8 +45029,8 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::Categories::hash",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
-      "fallible": true,
+      "execution": "case",
+      "fallible": false,
       "key": "polars_dtype:309",
       "kind": "inherent",
       "rune": "polars::Categories::hash",
@@ -45057,7 +45058,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__categories__name",
+          "disposition": "case",
           "id": "polars_dtype__categorical__categories__name",
           "receiver": "polars_dtype::categorical::Categories",
           "route": "inherent",
@@ -45066,7 +45068,7 @@
       ],
       "bucket": "conversion",
       "canonical_path": "polars_dtype::categorical::Categories::name",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": false,
       "key": "polars_dtype:306",
       "kind": "inherent",
@@ -45077,7 +45079,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__categories__namespace",
+          "disposition": "case",
           "id": "polars_dtype__categorical__categories__namespace",
           "receiver": "polars_dtype::categorical::Categories",
           "route": "inherent",
@@ -45086,7 +45089,7 @@
       ],
       "bucket": "conversion",
       "canonical_path": "polars_dtype::categorical::Categories::namespace",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": false,
       "key": "polars_dtype:307",
       "kind": "inherent",
@@ -45106,7 +45109,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__categories__physical",
+          "disposition": "case",
           "id": "polars_dtype__categorical__categories__physical",
           "receiver": "polars_dtype::categorical::Categories",
           "route": "inherent",
@@ -45115,7 +45119,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::Categories::physical",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": false,
       "key": "polars_dtype:308",
       "kind": "inherent",
@@ -45144,7 +45148,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__frozencategories__hash",
+          "disposition": "case",
           "id": "polars_dtype__categorical__frozencategories__hash",
           "receiver": "polars_dtype::categorical::FrozenCategories",
           "route": "inherent",
@@ -45153,8 +45158,8 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::FrozenCategories::hash",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
-      "fallible": true,
+      "execution": "case",
+      "fallible": false,
       "key": "polars_dtype:377",
       "kind": "inherent",
       "rune": "polars::FrozenCategories::hash",
@@ -45182,7 +45187,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__frozencategories__physical",
+          "disposition": "case",
           "id": "polars_dtype__categorical__frozencategories__physical",
           "receiver": "polars_dtype::categorical::FrozenCategories",
           "route": "inherent",
@@ -45191,7 +45197,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::FrozenCategories::physical",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": false,
       "key": "polars_dtype:375",
       "kind": "inherent",
@@ -45202,7 +45208,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__cat_to_hash",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__cat_to_hash",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45211,10 +45218,11 @@
       ],
       "bucket": "conversion",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_hash",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_dtype:33",
       "kind": "inherent",
+      "note": "fallible in Rune because an argument conversion can fail",
       "rune": "polars::CategoricalMapping::cat_to_hash",
       "signature": "(polars_dtype::categorical::catsize::CatSize) -> core::option::Option<u64>",
       "status": "generated"
@@ -45222,7 +45230,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__cat_to_str",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__cat_to_str",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45231,7 +45240,7 @@
       ],
       "bucket": "conversion",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_str",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_dtype:31",
       "kind": "inherent",
@@ -45243,7 +45252,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__get_cat",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__get_cat",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45252,7 +45262,7 @@
       ],
       "bucket": "conversion",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::get_cat",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": false,
       "key": "polars_dtype:25",
       "kind": "inherent",
@@ -45263,7 +45273,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__get_cat_with_hash",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__get_cat_with_hash",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45272,7 +45283,7 @@
       ],
       "bucket": "conversion",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::get_cat_with_hash",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_dtype:27",
       "kind": "inherent",
@@ -45293,7 +45304,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__insert_cat",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__insert_cat",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45302,7 +45314,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::insert_cat",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_dtype:28",
       "kind": "inherent",
@@ -45313,7 +45325,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__insert_cat_with_hash",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__insert_cat_with_hash",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45322,7 +45335,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::insert_cat_with_hash",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_dtype:30",
       "kind": "inherent",
@@ -45333,7 +45346,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__is_empty",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__is_empty",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45342,7 +45356,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::is_empty",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": false,
       "key": "polars_dtype:37",
       "kind": "inherent",
@@ -45354,7 +45368,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__len",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__len",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45363,7 +45378,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::len",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_dtype:36",
       "kind": "inherent",
@@ -45375,7 +45390,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__max_categories",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__max_categories",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45384,7 +45400,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::max_categories",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_dtype:23",
       "kind": "inherent",
@@ -45395,7 +45411,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__num_cats_upper_bound",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__num_cats_upper_bound",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45404,7 +45421,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::num_cats_upper_bound",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_dtype:35",
       "kind": "inherent",
@@ -45415,7 +45432,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "case_id": "polars_dtype__categorical__mapping__categoricalmapping__set_max_categories",
+          "disposition": "case",
           "id": "polars_dtype__categorical__mapping__categoricalmapping__set_max_categories",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "inherent",
@@ -45424,7 +45442,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping::set_max_categories",
-      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_dtype:24",
       "kind": "inherent",
@@ -74206,7 +74224,7 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type",
+          "disposition": "protocol Debug has no script-level trigger",
           "id": "polars_dtype__categorical__categories_as_core__fmt__debug",
           "receiver": "polars_dtype::categorical::Categories",
           "route": "protocol",
@@ -74215,7 +74233,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::Categories as core::fmt::Debug",
-      "execution": "no fixture for the receiver type",
+      "execution": "protocol Debug has no script-level trigger",
       "fallible": false,
       "key": "polars_dtype:299:363",
       "kind": "foreign_trait_impl",
@@ -74236,7 +74254,7 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type",
+          "disposition": "protocol Debug has no script-level trigger",
           "id": "polars_dtype__categorical__frozencategories_as_core__fmt__debug",
           "receiver": "polars_dtype::categorical::FrozenCategories",
           "route": "protocol",
@@ -74245,7 +74263,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::FrozenCategories as core::fmt::Debug",
-      "execution": "no fixture for the receiver type",
+      "execution": "protocol Debug has no script-level trigger",
       "fallible": false,
       "key": "polars_dtype:312:428",
       "kind": "foreign_trait_impl",
@@ -74266,7 +74284,7 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type",
+          "disposition": "protocol Debug has no script-level trigger",
           "id": "polars_dtype__categorical__mapping__categoricalmapping_as_core__fmt__debug",
           "receiver": "polars_dtype::categorical::mapping::CategoricalMapping",
           "route": "protocol",
@@ -74275,7 +74293,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_dtype::categorical::mapping::CategoricalMapping as core::fmt::Debug",
-      "execution": "no fixture for the receiver type",
+      "execution": "protocol Debug has no script-level trigger",
       "fallible": false,
       "key": "polars_dtype:19:177",
       "kind": "foreign_trait_impl",
@@ -99789,18 +99807,6 @@
       {
         "reason": "public fields, no Default, no constructor binding",
         "type": "polars_core::series::arrow_export::categorical::CategoricalToArrowConverter"
-      },
-      {
-        "reason": "no public fields, no Default, no constructor binding",
-        "type": "polars_dtype::categorical::Categories"
-      },
-      {
-        "reason": "no public fields, no Default, no constructor binding",
-        "type": "polars_dtype::categorical::FrozenCategories"
-      },
-      {
-        "reason": "no public fields, no Default, no constructor binding",
-        "type": "polars_dtype::categorical::mapping::CategoricalMapping"
       },
       {
         "reason": "no public fields, no Default, no constructor binding",
@@ -140446,7 +140452,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2234,
+  "oracle_cases": 2251,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -140951,74 +140957,6 @@
     {
       "path": "polars_core::series::builder::SeriesBuilder::reserve",
       "reason": "receiver type has no comparison"
-    },
-    {
-      "path": "polars_dtype::categorical::Categories::hash",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::Categories::name",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::Categories::namespace",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::Categories::physical",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::FrozenCategories::hash",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::FrozenCategories::physical",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_hash",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_str",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::get_cat",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::get_cat_with_hash",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::insert_cat",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::insert_cat_with_hash",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::is_empty",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::len",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::max_categories",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::num_cats_upper_bound",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
-    },
-    {
-      "path": "polars_dtype::categorical::mapping::CategoricalMapping::set_max_categories",
-      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     },
     {
       "path": "polars_error::PolarsError::context",
@@ -141934,15 +141872,15 @@
     },
     {
       "path": "polars_dtype::categorical::Categories as core::fmt::Debug",
-      "reason": "no fixture for the receiver type"
+      "reason": "protocol Debug has no script-level trigger"
     },
     {
       "path": "polars_dtype::categorical::FrozenCategories as core::fmt::Debug",
-      "reason": "no fixture for the receiver type"
+      "reason": "protocol Debug has no script-level trigger"
     },
     {
       "path": "polars_dtype::categorical::mapping::CategoricalMapping as core::fmt::Debug",
-      "reason": "no fixture for the receiver type"
+      "reason": "protocol Debug has no script-level trigger"
     },
     {
       "path": "polars_error::ErrString as core::clone::Clone",
@@ -143464,7 +143402,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "0799716ffc478c9527206cf76607277b10212704a8fb136e20a6b0d8a42d26f7",
+    "sha256": "fac87c145758cda3111275e6b7c14fa20f5fc8396f80d412a9942134506db1d2",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",

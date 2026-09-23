@@ -1,0 +1,104 @@
+{
+ "record": "0094",
+ "targets": [
+  {
+   "key": "polars_dtype:309",
+   "path": "polars_dtype::categorical::Categories::hash",
+   "direction": "return",
+   "param": null,
+   "source": "u64",
+   "params": [],
+   "return": "u64",
+   "domain": "stored (PlFixedStateQuality)",
+   "binding_before": "(this: &W_polars_dtype__categorical__Categories) -> Result<i64, Error>",
+   "binding_after": "(this: &W_polars_dtype__categorical__Categories) -> String",
+   "oracle": "match",
+   "cite": "polars-dtype 0.55.2 categorical/mod.rs:188-190: PlFixedStateQuality::default().hash_one(&self.id)"
+  },
+  {
+   "key": "polars_dtype:377",
+   "path": "polars_dtype::categorical::FrozenCategories::hash",
+   "direction": "return",
+   "param": null,
+   "source": "u64",
+   "params": [],
+   "return": "u64",
+   "domain": "stored (PlFixedStateQuality)",
+   "binding_before": "(this: &W_polars_dtype__categorical__FrozenCategories) -> Result<i64, Error>",
+   "binding_after": "(this: &W_polars_dtype__categorical__FrozenCategories) -> String",
+   "oracle": "match",
+   "cite": "polars-dtype 0.55.2 categorical/mod.rs:309-311: the combined PlFixedStateQuality hash of the strings (mod.rs:249-257)"
+  },
+  {
+   "key": "polars_dtype:33",
+   "path": "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_hash",
+   "direction": "return",
+   "param": null,
+   "source": "Option<u64>",
+   "params": [
+    [
+     "cat",
+     "polars_dtype::categorical::catsize::CatSize"
+    ]
+   ],
+   "return": "core::option::Option<u64>",
+   "domain": "stored (PlFixedStateQuality)",
+   "binding_before": "(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, cat: i64) -> Result<Option<i64>, Error>",
+   "binding_after": "(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, cat: i64) -> Result<Option<String>, Error>",
+   "oracle": "match",
+   "cite": "polars-dtype 0.55.2 categorical/mapping.rs:115-117: the stored PlFixedStateQuality hash (mapping.rs:85)"
+  },
+  {
+   "key": "polars_dtype:27",
+   "path": "polars_dtype::categorical::mapping::CategoricalMapping::get_cat_with_hash",
+   "direction": "parameter",
+   "param": "hash",
+   "source": "u64",
+   "params": [
+    [
+     "s",
+     "&str"
+    ],
+    [
+     "hash",
+     "u64"
+    ]
+   ],
+   "return": "core::option::Option<polars_dtype::categorical::catsize::CatSize>",
+   "domain": "lookup (CategoricalMapping hasher, seeded)",
+   "binding_before": "(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str, hash: i64) -> Result<Option<i64>, Error>",
+   "binding_after": "(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str, hash: &str) -> Result<Option<i64>, Error>",
+   "oracle": "match",
+   "cite": "polars-dtype 0.55.2 categorical/mapping.rs:60-62: str_to_cat lookup under the caller's hash; get_cat passes self.hasher.hash_one(s) (mapping.rs:53-56)"
+  },
+  {
+   "key": "polars_dtype:30",
+   "path": "polars_dtype::categorical::mapping::CategoricalMapping::insert_cat_with_hash",
+   "direction": "parameter",
+   "param": "hash",
+   "source": "u64",
+   "params": [
+    [
+     "s",
+     "&str"
+    ],
+    [
+     "hash",
+     "u64"
+    ]
+   ],
+   "return": "polars_error::PolarsResult<polars_dtype::categorical::catsize::CatSize>",
+   "domain": "lookup (CategoricalMapping hasher, seeded)",
+   "binding_before": "(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str, hash: i64) -> Result<i64, Error>",
+   "binding_after": "(this: &W_polars_dtype__categorical__mapping__CategoricalMapping, s: &str, hash: &str) -> Result<i64, Error>",
+   "oracle": "match",
+   "cite": "polars-dtype 0.55.2 categorical/mapping.rs:73-92: str_to_cat insert under the caller's hash; insert_cat passes self.hasher.hash_one(s) (mapping.rs:66-69)"
+  }
+ ],
+ "fixtures": {
+  "Categories": "support::categorical_fixtures::categories(): Categories::new(\"rnx-0094-5\",\"rnx\",U32), Arc::try_unwrap under a lock",
+  "FrozenCategories": "frozen_categories(): FrozenCategories::new([\"rnx-0094-5\",\"b\"]), Arc::try_unwrap under a lock",
+  "CategoricalMapping": "mapping(): CategoricalMapping::with_hasher(16, PlSeedableRandomStateQuality::seed_from_u64(94)) holding rnx-0094-2 (id 0) and rnx-0094-1 (id 1)"
+ },
+ "retained_0093_binary_sha256": "455cb5be71c2fb120ad0faf50ea4654947a98da08f0820dc9c52baa9c5413650"
+}
