@@ -3,7 +3,8 @@
     "mechanical",
     "conversion",
     "option_struct",
-    "callback"
+    "callback",
+    "generic_fn"
   ],
   "callbacks": {
     "by_disposition": {
@@ -700,7 +701,6 @@
         "owner": "polars_core::chunked_array::ChunkedArray",
         "refusals": [
           "f: return `T` is the free generic `T` (a Rune function cannot choose a Rust type parameter)",
-          "parameter `idx`: unwrapped type (polars_utils::index::NullableIdxSize)",
           "return: generic return (T)"
         ],
         "today": "unsupported",
@@ -6141,10 +6141,10 @@
     ]
   },
   "counts": {
-    "adapted": 327,
-    "generated": 2065,
+    "adapted": 329,
+    "generated": 2090,
     "out_of_scope": 710,
-    "unsupported": 1969
+    "unsupported": 1942
   },
   "entries": [
     {
@@ -27340,22 +27340,46 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (I)",
+          "id": "polars_core__chunked_array__builder__list__binary__listbinarychunkedbuilder__append_trusted_len_iter",
+          "receiver": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder",
+          "route": "inherent",
+          "rune": "polars::ListBinaryChunkedBuilder::append_trusted_len_iter"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::append_trusted_len_iter",
+      "execution": "no fixture for a parameter (I)",
+      "fallible": true,
       "key": "polars_core:2294",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "note": "mutates the Rune value in place; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::ListBinaryChunkedBuilder::append_trusted_len_iter",
       "signature": "(I) -> ()",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (I)",
+          "id": "polars_core__chunked_array__builder__list__binary__listbinarychunkedbuilder__append_values_iter",
+          "receiver": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder",
+          "route": "inherent",
+          "rune": "polars::ListBinaryChunkedBuilder::append_values_iter"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::append_values_iter",
+      "execution": "no fixture for a parameter (I)",
+      "fallible": true,
       "key": "polars_core:2295",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "note": "mutates the Rune value in place; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::ListBinaryChunkedBuilder::append_values_iter",
       "signature": "(I) -> ()",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -27379,22 +27403,46 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (I)",
+          "id": "polars_core__chunked_array__builder__list__binary__liststringchunkedbuilder__append_trusted_len_iter",
+          "receiver": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder",
+          "route": "inherent",
+          "rune": "polars::ListStringChunkedBuilder::append_trusted_len_iter"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::append_trusted_len_iter",
+      "execution": "no fixture for a parameter (I)",
+      "fallible": true,
       "key": "polars_core:2232",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "note": "mutates the Rune value in place; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::ListStringChunkedBuilder::append_trusted_len_iter",
       "signature": "(I) -> ()",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (I)",
+          "id": "polars_core__chunked_array__builder__list__binary__liststringchunkedbuilder__append_values_iter",
+          "receiver": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder",
+          "route": "inherent",
+          "rune": "polars::ListStringChunkedBuilder::append_values_iter"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::append_values_iter",
+      "execution": "no fixture for a parameter (I)",
+      "fallible": true,
       "key": "polars_core:2233",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "note": "mutates the Rune value in place; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::ListStringChunkedBuilder::append_values_iter",
       "signature": "(I) -> ()",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -27418,13 +27466,25 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (I)",
+          "id": "polars_core__chunked_array__builder__list__boolean__listbooleanchunkedbuilder__append_iter",
+          "receiver": "polars_core::chunked_array::builder::list::boolean::ListBooleanChunkedBuilder",
+          "route": "inherent",
+          "rune": "polars::ListBooleanChunkedBuilder::append_iter"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::builder::list::boolean::ListBooleanChunkedBuilder::append_iter",
+      "execution": "no fixture for a parameter (I)",
+      "fallible": true,
       "key": "polars_core:2357",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "note": "mutates the Rune value in place; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::ListBooleanChunkedBuilder::append_iter",
       "signature": "(I) -> ()",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -27473,7 +27533,7 @@
       "canonical_path": "polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_iter",
       "key": "polars_core:2484",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder",
       "signature": "(I) -> ()",
       "status": "unsupported"
     },
@@ -27500,7 +27560,7 @@
       "canonical_path": "polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_values_iter",
       "key": "polars_core:2483",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder",
       "signature": "(I) -> ()",
       "status": "unsupported"
     },
@@ -27509,7 +27569,7 @@
       "canonical_path": "polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_values_iter_trusted_len",
       "key": "polars_core:2482",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder",
       "signature": "(I) -> ()",
       "status": "unsupported"
     },
@@ -27641,7 +27701,7 @@
       "canonical_path": "polars_core::chunked_array::builder::string::BinViewChunkedBuilder::append_option",
       "key": "polars_core:2695",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_core::chunked_array::builder::string::BinViewChunkedBuilder",
       "signature": "(core::option::Option<S>) -> ()",
       "status": "unsupported"
     },
@@ -27650,7 +27710,7 @@
       "canonical_path": "polars_core::chunked_array::builder::string::BinViewChunkedBuilder::append_value",
       "key": "polars_core:2693",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_core::chunked_array::builder::string::BinViewChunkedBuilder",
       "signature": "(S) -> ()",
       "status": "unsupported"
     },
@@ -30742,7 +30802,7 @@
       "canonical_path": "polars_core::datatypes::any_value::AnyValue::extract",
       "key": "polars_core:4157",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "lifetime owner: polars_core::datatypes::any_value::AnyValue",
       "signature": "() -> core::option::Option<T>",
       "status": "unsupported"
     },
@@ -30787,7 +30847,7 @@
       "canonical_path": "polars_core::datatypes::any_value::AnyValue::hash_impl",
       "key": "polars_core:4180",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "lifetime owner: polars_core::datatypes::any_value::AnyValue",
       "signature": "(&mut H, bool) -> ()",
       "status": "unsupported"
     },
@@ -30931,7 +30991,7 @@
       "canonical_path": "polars_core::datatypes::any_value::AnyValue::try_extract",
       "key": "polars_core:4159",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "lifetime owner: polars_core::datatypes::any_value::AnyValue",
       "signature": "() -> polars_error::PolarsResult<T>",
       "status": "unsupported"
     },
@@ -33377,7 +33437,7 @@
       "canonical_path": "polars_core::frame::column::Column::cat",
       "key": "polars_core:7221",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: T",
       "signature": "() -> polars_error::PolarsResult<&polars_core::chunked_array::logical::categorical::CategoricalChunked<T>>",
       "status": "unsupported"
     },
@@ -34589,7 +34649,7 @@
       "canonical_path": "polars_core::frame::column::Column::new",
       "key": "polars_core:7162",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: Phantom",
       "signature": "(polars_utils::pl_str::PlSmallStr, T) -> Self",
       "status": "unsupported"
     },
@@ -35675,7 +35735,7 @@
       "canonical_path": "polars_core::frame::column::Column::try_cat",
       "key": "polars_core:7197",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: T",
       "signature": "() -> core::option::Option<&polars_core::chunked_array::logical::categorical::CategoricalChunked<T>>",
       "status": "unsupported"
     },
@@ -36422,7 +36482,7 @@
       "canonical_path": "polars_core::frame::column::Column::wrapping_trunc_div_scalar",
       "key": "polars_core:7314",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "bound: rhs (T)",
       "signature": "(T) -> Self",
       "status": "unsupported"
     },
@@ -37331,7 +37391,7 @@
       "canonical_path": "polars_core::frame::dataframe::DataFrame::deserialize_from_reader",
       "key": "polars_core:7686",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "mutable reference: reader (&mut T)",
       "signature": "(&mut T) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -37384,13 +37444,28 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__dataframe__dataframe__drop_many",
+          "disposition": "case",
+          "id": "polars_core__frame__dataframe__dataframe__drop_many",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::drop_many"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::drop_many",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7611",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: S",
+      "note": "routed through the engine thread; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::DataFrame::drop_many",
       "signature": "(I) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "conversion",
@@ -37406,7 +37481,7 @@
       "canonical_path": "polars_core::frame::dataframe::DataFrame::drop_nulls",
       "key": "polars_core:7609",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "unbounded generic: subset (S)",
       "signature": "(core::option::Option<&[S]>) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -37625,13 +37700,27 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (polars_core::chunked_array::ops::ExplodeOptions)",
+          "id": "polars_core__frame__dataframe__dataframe__explode",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::explode"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::explode",
+      "execution": "no fixture for a parameter (polars_core::chunked_array::ops::ExplodeOptions)",
+      "fallible": true,
       "key": "polars_core:7555",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: S",
+      "note": "routed through the engine thread",
+      "rune": "polars::DataFrame::explode",
       "signature": "(I, polars_core::chunked_array::ops::ExplodeOptions) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -37823,7 +37912,7 @@
       "canonical_path": "polars_core::frame::dataframe::DataFrame::from_rows_iter_and_schema",
       "key": "polars_core:7570",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "iterator of borrowed items: rows (I)",
       "signature": "(I, &polars_core::schema::Schema) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -37978,7 +38067,7 @@
       "canonical_path": "polars_core::frame::dataframe::DataFrame::group_by",
       "key": "polars_core:7559",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "lifetime type: return (polars_core::frame::group_by::GroupBy)",
       "signature": "(I) -> polars_error::PolarsResult<polars_core::frame::group_by::GroupBy>",
       "status": "unsupported"
     },
@@ -37987,7 +38076,7 @@
       "canonical_path": "polars_core::frame::dataframe::DataFrame::group_by_stable",
       "key": "polars_core:7560",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "lifetime type: return (polars_core::frame::group_by::GroupBy)",
       "signature": "(I) -> polars_error::PolarsResult<polars_core::frame::group_by::GroupBy>",
       "status": "unsupported"
     },
@@ -38427,22 +38516,51 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "excluded: nondeterministic oracle (the order of the partitions is unspecified (Polars documents only partition_by_stable as order-maintaining); the oracle's unordered policy covers rows within one frame, not a vector of frames (record 0084, observed run to run))",
+          "id": "polars_core__frame__dataframe__dataframe__partition_by",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::partition_by"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::partition_by",
+      "execution": "excluded: nondeterministic oracle (the order of the partitions is unspecified (Polars documents only partition_by_stable as order-maintaining); the oracle's unordered policy covers rows within one frame, not a vector of frames (record 0084, observed run to run))",
+      "fallible": true,
       "key": "polars_core:7676",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: S",
+      "note": "routed through the engine thread",
+      "rune": "polars::DataFrame::partition_by",
       "signature": "(I, bool) -> polars_error::PolarsResult<alloc::vec::Vec<polars_core::frame::dataframe::DataFrame>>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__dataframe__dataframe__partition_by_stable",
+          "disposition": "case",
+          "id": "polars_core__frame__dataframe__dataframe__partition_by_stable",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::partition_by_stable"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::partition_by_stable",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7677",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: S",
+      "note": "routed through the engine thread",
+      "rune": "polars::DataFrame::partition_by_stable",
       "signature": "(I, bool) -> polars_error::PolarsResult<alloc::vec::Vec<polars_core::frame::dataframe::DataFrame>>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -38566,7 +38684,7 @@
       "canonical_path": "polars_core::frame::dataframe::DataFrame::rename_many",
       "key": "polars_core:7636",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "tuple with a borrow: renames ((&str, polars_utils::pl_str::PlSmallStr))",
       "signature": "(impl core::iter::traits::iterator::Iterator<Item = (&str, polars_utils::pl_str::PlSmallStr)>) -> polars_error::PolarsResult<&mut Self>",
       "status": "unsupported"
     },
@@ -38763,13 +38881,28 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__dataframe__dataframe__select",
+          "disposition": "case",
+          "id": "polars_core__frame__dataframe__dataframe__select",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::select_"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::select",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7623",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: S",
+      "note": "routed through the engine thread; renamed: `select` is a Rune keyword",
+      "rune": "polars::DataFrame::select_",
       "signature": "(I) -> polars_error::PolarsResult<Self>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -38796,13 +38929,28 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__dataframe__dataframe__select_to_vec",
+          "disposition": "case",
+          "id": "polars_core__frame__dataframe__dataframe__select_to_vec",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::select_to_vec"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::select_to_vec",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7625",
       "kind": "inherent",
-      "reason": "vector of borrows: selection (alloc::vec::Vec<impl core::convert::AsRef>)",
+      "note": "routed through the engine thread",
+      "rune": "polars::DataFrame::select_to_vec",
       "signature": "(impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::AsRef<str>>) -> polars_error::PolarsResult<alloc::vec::Vec<polars_core::frame::column::Column>>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -39014,13 +39162,28 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__dataframe__dataframe__sort",
+          "disposition": "case",
+          "id": "polars_core__frame__dataframe__dataframe__sort",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::sort"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::sort",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7637",
       "kind": "inherent",
-      "reason": "vector of borrows: by (alloc::vec::Vec<impl core::convert::AsRef>)",
+      "note": "routed through the engine thread",
+      "rune": "polars::DataFrame::sort",
       "signature": "(impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::AsRef<str>>, polars_core::chunked_array::ops::sort::options::SortMultipleOptions) -> polars_error::PolarsResult<Self>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -39047,13 +39210,28 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__dataframe__dataframe__sort_in_place",
+          "disposition": "case",
+          "id": "polars_core__frame__dataframe__dataframe__sort_in_place",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::sort_in_place"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::sort_in_place",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7638",
       "kind": "inherent",
-      "reason": "vector of borrows: by (alloc::vec::Vec<impl core::convert::AsRef>)",
+      "note": "mutates the Rune value in place; routed through the engine thread",
+      "rune": "polars::DataFrame::sort_in_place",
       "signature": "(impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::AsRef<str>>, polars_core::chunked_array::ops::sort::options::SortMultipleOptions) -> polars_error::PolarsResult<&mut Self>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -39248,7 +39426,7 @@
       "canonical_path": "polars_core::frame::dataframe::DataFrame::try_from_rows_iter_and_schema",
       "key": "polars_core:7571",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "result argument: rows (polars_error::PolarsResult<&polars_core::frame::row::Row>)",
       "signature": "(I, &polars_core::schema::Schema) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -41096,7 +41274,7 @@
       "canonical_path": "polars_core::series::Series::cat",
       "key": "polars_core:11287",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: T",
       "signature": "() -> polars_error::PolarsResult<&polars_core::chunked_array::logical::categorical::CategoricalChunked<T>>",
       "status": "unsupported"
     },
@@ -41228,7 +41406,7 @@
       "canonical_path": "polars_core::series::Series::deserialize_from_reader",
       "key": "polars_core:11214",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "mutable reference: reader (&mut T)",
       "signature": "(&mut T) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -41503,7 +41681,7 @@
       "canonical_path": "polars_core::series::Series::from_array",
       "key": "polars_core:11228",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "bound: array (A)",
       "signature": "(polars_utils::pl_str::PlSmallStr, A) -> Self",
       "status": "unsupported"
     },
@@ -42117,7 +42295,7 @@
       "canonical_path": "polars_core::series::Series::max",
       "key": "polars_core:11334",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: T",
       "signature": "() -> polars_error::PolarsResult<core::option::Option<T>>",
       "status": "unsupported"
     },
@@ -42150,7 +42328,7 @@
       "canonical_path": "polars_core::series::Series::min",
       "key": "polars_core:11333",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: T",
       "signature": "() -> polars_error::PolarsResult<core::option::Option<T>>",
       "status": "unsupported"
     },
@@ -42627,7 +42805,7 @@
       "canonical_path": "polars_core::series::Series::sum",
       "key": "polars_core:11332",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: T",
       "signature": "() -> polars_error::PolarsResult<T>",
       "status": "unsupported"
     },
@@ -42684,7 +42862,7 @@
       "canonical_path": "polars_core::series::Series::take_inner",
       "key": "polars_core:11307",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: T",
       "signature": "() -> polars_core::chunked_array::ChunkedArray<T>",
       "status": "unsupported"
     },
@@ -42897,7 +43075,7 @@
       "canonical_path": "polars_core::series::Series::try_cat",
       "key": "polars_core:11262",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: T",
       "signature": "() -> core::option::Option<&polars_core::chunked_array::logical::categorical::CategoricalChunked<T>>",
       "status": "unsupported"
     },
@@ -43221,7 +43399,7 @@
       "canonical_path": "polars_core::series::Series::try_new",
       "key": "polars_core:11236",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "unbounded generic: data (T)",
       "signature": "(polars_utils::pl_str::PlSmallStr, T) -> core::result::Result<Self, <(PlSmallStr, T) as TryInto>::Error>",
       "status": "unsupported"
     },
@@ -43589,7 +43767,7 @@
       "canonical_path": "polars_core::series::Series::wrapping_trunc_div_scalar",
       "key": "polars_core:11219",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "bound: rhs (T)",
       "signature": "(T) -> Self",
       "status": "unsupported"
     },
@@ -44365,7 +44543,7 @@
       "canonical_path": "polars_dtype::categorical::FrozenCategories::new",
       "key": "polars_dtype:371",
       "kind": "inherent",
-      "reason": "vector of borrows: strings (alloc::vec::Vec<&str>)",
+      "reason": "foreign type: return (alloc::sync::Arc<Self>)",
       "signature": "(I) -> polars_error::PolarsResult<alloc::sync::Arc<Self>>",
       "status": "unsupported"
     },
@@ -45428,7 +45606,7 @@
       "canonical_path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::build_buffered_ranges_stream",
       "key": "polars_io:568",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "foreign type: path (object_store::path::Path)",
       "signature": "(&object_store::path::Path, T, polars_io::cloud::concurrency_config::ConcurrencyStrategy) -> impl futures_core::stream::Stream<Item = polars_error::PolarsResult<polars_buffer::buffer::Buffer<u8>>>",
       "status": "unsupported"
     },
@@ -45912,7 +46090,7 @@
       "canonical_path": "polars_io::csv::read::options::CsvReadOptions::into_reader_with_file_handle",
       "key": "polars_io:2341",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "bound: reader (R)",
       "signature": "(R) -> polars_io::csv::read::reader::CsvReader<R>",
       "status": "unsupported"
     },
@@ -46807,7 +46985,7 @@
       "canonical_path": "polars_io::ipc::ipc_reader_async::IpcReadOptions::with_predicate",
       "key": "polars_io:3881",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "foreign type: predicate (alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>)",
       "signature": "(impl core::convert::Into<core::option::Option<alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>>>) -> Self",
       "status": "unsupported"
     },
@@ -47011,7 +47189,7 @@
       "canonical_path": "polars_io::ipc::write::IpcWriterOptions::to_writer",
       "key": "polars_io:3952",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "bound: writer (W)",
       "signature": "(W) -> polars_io::ipc::write::IpcWriter<W>",
       "status": "unsupported"
     },
@@ -47083,7 +47261,7 @@
       "canonical_path": "polars_io::metrics::OptIOMetrics::record_bytes_tx",
       "key": "polars_io:7550",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "async: record_bytes_tx",
       "signature": "(u64, F) -> O",
       "status": "unsupported"
     },
@@ -47092,7 +47270,7 @@
       "canonical_path": "polars_io::metrics::OptIOMetrics::record_io_read",
       "key": "polars_io:7549",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "async: record_io_read",
       "signature": "(u64, F) -> O",
       "status": "unsupported"
     },
@@ -47509,7 +47687,7 @@
       "canonical_path": "polars_io::parquet::write::options::ParquetWriteOptions::to_writer",
       "key": "polars_io:5313",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "bound: f (F)",
       "signature": "(F) -> polars_io::parquet::write::writer::ParquetWriter<F>",
       "status": "unsupported"
     },
@@ -47536,7 +47714,7 @@
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::new",
       "key": "polars_io:5492",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
       "signature": "(W) -> Self",
       "status": "unsupported"
     },
@@ -48226,7 +48404,7 @@
       "canonical_path": "polars_io::utils::file::Writable::write_all_owned",
       "key": "polars_io:7005",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "async: write_all_owned",
       "signature": "(&mut T) -> core::io::error::Result<()>",
       "status": "unsupported"
     },
@@ -48271,7 +48449,7 @@
       "canonical_path": "polars_io::utils::file::async_writable::AsyncWritable::write_all_owned",
       "key": "polars_io:6929",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "async: write_all_owned",
       "signature": "(&mut T) -> core::io::error::Result<()>",
       "status": "unsupported"
     },
@@ -49119,18 +49297,34 @@
       "canonical_path": "polars_lazy::frame::LazyFrame::group_by",
       "key": "polars_lazy:307",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: IE",
+      "reason": "hand-written binding of the same name",
+      "rune": "polars::LazyFrame::group_by",
       "signature": "(E) -> polars_lazy::frame::LazyGroupBy",
-      "status": "unsupported"
+      "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_lazy__frame__lazyframe__group_by_stable",
+          "disposition": "case",
+          "id": "polars_lazy__frame__lazyframe__group_by_stable",
+          "receiver": "polars_lazy::frame::LazyFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::LazyFrame::group_by_stable"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::LazyFrame::group_by_stable",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_lazy:308",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: IE",
+      "note": "consumes in Rust; the Rune value is cloned and stays usable; routed through the engine thread; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::LazyFrame::group_by_stable",
       "signature": "(E) -> polars_lazy::frame::LazyGroupBy",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -49521,13 +49715,28 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_lazy__frame__lazyframe__rename",
+          "disposition": "case",
+          "id": "polars_lazy__frame__lazyframe__rename",
+          "receiver": "polars_lazy::frame::LazyFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::LazyFrame::rename"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_lazy::frame::LazyFrame::rename",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_lazy:263",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: T",
+      "note": "consumes in Rust; the Rune value is cloned and stays usable; routed through the engine thread; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::LazyFrame::rename",
       "signature": "(I, J, bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -54662,22 +54871,48 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__expr__expr__over",
+          "disposition": "case",
+          "id": "polars_plan__dsl__expr__expr__over",
+          "receiver": "polars_plan::dsl::expr::Expr",
+          "route": "inherent",
+          "rune": "polars::Expr::over"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::expr::Expr::over",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_plan:1540",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: IE",
+      "note": "consumes in Rust; the Rune value is cloned and stays usable",
+      "rune": "polars::Expr::over",
       "signature": "(E) -> polars_error::PolarsResult<Self>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__expr__expr__over_with_options",
+          "disposition": "case",
+          "id": "polars_plan__dsl__expr__expr__over_with_options",
+          "receiver": "polars_plan::dsl::expr::Expr",
+          "route": "inherent",
+          "rune": "polars::Expr::over_with_options"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::expr::Expr::over_with_options",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_plan:1541",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: IE",
+      "note": "consumes in Rust; the Rune value is cloned and stays usable",
+      "rune": "polars::Expr::over_with_options",
       "signature": "(core::option::Option<E>, core::option::Option<(E, polars_core::chunked_array::ops::sort::options::SortOptions)>, polars_plan::dsl::options::WindowMapping) -> polars_error::PolarsResult<Self>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -54979,13 +55214,28 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__expr__expr__sort_by",
+          "disposition": "case",
+          "id": "polars_plan__dsl__expr__expr__sort_by",
+          "receiver": "polars_plan::dsl::expr::Expr",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::Expr::sort_by"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::expr::Expr::sort_by",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_plan:1555",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: IE",
+      "note": "consumes in Rust; the Rune value is cloned and stays usable; routed through the engine thread; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::Expr::sort_by",
       "signature": "(E, polars_core::chunked_array::ops::sort::options::SortMultipleOptions) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -55651,7 +55901,7 @@
       "canonical_path": "polars_plan::dsl::file_scan::FileScanIR::gather_after_filter",
       "key": "polars_plan:7759",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "release policy: surviving_indices must be ascending indices into the pre-filter source list and first_file_dropped must agree with them; Polars indexes the cached metadata directly and FileScanIR does not record the pre-filter length, so a binding cannot validate either (review of record 0084) (polars-plan 0.55.2 src/dsl/file_scan/mod.rs:186-218; polars-mem-engine src/scan_predicate/functions.rs:494-500)",
       "signature": "(bool, I) -> ()",
       "status": "unsupported"
     },
@@ -57147,13 +57397,25 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+          "id": "polars_plan__dsl__scan_sources__scansources__gather",
+          "receiver": "polars_plan::dsl::scan_sources::ScanSources",
+          "route": "inherent",
+          "rune": "polars::ScanSources::gather"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_plan::dsl::scan_sources::ScanSources::gather",
+      "execution": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+      "fallible": true,
       "key": "polars_plan:6049",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "note": "fallible in Rune because an argument conversion can fail",
+      "rune": "polars::ScanSources::gather",
       "signature": "(impl core::iter::traits::iterator::Iterator<Item = usize>) -> core::option::Option<Self>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -57876,7 +58138,7 @@
       "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::drop",
       "key": "polars_plan:6911",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: S",
+      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace",
       "signature": "(I, bool) -> polars_plan::dsl::expr::Expr",
       "status": "unsupported"
     },
@@ -57903,7 +58165,7 @@
       "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::field_by_names",
       "key": "polars_plan:6908",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: S",
+      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace",
       "signature": "(I) -> polars_plan::dsl::expr::Expr",
       "status": "unsupported"
     },
@@ -57912,7 +58174,7 @@
       "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::rename_fields",
       "key": "polars_plan:6910",
       "kind": "inherent",
-      "reason": "generic parameter not inferable from arguments: S",
+      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace",
       "signature": "(I) -> polars_plan::dsl::expr::Expr",
       "status": "unsupported"
     },
@@ -57951,7 +58213,7 @@
       "canonical_path": "polars_plan::dsl::udf::UserDefinedFunction::new",
       "key": "polars_plan:6972",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "bound: fun (impl polars_plan::dsl::expr::anonymous::expr::AnonymousColumnsUdf + 'static)",
       "signature": "(polars_utils::pl_str::PlSmallStr, impl polars_plan::dsl::expr::anonymous::expr::AnonymousColumnsUdf + 'static) -> Self",
       "status": "unsupported"
     },
@@ -59253,7 +59515,7 @@
       "canonical_path": "polars_schema::schema::Schema::from_iter_check_duplicates",
       "key": "polars_schema:217",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_schema::schema::Schema",
       "signature": "(I) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -59307,7 +59569,7 @@
       "canonical_path": "polars_schema::schema::Schema::hstack",
       "key": "polars_schema:253",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_schema::schema::Schema",
       "signature": "(impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<(polars_utils::pl_str::PlSmallStr, Field)>>) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -59316,7 +59578,7 @@
       "canonical_path": "polars_schema::schema::Schema::hstack_mut",
       "key": "polars_schema:252",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_schema::schema::Schema",
       "signature": "(impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<(polars_utils::pl_str::PlSmallStr, Field)>>) -> polars_error::PolarsResult<()>",
       "status": "unsupported"
     },
@@ -59640,7 +59902,7 @@
       "canonical_path": "polars_schema::schema::Schema::try_project",
       "key": "polars_schema:274",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_schema::schema::Schema",
       "signature": "(I) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -59658,7 +59920,7 @@
       "canonical_path": "polars_schema::schema::Schema::try_project_with_alias",
       "key": "polars_schema:276",
       "kind": "inherent",
-      "reason": "bucket: generic",
+      "reason": "generic owner: polars_schema::schema::Schema",
       "signature": "(I) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -60222,7 +60484,7 @@
       "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_cat",
       "key": "polars_core:3157",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::logical::categorical::CategoricalChunked<T>)",
       "signature": "(&polars_core::chunked_array::logical::categorical::CategoricalChunked<T>) -> core::option::Option<usize>",
       "status": "unsupported"
     },
@@ -60231,7 +60493,7 @@
       "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
       "key": "polars_core:3155",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>) -> core::option::Option<usize>",
       "status": "unsupported"
     },
@@ -60240,7 +60502,7 @@
       "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_opt_iter",
       "key": "polars_core:3152",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "bound: iter (T)",
       "signature": "(I) -> core::option::Option<usize>",
       "status": "unsupported"
     },
@@ -60329,7 +60591,7 @@
       "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_cat",
       "key": "polars_core:3156",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::logical::categorical::CategoricalChunked<T>)",
       "signature": "(&polars_core::chunked_array::logical::categorical::CategoricalChunked<T>) -> core::option::Option<usize>",
       "status": "unsupported"
     },
@@ -60338,7 +60600,7 @@
       "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
       "key": "polars_core:3153",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>) -> core::option::Option<usize>",
       "status": "unsupported"
     },
@@ -60347,7 +60609,7 @@
       "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_opt_iter",
       "key": "polars_core:3151",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "bound: iter (T)",
       "signature": "(I) -> core::option::Option<usize>",
       "status": "unsupported"
     },
@@ -60385,7 +60647,7 @@
       "canonical_path": "polars_core::chunked_array::from_iterator_par::list_from_par_iter",
       "key": "polars_core:3179",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "bound: par_iter (I)",
       "signature": "(I, polars_utils::pl_str::PlSmallStr) -> polars_error::PolarsResult<polars_core::datatypes::ListChunked>",
       "status": "unsupported"
     },
@@ -60394,7 +60656,7 @@
       "canonical_path": "polars_core::chunked_array::from_iterator_par::try_list_from_par_iter",
       "key": "polars_core:3180",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "bound: par_iter (I)",
       "signature": "(I, polars_utils::pl_str::PlSmallStr) -> polars_error::PolarsResult<polars_core::datatypes::ListChunked>",
       "status": "unsupported"
     },
@@ -60450,7 +60712,7 @@
       "canonical_path": "polars_core::chunked_array::ops::arity::binary_elementwise",
       "key": "polars_core:783",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: V",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, &polars_core::chunked_array::ChunkedArray<U>, F) -> polars_core::chunked_array::ChunkedArray<V>",
       "status": "unsupported"
     },
@@ -60522,7 +60784,7 @@
       "canonical_path": "polars_core::chunked_array::ops::arity::broadcast_binary_elementwise",
       "key": "polars_core:803",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: V",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, &polars_core::chunked_array::ChunkedArray<U>, F) -> polars_core::chunked_array::ChunkedArray<V>",
       "status": "unsupported"
     },
@@ -60549,7 +60811,7 @@
       "canonical_path": "polars_core::chunked_array::ops::arity::ternary_elementwise",
       "key": "polars_core:802",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: V",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, &polars_core::chunked_array::ChunkedArray<U>, &polars_core::chunked_array::ChunkedArray<G>, F) -> polars_core::chunked_array::ChunkedArray<V>",
       "status": "unsupported"
     },
@@ -60639,7 +60901,7 @@
       "canonical_path": "polars_core::chunked_array::ops::arity::unary_elementwise",
       "key": "polars_core:773",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: V",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, F) -> polars_core::chunked_array::ChunkedArray<V>",
       "status": "unsupported"
     },
@@ -60648,7 +60910,7 @@
       "canonical_path": "polars_core::chunked_array::ops::arity::unary_elementwise_values",
       "key": "polars_core:776",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: V",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, F) -> polars_core::chunked_array::ChunkedArray<V>",
       "status": "unsupported"
     },
@@ -60716,7 +60978,7 @@
       "canonical_path": "polars_core::chunked_array::ops::float_sorted_arg_max::float_arg_max_sorted_ascending",
       "key": "polars_core:832",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>) -> usize",
       "status": "unsupported"
     },
@@ -60725,7 +60987,7 @@
       "canonical_path": "polars_core::chunked_array::ops::float_sorted_arg_max::float_arg_max_sorted_descending",
       "key": "polars_core:833",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>) -> usize",
       "status": "unsupported"
     },
@@ -60860,7 +61122,7 @@
       "canonical_path": "polars_core::chunked_array::ops::search_sorted::binary_search_ca",
       "key": "polars_core:972",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, impl core::iter::traits::iterator::Iterator<Item = core::option::Option<T::Physical>>, polars_core::chunked_array::ops::search_sorted::SearchSortedSide, bool) -> alloc::vec::Vec<polars_utils::index::IdxSize>",
       "status": "unsupported"
     },
@@ -60986,7 +61248,7 @@
       "canonical_path": "polars_core::datatypes::temporal::time_unit::convert_time_units",
       "key": "polars_core:4867",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "bound: v (T)",
       "signature": "(T, polars_core::datatypes::temporal::time_unit::TimeUnit, polars_core::datatypes::temporal::time_unit::TimeUnit) -> T",
       "status": "unsupported"
     },
@@ -61072,13 +61334,23 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (impl core::iter::traits::iterator::Iterator<Item = alloc::vec::Vec<(impl core::convert::Into<polars_utils::pl_str::PlSmallStr>, impl core::convert::Into<polars_core::datatypes::dtype::DataType>)>>)",
+          "id": "polars_core__frame__row__infer_schema",
+          "route": "free",
+          "rune": "polars::infer_schema"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::row::infer_schema",
+      "execution": "no fixture for a parameter (impl core::iter::traits::iterator::Iterator<Item = alloc::vec::Vec<(impl core::convert::Into<polars_utils::pl_str::PlSmallStr>, impl core::convert::Into<polars_core::datatypes::dtype::DataType>)>>)",
+      "fallible": true,
       "key": "polars_core:8871",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "rune": "polars::infer_schema",
       "signature": "(impl core::iter::traits::iterator::Iterator<Item = alloc::vec::Vec<(impl core::convert::Into<polars_utils::pl_str::PlSmallStr>, impl core::convert::Into<polars_core::datatypes::dtype::DataType>)>>, usize) -> polars_core::schema::Schema",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -61112,7 +61384,7 @@
       "canonical_path": "polars_core::schema::ensure_matching_schema",
       "key": "polars_core:10193",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: lhs (polars_schema::schema::Schema<F, M>)",
       "signature": "(&polars_schema::schema::Schema<F, M>, &polars_schema::schema::Schema<F, M>) -> polars_error::PolarsResult<()>",
       "status": "unsupported"
     },
@@ -61206,7 +61478,7 @@
       "canonical_path": "polars_error::map_err",
       "key": "polars_error:246",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "bound: error (E)",
       "signature": "(E) -> polars_error::PolarsError",
       "status": "unsupported"
     },
@@ -61215,7 +61487,7 @@
       "canonical_path": "polars_error::to_compute_err",
       "key": "polars_error:247",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "bound: err (impl core::fmt::Display)",
       "signature": "(impl core::fmt::Display) -> polars_error::PolarsError",
       "status": "unsupported"
     },
@@ -61607,7 +61879,7 @@
       "canonical_path": "polars_io::file_cache::utils::init_entries_from_uri_list",
       "key": "polars_io:3645",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "async: init_entries_from_uri_list",
       "signature": "(impl core::iter::traits::exact_size::ExactSizeIterator<Item = polars_utils::pl_path::PlRefPath> + core::marker::Send + 'static, core::option::Option<&polars_io::cloud::options::CloudOptions>) -> polars_error::PolarsResult<alloc::vec::Vec<alloc::sync::Arc<polars_io::file_cache::entry::FileCacheEntry>>>",
       "status": "unsupported"
     },
@@ -61616,7 +61888,7 @@
       "canonical_path": "polars_io::hive::merge_sorted_to_schema_order",
       "key": "polars_io:7617",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "mutable reference: cols_lhs (&mut dyn core::iter::traits::iterator::Iterator<Item = polars_core::frame::column::Column>)",
       "signature": "(&mut dyn core::iter::traits::iterator::Iterator<Item = polars_core::frame::column::Column>, &mut dyn core::iter::traits::iterator::Iterator<Item = polars_core::frame::column::Column>, &polars_schema::schema::Schema<F, M>, &mut alloc::vec::Vec<polars_core::frame::column::Column>) -> ()",
       "status": "unsupported"
     },
@@ -61876,7 +62148,7 @@
       "canonical_path": "polars_io::utils::other::decode_json_response",
       "key": "polars_io:6599",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic parameter not inferable from arguments: T",
       "signature": "(&[u8]) -> polars_error::PolarsResult<T>",
       "status": "unsupported"
     },
@@ -61885,7 +62157,7 @@
       "canonical_path": "polars_io::utils::other::get_reader_bytes",
       "key": "polars_io:6590",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "mutable reference: reader (&mut R)",
       "signature": "(&mut R) -> polars_error::PolarsResult<polars_io::mmap::ReaderBytes>",
       "status": "unsupported"
     },
@@ -62026,7 +62298,7 @@
       "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
       "key": "polars_ops:77",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, core::option::Option<T::Native>, core::option::Option<T::Native>) -> polars_core::datatypes::BooleanChunked",
       "status": "unsupported"
     },
@@ -62044,7 +62316,7 @@
       "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
       "key": "polars_ops:81",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, core::option::Option<T::Native>, core::option::Option<T::Native>) -> polars_core::datatypes::BooleanChunked",
       "status": "unsupported"
     },
@@ -62411,7 +62683,7 @@
       "canonical_path": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
       "key": "polars_ops:1057",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, usize, bool) -> polars_error::PolarsResult<polars_core::datatypes::aliases::IdxCa>",
       "status": "unsupported"
     },
@@ -62443,7 +62715,7 @@
       "canonical_path": "polars_ops::series::ops::int_range::new_int_range",
       "key": "polars_ops:1062",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "foreign type: start (T::Native)",
       "signature": "(T::Native, T::Native, i64, polars_utils::pl_str::PlSmallStr) -> polars_error::PolarsResult<polars_core::series::Series>",
       "status": "unsupported"
     },
@@ -62593,7 +62865,7 @@
       "canonical_path": "polars_ops::series::ops::rle::rle_lengths_helper_ca",
       "key": "polars_ops:1153",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>, &mut alloc::vec::Vec<polars_utils::index::IdxSize>) -> ()",
       "status": "unsupported"
     },
@@ -62779,7 +63051,7 @@
       "canonical_path": "polars_plan::dsl::expr::anonymous::expr::new_column_udf",
       "key": "polars_plan:1028",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "bound: func (F)",
       "signature": "(F) -> polars_plan::dsl::expr::anonymous::expr::OpaqueColumnUdf",
       "status": "unsupported"
     },
@@ -62804,13 +63076,24 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__functions__concat__as_list",
+          "disposition": "case",
+          "id": "polars_plan__dsl__functions__concat__as_list",
+          "route": "free",
+          "rune": "polars::as_list"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::functions::concat::as_list",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_plan:2882",
       "kind": "free_fn",
-      "reason": "generic parameter not inferable from arguments: IE",
+      "rune": "polars::as_list",
       "signature": "(E) -> polars_error::PolarsResult<polars_plan::dsl::expr::Expr>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -62836,22 +63119,50 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__functions__concat__concat_expr",
+          "disposition": "case",
+          "id": "polars_plan__dsl__functions__concat__concat_expr",
+          "reentry": "error",
+          "route": "free",
+          "route_reason": "engine thread",
+          "rune": "polars::concat_expr"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::functions::concat::concat_expr",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_plan:2885",
       "kind": "free_fn",
-      "reason": "generic parameter not inferable from arguments: IE",
+      "note": "routed through the engine thread",
+      "rune": "polars::concat_expr",
       "signature": "(E, bool) -> polars_error::PolarsResult<polars_plan::dsl::expr::Expr>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__functions__concat__concat_list",
+          "disposition": "case",
+          "id": "polars_plan__dsl__functions__concat__concat_list",
+          "reentry": "error",
+          "route": "free",
+          "route_reason": "engine thread",
+          "rune": "polars::concat_list"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::functions::concat::concat_list",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_plan:2883",
       "kind": "free_fn",
-      "reason": "generic parameter not inferable from arguments: IE",
+      "note": "routed through the engine thread",
+      "rune": "polars::concat_list",
       "signature": "(E) -> polars_error::PolarsResult<polars_plan::dsl::expr::Expr>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -63070,9 +63381,10 @@
       "canonical_path": "polars_plan::dsl::functions::lit",
       "key": "polars_plan:2941",
       "kind": "free_fn",
-      "reason": "bucket: generic",
+      "reason": "hand-written binding of the same name",
+      "rune": "polars::lit",
       "signature": "(L) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "adapted"
     },
     {
       "bindings": [
@@ -63135,13 +63447,24 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__functions__selectors__by_name",
+          "disposition": "case",
+          "id": "polars_plan__dsl__functions__selectors__by_name",
+          "route": "free",
+          "rune": "polars::by_name"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::functions::selectors::by_name",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_plan:2911",
       "kind": "free_fn",
-      "reason": "generic parameter not inferable from arguments: S",
+      "rune": "polars::by_name",
       "signature": "(I, bool, bool) -> polars_plan::dsl::selector::Selector",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "conversion",
@@ -63154,13 +63477,24 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__functions__selectors__cols",
+          "disposition": "case",
+          "id": "polars_plan__dsl__functions__selectors__cols",
+          "route": "free",
+          "rune": "polars::cols"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::functions::selectors::cols",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_plan:2908",
       "kind": "free_fn",
-      "reason": "generic parameter not inferable from arguments: S",
+      "rune": "polars::cols",
       "signature": "(I) -> polars_plan::dsl::selector::Selector",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -92609,18 +92943,52 @@
     {
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::builder::NewChunkedArray::from_iter_options",
+      "exceptions": [
+        {
+          "reason": "unbounded generic: it (N)",
+          "receiver": "polars_core::datatypes::StringType",
+          "route": "implementor"
+        },
+        {
+          "reason": "unbounded generic: it (N)",
+          "receiver": "polars_core::datatypes::BinaryType",
+          "route": "implementor"
+        },
+        {
+          "reason": "unbounded generic: it (N)",
+          "receiver": "polars_core::datatypes::BooleanType",
+          "route": "implementor"
+        }
+      ],
       "key": "polars_core:2766",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "on every implementor: unbounded generic: it (N)",
       "signature": "(polars_utils::pl_str::PlSmallStr, impl core::iter::traits::iterator::Iterator<Item = core::option::Option<N>>) -> Self",
       "status": "unsupported"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::builder::NewChunkedArray::from_iter_values",
+      "exceptions": [
+        {
+          "reason": "unbounded generic: it (N)",
+          "receiver": "polars_core::datatypes::StringType",
+          "route": "implementor"
+        },
+        {
+          "reason": "unbounded generic: it (N)",
+          "receiver": "polars_core::datatypes::BinaryType",
+          "route": "implementor"
+        },
+        {
+          "reason": "unbounded generic: it (N)",
+          "receiver": "polars_core::datatypes::BooleanType",
+          "route": "implementor"
+        }
+      ],
       "key": "polars_core:2767",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "on every implementor: unbounded generic: it (N)",
       "signature": "(polars_utils::pl_str::PlSmallStr, impl core::iter::traits::iterator::Iterator<Item = N>) -> Self",
       "status": "unsupported"
     },
@@ -92997,7 +93365,7 @@
       "canonical_path": "polars_core::chunked_array::collect::ChunkedCollectInferIterExt::collect_ca_trusted",
       "key": "polars_core:2889",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket",
       "signature": "(polars_utils::pl_str::PlSmallStr) -> polars_core::chunked_array::ChunkedArray<T>",
       "status": "unsupported"
     },
@@ -93006,7 +93374,7 @@
       "canonical_path": "polars_core::chunked_array::collect::ChunkedCollectInferIterExt::try_collect_ca",
       "key": "polars_core:2890",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket",
       "signature": "(polars_utils::pl_str::PlSmallStr) -> core::result::Result<polars_core::chunked_array::ChunkedArray<T>, E>",
       "status": "unsupported"
     },
@@ -93015,7 +93383,7 @@
       "canonical_path": "polars_core::chunked_array::collect::ChunkedCollectInferIterExt::try_collect_ca_trusted",
       "key": "polars_core:2891",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket",
       "signature": "(polars_utils::pl_str::PlSmallStr) -> core::result::Result<polars_core::chunked_array::ChunkedArray<T>, E>",
       "status": "unsupported"
     },
@@ -93033,7 +93401,7 @@
       "canonical_path": "polars_core::chunked_array::collect::ChunkedCollectIterExt::collect_ca_trusted_like",
       "key": "polars_core:2881",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>) -> polars_core::chunked_array::ChunkedArray<T>",
       "status": "unsupported"
     },
@@ -93042,7 +93410,7 @@
       "canonical_path": "polars_core::chunked_array::collect::ChunkedCollectIterExt::collect_ca_trusted_with_dtype",
       "key": "polars_core:2880",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket",
       "signature": "(polars_utils::pl_str::PlSmallStr, polars_core::datatypes::dtype::DataType) -> polars_core::chunked_array::ChunkedArray<T>",
       "status": "unsupported"
     },
@@ -93060,7 +93428,7 @@
       "canonical_path": "polars_core::chunked_array::collect::ChunkedCollectIterExt::try_collect_ca_like",
       "key": "polars_core:2883",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>) -> core::result::Result<polars_core::chunked_array::ChunkedArray<T>, E>",
       "status": "unsupported"
     },
@@ -93069,7 +93437,7 @@
       "canonical_path": "polars_core::chunked_array::collect::ChunkedCollectIterExt::try_collect_ca_trusted_like",
       "key": "polars_core:2885",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket",
       "signature": "(&polars_core::chunked_array::ChunkedArray<T>) -> core::result::Result<polars_core::chunked_array::ChunkedArray<T>, E>",
       "status": "unsupported"
     },
@@ -93078,7 +93446,7 @@
       "canonical_path": "polars_core::chunked_array::collect::ChunkedCollectIterExt::try_collect_ca_trusted_with_dtype",
       "key": "polars_core:2884",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket",
       "signature": "(polars_utils::pl_str::PlSmallStr, polars_core::datatypes::dtype::DataType) -> core::result::Result<polars_core::chunked_array::ChunkedArray<T>, E>",
       "status": "unsupported"
     },
@@ -93087,7 +93455,7 @@
       "canonical_path": "polars_core::chunked_array::collect::ChunkedCollectIterExt::try_collect_ca_with_dtype",
       "key": "polars_core:2882",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket",
       "signature": "(polars_utils::pl_str::PlSmallStr, polars_core::datatypes::dtype::DataType) -> core::result::Result<polars_core::chunked_array::ChunkedArray<T>, E>",
       "status": "unsupported"
     },
@@ -93105,7 +93473,7 @@
       "canonical_path": "polars_core::chunked_array::from_iterator_par::ChunkedCollectParIterExt::collect_ca_with_dtype",
       "key": "polars_core:3181",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: blanket",
       "signature": "(polars_utils::pl_str::PlSmallStr, polars_core::datatypes::dtype::DataType) -> B",
       "status": "unsupported"
     },
@@ -93114,7 +93482,7 @@
       "canonical_path": "polars_core::chunked_array::from_iterator_par::FromParIterWithDtype::from_par_iter_with_dtype",
       "key": "polars_core:3173",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: ",
       "signature": "(I, polars_utils::pl_str::PlSmallStr, polars_core::datatypes::dtype::DataType) -> Self",
       "status": "unsupported"
     },
@@ -93402,7 +93770,7 @@
       "canonical_path": "polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values",
       "key": "polars_core:1821",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: polars_core::chunked_array::ChunkedArray",
       "signature": "(T) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -93411,16 +93779,23 @@
       "canonical_path": "polars_core::chunked_array::ops::ChunkFilter::filter",
       "key": "polars_core:1873",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: polars_core::chunked_array::ChunkedArray",
       "signature": "(&polars_core::datatypes::BooleanChunked) -> polars_error::PolarsResult<polars_core::chunked_array::ChunkedArray<T>>",
       "status": "unsupported"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::ChunkFull::full",
+      "exceptions": [
+        {
+          "reason": "generic parameter not inferable from arguments: Self",
+          "receiver": "polars_core::series::Series",
+          "route": "implementor"
+        }
+      ],
       "key": "polars_core:1829",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "on every implementor: generic parameter not inferable from arguments: Self",
       "signature": "(polars_utils::pl_str::PlSmallStr, T, usize) -> Self",
       "status": "unsupported"
     },
@@ -93454,9 +93829,16 @@
     {
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::ChunkQuantile::quantiles",
+      "exceptions": [
+        {
+          "reason": "generic parameter not inferable from arguments: T",
+          "receiver": "polars_core::series::Series",
+          "route": "implementor"
+        }
+      ],
       "key": "polars_core:1405",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "on every implementor: generic parameter not inferable from arguments: T",
       "signature": "(&[f64], polars_compute::rolling::QuantileMethod) -> polars_error::PolarsResult<alloc::vec::Vec<core::option::Option<T>>>",
       "status": "unsupported"
     },
@@ -93474,7 +93856,7 @@
       "canonical_path": "polars_core::chunked_array::ops::ChunkSet::scatter_single",
       "key": "polars_core:1317",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: polars_core::chunked_array::ChunkedArray",
       "signature": "(I, core::option::Option<A>) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -93492,7 +93874,7 @@
       "canonical_path": "polars_core::chunked_array::ops::ChunkSet::set",
       "key": "polars_core:1319",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: polars_core::chunked_array::ChunkedArray",
       "signature": "(&polars_core::datatypes::BooleanChunked, core::option::Option<A>) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -93555,7 +93937,7 @@
       "canonical_path": "polars_core::chunked_array::ops::ChunkTake::take",
       "key": "polars_core:1288",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: polars_core::chunked_array::ChunkedArray, polars_core::chunked_array::ChunkedArray",
       "signature": "(&Idx) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
@@ -96782,7 +97164,7 @@
       "canonical_path": "polars_io::shared::SerReader::set_rechunk",
       "key": "polars_io:6087",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: polars_io::csv::read::reader::CsvReader, polars_io::ipc::ipc_file::IpcReader, polars_io::parquet::read::reader::ParquetReader",
       "signature": "(bool) -> Self",
       "status": "unsupported"
     },
@@ -96800,7 +97182,7 @@
       "canonical_path": "polars_io::shared::SerWriter::new",
       "key": "polars_io:6089",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: polars_io::csv::write::writer::CsvWriter, polars_io::ipc::write::IpcWriter",
       "signature": "(W) -> Self",
       "status": "unsupported"
     },
@@ -97423,7 +97805,7 @@
       "canonical_path": "polars_ops::chunked_array::scatter::ChunkedSet::scatter",
       "key": "polars_ops:83",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "no wrapped implementor: ",
       "signature": "(&[polars_utils::index::IdxSize], V) -> polars_error::PolarsResult<polars_core::series::Series>",
       "status": "unsupported"
     },
@@ -97863,18 +98245,32 @@
     {
       "bucket": "generic",
       "canonical_path": "polars_plan::plans::visitor::visitors::TreeWalker::rewrite",
+      "exceptions": [
+        {
+          "reason": "mutable reference: rewriter (&mut R)",
+          "receiver": "polars_plan::dsl::expr::Expr",
+          "route": "implementor"
+        }
+      ],
       "key": "polars_plan:15566",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "on every implementor: mutable reference: rewriter (&mut R)",
       "signature": "(&mut R, &mut Self::Arena) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_plan::plans::visitor::visitors::TreeWalker::visit",
+      "exceptions": [
+        {
+          "reason": "mutable reference: visitor (&mut V)",
+          "receiver": "polars_plan::dsl::expr::Expr",
+          "route": "implementor"
+        }
+      ],
       "key": "polars_plan:15565",
       "kind": "trait_method",
-      "reason": "bucket: generic",
+      "reason": "on every implementor: mutable reference: visitor (&mut V)",
       "signature": "(&mut V, &Self::Arena) -> polars_error::PolarsResult<polars_plan::plans::visitor::VisitRecursion>",
       "status": "unsupported"
     },
@@ -98659,6 +99055,10 @@
       {
         "reason": "Default impl without a generated default_ binding (the impl is on the generic base), no constructor binding",
         "type": "polars_utils::float16::pf16"
+      },
+      {
+        "reason": "public fields, no Default, no constructor binding",
+        "type": "polars_utils::index::NullableIdxSize"
       },
       {
         "reason": "Default impl without a generated default_ binding (the impl is on the generic base), no constructor binding",
@@ -139040,7 +139440,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2057,
+  "oracle_cases": 2073,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -139303,12 +139703,32 @@
       "reason": "return type has no comparison (W_polars_core__chunked_array__builder__list__anonymous__AnonymousOwnedListBuilder)"
     },
     {
+      "path": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::append_trusted_len_iter",
+      "reason": "no fixture for a parameter (I)"
+    },
+    {
+      "path": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::append_values_iter",
+      "reason": "no fixture for a parameter (I)"
+    },
+    {
       "path": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::new",
       "reason": "return type has no comparison (W_polars_core__chunked_array__builder__list__binary__ListBinaryChunkedBuilder)"
     },
     {
+      "path": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::append_trusted_len_iter",
+      "reason": "no fixture for a parameter (I)"
+    },
+    {
+      "path": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::append_values_iter",
+      "reason": "no fixture for a parameter (I)"
+    },
+    {
       "path": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::new",
       "reason": "return type has no comparison (W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder)"
+    },
+    {
+      "path": "polars_core::chunked_array::builder::list::boolean::ListBooleanChunkedBuilder::append_iter",
+      "reason": "no fixture for a parameter (I)"
     },
     {
       "path": "polars_core::chunked_array::builder::list::boolean::ListBooleanChunkedBuilder::new",
@@ -139431,12 +139851,20 @@
       "reason": "no fixture for a parameter (&polars_core::schema::Schema)"
     },
     {
+      "path": "polars_core::frame::dataframe::DataFrame::explode",
+      "reason": "no fixture for a parameter (polars_core::chunked_array::ops::ExplodeOptions)"
+    },
+    {
       "path": "polars_core::frame::dataframe::DataFrame::explode_impl",
       "reason": "no fixture for a parameter (polars_core::chunked_array::ops::ExplodeOptions)"
     },
     {
       "path": "polars_core::frame::dataframe::DataFrame::full_null",
       "reason": "no fixture for a parameter (&polars_core::schema::Schema)"
+    },
+    {
+      "path": "polars_core::frame::dataframe::DataFrame::partition_by",
+      "reason": "excluded: nondeterministic oracle (the order of the partitions is unspecified (Polars documents only partition_by_stable as order-maintaining); the oracle's unordered policy covers rows within one frame, not a vector of frames (record 0084, observed run to run))"
     },
     {
       "path": "polars_core::frame::dataframe::DataFrame::shape",
@@ -140071,6 +140499,10 @@
       "reason": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)"
     },
     {
+      "path": "polars_plan::dsl::scan_sources::ScanSources::gather",
+      "reason": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)"
+    },
+    {
       "path": "polars_plan::dsl::scan_sources::ScanSources::id",
       "reason": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)"
     },
@@ -140097,6 +140529,10 @@
     {
       "path": "polars_core::chunked_array::ops::row_encode::row_encoding_decode",
       "reason": "no fixture for a parameter (&[polars_row::row::RowEncodingOptions])"
+    },
+    {
+      "path": "polars_core::frame::row::infer_schema",
+      "reason": "no fixture for a parameter (impl core::iter::traits::iterator::Iterator<Item = alloc::vec::Vec<(impl core::convert::Into<polars_utils::pl_str::PlSmallStr>, impl core::convert::Into<polars_core::datatypes::dtype::DataType>)>>)"
     },
     {
       "path": "polars_io::path_utils::expanded_from_single_directory",
@@ -142022,7 +142458,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "b078dedf1c68419a23cd5a380cbe561319b521b600754a8114dbd1a7dc445ff3",
+    "sha256": "5560348ee30784c23842220aefc7e92bc43d02488facb64e7363b4fcfdbe29cb",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",
@@ -144174,6 +144610,14 @@
       "rune": "polars::utils::pf16",
       "shared_with": [],
       "type": "polars_utils::float16::pf16"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_utils::index::NullableIdxSize",
+      "rule": "internal type",
+      "rune": "polars::utils::NullableIdxSize",
+      "shared_with": [],
+      "type": "polars_utils::index::NullableIdxSize"
     },
     {
       "hand_written": false,

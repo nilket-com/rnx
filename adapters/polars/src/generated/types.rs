@@ -1056,6 +1056,10 @@ pub struct W_polars_row__row__RowEncodingOptions(pub(crate) polars::prelude::Row
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::utils, name = pf16)]
 pub struct W_polars_utils__float16__pf16(pub(crate) polars::polars_utils::float16::pf16);
+/// `polars_utils::index::NullableIdxSize`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::utils, name = NullableIdxSize)]
+pub struct W_polars_utils__index__NullableIdxSize(pub(crate) polars::polars_utils::NullableIdxSize);
 /// `polars_utils::pl_path::CloudScheme`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::utils, name = CloudScheme)]
@@ -1329,6 +1333,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_plan__plans__lit__LiteralValue>()?;
     m.ty::<W_polars_row__row__RowEncodingOptions>()?;
     m.ty::<W_polars_utils__float16__pf16>()?;
+    m.ty::<W_polars_utils__index__NullableIdxSize>()?;
     m.ty::<W_polars_utils__pl_path__CloudScheme>()?;
     m.ty::<W_polars_utils__pl_path__PlRefPath>()?;
     Ok(())

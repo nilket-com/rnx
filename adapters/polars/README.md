@@ -16,6 +16,15 @@ copied under the materialize bound; the vector outlives its source and
 never aliases Polars storage. `polars::set_materialize_limit` (test
 support) bounds those copies too.
 
+Function generics (record 0084): where Polars asks for `IntoIterator<Item = S>`
+with `S: AsRef<str>` or `Into<PlSmallStr>`, or `AsRef<[IE]>` with
+`IE: Into<Expr>`, the script passes a vector of strings or expressions
+(`df.select_(["x", "z"])`, `expr.over([col("y")])`); the vector and its
+elements stay usable afterwards. Where Polars asks for an iterator, the
+script passes a vector: owned items are handed over by value, and string or
+byte items are borrowed from the script's values only for the duration of
+the call (`builder.append_values_iter(["a", "bc"])`).
+
 ```sh
 cargo build --release --locked --manifest-path adapters/polars/Cargo.toml
 adapters/polars/target/release/rnx-polars run your-script.rn

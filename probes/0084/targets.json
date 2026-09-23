@@ -1,0 +1,948 @@
+[
+ {
+  "key": "polars_core:2294",
+  "canonical_path": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::append_trusted_len_iter",
+  "phase": "iterator",
+  "decision_0083": "candidate: iterator input, borrowed items",
+  "receiver": "&mut self",
+  "params": [
+   [
+    "iter",
+    "I"
+   ]
+  ],
+  "ret": null,
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::iterator::Iterator<Item = core::option::Option<&[u8]>> + polars_arrow::trusted_len::TrustedLen"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic",
+  "concrete": {
+   "I": "Vec<owned core::option::Option<&[u8]>>::iter()"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::ListBinaryChunkedBuilder::append_trusted_len_iter"
+ },
+ {
+  "key": "polars_core:2295",
+  "canonical_path": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::append_values_iter",
+  "phase": "iterator",
+  "decision_0083": "candidate: iterator input, borrowed items",
+  "receiver": "&mut self",
+  "params": [
+   [
+    "iter",
+    "I"
+   ]
+  ],
+  "ret": null,
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::iterator::Iterator<Item = &[u8]>"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic",
+  "concrete": {
+   "I": "Vec<owned &[u8]>::iter()"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::ListBinaryChunkedBuilder::append_values_iter"
+ },
+ {
+  "key": "polars_core:2232",
+  "canonical_path": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::append_trusted_len_iter",
+  "phase": "iterator",
+  "decision_0083": "candidate: iterator input, borrowed items",
+  "receiver": "&mut self",
+  "params": [
+   [
+    "iter",
+    "I"
+   ]
+  ],
+  "ret": null,
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::iterator::Iterator<Item = core::option::Option<&str>> + polars_arrow::trusted_len::TrustedLen"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic",
+  "concrete": {
+   "I": "Vec<owned core::option::Option<&str>>::iter()"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::ListStringChunkedBuilder::append_trusted_len_iter"
+ },
+ {
+  "key": "polars_core:2233",
+  "canonical_path": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::append_values_iter",
+  "phase": "iterator",
+  "decision_0083": "candidate: iterator input, borrowed items",
+  "receiver": "&mut self",
+  "params": [
+   [
+    "iter",
+    "I"
+   ]
+  ],
+  "ret": null,
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::iterator::Iterator<Item = &str>"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic",
+  "concrete": {
+   "I": "Vec<owned &str>::iter()"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::ListStringChunkedBuilder::append_values_iter"
+ },
+ {
+  "key": "polars_core:2357",
+  "canonical_path": "polars_core::chunked_array::builder::list::boolean::ListBooleanChunkedBuilder::append_iter",
+  "phase": "iterator",
+  "decision_0083": "candidate: iterator input, owned items",
+  "receiver": "&mut self",
+  "params": [
+   [
+    "iter",
+    "I"
+   ]
+  ],
+  "ret": null,
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::iterator::Iterator<Item = core::option::Option<bool>> + polars_arrow::trusted_len::TrustedLen"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic",
+  "concrete": {
+   "I": "Vec<core::option::Option<bool>>::into_iter()"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::ListBooleanChunkedBuilder::append_iter"
+ },
+ {
+  "key": "polars_core:3245",
+  "canonical_path": "polars_core::chunked_array::logical::Logical::from_str_iter",
+  "phase": "iterator",
+  "decision_0083": "candidate: iterator input, borrowed items (per family)",
+  "receiver": "none",
+  "params": [
+   [
+    "name",
+    "polars_utils::pl_str::PlSmallStr"
+   ],
+   [
+    "dtype",
+    "polars_core::datatypes::dtype::DataType"
+   ],
+   [
+    "strings",
+    "I"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<Self>",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = core::option::Option<&str>>"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic (no proven instantiation)",
+  "concrete": {
+   "I": "Vec<owned core::option::Option<&str>>::iter()"
+  },
+  "audit": "refused: bucket: generic (no proven instantiation)"
+ },
+ {
+  "key": "polars_core:7611",
+  "canonical_path": "polars_core::frame::dataframe::DataFrame::drop_many",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "&self",
+  "params": [
+   [
+    "names",
+    "I"
+   ]
+  ],
+  "ret": "Self",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::Into<polars_utils::pl_str::PlSmallStr>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::DataFrame::drop_many"
+ },
+ {
+  "key": "polars_core:7555",
+  "canonical_path": "polars_core::frame::dataframe::DataFrame::explode",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "&self",
+  "params": [
+   [
+    "columns",
+    "I"
+   ],
+   [
+    "options",
+    "polars_core::chunked_array::ops::ExplodeOptions"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::AsRef<str>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::DataFrame::explode"
+ },
+ {
+  "key": "polars_core:7559",
+  "canonical_path": "polars_core::frame::dataframe::DataFrame::group_by",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "&self",
+  "params": [
+   [
+    "by",
+    "I"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<polars_core::frame::group_by::GroupBy>",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::AsRef<str>"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "blocked by owner/return: lifetime type: return (polars_core::frame::group_by::GroupBy)"
+ },
+ {
+  "key": "polars_core:7560",
+  "canonical_path": "polars_core::frame::dataframe::DataFrame::group_by_stable",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "&self",
+  "params": [
+   [
+    "by",
+    "I"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<polars_core::frame::group_by::GroupBy>",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::AsRef<str>"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "blocked by owner/return: lifetime type: return (polars_core::frame::group_by::GroupBy)"
+ },
+ {
+  "key": "polars_core:7676",
+  "canonical_path": "polars_core::frame::dataframe::DataFrame::partition_by",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "&self",
+  "params": [
+   [
+    "cols",
+    "I"
+   ],
+   [
+    "include_key",
+    "bool"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<alloc::vec::Vec<polars_core::frame::dataframe::DataFrame>>",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::Into<polars_utils::pl_str::PlSmallStr>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::DataFrame::partition_by"
+ },
+ {
+  "key": "polars_core:7677",
+  "canonical_path": "polars_core::frame::dataframe::DataFrame::partition_by_stable",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "&self",
+  "params": [
+   [
+    "cols",
+    "I"
+   ],
+   [
+    "include_key",
+    "bool"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<alloc::vec::Vec<polars_core::frame::dataframe::DataFrame>>",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::Into<polars_utils::pl_str::PlSmallStr>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::DataFrame::partition_by_stable"
+ },
+ {
+  "key": "polars_core:7623",
+  "canonical_path": "polars_core::frame::dataframe::DataFrame::select",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "&self",
+  "params": [
+   [
+    "names",
+    "I"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<Self>",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::AsRef<str>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::DataFrame::select_"
+ },
+ {
+  "key": "polars_dtype:371",
+  "canonical_path": "polars_dtype::categorical::FrozenCategories::new",
+  "phase": "iterator",
+  "decision_0083": "candidate: iterator input, borrowed items",
+  "receiver": "none",
+  "params": [
+   [
+    "strings",
+    "I"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<alloc::sync::Arc<Self>>",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = &str>"
+   ]
+  ],
+  "surface_reason_0083": "vector of borrows: strings (alloc::vec::Vec<&str>)",
+  "concrete": {
+   "I": "Vec<owned &str>::iter()"
+  },
+  "audit": "blocked by owner/return: foreign type: return (alloc::sync::Arc<Self>)"
+ },
+ {
+  "key": "polars_lazy:307",
+  "canonical_path": "polars_lazy::frame::LazyFrame::group_by",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "self",
+  "params": [
+   [
+    "by",
+    "E"
+   ]
+  ],
+  "ret": "polars_lazy::frame::LazyGroupBy",
+  "generics": [
+   [
+    "E",
+    "core::convert::AsRef<[IE]>"
+   ],
+   [
+    "IE",
+    "core::convert::Into<polars_plan::dsl::expr::Expr> + core::clone::Clone"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: IE",
+  "concrete": {
+   "E": "Vec<Expr>",
+   "IE": "Expr"
+  },
+  "audit": "blocked: hand-written binding of the same name (already available)"
+ },
+ {
+  "key": "polars_lazy:308",
+  "canonical_path": "polars_lazy::frame::LazyFrame::group_by_stable",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "self",
+  "params": [
+   [
+    "by",
+    "E"
+   ]
+  ],
+  "ret": "polars_lazy::frame::LazyGroupBy",
+  "generics": [
+   [
+    "E",
+    "core::convert::AsRef<[IE]>"
+   ],
+   [
+    "IE",
+    "core::convert::Into<polars_plan::dsl::expr::Expr> + core::clone::Clone"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: IE",
+  "concrete": {
+   "E": "Vec<Expr>",
+   "IE": "Expr"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::LazyFrame::group_by_stable"
+ },
+ {
+  "key": "polars_lazy:263",
+  "canonical_path": "polars_lazy::frame::LazyFrame::rename",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "self",
+  "params": [
+   [
+    "existing",
+    "I"
+   ],
+   [
+    "new",
+    "J"
+   ],
+   [
+    "strict",
+    "bool"
+   ]
+  ],
+  "ret": "Self",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = T>"
+   ],
+   [
+    "J",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "T",
+    "core::convert::AsRef<str>"
+   ],
+   [
+    "S",
+    "core::convert::AsRef<str>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: T",
+  "concrete": {
+   "I": "Vec<String>",
+   "T": "String",
+   "J": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::LazyFrame::rename"
+ },
+ {
+  "key": "polars_plan:1540",
+  "canonical_path": "polars_plan::dsl::expr::Expr::over",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "self",
+  "params": [
+   [
+    "partition_by",
+    "E"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<Self>",
+  "generics": [
+   [
+    "E",
+    "core::convert::AsRef<[IE]>"
+   ],
+   [
+    "IE",
+    "core::convert::Into<polars_plan::dsl::expr::Expr> + core::clone::Clone"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: IE",
+  "concrete": {
+   "E": "Vec<Expr>",
+   "IE": "Expr"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::Expr::over"
+ },
+ {
+  "key": "polars_plan:1541",
+  "canonical_path": "polars_plan::dsl::expr::Expr::over_with_options",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "self",
+  "params": [
+   [
+    "partition_by",
+    "core::option::Option<E>"
+   ],
+   [
+    "order_by",
+    "core::option::Option<(E, polars_core::chunked_array::ops::sort::options::SortOptions)>"
+   ],
+   [
+    "mapping",
+    "polars_plan::dsl::options::WindowMapping"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<Self>",
+  "generics": [
+   [
+    "E",
+    "core::convert::AsRef<[IE]>"
+   ],
+   [
+    "IE",
+    "core::convert::Into<polars_plan::dsl::expr::Expr> + core::clone::Clone"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: IE",
+  "concrete": {
+   "E": "Vec<Expr>",
+   "IE": "Expr"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::Expr::over_with_options"
+ },
+ {
+  "key": "polars_plan:1555",
+  "canonical_path": "polars_plan::dsl::expr::Expr::sort_by",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "self",
+  "params": [
+   [
+    "by",
+    "E"
+   ],
+   [
+    "sort_options",
+    "polars_core::chunked_array::ops::sort::options::SortMultipleOptions"
+   ]
+  ],
+  "ret": "polars_plan::dsl::expr::Expr",
+  "generics": [
+   [
+    "E",
+    "core::convert::AsRef<[IE]>"
+   ],
+   [
+    "IE",
+    "core::convert::Into<polars_plan::dsl::expr::Expr> + core::clone::Clone"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: IE",
+  "concrete": {
+   "E": "Vec<Expr>",
+   "IE": "Expr"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::Expr::sort_by"
+ },
+ {
+  "key": "polars_plan:7759",
+  "canonical_path": "polars_plan::dsl::file_scan::FileScanIR::gather_after_filter",
+  "phase": "iterator",
+  "decision_0083": "candidate: iterator input, owned items",
+  "receiver": "&mut self",
+  "params": [
+   [
+    "first_file_dropped",
+    "bool"
+   ],
+   [
+    "surviving_indices",
+    "I"
+   ]
+  ],
+  "ret": null,
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::iterator::Iterator<Item = usize>"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic",
+  "concrete": {
+   "I": "Vec<usize>::into_iter()"
+  },
+  "audit": "refused: release policy: release policy: surviving_indices must be ascending indices into the pre-filter source list and first_file_dropped must agree with them; Polars indexes the cached metadata directly and FileScanIR does not record the pre-filter length, so a binding cannot validate either (review of record 0084) (polars-plan 0.55.2 src/dsl/file_scan/mod.rs:186-218; polars-mem-engine src/scan_predicate/functions.rs:494-500)"
+ },
+ {
+  "key": "polars_plan:2882",
+  "canonical_path": "polars_plan::dsl::functions::concat::as_list",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "none",
+  "params": [
+   [
+    "s",
+    "E"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<polars_plan::dsl::expr::Expr>",
+  "generics": [
+   [
+    "E",
+    "core::convert::AsRef<[IE]>"
+   ],
+   [
+    "IE",
+    "core::convert::Into<polars_plan::dsl::expr::Expr> + core::clone::Clone"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: IE",
+  "concrete": {
+   "E": "Vec<Expr>",
+   "IE": "Expr"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::as_list"
+ },
+ {
+  "key": "polars_plan:2885",
+  "canonical_path": "polars_plan::dsl::functions::concat::concat_expr",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "none",
+  "params": [
+   [
+    "s",
+    "E"
+   ],
+   [
+    "rechunk",
+    "bool"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<polars_plan::dsl::expr::Expr>",
+  "generics": [
+   [
+    "E",
+    "core::convert::AsRef<[IE]>"
+   ],
+   [
+    "IE",
+    "core::convert::Into<polars_plan::dsl::expr::Expr> + core::clone::Clone"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: IE",
+  "concrete": {
+   "E": "Vec<Expr>",
+   "IE": "Expr"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::concat_expr"
+ },
+ {
+  "key": "polars_plan:2883",
+  "canonical_path": "polars_plan::dsl::functions::concat::concat_list",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "none",
+  "params": [
+   [
+    "s",
+    "E"
+   ]
+  ],
+  "ret": "polars_error::PolarsResult<polars_plan::dsl::expr::Expr>",
+  "generics": [
+   [
+    "E",
+    "core::convert::AsRef<[IE]>"
+   ],
+   [
+    "IE",
+    "core::convert::Into<polars_plan::dsl::expr::Expr> + core::clone::Clone"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: IE",
+  "concrete": {
+   "E": "Vec<Expr>",
+   "IE": "Expr"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::concat_list"
+ },
+ {
+  "key": "polars_plan:2911",
+  "canonical_path": "polars_plan::dsl::functions::selectors::by_name",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "none",
+  "params": [
+   [
+    "names",
+    "I"
+   ],
+   [
+    "strict",
+    "bool"
+   ],
+   [
+    "expand_patterns",
+    "bool"
+   ]
+  ],
+  "ret": "polars_plan::dsl::selector::Selector",
+  "generics": [
+   [
+    "S",
+    "core::convert::Into<polars_utils::pl_str::PlSmallStr>"
+   ],
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::by_name"
+ },
+ {
+  "key": "polars_plan:2908",
+  "canonical_path": "polars_plan::dsl::functions::selectors::cols",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "none",
+  "params": [
+   [
+    "names",
+    "I"
+   ]
+  ],
+  "ret": "polars_plan::dsl::selector::Selector",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::Into<polars_utils::pl_str::PlSmallStr>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::cols"
+ },
+ {
+  "key": "polars_plan:6049",
+  "canonical_path": "polars_plan::dsl::scan_sources::ScanSources::gather",
+  "phase": "iterator",
+  "decision_0083": "candidate: iterator input, owned items",
+  "receiver": "&self",
+  "params": [
+   [
+    "indices",
+    "impl core::iter::traits::iterator::Iterator<Item = usize>"
+   ]
+  ],
+  "ret": "core::option::Option<Self>",
+  "generics": [
+   [
+    "impl Iterator<Item = usize>",
+    "core::iter::traits::iterator::Iterator<Item = usize>"
+   ]
+  ],
+  "surface_reason_0083": "bucket: generic",
+  "concrete": {
+   "impl Iterator<Item = usize>": "Vec<usize>::into_iter()"
+  },
+  "audit": "candidate: emitted",
+  "bindings": "polars::ScanSources::gather"
+ },
+ {
+  "key": "polars_plan:6911",
+  "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::drop",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "self",
+  "params": [
+   [
+    "names",
+    "I"
+   ],
+   [
+    "strict",
+    "bool"
+   ]
+  ],
+  "ret": "polars_plan::dsl::expr::Expr",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::Into<polars_utils::pl_str::PlSmallStr>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "blocked by owner/return: receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace"
+ },
+ {
+  "key": "polars_plan:6908",
+  "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::field_by_names",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "self",
+  "params": [
+   [
+    "names",
+    "I"
+   ]
+  ],
+  "ret": "polars_plan::dsl::expr::Expr",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::Into<polars_utils::pl_str::PlSmallStr>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "blocked by owner/return: receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace"
+ },
+ {
+  "key": "polars_plan:6910",
+  "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::rename_fields",
+  "phase": "chained",
+  "decision_0083": "candidate: chained inference",
+  "receiver": "self",
+  "params": [
+   [
+    "names",
+    "I"
+   ]
+  ],
+  "ret": "polars_plan::dsl::expr::Expr",
+  "generics": [
+   [
+    "I",
+    "core::iter::traits::collect::IntoIterator<Item = S>"
+   ],
+   [
+    "S",
+    "core::convert::Into<polars_utils::pl_str::PlSmallStr>"
+   ]
+  ],
+  "surface_reason_0083": "generic parameter not inferable from arguments: S",
+  "concrete": {
+   "I": "Vec<String>",
+   "S": "String"
+  },
+  "audit": "blocked by owner/return: receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace"
+ }
+]
