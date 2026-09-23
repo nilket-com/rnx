@@ -207,33 +207,54 @@ fn numeric_preflight<N: polars_arrow::types::NativeType>(chunks: &[polars_arrow:
 /// total, and an iterator that yields a different number of chunks than
 /// were counted is refused; nothing partial is returned.
 fn iter_copy<'a, A: polars_arrow::array::Array + 'a, V: ?Sized, U>(chunks: &[polars_arrow::array::ArrayRef], total: usize, it: impl Iterator<Item = Result<&'a A, Error>>, method: &str, iter: impl for<'b> Fn(&'b A) -> Box<dyn Iterator<Item = Option<&'b V>> + 'b>, size: impl Fn(&V) -> usize, copy: impl Fn(&V) -> Result<U, Error>) -> Result<Vec<Vec<Option<U>>>, Error> {
-	let recount = || Error("MaterializeLimit".into(), format!("{method}: more slots copied than the {total} counted, within the bound of {}", materialize_limit()));
-	let counted = chunks.len();
 	let mut used = 0usize;
-	let mut out = Vec::with_capacity(counted);
+	let mut out = Vec::with_capacity(chunks.len());
 	for a in it {
-		let a = a?;
-		if out.len() == counted {
-			return Err(Error::conversion(&format!("{method}: the iterator yielded more than the {counted} chunks counted")));
-		}
-		// each yielded chunk must be the one the preflight counted
-		let expected = chunks[out.len()].len();
-		if a.len() != expected {
-			return Err(Error::conversion(&format!("{method}: chunk {} has {} cells, {expected} were counted", out.len(), a.len())));
-		}
-		used = used.checked_add(1 + a.len()).filter(|u| *u <= total).ok_or_else(recount)?;
-		let mut row = Vec::with_capacity(a.len());
-		for v in iter(a) {
-			row.push(match v {
-				Some(v) => {
-					used = used.checked_add(size(v)).filter(|u| *u <= total).ok_or_else(recount)?;
-					Some(copy(v)?)
-				}
-				None => None,
-			});
-		}
+		let row = copy_chunk(a?, chunks, out.len(), total, &mut used, method, &iter, &size, &copy)?;
 		out.push(row);
 	}
+	finish_copy(out, chunks.len(), used, total, method)
+}
+/// Record 0105: the owned-array counterpart of `iter_copy`: each array the
+/// consuming iterator yields is copied as it comes (no intermediate
+/// collection) under the same checks, then dropped.
+fn owned_copy<A: polars_arrow::array::Array, V: ?Sized, U>(chunks: &[polars_arrow::array::ArrayRef], total: usize, it: impl Iterator<Item = A>, method: &str, iter: impl for<'b> Fn(&'b A) -> Box<dyn Iterator<Item = Option<&'b V>> + 'b>, size: impl Fn(&V) -> usize, copy: impl Fn(&V) -> Result<U, Error>) -> Result<Vec<Vec<Option<U>>>, Error> {
+	let mut used = 0usize;
+	let mut out = Vec::with_capacity(chunks.len());
+	for a in it {
+		let row = copy_chunk(&a, chunks, out.len(), total, &mut used, method, &iter, &size, &copy)?;
+		out.push(row);
+	}
+	finish_copy(out, chunks.len(), used, total, method)
+}
+/// Records 0103-0105: one yielded chunk, checked against the preflight
+/// chunk at its position, copied with every slot re-counted.
+#[allow(clippy::too_many_arguments)]
+fn copy_chunk<A: polars_arrow::array::Array, V: ?Sized, U>(a: &A, chunks: &[polars_arrow::array::ArrayRef], index: usize, total: usize, used: &mut usize, method: &str, iter: &impl for<'b> Fn(&'b A) -> Box<dyn Iterator<Item = Option<&'b V>> + 'b>, size: &impl Fn(&V) -> usize, copy: &impl Fn(&V) -> Result<U, Error>) -> Result<Vec<Option<U>>, Error> {
+	let recount = || Error("MaterializeLimit".into(), format!("{method}: more slots copied than the {total} counted, within the bound of {}", materialize_limit()));
+	if index == chunks.len() {
+		return Err(Error::conversion(&format!("{method}: the iterator yielded more than the {} chunks counted", chunks.len())));
+	}
+	// each yielded chunk must be the one the preflight counted
+	let expected = chunks[index].len();
+	if a.len() != expected {
+		return Err(Error::conversion(&format!("{method}: chunk {index} has {} cells, {expected} were counted", a.len())));
+	}
+	*used = used.checked_add(1 + a.len()).filter(|u| *u <= total).ok_or_else(recount)?;
+	let mut row = Vec::with_capacity(a.len());
+	for v in iter(a) {
+		row.push(match v {
+			Some(v) => {
+				*used = used.checked_add(size(v)).filter(|u| *u <= total).ok_or_else(recount)?;
+				Some(copy(v)?)
+			}
+			None => None,
+		});
+	}
+	Ok(row)
+}
+/// Records 0103-0105: every counted chunk and slot copied, no fewer.
+fn finish_copy<T>(out: Vec<T>, counted: usize, used: usize, total: usize, method: &str) -> Result<Vec<T>, Error> {
 	if out.len() != counted {
 		return Err(Error::conversion(&format!("{method}: the iterator yielded {} chunks, {counted} were counted", out.len())));
 	}
@@ -325,6 +346,41 @@ pub(crate) fn view_snapshot_binview<'a>(chunks: &[polars_arrow::array::ArrayRef]
 pub(crate) fn view_snapshot_binary_offset<'a>(chunks: &[polars_arrow::array::ArrayRef], len: usize, get: impl Fn(usize) -> Option<&'a polars_arrow::array::BinaryArray<i64>> + 'a, method: &str) -> Result<Vec<Vec<Option<Vec<i64>>>>, Error> {
 	let total = payload_preflight::<polars_arrow::array::BinaryArray<i64>, [u8]>(chunks, method, "BinaryArray<i64>", &binary_offset_cells, &<[u8]>::len)?;
 	iter_copy(chunks, total, view_items(chunks, len, get, method)?, method, binary_offset_cells, <[u8]>::len, bytes_as_ints)
+}
+
+/// Record 0105: the preflights, run on the Rune receiver's own chunks
+/// before it is cloned for Polars's consuming `downcast_into_iter`;
+/// each returns the total the copy must reach exactly.
+pub(crate) fn preflight_numeric<N: polars_arrow::types::NativeType>(chunks: &[polars_arrow::array::ArrayRef], method: &str) -> Result<usize, Error> {
+	numeric_preflight::<N>(chunks, method)
+}
+pub(crate) fn preflight_bool(chunks: &[polars_arrow::array::ArrayRef], method: &str) -> Result<usize, Error> {
+	payload_preflight::<polars_arrow::array::BooleanArray, bool>(chunks, method, "BooleanArray", &bool_cells, &|_| 0)
+}
+pub(crate) fn preflight_str(chunks: &[polars_arrow::array::ArrayRef], method: &str) -> Result<usize, Error> {
+	payload_preflight::<polars_arrow::array::Utf8ViewArray, str>(chunks, method, "Utf8ViewArray", &str_cells, &str::len)
+}
+pub(crate) fn preflight_binview(chunks: &[polars_arrow::array::ArrayRef], method: &str) -> Result<usize, Error> {
+	payload_preflight::<polars_arrow::array::BinaryViewArray, [u8]>(chunks, method, "BinaryViewArray", &binview_cells, &<[u8]>::len)
+}
+pub(crate) fn preflight_binary_offset(chunks: &[polars_arrow::array::ArrayRef], method: &str) -> Result<usize, Error> {
+	payload_preflight::<polars_arrow::array::BinaryArray<i64>, [u8]>(chunks, method, "BinaryArray<i64>", &binary_offset_cells, &<[u8]>::len)
+}
+/// Record 0105: `downcast_into_iter` on a numeric owner (after its preflight).
+pub(crate) fn owned_snapshot<N: polars_arrow::types::NativeType, U>(chunks: &[polars_arrow::array::ArrayRef], total: usize, it: impl Iterator<Item = polars_arrow::array::PrimitiveArray<N>>, method: &str, conv: impl Fn(N) -> Result<U, Error>) -> Result<Vec<Vec<Option<U>>>, Error> {
+	owned_copy::<polars_arrow::array::PrimitiveArray<N>, N, U>(chunks, total, it, method, |a| Box::new(a.iter()), |_| 0, |x| conv(*x))
+}
+pub(crate) fn owned_snapshot_bool(chunks: &[polars_arrow::array::ArrayRef], total: usize, it: impl Iterator<Item = polars_arrow::array::BooleanArray>, method: &str) -> Result<Vec<Vec<Option<bool>>>, Error> {
+	owned_copy(chunks, total, it, method, bool_cells, |_| 0, |b| Ok(*b))
+}
+pub(crate) fn owned_snapshot_str(chunks: &[polars_arrow::array::ArrayRef], total: usize, it: impl Iterator<Item = polars_arrow::array::Utf8ViewArray>, method: &str) -> Result<Vec<Vec<Option<String>>>, Error> {
+	owned_copy(chunks, total, it, method, str_cells, str::len, |v| Ok(v.to_string()))
+}
+pub(crate) fn owned_snapshot_binview(chunks: &[polars_arrow::array::ArrayRef], total: usize, it: impl Iterator<Item = polars_arrow::array::BinaryViewArray>, method: &str) -> Result<Vec<Vec<Option<Vec<i64>>>>, Error> {
+	owned_copy(chunks, total, it, method, binview_cells, <[u8]>::len, bytes_as_ints)
+}
+pub(crate) fn owned_snapshot_binary_offset(chunks: &[polars_arrow::array::ArrayRef], total: usize, it: impl Iterator<Item = polars_arrow::array::BinaryArray<i64>>, method: &str) -> Result<Vec<Vec<Option<Vec<i64>>>>, Error> {
+	owned_copy(chunks, total, it, method, binary_offset_cells, <[u8]>::len, bytes_as_ints)
 }
 
 /// Record 0100: the shared core of the payload snapshots. A preflight over
@@ -1381,6 +1437,39 @@ mod bits_tests {
 		assert_eq!(view_snapshot::<i32, i64>(&strings, 1, |_| None, "m", conv).unwrap_err().0, "ConversionError");
 		let fewer = Utf8ViewArray::from_slice([Some("a")]);
 		assert_eq!(view_snapshot_str(&strings, 1, |_| Some(&fewer), "m").unwrap_err().1, "m: 3 slots copied, 5 were counted");
+	}
+
+	#[test]
+	fn owned_snapshots_stream_after_the_preflight() {
+		let _s = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+		use polars_arrow::array::{ArrayRef, PrimitiveArray, Utf8ViewArray};
+		limit(0);
+		let a = PrimitiveArray::<i32>::from([Some(1), None]);
+		let e = PrimitiveArray::<i32>::from_vec(vec![]);
+		let chunks: Vec<ArrayRef> = vec![Box::new(a.clone()), Box::new(e.clone()), Box::new(a.clone())];
+		let conv = |x: i32| Ok(x as i64);
+		let total = preflight_numeric::<i32>(&chunks, "m").unwrap();
+		assert_eq!(total, 7);
+		assert_eq!(owned_snapshot::<i32, i64>(&chunks, total, vec![a.clone(), e.clone(), a.clone()].into_iter(), "m", conv).unwrap(), vec![vec![Some(1), None], vec![], vec![Some(1), None]], "forward order, middle empty chunk kept");
+		// the preflight refuses before any clone or Polars call could happen
+		limit(6);
+		assert_eq!(preflight_numeric::<i32>(&chunks, "m").unwrap_err().1, "m: 3 chunks and 4 cells (7 slots), more than the bound of 6");
+		let empties: Vec<ArrayRef> = (0..50).map(|_| -> ArrayRef { Box::new(e.clone()) }).collect();
+		limit(49);
+		assert_eq!(preflight_numeric::<i32>(&empties, "m").unwrap_err().1, "m: 50 chunks and 0 cells (50 slots), more than the bound of 49");
+		limit(0);
+		// a changed count or shape from the owned iterator
+		assert_eq!(owned_snapshot::<i32, i64>(&chunks, total, vec![a.clone(), e.clone()].into_iter(), "m", conv).unwrap_err().1, "m: the iterator yielded 2 chunks, 3 were counted");
+		assert_eq!(owned_snapshot::<i32, i64>(&chunks, total, vec![a.clone(), e.clone(), a.clone(), a.clone()].into_iter(), "m", conv).unwrap_err().1, "m: the iterator yielded more than the 3 chunks counted");
+		assert_eq!(owned_snapshot::<i32, i64>(&chunks, total, vec![e.clone(), a.clone(), a.clone()].into_iter(), "m", conv).unwrap_err().1, "m: chunk 0 has 0 cells, 2 were counted");
+		// wrong array in preflight; payload recount
+		let strings: Vec<ArrayRef> = vec![Box::new(Utf8ViewArray::from_slice([Some("abc")]))];
+		assert_eq!(preflight_numeric::<i32>(&strings, "m").unwrap_err().1, "m: a chunk is not a PrimitiveArray<i32>");
+		let t = preflight_str(&strings, "m").unwrap();
+		assert_eq!(owned_snapshot_str(&strings, t, vec![Utf8ViewArray::from_slice([Some("a")])].into_iter(), "m").unwrap_err().1, "m: 3 slots copied, 5 were counted");
+		assert_eq!(owned_snapshot_str(&strings, t, vec![Utf8ViewArray::from_slice([Some("abc")])].into_iter(), "m").unwrap(), vec![vec![Some("abc".to_string())]]);
+		// checked addition without a huge array
+		assert!(payload_count_step(1, usize::MAX, 0, 1, PayloadCount::Cells, "m").is_err());
 	}
 
 	#[test]

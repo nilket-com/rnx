@@ -176,6 +176,13 @@ result is an owned vector of chunks, each a vector of options. It is
 bounded the same way: chunks plus cells plus payload bytes, checked before
 copying.
 
+Consuming chunk iteration (record 0105): `ca.downcast_into_iter()` on the
+same fourteen wrappers returns every chunk in order, as `downcast_iter()`
+does. In Rust it consumes the array. Here it consumes a clone, so the
+script's array stays usable. The size bound (chunks plus cells plus payload
+bytes) is checked on the script's array before that clone is made. So an
+array too large to copy is refused without cloning it.
+
 Integer read-back (record 0093): a script integer is an `i64`, so every
 `u64`, `usize`, `isize`, `i128` or `u128` that Polars returns is converted
 with a range check. A value outside `i64` is a `ConversionError` naming the

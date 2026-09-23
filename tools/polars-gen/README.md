@@ -264,6 +264,17 @@ whose length differs from the preflight chunk count, or whose in-range `get`
 returns `None`. It then copies with 0103's per-chunk-length and final-total
 checks; `iter_copy` now takes fallible items.
 
+Record 0105's `[[owned_iter_snapshots]]` entry maps `downcast_into_iter`.
+It requires a consuming `self` receiver, no parameters, and the exact text
+`impl DoubleEndedIterator<Item = T::Array>` with an owned item. With the
+pair's kind in scope, `World::ret` requires the parsed item to equal the
+pair's array as an owned value. The method emitter inserts
+`let __total = support::preflight_*(this.0.chunks(), ..)?;` before the call,
+so the check runs before the receiver's clone (`this.0.clone()`) and before
+Polars. `support::owned_snapshot*` then streams each owned array through
+the shared `copy_chunk` and `finish_copy`, with 0103's per-chunk and
+final-total checks and no intermediate collection.
+
 Record 0076 added the deref route (trait methods on a type whose `Deref`
 target is that trait), the null-series core fixture, the instantiation
 of `ChunkedArray` and `Logical` methods on their alias wrappers from an
