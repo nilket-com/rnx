@@ -258,9 +258,9 @@ pub fn drive_async(
 /// Polls the execution and, at the moment it settles, records whether the
 /// budget installed around this poll was exhausted. That reading must be
 /// taken inside the budget wrapper's poll, while the budget is installed.
-struct Settled<F> {
-	inner: Pin<Box<F>>,
-	exhausted: Rc<Cell<bool>>,
+pub(crate) struct Settled<F> {
+	pub(crate) inner: Pin<Box<F>>,
+	pub(crate) exhausted: Rc<Cell<bool>>,
 }
 
 impl<F: Future> Future for Settled<F> {
