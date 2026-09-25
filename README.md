@@ -675,7 +675,14 @@ Compile an entry file once with `Program::compile(path, schema_extensions)`;
 create fresh, identically registered extensions on each worker and call
 `program.prepare(extensions, "module::handler", request_value, budget)`.
 The handler takes one Rune value. Construct and inspect values through
-`rnx::rune`; no private renderer or serializer is needed. `Program` is shareable;
+`rnx::rune`; no private renderer or serializer is needed. Record 0107 adds
+two additive entries: `Program::compile_source(name, text, extensions)`
+compiles source text the caller holds (`name` appears in diagnostics and is
+never opened; the text counts against the same allowance, and `mod`
+declarations are refused because it has no directory), and
+`program.prepare_with(extensions, handler, arguments, budget)` passes any
+number of positional arguments. A spent budget is reported as `the budget of
+N instructions was exhausted`, as the CLI reports it. `Program` is shareable;
 an `Invocation` and its values stay on their owner thread.
 
 Await `invocation.run()` once on the caller's runtime, then explicitly call

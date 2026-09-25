@@ -26,6 +26,8 @@ pub struct Loader {
 	limit: usize,
 	remaining: usize,
 	exhausted: bool,
+	// An in-memory entry has no directory, so `mod` declarations are refused.
+	memory: bool,
 	#[cfg(test)]
 	opens: usize,
 }
@@ -43,6 +45,7 @@ impl Loader {
 			limit,
 			remaining: limit,
 			exhausted: false,
+			memory: false,
 			#[cfg(test)]
 			opens: 0,
 		}
@@ -93,6 +96,20 @@ impl Loader {
 		})
 	}
 
+	/// An entry supplied as text. `name` identifies it in diagnostics and is
+	/// never opened; the text counts against the same allowance as a file.
+	#[cfg(feature = "server-runtime")]
+	pub fn memory(&mut self, name: &str, text: &str) -> Result<Source, String> {
+		let text = self.read(text.as_bytes()).map_err(|e| e.to_string())?;
+		let source = Source::with_path(name, &text, name).map_err(|e| e.to_string())?;
+		self.memory = true;
+		self.texts.push(Text {
+			path: PathBuf::from(name),
+			text,
+		});
+		Ok(source)
+	}
+
 	pub fn entry(&mut self, path: &Path) -> Result<Source, String> {
 		self.file(path)
 			.map_err(|error| format!("cannot read {}: {error}", path.display()))
@@ -123,6 +140,12 @@ impl SourceLoader for Loader {
 		// Do not even resolve further candidates once a read crossed the bound.
 		if self.exhausted {
 			return Err(compile::Error::msg(span, self.limit_error()));
+		}
+		if self.memory {
+			return Err(compile::Error::msg(
+				span,
+				format!("module `{item}` cannot be loaded: an in-memory source has no directory"),
+			));
 		}
 		#[cfg(feature = "project-sources")]
 		if let Some((base, at_root)) = self.mounts.resolve(item) {
