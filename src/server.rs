@@ -136,16 +136,28 @@ impl Program {
 	/// Compile with the entry-file loader and its 8 MiB aggregate allowance.
 	/// Extensions are schema registrations; no handler is executed here.
 	pub fn compile(entry: impl AsRef<Path>, extensions: Extensions) -> Result<Self, Failure> {
+		Self::build(extensions, |loader| loader.entry(entry.as_ref()))
+	}
+	/// Compile source text held by the caller. `name` identifies it in
+	/// diagnostics and is never opened. `mod` declarations are refused, since
+	/// the text has no directory to resolve them against.
+	pub fn compile_source(
+		name: &str,
+		source: &str,
+		extensions: Extensions,
+	) -> Result<Self, Failure> {
+		Self::build(extensions, |loader| loader.memory(name, source))
+	}
+	fn build(
+		extensions: Extensions,
+		entry: impl FnOnce(&mut Loader) -> Result<rune::Source, String>,
+	) -> Result<Self, Failure> {
 		let (context, owner) = context(extensions)?;
 		let built = (|| {
 			let mut loader = Loader::new();
 			let mut sources = Sources::new();
 			sources
-				.insert(
-					loader
-						.entry(entry.as_ref())
-						.map_err(|e| Failure::new("preparation", e))?,
-				)
+				.insert(entry(&mut loader).map_err(|e| Failure::new("preparation", e))?)
 				.map_err(|e| Failure::new("preparation", e))?;
 			let mut diagnostics = Diagnostics::new();
 			let result = rune::prepare(&mut sources)
@@ -188,6 +200,16 @@ impl Program {
 		argument: Value,
 		budget: usize,
 	) -> Result<Invocation, Failure> {
+		self.prepare_with(extensions, handler, vec![argument], budget)
+	}
+	/// `prepare` for a handler taking any number of positional arguments.
+	pub fn prepare_with(
+		&self,
+		extensions: Extensions,
+		handler: &str,
+		arguments: Vec<Value>,
+		budget: usize,
+	) -> Result<Invocation, Failure> {
 		if budget == 0 || budget > crate::runner::LARGEST_BUDGET {
 			return Err(Failure::new(
 				"preparation",
@@ -206,7 +228,7 @@ impl Program {
 			program: self.clone(),
 			runtime,
 			owner,
-			argument: Some(argument),
+			arguments: Some(arguments),
 			handler: handler.into(),
 			budget,
 			started: false,
@@ -244,7 +266,7 @@ pub struct Invocation {
 	program: Program,
 	runtime: Arc<RuntimeContext>,
 	owner: Owner,
-	argument: Option<Value>,
+	arguments: Option<Vec<Value>>,
 	handler: String,
 	budget: usize,
 	started: bool,
@@ -296,19 +318,44 @@ impl Invocation {
 		let result = {
 			let this = &mut guard.invocation;
 			let mut vm = Vm::new(this.runtime.clone(), this.program.0.unit.clone());
-			let argument = this.argument.take().expect("one-shot argument");
+			let arguments = this.arguments.take().expect("one-shot arguments");
 			match vm.execute(
 				rune::Hash::type_hash(this.handler.split("::").collect::<Vec<_>>().as_slice()),
-				(argument,),
+				arguments,
 			) {
-				Ok(mut execution) => {
-					match rune::runtime::budget::with(this.budget, execution.async_resume())
+				Ok(execution) => {
+					// Read as the CLI reads it (execute.rs): a halt with no
+					// location while the budget is spent is the budget itself.
+					let exhausted = std::rc::Rc::new(std::cell::Cell::new(false));
+					let settled = crate::execute::Settled {
+						inner: Box::pin(async move {
+							let mut execution = execution;
+							execution.async_resume().await
+						}),
+						exhausted: exhausted.clone(),
+					};
+					match rune::runtime::budget::with(this.budget, settled)
 						.await
 						.into_result()
 					{
 						Ok(rune::runtime::GeneratorState::Complete(value)) => Ok(value),
 						Ok(_) => Err(Failure::new("vm", "handler yielded instead of completing")),
-						Err(error) => Err(this.program.fault(error)),
+						Err(error) if error.first_location().is_none() && exhausted.get() => {
+							Err(Failure::new(
+								"vm",
+								format!("the budget of {} instructions was exhausted", this.budget),
+							))
+						}
+						Err(error) => {
+							let mut failure = this.program.fault(error);
+							if exhausted.get() {
+								failure.message.push_str(&format!(
+									"; the budget of {} instructions was exhausted at that point",
+									this.budget
+								));
+							}
+							Err(failure)
+						}
 					}
 				}
 				Err(error) => Err(this.program.fault(error)),
@@ -319,7 +366,7 @@ impl Invocation {
 	/// Retire all owned operations, without entering or draining a runtime.
 	/// Cleanup failures take precedence over a remembered execution failure.
 	pub fn close(mut self) -> Result<(), Failure> {
-		drop(self.argument.take());
+		drop(self.arguments.take());
 		self.owner.close()?;
 		match self.failure.take() {
 			Some(error) => Err(error),
@@ -554,5 +601,96 @@ mod host_tests {
 				"HOST released native poll and joined worker"
 			}));
 		}
+	}
+}
+
+#[cfg(test)]
+mod source_tests {
+	use super::*;
+	fn run(program: &Program, handler: &str, arguments: Vec<Value>) -> Result<Value, Failure> {
+		let mut invocation = program
+			.prepare_with(Extensions::none(), handler, arguments, 10000)
+			.unwrap();
+		let result = tokio::runtime::Builder::new_current_thread()
+			.enable_all()
+			.build()
+			.unwrap()
+			.block_on(invocation.run());
+		let close = invocation.close();
+		if result.is_ok() {
+			close.unwrap();
+		}
+		result
+	}
+	#[test]
+	fn in_memory_source_takes_several_arguments() {
+		let program = Program::compile_source(
+			"<buffer 1>",
+			"pub fn main(a, b) { a * 10 + b }\n",
+			Extensions::none(),
+		)
+		.unwrap();
+		let value = run(&program, "main", vec![Value::from(4i64), Value::from(2i64)]).unwrap();
+		assert_eq!(rune::from_value::<i64>(value).unwrap(), 42);
+	}
+	#[test]
+	fn single_argument_prepare_is_unchanged() {
+		let program =
+			Program::compile_source("<one>", "pub fn main(a) { a + 1 }\n", Extensions::none())
+				.unwrap();
+		let mut invocation = program
+			.prepare(Extensions::none(), "main", Value::from(1i64), 10000)
+			.unwrap();
+		let value = tokio::runtime::Builder::new_current_thread()
+			.enable_all()
+			.build()
+			.unwrap()
+			.block_on(invocation.run())
+			.unwrap();
+		invocation.close().unwrap();
+		assert_eq!(rune::from_value::<i64>(value).unwrap(), 2);
+	}
+	#[test]
+	fn in_memory_compile_failure_names_the_source() {
+		let failure = Program::compile_source(
+			"<buffer 7>",
+			"pub fn main() {\n    unknown\n}\n",
+			Extensions::none(),
+		)
+		.err()
+		.unwrap();
+		assert_eq!(failure.category(), "preparation");
+		assert_eq!(failure.path(), Some(Path::new("<buffer 7>")));
+		assert_eq!(failure.position().map(|p| p.0), Some(2));
+		assert_eq!(failure.excerpt(), Some("    unknown"));
+	}
+	#[test]
+	fn in_memory_source_refuses_module_declarations() {
+		let failure =
+			Program::compile_source("<buffer 2>", "mod helpers;\npub fn main() {}\n", Extensions::none())
+				.err()
+				.unwrap();
+		assert!(
+			failure.message().contains("an in-memory source has no directory"),
+			"{failure}"
+		);
+		assert_eq!(failure.position().map(|p| p.0), Some(1));
+	}
+	#[test]
+	fn an_exhausted_budget_is_named() {
+		let program =
+			Program::compile_source("<loop>", "pub fn main() { loop {} }\n", Extensions::none())
+				.unwrap();
+		let failure = run(&program, "main", vec![]).unwrap_err();
+		assert_eq!(failure.category(), "vm");
+		assert_eq!(failure.message(), "the budget of 10000 instructions was exhausted");
+	}
+	#[test]
+	fn in_memory_source_counts_against_the_allowance() {
+		let text = format!("pub fn main() {{}}\n//{}\n", "x".repeat(crate::program::SOURCE_ALLOWANCE));
+		let failure = Program::compile_source("<big>", &text, Extensions::none())
+			.err()
+			.unwrap();
+		assert!(failure.message().contains("source allowance"), "{failure}");
 	}
 }
