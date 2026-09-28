@@ -8,1069 +8,1514 @@ use crate::render;
 
 /// Every loaded document, keyed by crate name (underscored, as rustc names it).
 pub struct Docs {
-    pub crates: HashMap<String, Crate>,
-    /// Per crate: local item path -> id, for cross-document resolution.
-    by_path: HashMap<String, HashMap<Vec<String>, Id>>,
+	pub crates: HashMap<String, Crate>,
+	/// Per crate: local item path -> id, for cross-document resolution.
+	by_path: HashMap<String, HashMap<Vec<String>, Id>>,
 }
 
 impl Docs {
-    pub fn load(dir: &Path) -> Docs {
-        let mut crates = HashMap::new();
-        let mut by_path = HashMap::new();
-        for entry in std::fs::read_dir(dir).expect("docs dir") {
-            let p = entry.unwrap().path();
-            if p.extension().map(|e| e != "json").unwrap_or(true) || p.file_name().unwrap() == "pins.json" {
-                continue;
-            }
-            let text = std::fs::read_to_string(&p).unwrap();
-            let c: Crate = serde_json::from_str(&text).unwrap_or_else(|e| panic!("{}: {}", p.display(), e));
-            let name = c.index[&c.root].name.clone().expect("crate root name");
-            let mut paths = HashMap::new();
-            for (id, s) in &c.paths {
-                if s.crate_id == 0 {
-                    paths.insert(s.path.clone(), *id);
-                }
-            }
-            by_path.insert(name.clone(), paths);
-            crates.insert(name, c);
-        }
-        Docs { crates, by_path }
-    }
+	pub fn load(dir: &Path) -> Docs {
+		let mut crates = HashMap::new();
+		let mut by_path = HashMap::new();
+		for entry in std::fs::read_dir(dir).expect("docs dir") {
+			let p = entry.unwrap().path();
+			if p.extension().map(|e| e != "json").unwrap_or(true)
+				|| p.file_name().unwrap() == "pins.json"
+			{
+				continue;
+			}
+			let text = std::fs::read_to_string(&p).unwrap();
+			let c: Crate =
+				serde_json::from_str(&text).unwrap_or_else(|e| panic!("{}: {}", p.display(), e));
+			let name = c.index[&c.root].name.clone().expect("crate root name");
+			let mut paths = HashMap::new();
+			for (id, s) in &c.paths {
+				if s.crate_id == 0 {
+					paths.insert(s.path.clone(), *id);
+				}
+			}
+			by_path.insert(name.clone(), paths);
+			crates.insert(name, c);
+		}
+		Docs { crates, by_path }
+	}
 
-    /// Resolve an id seen in `krate` to its defining crate and local id.
-    pub fn resolve(&self, krate: &str, id: Id) -> Resolved {
-        let c = &self.crates[krate];
-        if let Some(item) = c.index.get(&id) {
-            if item.crate_id == 0 {
-                return Resolved::Local(krate.to_string(), id);
-            }
-        }
-        let Some(summary) = c.paths.get(&id) else {
-            return Resolved::Unknown(format!("{krate}: id {} has no path entry", id.0));
-        };
-        let cname = match c.external_crates.get(&summary.crate_id) {
-            Some(e) => e.name.clone(),
-            None => return Resolved::Unknown(format!("{krate}: {} crate_id {} unlisted", summary.path.join("::"), summary.crate_id)),
-        };
-        match self.by_path.get(&cname).and_then(|m| m.get(&summary.path)) {
-            Some(local) => Resolved::Local(cname, *local),
-            None if self.crates.contains_key(&cname) => Resolved::Unknown(format!("{}: not in {}'s index", summary.path.join("::"), cname)),
-            // A polars crate that was not documented is a gap, not an external crate.
-            None if cname.starts_with("polars") => Resolved::Unknown(format!("{}: crate {} not documented", summary.path.join("::"), cname)),
-            None => Resolved::Foreign(cname, summary.path.join("::"), summary.kind.clone()),
-        }
-    }
+	/// Resolve an id seen in `krate` to its defining crate and local id.
+	pub fn resolve(&self, krate: &str, id: Id) -> Resolved {
+		let c = &self.crates[krate];
+		if let Some(item) = c.index.get(&id) {
+			if item.crate_id == 0 {
+				return Resolved::Local(krate.to_string(), id);
+			}
+		}
+		let Some(summary) = c.paths.get(&id) else {
+			return Resolved::Unknown(format!("{krate}: id {} has no path entry", id.0));
+		};
+		let cname = match c.external_crates.get(&summary.crate_id) {
+			Some(e) => e.name.clone(),
+			None => {
+				return Resolved::Unknown(format!(
+					"{krate}: {} crate_id {} unlisted",
+					summary.path.join("::"),
+					summary.crate_id
+				));
+			}
+		};
+		match self.by_path.get(&cname).and_then(|m| m.get(&summary.path)) {
+			Some(local) => Resolved::Local(cname, *local),
+			None if self.crates.contains_key(&cname) => Resolved::Unknown(format!(
+				"{}: not in {}'s index",
+				summary.path.join("::"),
+				cname
+			)),
+			// A polars crate that was not documented is a gap, not an external crate.
+			None if cname.starts_with("polars") => Resolved::Unknown(format!(
+				"{}: crate {} not documented",
+				summary.path.join("::"),
+				cname
+			)),
+			None => Resolved::Foreign(cname, summary.path.join("::"), summary.kind.clone()),
+		}
+	}
 }
 
 impl Docs {
-    /// Render a type with canonical paths; see `Param::ty_canonical`.
-    pub fn canon(&self, krate: &str, t: &Type) -> String {
-        match t {
-            Type::ResolvedPath(p) => {
-                let base = match self.resolve(krate, p.id) {
-                    Resolved::Local(home, hid) => self.crates[&home].paths.get(&hid).map(|s| s.path.join("::")).unwrap_or_else(|| p.path.clone()),
-                    Resolved::Foreign(_, path, _) => path,
-                    Resolved::Unknown(_) => format!("?{}", p.path),
-                };
-                let args: Vec<String> = match p.args.as_deref() {
-                    Some(rustdoc_types::GenericArgs::AngleBracketed { args, constraints }) => {
-                        let mut v: Vec<String> = args
-                            .iter()
-                            .filter_map(|a| match a {
-                                rustdoc_types::GenericArg::Type(t) => Some(self.canon(krate, t)),
-                                rustdoc_types::GenericArg::Const(c) => Some(c.expr.clone()),
-                                _ => None,
-                            })
-                            .collect();
-                        for c in constraints {
-                            if let rustdoc_types::AssocItemConstraintKind::Equality(rustdoc_types::Term::Type(t)) = &c.binding {
-                                v.push(format!("{} = {}", c.name, self.canon(krate, t)));
-                            }
-                        }
-                        v
-                    }
-                    Some(rustdoc_types::GenericArgs::Parenthesized { inputs, output }) => {
-                        let ins: Vec<String> = inputs.iter().map(|t| self.canon(krate, t)).collect();
-                        return match output {
-                            Some(o) => format!("{}({}) -> {}", base, ins.join(", "), self.canon(krate, o)),
-                            None => format!("{}({})", base, ins.join(", ")),
-                        };
-                    }
-                    _ => vec![],
-                };
-                if args.is_empty() { base } else { format!("{}<{}>", base, args.join(", ")) }
-            }
-            Type::BorrowedRef { is_mutable, type_, lifetime } => format!("&{}{}{}", if lifetime.as_deref() == Some("'static") { "'static " } else { "" }, if *is_mutable { "mut " } else { "" }, self.canon(krate, type_)),
-            Type::Slice(i) => format!("[{}]", self.canon(krate, i)),
-            Type::Array { type_, len } => format!("[{}; {}]", self.canon(krate, type_), len),
-            Type::Tuple(ts) => format!("({})", ts.iter().map(|t| self.canon(krate, t)).collect::<Vec<_>>().join(", ")),
-            Type::ImplTrait(bounds) => format!("impl {}", self.canon_bounds(krate, bounds)),
-            Type::DynTrait(d) => format!("dyn {}", d.traits.iter().map(|t| self.canon_path(krate, &t.trait_)).collect::<Vec<_>>().join(" + ")),
-            Type::Generic(g) => g.clone(),
-            other => render::ty(other),
-        }
-    }
+	/// Render a type with canonical paths; see `Param::ty_canonical`.
+	pub fn canon(&self, krate: &str, t: &Type) -> String {
+		match t {
+			Type::ResolvedPath(p) => {
+				let base = match self.resolve(krate, p.id) {
+					Resolved::Local(home, hid) => self.crates[&home]
+						.paths
+						.get(&hid)
+						.map(|s| s.path.join("::"))
+						.unwrap_or_else(|| p.path.clone()),
+					Resolved::Foreign(_, path, _) => path,
+					Resolved::Unknown(_) => format!("?{}", p.path),
+				};
+				let args: Vec<String> = match p.args.as_deref() {
+					Some(rustdoc_types::GenericArgs::AngleBracketed { args, constraints }) => {
+						let mut v: Vec<String> = args
+							.iter()
+							.filter_map(|a| match a {
+								rustdoc_types::GenericArg::Type(t) => Some(self.canon(krate, t)),
+								rustdoc_types::GenericArg::Const(c) => Some(c.expr.clone()),
+								_ => None,
+							})
+							.collect();
+						for c in constraints {
+							if let rustdoc_types::AssocItemConstraintKind::Equality(
+								rustdoc_types::Term::Type(t),
+							) = &c.binding
+							{
+								v.push(format!("{} = {}", c.name, self.canon(krate, t)));
+							}
+						}
+						v
+					}
+					Some(rustdoc_types::GenericArgs::Parenthesized { inputs, output }) => {
+						let ins: Vec<String> =
+							inputs.iter().map(|t| self.canon(krate, t)).collect();
+						return match output {
+							Some(o) => {
+								format!("{}({}) -> {}", base, ins.join(", "), self.canon(krate, o))
+							}
+							None => format!("{}({})", base, ins.join(", ")),
+						};
+					}
+					_ => vec![],
+				};
+				if args.is_empty() {
+					base
+				} else {
+					format!("{}<{}>", base, args.join(", "))
+				}
+			}
+			Type::BorrowedRef {
+				is_mutable,
+				type_,
+				lifetime,
+			} => format!(
+				"&{}{}{}",
+				if lifetime.as_deref() == Some("'static") {
+					"'static "
+				} else {
+					""
+				},
+				if *is_mutable { "mut " } else { "" },
+				self.canon(krate, type_)
+			),
+			Type::Slice(i) => format!("[{}]", self.canon(krate, i)),
+			Type::Array { type_, len } => format!("[{}; {}]", self.canon(krate, type_), len),
+			Type::Tuple(ts) => format!(
+				"({})",
+				ts.iter()
+					.map(|t| self.canon(krate, t))
+					.collect::<Vec<_>>()
+					.join(", ")
+			),
+			Type::ImplTrait(bounds) => format!("impl {}", self.canon_bounds(krate, bounds)),
+			Type::DynTrait(d) => format!(
+				"dyn {}",
+				d.traits
+					.iter()
+					.map(|t| self.canon_path(krate, &t.trait_))
+					.collect::<Vec<_>>()
+					.join(" + ")
+			),
+			Type::Generic(g) => g.clone(),
+			other => render::ty(other),
+		}
+	}
 
-    /// `canon`, with every non-generic local type alias replaced by its
-    /// (recursively expanded) target. Generic aliases keep their own path.
-    pub fn canon_expanded(&self, krate: &str, t: &Type) -> String {
-        self.canon_expanded_depth(krate, t, 0)
-    }
-    fn canon_expanded_depth(&self, krate: &str, t: &Type, depth: usize) -> String {
-        if depth > 16 { return self.canon(krate, t); }
-        match t {
-            Type::ResolvedPath(p) => {
-                if let Resolved::Local(home, hid) = self.resolve(krate, p.id) {
-                    if let Some(ItemEnum::TypeAlias(ta)) = self.crates[&home].index.get(&hid).map(|i| &i.inner) {
-                        let generic = ta.generics.params.iter().any(|g| !matches!(g.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. }));
-                        if !generic {
-                            return self.canon_expanded_depth(&home, &ta.type_, depth + 1);
-                        }
-                    }
-                }
-                let base = self.canon(krate, &Type::ResolvedPath(rustdoc_types::Path { path: p.path.clone(), id: p.id, args: None }));
-                let args: Vec<String> = match p.args.as_deref() {
-                    Some(rustdoc_types::GenericArgs::AngleBracketed { args, constraints }) => {
-                        let mut v: Vec<String> = args
-                            .iter()
-                            .filter_map(|a| match a {
-                                rustdoc_types::GenericArg::Type(t) => Some(self.canon_expanded_depth(krate, t, depth + 1)),
-                                rustdoc_types::GenericArg::Const(c) => Some(c.expr.clone()),
-                                _ => None,
-                            })
-                            .collect();
-                        for c in constraints {
-                            if let rustdoc_types::AssocItemConstraintKind::Equality(rustdoc_types::Term::Type(t)) = &c.binding {
-                                v.push(format!("{} = {}", c.name, self.canon_expanded_depth(krate, t, depth + 1)));
-                            }
-                        }
-                        v
-                    }
-                    Some(rustdoc_types::GenericArgs::Parenthesized { .. }) => return self.canon(krate, t),
-                    _ => vec![],
-                };
-                if args.is_empty() { base } else { format!("{}<{}>", base, args.join(", ")) }
-            }
-            Type::BorrowedRef { is_mutable, type_, lifetime } => format!("&{}{}{}", if lifetime.as_deref() == Some("'static") { "'static " } else { "" }, if *is_mutable { "mut " } else { "" }, self.canon_expanded_depth(krate, type_, depth + 1)),
-            Type::Slice(i) => format!("[{}]", self.canon_expanded_depth(krate, i, depth + 1)),
-            Type::Array { type_, len } => format!("[{}; {}]", self.canon_expanded_depth(krate, type_, depth + 1), len),
-            Type::Tuple(ts) => format!("({})", ts.iter().map(|t| self.canon_expanded_depth(krate, t, depth + 1)).collect::<Vec<_>>().join(", ")),
-            other => self.canon(krate, other),
-        }
-    }
+	/// `canon`, with every non-generic local type alias replaced by its
+	/// (recursively expanded) target. Generic aliases keep their own path.
+	pub fn canon_expanded(&self, krate: &str, t: &Type) -> String {
+		self.canon_expanded_depth(krate, t, 0)
+	}
+	fn canon_expanded_depth(&self, krate: &str, t: &Type, depth: usize) -> String {
+		if depth > 16 {
+			return self.canon(krate, t);
+		}
+		match t {
+			Type::ResolvedPath(p) => {
+				if let Resolved::Local(home, hid) = self.resolve(krate, p.id) {
+					if let Some(ItemEnum::TypeAlias(ta)) =
+						self.crates[&home].index.get(&hid).map(|i| &i.inner)
+					{
+						let generic = ta.generics.params.iter().any(|g| {
+							!matches!(g.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. })
+						});
+						if !generic {
+							return self.canon_expanded_depth(&home, &ta.type_, depth + 1);
+						}
+					}
+				}
+				let base = self.canon(
+					krate,
+					&Type::ResolvedPath(rustdoc_types::Path {
+						path: p.path.clone(),
+						id: p.id,
+						args: None,
+					}),
+				);
+				let args: Vec<String> = match p.args.as_deref() {
+					Some(rustdoc_types::GenericArgs::AngleBracketed { args, constraints }) => {
+						let mut v: Vec<String> = args
+							.iter()
+							.filter_map(|a| match a {
+								rustdoc_types::GenericArg::Type(t) => {
+									Some(self.canon_expanded_depth(krate, t, depth + 1))
+								}
+								rustdoc_types::GenericArg::Const(c) => Some(c.expr.clone()),
+								_ => None,
+							})
+							.collect();
+						for c in constraints {
+							if let rustdoc_types::AssocItemConstraintKind::Equality(
+								rustdoc_types::Term::Type(t),
+							) = &c.binding
+							{
+								v.push(format!(
+									"{} = {}",
+									c.name,
+									self.canon_expanded_depth(krate, t, depth + 1)
+								));
+							}
+						}
+						v
+					}
+					Some(rustdoc_types::GenericArgs::Parenthesized { .. }) => {
+						return self.canon(krate, t);
+					}
+					_ => vec![],
+				};
+				if args.is_empty() {
+					base
+				} else {
+					format!("{}<{}>", base, args.join(", "))
+				}
+			}
+			Type::BorrowedRef {
+				is_mutable,
+				type_,
+				lifetime,
+			} => format!(
+				"&{}{}{}",
+				if lifetime.as_deref() == Some("'static") {
+					"'static "
+				} else {
+					""
+				},
+				if *is_mutable { "mut " } else { "" },
+				self.canon_expanded_depth(krate, type_, depth + 1)
+			),
+			Type::Slice(i) => format!("[{}]", self.canon_expanded_depth(krate, i, depth + 1)),
+			Type::Array { type_, len } => format!(
+				"[{}; {}]",
+				self.canon_expanded_depth(krate, type_, depth + 1),
+				len
+			),
+			Type::Tuple(ts) => format!(
+				"({})",
+				ts.iter()
+					.map(|t| self.canon_expanded_depth(krate, t, depth + 1))
+					.collect::<Vec<_>>()
+					.join(", ")
+			),
+			other => self.canon(krate, other),
+		}
+	}
 
-    pub fn canon_path(&self, krate: &str, p: &rustdoc_types::Path) -> String {
-        self.canon(krate, &Type::ResolvedPath(p.clone()))
-    }
+	pub fn canon_path(&self, krate: &str, p: &rustdoc_types::Path) -> String {
+		self.canon(krate, &Type::ResolvedPath(p.clone()))
+	}
 
-    pub fn canon_bounds(&self, krate: &str, bounds: &[rustdoc_types::GenericBound]) -> String {
-        bounds
-            .iter()
-            .filter_map(|b| match b {
-                rustdoc_types::GenericBound::TraitBound { trait_, .. } => Some(self.canon_path(krate, trait_)),
-                rustdoc_types::GenericBound::Outlives(l) => Some(l.clone()),
-                _ => None,
-            })
-            .collect::<Vec<_>>()
-            .join(" + ")
-    }
+	pub fn canon_bounds(&self, krate: &str, bounds: &[rustdoc_types::GenericBound]) -> String {
+		bounds
+			.iter()
+			.filter_map(|b| match b {
+				rustdoc_types::GenericBound::TraitBound { trait_, .. } => {
+					Some(self.canon_path(krate, trait_))
+				}
+				rustdoc_types::GenericBound::Outlives(l) => Some(l.clone()),
+				_ => None,
+			})
+			.collect::<Vec<_>>()
+			.join(" + ")
+	}
 }
 
 pub enum Resolved {
-    Local(String, Id),
-    /// Belongs to a crate that was not documented (std, core, arrow2, ...).
-    Foreign(String, String, ItemKind),
-    Unknown(String),
+	Local(String, Id),
+	/// Belongs to a crate that was not documented (std, core, arrow2, ...).
+	Foreign(String, String, ItemKind),
+	Unknown(String),
 }
 
 #[derive(Serialize, Clone, Debug)]
 pub struct Param {
-    pub name: String,
-    pub ty: String,
-    /// The same type with every path replaced by the defining item's
-    /// canonical path (`polars_core::frame::DataFrame`, `core::option::Option`),
-    /// so a consumer can key on identity rather than on a bare name.
-    pub ty_canonical: String,
-    #[serde(skip)]
-    pub raw: Type,
+	pub name: String,
+	pub ty: String,
+	/// The same type with every path replaced by the defining item's
+	/// canonical path (`polars_core::frame::DataFrame`, `core::option::Option`),
+	/// so a consumer can key on identity rather than on a bare name.
+	pub ty_canonical: String,
+	#[serde(skip)]
+	pub raw: Type,
 }
 
 #[derive(Serialize, Clone, Debug)]
 pub struct GenericParam {
-    pub name: String,
-    pub bounds: String,
+	pub name: String,
+	pub bounds: String,
 }
 
 #[derive(Serialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum CallableKind {
-    Inherent,
-    TraitMethod,
-    FreeFn,
-    /// An impl of a foreign (std/core) trait for a reachable type: operators,
-    /// conversions, Display, Iterator ...
-    ForeignTraitImpl,
+	Inherent,
+	TraitMethod,
+	FreeFn,
+	/// An impl of a foreign (std/core) trait for a reachable type: operators,
+	/// conversions, Display, Iterator ...
+	ForeignTraitImpl,
 }
 
 #[derive(Serialize, Clone, Debug)]
 pub struct Callable {
-    pub key: String,
-    pub kind: CallableKind,
-    pub krate: String,
-    /// Canonical owner: the type (inherent), trait (trait method) or module path.
-    pub owner: String,
-    pub name: String,
-    pub canonical_path: String,
-    pub found_paths: Vec<String>,
-    /// Public paths of the item from its own crate's root (spellable with
-    /// a direct dependency on that crate), shortest first.
-    pub crate_paths: Vec<String>,
-    pub receiver: String,
-    pub params: Vec<Param>,
-    pub ret: Option<String>,
-    pub ret_canonical: Option<String>,
-    #[serde(skip)]
-    pub ret_raw: Option<Type>,
-    pub generics: Vec<GenericParam>,
-    pub where_clause: Vec<String>,
-    /// Generic parameter name -> canonical bounds (from both the parameter
-    /// list and the where clause), for consumers that key on identity.
-    pub generics_canonical: Vec<(String, String)>,
-    /// Foreign trait impls only (record 0075): the impl's `for` type,
-    /// canonical, and the impl's generic parameters with their canonical
-    /// bounds, so a generator can decide whether the impl covers one
-    /// instantiation (`ChunkedArray<BooleanType>`) of a generic owner.
-    pub impl_for: Option<String>,
-    pub impl_bounds: Vec<(String, String)>,
-    /// Record 0076: for an inherent method of a generic owner, the impl
-    /// block's head (`for` type, canonical, possibly specialized), its
-    /// `where` predicates in canonical form, and for any impl the
-    /// associated types it binds (`Target` of a `Deref`, `Native` of a
-    /// `PolarsDataType`).
-    pub impl_head: Option<String>,
-    pub impl_where: Vec<String>,
-    pub impl_assoc: Vec<(String, String)>,
-    /// First paragraph of the item's rustdoc, if any.
-    pub docs_first: Option<String>,
-    #[serde(skip)]
-    pub bounds_raw: Vec<(String, Vec<rustdoc_types::GenericBound>)>,
-    pub owner_generic: bool,
-    /// Owner is generic but was reached through a concrete type alias
-    /// (Int64Chunked = ChunkedArray<Int64Type>); lists the aliases.
-    pub owner_aliases: Vec<String>,
-    pub is_unsafe: bool,
-    pub is_async: bool,
-    pub is_provided: bool,
-    pub deprecated: bool,
-    pub hidden: bool,
-    pub unstable: bool,
-    /// For trait methods: reachable types implementing the trait; "blanket"
-    /// marks a blanket impl.
-    pub implementors: Vec<String>,
-    /// For trait methods: whether the trait itself is reachable by a public path.
-    pub trait_reachable: bool,
-    /// For foreign trait impls: the impl is `#[derive]`d.
-    pub derived: bool,
-    #[serde(skip)]
-    pub inputs_raw: Vec<(String, Type)>,
+	pub key: String,
+	pub kind: CallableKind,
+	pub krate: String,
+	/// Canonical owner: the type (inherent), trait (trait method) or module path.
+	pub owner: String,
+	pub name: String,
+	pub canonical_path: String,
+	pub found_paths: Vec<String>,
+	/// Public paths of the item from its own crate's root (spellable with
+	/// a direct dependency on that crate), shortest first.
+	pub crate_paths: Vec<String>,
+	pub receiver: String,
+	pub params: Vec<Param>,
+	pub ret: Option<String>,
+	pub ret_canonical: Option<String>,
+	#[serde(skip)]
+	pub ret_raw: Option<Type>,
+	pub generics: Vec<GenericParam>,
+	pub where_clause: Vec<String>,
+	/// Generic parameter name -> canonical bounds (from both the parameter
+	/// list and the where clause), for consumers that key on identity.
+	pub generics_canonical: Vec<(String, String)>,
+	/// Foreign trait impls only (record 0075): the impl's `for` type,
+	/// canonical, and the impl's generic parameters with their canonical
+	/// bounds, so a generator can decide whether the impl covers one
+	/// instantiation (`ChunkedArray<BooleanType>`) of a generic owner.
+	pub impl_for: Option<String>,
+	pub impl_bounds: Vec<(String, String)>,
+	/// Record 0076: for an inherent method of a generic owner, the impl
+	/// block's head (`for` type, canonical, possibly specialized), its
+	/// `where` predicates in canonical form, and for any impl the
+	/// associated types it binds (`Target` of a `Deref`, `Native` of a
+	/// `PolarsDataType`).
+	pub impl_head: Option<String>,
+	pub impl_where: Vec<String>,
+	pub impl_assoc: Vec<(String, String)>,
+	/// First paragraph of the item's rustdoc, if any.
+	pub docs_first: Option<String>,
+	#[serde(skip)]
+	pub bounds_raw: Vec<(String, Vec<rustdoc_types::GenericBound>)>,
+	pub owner_generic: bool,
+	/// Owner is generic but was reached through a concrete type alias
+	/// (Int64Chunked = ChunkedArray<Int64Type>); lists the aliases.
+	pub owner_aliases: Vec<String>,
+	pub is_unsafe: bool,
+	pub is_async: bool,
+	pub is_provided: bool,
+	pub deprecated: bool,
+	pub hidden: bool,
+	pub unstable: bool,
+	/// For trait methods: reachable types implementing the trait; "blanket"
+	/// marks a blanket impl.
+	pub implementors: Vec<String>,
+	/// For trait methods: whether the trait itself is reachable by a public path.
+	pub trait_reachable: bool,
+	/// For foreign trait impls: the impl is `#[derive]`d.
+	pub derived: bool,
+	#[serde(skip)]
+	pub inputs_raw: Vec<(String, Type)>,
 }
 
 #[derive(Serialize, Clone, Debug)]
 pub struct Supporting {
-    pub key: String,
-    pub kind: String,
-    pub canonical_path: String,
-    pub found_paths: Vec<String>,
-    /// Public paths from the defining crate's own root, shortest first.
-    pub crate_paths: Vec<String>,
-    pub public_fields: usize,
-    /// (name, rendered type) of public fields.
-    pub fields: Vec<(String, String)>,
-    /// (name, canonical rendering) of public fields.
-    pub fields_canonical: Vec<(String, String)>,
-    /// (variant, [canonical payload types]) for data-carrying variants.
-    pub variant_payloads: Vec<(String, Vec<String>)>,
-    pub variants: usize,
-    /// Variant names with whether they carry data.
-    pub variant_shapes: Vec<(String, bool)>,
-    pub generic: bool,
-    /// Has lifetime parameters (AnyValue<'a>).
-    pub lifetime: bool,
-    pub hidden: bool,
-    /// Traits whose impls are `#[derive]`d (Clone, Default, Debug, ...).
-    pub derived: Vec<String>,
-    /// For a type alias: the aliased type rendered canonically, with
-    /// non-generic aliases inside it expanded (record 0075), so that two
-    /// aliases of one instantiation render the same.
-    pub alias_target: Option<String>,
-    /// For a trait (record 0075): the canonical types with a direct impl
-    /// (`blanket` for a blanket impl), gathered while visiting types.
-    pub implementors: Vec<String>,
-    /// For a trait (record 0076): every impl seen while visiting types,
-    /// with its canonical `for` type (an instantiation such as
-    /// `Logical<DateType, Int32Type>` is kept as such), its parameter
-    /// bounds, `where` predicates and bound associated types.
-    pub impls: Vec<TraitImpl>,
+	pub key: String,
+	pub kind: String,
+	pub canonical_path: String,
+	pub found_paths: Vec<String>,
+	/// Public paths from the defining crate's own root, shortest first.
+	pub crate_paths: Vec<String>,
+	pub public_fields: usize,
+	/// (name, rendered type) of public fields.
+	pub fields: Vec<(String, String)>,
+	/// (name, canonical rendering) of public fields.
+	pub fields_canonical: Vec<(String, String)>,
+	/// (variant, [canonical payload types]) for data-carrying variants.
+	pub variant_payloads: Vec<(String, Vec<String>)>,
+	pub variants: usize,
+	/// Variant names with whether they carry data.
+	pub variant_shapes: Vec<(String, bool)>,
+	pub generic: bool,
+	/// Has lifetime parameters (AnyValue<'a>).
+	pub lifetime: bool,
+	pub hidden: bool,
+	/// Traits whose impls are `#[derive]`d (Clone, Default, Debug, ...).
+	pub derived: Vec<String>,
+	/// For a type alias: the aliased type rendered canonically, with
+	/// non-generic aliases inside it expanded (record 0075), so that two
+	/// aliases of one instantiation render the same.
+	pub alias_target: Option<String>,
+	/// For a trait (record 0075): the canonical types with a direct impl
+	/// (`blanket` for a blanket impl), gathered while visiting types.
+	pub implementors: Vec<String>,
+	/// For a trait (record 0076): every impl seen while visiting types,
+	/// with its canonical `for` type (an instantiation such as
+	/// `Logical<DateType, Int32Type>` is kept as such), its parameter
+	/// bounds, `where` predicates and bound associated types.
+	pub impls: Vec<TraitImpl>,
 }
 
 #[derive(Serialize, Clone, Debug)]
 pub struct TraitImpl {
-    pub for_type: String,
-    pub blanket: bool,
-    pub bounds: Vec<(String, String)>,
-    pub where_predicates: Vec<String>,
-    pub assoc_types: Vec<(String, String)>,
+	pub for_type: String,
+	pub blanket: bool,
+	pub bounds: Vec<(String, String)>,
+	pub where_predicates: Vec<String>,
+	pub assoc_types: Vec<(String, String)>,
 }
 
 #[derive(Serialize, Default)]
 pub struct Inventory {
-    pub root: String,
-    pub callables: Vec<Callable>,
-    pub supporting: Vec<Supporting>,
-    pub unknown: Vec<String>,
-    /// Foreign items re-exported by path (std types etc.), listed, not counted.
-    pub foreign_reexports: Vec<String>,
-    /// `#[derive]`d impls on reachable types, skipped as callables.
-    pub derived_impls: usize,
-    /// Gross public inventory: every public item in every loaded crate, by crate.
-    pub gross: BTreeMap<String, GrossCounts>,
+	pub root: String,
+	pub callables: Vec<Callable>,
+	pub supporting: Vec<Supporting>,
+	pub unknown: Vec<String>,
+	/// Foreign items re-exported by path (std types etc.), listed, not counted.
+	pub foreign_reexports: Vec<String>,
+	/// `#[derive]`d impls on reachable types, skipped as callables.
+	pub derived_impls: usize,
+	/// Gross public inventory: every public item in every loaded crate, by crate.
+	pub gross: BTreeMap<String, GrossCounts>,
 }
 
 #[derive(Serialize, Default, Clone)]
 pub struct GrossCounts {
-    pub functions: usize,
-    pub methods: usize,
-    pub types: usize,
-    pub traits: usize,
-    pub constants: usize,
-    pub macros: usize,
+	pub functions: usize,
+	pub methods: usize,
+	pub types: usize,
+	pub traits: usize,
+	pub constants: usize,
+	pub macros: usize,
 }
 
 struct Walker<'a> {
-    docs: &'a Docs,
-    inv: Inventory,
-    /// (crate, id) -> index into callables/supporting.
-    seen_callable: HashMap<(String, Id), usize>,
-    seen_support: HashMap<(String, Id), usize>,
-    visited_types: BTreeSet<(String, Id)>,
-    visited_modules: BTreeSet<(String, Id, bool)>,
-    /// trait key -> implementors, filled while visiting types.
-    implementors: BTreeMap<(String, Id), Vec<String>>,
-    /// trait key -> impls with their heads, filled while visiting types.
-    trait_impls: BTreeMap<(String, Id), Vec<TraitImpl>>,
-    reachable_traits: BTreeSet<(String, Id)>,
-    /// traits implemented by reachable types but not reached by path yet.
-    pending_traits: BTreeSet<(String, Id)>,
-    /// generic type -> concrete aliases that reach it.
-    aliases: BTreeMap<(String, Id), Vec<String>>,
+	docs: &'a Docs,
+	inv: Inventory,
+	/// (crate, id) -> index into callables/supporting.
+	seen_callable: HashMap<(String, Id), usize>,
+	seen_support: HashMap<(String, Id), usize>,
+	visited_types: BTreeSet<(String, Id)>,
+	visited_modules: BTreeSet<(String, Id, bool)>,
+	/// trait key -> implementors, filled while visiting types.
+	implementors: BTreeMap<(String, Id), Vec<String>>,
+	/// trait key -> impls with their heads, filled while visiting types.
+	trait_impls: BTreeMap<(String, Id), Vec<TraitImpl>>,
+	reachable_traits: BTreeSet<(String, Id)>,
+	/// traits implemented by reachable types but not reached by path yet.
+	pending_traits: BTreeSet<(String, Id)>,
+	/// generic type -> concrete aliases that reach it.
+	aliases: BTreeMap<(String, Id), Vec<String>>,
 }
 
 fn is_hidden(item: &Item) -> bool {
-    item.attrs.iter().any(|a| matches!(a, rustdoc_types::Attribute::Other(s) if s.contains("doc(hidden)")))
+	item.attrs
+		.iter()
+		.any(|a| matches!(a, rustdoc_types::Attribute::Other(s) if s.contains("doc(hidden)")))
 }
 
 fn item_path(c: &Crate, id: Id) -> Option<String> {
-    c.paths.get(&id).map(|s| s.path.join("::"))
+	c.paths.get(&id).map(|s| s.path.join("::"))
 }
 
 pub fn extract(docs: &Docs, root: &str) -> Inventory {
-    let mut w = Walker {
-        docs,
-        inv: Inventory { root: root.to_string(), ..Default::default() },
-        seen_callable: HashMap::new(),
-        seen_support: HashMap::new(),
-        visited_types: BTreeSet::new(),
-        visited_modules: BTreeSet::new(),
-        implementors: BTreeMap::new(),
-        trait_impls: BTreeMap::new(),
-        reachable_traits: BTreeSet::new(),
-        pending_traits: BTreeSet::new(),
-        aliases: BTreeMap::new(),
-    };
-    let Some(root_crate) = docs.crates.get(root) else {
-        eprintln!("root crate {root} is not among the documented crates");
-        std::process::exit(3);
-    };
-    let root_id = root_crate.root;
-    w.walk_module(root, root_id, root, false);
-    // Traits implemented by reachable types but not reachable by path: their
-    // methods are still callable when the trait is in scope. Count them,
-    // flagged.
-    let pending: Vec<_> = w.pending_traits.iter().cloned().collect();
-    for (krate, id) in pending {
-        if !w.reachable_traits.contains(&(krate.clone(), id)) {
-            let path = item_path(&docs.crates[&krate], id).unwrap_or_default();
-            w.visit_trait(&krate, id, &path, false, false);
-        }
-    }
-    // Concrete aliases of generic owners, onto their inherent methods.
-    let aliases = w.aliases.clone();
-    for ((krate, id), names) in aliases {
-        let okey = format!("{krate}:{}", id.0);
-        let mut names = names;
-        names.sort();
-        names.dedup();
-        for c in &mut w.inv.callables {
-            if c.kind == CallableKind::Inherent && c.owner == okey {
-                c.owner_aliases = names.clone();
-            }
-        }
-    }
-    // Fill implementors into trait methods.
-    let impls = w.implementors.clone();
-    for c in &mut w.inv.callables {
-        if c.kind == CallableKind::TraitMethod {
-            let tk: Vec<&str> = c.key.splitn(2, ':').collect();
-            let _ = tk;
-        }
-    }
-    for ((krate, id), types) in impls {
-        let tkey = format!("{krate}:{}", id.0);
-        for c in &mut w.inv.callables {
-            if c.kind == CallableKind::TraitMethod && c.owner == tkey {
-                c.implementors = types.clone();
-            }
-        }
-        for s in &mut w.inv.supporting {
-            if s.key == tkey {
-                s.implementors = types.clone();
-            }
-        }
-    }
-    let timpls = w.trait_impls.clone();
-    for ((krate, id), impls) in timpls {
-        let tkey = format!("{krate}:{}", id.0);
-        for s in &mut w.inv.supporting {
-            if s.key == tkey {
-                s.impls = impls.clone();
-            }
-        }
-    }
-    // Owner keys were internal; replace with canonical paths for output.
-    let mut owner_paths: HashMap<String, String> = HashMap::new();
-    for s in &w.inv.supporting {
-        owner_paths.insert(s.key.clone(), s.canonical_path.clone());
-    }
-    for c in &mut w.inv.callables {
-        if let Some(p) = owner_paths.get(&c.owner) {
-            c.owner = p.clone();
-        }
-        c.found_paths.sort();
-        c.found_paths.dedup();
-    }
-    for s in &mut w.inv.supporting {
-        s.found_paths.sort();
-        s.found_paths.dedup();
-    }
-    w.inv.unknown.sort();
-    w.inv.unknown.dedup();
-    w.inv.foreign_reexports.sort();
-    w.inv.foreign_reexports.dedup();
-    w.inv.callables.sort_by(|a, b| a.canonical_path.cmp(&b.canonical_path).then(a.key.cmp(&b.key)));
-    w.inv.supporting.sort_by(|a, b| a.canonical_path.cmp(&b.canonical_path));
-    w.inv.gross = gross(docs);
-    let mut inv = w.inv;
-    // Own-crate paths: walk each documented crate from its own root and
-    // take the paths it finds for the same items.
-    let mut own: HashMap<String, Vec<String>> = HashMap::new();
-    for name in docs.crates.keys() {
-        if name == root {
-            continue;
-        }
-        let sub = extract_paths_only(docs, name);
-        for (key, paths) in sub {
-            own.entry(key).or_default().extend(paths);
-        }
-    }
-    let sortkey = |p: &String| (p.matches("::").count(), p.clone());
-    for c in &mut inv.callables {
-        if let Some(v) = own.get(&c.key) {
-            let mut v: Vec<String> = v.iter().filter(|p| !p.contains(" as ")).cloned().collect();
-            v.sort_by_key(sortkey);
-            v.dedup();
-            c.crate_paths = v;
-        }
-    }
-    for s in &mut inv.supporting {
-        if let Some(v) = own.get(&s.key) {
-            let mut v: Vec<String> = v.clone();
-            v.sort_by_key(sortkey);
-            v.dedup();
-            s.crate_paths = v;
-        }
-    }
-    inv
+	let mut w = Walker {
+		docs,
+		inv: Inventory {
+			root: root.to_string(),
+			..Default::default()
+		},
+		seen_callable: HashMap::new(),
+		seen_support: HashMap::new(),
+		visited_types: BTreeSet::new(),
+		visited_modules: BTreeSet::new(),
+		implementors: BTreeMap::new(),
+		trait_impls: BTreeMap::new(),
+		reachable_traits: BTreeSet::new(),
+		pending_traits: BTreeSet::new(),
+		aliases: BTreeMap::new(),
+	};
+	let Some(root_crate) = docs.crates.get(root) else {
+		eprintln!("root crate {root} is not among the documented crates");
+		std::process::exit(3);
+	};
+	let root_id = root_crate.root;
+	w.walk_module(root, root_id, root, false);
+	// Traits implemented by reachable types but not reachable by path: their
+	// methods are still callable when the trait is in scope. Count them,
+	// flagged.
+	let pending: Vec<_> = w.pending_traits.iter().cloned().collect();
+	for (krate, id) in pending {
+		if !w.reachable_traits.contains(&(krate.clone(), id)) {
+			let path = item_path(&docs.crates[&krate], id).unwrap_or_default();
+			w.visit_trait(&krate, id, &path, false, false);
+		}
+	}
+	// Concrete aliases of generic owners, onto their inherent methods.
+	let aliases = w.aliases.clone();
+	for ((krate, id), names) in aliases {
+		let okey = format!("{krate}:{}", id.0);
+		let mut names = names;
+		names.sort();
+		names.dedup();
+		for c in &mut w.inv.callables {
+			if c.kind == CallableKind::Inherent && c.owner == okey {
+				c.owner_aliases = names.clone();
+			}
+		}
+	}
+	// Record 0110: implementors by trait identity. An impl lives in the crate
+	// that writes it, which may be neither the trait's nor the type's, so the
+	// type walk above misses e.g. `impl polars_ops::StringNameSpaceImpl for
+	// StringChunked` (written in polars_ops for a polars_core type). Every
+	// impl item of every documented crate is joined to the traits whose
+	// methods are already callables; no trait or callable is added here.
+	{
+		let owners: BTreeSet<String> = w
+			.inv
+			.callables
+			.iter()
+			.filter(|c| c.kind == CallableKind::TraitMethod)
+			.map(|c| c.owner.clone())
+			.collect();
+		let mut names: Vec<&String> = docs.crates.keys().collect();
+		names.sort();
+		let mut recovered = 0usize;
+		for krate in names {
+			let c = &docs.crates[krate];
+			let mut ids: Vec<&Id> = c.index.keys().collect();
+			ids.sort_by_key(|i| i.0);
+			for impl_id in ids {
+				let ItemEnum::Impl(imp) = &c.index[impl_id].inner else {
+					continue;
+				};
+				let Some(tr) = &imp.trait_ else { continue };
+				let Resolved::Local(home, tid) = docs.resolve(krate, tr.id) else {
+					continue;
+				};
+				if !owners.contains(&format!("{home}:{}", tid.0)) {
+					continue;
+				}
+				let blanket = imp.blanket_impl.is_some();
+				let for_type = w.docs.canon_expanded(krate, &imp.for_);
+				let known = w.trait_impls.get(&(home.clone(), tid)).is_some_and(|v| {
+					v.iter()
+						.any(|x| x.for_type == for_type && x.blanket == blanket)
+				});
+				if known {
+					continue;
+				}
+				let label = if blanket {
+					"blanket".to_string()
+				} else {
+					for_type.split('<').next().unwrap_or(&for_type).to_string()
+				};
+				let ti = TraitImpl {
+					for_type,
+					blanket,
+					bounds: w.impl_bounds(krate, &imp.generics),
+					where_predicates: w.impl_where(krate, &imp.generics),
+					assoc_types: w.impl_assoc(krate, imp),
+				};
+				w.implementors
+					.entry((home.clone(), tid))
+					.or_default()
+					.push(label);
+				w.trait_impls.entry((home, tid)).or_default().push(ti);
+				recovered += 1;
+			}
+		}
+		eprintln!("implementors recovered by trait identity: {recovered}");
+	}
+	// Fill implementors into trait methods.
+	let impls = w.implementors.clone();
+	for ((krate, id), types) in impls {
+		let tkey = format!("{krate}:{}", id.0);
+		for c in &mut w.inv.callables {
+			if c.kind == CallableKind::TraitMethod && c.owner == tkey {
+				c.implementors = types.clone();
+			}
+		}
+		for s in &mut w.inv.supporting {
+			if s.key == tkey {
+				s.implementors = types.clone();
+			}
+		}
+	}
+	let timpls = w.trait_impls.clone();
+	for ((krate, id), impls) in timpls {
+		let tkey = format!("{krate}:{}", id.0);
+		for s in &mut w.inv.supporting {
+			if s.key == tkey {
+				s.impls = impls.clone();
+			}
+		}
+	}
+	// Owner keys were internal; replace with canonical paths for output.
+	let mut owner_paths: HashMap<String, String> = HashMap::new();
+	for s in &w.inv.supporting {
+		owner_paths.insert(s.key.clone(), s.canonical_path.clone());
+	}
+	for c in &mut w.inv.callables {
+		if let Some(p) = owner_paths.get(&c.owner) {
+			c.owner = p.clone();
+		}
+		c.found_paths.sort();
+		c.found_paths.dedup();
+	}
+	for s in &mut w.inv.supporting {
+		s.found_paths.sort();
+		s.found_paths.dedup();
+	}
+	w.inv.unknown.sort();
+	w.inv.unknown.dedup();
+	w.inv.foreign_reexports.sort();
+	w.inv.foreign_reexports.dedup();
+	w.inv.callables.sort_by(|a, b| {
+		a.canonical_path
+			.cmp(&b.canonical_path)
+			.then(a.key.cmp(&b.key))
+	});
+	w.inv
+		.supporting
+		.sort_by(|a, b| a.canonical_path.cmp(&b.canonical_path));
+	w.inv.gross = gross(docs);
+	let mut inv = w.inv;
+	// Own-crate paths: walk each documented crate from its own root and
+	// take the paths it finds for the same items.
+	let mut own: HashMap<String, Vec<String>> = HashMap::new();
+	for name in docs.crates.keys() {
+		if name == root {
+			continue;
+		}
+		let sub = extract_paths_only(docs, name);
+		for (key, paths) in sub {
+			own.entry(key).or_default().extend(paths);
+		}
+	}
+	let sortkey = |p: &String| (p.matches("::").count(), p.clone());
+	for c in &mut inv.callables {
+		if let Some(v) = own.get(&c.key) {
+			let mut v: Vec<String> = v.iter().filter(|p| !p.contains(" as ")).cloned().collect();
+			v.sort_by_key(sortkey);
+			v.dedup();
+			c.crate_paths = v;
+		}
+	}
+	for s in &mut inv.supporting {
+		if let Some(v) = own.get(&s.key) {
+			let mut v: Vec<String> = v.clone();
+			v.sort_by_key(sortkey);
+			v.dedup();
+			s.crate_paths = v;
+		}
+	}
+	inv
 }
 
 /// Paths of every item reachable from `root`'s own crate root, by key.
 fn extract_paths_only(docs: &Docs, root: &str) -> HashMap<String, Vec<String>> {
-    let mut w = Walker {
-        docs,
-        inv: Inventory { root: root.to_string(), ..Default::default() },
-        seen_callable: HashMap::new(),
-        seen_support: HashMap::new(),
-        visited_types: BTreeSet::new(),
-        visited_modules: BTreeSet::new(),
-        implementors: BTreeMap::new(),
-        trait_impls: BTreeMap::new(),
-        reachable_traits: BTreeSet::new(),
-        pending_traits: BTreeSet::new(),
-        aliases: BTreeMap::new(),
-    };
-    let Some(rc) = docs.crates.get(root) else { return HashMap::new() };
-    w.walk_module(root, rc.root, root, false);
-    let mut out = HashMap::new();
-    for c in w.inv.callables {
-        if c.krate == root {
-            out.insert(c.key, c.found_paths);
-        }
-    }
-    for s in w.inv.supporting {
-        if s.key.starts_with(&format!("{root}:")) {
-            out.insert(s.key, s.found_paths);
-        }
-    }
-    out
+	let mut w = Walker {
+		docs,
+		inv: Inventory {
+			root: root.to_string(),
+			..Default::default()
+		},
+		seen_callable: HashMap::new(),
+		seen_support: HashMap::new(),
+		visited_types: BTreeSet::new(),
+		visited_modules: BTreeSet::new(),
+		implementors: BTreeMap::new(),
+		trait_impls: BTreeMap::new(),
+		reachable_traits: BTreeSet::new(),
+		pending_traits: BTreeSet::new(),
+		aliases: BTreeMap::new(),
+	};
+	let Some(rc) = docs.crates.get(root) else {
+		return HashMap::new();
+	};
+	w.walk_module(root, rc.root, root, false);
+	let mut out = HashMap::new();
+	for c in w.inv.callables {
+		if c.krate == root {
+			out.insert(c.key, c.found_paths);
+		}
+	}
+	for s in w.inv.supporting {
+		if s.key.starts_with(&format!("{root}:")) {
+			out.insert(s.key, s.found_paths);
+		}
+	}
+	out
 }
 
 fn gross(docs: &Docs) -> BTreeMap<String, GrossCounts> {
-    let mut out = BTreeMap::new();
-    for (name, c) in &docs.crates {
-        let mut g = GrossCounts::default();
-        for item in c.index.values() {
-            if item.crate_id != 0 || !matches!(item.visibility, Visibility::Public | Visibility::Default) {
-                continue;
-            }
-            match &item.inner {
-                ItemEnum::Function(_) => {
-                    if c.paths.contains_key(&item.id) { g.functions += 1 } else { g.methods += 1 }
-                }
-                ItemEnum::Struct(_) | ItemEnum::Enum(_) | ItemEnum::Union(_) | ItemEnum::TypeAlias(_) => g.types += 1,
-                ItemEnum::Trait(_) | ItemEnum::TraitAlias(_) => g.traits += 1,
-                ItemEnum::Constant { .. } | ItemEnum::Static(_) => g.constants += 1,
-                ItemEnum::Macro(_) | ItemEnum::ProcMacro(_) => g.macros += 1,
-                _ => {}
-            }
-        }
-        out.insert(name.clone(), g);
-    }
-    out
+	let mut out = BTreeMap::new();
+	for (name, c) in &docs.crates {
+		let mut g = GrossCounts::default();
+		for item in c.index.values() {
+			if item.crate_id != 0
+				|| !matches!(item.visibility, Visibility::Public | Visibility::Default)
+			{
+				continue;
+			}
+			match &item.inner {
+				ItemEnum::Function(_) => {
+					if c.paths.contains_key(&item.id) {
+						g.functions += 1
+					} else {
+						g.methods += 1
+					}
+				}
+				ItemEnum::Struct(_)
+				| ItemEnum::Enum(_)
+				| ItemEnum::Union(_)
+				| ItemEnum::TypeAlias(_) => g.types += 1,
+				ItemEnum::Trait(_) | ItemEnum::TraitAlias(_) => g.traits += 1,
+				ItemEnum::Constant { .. } | ItemEnum::Static(_) => g.constants += 1,
+				ItemEnum::Macro(_) | ItemEnum::ProcMacro(_) => g.macros += 1,
+				_ => {}
+			}
+		}
+		out.insert(name.clone(), g);
+	}
+	out
 }
 
 impl<'a> Walker<'a> {
-    fn crate_(&self, k: &str) -> &'a Crate {
-        &self.docs.crates[k]
-    }
+	fn crate_(&self, k: &str) -> &'a Crate {
+		&self.docs.crates[k]
+	}
 
-    fn walk_module(&mut self, krate: &str, id: Id, prefix: &str, hidden: bool) {
-        if !self.visited_modules.insert((krate.to_string(), id, hidden)) {
-            return;
-        }
-        let c = self.crate_(krate);
-        let ItemEnum::Module(m) = &c.index[&id].inner else { return };
-        for child in &m.items {
-            let item = &c.index[child];
-            let hidden = hidden || is_hidden(item);
-            if !matches!(item.visibility, Visibility::Public | Visibility::Default) {
-                continue;
-            }
-            match &item.inner {
-                ItemEnum::Module(_) => {
-                    let name = item.name.clone().unwrap();
-                    self.walk_module(krate, *child, &format!("{prefix}::{name}"), hidden);
-                }
-                ItemEnum::Use(u) => {
-                    let Some(target) = u.id else {
-                        self.inv.unknown.push(format!("{prefix}::{} (use {} unresolved by rustdoc)", u.name, u.source));
-                        continue;
-                    };
-                    match self.docs.resolve(krate, target) {
-                        Resolved::Unknown(why) => self.inv.unknown.push(format!("{prefix}::{} <- {}", u.name, why)),
-                        Resolved::Foreign(cname, path, kind) => {
-                            self.inv.foreign_reexports.push(format!("{prefix}::{} = {cname}::{path} ({:?})", u.name, kind));
-                        }
-                        Resolved::Local(home, hid) => {
-                            let h = self.crate_(&home);
-                            let titem = &h.index[&hid];
-                            if u.is_glob {
-                                match &titem.inner {
-                                    ItemEnum::Module(_) => self.walk_module(&home, hid, prefix, hidden),
-                                    ItemEnum::Enum(_) => self.visit(&home, hid, prefix, hidden),
-                                    _ => self.inv.unknown.push(format!("{prefix}::* <- glob of non-module {}", u.source)),
-                                }
-                            } else {
-                                let name = &u.name;
-                                self.visit(&home, hid, &format!("{prefix}::{name}"), hidden);
-                            }
-                        }
-                    }
-                }
-                _ => {
-                    let name = item.name.clone().unwrap_or_default();
-                    self.visit(krate, *child, &format!("{prefix}::{name}"), hidden);
-                }
-            }
-        }
-    }
+	fn walk_module(&mut self, krate: &str, id: Id, prefix: &str, hidden: bool) {
+		if !self.visited_modules.insert((krate.to_string(), id, hidden)) {
+			return;
+		}
+		let c = self.crate_(krate);
+		let ItemEnum::Module(m) = &c.index[&id].inner else {
+			return;
+		};
+		for child in &m.items {
+			let item = &c.index[child];
+			let hidden = hidden || is_hidden(item);
+			if !matches!(item.visibility, Visibility::Public | Visibility::Default) {
+				continue;
+			}
+			match &item.inner {
+				ItemEnum::Module(_) => {
+					let name = item.name.clone().unwrap();
+					self.walk_module(krate, *child, &format!("{prefix}::{name}"), hidden);
+				}
+				ItemEnum::Use(u) => {
+					let Some(target) = u.id else {
+						self.inv.unknown.push(format!(
+							"{prefix}::{} (use {} unresolved by rustdoc)",
+							u.name, u.source
+						));
+						continue;
+					};
+					match self.docs.resolve(krate, target) {
+						Resolved::Unknown(why) => self
+							.inv
+							.unknown
+							.push(format!("{prefix}::{} <- {}", u.name, why)),
+						Resolved::Foreign(cname, path, kind) => {
+							self.inv.foreign_reexports.push(format!(
+								"{prefix}::{} = {cname}::{path} ({:?})",
+								u.name, kind
+							));
+						}
+						Resolved::Local(home, hid) => {
+							let h = self.crate_(&home);
+							let titem = &h.index[&hid];
+							if u.is_glob {
+								match &titem.inner {
+									ItemEnum::Module(_) => {
+										self.walk_module(&home, hid, prefix, hidden)
+									}
+									ItemEnum::Enum(_) => self.visit(&home, hid, prefix, hidden),
+									_ => self.inv.unknown.push(format!(
+										"{prefix}::* <- glob of non-module {}",
+										u.source
+									)),
+								}
+							} else {
+								let name = &u.name;
+								self.visit(&home, hid, &format!("{prefix}::{name}"), hidden);
+							}
+						}
+					}
+				}
+				_ => {
+					let name = item.name.clone().unwrap_or_default();
+					self.visit(krate, *child, &format!("{prefix}::{name}"), hidden);
+				}
+			}
+		}
+	}
 
-    fn visit(&mut self, krate: &str, id: Id, found: &str, hidden: bool) {
-        let c = self.crate_(krate);
-        let item = &c.index[&id];
-        let hidden = hidden || is_hidden(item);
-        match &item.inner {
-            ItemEnum::Module(_) => self.walk_module(krate, id, found, hidden),
-            ItemEnum::Struct(_) | ItemEnum::Enum(_) | ItemEnum::Union(_) => self.visit_type(krate, id, found, hidden),
-            ItemEnum::Trait(_) => self.visit_trait(krate, id, found, hidden, true),
-            ItemEnum::Function(_) => {
-                self.visit_function(krate, id, found, hidden, CallableKind::FreeFn, String::new(), false, true);
-            }
-            ItemEnum::TypeAlias(ta) => {
-                let alias_generic = ta.generics.params.iter().any(|p| !matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. }));
-                let idx = self.support(krate, id, "type_alias", found, 0, 0, alias_generic, hidden);
-                if self.inv.supporting[idx].alias_target.is_none() {
-                    self.inv.supporting[idx].alias_target = Some(self.docs.canon_expanded(krate, &ta.type_));
-                }
-                if let Type::ResolvedPath(p) = &ta.type_ {
-                    if let Resolved::Local(home, hid) = self.docs.resolve(krate, p.id) {
-                        let h = self.crate_(&home);
-                        if matches!(h.index[&hid].inner, ItemEnum::Struct(_) | ItemEnum::Enum(_) | ItemEnum::Union(_)) {
-                            self.visit_type(&home, hid, found, hidden);
-                            if !alias_generic && p.args.is_some() {
-                                let alias = item_path(c, id).unwrap_or_else(|| found.to_string());
-                                self.aliases.entry((home, hid)).or_default().push(alias);
-                            }
-                        }
-                    }
-                }
-            }
-            ItemEnum::TraitAlias(_) => {
-                self.support(krate, id, "trait_alias", found, 0, 0, false, hidden);
-            }
-            ItemEnum::Constant { .. } => {
-                self.support(krate, id, "constant", found, 0, 0, false, hidden);
-            }
-            ItemEnum::Static(_) => {
-                self.support(krate, id, "static", found, 0, 0, false, hidden);
-            }
-            ItemEnum::Macro(_) | ItemEnum::ProcMacro(_) => {
-                self.support(krate, id, "macro", found, 0, 0, false, hidden);
-            }
-            ItemEnum::ExternType => {
-                self.support(krate, id, "extern_type", found, 0, 0, false, hidden);
-            }
-            ItemEnum::Use(_) => {} // nested use reached through a module walk only
-            _ => {}
-        }
-    }
+	fn visit(&mut self, krate: &str, id: Id, found: &str, hidden: bool) {
+		let c = self.crate_(krate);
+		let item = &c.index[&id];
+		let hidden = hidden || is_hidden(item);
+		match &item.inner {
+			ItemEnum::Module(_) => self.walk_module(krate, id, found, hidden),
+			ItemEnum::Struct(_) | ItemEnum::Enum(_) | ItemEnum::Union(_) => {
+				self.visit_type(krate, id, found, hidden)
+			}
+			ItemEnum::Trait(_) => self.visit_trait(krate, id, found, hidden, true),
+			ItemEnum::Function(_) => {
+				self.visit_function(
+					krate,
+					id,
+					found,
+					hidden,
+					CallableKind::FreeFn,
+					String::new(),
+					false,
+					true,
+				);
+			}
+			ItemEnum::TypeAlias(ta) => {
+				let alias_generic = ta.generics.params.iter().any(|p| {
+					!matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. })
+				});
+				let idx = self.support(krate, id, "type_alias", found, 0, 0, alias_generic, hidden);
+				if self.inv.supporting[idx].alias_target.is_none() {
+					self.inv.supporting[idx].alias_target =
+						Some(self.docs.canon_expanded(krate, &ta.type_));
+				}
+				if let Type::ResolvedPath(p) = &ta.type_ {
+					if let Resolved::Local(home, hid) = self.docs.resolve(krate, p.id) {
+						let h = self.crate_(&home);
+						if matches!(
+							h.index[&hid].inner,
+							ItemEnum::Struct(_) | ItemEnum::Enum(_) | ItemEnum::Union(_)
+						) {
+							self.visit_type(&home, hid, found, hidden);
+							if !alias_generic && p.args.is_some() {
+								let alias = item_path(c, id).unwrap_or_else(|| found.to_string());
+								self.aliases.entry((home, hid)).or_default().push(alias);
+							}
+						}
+					}
+				}
+			}
+			ItemEnum::TraitAlias(_) => {
+				self.support(krate, id, "trait_alias", found, 0, 0, false, hidden);
+			}
+			ItemEnum::Constant { .. } => {
+				self.support(krate, id, "constant", found, 0, 0, false, hidden);
+			}
+			ItemEnum::Static(_) => {
+				self.support(krate, id, "static", found, 0, 0, false, hidden);
+			}
+			ItemEnum::Macro(_) | ItemEnum::ProcMacro(_) => {
+				self.support(krate, id, "macro", found, 0, 0, false, hidden);
+			}
+			ItemEnum::ExternType => {
+				self.support(krate, id, "extern_type", found, 0, 0, false, hidden);
+			}
+			ItemEnum::Use(_) => {} // nested use reached through a module walk only
+			_ => {}
+		}
+	}
 
-    /// An impl's type parameters with their bounds (declared and `where`),
-    /// canonical.
-    fn impl_bounds(&self, krate: &str, g: &rustdoc_types::Generics) -> Vec<(String, String)> {
-        let mut raw: Vec<(String, Vec<rustdoc_types::GenericBound>)> = g
-            .params
-            .iter()
-            .filter_map(|p| match &p.kind {
-                rustdoc_types::GenericParamDefKind::Type { bounds, .. } => Some((p.name.clone(), bounds.clone())),
-                _ => None,
-            })
-            .collect();
-        for w in &g.where_predicates {
-            if let rustdoc_types::WherePredicate::BoundPredicate { type_: Type::Generic(gn), bounds, .. } = w {
-                match raw.iter_mut().find(|(n, _)| n == gn) {
-                    Some((_, b)) => b.extend(bounds.iter().cloned()),
-                    None => raw.push((gn.clone(), bounds.clone())),
-                }
-            }
-        }
-        raw.iter().map(|(n, b)| (n.clone(), self.docs.canon_bounds(krate, b))).collect()
-    }
+	/// An impl's type parameters with their bounds (declared and `where`),
+	/// canonical.
+	fn impl_bounds(&self, krate: &str, g: &rustdoc_types::Generics) -> Vec<(String, String)> {
+		let mut raw: Vec<(String, Vec<rustdoc_types::GenericBound>)> = g
+			.params
+			.iter()
+			.filter_map(|p| match &p.kind {
+				rustdoc_types::GenericParamDefKind::Type { bounds, .. } => {
+					Some((p.name.clone(), bounds.clone()))
+				}
+				_ => None,
+			})
+			.collect();
+		for w in &g.where_predicates {
+			if let rustdoc_types::WherePredicate::BoundPredicate {
+				type_: Type::Generic(gn),
+				bounds,
+				..
+			} = w
+			{
+				match raw.iter_mut().find(|(n, _)| n == gn) {
+					Some((_, b)) => b.extend(bounds.iter().cloned()),
+					None => raw.push((gn.clone(), bounds.clone())),
+				}
+			}
+		}
+		raw.iter()
+			.map(|(n, b)| (n.clone(), self.docs.canon_bounds(krate, b)))
+			.collect()
+	}
 
-    /// Every `where` predicate of an impl, canonical: `Self: LogicalType`,
-    /// `T: PolarsDataType<Array = A>`, `A = B`; lifetime predicates are
-    /// omitted.
-    fn impl_where(&self, krate: &str, g: &rustdoc_types::Generics) -> Vec<String> {
-        g.where_predicates
-            .iter()
-            .filter_map(|w| match w {
-                rustdoc_types::WherePredicate::BoundPredicate { type_, bounds, .. } => Some(format!("{}: {}", self.docs.canon(krate, type_), self.docs.canon_bounds(krate, bounds))),
-                rustdoc_types::WherePredicate::EqPredicate { lhs, rhs } => Some(format!("{} = {}", self.docs.canon(krate, lhs), match rhs { rustdoc_types::Term::Type(t) => self.docs.canon(krate, t), rustdoc_types::Term::Constant(c) => c.expr.clone() })),
-                rustdoc_types::WherePredicate::LifetimePredicate { .. } => None,
-            })
-            .collect()
-    }
+	/// Every `where` predicate of an impl, canonical: `Self: LogicalType`,
+	/// `T: PolarsDataType<Array = A>`, `A = B`; lifetime predicates are
+	/// omitted.
+	fn impl_where(&self, krate: &str, g: &rustdoc_types::Generics) -> Vec<String> {
+		g.where_predicates
+			.iter()
+			.filter_map(|w| match w {
+				rustdoc_types::WherePredicate::BoundPredicate { type_, bounds, .. } => {
+					Some(format!(
+						"{}: {}",
+						self.docs.canon(krate, type_),
+						self.docs.canon_bounds(krate, bounds)
+					))
+				}
+				rustdoc_types::WherePredicate::EqPredicate { lhs, rhs } => Some(format!(
+					"{} = {}",
+					self.docs.canon(krate, lhs),
+					match rhs {
+						rustdoc_types::Term::Type(t) => self.docs.canon(krate, t),
+						rustdoc_types::Term::Constant(c) => c.expr.clone(),
+					}
+				)),
+				rustdoc_types::WherePredicate::LifetimePredicate { .. } => None,
+			})
+			.collect()
+	}
 
-    /// The associated types an impl binds, canonical with aliases expanded.
-    fn impl_assoc(&self, krate: &str, imp: &rustdoc_types::Impl) -> Vec<(String, String)> {
-        let c = &self.docs.crates[krate];
-        imp.items
-            .iter()
-            .filter_map(|m| match c.index.get(m).map(|i| (&i.inner, i.name.clone())) {
-                Some((ItemEnum::AssocType { type_: Some(t), .. }, Some(name))) => Some((name, self.docs.canon_expanded(krate, t))),
-                _ => None,
-            })
-            .collect()
-    }
+	/// The associated types an impl binds, canonical with aliases expanded.
+	fn impl_assoc(&self, krate: &str, imp: &rustdoc_types::Impl) -> Vec<(String, String)> {
+		let c = &self.docs.crates[krate];
+		imp.items
+			.iter()
+			.filter_map(
+				|m| match c.index.get(m).map(|i| (&i.inner, i.name.clone())) {
+					Some((ItemEnum::AssocType { type_: Some(t), .. }, Some(name))) => {
+						Some((name, self.docs.canon_expanded(krate, t)))
+					}
+					_ => None,
+				},
+			)
+			.collect()
+	}
 
-    fn support(&mut self, krate: &str, id: Id, kind: &str, found: &str, fields: usize, variants: usize, generic: bool, hidden: bool) -> usize {
-        let key = (krate.to_string(), id);
-        if let Some(&i) = self.seen_support.get(&key) {
-            self.inv.supporting[i].found_paths.push(found.to_string());
-            self.inv.supporting[i].hidden &= hidden;
-            return i;
-        }
-        let c = self.crate_(krate);
-        let s = Supporting {
-            key: format!("{krate}:{}", id.0),
-            kind: kind.to_string(),
-            canonical_path: item_path(c, id).unwrap_or_else(|| found.to_string()),
-            found_paths: vec![found.to_string()],
-            crate_paths: vec![],
-            public_fields: fields,
-            fields: vec![],
-            fields_canonical: vec![],
-            variant_payloads: vec![],
-            variants,
-            variant_shapes: vec![],
-            generic,
-            lifetime: false,
-            hidden,
-            derived: vec![],
-            alias_target: None,
-            implementors: vec![],
-            impls: vec![],
-        };
-        self.inv.supporting.push(s);
-        let i = self.inv.supporting.len() - 1;
-        self.seen_support.insert(key, i);
-        i
-    }
+	fn support(
+		&mut self,
+		krate: &str,
+		id: Id,
+		kind: &str,
+		found: &str,
+		fields: usize,
+		variants: usize,
+		generic: bool,
+		hidden: bool,
+	) -> usize {
+		let key = (krate.to_string(), id);
+		if let Some(&i) = self.seen_support.get(&key) {
+			self.inv.supporting[i].found_paths.push(found.to_string());
+			self.inv.supporting[i].hidden &= hidden;
+			return i;
+		}
+		let c = self.crate_(krate);
+		let s = Supporting {
+			key: format!("{krate}:{}", id.0),
+			kind: kind.to_string(),
+			canonical_path: item_path(c, id).unwrap_or_else(|| found.to_string()),
+			found_paths: vec![found.to_string()],
+			crate_paths: vec![],
+			public_fields: fields,
+			fields: vec![],
+			fields_canonical: vec![],
+			variant_payloads: vec![],
+			variants,
+			variant_shapes: vec![],
+			generic,
+			lifetime: false,
+			hidden,
+			derived: vec![],
+			alias_target: None,
+			implementors: vec![],
+			impls: vec![],
+		};
+		self.inv.supporting.push(s);
+		let i = self.inv.supporting.len() - 1;
+		self.seen_support.insert(key, i);
+		i
+	}
 
-    fn visit_type(&mut self, krate: &str, id: Id, found: &str, hidden: bool) {
-        let c = self.crate_(krate);
-        let item = &c.index[&id];
-        let (kind, impls, fields, variants, generic) = match &item.inner {
-            ItemEnum::Struct(s) => {
-                let fields = match &s.kind {
-                    StructKind::Plain { fields, .. } => fields.len(),
-                    StructKind::Tuple(f) => f.iter().filter(|f| f.is_some()).count(),
-                    StructKind::Unit => 0,
-                };
-                ("struct", s.impls.clone(), fields, 0, s.generics.params.iter().any(|p| !matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. })))
-            }
-            ItemEnum::Enum(e) => ("enum", e.impls.clone(), 0, e.variants.len(), e.generics.params.iter().any(|p| !matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. }))),
-            ItemEnum::Union(u) => ("union", u.impls.clone(), 0, 0, !u.generics.params.is_empty()),
-            _ => return,
-        };
-        let idx = self.support(krate, id, kind, found, fields, variants, generic, hidden);
-        let owner_key = self.inv.supporting[idx].key.clone();
-        let owner_path = self.inv.supporting[idx].canonical_path.clone();
-        if !self.visited_types.insert((krate.to_string(), id)) {
-            return;
-        }
-        let lifetime = match &item.inner {
-            ItemEnum::Struct(st) => st.generics.params.iter().any(|p| matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. })),
-            ItemEnum::Enum(en) => en.generics.params.iter().any(|p| matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. })),
-            _ => false,
-        };
-        self.inv.supporting[idx].lifetime = lifetime;
-        match &item.inner {
-            ItemEnum::Struct(st) => {
-                if let StructKind::Plain { fields, .. } = &st.kind {
-                    for f in fields {
-                        if let Some(fi) = c.index.get(f) {
-                            if let ItemEnum::StructField(t) = &fi.inner {
-                                self.inv.supporting[idx].fields.push((fi.name.clone().unwrap_or_default(), render::ty(t)));
-                                let canon = self.docs.canon(krate, t);
-                                self.inv.supporting[idx].fields_canonical.push((fi.name.clone().unwrap_or_default(), canon));
-                            }
-                        }
-                    }
-                }
-            }
-            ItemEnum::Enum(en) => {
-                for v in &en.variants {
-                    if let Some(vi) = c.index.get(v) {
-                        if let ItemEnum::Variant(var) = &vi.inner {
-                            let data = !matches!(var.kind, rustdoc_types::VariantKind::Plain);
-                            self.inv.supporting[idx].variant_shapes.push((vi.name.clone().unwrap_or_default(), data));
-                            let payload: Vec<String> = match &var.kind {
-                                rustdoc_types::VariantKind::Tuple(fs) => fs.iter().filter_map(|f| f.as_ref()).filter_map(|f| c.index.get(f)).filter_map(|fi| if let ItemEnum::StructField(t) = &fi.inner { Some(self.docs.canon(krate, t)) } else { None }).collect(),
-                                rustdoc_types::VariantKind::Struct { fields, .. } => fields.iter().filter_map(|f| c.index.get(f)).filter_map(|fi| if let ItemEnum::StructField(t) = &fi.inner { Some(format!("{}: {}", fi.name.clone().unwrap_or_default(), self.docs.canon(krate, t))) } else { None }).collect(),
-                                rustdoc_types::VariantKind::Plain => vec![],
-                            };
-                            if data {
-                                self.inv.supporting[idx].variant_payloads.push((vi.name.clone().unwrap_or_default(), payload));
-                            }
-                        }
-                    }
-                }
-            }
-            _ => {}
-        }
-        for impl_id in impls {
-            let imp = match &c.index.get(&impl_id).map(|i| &i.inner) {
-                Some(ItemEnum::Impl(i)) => i,
-                _ => continue,
-            };
-            if imp.is_negative || imp.is_synthetic {
-                continue;
-            }
-            // `#[derive]`d impls (Clone, Debug, PartialEq, ...) are public
-            // operations like hand-written ones; they are inventoried on the
-            // same terms and flagged, and the count is also reported.
-            let derived = c.index[&impl_id].attrs.iter().any(|a| matches!(a, rustdoc_types::Attribute::AutomaticallyDerived));
-            if derived {
-                self.inv.derived_impls += 1;
-                if let Some(tr) = &imp.trait_ {
-                    self.inv.supporting[idx].derived.push(render::last(&tr.path).to_string());
-                }
-            }
-            match &imp.trait_ {
-                None => {
-                    let head = self.docs.canon_expanded(krate, &imp.for_);
-                    let bounds = self.impl_bounds(krate, &imp.generics);
-                    let wh = self.impl_where(krate, &imp.generics);
-                    for m in &imp.items {
-                        if matches!(c.index.get(m).map(|i| &i.inner), Some(ItemEnum::Function(_))) {
-                            let name = c.index[m].name.clone().unwrap();
-                            if let Some(i) = self.visit_function(krate, *m, &format!("{owner_path}::{name}"), hidden, CallableKind::Inherent, owner_key.clone(), generic, true) {
-                                if generic {
-                                    let cl = &mut self.inv.callables[i];
-                                    cl.impl_head = Some(head.clone());
-                                    cl.impl_bounds = bounds.clone();
-                                    cl.impl_where = wh.clone();
-                                }
-                            }
-                        }
-                    }
-                }
-                Some(tr) => {
-                    let blanket = imp.blanket_impl.is_some();
-                    match self.docs.resolve(krate, tr.id) {
-                        Resolved::Local(home, tid) => {
-                            let label = if blanket { "blanket".to_string() } else { owner_path.clone() };
-                            self.implementors.entry((home.clone(), tid)).or_default().push(label);
-                            let ti = TraitImpl { for_type: self.docs.canon_expanded(krate, &imp.for_), blanket, bounds: self.impl_bounds(krate, &imp.generics), where_predicates: self.impl_where(krate, &imp.generics), assoc_types: self.impl_assoc(krate, imp) };
-                            self.trait_impls.entry((home.clone(), tid)).or_default().push(ti);
-                            self.pending_traits.insert((home, tid));
-                        }
-                        Resolved::Foreign(_cname, tpath, _) => {
-                            // Operators and std conversions on a reachable type: one
-                            // callable per (type, trait), not per method.
-                            if blanket {
-                                continue;
-                            }
-                            let tname = render::path(&tr.path, tr.args.as_deref());
-                            let key = format!("{krate}:{}:{}", id.0, impl_id.0);
-                            if self.seen_callable.contains_key(&(key.clone(), Id(0))) {
-                                continue;
-                            }
-                            self.seen_callable.insert((key.clone(), Id(0)), self.inv.callables.len());
-                            let (recv, mut params, ret, ret_raw, inputs_raw) = first_method_sig(c, imp);
-                            for p in params.iter_mut() {
-                                p.ty_canonical = self.docs.canon(krate, &p.raw);
-                            }
-                            let ret_canonical = ret_raw.as_ref().map(|t| self.docs.canon(krate, t));
-                            let impl_for = Some(self.docs.canon_expanded(krate, &imp.for_));
-                            let impl_bounds = self.impl_bounds(krate, &imp.generics);
-                            self.inv.callables.push(Callable {
-                                key: key.clone(),
-                                kind: CallableKind::ForeignTraitImpl,
-                                krate: krate.to_string(),
-                                owner: owner_key.clone(),
-                                name: tname.clone(),
-                                canonical_path: format!("{owner_path} as {tpath}"),
-                                found_paths: vec![format!("{found} as {tname}")],
-                                crate_paths: vec![],
-                                receiver: recv,
-                                params,
-                                ret,
-                                ret_canonical,
-                                ret_raw,
-                                generics: vec![],
-                                where_clause: vec![],
-                                generics_canonical: vec![],
-                                impl_for,
-                                impl_bounds,
-                                impl_head: None,
-                                impl_where: vec![],
-                                impl_assoc: self.impl_assoc(krate, imp),
-                                docs_first: None,
-                                bounds_raw: vec![],
-                                owner_generic: generic,
-                                owner_aliases: vec![],
-                                is_unsafe: imp.is_unsafe,
-                                is_async: false,
-                                is_provided: false,
-                                deprecated: false,
-                                hidden,
-                                unstable: false,
-                                implementors: vec![],
-                                trait_reachable: false,
-                                derived,
-                                inputs_raw,
-                            });
-                        }
-                        Resolved::Unknown(why) => self.inv.unknown.push(format!("impl for {owner_path}: {why}")),
-                    }
-                }
-            }
-        }
-    }
+	fn visit_type(&mut self, krate: &str, id: Id, found: &str, hidden: bool) {
+		let c = self.crate_(krate);
+		let item = &c.index[&id];
+		let (kind, impls, fields, variants, generic) = match &item.inner {
+			ItemEnum::Struct(s) => {
+				let fields = match &s.kind {
+					StructKind::Plain { fields, .. } => fields.len(),
+					StructKind::Tuple(f) => f.iter().filter(|f| f.is_some()).count(),
+					StructKind::Unit => 0,
+				};
+				(
+					"struct",
+					s.impls.clone(),
+					fields,
+					0,
+					s.generics.params.iter().any(|p| {
+						!matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. })
+					}),
+				)
+			}
+			ItemEnum::Enum(e) => (
+				"enum",
+				e.impls.clone(),
+				0,
+				e.variants.len(),
+				e.generics.params.iter().any(|p| {
+					!matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. })
+				}),
+			),
+			ItemEnum::Union(u) => (
+				"union",
+				u.impls.clone(),
+				0,
+				0,
+				!u.generics.params.is_empty(),
+			),
+			_ => return,
+		};
+		let idx = self.support(krate, id, kind, found, fields, variants, generic, hidden);
+		let owner_key = self.inv.supporting[idx].key.clone();
+		let owner_path = self.inv.supporting[idx].canonical_path.clone();
+		if !self.visited_types.insert((krate.to_string(), id)) {
+			return;
+		}
+		let lifetime = match &item.inner {
+			ItemEnum::Struct(st) => st
+				.generics
+				.params
+				.iter()
+				.any(|p| matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. })),
+			ItemEnum::Enum(en) => en
+				.generics
+				.params
+				.iter()
+				.any(|p| matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. })),
+			_ => false,
+		};
+		self.inv.supporting[idx].lifetime = lifetime;
+		match &item.inner {
+			ItemEnum::Struct(st) => {
+				if let StructKind::Plain { fields, .. } = &st.kind {
+					for f in fields {
+						if let Some(fi) = c.index.get(f) {
+							if let ItemEnum::StructField(t) = &fi.inner {
+								self.inv.supporting[idx]
+									.fields
+									.push((fi.name.clone().unwrap_or_default(), render::ty(t)));
+								let canon = self.docs.canon(krate, t);
+								self.inv.supporting[idx]
+									.fields_canonical
+									.push((fi.name.clone().unwrap_or_default(), canon));
+							}
+						}
+					}
+				}
+			}
+			ItemEnum::Enum(en) => {
+				for v in &en.variants {
+					if let Some(vi) = c.index.get(v) {
+						if let ItemEnum::Variant(var) = &vi.inner {
+							let data = !matches!(var.kind, rustdoc_types::VariantKind::Plain);
+							self.inv.supporting[idx]
+								.variant_shapes
+								.push((vi.name.clone().unwrap_or_default(), data));
+							let payload: Vec<String> = match &var.kind {
+								rustdoc_types::VariantKind::Tuple(fs) => fs
+									.iter()
+									.filter_map(|f| f.as_ref())
+									.filter_map(|f| c.index.get(f))
+									.filter_map(|fi| {
+										if let ItemEnum::StructField(t) = &fi.inner {
+											Some(self.docs.canon(krate, t))
+										} else {
+											None
+										}
+									})
+									.collect(),
+								rustdoc_types::VariantKind::Struct { fields, .. } => fields
+									.iter()
+									.filter_map(|f| c.index.get(f))
+									.filter_map(|fi| {
+										if let ItemEnum::StructField(t) = &fi.inner {
+											Some(format!(
+												"{}: {}",
+												fi.name.clone().unwrap_or_default(),
+												self.docs.canon(krate, t)
+											))
+										} else {
+											None
+										}
+									})
+									.collect(),
+								rustdoc_types::VariantKind::Plain => vec![],
+							};
+							if data {
+								self.inv.supporting[idx]
+									.variant_payloads
+									.push((vi.name.clone().unwrap_or_default(), payload));
+							}
+						}
+					}
+				}
+			}
+			_ => {}
+		}
+		for impl_id in impls {
+			let imp = match &c.index.get(&impl_id).map(|i| &i.inner) {
+				Some(ItemEnum::Impl(i)) => i,
+				_ => continue,
+			};
+			if imp.is_negative || imp.is_synthetic {
+				continue;
+			}
+			// `#[derive]`d impls (Clone, Debug, PartialEq, ...) are public
+			// operations like hand-written ones; they are inventoried on the
+			// same terms and flagged, and the count is also reported.
+			let derived = c.index[&impl_id]
+				.attrs
+				.iter()
+				.any(|a| matches!(a, rustdoc_types::Attribute::AutomaticallyDerived));
+			if derived {
+				self.inv.derived_impls += 1;
+				if let Some(tr) = &imp.trait_ {
+					self.inv.supporting[idx]
+						.derived
+						.push(render::last(&tr.path).to_string());
+				}
+			}
+			match &imp.trait_ {
+				None => {
+					let head = self.docs.canon_expanded(krate, &imp.for_);
+					let bounds = self.impl_bounds(krate, &imp.generics);
+					let wh = self.impl_where(krate, &imp.generics);
+					for m in &imp.items {
+						if matches!(
+							c.index.get(m).map(|i| &i.inner),
+							Some(ItemEnum::Function(_))
+						) {
+							let name = c.index[m].name.clone().unwrap();
+							if let Some(i) = self.visit_function(
+								krate,
+								*m,
+								&format!("{owner_path}::{name}"),
+								hidden,
+								CallableKind::Inherent,
+								owner_key.clone(),
+								generic,
+								true,
+							) {
+								if generic {
+									let cl = &mut self.inv.callables[i];
+									cl.impl_head = Some(head.clone());
+									cl.impl_bounds = bounds.clone();
+									cl.impl_where = wh.clone();
+								}
+							}
+						}
+					}
+				}
+				Some(tr) => {
+					let blanket = imp.blanket_impl.is_some();
+					match self.docs.resolve(krate, tr.id) {
+						Resolved::Local(home, tid) => {
+							let label = if blanket {
+								"blanket".to_string()
+							} else {
+								owner_path.clone()
+							};
+							self.implementors
+								.entry((home.clone(), tid))
+								.or_default()
+								.push(label);
+							let ti = TraitImpl {
+								for_type: self.docs.canon_expanded(krate, &imp.for_),
+								blanket,
+								bounds: self.impl_bounds(krate, &imp.generics),
+								where_predicates: self.impl_where(krate, &imp.generics),
+								assoc_types: self.impl_assoc(krate, imp),
+							};
+							self.trait_impls
+								.entry((home.clone(), tid))
+								.or_default()
+								.push(ti);
+							self.pending_traits.insert((home, tid));
+						}
+						Resolved::Foreign(_cname, tpath, _) => {
+							// Operators and std conversions on a reachable type: one
+							// callable per (type, trait), not per method.
+							if blanket {
+								continue;
+							}
+							let tname = render::path(&tr.path, tr.args.as_deref());
+							let key = format!("{krate}:{}:{}", id.0, impl_id.0);
+							if self.seen_callable.contains_key(&(key.clone(), Id(0))) {
+								continue;
+							}
+							self.seen_callable
+								.insert((key.clone(), Id(0)), self.inv.callables.len());
+							let (recv, mut params, ret, ret_raw, inputs_raw) =
+								first_method_sig(c, imp);
+							for p in params.iter_mut() {
+								p.ty_canonical = self.docs.canon(krate, &p.raw);
+							}
+							let ret_canonical = ret_raw.as_ref().map(|t| self.docs.canon(krate, t));
+							let impl_for = Some(self.docs.canon_expanded(krate, &imp.for_));
+							let impl_bounds = self.impl_bounds(krate, &imp.generics);
+							self.inv.callables.push(Callable {
+								key: key.clone(),
+								kind: CallableKind::ForeignTraitImpl,
+								krate: krate.to_string(),
+								owner: owner_key.clone(),
+								name: tname.clone(),
+								canonical_path: format!("{owner_path} as {tpath}"),
+								found_paths: vec![format!("{found} as {tname}")],
+								crate_paths: vec![],
+								receiver: recv,
+								params,
+								ret,
+								ret_canonical,
+								ret_raw,
+								generics: vec![],
+								where_clause: vec![],
+								generics_canonical: vec![],
+								impl_for,
+								impl_bounds,
+								impl_head: None,
+								impl_where: vec![],
+								impl_assoc: self.impl_assoc(krate, imp),
+								docs_first: None,
+								bounds_raw: vec![],
+								owner_generic: generic,
+								owner_aliases: vec![],
+								is_unsafe: imp.is_unsafe,
+								is_async: false,
+								is_provided: false,
+								deprecated: false,
+								hidden,
+								unstable: false,
+								implementors: vec![],
+								trait_reachable: false,
+								derived,
+								inputs_raw,
+							});
+						}
+						Resolved::Unknown(why) => self
+							.inv
+							.unknown
+							.push(format!("impl for {owner_path}: {why}")),
+					}
+				}
+			}
+		}
+	}
 
-    fn visit_trait(&mut self, krate: &str, id: Id, found: &str, hidden: bool, by_path: bool) {
-        let c = self.crate_(krate);
-        let ItemEnum::Trait(t) = &c.index[&id].inner else { return };
-        let generic = t.generics.params.iter().any(|p| !matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. }));
-        let idx = self.support(krate, id, "trait", found, 0, 0, generic, hidden);
-        let owner_key = self.inv.supporting[idx].key.clone();
-        let owner_path = self.inv.supporting[idx].canonical_path.clone();
-        if by_path {
-            self.reachable_traits.insert((krate.to_string(), id));
-        }
-        for m in &t.items {
-            if let Some(ItemEnum::Function(f)) = c.index.get(m).map(|i| &i.inner) {
-                let name = c.index[m].name.clone().unwrap();
-                let provided = f.has_body;
-                let i = self.visit_function(krate, *m, &format!("{owner_path}::{name}"), hidden, CallableKind::TraitMethod, owner_key.clone(), generic, by_path);
-                if let Some(i) = i {
-                    self.inv.callables[i].is_provided = provided;
-                    self.inv.callables[i].trait_reachable |= by_path;
-                }
-            }
-        }
-    }
+	fn visit_trait(&mut self, krate: &str, id: Id, found: &str, hidden: bool, by_path: bool) {
+		let c = self.crate_(krate);
+		let ItemEnum::Trait(t) = &c.index[&id].inner else {
+			return;
+		};
+		let generic = t
+			.generics
+			.params
+			.iter()
+			.any(|p| !matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. }));
+		let idx = self.support(krate, id, "trait", found, 0, 0, generic, hidden);
+		let owner_key = self.inv.supporting[idx].key.clone();
+		let owner_path = self.inv.supporting[idx].canonical_path.clone();
+		if by_path {
+			self.reachable_traits.insert((krate.to_string(), id));
+		}
+		for m in &t.items {
+			if let Some(ItemEnum::Function(f)) = c.index.get(m).map(|i| &i.inner) {
+				let name = c.index[m].name.clone().unwrap();
+				let provided = f.has_body;
+				let i = self.visit_function(
+					krate,
+					*m,
+					&format!("{owner_path}::{name}"),
+					hidden,
+					CallableKind::TraitMethod,
+					owner_key.clone(),
+					generic,
+					by_path,
+				);
+				if let Some(i) = i {
+					self.inv.callables[i].is_provided = provided;
+					self.inv.callables[i].trait_reachable |= by_path;
+				}
+			}
+		}
+	}
 
-    #[allow(clippy::too_many_arguments)]
-    fn visit_function(&mut self, krate: &str, id: Id, found: &str, hidden: bool, kind: CallableKind, owner: String, owner_generic: bool, trait_reachable: bool) -> Option<usize> {
-        let key = (krate.to_string(), id);
-        if let Some(&i) = self.seen_callable.get(&key) {
-            self.inv.callables[i].found_paths.push(found.to_string());
-            self.inv.callables[i].hidden &= hidden;
-            self.inv.callables[i].trait_reachable |= trait_reachable;
-            return Some(i);
-        }
-        let c = self.crate_(krate);
-        let item = &c.index[&id];
-        let ItemEnum::Function(f) = &item.inner else { return None };
-        let (receiver, mut params) = split_receiver(&f.sig.inputs);
-        for p in params.iter_mut() {
-            p.ty_canonical = self.docs.canon(krate, &p.raw);
-        }
-        let ret_canonical = f.sig.output.as_ref().map(|t| self.docs.canon(krate, t));
-        let generics = f
-            .generics
-            .params
-            .iter()
-            .filter_map(|p| match &p.kind {
-                rustdoc_types::GenericParamDefKind::Type { bounds, .. } => Some(GenericParam { name: p.name.clone(), bounds: render::bounds_str(bounds) }),
-                rustdoc_types::GenericParamDefKind::Const { type_, .. } => Some(GenericParam { name: p.name.clone(), bounds: format!("const {}", render::ty(type_)) }),
-                rustdoc_types::GenericParamDefKind::Lifetime { .. } => None,
-            })
-            .collect();
-        let mut bounds_raw: Vec<(String, Vec<rustdoc_types::GenericBound>)> = f
-            .generics
-            .params
-            .iter()
-            .filter_map(|p| match &p.kind {
-                rustdoc_types::GenericParamDefKind::Type { bounds, .. } => Some((p.name.clone(), bounds.clone())),
-                _ => None,
-            })
-            .collect();
-        for w in &f.generics.where_predicates {
-            if let rustdoc_types::WherePredicate::BoundPredicate { type_: Type::Generic(g), bounds, .. } = w {
-                match bounds_raw.iter_mut().find(|(n, _)| n == g) {
-                    Some((_, b)) => b.extend(bounds.iter().cloned()),
-                    None => bounds_raw.push((g.clone(), bounds.clone())),
-                }
-            }
-        }
-        let generics_canonical: Vec<(String, String)> = bounds_raw.iter().map(|(n, b)| (n.clone(), self.docs.canon_bounds(krate, b))).collect();
-        let docs_first = item.docs.as_ref().map(|d| d.split("\n\n").next().unwrap_or("").trim().to_string()).filter(|d| !d.is_empty());
-        let where_clause = f
-            .generics
-            .where_predicates
-            .iter()
-            .filter_map(|w| match w {
-                rustdoc_types::WherePredicate::BoundPredicate { type_, bounds, .. } => Some(format!("{}: {}", render::ty(type_), render::bounds_str(bounds))),
-                rustdoc_types::WherePredicate::EqPredicate { lhs, .. } => Some(format!("{} = ..", render::ty(lhs))),
-                rustdoc_types::WherePredicate::LifetimePredicate { .. } => None,
-            })
-            .collect();
-        let canonical_path = match kind {
-            CallableKind::FreeFn => item_path(c, id).unwrap_or_else(|| found.to_string()),
-            _ => found.to_string(),
-        };
-        let call = Callable {
-            key: format!("{krate}:{}", id.0),
-            kind,
-            krate: krate.to_string(),
-            owner,
-            name: item.name.clone().unwrap_or_default(),
-            canonical_path,
-            found_paths: vec![found.to_string()],
-            crate_paths: vec![],
-            receiver,
-            params,
-            ret: f.sig.output.as_ref().map(render::ty),
-            ret_canonical,
-            ret_raw: f.sig.output.clone(),
-            generics,
-            where_clause,
-            generics_canonical,
-            impl_for: None,
-            impl_bounds: vec![],
-            impl_head: None,
-            impl_where: vec![],
-            impl_assoc: vec![],
-            docs_first,
-            bounds_raw,
-            owner_generic,
-            owner_aliases: vec![],
-            is_unsafe: f.header.is_unsafe,
-            is_async: f.header.is_async,
-            is_provided: false,
-            deprecated: item.deprecation.is_some(),
-            hidden,
-            unstable: item.stability.as_ref().map(|s| matches!(s.level, rustdoc_types::StabilityLevel::Unstable { .. })).unwrap_or(false),
-            implementors: vec![],
-            trait_reachable,
-            derived: false,
-            inputs_raw: f.sig.inputs.clone(),
-        };
-        self.inv.callables.push(call);
-        let i = self.inv.callables.len() - 1;
-        self.seen_callable.insert(key, i);
-        Some(i)
-    }
+	#[allow(clippy::too_many_arguments)]
+	fn visit_function(
+		&mut self,
+		krate: &str,
+		id: Id,
+		found: &str,
+		hidden: bool,
+		kind: CallableKind,
+		owner: String,
+		owner_generic: bool,
+		trait_reachable: bool,
+	) -> Option<usize> {
+		let key = (krate.to_string(), id);
+		if let Some(&i) = self.seen_callable.get(&key) {
+			self.inv.callables[i].found_paths.push(found.to_string());
+			self.inv.callables[i].hidden &= hidden;
+			self.inv.callables[i].trait_reachable |= trait_reachable;
+			return Some(i);
+		}
+		let c = self.crate_(krate);
+		let item = &c.index[&id];
+		let ItemEnum::Function(f) = &item.inner else {
+			return None;
+		};
+		let (receiver, mut params) = split_receiver(&f.sig.inputs);
+		for p in params.iter_mut() {
+			p.ty_canonical = self.docs.canon(krate, &p.raw);
+		}
+		let ret_canonical = f.sig.output.as_ref().map(|t| self.docs.canon(krate, t));
+		let generics = f
+			.generics
+			.params
+			.iter()
+			.filter_map(|p| match &p.kind {
+				rustdoc_types::GenericParamDefKind::Type { bounds, .. } => Some(GenericParam {
+					name: p.name.clone(),
+					bounds: render::bounds_str(bounds),
+				}),
+				rustdoc_types::GenericParamDefKind::Const { type_, .. } => Some(GenericParam {
+					name: p.name.clone(),
+					bounds: format!("const {}", render::ty(type_)),
+				}),
+				rustdoc_types::GenericParamDefKind::Lifetime { .. } => None,
+			})
+			.collect();
+		let mut bounds_raw: Vec<(String, Vec<rustdoc_types::GenericBound>)> = f
+			.generics
+			.params
+			.iter()
+			.filter_map(|p| match &p.kind {
+				rustdoc_types::GenericParamDefKind::Type { bounds, .. } => {
+					Some((p.name.clone(), bounds.clone()))
+				}
+				_ => None,
+			})
+			.collect();
+		for w in &f.generics.where_predicates {
+			if let rustdoc_types::WherePredicate::BoundPredicate {
+				type_: Type::Generic(g),
+				bounds,
+				..
+			} = w
+			{
+				match bounds_raw.iter_mut().find(|(n, _)| n == g) {
+					Some((_, b)) => b.extend(bounds.iter().cloned()),
+					None => bounds_raw.push((g.clone(), bounds.clone())),
+				}
+			}
+		}
+		let generics_canonical: Vec<(String, String)> = bounds_raw
+			.iter()
+			.map(|(n, b)| (n.clone(), self.docs.canon_bounds(krate, b)))
+			.collect();
+		let docs_first = item
+			.docs
+			.as_ref()
+			.map(|d| d.split("\n\n").next().unwrap_or("").trim().to_string())
+			.filter(|d| !d.is_empty());
+		let where_clause = f
+			.generics
+			.where_predicates
+			.iter()
+			.filter_map(|w| match w {
+				rustdoc_types::WherePredicate::BoundPredicate { type_, bounds, .. } => Some(
+					format!("{}: {}", render::ty(type_), render::bounds_str(bounds)),
+				),
+				rustdoc_types::WherePredicate::EqPredicate { lhs, .. } => {
+					Some(format!("{} = ..", render::ty(lhs)))
+				}
+				rustdoc_types::WherePredicate::LifetimePredicate { .. } => None,
+			})
+			.collect();
+		let canonical_path = match kind {
+			CallableKind::FreeFn => item_path(c, id).unwrap_or_else(|| found.to_string()),
+			_ => found.to_string(),
+		};
+		let call = Callable {
+			key: format!("{krate}:{}", id.0),
+			kind,
+			krate: krate.to_string(),
+			owner,
+			name: item.name.clone().unwrap_or_default(),
+			canonical_path,
+			found_paths: vec![found.to_string()],
+			crate_paths: vec![],
+			receiver,
+			params,
+			ret: f.sig.output.as_ref().map(render::ty),
+			ret_canonical,
+			ret_raw: f.sig.output.clone(),
+			generics,
+			where_clause,
+			generics_canonical,
+			impl_for: None,
+			impl_bounds: vec![],
+			impl_head: None,
+			impl_where: vec![],
+			impl_assoc: vec![],
+			docs_first,
+			bounds_raw,
+			owner_generic,
+			owner_aliases: vec![],
+			is_unsafe: f.header.is_unsafe,
+			is_async: f.header.is_async,
+			is_provided: false,
+			deprecated: item.deprecation.is_some(),
+			hidden,
+			unstable: item
+				.stability
+				.as_ref()
+				.map(|s| matches!(s.level, rustdoc_types::StabilityLevel::Unstable { .. }))
+				.unwrap_or(false),
+			implementors: vec![],
+			trait_reachable,
+			derived: false,
+			inputs_raw: f.sig.inputs.clone(),
+		};
+		self.inv.callables.push(call);
+		let i = self.inv.callables.len() - 1;
+		self.seen_callable.insert(key, i);
+		Some(i)
+	}
 }
 
 fn split_receiver(inputs: &[(String, Type)]) -> (String, Vec<Param>) {
-    let mut params = Vec::new();
-    let mut receiver = "none".to_string();
-    for (i, (name, ty)) in inputs.iter().enumerate() {
-        if i == 0 && name == "self" {
-            receiver = match ty {
-                Type::Generic(g) if g == "Self" => "self".into(),
-                Type::BorrowedRef { is_mutable: false, type_, .. } if matches!(&**type_, Type::Generic(g) if g == "Self") => "&self".into(),
-                Type::BorrowedRef { is_mutable: true, type_, .. } if matches!(&**type_, Type::Generic(g) if g == "Self") => "&mut self".into(),
-                other => format!("self: {}", render::ty(other)),
-            };
-            continue;
-        }
-        params.push(Param { name: name.clone(), ty: render::ty(ty), ty_canonical: String::new(), raw: ty.clone() });
-    }
-    (receiver, params)
+	let mut params = Vec::new();
+	let mut receiver = "none".to_string();
+	for (i, (name, ty)) in inputs.iter().enumerate() {
+		if i == 0 && name == "self" {
+			receiver = match ty {
+				Type::Generic(g) if g == "Self" => "self".into(),
+				Type::BorrowedRef {
+					is_mutable: false,
+					type_,
+					..
+				} if matches!(&**type_, Type::Generic(g) if g == "Self") => "&self".into(),
+				Type::BorrowedRef {
+					is_mutable: true,
+					type_,
+					..
+				} if matches!(&**type_, Type::Generic(g) if g == "Self") => "&mut self".into(),
+				other => format!("self: {}", render::ty(other)),
+			};
+			continue;
+		}
+		params.push(Param {
+			name: name.clone(),
+			ty: render::ty(ty),
+			ty_canonical: String::new(),
+			raw: ty.clone(),
+		});
+	}
+	(receiver, params)
 }
 
 /// For a foreign trait impl, take the signature of its first method (e.g.
 /// `add(self, rhs)`) so the classifier can judge the argument shapes.
-fn first_method_sig(c: &Crate, imp: &rustdoc_types::Impl) -> (String, Vec<Param>, Option<String>, Option<Type>, Vec<(String, Type)>) {
-    for m in &imp.items {
-        if let Some(ItemEnum::Function(f)) = c.index.get(m).map(|i| &i.inner) {
-            let (r, p) = split_receiver(&f.sig.inputs);
-            return (r, p, f.sig.output.as_ref().map(render::ty), f.sig.output.clone(), f.sig.inputs.clone());
-        }
-    }
-    ("none".into(), vec![], None, None, vec![])
+fn first_method_sig(
+	c: &Crate,
+	imp: &rustdoc_types::Impl,
+) -> (
+	String,
+	Vec<Param>,
+	Option<String>,
+	Option<Type>,
+	Vec<(String, Type)>,
+) {
+	for m in &imp.items {
+		if let Some(ItemEnum::Function(f)) = c.index.get(m).map(|i| &i.inner) {
+			let (r, p) = split_receiver(&f.sig.inputs);
+			return (
+				r,
+				p,
+				f.sig.output.as_ref().map(render::ty),
+				f.sig.output.clone(),
+				f.sig.inputs.clone(),
+			);
+		}
+	}
+	("none".into(), vec![], None, None, vec![])
 }

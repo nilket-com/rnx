@@ -1,5 +1,5 @@
 {
-  "cases": 2489,
+  "cases": 2802,
   "results": [
     {
       "detail": "false",
@@ -34,6 +34,118 @@
       "unordered": false
     },
     {
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([0, 255]), Binary([]), Binary([97, 98]), Binary([0, 255]), Binary([])];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__binaryoffsetchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Binary:[Binary([97, 98]), Binary([0, 255]), Binary([]), Binary([97, 98]), Binary([0, 255]), Binary([])];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__binarychunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Boolean:[Boolean(true), Boolean(false), Boolean(true), Boolean(true), Boolean(false), Boolean(true)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__booleanchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Float32:[Float32(1.5), Float32(2.5), Float32(3.5), Float32(1.5), Float32(2.5), Float32(3.5)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Float64:[Float64(1.5), Float64(2.5), Float64(3.5), Float64(1.5), Float64(2.5), Float64(3.5)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3), Int16(1), Int16(2), Int16(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__int16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Int32:[Int32(1), Int32(2), Int32(3), Int32(1), Int32(2), Int32(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__int32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Int64:[Int64(1), Int64(2), Int64(3), Int64(1), Int64(2), Int64(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__int64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3), Int8(1), Int8(2), Int8(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__int8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:String:[String(\"a\"), String(\"bb\"), String(\"ccc\"), String(\"a\"), String(\"bb\"), String(\"ccc\")];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__stringchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3), UInt16(1), UInt16(2), UInt16(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__uint16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:UInt32:[UInt32(1), UInt32(2), UInt32(3), UInt32(1), UInt32(2), UInt32(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__idxca",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:UInt64:[UInt64(1), UInt64(2), UInt64(3), UInt64(1), UInt64(2), UInt64(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__uint64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3), UInt8(1), UInt8(2), UInt8(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append__on__uint8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "recv=x:List(Int64):[List(:Int64:[Int64(1), Int64(2)]), List(:Int64:[Int64(3)]), List(:Int64:[Int64(1), Int64(2)]), List(:Int64:[Int64(3)])];ret=()",
       "id": "polars_core__chunked_array__chunkedarray__append__on__listchunked",
       "path": "polars_core::chunked_array::ChunkedArray::append",
@@ -45,6 +157,118 @@
       "detail": "recv=x:Struct({'x': Int64, 'y': String, 'z': Float64}):len=6:rows=[valid, valid, valid, valid, valid, valid]:{x:Int64:[Int64(1), Int64(2), Int64(3), Int64(1), Int64(2), Int64(3)]; y:String:[String(\"a\"), String(\"b\"), String(\"c\"), String(\"a\"), String(\"b\"), String(\"c\")]; z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5), Float64(1.5), Float64(2.5), Float64(3.5)]};ret=()",
       "id": "polars_core__chunked_array__chunkedarray__append__on__structchunked",
       "path": "polars_core::chunked_array::ChunkedArray::append",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:BinaryOffset:[Binary([97, 98]), Binary([0, 255]), Binary([]), Binary([97, 98]), Binary([0, 255]), Binary([])];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__binaryoffsetchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Binary:[Binary([97, 98]), Binary([0, 255]), Binary([]), Binary([97, 98]), Binary([0, 255]), Binary([])];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__binarychunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Boolean:[Boolean(true), Boolean(false), Boolean(true), Boolean(true), Boolean(false), Boolean(true)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__booleanchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Float32:[Float32(1.5), Float32(2.5), Float32(3.5), Float32(1.5), Float32(2.5), Float32(3.5)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__float32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Float64:[Float64(1.5), Float64(2.5), Float64(3.5), Float64(1.5), Float64(2.5), Float64(3.5)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__float64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Int16:[Int16(1), Int16(2), Int16(3), Int16(1), Int16(2), Int16(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__int16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Int32:[Int32(1), Int32(2), Int32(3), Int32(1), Int32(2), Int32(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__int32chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Int64:[Int64(1), Int64(2), Int64(3), Int64(1), Int64(2), Int64(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__int64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Int8:[Int8(1), Int8(2), Int8(3), Int8(1), Int8(2), Int8(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__int8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:String:[String(\"a\"), String(\"bb\"), String(\"ccc\"), String(\"a\"), String(\"bb\"), String(\"ccc\")];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__stringchunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:UInt16:[UInt16(1), UInt16(2), UInt16(3), UInt16(1), UInt16(2), UInt16(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__uint16chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:UInt32:[UInt32(1), UInt32(2), UInt32(3), UInt32(1), UInt32(2), UInt32(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__idxca",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:UInt64:[UInt64(1), UInt64(2), UInt64(3), UInt64(1), UInt64(2), UInt64(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__uint64chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:UInt8:[UInt8(1), UInt8(2), UInt8(3), UInt8(1), UInt8(2), UInt8(3)];ret=()",
+      "id": "polars_core__chunked_array__chunkedarray__append_owned__on__uint8chunked",
+      "path": "polars_core::chunked_array::ChunkedArray::append_owned",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -8426,6 +8650,390 @@
       "unordered": false
     },
     {
+      "detail": "Field { name: \"x\", dtype: Date }",
+      "id": "polars_core__chunked_array__logical__logical__field__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::field",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Field { name: \"x\", dtype: Datetime('ms') }",
+      "id": "polars_core__chunked_array__logical__logical__field__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::field",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Field { name: \"x\", dtype: Duration('ms') }",
+      "id": "polars_core__chunked_array__logical__logical__field__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::field",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Field { name: \"x\", dtype: Time }",
+      "id": "polars_core__chunked_array__logical__logical__field__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::field",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__chunked_array__logical__logical__has_nulls__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::has_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__chunked_array__logical__logical__has_nulls__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::has_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__chunked_array__logical__logical__has_nulls__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::has_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__chunked_array__logical__logical__has_nulls__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::has_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(1), Int32(2), Int32(3)]",
+      "id": "polars_core__chunked_array__logical__logical__into_physical__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::into_physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logical__into_physical__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::into_physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logical__into_physical__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::into_physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logical__into_physical__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::into_physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__chunked_array__logical__logical__is_empty__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_empty",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__chunked_array__logical__logical__is_empty__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_empty",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__chunked_array__logical__logical__is_empty__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_empty",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__chunked_array__logical__logical__is_empty__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_empty",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_core__chunked_array__logical__logical__is_not_null__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_not_null",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_core__chunked_array__logical__logical__is_not_null__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_not_null",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_core__chunked_array__logical__logical__is_not_null__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_not_null",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_core__chunked_array__logical__logical__is_not_null__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_not_null",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_core__chunked_array__logical__logical__is_null__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_null",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_core__chunked_array__logical__logical__is_null__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_null",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_core__chunked_array__logical__logical__is_null__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_null",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_core__chunked_array__logical__logical__is_null__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::is_null",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "3",
+      "id": "polars_core__chunked_array__logical__logical__len__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::len",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "3",
+      "id": "polars_core__chunked_array__logical__logical__len__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::len",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "3",
+      "id": "polars_core__chunked_array__logical__logical__len__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::len",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "3",
+      "id": "polars_core__chunked_array__logical__logical__len__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::len",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x",
+      "id": "polars_core__chunked_array__logical__logical__name__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::name",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x",
+      "id": "polars_core__chunked_array__logical__logical__name__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::name",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x",
+      "id": "polars_core__chunked_array__logical__logical__name__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::name",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x",
+      "id": "polars_core__chunked_array__logical__logical__name__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::name",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "0",
+      "id": "polars_core__chunked_array__logical__logical__null_count__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::null_count",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "0",
+      "id": "polars_core__chunked_array__logical__logical__null_count__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::null_count",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "0",
+      "id": "polars_core__chunked_array__logical__logical__null_count__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::null_count",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "0",
+      "id": "polars_core__chunked_array__logical__logical__null_count__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::null_count",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(1), Int32(2), Int32(3)]",
+      "id": "polars_core__chunked_array__logical__logical__physical__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logical__physical__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logical__physical__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logical__physical__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Date:[Date(1), Date(2), Date(3)];ret=()",
+      "id": "polars_core__chunked_array__logical__logical__physical_mut__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::physical_mut",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Datetime('ms'):[Datetime(1, Milliseconds, None), Datetime(2, Milliseconds, None), Datetime(3, Milliseconds, None)];ret=()",
+      "id": "polars_core__chunked_array__logical__logical__physical_mut__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::physical_mut",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Duration('ms'):[Duration(1, Milliseconds), Duration(2, Milliseconds), Duration(3, Milliseconds)];ret=()",
+      "id": "polars_core__chunked_array__logical__logical__physical_mut__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::physical_mut",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Time:[Time(1), Time(2), Time(3)];ret=()",
+      "id": "polars_core__chunked_array__logical__logical__physical_mut__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::physical_mut",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Date:[Date(1), Date(2), Date(3)];ret=()",
+      "id": "polars_core__chunked_array__logical__logical__rename__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::rename",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Datetime('ms'):[Datetime(1, Milliseconds, None), Datetime(2, Milliseconds, None), Datetime(3, Milliseconds, None)];ret=()",
+      "id": "polars_core__chunked_array__logical__logical__rename__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::rename",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Duration('ms'):[Duration(1, Milliseconds), Duration(2, Milliseconds), Duration(3, Milliseconds)];ret=()",
+      "id": "polars_core__chunked_array__logical__logical__rename__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::rename",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "recv=x:Time:[Time(1), Time(2), Time(3)];ret=()",
+      "id": "polars_core__chunked_array__logical__logical__rename__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::rename",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "recv=x:Datetime('ns'):[Datetime(1, Nanoseconds, None), Datetime(2, Nanoseconds, None), Datetime(3, Nanoseconds, None)];ret=()",
       "id": "polars_core__chunked_array__logical__logical__set_time_unit__on__datetimechunked",
       "path": "polars_core::chunked_array::logical::Logical::set_time_unit",
@@ -8437,6 +9045,38 @@
       "detail": "recv=x:Duration('ns'):[Duration(1, Nanoseconds), Duration(2, Nanoseconds), Duration(3, Nanoseconds)];ret=()",
       "id": "polars_core__chunked_array__logical__logical__set_time_unit__on__durationchunked",
       "path": "polars_core::chunked_array::logical::Logical::set_time_unit",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Date:[Date(3)]",
+      "id": "polars_core__chunked_array__logical__logical__slice__on__datechunked",
+      "path": "polars_core::chunked_array::logical::Logical::slice",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Datetime('ms'):[Datetime(3, Milliseconds, None)]",
+      "id": "polars_core__chunked_array__logical__logical__slice__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::Logical::slice",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Duration('ms'):[Duration(3, Milliseconds)]",
+      "id": "polars_core__chunked_array__logical__logical__slice__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::Logical::slice",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Time:[Time(3)]",
+      "id": "polars_core__chunked_array__logical__logical__slice__on__timechunked",
+      "path": "polars_core::chunked_array::logical::Logical::slice",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -13294,11 +13934,11 @@
       "id": "polars_lazy__frame__lazyframe__unique",
       "path": "polars_lazy::frame::LazyFrame::unique",
       "policy": "unordered: default arguments [Polars documents unique as order-unspecified unless maintain_order is set]",
-      "status": "match",
+      "status": "row_order_differs",
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
@@ -19074,6 +19714,726 @@
       "unordered": false
     },
     {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logicaltype__cast",
+      "path": "polars_core::chunked_array::logical::LogicalType::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logicaltype__cast__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::LogicalType::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logicaltype__cast__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::LogicalType::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logicaltype__cast__on__timechunked",
+      "path": "polars_core::chunked_array::logical::LogicalType::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logicaltype__cast_with_options",
+      "path": "polars_core::chunked_array::logical::LogicalType::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logicaltype__cast_with_options__on__datetimechunked",
+      "path": "polars_core::chunked_array::logical::LogicalType::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logicaltype__cast_with_options__on__durationchunked",
+      "path": "polars_core::chunked_array::logical::LogicalType::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__logical__logicaltype__cast_with_options__on__timechunked",
+      "path": "polars_core::chunked_array::logical::LogicalType::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "UInt8",
+      "id": "polars_core__chunked_array__logical__categorical__categoricalphysicaldtypeext__dtype",
+      "path": "polars_core::chunked_array::logical::categorical::CategoricalPhysicalDtypeExt::dtype",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__int16chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__int32chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__int64chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__int8chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__uint16chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__uint32chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__uint64chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__uint8chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Null, Null, Null]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__stringchunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__binarychunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Null, Null, Null]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__binaryoffsetchunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(0), Int64(1)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__booleanchunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast__on__listchunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__int16chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__int32chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__int64chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__int8chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__uint16chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__uint32chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__uint64chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__uint8chunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__stringchunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__binarychunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__binaryoffsetchunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(0), Int64(1)]",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__booleanchunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__listchunked",
+      "path": "polars_core::chunked_array::ops::ChunkCast::cast_with_options",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(3.5), Float32(2.5), Float32(1.5)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(3.5), Float64(2.5), Float64(1.5)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(3), Int16(2), Int16(1)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__int16chunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(3), Int32(2), Int32(1)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__int32chunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(3), Int64(2), Int64(1)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__int64chunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(3), Int8(2), Int8(1)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__int8chunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(3), UInt16(2), UInt16(1)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__uint16chunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(3), UInt32(2), UInt32(1)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__uint32chunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(3), UInt64(2), UInt64(1)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__uint64chunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(3), UInt8(2), UInt8(1)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__uint8chunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(false), Boolean(true)]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__booleanchunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:BinaryOffset:[Binary([]), Binary([0, 255]), Binary([97, 98])]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__binaryoffsetchunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:List(Int64):[List(:Int64:[Int64(3)]), List(:Int64:[Int64(1), Int64(2)])]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__listchunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Binary:[Binary([]), Binary([0, 255]), Binary([97, 98])]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__binarychunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:String:[String(\"ccc\"), String(\"bb\"), String(\"a\")]",
+      "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__stringchunked",
+      "path": "polars_core::chunked_array::ops::ChunkReverse::reverse",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(1), UInt32(2)]",
+      "id": "polars_core__chunked_array__ops__chunkunique__arg_unique",
+      "path": "polars_core::chunked_array::ops::ChunkUnique::arg_unique",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(1), UInt32(2)]",
+      "id": "polars_core__chunked_array__ops__chunkunique__arg_unique__on__binarychunked",
+      "path": "polars_core::chunked_array::ops::ChunkUnique::arg_unique",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(1), UInt32(2)]",
+      "id": "polars_core__chunked_array__ops__chunkunique__arg_unique__on__binaryoffsetchunked",
+      "path": "polars_core::chunked_array::ops::ChunkUnique::arg_unique",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(1)]",
+      "id": "polars_core__chunked_array__ops__chunkunique__arg_unique__on__booleanchunked",
+      "path": "polars_core::chunked_array::ops::ChunkUnique::arg_unique",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "3",
+      "id": "polars_core__chunked_array__ops__chunkunique__n_unique",
+      "path": "polars_core::chunked_array::ops::ChunkUnique::n_unique",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "3",
+      "id": "polars_core__chunked_array__ops__chunkunique__n_unique__on__binarychunked",
+      "path": "polars_core::chunked_array::ops::ChunkUnique::n_unique",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "3",
+      "id": "polars_core__chunked_array__ops__chunkunique__n_unique__on__binaryoffsetchunked",
+      "path": "polars_core::chunked_array::ops::ChunkUnique::n_unique",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "2",
+      "id": "polars_core__chunked_array__ops__chunkunique__n_unique__on__booleanchunked",
+      "path": "polars_core::chunked_array::ops::ChunkUnique::n_unique",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__chunkvar__std",
+      "path": "polars_core::chunked_array::ops::ChunkVar::std",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__chunkvar__std__on__listchunked",
+      "path": "polars_core::chunked_array::ops::ChunkVar::std",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__chunkvar__std__on__booleanchunked",
+      "path": "polars_core::chunked_array::ops::ChunkVar::std",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__chunkvar__var",
+      "path": "polars_core::chunked_array::ops::ChunkVar::var",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__chunkvar__var__on__listchunked",
+      "path": "polars_core::chunked_array::ops::ChunkVar::var",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__chunkvar__var__on__booleanchunked",
+      "path": "polars_core::chunked_array::ops::ChunkVar::var",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Boolean, value: Boolean(true) }",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__max_reduce",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::max_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: String, value: StringOwned(\"ccc\") }",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__max_reduce__on__stringchunked",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::max_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Binary, value: BinaryOwned([97, 98]) }",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__max_reduce__on__binarychunked",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::max_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Boolean, value: Boolean(false) }",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__min_reduce",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::min_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: String, value: StringOwned(\"a\") }",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__min_reduce__on__stringchunked",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::min_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Binary, value: BinaryOwned([]) }",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__min_reduce__on__binarychunked",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::min_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "not implemented",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__prod_reduce",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::prod_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "not implemented",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__prod_reduce__on__stringchunked",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::prod_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "not implemented",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__prod_reduce__on__binarychunked",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::prod_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: UInt32, value: UInt32(2) }",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__sum_reduce",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::sum_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "not implemented",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__sum_reduce__on__stringchunked",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::sum_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "not implemented",
+      "id": "polars_core__chunked_array__ops__aggregate__chunkaggseries__sum_reduce__on__binarychunked",
+      "path": "polars_core::chunked_array::ops::aggregate::ChunkAggSeries::sum_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Float32, value: Float32(2.5) }",
+      "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__median_reduce",
+      "path": "polars_core::chunked_array::ops::aggregate::quantile::QuantileAggSeries::median_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Float64, value: Float64(2.5) }",
+      "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__median_reduce__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::aggregate::quantile::QuantileAggSeries::median_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "ComputeError",
+      "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantile_reduce",
+      "path": "polars_core::chunked_array::ops::aggregate::quantile::QuantileAggSeries::quantile_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "ComputeError",
+      "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantile_reduce__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::aggregate::quantile::QuantileAggSeries::quantile_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "ComputeError",
+      "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantiles_reduce",
+      "path": "polars_core::chunked_array::ops::aggregate::quantile::QuantileAggSeries::quantiles_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "ComputeError",
+      "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantiles_reduce__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::aggregate::quantile::QuantileAggSeries::quantiles_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Float32, value: Float32(1.4142135) }",
+      "id": "polars_core__chunked_array__ops__aggregate__var__varaggseries__std_reduce",
+      "path": "polars_core::chunked_array::ops::aggregate::var::VarAggSeries::std_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Float64, value: Float64(1.4142135623730951) }",
+      "id": "polars_core__chunked_array__ops__aggregate__var__varaggseries__std_reduce__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::aggregate::var::VarAggSeries::std_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Float32, value: Float32(2.0) }",
+      "id": "polars_core__chunked_array__ops__aggregate__var__varaggseries__var_reduce",
+      "path": "polars_core::chunked_array::ops::aggregate::var::VarAggSeries::var_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Scalar { dtype: Float64, value: Float64(2.0) }",
+      "id": "polars_core__chunked_array__ops__aggregate__var__varaggseries__var_reduce__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::aggregate::var::VarAggSeries::var_reduce",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "None",
       "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls",
       "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
@@ -19083,7 +20443,263 @@
     },
     {
       "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__binaryoffsetchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__booleanchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__float32chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__int16chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__int32chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__int64chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__int8chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__stringchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__uint16chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__uint32chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__uint64chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__uint8chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__nullchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__listchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__structchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::propagate_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
       "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__binaryoffsetchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__booleanchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__float32chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__float64chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__int16chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__int32chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__int64chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__int8chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__stringchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__uint16chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__uint32chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__uint64chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__uint8chunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__nullchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__listchunked",
+      "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__structchunked",
       "path": "polars_core::chunked_array::ops::nesting_utils::ChunkNestingUtils::trim_lists_to_normalized_offsets",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
@@ -19106,6 +20722,206 @@
       "unordered": false
     },
     {
+      "detail": "Idx(GroupsIdx { sorted_by_first_idx: true, first: [0, 1], all: [UnitVec: [0, 2], UnitVec: [1]] })",
+      "id": "polars_core__frame__group_by__into_groups__intogroupstype__group_tuples",
+      "path": "polars_core::frame::group_by::into_groups::IntoGroupsType::group_tuples",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Idx(GroupsIdx { sorted_by_first_idx: true, first: [0, 1, 2], all: [UnitVec: [0], UnitVec: [1], UnitVec: [2]] })",
+      "id": "polars_core__frame__group_by__into_groups__intogroupstype__group_tuples__on__stringchunked",
+      "path": "polars_core::frame::group_by::into_groups::IntoGroupsType::group_tuples",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Idx(GroupsIdx { sorted_by_first_idx: true, first: [0, 1, 2], all: [UnitVec: [0], UnitVec: [1], UnitVec: [2]] })",
+      "id": "polars_core__frame__group_by__into_groups__intogroupstype__group_tuples__on__binarychunked",
+      "path": "polars_core::frame::group_by::into_groups::IntoGroupsType::group_tuples",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Idx(GroupsIdx { sorted_by_first_idx: true, first: [0, 1, 2], all: [UnitVec: [0], UnitVec: [1], UnitVec: [2]] })",
+      "id": "polars_core__frame__group_by__into_groups__intogroupstype__group_tuples__on__binaryoffsetchunked",
+      "path": "polars_core::frame::group_by::into_groups::IntoGroupsType::group_tuples",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Idx(GroupsIdx { sorted_by_first_idx: true, first: [0, 1], all: [UnitVec: [0], UnitVec: [1]] })",
+      "id": "polars_core__frame__group_by__into_groups__intogroupstype__group_tuples__on__listchunked",
+      "path": "polars_core::frame::group_by::into_groups::IntoGroupsType::group_tuples",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "SchemaMismatch",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::add_to",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "SchemaMismatch",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to__on__booleanchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::add_to",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "activate 'list_arithmetic, ' feature",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to__on__listchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::add_to",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "SchemaMismatch",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to__on__stringchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::add_to",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::divide",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide__on__booleanchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::divide",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "activate 'list_arithmetic, ' feature",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide__on__listchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::divide",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide__on__stringchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::divide",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::multiply",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply__on__booleanchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::multiply",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "activate 'list_arithmetic, ' feature",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply__on__listchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::multiply",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply__on__stringchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::multiply",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::remainder",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder__on__booleanchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::remainder",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "activate 'list_arithmetic, ' feature",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder__on__listchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::remainder",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder__on__stringchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::remainder",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::subtract",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract__on__booleanchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::subtract",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "activate 'list_arithmetic, ' feature",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract__on__listchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::subtract",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract__on__stringchunked",
+      "path": "polars_core::series::arithmetic::borrowed::NumOpsDispatch::subtract",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
       "detail": "false",
       "id": "polars_core__series__from__intoseries__is_series",
       "path": "polars_core::series::from::IntoSeries::is_series",
@@ -19114,8 +20930,168 @@
       "unordered": false
     },
     {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__binarychunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__binaryoffsetchunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__booleanchunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__float32chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__float64chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__int16chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__int32chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__int64chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__int8chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__listchunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__stringchunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__uint16chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__uint32chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__uint64chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__uint8chunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__nullchunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__series__from__intoseries__is_series__on__series",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__datechunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__datetimechunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__durationchunked",
+      "path": "polars_core::series::from::IntoSeries::is_series",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_core__series__from__intoseries__is_series__on__timechunked",
       "path": "polars_core::series::from::IntoSeries::is_series",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
@@ -19882,8 +21858,136 @@
       "unordered": false
     },
     {
-      "detail": "[177:shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]]",
+      "detail": "[227:x:Struct({'x': Int64, 'y': String, 'z': Float64}):len=3:rows=[valid, valid, valid]:{x:Int64:[Int64(1), Int64(2), Int64(3)]; y:String:[String(\"a\"), String(\"b\"), String(\"c\")]; z:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]}]",
       "id": "polars_core__utils__container__iter_chunks",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[57:x:Binary:[Binary([97, 98]), Binary([0, 255]), Binary([])]]",
+      "id": "polars_core__utils__container__iter_chunks__on__binarychunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[63:x:BinaryOffset:[Binary([97, 98]), Binary([0, 255]), Binary([])]]",
+      "id": "polars_core__utils__container__iter_chunks__on__binaryoffsetchunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[56:x:Boolean:[Boolean(true), Boolean(false), Boolean(true)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__booleanchunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[52:x:Float32:[Float32(1.5), Float32(2.5), Float32(3.5)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__float32chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[52:x:Float64:[Float64(1.5), Float64(2.5), Float64(3.5)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__float64chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[38:x:Int16:[Int16(1), Int16(2), Int16(3)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__int16chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[38:x:Int32:[Int32(1), Int32(2), Int32(3)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__int32chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[38:x:Int64:[Int64(1), Int64(2), Int64(3)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__int64chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[34:x:Int8:[Int8(1), Int8(2), Int8(3)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__int8chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[74:x:List(Int64):[List(:Int64:[Int64(1), Int64(2)]), List(:Int64:[Int64(3)])]]",
+      "id": "polars_core__utils__container__iter_chunks__on__listchunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[51:x:String:[String(\"a\"), String(\"bb\"), String(\"ccc\")]]",
+      "id": "polars_core__utils__container__iter_chunks__on__stringchunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[42:x:UInt16:[UInt16(1), UInt16(2), UInt16(3)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__uint16chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[42:x:UInt32:[UInt32(1), UInt32(2), UInt32(3)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__uint32chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[42:x:UInt64:[UInt64(1), UInt64(2), UInt64(3)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__uint64chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[38:x:UInt8:[UInt8(1), UInt8(2), UInt8(3)]]",
+      "id": "polars_core__utils__container__iter_chunks__on__uint8chunked",
+      "path": "polars_core::utils::Container::iter_chunks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[177:shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]]",
+      "id": "polars_core__utils__container__iter_chunks__on__dataframe",
       "path": "polars_core::utils::Container::iter_chunks",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
@@ -19906,8 +22010,408 @@
       "unordered": false
     },
     {
+      "detail": "x:Binary:[Binary([97, 98]), Binary([0, 255]), Binary([])]",
+      "id": "polars_ops__chunked_array__binary__asbinary__as_binary",
+      "path": "polars_ops::chunked_array::binary::AsBinary::as_binary",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Binary:[Binary([97]), Binary([0, 255]), Binary([])]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__bin_head",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::bin_head",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Binary:[Binary([98]), Binary([]), Binary([])]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__bin_slice",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::bin_slice",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Binary:[Binary([98]), Binary([0, 255]), Binary([])]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__bin_tail",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::bin_tail",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__contains",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::contains",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__contains_chunked",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::contains_chunked",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__ends_with",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::ends_with",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__ends_with_chunked",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::ends_with_chunked",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(2), UInt32(2), UInt32(0)]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__size_bytes",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::size_bytes",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(false), Boolean(false), Boolean(false)]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__starts_with",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::starts_with",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[Boolean(true), Boolean(true), Boolean(true)]",
+      "id": "polars_ops__chunked_array__binary__namespace__binarynamespaceimpl__starts_with_chunked",
+      "path": "polars_ops::chunked_array::binary::namespace::BinaryNameSpaceImpl::starts_with_chunked",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:List(Int64):[List(:Int64:[Int64(1), Int64(2)]), List(:Int64:[Int64(3)])]",
+      "id": "polars_ops__chunked_array__list__aslist__as_list",
+      "path": "polars_ops::chunked_array::list::AsList::as_list",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "called `Result::unwrap()` on an `Err` value: SchemaMismatch(ErrString(\"invalid series dtype: expected `String`, got `i64` for series with name ``\"))",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__join_literal",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::join_literal",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "called `Result::unwrap()` on an `Err` value: SchemaMismatch(ErrString(\"invalid series dtype: expected `String`, got `i64` for series with name ``\"))",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__join_many",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::join_many",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(1), UInt32(0)]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_arg_max",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_arg_max",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(0)]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_arg_min",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_arg_min",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "ShapeMismatch",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_concat",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_concat",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Null, Null]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_get",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_get",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_join",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_join",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(2), UInt32(1)]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_lengths",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_lengths",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(3)]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_max",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_max",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(1.5), Float64(3.0)]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_mean",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_mean",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(1.5), Float64(3.0)]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_median",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_median",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(3)]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_min",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_min",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "ShapeMismatch",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_shift",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_shift",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "x:List(Int64):[List(:Int64:[]), List(:Int64:[])]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_slice",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_slice",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:List(Int64):[List(:Int64:[Int64(1), Int64(2)]), List(:Int64:[Int64(3)])]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_sort",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_sort",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Null, Null]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_std",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_std",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(3), Int64(3)]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_sum",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_sum",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Null, Null]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__lst_var",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::lst_var",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:List(Int64):[List(:Int64:[Int64(1), Int64(2)]), List(:Int64:[Int64(3)])]",
+      "id": "polars_ops__chunked_array__list__namespace__listnamespaceimpl__same_type",
+      "path": "polars_ops::chunked_array::list::namespace::ListNameSpaceImpl::same_type",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:String:[String(\"a\"), String(\"bb\"), String(\"ccc\")]",
+      "id": "polars_ops__chunked_array__strings__asstring__as_string",
+      "path": "polars_ops::chunked_array::strings::AsString::as_string",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_ops__frame__is_sorted__dataframeissorted__is_sorted",
+      "path": "polars_ops::frame::is_sorted::DataFrameIsSorted::is_sorted",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "shape=(3, 6); columns=[x:Int64,y:String,z:Float64,x_right:Int64,y_right:String,z_right:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5), Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5), Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5), Int64(3), String(\"c\"), Float64(3.5))]",
+      "id": "polars_ops__frame__join__dataframejoinops__full_join",
+      "path": "polars_ops::frame::join::DataFrameJoinOps::full_join",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "shape=(3, 5); columns=[x:Int64,y:String,z:Float64,y_right:String,z_right:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5), String(\"c\"), Float64(3.5))]",
+      "id": "polars_ops__frame__join__dataframejoinops__inner_join",
+      "path": "polars_ops::frame::join::DataFrameJoinOps::inner_join",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "shape=(3, 5); columns=[x:Int64,y:String,z:Float64,y_right:String,z_right:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5), String(\"c\"), Float64(3.5))]",
+      "id": "polars_ops__frame__join__dataframejoinops__left_join",
+      "path": "polars_ops::frame::join::DataFrameJoinOps::left_join",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "shape=(2, 6); columns=[x:Int64,y:String,z:Float64,xx:Int64,yx:String,zx:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5), Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5), Int64(1), String(\"a\"), Float64(1.5))]",
+      "id": "polars_ops__frame__join__cross_join__crossjoin__cross_join",
+      "path": "polars_ops::frame::join::cross_join::CrossJoin::cross_join",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:2)",
+      "id": "polars_ops__series__ops__arg_min_max__argagg__arg_max",
+      "path": "polars_ops::series::ops::arg_min_max::ArgAgg::arg_max",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(1:0)",
+      "id": "polars_ops__series__ops__arg_min_max__argagg__arg_min",
+      "path": "polars_ops::series::ops::arg_min_max::ArgAgg::arg_min",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(1), Int8(2), Int8(3)]",
+      "id": "polars_ops__series__ops__eager__shrinktype__shrink_type",
+      "path": "polars_ops::series::ops::eager::ShrinkType::shrink_type",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "ComputeError",
+      "id": "polars_ops__series__ops__horizontal__minmaxhorizontal__max_horizontal",
+      "path": "polars_ops::series::ops::horizontal::MinMaxHorizontal::max_horizontal",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "ComputeError",
+      "id": "polars_ops__series__ops__horizontal__minmaxhorizontal__min_horizontal",
+      "path": "polars_ops::series::ops::horizontal::MinMaxHorizontal::min_horizontal",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "InvalidOperation",
+      "id": "polars_ops__series__ops__horizontal__summeanhorizontal__mean_horizontal",
+      "path": "polars_ops::series::ops::horizontal::SumMeanHorizontal::mean_horizontal",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "Some(60:x:String:[String(\"1a1.5\"), String(\"2b2.5\"), String(\"3c3.5\")])",
+      "id": "polars_ops__series__ops__horizontal__summeanhorizontal__sum_horizontal",
+      "path": "polars_ops::series::ops::horizontal::SumMeanHorizontal::sum_horizontal",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "()",
+      "id": "polars_ops__series__ops__various__seriesmethods__ensure_sorted_arg",
+      "path": "polars_ops::series::ops::various::SeriesMethods::ensure_sorted_arg",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true",
+      "id": "polars_ops__series__ops__various__seriesmethods__is_sorted",
+      "path": "polars_ops::series::ops::various::SeriesMethods::is_sorted",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_ops__series__ops__various__seriesmethods__is_sorted_any",
+      "path": "polars_ops::series::ops::various::SeriesMethods::is_sorted_any",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Duplicate",
+      "id": "polars_ops__series__ops__various__seriesmethods__value_counts",
+      "path": "polars_ops::series::ops::various::SeriesMethods::value_counts",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
       "detail": "selected shape=(1, 1); columns=[literal:UInt32,]; rows=[(UInt32(2))]",
       "id": "polars_plan__plans__lit__literal__lit",
+      "path": "polars_plan::plans::lit::Literal::lit",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__plans__lit__literal__lit__on__series",
+      "path": "polars_plan::plans::lit::Literal::lit",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(1, 1); columns=[literal:Null,]; rows=[(Null)]",
+      "id": "polars_plan__plans__lit__literal__lit__on__scalar",
       "path": "polars_plan::plans::lit::Literal::lit",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
@@ -19915,10 +22419,10 @@
     }
   ],
   "tally": {
-    "both_error": 98,
-    "both_panic": 19,
-    "match": 2371,
-    "row_order_differs": 1
+    "both_error": 130,
+    "both_panic": 31,
+    "match": 2639,
+    "row_order_differs": 2
   },
-  "verified": 2489
+  "verified": 2802
 }

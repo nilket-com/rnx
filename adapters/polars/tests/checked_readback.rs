@@ -5,25 +5,27 @@ use std::sync::Arc;
 static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 fn run(script: &str) -> String {
-    let mut polars = Module::with_crate("polars").unwrap();
-    rnx_polars::build(&mut polars).unwrap();
-    let mut fixtures = Module::with_crate("fx").unwrap();
-    rnx_polars::generated::fixtures::install(&mut fixtures).unwrap();
-    let mut context = Context::with_default_modules().unwrap();
-    context.install(polars).unwrap();
-    context.install(fixtures).unwrap();
-    let runtime = Arc::new(context.runtime().unwrap());
-    let mut sources = Sources::new();
-    sources.insert(Source::memory(script).unwrap()).unwrap();
-    let mut diagnostics = rune::Diagnostics::new();
-    let built = rune::prepare(&mut sources).with_context(&context).with_diagnostics(&mut diagnostics).build();
-    if built.is_err() {
-        eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
-    }
-    let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
-    rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
+	let mut polars = Module::with_crate("polars").unwrap();
+	rnx_polars::build(&mut polars).unwrap();
+	let mut fixtures = Module::with_crate("fx").unwrap();
+	rnx_polars::generated::fixtures::install(&mut fixtures).unwrap();
+	let mut context = Context::with_default_modules().unwrap();
+	context.install(polars).unwrap();
+	context.install(fixtures).unwrap();
+	let runtime = Arc::new(context.runtime().unwrap());
+	let mut sources = Sources::new();
+	sources.insert(Source::memory(script).unwrap()).unwrap();
+	let mut diagnostics = rune::Diagnostics::new();
+	let built = rune::prepare(&mut sources)
+		.with_context(&context)
+		.with_diagnostics(&mut diagnostics)
+		.build();
+	if built.is_err() {
+		eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
+	}
+	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
 }
-
 
 /// i64::MAX reads back exactly; i64::MAX + 1 and u64::MAX are a typed
 /// ConversionError naming the method on the option, iterator, vector and
@@ -53,19 +55,37 @@ const PROBE: &str = r#"
 
 #[test]
 fn boundary_values_are_checked_on_every_route() {
-    let _serial = SERIAL.lock().unwrap();
-    let got = run(PROBE);
-    let fit = |m: &str, v: &str| format!("ConversionError {m}: {v} does not fit a script integer");
-    let cb = |m: &str| format!("CallbackError callback UInt64Chunked::{m}: UInt64Chunked::{m}: 9223372036854775808 does not fit a script integer");
-    let (max, over, top) = ("9223372036854775807", "9223372036854775808", "18446744073709551615");
-    let want = [
-        format!("Some({max})"), fit("get", over), fit("get", top), "None".into(),
-        format!("Some({max})"), "None".into(),
-        fit("iter", over), fit("to_vec", over), fit("cont_slice", top),
-        "ok 3".into(), "ok 3".into(),
-        cb("for_each"), cb("apply_mut"), "ok ok".into(),
-        format!("Some({max}) {} Some(13)", fit("get", over)),
-        "3 3".into(),
-    ].join(" | ");
-    assert_eq!(got, want);
+	let _serial = SERIAL.lock().unwrap();
+	let got = run(PROBE);
+	let fit = |m: &str, v: &str| format!("ConversionError {m}: {v} does not fit a script integer");
+	let cb = |m: &str| {
+		format!(
+			"CallbackError callback UInt64Chunked::{m}: UInt64Chunked::{m}: 9223372036854775808 does not fit a script integer"
+		)
+	};
+	let (max, over, top) = (
+		"9223372036854775807",
+		"9223372036854775808",
+		"18446744073709551615",
+	);
+	let want = [
+		format!("Some({max})"),
+		fit("get", over),
+		fit("get", top),
+		"None".into(),
+		format!("Some({max})"),
+		"None".into(),
+		fit("iter", over),
+		fit("to_vec", over),
+		fit("cont_slice", top),
+		"ok 3".into(),
+		"ok 3".into(),
+		cb("for_each"),
+		cb("apply_mut"),
+		"ok ok".into(),
+		format!("Some({max}) {} Some(13)", fit("get", over)),
+		"3 3".into(),
+	]
+	.join(" | ");
+	assert_eq!(got, want);
 }

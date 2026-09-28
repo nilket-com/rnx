@@ -212,12 +212,15 @@ def inputs(d):
     bs = first("baseline-surface-0106.json")
     bs = open(bs, "rb").read() if bs else __import__("subprocess").check_output(
         ["git", "-C", ROOT, "show", f"{BASELINE_COMMIT}:adapters/polars/surface.json"])
-    bi = first("baseline-inventory.json") or os.path.join(ROOT, "probes/0072/out/0.55.2-adapter-narrow/result/inventory.json")
+    # record 0110: the local 0072 inventory is re-extracted by later records;
+    # the pinned baseline is the one committed in the 0108 bundle
+    bi = first("baseline-inventory.json")
+    bi_raw = open(bi, "rb").read() if bi else __import__("gzip").open(os.path.join(HERE, "evidence/baseline-inventory.json.gz")).read()
     raw = {"inventory": open(inv_p, "rb").read(), "surface": open(surf_p, "rb").read()}
     rp = first("oracle-results-v2.json")
     if rp:
         raw["oracle"] = open(rp, "rb").read()
-    return raw, pinned(bs, BASELINE_SURFACE_SHA, "baseline surface"), pinned(open(bi, "rb").read(), BASELINE_INVENTORY_SHA, "baseline inventory")
+    return raw, pinned(bs, BASELINE_SURFACE_SHA, "baseline surface"), pinned(bi_raw, BASELINE_INVENTORY_SHA, "baseline inventory")
 
 
 def check_provenance(inv, surface):
