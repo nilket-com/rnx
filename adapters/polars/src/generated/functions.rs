@@ -8936,6 +8936,12 @@ fn p_ca4c7e40_ked_array__cast__castoptions_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::cast::CastOptions as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_cf7747ef_ked_array__cast__castoptions_as_core__hash__hash(this: &W_polars_core__chunked_array__cast__CastOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::chunked_array::cast::CastOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__chunked_array__cast__CastOptions::from_json)]
+fn s_bcc8175b_cast__castoptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__chunked_array__cast__CastOptions, Error> { support::json_len_ok(s, "CastOptions::from_json")?; let __v = crate::engine::run("CastOptions::from_json", || support::from_json::<polars::chunked_array::cast::CastOptions>(s, "CastOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_core__chunked_array__cast__CastOptions(__v)) }
+/// Polars: `polars_core::chunked_array::cast::CastOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_07d7d30e__cast__castoptions_as_serde_core__ser__serialize(this: &W_polars_core__chunked_array__cast__CastOptions) -> Result<String, Error> { crate::engine::run("CastOptions::to_json", || support::to_json(&this.0, "CastOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f8c93311_ay__flags__statisticsflags_as_core__clone__clone(this: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlags { W_polars_core__chunked_array__flags__StatisticsFlags(this.0.clone()) }
@@ -8975,6 +8981,12 @@ fn p_94eab3be__statisticsflags_as_core__ops__bit__bitxorassign(this: &mut W_pola
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::bit::Not`.
 #[rune::function(instance, path = not_)]
 fn p_2c1f07d0_y__flags__statisticsflags_as_core__ops__bit__not(this: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlags { W_polars_core__chunked_array__flags__StatisticsFlags(<polars::chunked_array::flags::StatisticsFlags as core::ops::Not>::not(this.0.clone())) }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlags as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__chunked_array__flags__StatisticsFlags::from_json)]
+fn s_c01e6e89___statisticsflags_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__chunked_array__flags__StatisticsFlags, Error> { support::json_len_ok(s, "StatisticsFlags::from_json")?; let __v = crate::engine::run("StatisticsFlags::from_json", || support::from_json::<polars::chunked_array::flags::StatisticsFlags>(s, "StatisticsFlags::from_json")).map_err(Error::engine)??; Ok(W_polars_core__chunked_array__flags__StatisticsFlags(__v)) }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlags as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_45c5fb14_s__statisticsflags_as_serde_core__ser__serialize(this: &W_polars_core__chunked_array__flags__StatisticsFlags) -> Result<String, Error> { crate::engine::run("StatisticsFlags::to_json", || support::to_json(&this.0, "StatisticsFlags::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlagsIM as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_4b377447___flags__statisticsflagsim_as_core__clone__clone(this: &W_polars_core__chunked_array__flags__StatisticsFlagsIM) -> W_polars_core__chunked_array__flags__StatisticsFlagsIM { W_polars_core__chunked_array__flags__StatisticsFlagsIM(this.0.clone()) }
@@ -9005,6 +9017,12 @@ fn p_2f7a8194_d_array__ops__explodeoptions_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::ExplodeOptions as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_6eaae49c_d_array__ops__explodeoptions_as_core__hash__hash(this: &W_polars_core__chunked_array__ops__ExplodeOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::chunked_array::ops::ExplodeOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__chunked_array__ops__ExplodeOptions::from_json)]
+fn s_d2fd2883_s__explodeoptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__chunked_array__ops__ExplodeOptions, Error> { support::json_len_ok(s, "ExplodeOptions::from_json")?; let __v = crate::engine::run("ExplodeOptions::from_json", || support::from_json::<polars_core::chunked_array::ops::ExplodeOptions>(s, "ExplodeOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_core__chunked_array__ops__ExplodeOptions(__v)) }
+/// Polars: `polars_core::chunked_array::ops::ExplodeOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_d8e5f2d5_ps__explodeoptions_as_serde_core__ser__serialize(this: &W_polars_core__chunked_array__ops__ExplodeOptions) -> Result<String, Error> { crate::engine::run("ExplodeOptions::to_json", || support::to_json(&this.0, "ExplodeOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::chunked_array::ops::FillNullStrategy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f9614fa5_ray__ops__fillnullstrategy_as_core__clone__clone(this: &W_polars_core__chunked_array__ops__FillNullStrategy) -> W_polars_core__chunked_array__ops__FillNullStrategy { W_polars_core__chunked_array__ops__FillNullStrategy(this.0.clone()) }
@@ -9014,6 +9032,12 @@ fn p_d715fa87_y__ops__fillnullstrategy_as_core__cmp__partialeq(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::FillNullStrategy as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_c444a93d_array__ops__fillnullstrategy_as_core__fmt__debug(this: &W_polars_core__chunked_array__ops__FillNullStrategy, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::chunked_array::ops::FillNullStrategy as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__chunked_array__ops__FillNullStrategy::from_json)]
+fn s_3491f7a8__fillnullstrategy_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__chunked_array__ops__FillNullStrategy, Error> { support::json_len_ok(s, "FillNullStrategy::from_json")?; let __v = crate::engine::run("FillNullStrategy::from_json", || support::from_json::<polars_core::chunked_array::ops::FillNullStrategy>(s, "FillNullStrategy::from_json")).map_err(Error::engine)??; Ok(W_polars_core__chunked_array__ops__FillNullStrategy(__v)) }
+/// Polars: `polars_core::chunked_array::ops::FillNullStrategy as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_b7a92c24___fillnullstrategy_as_serde_core__ser__serialize(this: &W_polars_core__chunked_array__ops__FillNullStrategy) -> Result<String, Error> { crate::engine::run("FillNullStrategy::to_json", || support::to_json(&this.0, "FillNullStrategy::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_4ab24996_h_sorted__searchsortedside_as_core__clone__clone(this: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide) -> W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide { W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide(this.0.clone()) }
@@ -9032,6 +9056,12 @@ fn p_3ba76a74_rch_sorted__searchsortedside_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_7de17d19_rch_sorted__searchsortedside_as_core__hash__hash(this: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::chunked_array::ops::search_sorted::SearchSortedSide as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide::from_json)]
+fn s_8b828fef__searchsortedside_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide, Error> { support::json_len_ok(s, "SearchSortedSide::from_json")?; let __v = crate::engine::run("SearchSortedSide::from_json", || support::from_json::<polars_core::chunked_array::ops::search_sorted::SearchSortedSide>(s, "SearchSortedSide::from_json")).map_err(Error::engine)??; Ok(W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide(__v)) }
+/// Polars: `polars_core::chunked_array::ops::search_sorted::SearchSortedSide as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_839e6a2f___searchsortedside_as_serde_core__ser__serialize(this: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide) -> Result<String, Error> { crate::engine::run("SearchSortedSide::to_json", || support::to_json(&this.0, "SearchSortedSide::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_83e30ef3_tions__sortmultipleoptions_as_core__clone__clone(this: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions { W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions(this.0.clone()) }
@@ -9053,6 +9083,12 @@ fn p_ea4106e7_options__sortmultipleoptions_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_c92197c6_options__sortmultipleoptions_as_core__hash__hash(this: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions::from_json)]
+fn s_8d10b88f_rtmultipleoptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions, Error> { support::json_len_ok(s, "SortMultipleOptions::from_json")?; let __v = crate::engine::run("SortMultipleOptions::from_json", || support::from_json::<polars_core::chunked_array::ops::sort::options::SortMultipleOptions>(s, "SortMultipleOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions(__v)) }
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_ba263342_ortmultipleoptions_as_serde_core__ser__serialize(this: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> Result<String, Error> { crate::engine::run("SortMultipleOptions::to_json", || support::to_json(&this.0, "SortMultipleOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_61ae14b9_sort__options__sortoptions_as_core__clone__clone(this: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> W_polars_core__chunked_array__ops__sort__options__SortOptions { W_polars_core__chunked_array__ops__sort__options__SortOptions(this.0.clone()) }
@@ -9074,6 +9110,12 @@ fn p_7b063c10___sort__options__sortoptions_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_09939bd3___sort__options__sortoptions_as_core__hash__hash(this: &W_polars_core__chunked_array__ops__sort__options__SortOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__chunked_array__ops__sort__options__SortOptions::from_json)]
+fn s_df5bedde_ions__sortoptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__chunked_array__ops__sort__options__SortOptions, Error> { support::json_len_ok(s, "SortOptions::from_json")?; let __v = crate::engine::run("SortOptions::from_json", || support::from_json::<polars_core::chunked_array::ops::sort::options::SortOptions>(s, "SortOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_core__chunked_array__ops__sort__options__SortOptions(__v)) }
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_e78b6d88_tions__sortoptions_as_serde_core__ser__serialize(this: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> Result<String, Error> { crate::engine::run("SortOptions::to_json", || support::to_json(&this.0, "SortOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::datatypes::BinaryOffsetType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_825e24bc_atatypes__binaryoffsettype_as_core__clone__clone(this: &W_polars_core__datatypes__BinaryOffsetType) -> W_polars_core__datatypes__BinaryOffsetType { W_polars_core__datatypes__BinaryOffsetType(this.0.clone()) }
@@ -9122,6 +9164,12 @@ fn p_a05e36d3_core__datatypes__int64type_as_core__clone__clone(this: &W_polars_c
 /// Polars: `polars_core::datatypes::Int8Type as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_34d8d875__core__datatypes__int8type_as_core__clone__clone(this: &W_polars_core__datatypes__Int8Type) -> W_polars_core__datatypes__Int8Type { W_polars_core__datatypes__Int8Type(this.0.clone()) }
+/// Polars: `polars_core::datatypes::ListType as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__datatypes__ListType::from_json)]
+fn s_98252a7e_tatypes__listtype_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__datatypes__ListType, Error> { support::json_len_ok(s, "ListType::from_json")?; let __v = crate::engine::run("ListType::from_json", || support::from_json::<polars_core::datatypes::ListType>(s, "ListType::from_json")).map_err(Error::engine)??; Ok(W_polars_core__datatypes__ListType(__v)) }
+/// Polars: `polars_core::datatypes::ListType as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_86cd0167_atatypes__listtype_as_serde_core__ser__serialize(this: &W_polars_core__datatypes__ListType) -> Result<String, Error> { crate::engine::run("ListType::to_json", || support::to_json(&this.0, "ListType::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::datatypes::StringType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_839e6582_ore__datatypes__stringtype_as_core__clone__clone(this: &W_polars_core__datatypes__StringType) -> W_polars_core__datatypes__StringType { W_polars_core__datatypes__StringType(this.0.clone()) }
@@ -9155,6 +9203,12 @@ fn p_2c9ef818_atatypes__dtype__compatlevel_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::datatypes::dtype::CompatLevel as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_761ba34e_atatypes__dtype__compatlevel_as_core__hash__hash(this: &W_polars_core__datatypes__dtype__CompatLevel, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::datatypes::dtype::CompatLevel as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__datatypes__dtype__CompatLevel::from_json)]
+fn s_d433053a_type__compatlevel_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__datatypes__dtype__CompatLevel, Error> { support::json_len_ok(s, "CompatLevel::from_json")?; let __v = crate::engine::run("CompatLevel::from_json", || support::from_json::<polars_core::datatypes::CompatLevel>(s, "CompatLevel::from_json")).map_err(Error::engine)??; Ok(W_polars_core__datatypes__dtype__CompatLevel(__v)) }
+/// Polars: `polars_core::datatypes::dtype::CompatLevel as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_61fe6196_dtype__compatlevel_as_serde_core__ser__serialize(this: &W_polars_core__datatypes__dtype__CompatLevel) -> Result<String, Error> { crate::engine::run("CompatLevel::to_json", || support::to_json(&this.0, "CompatLevel::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::datatypes::dtype::DataType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_d5beb85c_datatypes__dtype__datatype_as_core__clone__clone(this: &W_polars_core__datatypes__dtype__DataType) -> W_polars_core__datatypes__dtype__DataType { W_polars_core__datatypes__dtype__DataType(this.0.clone()) }
@@ -9194,6 +9248,12 @@ fn p_679b2af4_atatypes__dtype__unknownkind_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::datatypes::dtype::UnknownKind as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_1c05e875_atatypes__dtype__unknownkind_as_core__hash__hash(this: &W_polars_core__datatypes__dtype__UnknownKind, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::datatypes::dtype::UnknownKind as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__datatypes__dtype__UnknownKind::from_json)]
+fn s_2f9ea137_type__unknownkind_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__datatypes__dtype__UnknownKind, Error> { support::json_len_ok(s, "UnknownKind::from_json")?; let __v = crate::engine::run("UnknownKind::from_json", || support::from_json::<polars_core::datatypes::UnknownKind>(s, "UnknownKind::from_json")).map_err(Error::engine)??; Ok(W_polars_core__datatypes__dtype__UnknownKind(__v)) }
+/// Polars: `polars_core::datatypes::dtype::UnknownKind as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_c3077c98_dtype__unknownkind_as_serde_core__ser__serialize(this: &W_polars_core__datatypes__dtype__UnknownKind) -> Result<String, Error> { crate::engine::run("UnknownKind::to_json", || support::to_json(&this.0, "UnknownKind::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::datatypes::field::Field as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_8addd2a4_e__datatypes__field__field_as_core__clone__clone(this: &W_polars_core__datatypes__field__Field) -> W_polars_core__datatypes__field__Field { W_polars_core__datatypes__field__Field(this.0.clone()) }
@@ -9233,6 +9293,12 @@ fn p_d802bb4e_poral__time_unit__timeunit_as_core__fmt__display(this: &W_polars_c
 /// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_e4cc3422_emporal__time_unit__timeunit_as_core__hash__hash(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__datatypes__temporal__time_unit__TimeUnit::from_json)]
+fn s_074372cc_me_unit__timeunit_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__datatypes__temporal__time_unit__TimeUnit, Error> { support::json_len_ok(s, "TimeUnit::from_json")?; let __v = crate::engine::run("TimeUnit::from_json", || support::from_json::<polars_core::datatypes::TimeUnit>(s, "TimeUnit::from_json")).map_err(Error::engine)??; Ok(W_polars_core__datatypes__temporal__time_unit__TimeUnit(__v)) }
+/// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_554e53c0_ime_unit__timeunit_as_serde_core__ser__serialize(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> Result<String, Error> { crate::engine::run("TimeUnit::to_json", || support::to_json(&this.0, "TimeUnit::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::datatypes::temporal::time_zone::TimeZone as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_6b512183_poral__time_zone__timezone_as_core__clone__clone(this: &W_polars_core__datatypes__temporal__time_zone__TimeZone) -> W_polars_core__datatypes__temporal__time_zone__TimeZone { W_polars_core__datatypes__temporal__time_zone__TimeZone(this.0.clone()) }
@@ -9251,6 +9317,12 @@ fn p_3139b6ef_poral__time_zone__timezone_as_core__fmt__display(this: &W_polars_c
 /// Polars: `polars_core::datatypes::temporal::time_zone::TimeZone as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_fd1a516a_emporal__time_zone__timezone_as_core__hash__hash(this: &W_polars_core__datatypes__temporal__time_zone__TimeZone, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::datatypes::temporal::time_zone::TimeZone as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__datatypes__temporal__time_zone__TimeZone::from_json)]
+fn s_0b3af38b_me_zone__timezone_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__datatypes__temporal__time_zone__TimeZone, Error> { support::json_len_ok(s, "TimeZone::from_json")?; let __v = crate::engine::run("TimeZone::from_json", || support::from_json::<polars_core::datatypes::TimeZone>(s, "TimeZone::from_json")).map_err(Error::engine)??; Ok(W_polars_core__datatypes__temporal__time_zone__TimeZone(__v)) }
+/// Polars: `polars_core::datatypes::temporal::time_zone::TimeZone as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_09d4126d_ime_zone__timezone_as_serde_core__ser__serialize(this: &W_polars_core__datatypes__temporal__time_zone__TimeZone) -> Result<String, Error> { crate::engine::run("TimeZone::to_json", || support::to_json(&this.0, "TimeZone::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::frame::PivotColumnNaming as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_ee50e56c___frame__pivotcolumnnaming_as_core__clone__clone(this: &W_polars_core__frame__PivotColumnNaming) -> W_polars_core__frame__PivotColumnNaming { W_polars_core__frame__PivotColumnNaming(this.0.clone()) }
@@ -9269,6 +9341,12 @@ fn p_0690e0f0_re__frame__pivotcolumnnaming_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::frame::PivotColumnNaming as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_597047cc_re__frame__pivotcolumnnaming_as_core__hash__hash(this: &W_polars_core__frame__PivotColumnNaming, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::frame::PivotColumnNaming as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__frame__PivotColumnNaming::from_json)]
+fn s_2805fc17_pivotcolumnnaming_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__frame__PivotColumnNaming, Error> { support::json_len_ok(s, "PivotColumnNaming::from_json")?; let __v = crate::engine::run("PivotColumnNaming::from_json", || support::from_json::<polars::frame::PivotColumnNaming>(s, "PivotColumnNaming::from_json")).map_err(Error::engine)??; Ok(W_polars_core__frame__PivotColumnNaming(__v)) }
+/// Polars: `polars_core::frame::PivotColumnNaming as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_b5222308__pivotcolumnnaming_as_serde_core__ser__serialize(this: &W_polars_core__frame__PivotColumnNaming) -> Result<String, Error> { crate::engine::run("PivotColumnNaming::to_json", || support::to_json(&this.0, "PivotColumnNaming::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::frame::UniqueKeepStrategy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_e7655cfc__frame__uniquekeepstrategy_as_core__clone__clone(this: &W_polars_core__frame__UniqueKeepStrategy) -> W_polars_core__frame__UniqueKeepStrategy { W_polars_core__frame__UniqueKeepStrategy(this.0.clone()) }
@@ -9287,6 +9365,12 @@ fn p_df0f79ba_e__frame__uniquekeepstrategy_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::frame::UniqueKeepStrategy as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_180b63e8_e__frame__uniquekeepstrategy_as_core__hash__hash(this: &W_polars_core__frame__UniqueKeepStrategy, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::frame::UniqueKeepStrategy as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__frame__UniqueKeepStrategy::from_json)]
+fn s_da4d2b99_niquekeepstrategy_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__frame__UniqueKeepStrategy, Error> { support::json_len_ok(s, "UniqueKeepStrategy::from_json")?; let __v = crate::engine::run("UniqueKeepStrategy::from_json", || support::from_json::<polars::frame::UniqueKeepStrategy>(s, "UniqueKeepStrategy::from_json")).map_err(Error::engine)??; Ok(W_polars_core__frame__UniqueKeepStrategy(__v)) }
+/// Polars: `polars_core::frame::UniqueKeepStrategy as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_69689bb6_uniquekeepstrategy_as_serde_core__ser__serialize(this: &W_polars_core__frame__UniqueKeepStrategy) -> Result<String, Error> { crate::engine::run("UniqueKeepStrategy::to_json", || support::to_json(&this.0, "UniqueKeepStrategy::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::frame::column::Column as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2d1c06dd_ore__frame__column__column_as_core__clone__clone(this: &W_polars_core__frame__column__Column) -> W_polars_core__frame__column__Column { W_polars_core__frame__column__Column(this.0.clone()) }
@@ -9341,6 +9425,12 @@ fn p_7a122dd9_rame__explode__unpivotargsir_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::frame::explode::UnpivotArgsIR as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_eb69a724_rame__explode__unpivotargsir_as_core__hash__hash(this: &W_polars_core__frame__explode__UnpivotArgsIR, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::frame::explode::UnpivotArgsIR as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__frame__explode__UnpivotArgsIR::from_json)]
+fn s_74d2a997_de__unpivotargsir_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__frame__explode__UnpivotArgsIR, Error> { support::json_len_ok(s, "UnpivotArgsIR::from_json")?; let __v = crate::engine::run("UnpivotArgsIR::from_json", || support::from_json::<polars::frame::explode::UnpivotArgsIR>(s, "UnpivotArgsIR::from_json")).map_err(Error::engine)??; Ok(W_polars_core__frame__explode__UnpivotArgsIR(__v)) }
+/// Polars: `polars_core::frame::explode::UnpivotArgsIR as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_7beebb91_ode__unpivotargsir_as_serde_core__ser__serialize(this: &W_polars_core__frame__explode__UnpivotArgsIR) -> Result<String, Error> { crate::engine::run("UnpivotArgsIR::to_json", || support::to_json(&this.0, "UnpivotArgsIR::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::frame::group_by::GroupByMethod as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_852d6f78_e__group_by__groupbymethod_as_core__clone__clone(this: &W_polars_core__frame__group_by__GroupByMethod) -> W_polars_core__frame__group_by__GroupByMethod { W_polars_core__frame__group_by__GroupByMethod(this.0.clone()) }
@@ -9512,6 +9602,12 @@ fn p_939b232e_e__series__ops__nullbehavior_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::series::ops::NullBehavior as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_19b96d18_e__series__ops__nullbehavior_as_core__hash__hash(this: &W_polars_core__series__ops__NullBehavior, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_core::series::ops::NullBehavior as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_core__series__ops__NullBehavior::from_json)]
+fn s_19041956_ops__nullbehavior_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_core__series__ops__NullBehavior, Error> { support::json_len_ok(s, "NullBehavior::from_json")?; let __v = crate::engine::run("NullBehavior::from_json", || support::from_json::<polars::series::ops::NullBehavior>(s, "NullBehavior::from_json")).map_err(Error::engine)??; Ok(W_polars_core__series__ops__NullBehavior(__v)) }
+/// Polars: `polars_core::series::ops::NullBehavior as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_57d295e2__ops__nullbehavior_as_serde_core__ser__serialize(this: &W_polars_core__series__ops__NullBehavior) -> Result<String, Error> { crate::engine::run("NullBehavior::to_json", || support::to_json(&this.0, "NullBehavior::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_core::series::series_trait::IsSorted as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_92c7504e_es__series_trait__issorted_as_core__clone__clone(this: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__series__series_trait__IsSorted { W_polars_core__series__series_trait__IsSorted(this.0.clone()) }
@@ -9545,6 +9641,12 @@ fn p_39316dc4_gorical__categoricalphysical_as_core__hash__hash(this: &W_polars_d
 /// Polars: `polars_dtype::categorical::CategoricalPhysical as core::str::traits::FromStr`.
 #[rune::function(free, path = W_polars_dtype__categorical__CategoricalPhysical::parse)]
 fn p_0b434565_ategoricalphysical_as_core__str__traits__fromstr(s: &str) -> Result<W_polars_dtype__categorical__CategoricalPhysical, Error> { <polars_dtype::categorical::CategoricalPhysical as core::str::FromStr>::from_str(s).map(W_polars_dtype__categorical__CategoricalPhysical).map_err(|e| Error::conversion(&format!("parse: {e:?}"))) }
+/// Polars: `polars_dtype::categorical::CategoricalPhysical as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_dtype__categorical__CategoricalPhysical::from_json)]
+fn s_3a6ad0bc_tegoricalphysical_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_dtype__categorical__CategoricalPhysical, Error> { support::json_len_ok(s, "CategoricalPhysical::from_json")?; let __v = crate::engine::run("CategoricalPhysical::from_json", || support::from_json::<polars_dtype::categorical::CategoricalPhysical>(s, "CategoricalPhysical::from_json")).map_err(Error::engine)??; Ok(W_polars_dtype__categorical__CategoricalPhysical(__v)) }
+/// Polars: `polars_dtype::categorical::CategoricalPhysical as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_d8389a1f_ategoricalphysical_as_serde_core__ser__serialize(this: &W_polars_dtype__categorical__CategoricalPhysical) -> Result<String, Error> { crate::engine::run("CategoricalPhysical::to_json", || support::to_json(&this.0, "CategoricalPhysical::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_dtype::categorical::Categories as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_9bb33ac7_ype__categorical__categories_as_core__fmt__debug(this: &W_polars_dtype__categorical__Categories, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -9701,6 +9803,12 @@ fn p_e18edaaa__cloud__options__cloudconfig_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::cloud::options::CloudConfig as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_d908f51f__cloud__options__cloudconfig_as_core__hash__hash(this: &W_polars_io__cloud__options__CloudConfig, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::cloud::options::CloudConfig as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__cloud__options__CloudConfig::from_json)]
+fn s_70b5c7e3_ions__cloudconfig_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__cloud__options__CloudConfig, Error> { support::json_len_ok(s, "CloudConfig::from_json")?; let __v = crate::engine::run("CloudConfig::from_json", || support::from_json::<polars_io::cloud::options::CloudConfig>(s, "CloudConfig::from_json")).map_err(Error::engine)??; Ok(W_polars_io__cloud__options__CloudConfig(__v)) }
+/// Polars: `polars_io::cloud::options::CloudConfig as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_992830aa_tions__cloudconfig_as_serde_core__ser__serialize(this: &W_polars_io__cloud__options__CloudConfig) -> Result<String, Error> { crate::engine::run("CloudConfig::to_json", || support::to_json(&this.0, "CloudConfig::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::cloud::options::CloudOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_564ac14b_oud__options__cloudoptions_as_core__clone__clone(this: &W_polars_io__cloud__options__CloudOptions) -> W_polars_io__cloud__options__CloudOptions { W_polars_io__cloud__options__CloudOptions(this.0.clone()) }
@@ -9779,6 +9887,12 @@ fn p_c17308f9_read__options__commentprefix_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::csv::read::options::CommentPrefix as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_ecf912ab_read__options__commentprefix_as_core__hash__hash(this: &W_polars_io__csv__read__options__CommentPrefix, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::csv::read::options::CommentPrefix as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__csv__read__options__CommentPrefix::from_json)]
+fn s_80cbaae8_ns__commentprefix_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__csv__read__options__CommentPrefix, Error> { support::json_len_ok(s, "CommentPrefix::from_json")?; let __v = crate::engine::run("CommentPrefix::from_json", || support::from_json::<polars_io::csv::read::CommentPrefix>(s, "CommentPrefix::from_json")).map_err(Error::engine)??; Ok(W_polars_io__csv__read__options__CommentPrefix(__v)) }
+/// Polars: `polars_io::csv::read::options::CommentPrefix as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_c8d6ca97_ons__commentprefix_as_serde_core__ser__serialize(this: &W_polars_io__csv__read__options__CommentPrefix) -> Result<String, Error> { crate::engine::run("CommentPrefix::to_json", || support::to_json(&this.0, "CommentPrefix::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::csv::read::options::CsvEncoding as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b4f20c5d_read__options__csvencoding_as_core__clone__clone(this: &W_polars_io__csv__read__options__CsvEncoding) -> W_polars_io__csv__read__options__CsvEncoding { W_polars_io__csv__read__options__CsvEncoding(this.0.clone()) }
@@ -9797,6 +9911,12 @@ fn p_744b2a31___read__options__csvencoding_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::csv::read::options::CsvEncoding as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_fd19db50___read__options__csvencoding_as_core__hash__hash(this: &W_polars_io__csv__read__options__CsvEncoding, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::csv::read::options::CsvEncoding as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__csv__read__options__CsvEncoding::from_json)]
+fn s_62113214_ions__csvencoding_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__csv__read__options__CsvEncoding, Error> { support::json_len_ok(s, "CsvEncoding::from_json")?; let __v = crate::engine::run("CsvEncoding::from_json", || support::from_json::<polars_io::csv::read::CsvEncoding>(s, "CsvEncoding::from_json")).map_err(Error::engine)??; Ok(W_polars_io__csv__read__options__CsvEncoding(__v)) }
+/// Polars: `polars_io::csv::read::options::CsvEncoding as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_d6ef5eb0_tions__csvencoding_as_serde_core__ser__serialize(this: &W_polars_io__csv__read__options__CsvEncoding) -> Result<String, Error> { crate::engine::run("CsvEncoding::to_json", || support::to_json(&this.0, "CsvEncoding::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::csv::read::options::CsvParseOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_de7c00cc___options__csvparseoptions_as_core__clone__clone(this: &W_polars_io__csv__read__options__CsvParseOptions) -> W_polars_io__csv__read__options__CsvParseOptions { W_polars_io__csv__read__options__CsvParseOptions(this.0.clone()) }
@@ -9815,6 +9935,12 @@ fn p_3a3f1a51_ad__options__csvparseoptions_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::csv::read::options::CsvParseOptions as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_02a1f794_ad__options__csvparseoptions_as_core__hash__hash(this: &W_polars_io__csv__read__options__CsvParseOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::csv::read::options::CsvParseOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__csv__read__options__CsvParseOptions::from_json)]
+fn s_3e6009b5___csvparseoptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__csv__read__options__CsvParseOptions, Error> { support::json_len_ok(s, "CsvParseOptions::from_json")?; let __v = crate::engine::run("CsvParseOptions::from_json", || support::from_json::<polars_io::csv::read::CsvParseOptions>(s, "CsvParseOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_io__csv__read__options__CsvParseOptions(__v)) }
+/// Polars: `polars_io::csv::read::options::CsvParseOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_8d6a14bc_s__csvparseoptions_as_serde_core__ser__serialize(this: &W_polars_io__csv__read__options__CsvParseOptions) -> Result<String, Error> { crate::engine::run("CsvParseOptions::to_json", || support::to_json(&this.0, "CsvParseOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::csv::read::options::CsvReadOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_653ab779_d__options__csvreadoptions_as_core__clone__clone(this: &W_polars_io__csv__read__options__CsvReadOptions) -> W_polars_io__csv__read__options__CsvReadOptions { W_polars_io__csv__read__options__CsvReadOptions(this.0.clone()) }
@@ -9848,6 +9974,12 @@ fn p_dfbf11e3_v__read__options__nullvalues_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::csv::read::options::NullValues as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_0be648b2_v__read__options__nullvalues_as_core__hash__hash(this: &W_polars_io__csv__read__options__NullValues, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::csv::read::options::NullValues as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__csv__read__options__NullValues::from_json)]
+fn s_29424cf5_tions__nullvalues_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__csv__read__options__NullValues, Error> { support::json_len_ok(s, "NullValues::from_json")?; let __v = crate::engine::run("NullValues::from_json", || support::from_json::<polars_io::csv::read::NullValues>(s, "NullValues::from_json")).map_err(Error::engine)??; Ok(W_polars_io__csv__read__options__NullValues(__v)) }
+/// Polars: `polars_io::csv::read::options::NullValues as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_b22df112_ptions__nullvalues_as_serde_core__ser__serialize(this: &W_polars_io__csv__read__options__NullValues) -> Result<String, Error> { crate::engine::run("NullValues::to_json", || support::to_json(&this.0, "NullValues::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::csv::read::options::NullValuesCompiled as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_54b0412c_ptions__nullvaluescompiled_as_core__clone__clone(this: &W_polars_io__csv__read__options__NullValuesCompiled) -> W_polars_io__csv__read__options__NullValuesCompiled { W_polars_io__csv__read__options__NullValuesCompiled(this.0.clone()) }
@@ -9872,6 +10004,12 @@ fn p_1abb846d_e__options__csvwriteroptions_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::csv::write::options::CsvWriterOptions as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_e9da73f6_e__options__csvwriteroptions_as_core__hash__hash(this: &W_polars_io__csv__write__options__CsvWriterOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::csv::write::options::CsvWriterOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__csv__write__options__CsvWriterOptions::from_json)]
+fn s_3daab5e0__csvwriteroptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__csv__write__options__CsvWriterOptions, Error> { support::json_len_ok(s, "CsvWriterOptions::from_json")?; let __v = crate::engine::run("CsvWriterOptions::from_json", || support::from_json::<polars_io::csv::write::CsvWriterOptions>(s, "CsvWriterOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_io__csv__write__options__CsvWriterOptions(__v)) }
+/// Polars: `polars_io::csv::write::options::CsvWriterOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_4ef3e581___csvwriteroptions_as_serde_core__ser__serialize(this: &W_polars_io__csv__write__options__CsvWriterOptions) -> Result<String, Error> { crate::engine::run("CsvWriterOptions::to_json", || support::to_json(&this.0, "CsvWriterOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::csv::write::options::QuoteStyle as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_07913a7f_write__options__quotestyle_as_core__clone__clone(this: &W_polars_io__csv__write__options__QuoteStyle) -> W_polars_io__csv__write__options__QuoteStyle { W_polars_io__csv__write__options__QuoteStyle(this.0.clone()) }
@@ -9890,6 +10028,12 @@ fn p_c5a394df___write__options__quotestyle_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::csv::write::options::QuoteStyle as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_0731234f___write__options__quotestyle_as_core__hash__hash(this: &W_polars_io__csv__write__options__QuoteStyle, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::csv::write::options::QuoteStyle as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__csv__write__options__QuoteStyle::from_json)]
+fn s_b65ecde5_tions__quotestyle_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__csv__write__options__QuoteStyle, Error> { support::json_len_ok(s, "QuoteStyle::from_json")?; let __v = crate::engine::run("QuoteStyle::from_json", || support::from_json::<polars_io::csv::write::QuoteStyle>(s, "QuoteStyle::from_json")).map_err(Error::engine)??; Ok(W_polars_io__csv__write__options__QuoteStyle(__v)) }
+/// Polars: `polars_io::csv::write::options::QuoteStyle as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_f9e3df57_ptions__quotestyle_as_serde_core__ser__serialize(this: &W_polars_io__csv__write__options__QuoteStyle) -> Result<String, Error> { crate::engine::run("QuoteStyle::to_json", || support::to_json(&this.0, "QuoteStyle::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::csv::write::options::SerializeOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f132a796__options__serializeoptions_as_core__clone__clone(this: &W_polars_io__csv__write__options__SerializeOptions) -> W_polars_io__csv__write__options__SerializeOptions { W_polars_io__csv__write__options__SerializeOptions(this.0.clone()) }
@@ -9908,6 +10052,12 @@ fn p_1da82027_e__options__serializeoptions_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::csv::write::options::SerializeOptions as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_a25cc0f3_e__options__serializeoptions_as_core__hash__hash(this: &W_polars_io__csv__write__options__SerializeOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::csv::write::options::SerializeOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__csv__write__options__SerializeOptions::from_json)]
+fn s_6dbe7892__serializeoptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__csv__write__options__SerializeOptions, Error> { support::json_len_ok(s, "SerializeOptions::from_json")?; let __v = crate::engine::run("SerializeOptions::from_json", || support::from_json::<polars_io::csv::write::SerializeOptions>(s, "SerializeOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_io__csv__write__options__SerializeOptions(__v)) }
+/// Polars: `polars_io::csv::write::options::SerializeOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_882949fe___serializeoptions_as_serde_core__ser__serialize(this: &W_polars_io__csv__write__options__SerializeOptions) -> Result<String, Error> { crate::engine::run("SerializeOptions::to_json", || support::to_json(&this.0, "SerializeOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::csv::write::write_impl::CsvSerializer as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2f629a1b__write_impl__csvserializer_as_core__clone__clone(this: &W_polars_io__csv__write__write_impl__CsvSerializer) -> W_polars_io__csv__write__write_impl__CsvSerializer { W_polars_io__csv__write__write_impl__CsvSerializer(this.0.clone()) }
@@ -9923,6 +10073,12 @@ fn p_e6a95bd5_c_file__ipcscanoptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::ipc::ipc_file::IpcScanOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_bcc1f7cb_pc__ipc_file__ipcscanoptions_as_core__fmt__debug(this: &W_polars_io__ipc__ipc_file__IpcScanOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::ipc::ipc_file::IpcScanOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__ipc__ipc_file__IpcScanOptions::from_json)]
+fn s_49764c29_e__ipcscanoptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__ipc__ipc_file__IpcScanOptions, Error> { support::json_len_ok(s, "IpcScanOptions::from_json")?; let __v = crate::engine::run("IpcScanOptions::from_json", || support::from_json::<polars_io::ipc::IpcScanOptions>(s, "IpcScanOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_io__ipc__ipc_file__IpcScanOptions(__v)) }
+/// Polars: `polars_io::ipc::ipc_file::IpcScanOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_b3f99ad4_le__ipcscanoptions_as_serde_core__ser__serialize(this: &W_polars_io__ipc__ipc_file__IpcScanOptions) -> Result<String, Error> { crate::engine::run("IpcScanOptions::to_json", || support::to_json(&this.0, "IpcScanOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::ipc::ipc_reader_async::IpcReadOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2b5d3231_ader_async__ipcreadoptions_as_core__clone__clone(this: &W_polars_io__ipc__ipc_reader_async__IpcReadOptions) -> W_polars_io__ipc__ipc_reader_async__IpcReadOptions { W_polars_io__ipc__ipc_reader_async__IpcReadOptions(this.0.clone()) }
@@ -9947,6 +10103,12 @@ fn p_2805af37__ipc_metadata__plipcmetadata_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_4b6f79e5__ipc_metadata__plipcmetadata_as_core__hash__hash(this: &W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata::from_json)]
+fn s_3eeda21f_ta__plipcmetadata_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata, Error> { support::json_len_ok(s, "PlIpcMetadata::from_json")?; let __v = crate::engine::run("PlIpcMetadata::from_json", || support::from_json::<polars_io::ipc::pl_ipc_metadata::PlIpcMetadata>(s, "PlIpcMetadata::from_json")).map_err(Error::engine)??; Ok(W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata(__v)) }
+/// Polars: `polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_d9ccc276_ata__plipcmetadata_as_serde_core__ser__serialize(this: &W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata) -> Result<String, Error> { crate::engine::run("PlIpcMetadata::to_json", || support::to_json(&this.0, "PlIpcMetadata::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::ipc::write::IpcCompression as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_d82be3e9_ipc__write__ipccompression_as_core__clone__clone(this: &W_polars_io__ipc__write__IpcCompression) -> W_polars_io__ipc__write__IpcCompression { W_polars_io__ipc__write__IpcCompression(this.0.clone()) }
@@ -9965,6 +10127,12 @@ fn p_a580c291___ipc__write__ipccompression_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::ipc::write::IpcCompression as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_e9de6ba4___ipc__write__ipccompression_as_core__hash__hash(this: &W_polars_io__ipc__write__IpcCompression, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::ipc::write::IpcCompression as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__ipc__write__IpcCompression::from_json)]
+fn s_7b8fe719_e__ipccompression_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__ipc__write__IpcCompression, Error> { support::json_len_ok(s, "IpcCompression::from_json")?; let __v = crate::engine::run("IpcCompression::from_json", || support::from_json::<polars_io::ipc::IpcCompression>(s, "IpcCompression::from_json")).map_err(Error::engine)??; Ok(W_polars_io__ipc__write__IpcCompression(__v)) }
+/// Polars: `polars_io::ipc::write::IpcCompression as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_e3139017_te__ipccompression_as_serde_core__ser__serialize(this: &W_polars_io__ipc__write__IpcCompression) -> Result<String, Error> { crate::engine::run("IpcCompression::to_json", || support::to_json(&this.0, "IpcCompression::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::ipc::write::IpcWriterOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_10a36726_c__write__ipcwriteroptions_as_core__clone__clone(this: &W_polars_io__ipc__write__IpcWriterOptions) -> W_polars_io__ipc__write__IpcWriterOptions { W_polars_io__ipc__write__IpcWriterOptions(this.0.clone()) }
@@ -9983,6 +10151,12 @@ fn p_8b4b7147_ipc__write__ipcwriteroptions_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::ipc::write::IpcWriterOptions as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_5bf88c81_ipc__write__ipcwriteroptions_as_core__hash__hash(this: &W_polars_io__ipc__write__IpcWriterOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::ipc::write::IpcWriterOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__ipc__write__IpcWriterOptions::from_json)]
+fn s_0f5121f6__ipcwriteroptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__ipc__write__IpcWriterOptions, Error> { support::json_len_ok(s, "IpcWriterOptions::from_json")?; let __v = crate::engine::run("IpcWriterOptions::from_json", || support::from_json::<polars_io::ipc::IpcWriterOptions>(s, "IpcWriterOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_io__ipc__write__IpcWriterOptions(__v)) }
+/// Polars: `polars_io::ipc::write::IpcWriterOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_cc945200___ipcwriteroptions_as_serde_core__ser__serialize(this: &W_polars_io__ipc__write__IpcWriterOptions) -> Result<String, Error> { crate::engine::run("IpcWriterOptions::to_json", || support::to_json(&this.0, "IpcWriterOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::metrics::IOMetrics as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_17f7d338_ars_io__metrics__iometrics_as_core__clone__clone(this: &W_polars_io__metrics__IOMetrics) -> W_polars_io__metrics__IOMetrics { W_polars_io__metrics__IOMetrics(this.0.clone()) }
@@ -10016,6 +10190,12 @@ fn p_f413c47e_options__externalcompression_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::options::ExternalCompression as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_8530ca73_options__externalcompression_as_core__hash__hash(this: &W_polars_io__options__ExternalCompression, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::options::ExternalCompression as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__options__ExternalCompression::from_json)]
+fn s_03313d43_ternalcompression_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__options__ExternalCompression, Error> { support::json_len_ok(s, "ExternalCompression::from_json")?; let __v = crate::engine::run("ExternalCompression::from_json", || support::from_json::<polars_io::prelude::ExternalCompression>(s, "ExternalCompression::from_json")).map_err(Error::engine)??; Ok(W_polars_io__options__ExternalCompression(__v)) }
+/// Polars: `polars_io::options::ExternalCompression as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_829fe75d_xternalcompression_as_serde_core__ser__serialize(this: &W_polars_io__options__ExternalCompression) -> Result<String, Error> { crate::engine::run("ExternalCompression::to_json", || support::to_json(&this.0, "ExternalCompression::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::options::HiveOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_e7f8e96f_s_io__options__hiveoptions_as_core__clone__clone(this: &W_polars_io__options__HiveOptions) -> W_polars_io__options__HiveOptions { W_polars_io__options__HiveOptions(this.0.clone()) }
@@ -10049,6 +10229,12 @@ fn p_869932e0_polars_io__options__rowindex_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::options::RowIndex as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_ba851366_polars_io__options__rowindex_as_core__hash__hash(this: &W_polars_io__options__RowIndex, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::options::RowIndex as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__options__RowIndex::from_json)]
+fn s_f2ad1b6f_options__rowindex_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__options__RowIndex, Error> { support::json_len_ok(s, "RowIndex::from_json")?; let __v = crate::engine::run("RowIndex::from_json", || support::from_json::<polars_io::prelude::RowIndex>(s, "RowIndex::from_json")).map_err(Error::engine)??; Ok(W_polars_io__options__RowIndex(__v)) }
+/// Polars: `polars_io::options::RowIndex as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_732f5345__options__rowindex_as_serde_core__ser__serialize(this: &W_polars_io__options__RowIndex) -> Result<String, Error> { crate::engine::run("RowIndex::to_json", || support::to_json(&this.0, "RowIndex::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::parquet::read::options::ParallelStrategy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_dbb749d9__options__parallelstrategy_as_core__clone__clone(this: &W_polars_io__parquet__read__options__ParallelStrategy) -> W_polars_io__parquet__read__options__ParallelStrategy { W_polars_io__parquet__read__options__ParallelStrategy(this.0.clone()) }
@@ -10067,6 +10253,12 @@ fn p_89c77260_d__options__parallelstrategy_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::parquet::read::options::ParallelStrategy as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_d7f9e3fd_d__options__parallelstrategy_as_core__hash__hash(this: &W_polars_io__parquet__read__options__ParallelStrategy, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::parquet::read::options::ParallelStrategy as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__parquet__read__options__ParallelStrategy::from_json)]
+fn s_a9e8a933__parallelstrategy_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__parquet__read__options__ParallelStrategy, Error> { support::json_len_ok(s, "ParallelStrategy::from_json")?; let __v = crate::engine::run("ParallelStrategy::from_json", || support::from_json::<polars_io::parquet::read::ParallelStrategy>(s, "ParallelStrategy::from_json")).map_err(Error::engine)??; Ok(W_polars_io__parquet__read__options__ParallelStrategy(__v)) }
+/// Polars: `polars_io::parquet::read::options::ParallelStrategy as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_c782080a___parallelstrategy_as_serde_core__ser__serialize(this: &W_polars_io__parquet__read__options__ParallelStrategy) -> Result<String, Error> { crate::engine::run("ParallelStrategy::to_json", || support::to_json(&this.0, "ParallelStrategy::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::parquet::read::options::ParquetOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_365e922c_d__options__parquetoptions_as_core__clone__clone(this: &W_polars_io__parquet__read__options__ParquetOptions) -> W_polars_io__parquet__read__options__ParquetOptions { W_polars_io__parquet__read__options__ParquetOptions(this.0.clone()) }
@@ -10121,6 +10313,12 @@ fn p_fa4a7266__options__parquetcompression_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::parquet::write::options::ParquetCompression as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_cd1e1271__options__parquetcompression_as_core__hash__hash(this: &W_polars_io__parquet__write__options__ParquetCompression, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::parquet::write::options::ParquetCompression as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__parquet__write__options__ParquetCompression::from_json)]
+fn s_da030288_arquetcompression_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__parquet__write__options__ParquetCompression, Error> { support::json_len_ok(s, "ParquetCompression::from_json")?; let __v = crate::engine::run("ParquetCompression::from_json", || support::from_json::<polars_io::parquet::write::ParquetCompression>(s, "ParquetCompression::from_json")).map_err(Error::engine)??; Ok(W_polars_io__parquet__write__options__ParquetCompression(__v)) }
+/// Polars: `polars_io::parquet::write::options::ParquetCompression as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_301fe262_parquetcompression_as_serde_core__ser__serialize(this: &W_polars_io__parquet__write__options__ParquetCompression) -> Result<String, Error> { crate::engine::run("ParquetCompression::to_json", || support::to_json(&this.0, "ParquetCompression::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::parquet::write::options::ParquetWriteOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_df5ac108_tions__parquetwriteoptions_as_core__clone__clone(this: &W_polars_io__parquet__write__options__ParquetWriteOptions) -> W_polars_io__parquet__write__options__ParquetWriteOptions { W_polars_io__parquet__write__options__ParquetWriteOptions(this.0.clone()) }
@@ -18124,6 +18322,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6ae3cac0_ray__cast__castoptions_as_core__default__default)?;
     m.function_meta(p_ca4c7e40_ked_array__cast__castoptions_as_core__fmt__debug)?;
     m.function_meta(p_cf7747ef_ked_array__cast__castoptions_as_core__hash__hash)?;
+    m.function_meta(s_bcc8175b_cast__castoptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_07d7d30e__cast__castoptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_f8c93311_ay__flags__statisticsflags_as_core__clone__clone)?;
     m.function_meta(p_36cfbb59_d_array__flags__statisticsflags_as_core__cmp__eq)?;
     m.function_meta(p_c4daae80___flags__statisticsflags_as_core__cmp__partialeq)?;
@@ -18137,6 +18337,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_1d20eb63_flags__statisticsflags_as_core__ops__bit__bitxor)?;
     m.function_meta(p_94eab3be__statisticsflags_as_core__ops__bit__bitxorassign)?;
     m.function_meta(p_2c1f07d0_y__flags__statisticsflags_as_core__ops__bit__not)?;
+    m.function_meta(s_c01e6e89___statisticsflags_as_serde_core__de__deserialize)?;
+    m.function_meta(s_45c5fb14_s__statisticsflags_as_serde_core__ser__serialize)?;
     m.function_meta(p_4b377447___flags__statisticsflagsim_as_core__clone__clone)?;
     m.function_meta(p_1e3b84eb_array__flags__statisticsflagsim_as_core__cmp__eq)?;
     m.function_meta(p_3903acc8_flags__statisticsflagsim_as_core__cmp__partialeq)?;
@@ -18147,15 +18349,21 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_3147d860_ray__ops__explodeoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_2f7a8194_d_array__ops__explodeoptions_as_core__fmt__debug)?;
     m.function_meta(p_6eaae49c_d_array__ops__explodeoptions_as_core__hash__hash)?;
+    m.function_meta(s_d2fd2883_s__explodeoptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_d8e5f2d5_ps__explodeoptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_f9614fa5_ray__ops__fillnullstrategy_as_core__clone__clone)?;
     m.function_meta(p_d715fa87_y__ops__fillnullstrategy_as_core__cmp__partialeq)?;
     m.function_meta(p_c444a93d_array__ops__fillnullstrategy_as_core__fmt__debug)?;
+    m.function_meta(s_3491f7a8__fillnullstrategy_as_serde_core__de__deserialize)?;
+    m.function_meta(s_b7a92c24___fillnullstrategy_as_serde_core__ser__serialize)?;
     m.function_meta(p_4ab24996_h_sorted__searchsortedside_as_core__clone__clone)?;
     m.function_meta(p_e45fa70c_search_sorted__searchsortedside_as_core__cmp__eq)?;
     m.function_meta(p_c7af2fbf_sorted__searchsortedside_as_core__cmp__partialeq)?;
     m.function_meta(p_bcd34a7a_rted__searchsortedside_as_core__default__default)?;
     m.function_meta(p_3ba76a74_rch_sorted__searchsortedside_as_core__fmt__debug)?;
     m.function_meta(p_7de17d19_rch_sorted__searchsortedside_as_core__hash__hash)?;
+    m.function_meta(s_8b828fef__searchsortedside_as_serde_core__de__deserialize)?;
+    m.function_meta(s_839e6a2f___searchsortedside_as_serde_core__ser__serialize)?;
     m.function_meta(p_83e30ef3_tions__sortmultipleoptions_as_core__clone__clone)?;
     m.function_meta(p_a5488ee9_t__options__sortmultipleoptions_as_core__cmp__eq)?;
     m.function_meta(p_e25a91e9_ons__sortmultipleoptions_as_core__cmp__partialeq)?;
@@ -18163,6 +18371,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_a57c33b4_s__sortmultipleoptions_as_core__default__default)?;
     m.function_meta(p_ea4106e7_options__sortmultipleoptions_as_core__fmt__debug)?;
     m.function_meta(p_c92197c6_options__sortmultipleoptions_as_core__hash__hash)?;
+    m.function_meta(s_8d10b88f_rtmultipleoptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_ba263342_ortmultipleoptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_61ae14b9_sort__options__sortoptions_as_core__clone__clone)?;
     m.function_meta(p_0e9979b2_ops__sort__options__sortoptions_as_core__cmp__eq)?;
     m.function_meta(p_e1ddcfaf_rt__options__sortoptions_as_core__cmp__partialeq)?;
@@ -18170,6 +18380,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_a52bb73a___options__sortoptions_as_core__default__default)?;
     m.function_meta(p_7b063c10___sort__options__sortoptions_as_core__fmt__debug)?;
     m.function_meta(p_09939bd3___sort__options__sortoptions_as_core__hash__hash)?;
+    m.function_meta(s_df5bedde_ions__sortoptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_e78b6d88_tions__sortoptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_825e24bc_atatypes__binaryoffsettype_as_core__clone__clone)?;
     m.function_meta(p_ffb1e306_ore__datatypes__binarytype_as_core__clone__clone)?;
     m.function_meta(p_5fc41980_re__datatypes__booleantype_as_core__clone__clone)?;
@@ -18186,6 +18398,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_34866f01_core__datatypes__int32type_as_core__clone__clone)?;
     m.function_meta(p_a05e36d3_core__datatypes__int64type_as_core__clone__clone)?;
     m.function_meta(p_34d8d875__core__datatypes__int8type_as_core__clone__clone)?;
+    m.function_meta(s_98252a7e_tatypes__listtype_as_serde_core__de__deserialize)?;
+    m.function_meta(s_86cd0167_atatypes__listtype_as_serde_core__ser__serialize)?;
     m.function_meta(p_839e6582_ore__datatypes__stringtype_as_core__clone__clone)?;
     m.function_meta(p_62483d27__core__datatypes__timetype_as_core__clone__clone)?;
     m.function_meta(p_3506e03e_ore__datatypes__uint16type_as_core__clone__clone)?;
@@ -18197,6 +18411,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_158069ff_ypes__dtype__compatlevel_as_core__cmp__partialeq)?;
     m.function_meta(p_2c9ef818_atatypes__dtype__compatlevel_as_core__fmt__debug)?;
     m.function_meta(p_761ba34e_atatypes__dtype__compatlevel_as_core__hash__hash)?;
+    m.function_meta(s_d433053a_type__compatlevel_as_serde_core__de__deserialize)?;
+    m.function_meta(s_61fe6196_dtype__compatlevel_as_serde_core__ser__serialize)?;
     m.function_meta(p_d5beb85c_datatypes__dtype__datatype_as_core__clone__clone)?;
     m.function_meta(p_3f38aa27_ore__datatypes__dtype__datatype_as_core__cmp__eq)?;
     m.function_meta(p_7aa07c19_tatypes__dtype__datatype_as_core__cmp__partialeq)?;
@@ -18210,6 +18426,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_d7f15131_es__dtype__unknownkind_as_core__default__default)?;
     m.function_meta(p_679b2af4_atatypes__dtype__unknownkind_as_core__fmt__debug)?;
     m.function_meta(p_1c05e875_atatypes__dtype__unknownkind_as_core__hash__hash)?;
+    m.function_meta(s_2f9ea137_type__unknownkind_as_serde_core__de__deserialize)?;
+    m.function_meta(s_c3077c98_dtype__unknownkind_as_serde_core__ser__serialize)?;
     m.function_meta(p_8addd2a4_e__datatypes__field__field_as_core__clone__clone)?;
     m.function_meta(p_079ce4e4_s_core__datatypes__field__field_as_core__cmp__eq)?;
     m.function_meta(p_15f254a0__datatypes__field__field_as_core__cmp__partialeq)?;
@@ -18223,24 +18441,32 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_27f8cf16_emporal__time_unit__timeunit_as_core__fmt__debug)?;
     m.function_meta(p_d802bb4e_poral__time_unit__timeunit_as_core__fmt__display)?;
     m.function_meta(p_e4cc3422_emporal__time_unit__timeunit_as_core__hash__hash)?;
+    m.function_meta(s_074372cc_me_unit__timeunit_as_serde_core__de__deserialize)?;
+    m.function_meta(s_554e53c0_ime_unit__timeunit_as_serde_core__ser__serialize)?;
     m.function_meta(p_6b512183_poral__time_zone__timezone_as_core__clone__clone)?;
     m.function_meta(p_aac8758e___temporal__time_zone__timezone_as_core__cmp__eq)?;
     m.function_meta(p_9869ee65_ral__time_zone__timezone_as_core__cmp__partialeq)?;
     m.function_meta(p_2602c5b3_emporal__time_zone__timezone_as_core__fmt__debug)?;
     m.function_meta(p_3139b6ef_poral__time_zone__timezone_as_core__fmt__display)?;
     m.function_meta(p_fd1a516a_emporal__time_zone__timezone_as_core__hash__hash)?;
+    m.function_meta(s_0b3af38b_me_zone__timezone_as_serde_core__de__deserialize)?;
+    m.function_meta(s_09d4126d_ime_zone__timezone_as_serde_core__ser__serialize)?;
     m.function_meta(p_ee50e56c___frame__pivotcolumnnaming_as_core__clone__clone)?;
     m.function_meta(p_6f044185__core__frame__pivotcolumnnaming_as_core__cmp__eq)?;
     m.function_meta(p_09d70872_frame__pivotcolumnnaming_as_core__cmp__partialeq)?;
     m.function_meta(p_a40be9cf_ame__pivotcolumnnaming_as_core__default__default)?;
     m.function_meta(p_0690e0f0_re__frame__pivotcolumnnaming_as_core__fmt__debug)?;
     m.function_meta(p_597047cc_re__frame__pivotcolumnnaming_as_core__hash__hash)?;
+    m.function_meta(s_2805fc17_pivotcolumnnaming_as_serde_core__de__deserialize)?;
+    m.function_meta(s_b5222308__pivotcolumnnaming_as_serde_core__ser__serialize)?;
     m.function_meta(p_e7655cfc__frame__uniquekeepstrategy_as_core__clone__clone)?;
     m.function_meta(p_08d7be7d_core__frame__uniquekeepstrategy_as_core__cmp__eq)?;
     m.function_meta(p_6b2dd042_rame__uniquekeepstrategy_as_core__cmp__partialeq)?;
     m.function_meta(p_ec06cb05_me__uniquekeepstrategy_as_core__default__default)?;
     m.function_meta(p_df0f79ba_e__frame__uniquekeepstrategy_as_core__fmt__debug)?;
     m.function_meta(p_180b63e8_e__frame__uniquekeepstrategy_as_core__hash__hash)?;
+    m.function_meta(s_da4d2b99_niquekeepstrategy_as_serde_core__de__deserialize)?;
+    m.function_meta(s_69689bb6_uniquekeepstrategy_as_serde_core__ser__serialize)?;
     m.function_meta(p_2d1c06dd_ore__frame__column__column_as_core__clone__clone)?;
     m.function_meta(p_9bef3223_e__frame__column__column_as_core__cmp__partialeq)?;
     m.function_meta(f_d59c4694_scalarcolumn__polars_core__frame__column__column)?;
@@ -18259,6 +18485,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_848925a8_explode__unpivotargsir_as_core__default__default)?;
     m.function_meta(p_7a122dd9_rame__explode__unpivotargsir_as_core__fmt__debug)?;
     m.function_meta(p_eb69a724_rame__explode__unpivotargsir_as_core__hash__hash)?;
+    m.function_meta(s_74d2a997_de__unpivotargsir_as_serde_core__de__deserialize)?;
+    m.function_meta(s_7beebb91_ode__unpivotargsir_as_serde_core__ser__serialize)?;
     m.function_meta(p_852d6f78_e__group_by__groupbymethod_as_core__clone__clone)?;
     m.function_meta(p_daed314c_ame__group_by__groupbymethod_as_core__fmt__debug)?;
     m.function_meta(p_08409c5b_e__group_by__groupbymethod_as_core__fmt__display)?;
@@ -18316,6 +18544,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_cf2a3a96_ies__ops__nullbehavior_as_core__default__default)?;
     m.function_meta(p_939b232e_e__series__ops__nullbehavior_as_core__fmt__debug)?;
     m.function_meta(p_19b96d18_e__series__ops__nullbehavior_as_core__hash__hash)?;
+    m.function_meta(s_19041956_ops__nullbehavior_as_serde_core__de__deserialize)?;
+    m.function_meta(s_57d295e2__ops__nullbehavior_as_serde_core__ser__serialize)?;
     m.function_meta(p_92c7504e_es__series_trait__issorted_as_core__clone__clone)?;
     m.function_meta(p_58275524__series__series_trait__issorted_as_core__cmp__eq)?;
     m.function_meta(p_21c7cda4___series_trait__issorted_as_core__cmp__partialeq)?;
@@ -18327,6 +18557,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_2f670921_gorical__categoricalphysical_as_core__fmt__debug)?;
     m.function_meta(p_39316dc4_gorical__categoricalphysical_as_core__hash__hash)?;
     m.function_meta(p_0b434565_ategoricalphysical_as_core__str__traits__fromstr)?;
+    m.function_meta(s_3a6ad0bc_tegoricalphysical_as_serde_core__de__deserialize)?;
+    m.function_meta(s_d8389a1f_ategoricalphysical_as_serde_core__ser__serialize)?;
     m.function_meta(p_9bb33ac7_ype__categorical__categories_as_core__fmt__debug)?;
     m.function_meta(p_86d5d964_ategorical__frozencategories_as_core__fmt__debug)?;
     m.function_meta(p_7e853523__mapping__categoricalmapping_as_core__fmt__debug)?;
@@ -18379,6 +18611,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_86b1fc82_ud__options__cloudconfig_as_core__cmp__partialeq)?;
     m.function_meta(p_e18edaaa__cloud__options__cloudconfig_as_core__fmt__debug)?;
     m.function_meta(p_d908f51f__cloud__options__cloudconfig_as_core__hash__hash)?;
+    m.function_meta(s_70b5c7e3_ions__cloudconfig_as_serde_core__de__deserialize)?;
+    m.function_meta(s_992830aa_tions__cloudconfig_as_serde_core__ser__serialize)?;
     m.function_meta(p_564ac14b_oud__options__cloudoptions_as_core__clone__clone)?;
     m.function_meta(p_cd415fd4_o__cloud__options__cloudoptions_as_core__cmp__eq)?;
     m.function_meta(p_b4a36246_d__options__cloudoptions_as_core__cmp__partialeq)?;
@@ -18405,18 +18639,24 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_814edb37_tr__polars_io__csv__read__options__commentprefix)?;
     m.function_meta(p_c17308f9_read__options__commentprefix_as_core__fmt__debug)?;
     m.function_meta(p_ecf912ab_read__options__commentprefix_as_core__hash__hash)?;
+    m.function_meta(s_80cbaae8_ns__commentprefix_as_serde_core__de__deserialize)?;
+    m.function_meta(s_c8d6ca97_ons__commentprefix_as_serde_core__ser__serialize)?;
     m.function_meta(p_b4f20c5d_read__options__csvencoding_as_core__clone__clone)?;
     m.function_meta(p_2cd613ac_csv__read__options__csvencoding_as_core__cmp__eq)?;
     m.function_meta(p_71feb059_ad__options__csvencoding_as_core__cmp__partialeq)?;
     m.function_meta(p_624ab269___options__csvencoding_as_core__default__default)?;
     m.function_meta(p_744b2a31___read__options__csvencoding_as_core__fmt__debug)?;
     m.function_meta(p_fd19db50___read__options__csvencoding_as_core__hash__hash)?;
+    m.function_meta(s_62113214_ions__csvencoding_as_serde_core__de__deserialize)?;
+    m.function_meta(s_d6ef5eb0_tions__csvencoding_as_serde_core__ser__serialize)?;
     m.function_meta(p_de7c00cc___options__csvparseoptions_as_core__clone__clone)?;
     m.function_meta(p_4a1af435__read__options__csvparseoptions_as_core__cmp__eq)?;
     m.function_meta(p_c2252bff_options__csvparseoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_2cf0f60e_tions__csvparseoptions_as_core__default__default)?;
     m.function_meta(p_3a3f1a51_ad__options__csvparseoptions_as_core__fmt__debug)?;
     m.function_meta(p_02a1f794_ad__options__csvparseoptions_as_core__hash__hash)?;
+    m.function_meta(s_3e6009b5___csvparseoptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_8d6a14bc_s__csvparseoptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_653ab779_d__options__csvreadoptions_as_core__clone__clone)?;
     m.function_meta(p_a3596f24___read__options__csvreadoptions_as_core__cmp__eq)?;
     m.function_meta(p_e9b51fdd__options__csvreadoptions_as_core__cmp__partialeq)?;
@@ -18428,6 +18668,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_1f31c9c2_ead__options__nullvalues_as_core__cmp__partialeq)?;
     m.function_meta(p_dfbf11e3_v__read__options__nullvalues_as_core__fmt__debug)?;
     m.function_meta(p_0be648b2_v__read__options__nullvalues_as_core__hash__hash)?;
+    m.function_meta(s_29424cf5_tions__nullvalues_as_serde_core__de__deserialize)?;
+    m.function_meta(s_b22df112_ptions__nullvalues_as_serde_core__ser__serialize)?;
     m.function_meta(p_54b0412c_ptions__nullvaluescompiled_as_core__clone__clone)?;
     m.function_meta(p_372890ce__options__nullvaluescompiled_as_core__fmt__debug)?;
     m.function_meta(p_1b9fb010__options__csvwriteroptions_as_core__clone__clone)?;
@@ -18436,23 +18678,31 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6c6fdc2e_ions__csvwriteroptions_as_core__default__default)?;
     m.function_meta(p_1abb846d_e__options__csvwriteroptions_as_core__fmt__debug)?;
     m.function_meta(p_e9da73f6_e__options__csvwriteroptions_as_core__hash__hash)?;
+    m.function_meta(s_3daab5e0__csvwriteroptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_4ef3e581___csvwriteroptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_07913a7f_write__options__quotestyle_as_core__clone__clone)?;
     m.function_meta(p_30489e38_csv__write__options__quotestyle_as_core__cmp__eq)?;
     m.function_meta(p_eedfb5e6_ite__options__quotestyle_as_core__cmp__partialeq)?;
     m.function_meta(p_49339554_e__options__quotestyle_as_core__default__default)?;
     m.function_meta(p_c5a394df___write__options__quotestyle_as_core__fmt__debug)?;
     m.function_meta(p_0731234f___write__options__quotestyle_as_core__hash__hash)?;
+    m.function_meta(s_b65ecde5_tions__quotestyle_as_serde_core__de__deserialize)?;
+    m.function_meta(s_f9e3df57_ptions__quotestyle_as_serde_core__ser__serialize)?;
     m.function_meta(p_f132a796__options__serializeoptions_as_core__clone__clone)?;
     m.function_meta(p_c24ef6eb_rite__options__serializeoptions_as_core__cmp__eq)?;
     m.function_meta(p_7ade6fb3_ptions__serializeoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_5e30f25a_ions__serializeoptions_as_core__default__default)?;
     m.function_meta(p_1da82027_e__options__serializeoptions_as_core__fmt__debug)?;
     m.function_meta(p_a25cc0f3_e__options__serializeoptions_as_core__hash__hash)?;
+    m.function_meta(s_6dbe7892__serializeoptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_882949fe___serializeoptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_2f629a1b__write_impl__csvserializer_as_core__clone__clone)?;
     m.function_meta(p_ba50fd2f___ipc_file__ipcscanoptions_as_core__clone__clone)?;
     m.function_meta(p_4cf3f7cd_ipc_file__ipcscanoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_e6a95bd5_c_file__ipcscanoptions_as_core__default__default)?;
     m.function_meta(p_bcc1f7cb_pc__ipc_file__ipcscanoptions_as_core__fmt__debug)?;
+    m.function_meta(s_49764c29_e__ipcscanoptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_b3f99ad4_le__ipcscanoptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_2b5d3231_ader_async__ipcreadoptions_as_core__clone__clone)?;
     m.function_meta(p_38465d76__async__ipcreadoptions_as_core__default__default)?;
     m.function_meta(p_acc7c341_pc_metadata__plipcmetadata_as_core__clone__clone)?;
@@ -18461,18 +18711,24 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_1bc81a94_etadata__plipcmetadata_as_core__default__default)?;
     m.function_meta(p_2805af37__ipc_metadata__plipcmetadata_as_core__fmt__debug)?;
     m.function_meta(p_4b6f79e5__ipc_metadata__plipcmetadata_as_core__hash__hash)?;
+    m.function_meta(s_3eeda21f_ta__plipcmetadata_as_serde_core__de__deserialize)?;
+    m.function_meta(s_d9ccc276_ata__plipcmetadata_as_serde_core__ser__serialize)?;
     m.function_meta(p_d82be3e9_ipc__write__ipccompression_as_core__clone__clone)?;
     m.function_meta(p_6ced7b7b__io__ipc__write__ipccompression_as_core__cmp__eq)?;
     m.function_meta(p_b6d78e03_c__write__ipccompression_as_core__cmp__partialeq)?;
     m.function_meta(p_93ddfd65__write__ipccompression_as_core__default__default)?;
     m.function_meta(p_a580c291___ipc__write__ipccompression_as_core__fmt__debug)?;
     m.function_meta(p_e9de6ba4___ipc__write__ipccompression_as_core__hash__hash)?;
+    m.function_meta(s_7b8fe719_e__ipccompression_as_serde_core__de__deserialize)?;
+    m.function_meta(s_e3139017_te__ipccompression_as_serde_core__ser__serialize)?;
     m.function_meta(p_10a36726_c__write__ipcwriteroptions_as_core__clone__clone)?;
     m.function_meta(p_3cf13ce1_o__ipc__write__ipcwriteroptions_as_core__cmp__eq)?;
     m.function_meta(p_ecd50bb9__write__ipcwriteroptions_as_core__cmp__partialeq)?;
     m.function_meta(p_e39378a0_rite__ipcwriteroptions_as_core__default__default)?;
     m.function_meta(p_8b4b7147_ipc__write__ipcwriteroptions_as_core__fmt__debug)?;
     m.function_meta(p_5bf88c81_ipc__write__ipcwriteroptions_as_core__hash__hash)?;
+    m.function_meta(s_0f5121f6__ipcwriteroptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_cc945200___ipcwriteroptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_17f7d338_ars_io__metrics__iometrics_as_core__clone__clone)?;
     m.function_meta(p_dc592844_io__metrics__iometrics_as_core__default__default)?;
     m.function_meta(p_b7f962b9_olars_io__metrics__iometrics_as_core__fmt__debug)?;
@@ -18484,6 +18740,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_0c65527c_s__externalcompression_as_core__default__default)?;
     m.function_meta(p_f413c47e_options__externalcompression_as_core__fmt__debug)?;
     m.function_meta(p_8530ca73_options__externalcompression_as_core__hash__hash)?;
+    m.function_meta(s_03313d43_ternalcompression_as_serde_core__de__deserialize)?;
+    m.function_meta(s_829fe75d_xternalcompression_as_serde_core__ser__serialize)?;
     m.function_meta(p_e7f8e96f_s_io__options__hiveoptions_as_core__clone__clone)?;
     m.function_meta(p_4d8daaeb_polars_io__options__hiveoptions_as_core__cmp__eq)?;
     m.function_meta(p_8e68d80d_io__options__hiveoptions_as_core__cmp__partialeq)?;
@@ -18495,12 +18753,16 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_05aeb7b6_rs_io__options__rowindex_as_core__cmp__partialeq)?;
     m.function_meta(p_869932e0_polars_io__options__rowindex_as_core__fmt__debug)?;
     m.function_meta(p_ba851366_polars_io__options__rowindex_as_core__hash__hash)?;
+    m.function_meta(s_f2ad1b6f_options__rowindex_as_serde_core__de__deserialize)?;
+    m.function_meta(s_732f5345__options__rowindex_as_serde_core__ser__serialize)?;
     m.function_meta(p_dbb749d9__options__parallelstrategy_as_core__clone__clone)?;
     m.function_meta(p_313817ed_read__options__parallelstrategy_as_core__cmp__eq)?;
     m.function_meta(p_5581fe44_ptions__parallelstrategy_as_core__cmp__partialeq)?;
     m.function_meta(p_c974681f_ions__parallelstrategy_as_core__default__default)?;
     m.function_meta(p_89c77260_d__options__parallelstrategy_as_core__fmt__debug)?;
     m.function_meta(p_d7f9e3fd_d__options__parallelstrategy_as_core__hash__hash)?;
+    m.function_meta(s_a9e8a933__parallelstrategy_as_serde_core__de__deserialize)?;
+    m.function_meta(s_c782080a___parallelstrategy_as_serde_core__ser__serialize)?;
     m.function_meta(p_365e922c_d__options__parquetoptions_as_core__clone__clone)?;
     m.function_meta(p_571e2532___read__options__parquetoptions_as_core__cmp__eq)?;
     m.function_meta(p_7804825a__options__parquetoptions_as_core__cmp__partialeq)?;
@@ -18519,6 +18781,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_b44bd258_ns__parquetcompression_as_core__default__default)?;
     m.function_meta(p_fa4a7266__options__parquetcompression_as_core__fmt__debug)?;
     m.function_meta(p_cd1e1271__options__parquetcompression_as_core__hash__hash)?;
+    m.function_meta(s_da030288_arquetcompression_as_serde_core__de__deserialize)?;
+    m.function_meta(s_301fe262_parquetcompression_as_serde_core__ser__serialize)?;
     m.function_meta(p_df5ac108_tions__parquetwriteoptions_as_core__clone__clone)?;
     m.function_meta(p_514e836a_e__options__parquetwriteoptions_as_core__cmp__eq)?;
     m.function_meta(p_f0bb3fb2_ons__parquetwriteoptions_as_core__cmp__partialeq)?;
