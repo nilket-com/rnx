@@ -1,0 +1,5 @@
+# Record 0108: the Python 2.0 rc2 distribution, pinned by hash (linux x86_64).
+# polars-runtime-32 is the runtime `pip install polars` selects; its
+# compiled module reports _BUILD_COMMIT da47b7405f0e2d188e71cce7c2d588c695f4098d.
+polars==2.0.0rc2 --hash=sha256:f8fc0fd8694e12c8db0c7e99892c4c822e48c454358a0dbf0d4972f7e9d75298
+polars-runtime-32==2.0.0rc2 --hash=sha256:3acbb246f6b00c9bf1b83ff8087b9c39e3071bde537f69330ed4a9474478c2e2

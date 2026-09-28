@@ -3334,6 +3334,42 @@ fn generic_input_self_test() {
     println!("generic-input self-test: ok");
 }
 
+/// Record 0108: a method binds at most METHOD_ARITY arguments, receiver
+/// included (Rune's InstanceFunction goes through Function); a longer one is
+/// refused with the arity reason instead of emitting code that cannot compile.
+fn method_arity_self_test() {
+    let series = "polars_core::series::Series";
+    let mk = |key: &str, n: usize| Callable {
+        key: key.into(), kind: "inherent".into(), krate: "polars_core".into(), owner: series.into(), name: key.into(), canonical_path: format!("{series}::{key}"),
+        found_paths: vec![], crate_paths: vec![], receiver: "&self".into(),
+        params: (0..n).map(|i| Param { name: format!("a{i}"), ty: "bool".into(), ty_canonical: "bool".into() }).collect(),
+        ret: None, ret_canonical: Some("bool".into()), generics_canonical: vec![],
+        impl_for: None, impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic: false, is_unsafe: false, is_async: false,
+        deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "mechanical".into(), rules: vec![],
+    };
+    let sup = Supporting {
+        key: series.to_string(), kind: "struct".into(), canonical_path: series.to_string(),
+        found_paths: vec!["polars::Series".into()], crate_paths: vec![series.to_string()],
+        public_fields: 0, fields_canonical: vec![], variant_shapes: vec![], variant_payloads: vec![], generic: false, lifetime: false, hidden: false,
+        derived: vec!["Clone".into(), "Debug".into()], alias_target: None, implementors: vec![], impls: vec![],
+    };
+    let inv = Inventory { callables: vec![mk("four", 4), mk("five", 5)], supporting: vec![sup], provenance: None };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], iterator_returns: vec![], cow_returns: vec![], free_instantiations: vec![], method_scalar_generics: vec![], bounded_readbacks: vec![], hash_tokens: vec![], null_aware_returns: vec![], sized_self_methods: vec![], external_bounds: vec![], chunk_snapshots: vec![], indexed_chunk_snapshots: vec![], array_snapshots: vec![], iter_snapshots: vec![], view_snapshots: vec![], owned_iter_snapshots: vec![], layout_snapshots: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let world = World::new(&inv, &release, &["mechanical"]);
+    let emit = |key: &str| {
+        let mut e = Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+        emit_callable(&world, &mut e, inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical"]);
+        (e.entries[0].status.clone(), e.entries[0].reason.clone().unwrap_or_default(), e.fn_index)
+    };
+    let (status, reason, _) = emit("four");
+    assert_eq!(status, "generated", "receiver + 4 binds: {reason}");
+    let (status, reason, idx) = emit("five");
+    assert_eq!(status, "unsupported");
+    assert!(reason.starts_with("arity: method with 6 arguments including the receiver; Rune binds at most 5"), "{reason}");
+    assert_eq!(idx, 0, "a refused method consumes no function index");
+    println!("method-arity self-test: ok");
+}
+
 /// Record 0082 gate 2 controls, from a synthetic inventory: immutable
 /// borrowed slices are copied into bounded owned vectors as returns,
 /// as iterator items and as callback inputs; a mutable slice, an Arrow
@@ -3895,6 +3931,7 @@ fn from_naming_self_test() {
     iterator_return_self_test();
     cow_return_self_test();
     free_instantiation_self_test();
+    method_arity_self_test();
     native_substitution_self_test();
     method_scalar_generic_self_test();
     checked_readback_self_test();
@@ -6168,6 +6205,9 @@ fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str
     }
 }
 
+/// Record 0108: arguments a Rune method binding can take, receiver included.
+const METHOD_ARITY: usize = 5;
+
 fn emit_method(world: &World, out: &mut Emitted, c: &Callable, owner: &str, trait_spell: Option<&str>, deref: bool) {
     emit_method_with(world, out, c, owner, trait_spell, deref, None)
 }
@@ -6308,6 +6348,15 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
     };
     let commit_receiver = c.receiver == "&mut self" && matches!(c.name.as_str(), "apply_mut" | "apply_in_place") && c.params.iter().any(|p| closure_signature(c, p).is_some());
     if commit_receiver { recv_expr = Some("&mut __work".into()); }
+    // Record 0108: `InstanceFunction` is implemented through `Function` over
+    // (receiver, args...) (rune 0.14.2 function/mod.rs:122-140), so a method
+    // shares the free-function limit, receiver included. First reached at v2
+    // (`Expr::qcut`, receiver + 5).
+    let arity = usize::from(!recv_sig.is_empty()) + params.len();
+    if arity > METHOD_ARITY {
+        out.unsupported(c, "arity", &format!("method with {arity} arguments including the receiver; Rune binds at most {METHOD_ARITY}"));
+        return;
+    }
     let idx = out.fn_index;
     out.fn_index += 1;
     // trait methods are emitted once per implementor: the owner is part of the identity
@@ -6638,7 +6687,7 @@ fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
     };
     // Rune implements `Function` for free functions of at most five
     // parameters (rune 0.14.2 `function/macros.rs`, every reference
-    // permutation); instance functions go to fifteen.
+    // permutation); methods share it (record 0108, METHOD_ARITY).
     const FREE_ARITY: usize = 5;
     if params.len() > FREE_ARITY {
         out.unsupported(c, "arity", &format!("free function with {} parameters; Rune binds at most {FREE_ARITY}", params.len()));
@@ -8548,7 +8597,7 @@ fn oracle_runner_fails_closed() {
         ("wrong second order under the default policy", Case { id: "c2b", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, a.reverse()) }", has_receiver: true, unordered: false, policy: "control", fmt: df_side, oracle: || ran(same) }, &[Outcome::ReuseFailed]),
         ("compile error against a nondeterministic oracle", Case { id: "c3", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = ; }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(alternating) }, &[Outcome::Broken]),
         ("a script panic (a VM error) against a Rust panic", Case { id: "c4", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { panic(\"unrelated\") }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(panics) }, &[Outcome::Broken]),
-        ("a binding that panics in Polars against a Rust panic with another message", Case { id: "c4b", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::column(); (a.product(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || panic!("a different panic") }, &[Outcome::PanicMismatch]),
+        ("a binding that panics in Polars against a Rust panic with another message", Case { id: "c4b", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::series(); (a.select_chunk(2), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || panic!("a different panic") }, &[Outcome::PanicMismatch]),
         ("a value against a panicking oracle", Case { id: "c5", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(panics) }, &[Outcome::OraclePanicked]),
         ("a wrong value against a nondeterministic oracle", Case { id: "c6", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(alternating) }, &[Outcome::Nondeterministic]),
         ("a matching first run whose second run changes value", Case { id: "c7", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(first_then_reversed) }, &[Outcome::Nondeterministic]),

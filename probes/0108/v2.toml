@@ -1,0 +1,1040 @@
+# Record 0108: the probe release for Polars v2 (the Rust workspace at
+# Python's py-2.0.0-rc.2 tag), feature set = the Python wheel's
+# (probes/0108/features.txt). Every table below is copied verbatim from
+# tools/polars-gen/releases/0.55.2-joins.toml at 1eecbf1; paths or line
+# citations that no longer hold at v2 are refused by the generator's own
+# gates and reported by the probe, not silently re-targeted.
+# The join-order policy ([[unordered]] joins) re-verified at da47b74:
+# polars-defs/src/join.rs:119 marks `MaintainOrderJoin::None` #[default],
+# `JoinArgs::new` (join.rs:140-148) takes `maintain_order: Default::default()`,
+# and polars-lazy/src/frame/mod.rs:1240, 1266, 1292 build left_join,
+# inner_join and full_join with `JoinArgs::new`. The 0.55.2 line citations
+# kept in the copied tables below are historical.
+# API crates: the 0.55.2 set plus the three v2 crates that carry user-facing
+# items (polars_defs: types moved out of core/plan; polars_sql: the `sql`
+# feature; polars_config). polars_descriptions and polars_observer are not
+# API crates: the extractor reaches no callable in either.
+name = "v2-rc2"
+source = "git da47b7405f0e2d188e71cce7c2d588c695f4098d (Rust workspace at py-2.0.0-rc.2)"
+api_crates = ["polars_core", "polars_defs", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error", "polars_sql", "polars_config"]
+# Record 0085: validity bitmap returns copied into an owned Vec<bool>;
+# only these paths, every other Bitmap stays refused.
+bitmap_returns = [
+    "polars_core::chunked_array::ChunkedArray::rechunk_validity",  # polars-core 0.55.2 chunked_array/ops/chunkops.rs:199-216
+    "polars_core::chunked_array::ChunkedArray::iter_validities",   # polars-core 0.55.2 chunked_array/mod.rs:411-418
+]
+
+# The inventory this policy belongs to; the generator refuses any other.
+
+[provenance]
+rev = "da47b7405f0e2d188e71cce7c2d588c695f4098d"
+cfg = "v2py"
+features = ["abs", "approx_quantile", "approx_unique", "arg_where", "array_arithmetic", "array_count", "array_to_struct", "asof_join", "async", "avro", "aws", "azure", "binary_encoding", "bitwise", "business", "chunked_ids", "cloud", "concat_str", "cov", "cross_join", "cse", "csv", "cum_agg", "cumulative_eval", "cutqcut", "dataframe_arithmetic", "decompress", "diagonal_concat", "diff", "dot_diagram", "dot_product", "dtype-array", "dtype-categorical", "dtype-date", "dtype-datetime", "dtype-decimal", "dtype-duration", "dtype-extension", "dtype-f16", "dtype-full", "dtype-i128", "dtype-i16", "dtype-i8", "dtype-map", "dtype-struct", "dtype-time", "dtype-u128", "dtype-u16", "dtype-u8", "dynamic_group_by", "ewma", "ewma_by", "extract_groups", "extract_jsonpath", "find_many", "fmt", "fused", "gcp", "hist", "http", "iejoin", "index_of", "interpolate", "interpolate_by", "ipc", "ipc_streaming", "is_between", "is_close", "is_first_distinct", "is_in", "is_last_distinct", "is_unique", "json", "lazy", "list_arithmetic", "list_count", "list_drop_nulls", "list_eval", "list_filter", "list_gather", "list_sample", "list_to_struct", "log", "merge_sorted", "meta", "mode", "moment", "month_end", "month_start", "ndarray", "nightly", "object", "offset_by", "parquet", "partition_by", "pct_change", "peaks", "performant", "pivot", "polars-expr", "polars-io", "polars-lazy", "polars-ops", "polars-parquet", "polars-sql", "polars-time", "polars_cloud_client", "product", "propagate_nans", "random", "range", "rank", "regex", "reinterpret", "repeat_by", "replace", "rle", "rolling_window", "rolling_window_by", "round_series", "row_hash", "rows", "scan_lines", "search_sorted", "semi_anti_join", "serde", "serde-lazy", "sign", "simd", "sql", "streaming", "string_encoding", "string_normalize", "string_pad", "string_reverse", "string_to_integer", "strings", "temporal", "timezones", "to_dummies", "top_k", "trigonometry", "true_div", "unique_counts", "zip_with"]
+
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::unique"
+args = { subset = "*", keep_strategy = "*" }
+options = "default arguments"
+cite = "Polars documents unique as order-unspecified unless maintain_order is set"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::unique_generic"
+args = { subset = "*", keep_strategy = "*" }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_plan::dsl::expr::Expr::unique"
+args = { }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_core::frame::dataframe::DataFrame::unique"
+args = { subset = "*", keep = "*", slice = "*" }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_core::series::Series::unique"
+args = { }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_core::frame::column::Column::unique"
+args = { }
+options = "default arguments"
+cite = "as unique"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::inner_join"
+args = { other = "*", left_on = "*", right_on = "*" }
+options = "default arguments"
+cite = "polars-lazy-0.55.2 frame/mod.rs:1281 uses JoinArgs::new; polars-ops-0.55.2 join/args.rs:124 MaintainOrderJoin::None is #[default]"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::left_join"
+args = { other = "*", left_on = "*", right_on = "*" }
+options = "default arguments"
+cite = "polars-lazy-0.55.2 frame/mod.rs:1256 uses JoinArgs::new; args.rs:124"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::full_join"
+args = { other = "*", left_on = "*", right_on = "*" }
+options = "default arguments"
+cite = "polars-lazy-0.55.2 frame/mod.rs:1306 uses JoinArgs::new; args.rs:124"
+[[unordered]]
+path = "polars_lazy::frame::LazyFrame::join"
+args = { other = "*", left_on = "*", right_on = "*", args = "polars::JoinArgs::default_()" }
+options = "JoinArgs::default()"
+cite = "polars-ops-0.55.2 join/args.rs:153 JoinArgs::default() takes maintain_order: Default::default() = None"
+
+[[excluded_oracle]]
+path = "polars_core::frame::dataframe::DataFrame::partition_by"
+reason = "the order of the partitions is unspecified (Polars documents only partition_by_stable as order-maintaining); the oracle's unordered policy covers rows within one frame, not a vector of frames (record 0084, observed run to run)"
+[[excluded_oracle]]
+path = "polars_core::chunked_array::ChunkedArray::row_decode_ordered"
+reason = "decodes arbitrary bytes as row-encoded data; the result differs run to run (record 0077, observed on BinaryOffsetChunked)"
+[[excluded_oracle]]
+path = "polars_core::chunked_array::ChunkedArray::row_decode_unordered"
+reason = "as row_decode_ordered"
+[[excluded_oracle]]
+path = "polars_core::series::Series::as_single_ptr"
+reason = "returns a memory address"
+[[excluded_oracle]]
+path = "polars_io::cloud::concurrency::ConcurrencyController::new"
+reason = "Debug output shows runtime state"
+
+# Record 0076: proven instantiations the compiler refuses. polars-arrow-0.55.2
+# src/array/static_array.rs lines 52 and 80 mark `StructArray`'s
+# `value_unchecked`, `iter` and `values_iter` (lines 52, 80, 83) with `no_call_const`, a compile-time panic,
+# and `get`, `first`, `last`, `first_null`, `first_non_null` and `last_non_null`
+# on `ChunkedArray<T>` reach them (bisected by compilation, record 0076); `iter` and `no_null_iter`
+# (record 0077, iterator returns) reach `iter` and `values_iter`.
+[[instantiation.exclude]]
+alias = "StructChunked"
+methods = ["set_validity", "with_validity"]
+cite = "polars-core 0.55.2 chunked_array/mod.rs:619-622 asserts the receiver is not a struct (set_outer_validity instead); record 0086"
+[[instantiation.exclude]]
+alias = "StructChunked"
+methods = ["get", "first", "last", "first_null", "first_non_null", "last_non_null", "iter", "no_null_iter", "for_each", "apply_into_string_amortized"]
+cite = "polars-arrow-0.55.2 array/static_array.rs:52,80 no_call_const on StructArray"
+
+# record 0079: mutable closure arguments, by what Polars does with the writes
+[[callback_mutable]]
+path = "polars_plan::dsl::expr::Expr::map_many"
+param = "function"
+contract = "vector"
+cite = "polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards"
+[[callback_mutable]]
+path = "polars_plan::dsl::expr::Expr::apply_many"
+param = "function"
+contract = "vector"
+cite = "polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards"
+[[callback_mutable]]
+path = "polars_plan::dsl::map_multiple"
+param = "function"
+contract = "vector"
+cite = "polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards"
+[[callback_mutable]]
+path = "polars_plan::dsl::apply_multiple"
+param = "function"
+contract = "vector"
+cite = "polars-expr-0.55.2/src/expressions/apply.rs:235,325: `let out = self.function.call_udf(&mut cols)?`, only `out` is used afterwards"
+[[callback_mutable]]
+path = "polars_core::chunked_array::ChunkedArray::apply_into_string_amortized"
+param = "f"
+contract = "result buffer"
+cite = "polars-core-0.55.2/src/chunked_array/ops/apply.rs:71-92: `buf.clear(); f(v, &mut buf); mutarr.push_value(&buf)` per element"
+
+# record 0079: where each feasible operation invokes its closure, from the pinned sources (per closure parameter)
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_as_ints"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/bit_repr.rs:211,226,240: `let out = f(&s)` on the bit representation, before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_in_place"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/apply.rs:183-189: chunks rebuilt through `apply_in_place_impl` (`:120`), which maps every value with `f` before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_into_string_amortized"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/apply.rs:71-92: `f(v, &mut buf)` per element before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_mut"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/apply.rs:193-205: values mapped in place through `downcast_iter_mut` before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::apply_to_inner"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/list/mod.rs:167 and array/mod.rs:167: `let out: Series = func(elements)?` before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::for_each"
+param = "op"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/ops/for_each.rs:7-14: `arr.iter().for_each(&mut op)` per chunk before returning"
+[[callback_invocation]]
+path = "polars_core::chunked_array::ChunkedArray::try_apply_fields"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/chunked_array/struct_/mod.rs:351-360: `.map(func).collect()` over the fields before returning"
+[[callback_invocation]]
+path = "polars_core::datatypes::dtype::DataType::map_leaves"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/datatypes/dtype.rs:408-424: recursive descent ending in `f(self)` at every leaf, before returning"
+[[callback_invocation]]
+path = "polars_core::datatypes::dtype::DataType::try_visit_with"
+param = "visitor_fn"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/datatypes/dtype.rs:1466-1473: `try_mutate_with` calls `visitor_fn` at every node before returning"
+[[callback_invocation]]
+path = "polars_core::datatypes::dtype::DataType::visit_with"
+param = "visitor_fn"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/datatypes/dtype.rs:1458-1464: delegates to `try_visit_with`, which walks the type through `try_mutate_with` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_binary_elementwise"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1781-1795: delegates to the `try_` form before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_binary_elementwise"
+param = "f_lb"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1781-1795: delegates to the `try_` form before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_binary_elementwise"
+param = "f_rb"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1781-1795: delegates to the `try_` form before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_broadcasting_binary_elementwise"
+param = "op"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1737-1743: delegates to the `try_` form before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::apply_unary_elementwise"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1720-1722: delegates to the `try_` form, `f(s)` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::map_unary_elementwise_to_bool"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1703-1708: delegates to the `try_` form, `f(s)` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_binary_elementwise"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1796-1830: `f`, `f_lb` or `f_rb` called per variant pair before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_binary_elementwise"
+param = "f_lb"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1796-1830: `f`, `f_lb` or `f_rb` called per variant pair before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_binary_elementwise"
+param = "f_rb"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1796-1830: `f`, `f_lb` or `f_rb` called per variant pair before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_broadcasting_binary_elementwise"
+param = "op"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1744-1780: `op(lhs, rhs)` per broadcast case before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_apply_unary_elementwise"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1723-1735: `f(s)` per column variant before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::Column::try_map_unary_elementwise_to_bool"
+param = "f"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/mod.rs:1710-1718: `f(s)` on the series or the scalar's single-value series before returning"
+[[callback_invocation]]
+path = "polars_core::frame::column::scalar::ScalarColumn::map_scalar"
+param = "map_scalar"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/column/scalar.rs:315-318: `self.scalar = map_scalar(take(&mut self.scalar))` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::dataframe::DataFrame::apply_columns"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/mod.rs:122-128: `slf.columns().iter().map(func).collect()` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::dataframe::DataFrame::apply_columns_par"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/mod.rs:144-150: `RAYON.install(|| ... par_iter().map(func).collect())` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::dataframe::DataFrame::try_apply_columns"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/mod.rs:108-119: `slf.columns().iter().map(func).collect()` before returning"
+[[callback_invocation]]
+path = "polars_core::frame::dataframe::DataFrame::try_apply_columns_par"
+param = "func"
+invocation = "immediate"
+cite = "polars-core-0.55.2/src/frame/mod.rs:130-142: `RAYON.install(|| ... par_iter().map(func).collect())` before returning"
+[[callback_invocation]]
+path = "polars_error::PolarsError::wrap_msg"
+param = "func"
+invocation = "immediate"
+cite = "polars-error-0.55.2/src/lib.rs:298-315: `func(msg)` on the variant's message before returning"
+[[callback_invocation]]
+path = "polars_io::csv::read::options::CsvReadOptions::map_parse_options"
+param = "map_func"
+invocation = "immediate"
+cite = "polars-io-0.55.2/src/csv/read/options.rs:277-283: `self.parse_options = Arc::new(map_func(parse_options))` before returning"
+[[callback_invocation]]
+path = "polars_lazy::scan::csv::LazyCsvReader::map_parse_options"
+param = "map_func"
+invocation = "immediate"
+cite = "polars-lazy-0.55.2/src/scan/csv.rs:34-39: delegates to `CsvReadOptions::map_parse_options`, invoked before returning"
+[[callback_invocation]]
+path = "polars_lazy::scan::csv::LazyCsvReader::with_schema_modify"
+param = "f"
+invocation = "immediate"
+cite = "polars-lazy-0.55.2/src/scan/csv.rs:277-357: the schema is inferred and `let mut schema = f(schema)?` (`:348`) before returning"
+[[callback_invocation]]
+path = "polars_plan::dsl::apply_multiple"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1739: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::apply_multiple"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1739: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::agg_with_fmt_str"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:501: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::agg_with_fmt_str"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:501: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:582: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:582: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply_many"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:593: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply_many"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:593: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply_with_fmt_str"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:526: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::apply_with_fmt_str"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:526: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_expr"
+param = "f"
+invocation = "immediate"
+cite = "polars-plan-0.55.2/src/plans/iterator.rs:164-167: `self.rewrite(&mut ExprMapper { f: ... })` walks the expression before returning"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_many"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:554: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_many"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:554: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_with_fmt_str"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::map_with_fmt_str"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:475: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::expr::Expr::try_map_expr"
+param = "f"
+invocation = "immediate"
+cite = "polars-plan-0.55.2/src/plans/iterator.rs:169-171: `self.rewrite(&mut ExprMapper { f })` walks the expression before returning"
+[[callback_invocation]]
+path = "polars_plan::dsl::map_multiple"
+param = "function"
+invocation = "stored"
+sinks = ["plan execution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1711: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::map_multiple"
+param = "output_type"
+invocation = "stored"
+sinks = ["schema resolution"]
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1711: `Expr::AnonymousFunction { function: new_column_udf(f), output_type: ..., }` keeps both closures in the expression; `function` runs at plan execution (polars-expr-0.55.2/src/expressions/apply.rs:114,133,235,295,325,376,395; polars-stream nodes), `output_type` at schema resolution (polars-plan-0.55.2/src/plans/aexpr/schema.rs:287,299,391; plans/ir/unoptimized.rs:48,65; plans/schema.rs:21 `compute_schema`)"
+[[callback_invocation]]
+path = "polars_plan::dsl::udf::infer_udf_output_dtype"
+param = "f"
+invocation = "immediate"
+cite = "polars-plan-0.55.2/src/dsl/udf.rs:54-90: `f(&params)` on dummy columns (`:83`) before returning"
+[[callback_invocation]]
+path = "polars_plan::dsl::udf::try_infer_udf_output_dtype"
+param = "f"
+invocation = "immediate"
+cite = "polars-plan-0.55.2/src/dsl/udf.rs:93-100: delegates to `infer_udf_output_dtype`, invoked before returning"
+
+# record 0079: every method of a plan-holding type whose result is not the plan, classified as an execution sink or not
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:746-757: `collect_with_engine` after `to_alp_optimized` (schema resolution, then execution)"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect_all_with_engine"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:711: optimizes and executes every plan"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect_concurrently"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp_optimized` then execution on a thread"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect_with_engine"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp_optimized` then execution"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::profile"
+sink = "plan execution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:823: executes the plan and times its nodes"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::collect_schema"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp` (DSL to IR conversion resolves every field)"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::describe_plan"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:218-219: `self.clone().to_alp()?.describe()`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::describe_plan_tree"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:223-224: `to_alp()?.describe_tree_format()`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::describe_optimized_plan"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:230-231: `to_alp_optimized()?.describe()`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::describe_optimized_plan_tree"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:237-238: `to_alp_optimized()?.describe_tree_format()`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::explain"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:245: `describe_optimized_plan` or `describe_plan`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::explain_all"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:702: converts every plan to IR"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::optimize"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:500-506: `optimize_with_scratch` converts to IR"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::to_alp"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:515-520: `to_alp(...)`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::to_alp_optimized"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs:508-513: `optimize_with_scratch`"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::schema_with_arenas"
+sink = "schema resolution"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: converts to IR into the given arenas"
+[[callback_sink]]
+path = "polars_lazy::frame::LazyFrame::set_cached_arena"
+sink = "none"
+cite = "polars-lazy-0.55.2/src/frame/mod.rs: stores arenas, converts nothing"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::compute_schema"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/plans/schema.rs:21-30: `to_alp(self.clone(), ..., OptFlags::schema_only())` (reproduced by Codex: three output-field invocations)"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::describe"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/plan.rs:247-249: `self.clone().to_alp()?.describe()`"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::describe_tree_format"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/plan.rs:251-253: `to_alp()?.describe_tree_format()`"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::display"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/plan.rs:255-263: `self.clone().to_alp()?`"
+[[callback_sink]]
+path = "polars_plan::dsl::plan::DslPlan::to_alp"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/plan.rs:265-275: DSL to IR conversion"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::to_field"
+sink = "schema resolution"
+cite = "polars-plan-0.55.2/src/dsl/expr/mod.rs:438: converts the expression to an AExpr against the schema and resolves its field"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::binary"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1651: returns a namespace holding the expression"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::cat"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1679: returns a namespace holding the expression"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::list"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs: returns a namespace holding the expression"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::struct_"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs: returns a namespace holding the expression"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::nodes"
+sink = "none"
+cite = "polars-plan-0.55.2/src/plans/iterator.rs:153: collects references to sub-expressions"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::nodes_owned"
+sink = "none"
+cite = "polars-plan-0.55.2/src/plans/iterator.rs: collects sub-expressions"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::extract_i64"
+sink = "none"
+cite = "polars-plan-0.55.2/src/plans/lit.rs:279: reads a literal, no conversion"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::extract_usize"
+sink = "none"
+cite = "polars-plan-0.55.2/src/plans/lit.rs: reads a literal, no conversion"
+[[callback_sink]]
+path = "polars_plan::dsl::expr::Expr::name"
+sink = "none"
+cite = "polars-plan-0.55.2/src/dsl/mod.rs:1667: returns the name namespace holding the expression"
+[[callback_safe]]
+path = "polars_core::series::Series::with_name"
+cite = "polars-core 0.55.2 series/mod.rs:289 calls rename on a cloned Series; no value work or pool"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::with_name"
+cite = "polars-core 0.55.2 frame/column/mod.rs:227 delegates to metadata rename"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::rename"
+cite = "polars-core 0.55.2 frame/column/mod.rs:233 delegates to Series or Scalar name metadata"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::name"
+cite = "polars-core 0.55.2 frame/column/mod.rs:211 selects the stored name"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::len"
+cite = "polars-core 0.55.2 frame/column/mod.rs:219 selects the stored length"
+
+[[callback_safe]]
+path = "polars_core::frame::column::Column::null_count"
+cite = "polars-core 0.55.2 frame/column/mod.rs:617 reads array null-count metadata or the scalar flag"
+
+[[callback_safe]]
+path = "polars_core::series::series_trait::SeriesTrait::name"
+cite = "polars-core 0.55.2 series/series_trait.rs:223 reads the stored name"
+
+[[callback_safe]]
+path = "polars_core::series::series_trait::SeriesTrait::len"
+cite = "polars-core 0.55.2 series/series_trait.rs:307 reads the stored length"
+
+[[callback_safe]]
+path = "polars_core::series::series_trait::SeriesTrait::dtype"
+cite = "polars-core 0.55.2 series/series_trait.rs:231 reads the field dtype"
+
+[[callback_safe]]
+path = "polars_core::series::series_trait::SeriesTrait::null_count"
+cite = "polars-core 0.55.2 series/series_trait.rs:448 reads chunk null-count metadata"
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::series::Series)->polars_core::series::Series"
+rune = '|s| s.with_name("cb")'
+rust = '|s: &p::Series| s.clone().with_name("cb".into())'
+uses = ["polars::Series::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::series::Series)->polars_error::PolarsResult<polars_core::series::Series>"
+rune = '|s| s.with_name("cb")'
+rust = '|s: &p::Series| Ok(s.clone().with_name("cb".into()))'
+uses = ["polars::Series::with_name"]
+
+[[callback_recipe]]
+signature = "FnMut(&polars_core::series::Series)->polars_error::PolarsResult<polars_core::series::Series>"
+rune = '|s| s.with_name("cb")'
+rust = '|s: &p::Series| Ok(s.clone().with_name("cb".into()))'
+uses = ["polars::Series::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(polars_core::series::Series)->polars_error::PolarsResult<polars_core::series::Series>"
+rune = '|s| s.with_name("cb")'
+rust = '|s: p::Series| Ok(s.with_name("cb".into()))'
+uses = ["polars::Series::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::frame::column::Column)->polars_core::frame::column::Column"
+rune = '|c| c.with_name("cb")'
+rust = '|c: &p::Column| c.clone().with_name("cb".into())'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(polars_core::frame::column::Column)->polars_error::PolarsResult<polars_core::frame::column::Column>"
+rune = '|c| c.with_name("cb")'
+rust = '|c: p::Column| Ok(c.with_name("cb".into()))'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::frame::column::Column)->polars_error::PolarsResult<polars_core::frame::column::Column>"
+rune = '|c| c.with_name("cb")'
+rust = '|c: &p::Column| Ok(c.clone().with_name("cb".into()))'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&mut [polars_core::frame::column::Column])->polars_error::PolarsResult<polars_core::frame::column::Column>"
+rune = '|cols| cols[0].with_name("cb")'
+rust = '|cols: &mut [p::Column]| Ok(cols[0].clone().with_name("cb".into()))'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&[polars_core::frame::column::Column])->polars_error::PolarsResult<polars_core::frame::column::Column>"
+rune = '|cols| cols[0].with_name("cb")'
+rust = '|cols: &[p::Column]| Ok(cols[0].clone().with_name("cb".into()))'
+uses = ["polars::Column::with_name"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::schema::Schema,&polars_core::datatypes::field::Field)->polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+rune = '|s, f| f.with_dtype(polars::DataType::Float64())'
+rust = '|_s: &p::Schema, f: &p::Field| Ok(f.clone().with_dtype(p::DataType::Float64))'
+uses = ["polars::Field::with_dtype"]
+
+[[callback_recipe]]
+signature = "Fn(&polars_core::schema::Schema,&[polars_core::datatypes::field::Field])->polars_error::PolarsResult<polars_core::datatypes::field::Field>"
+rune = '|s, fields| fields[0].with_dtype(polars::DataType::Float64())'
+rust = '|_s: &p::Schema, fields: &[p::Field]| Ok(fields[0].clone().with_dtype(p::DataType::Float64))'
+uses = ["polars::Field::with_dtype"]
+
+[[callback_recipe]]
+signature = "Fn(i64)->i64"
+rune = '|x| x + 1'
+rust = '|x: i64| x + 1'
+
+[[callback_recipe]]
+signature = "Fn(f32)->f32"
+rune = '|x| x + 1.0'
+rust = '|x: f32| x + 1.0'
+
+[[callback_recipe]]
+signature = "FnOnce(&str)->alloc::string::String"
+rune = '|s| s + "!"'
+rust = '|s: &str| format!("{s}!")'
+
+[[callback_recipe]]
+signature = "FnMut(i64,&mut alloc::string::String)->()"
+rune = '|x| `${x}!`'
+rust = '|x: i64, buf: &mut String| buf.push_str(&format!("{x}!"))'
+
+[[callback_recipe]]
+signature = "FnMut(polars_core::datatypes::dtype::DataType)->polars_core::datatypes::dtype::DataType"
+rune = '|_| polars::DataType::Float64()'
+rust = '|_: p::DataType| p::DataType::Float64'
+
+# Record 0084: operations the mapping rules would admit but the release
+# refuses until a binding validates the source contract at runtime.
+[[refused]]
+path = "polars_core::chunked_array::ChunkedArray::match_chunks"
+reason = "the single-chunk receiver and the chunk-length sum are debug_assert! only, before sliced_unchecked; a release binding would be undefined behaviour on bad input"
+cite = "polars-core 0.55.2 src/chunked_array/mod.rs:845-866; probes/0083/probe B"
+[[refused]]
+path = "polars_plan::dsl::file_scan::FileScanIR::gather_after_filter"
+reason = "surviving_indices must be ascending indices into the pre-filter source list and first_file_dropped must agree with them; Polars indexes the cached metadata directly and FileScanIR does not record the pre-filter length, so a binding cannot validate either (review of record 0084)"
+cite = "polars-plan 0.55.2 src/dsl/file_scan/mod.rs:186-218; polars-mem-engine src/scan_predicate/functions.rs:494-500"
+
+# Record 0086: validity bitmap inputs built from a script Vec<bool>, the
+# length checked before Polars sees it (Polars asserts or panics instead).
+[[bitmap_inputs]]
+path = "polars_core::chunked_array::ChunkedArray::set_validity"
+length = "receiver"
+cite = "polars-core 0.55.2 chunked_array/mod.rs:618-634 (assert_eq!(self.len(), v.len()); Struct asserts)"
+[[bitmap_inputs]]
+path = "polars_core::chunked_array::ChunkedArray::with_validity"
+length = "receiver"
+cite = "polars-core 0.55.2 chunked_array/mod.rs:636-639 (calls set_validity)"
+[[bitmap_inputs]]
+path = "polars_core::chunked_array::ChunkedArray::from_vec_validity"
+length = "values"
+cite = "polars-core 0.55.2 chunked_array/from.rs:186-194; polars-arrow 0.55.2 array/primitive/mod.rs:465-477 (new unwraps try_new's length check)"
+[[bitmap_inputs]]
+path = "polars_core::chunked_array::ChunkedArray::from_bitmap"
+length = "none"
+cite = "polars-core 0.55.2 chunked_array/from.rs:219-225 (the bits are the Boolean values)"
+
+# Record 0087: concrete iterator returns materialized as owned integer vectors.
+[[iterator_returns]]
+path = "polars_core::chunked_array::ChunkedArray::chunk_lengths"
+item = "usize"
+cite = "polars-core 0.55.2 chunked_array/mod.rs:61 (ChunkLenIter = Map<Iter<ArrayRef>, fn(&ArrayRef) -> usize>), :472-475"
+
+# Record 0088: Cow<Wrapped> returns made owned inside the call (by key, since
+# to_physical_repr's canonical path is shared by several impls).
+[[cow_returns]]
+key = "polars_core:3434"
+path = "polars_core::chunked_array::ChunkedArray::rechunk"
+cite = "polars-core 0.55.2 chunked_array/ops/chunkops.rs:162-182 (Borrowed for one chunk, Owned after concatenation; object branch not compiled)"
+[[cow_returns]]
+key = "polars_core:3611"
+path = "polars_core::chunked_array::ChunkedArray::to_physical_repr"
+cite = "polars-core 0.55.2 chunked_array/list/mod.rs:47-82 (Borrowed when the inner dtype is physical)"
+[[cow_returns]]
+key = "polars_core:3641"
+path = "polars_core::chunked_array::ChunkedArray::to_physical_repr"
+cite = "polars-core 0.55.2 chunked_array/struct_/mod.rs:138-170 (Borrowed when fields are physical)"
+
+# Record 0089: integer arg extrema, T inferred from the wrapped argument.
+# Floats are excluded: arg_max_numeric sends a sorted float to an unchecked
+# path whose precondition a script can violate by setting the sorted flag.
+[[free_instantiations]]
+key = "polars_core:3153"
+path = "polars_core::chunked_array::arg_min_max::arg_min_numeric"
+callee = "polars::chunked_array::arg_min_max::arg_min_numeric"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type"]
+cite = "polars-core 0.55.2 chunked_array/arg_min_max.rs:41-52,163-283"
+[[free_instantiations]]
+key = "polars_core:3155"
+path = "polars_core::chunked_array::arg_min_max::arg_max_numeric"
+callee = "polars::chunked_array::arg_min_max::arg_max_numeric"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type"]
+cite = "polars-core 0.55.2 chunked_array/arg_min_max.rs:54-80 (float sorted branch excluded), 163-283"
+
+# Record 0090: numeric peaks with explicit boundaries; T::Native resolved per type.
+[[free_instantiations]]
+key = "polars_ops:77"
+path = "polars_ops::chunked_array::peaks::peak_max_with_start_end"
+callee = "polars::prelude::peaks::peak_max_with_start_end"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-ops 0.55.2 chunked_array/peaks.rs:36-60 (shift_and_fill by 1 and -1, tot_lt/tot_gt kernels); record 0090"
+[[free_instantiations]]
+key = "polars_ops:81"
+path = "polars_ops::chunked_array::peaks::peak_min_with_start_end"
+callee = "polars::prelude::peaks::peak_min_with_start_end"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-ops 0.55.2 chunked_array/peaks.rs:36-60 (shift_and_fill by 1 and -1, tot_lt/tot_gt kernels); record 0090"
+
+# Record 0091: integer index conversion; target_len is checked below
+# IdxSize::MAX before the call (Polars asserts it, index.rs:32).
+[[free_instantiations]]
+key = "polars_ops:1057"
+path = "polars_ops::series::ops::index::convert_and_bound_idx_ca"
+callee = "polars::prelude::convert_and_bound_idx_ca"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type"]
+guard_param = "target_len"
+guard = "below_idx_max"
+cite = "polars-ops 0.55.2 series/ops/index.rs:21-82 (to_u64/to_i64 total for these types; out-of-range values get a false validity bit)"
+
+# Record 0092: lhs_sub's `N: Num + NumCast` is bound to the pair's own native,
+# so Polars's NumCast::from(lhs).expect(..) is a same-type cast and cannot fail.
+[[method_scalar_generics]]
+key = "polars_core:3719"
+path = "polars_core::chunked_array::ChunkedArray::lhs_sub"
+generic = "N"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-core 0.55.2 series/arithmetic/borrowed.rs:836-843; polars-compute arithmetic signed.rs:80-82, unsigned.rs:68-70 (wrapping_sub), float.rs:59-65"
+
+# Record 0095: left division and remainder. Integer zero denominators are
+# masked to null and never divided (signed: wrapping_floor_div_mod returns
+# (0, 0), MIN / -1 wraps; unsigned: guarded); floats are IEEE. Probed on all
+# ten types in debug and release (probes/0095).
+[[method_scalar_generics]]
+key = "polars_core:3722"
+path = "polars_core::chunked_array::ChunkedArray::lhs_div"
+generic = "N"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-core 0.55.2 series/arithmetic/borrowed.rs:845-849 (legacy_div_scalar_lhs); polars-compute 0.55.2 arithmetic/mod.rs:65-76, signed.rs:131-140, unsigned.rs:97-106, float.rs:117-119 (true division); polars-utils floor_divmod.rs:39-68"
+[[method_scalar_generics]]
+key = "polars_core:3723"
+path = "polars_core::chunked_array::ChunkedArray::lhs_rem"
+generic = "N"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+natives = ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64", "f32", "f64"]
+cite = "polars-core 0.55.2 series/arithmetic/borrowed.rs:852-856 (wrapping_mod_scalar_lhs); polars-compute 0.55.2 arithmetic/signed.rs:199-208, unsigned.rs:127-136, float.rs:101-103 (lhs - x * floor(lhs / x)); polars-utils floor_divmod.rs:39-68"
+
+# Record 0096: to_vec_null_aware returns Left(Vec<T::Native>) exactly when
+# null_count() == 0, else Right(to_vec()); both branches own their elements.
+# The binding merges them into one Vec<Option<script value>>, checking the
+# receiver length against the materialize bound before the call.
+[[null_aware_returns]]
+key = "polars_core:3658"
+path = "polars_core::chunked_array::ChunkedArray::to_vec_null_aware"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+cite = "polars-core 0.55.2 chunked_array/to_vec.rs:15-27 (Left: values copied from every chunk when null_count() == 0; Right: to_vec(), lines 7-13)"
+
+# Record 0097: limit/head/tail carry only `where Self: Sized` as a method-level
+# generic; on each concrete family pair they are ordinary `&self -> Self`
+# methods over ChunkedArray::slice (chunkops.rs:252). The binding checks the
+# receiver length is within i64::MAX first: slice_offsets
+# (utils/mod.rs:340-357) panics beyond it.
+[[sized_self_methods]]
+key = "polars_core:3499"
+path = "polars_core::chunked_array::ChunkedArray::limit"
+params = ["usize"]
+cite = "polars-core 0.55.2 chunked_array/ops/chunkops.rs:278-283 (slice(0, num_elements)); slice at :252, slice_offsets at utils/mod.rs:340-357"
+[[sized_self_methods]]
+key = "polars_core:3500"
+path = "polars_core::chunked_array::ChunkedArray::head"
+params = ["core::option::Option<usize>"]
+cite = "polars-core 0.55.2 chunked_array/ops/chunkops.rs:287-295 (slice(0, min(len or 10, self.len()))); slice at :252, slice_offsets at utils/mod.rs:340-357"
+[[sized_self_methods]]
+key = "polars_core:3501"
+path = "polars_core::chunked_array::ChunkedArray::tail"
+params = ["core::option::Option<usize>"]
+cite = "polars-core 0.55.2 chunked_array/ops/chunkops.rs:299-308 (slice(-(len as i64), len), len = min(len or 10, self.len())); slice at :252, slice_offsets at utils/mod.rs:340-357"
+
+# Record 0098: six float methods whose only unprovable impl bound is the
+# external `T::Native: num_traits::float::Float` (and `Canonical` for
+# to_canonical, a polars trait implemented for f32/f64 at float.rs:57-68).
+# f32 and f64 implement num_traits Float. Discharged for Float32/Float64 only;
+# `T: PolarsFloatType` is still proven (and rejects the other families).
+[[external_bounds]]
+key = "polars_core:3546"
+path = "polars_core::chunked_array::ChunkedArray::is_nan"
+ret = "polars_core::datatypes::BooleanChunked"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:16-21 (is_nan bitmap with the input validity); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3547"
+path = "polars_core::chunked_array::ChunkedArray::is_not_nan"
+ret = "polars_core::datatypes::BooleanChunked"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:22-28 (is_not_nan bitmap with the input validity); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3548"
+path = "polars_core::chunked_array::ChunkedArray::is_finite"
+ret = "polars_core::datatypes::BooleanChunked"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:29-31 (unary_elementwise_values, x.is_finite()); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3549"
+path = "polars_core::chunked_array::ChunkedArray::is_infinite"
+ret = "polars_core::datatypes::BooleanChunked"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:32-34 (unary_elementwise_values, x.is_infinite()); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3550"
+path = "polars_core::chunked_array::ChunkedArray::none_to_nan"
+ret = "Self"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float"]
+discharge = ["T::Native: num_traits::float::Float"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:36-43 (set_at_nulls with T::Native::nan()); impl<T: PolarsFloatType> where T::Native: Float at float.rs:11-15"
+[[external_bounds]]
+key = "polars_core:3554"
+path = "polars_core::chunked_array::ChunkedArray::to_canonical"
+ret = "Self"
+where = ["T: polars_core::datatypes::PolarsFloatType", "T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"]
+discharge = ["T::Native: num_traits::float::Float + polars_core::chunked_array::float::Canonical"]
+pairs = [["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"]]
+cite = "polars-core 0.55.2 chunked_array/float.rs:71-78 (unary_elementwise_values, v.canonical()); Canonical for f32/f64 at float.rs:57-68; impl<T: PolarsFloatType> where T::Native: Float + Canonical at float.rs:71-75"
+
+# Record 0099 (extended by 0100 to the Boolean, String, Binary and BinaryOffset
+# owners; List and Struct stay refused): ChunkedArray::chunks borrows the chunk vector; for the numeric
+# types every chunk is a PrimitiveArray<T::Native>. The binding copies each
+# chunk (empty ones kept) into owned nested options under one inclusive
+# budget of chunk slots plus cells, downcasting with a typed error.
+[[chunk_snapshots]]
+key = "polars_core:3681"
+path = "polars_core::chunked_array::ChunkedArray::chunks"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/mod.rs:478-481 (&self.chunks); numeric T::Array = PrimitiveArray<T::Native> via impl_polars_num_datatype at datatypes/mod.rs:181-227; record 0100: String/Binary/BinaryOffset/Boolean arrays Utf8ViewArray, BinaryViewArray, BinaryArray<i64>, BooleanArray at datatypes/mod.rs:229-232, copied with payload bytes counted"
+
+# Record 0101: downcast_get(idx) borrows one chunk as T::Array, or None past
+# the last chunk. The binding copies only that chunk (one chunk slot + cells
+# + payload bytes against the bound); List and Struct stay refused.
+[[indexed_chunk_snapshots]]
+key = "polars_core:3509"
+path = "polars_core::chunked_array::ChunkedArray::downcast_get"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:104-110 (self.chunks.get(idx)? then the T::Array cast); arrays per datatypes/mod.rs:181-232 (records 0099, 0100)"
+
+# Record 0102: downcast_as_array asserts exactly one chunk (a Polars panic
+# otherwise, kept as is), then borrows it as T::Array. The binding copies that
+# one array (one chunk slot + cells + payload bytes); List/Struct stay refused.
+[[array_snapshots]]
+key = "polars_core:3510"
+path = "polars_core::chunked_array::ChunkedArray::downcast_as_array"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:112-118 (assert_eq!(self.chunks.len(), 1); downcast_get(0).unwrap()); arrays per datatypes/mod.rs:181-232 (records 0099-0101)"
+
+# Record 0103: downcast_iter lazily maps the receiver's chunks to &T::Array.
+# The binding preflights the same receiver's chunks (typed downcasts, one
+# bound on chunks + cells + payload bytes), then drives the iterator once,
+# re-counting; List/Struct stay refused.
+[[iter_snapshots]]
+key = "polars_core:3505"
+path = "polars_core::chunked_array::ChunkedArray::downcast_iter"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:63-70 (self.chunks.iter().map(|arr| cast to &T::Array)); arrays per datatypes/mod.rs:181-232 (records 0099-0102)"
+
+# Record 0104: downcast_chunks returns Chunks<'_, T::Array>, an indexed view
+# over the receiver's chunks (len, get). The binding preflights the same
+# receiver's chunks, checks view.len() against them, then reads get(i) in
+# order with 0103's per-chunk and final-total checks; List/Struct refused.
+[[view_snapshots]]
+key = "polars_core:3508"
+path = "polars_core::chunked_array::ChunkedArray::downcast_chunks"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:10-47 (Chunks: borrowed chunks, get(index) -> Option<&T>, len()) and 99-102 (downcast_chunks = Chunks::new(&self.chunks)); arrays per datatypes/mod.rs:181-232"
+
+# Record 0105: downcast_into_iter(mut self) moves the chunk boxes into an
+# owned DoubleEndedIterator<Item = T::Array>. The binding preflights the Rune
+# receiver's chunks BEFORE cloning it for Polars (the clone costs a chunk
+# vector), then streams each owned array with 0103's checks; List/Struct refused.
+[[owned_iter_snapshots]]
+key = "polars_core:3504"
+path = "polars_core::chunked_array::ChunkedArray::downcast_into_iter"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/ops/downcast.rs:53-61 (mem::take(&mut self.chunks), each Box cast to T::Array); ChunkedArray Clone at chunked_array/mod.rs:996-1008; arrays per datatypes/mod.rs:181-232"
+
+# Record 0106: layout() returns ChunkedArrayLayout<'_, T>: SingleNoNull/Single
+# (&T::Array, one chunk) or MultiNoNull/Multi (&ChunkedArray<T>). The binding
+# preflights the receiver's chunks before the call, then reports the variant
+# by name with its payload copied under that total; List/Struct refused.
+[[layout_snapshots]]
+key = "polars_core:3706"
+path = "polars_core::chunked_array::ChunkedArray::layout"
+pairs = [["polars_core::datatypes::Int8Type", "i8"], ["polars_core::datatypes::Int16Type", "i16"], ["polars_core::datatypes::Int32Type", "i32"], ["polars_core::datatypes::Int64Type", "i64"], ["polars_core::datatypes::UInt8Type", "u8"], ["polars_core::datatypes::UInt16Type", "u16"], ["polars_core::datatypes::UInt32Type", "u32"], ["polars_core::datatypes::UInt64Type", "u64"], ["polars_core::datatypes::Float32Type", "f32"], ["polars_core::datatypes::Float64Type", "f64"], ["polars_core::datatypes::BooleanType", "bool"], ["polars_core::datatypes::StringType", "str"], ["polars_core::datatypes::BinaryType", "binary"], ["polars_core::datatypes::BinaryOffsetType", "binary_offset"]]
+cite = "polars-core 0.55.2 chunked_array/mod.rs:919-924 (ChunkedArrayLayout) and 926-946 (layout: one chunk -> Single/SingleNoNull by null_count, else Multi/MultiNoNull by all chunks' null_count); arrays per datatypes/mod.rs:181-232"
+
+# Record 0093: usize results proven to be a length of, or index into, a Vec or
+# IndexMap (<= isize::MAX) keep a plain integer return; every other usize/u64
+# read-back converts with a range check. ChunkedArray lengths are NOT here:
+# append only checked_adds (ops/append.rs:150-280), so a shared-buffer
+# self-append can exceed i64::MAX without violating any Polars check.
+[[bounded_readbacks]]
+key = "polars_core:7539"
+path = "polars_core::frame::dataframe::DataFrame::width"
+cite = "polars-core 0.55.2 frame/dataframe.rs:231-233: self.columns.len() (a Vec<Column>)"
+[[bounded_readbacks]]
+key = "polars_core:7620"
+path = "polars_core::frame::dataframe::DataFrame::get_column_index"
+cite = "polars-core 0.55.2 frame/mod.rs:1065-1074: schema.index_of (IndexMap::get_index_of, polars-schema schema.rs:375) or columns.iter().position — an index into a Vec/IndexMap"
+[[bounded_readbacks]]
+key = "polars_core:7621"
+path = "polars_core::frame::dataframe::DataFrame::try_get_column_index"
+cite = "polars-core 0.55.2 frame/mod.rs:1076-1079: get_column_index"
+[[bounded_readbacks]]
+key = "polars_core:11119"
+path = "polars_core::series::series_trait::SeriesTrait::n_chunks"
+cite = "polars-core 0.55.2 series/series_trait.rs:245-247: self.chunks().len() (a Vec<ArrayRef>); the only override, series/implementations/extension.rs:271-273, delegates to the storage series"
+[[bounded_readbacks]]
+key = "polars_core:7348"
+path = "polars_core::frame::column::Column::n_chunks"
+cite = "polars-core 0.55.2 frame/column/mod.rs:1833-1838: the series' n_chunks, or 1 for an unmaterialized scalar column"
+[[bounded_readbacks]]
+key = "polars_core:7599"
+path = "polars_core::frame::dataframe::DataFrame::max_n_chunks"
+cite = "polars-core 0.55.2 frame/mod.rs:451-457: the maximum of the columns' n_chunks (or 1), 0 when empty"
+[[bounded_readbacks]]
+key = "polars_core:7598"
+path = "polars_core::frame::dataframe::DataFrame::first_col_n_chunks"
+cite = "polars-core 0.55.2 frame/mod.rs:442-448: the first series column's n_chunks, 0 or 1 otherwise"
+
+# Record 0094: categorical hashes cross the script boundary as exact
+# 16-digit lowercase hex tokens (support::hash_token / hash_from_token).
+# Two hash domains: the stored fixed-state hash (Categories::hash,
+# FrozenCategories::hash, cat_to_hash) and the mapping's seeded lookup hash
+# (the *_with_hash parameters); a token from one is not valid for the other.
+[[hash_tokens]]
+key = "polars_dtype:309"
+path = "polars_dtype::categorical::Categories::hash"
+direction = "return"
+source = "u64"
+cite = "polars-dtype 0.55.2 categorical/mod.rs:188-190: PlFixedStateQuality::default().hash_one(&self.id)"
+[[hash_tokens]]
+key = "polars_dtype:377"
+path = "polars_dtype::categorical::FrozenCategories::hash"
+direction = "return"
+source = "u64"
+cite = "polars-dtype 0.55.2 categorical/mod.rs:309-311: the combined PlFixedStateQuality hash of the strings (mod.rs:249-257)"
+[[hash_tokens]]
+key = "polars_dtype:33"
+path = "polars_dtype::categorical::mapping::CategoricalMapping::cat_to_hash"
+direction = "return"
+source = "Option<u64>"
+cite = "polars-dtype 0.55.2 categorical/mapping.rs:115-117: the stored PlFixedStateQuality hash (mapping.rs:85)"
+[[hash_tokens]]
+key = "polars_dtype:27"
+path = "polars_dtype::categorical::mapping::CategoricalMapping::get_cat_with_hash"
+direction = "parameter"
+param = "hash"
+source = "u64"
+cite = "polars-dtype 0.55.2 categorical/mapping.rs:60-62: str_to_cat lookup under the caller's hash; get_cat passes self.hasher.hash_one(s) (mapping.rs:53-56)"
+[[hash_tokens]]
+key = "polars_dtype:30"
+path = "polars_dtype::categorical::mapping::CategoricalMapping::insert_cat_with_hash"
+direction = "parameter"
+param = "hash"
+source = "u64"
+cite = "polars-dtype 0.55.2 categorical/mapping.rs:73-92: str_to_cat insert under the caller's hash; insert_cat passes self.hasher.hash_one(s) (mapping.rs:66-69)"
