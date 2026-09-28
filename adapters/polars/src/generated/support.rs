@@ -710,15 +710,25 @@ pub mod categorical_fixtures {
 	use polars_utils::aliases::{PlSeedableRandomStateQuality, SeedableFromU64SeedExt};
 	use std::sync::{Arc, Mutex};
 	static BUILD: Mutex<()> = Mutex::new(());
+	/// The first fixture name, from `rnx-0094-5` on, whose hash is in the
+	/// upper half of `u64`. Record 0108: the stable hash changed between
+	/// 0.55.2 (where `rnx-0094-5` qualifies) and v2, so the name is searched
+	/// rather than fixed; the search is deterministic, so both sides of a
+	/// paired case still build the same value.
+	fn upper_half_name(hash: impl Fn(&str) -> u64) -> String {
+		(5..1_000).map(|n| format!("rnx-0094-{n}")).find(|s| hash(s) > i64::MAX as u64).expect("fixture: no upper-half name")
+	}
 	/// A named `Categories`; its stable hash is in the upper half of `u64`.
 	pub fn categories() -> Categories {
 		let _g = BUILD.lock().unwrap_or_else(|e| e.into_inner());
-		Arc::try_unwrap(Categories::new("rnx-0094-5".into(), "rnx".into(), CategoricalPhysical::U32)).unwrap_or_else(|_| panic!("fixture: categories are shared"))
+		let name = upper_half_name(|s| Categories::new(s.into(), "rnx".into(), CategoricalPhysical::U32).hash());
+		Arc::try_unwrap(Categories::new(name.into(), "rnx".into(), CategoricalPhysical::U32)).unwrap_or_else(|_| panic!("fixture: categories are shared"))
 	}
 	/// Two frozen categories; the combined hash is in the upper half of `u64`.
 	pub fn frozen_categories() -> FrozenCategories {
 		let _g = BUILD.lock().unwrap_or_else(|e| e.into_inner());
-		Arc::try_unwrap(FrozenCategories::new(["rnx-0094-5", "b"]).expect("fixture: unique strings")).unwrap_or_else(|_| panic!("fixture: frozen categories are shared"))
+		let name = upper_half_name(|s| FrozenCategories::new([s, "b"]).expect("fixture: unique strings").hash());
+		Arc::try_unwrap(FrozenCategories::new([name.as_str(), "b"]).expect("fixture: unique strings")).unwrap_or_else(|_| panic!("fixture: frozen categories are shared"))
 	}
 	/// The lookup hasher every mapping fixture uses.
 	pub fn lookup_hasher() -> PlSeedableRandomStateQuality {
