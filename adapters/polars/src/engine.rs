@@ -9,7 +9,9 @@ pub(crate) struct CallbackFailure {
 	pub cause: String,
 }
 impl CallbackFailure {
-	pub fn text(&self) -> String { format!("callback {}: {}", self.op, self.cause) }
+	pub fn text(&self) -> String {
+		format!("callback {}: {}", self.op, self.cause)
+	}
 }
 
 #[derive(Debug)]
@@ -20,18 +22,27 @@ pub(crate) enum EngineFailure {
 }
 impl std::fmt::Display for EngineFailure {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		match self { Self::NoThread(s) | Self::Callback(s) | Self::Reentry(s) => f.write_str(s) }
+		match self {
+			Self::NoThread(s) | Self::Callback(s) | Self::Reentry(s) => f.write_str(s),
+		}
 	}
 }
 
 thread_local! { static IN_CALLBACK: Cell<bool> = const { Cell::new(false) }; }
-pub(crate) fn in_callback() -> bool { IN_CALLBACK.with(Cell::get) }
+pub(crate) fn in_callback() -> bool {
+	IN_CALLBACK.with(Cell::get)
+}
 pub(crate) struct CallbackGuard;
 impl CallbackGuard {
-	pub(crate) fn enter() -> Self { IN_CALLBACK.with(|c| c.set(true)); Self }
+	pub(crate) fn enter() -> Self {
+		IN_CALLBACK.with(|c| c.set(true));
+		Self
+	}
 }
 impl Drop for CallbackGuard {
-	fn drop(&mut self) { IN_CALLBACK.with(|c| c.set(false)); }
+	fn drop(&mut self) {
+		IN_CALLBACK.with(|c| c.set(false));
+	}
 }
 
 /// Preserve the original no-thread panic for an infallible binding, and
@@ -40,7 +51,8 @@ pub(crate) fn infallible<T>(result: Result<T, EngineFailure>, binding: &str) -> 
 	match result {
 		Ok(value) => value,
 		Err(EngineFailure::Reentry(_)) => std::panic::resume_unwind(Box::new(CallbackFailure {
-			op: binding.into(), cause: "routed binding called from a callback".into(),
+			op: binding.into(),
+			cause: "routed binding called from a callback".into(),
 		})),
 		Err(e) => panic!("polars engine thread: {e}"),
 	}
@@ -68,9 +80,14 @@ impl Drop for Finished {
 		FINISHED.fetch_add(1, Ordering::SeqCst);
 	}
 }
-pub(crate) fn run<T: Send>(binding: &str, call: impl FnOnce() -> T + Send) -> Result<T, EngineFailure> {
+pub(crate) fn run<T: Send>(
+	binding: &str,
+	call: impl FnOnce() -> T + Send,
+) -> Result<T, EngineFailure> {
 	if in_callback() {
-		return Err(EngineFailure::Reentry(format!("callback {binding}: routed binding called from a callback")));
+		return Err(EngineFailure::Reentry(format!(
+			"callback {binding}: routed binding called from a callback"
+		)));
 	}
 	std::thread::scope(|scope| {
 		let worker = std::thread::Builder::new()
@@ -88,7 +105,9 @@ pub(crate) fn run<T: Send>(binding: &str, call: impl FnOnce() -> T + Send) -> Re
 				};
 				call()
 			})
-			.map_err(|e| EngineFailure::NoThread(format!("cannot start Polars engine thread: {e}")))?;
+			.map_err(|e| {
+				EngineFailure::NoThread(format!("cannot start Polars engine thread: {e}"))
+			})?;
 		let result = worker.join();
 		#[cfg(feature = "test-support")]
 		JOINED.fetch_add(1, Ordering::SeqCst);

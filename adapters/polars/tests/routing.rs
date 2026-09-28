@@ -24,7 +24,10 @@ fn eager_frame_work_runs_on_the_engine_thread() {
 	let run = |src: &str| -> (i64, i64) {
 		let mut sources = Sources::new();
 		sources.insert(Source::memory(src).unwrap()).unwrap();
-		let unit = rune::prepare(&mut sources).with_context(&context).build().unwrap();
+		let unit = rune::prepare(&mut sources)
+			.with_context(&context)
+			.build()
+			.unwrap();
 		let mut vm = Vm::new(runtime.clone(), Arc::new(unit));
 		rune::from_value::<(i64, i64)>(vm.call(["main"], ()).unwrap()).unwrap()
 	};
@@ -32,17 +35,31 @@ fn eager_frame_work_runs_on_the_engine_thread() {
 	// the sort alone, isolated: exactly one engine thread
 	let script = "pub fn main() { let d = polars::DataFrame::empty(); let opts = polars::SortMultipleOptions::default_(); let before = polars::engine_counts().0; let _ = d.sort_impl([], opts, None); let after = polars::engine_counts().0; (before, after) }";
 	let (before, after) = run(script);
-	assert_eq!(after - before, 1, "an eager sort must start exactly one engine thread (started {before} -> {after})");
+	assert_eq!(
+		after - before,
+		1,
+		"an eager sort must start exactly one engine thread (started {before} -> {after})"
+	);
 	let script = "pub fn main() { let d = polars::DataFrame::empty(); let before = polars::engine_counts().0; let _ = d.height(); let after = polars::engine_counts().0; (before, after) }";
 	let (before, after) = run(script);
-	assert_eq!(after - before, 1, "a frame accessor must start exactly one engine thread (started {before} -> {after})");
+	assert_eq!(
+		after - before,
+		1,
+		"a frame accessor must start exactly one engine thread (started {before} -> {after})"
+	);
 	// inside a tokio runtime the engine thread still sees no runtime context
-	let rt = tokio::runtime::Builder::new_current_thread().build().unwrap();
+	let rt = tokio::runtime::Builder::new_current_thread()
+		.build()
+		.unwrap();
 	let (before, after) = rt.block_on(async {
 		let script = "pub fn main() { let d = polars::DataFrame::empty(); let before = polars::engine_counts().5; let _ = d.width(); let after = polars::engine_counts().5; (before, after) }";
 		run(script)
 	});
-	assert_eq!(after - before, 1, "a frame call from inside a runtime must run on an engine thread with no runtime context");
+	assert_eq!(
+		after - before,
+		1,
+		"a frame call from inside a runtime must run on an engine thread with no runtime context"
+	);
 }
 
 /// A generated binding runs in a script: an associated constructor, an
@@ -61,18 +78,36 @@ fn generated_bindings_run() {
 	let t2 = std::time::Instant::now();
 	let runtime = Arc::new(context.runtime().unwrap());
 	let t3 = std::time::Instant::now();
-	eprintln!("module build {} µs, context install {} µs, runtime {} µs", (t1 - t0).as_micros(), (t2 - t1).as_micros(), (t3 - t2).as_micros());
+	eprintln!(
+		"module build {} µs, context install {} µs, runtime {} µs",
+		(t1 - t0).as_micros(),
+		(t2 - t1).as_micros(),
+		(t3 - t2).as_micros()
+	);
 	let run = |src: &str| -> String {
 		let mut sources = Sources::new();
 		sources.insert(Source::memory(src).unwrap()).unwrap();
-		let unit = rune::prepare(&mut sources).with_context(&context).build().unwrap();
+		let unit = rune::prepare(&mut sources)
+			.with_context(&context)
+			.build()
+			.unwrap();
 		let mut vm = Vm::new(runtime.clone(), Arc::new(unit));
 		let out = vm.call(["main"], ()).unwrap();
 		rune::from_value::<String>(out).unwrap()
 	};
-	assert_eq!(run("pub fn main() { let d = polars::DataFrame::empty(); `${d.height().unwrap()} ${d.width()}` }"), "0 0");
-	let err = run("pub fn main() { let d = polars::DataFrame::empty(); match d.try_get_column_index(\"x\") { Ok(i) => `ok ${i}`, Err(e) => `${e.kind()}|${e}` } }");
-	assert!(err.starts_with("ColumnNotFound|") && err.contains("\"x\""), "{err}");
+	assert_eq!(
+		run(
+			"pub fn main() { let d = polars::DataFrame::empty(); `${d.height().unwrap()} ${d.width()}` }"
+		),
+		"0 0"
+	);
+	let err = run(
+		"pub fn main() { let d = polars::DataFrame::empty(); match d.try_get_column_index(\"x\") { Ok(i) => `ok ${i}`, Err(e) => `${e.kind()}|${e}` } }",
+	);
+	assert!(
+		err.starts_with("ColumnNotFound|") && err.contains("\"x\""),
+		"{err}"
+	);
 }
 
 /// The end-to-end script beside this file runs through the adapter binary:
@@ -90,7 +125,8 @@ fn end_to_end_script_runs() {
 		.stdin(std::process::Stdio::null())
 		.output()
 		.expect("run the fixture binary");
-	let text = String::from_utf8_lossy(&out.stdout).to_string() + &String::from_utf8_lossy(&out.stderr);
+	let text =
+		String::from_utf8_lossy(&out.stdout).to_string() + &String::from_utf8_lossy(&out.stderr);
 	assert_eq!(
 		text.trim(),
 		"height 0 width 0\nexpr col(\"x\").alias(\"y\")\ncollected 1 rows, 1 cols\nopts true\nerror kind ColumnNotFound\ndtype datetime[ms]",

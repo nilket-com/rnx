@@ -65,7 +65,8 @@ fn collect(plan: &LazyFrame) -> Result<DataFrame, String> {
 		let frame = plan.collect().map_err(|e| format!("polars collect: {e}"))?;
 		files::validate(&frame)?;
 		Ok(frame)
-	}).map_err(err)?
+	})
+	.map_err(err)?
 	.map(DataFrame)
 }
 #[rune::function(instance)]
@@ -132,16 +133,23 @@ pub fn present(presenters: &mut rnx::Presenters) -> Result<(), String> {
 fn write_parquet_new(frame: &DataFrame, path: &str) -> Result<(), String> {
 	let frame = frame.0.clone();
 	let path = path.to_owned();
-	engine::run("DataFrame::write_parquet_new", move || files::write(frame, &path)).map_err(err)?
+	engine::run("DataFrame::write_parquet_new", move || {
+		files::write(frame, &path)
+	})
+	.map_err(err)?
 }
 fn read_csv(path: &str, schema: rune::Value) -> Result<DataFrame, String> {
 	let schema = values::schema(schema)?;
 	let path = path.to_owned();
-	engine::run("read_csv", move || files::csv(&path, schema)).map_err(err)?.map(DataFrame)
+	engine::run("read_csv", move || files::csv(&path, schema))
+		.map_err(err)?
+		.map(DataFrame)
 }
 fn read_parquet(path: &str) -> Result<DataFrame, String> {
 	let path = path.to_owned();
-	engine::run("read_parquet", move || files::parquet(&path)).map_err(err)?.map(DataFrame)
+	engine::run("read_parquet", move || files::parquet(&path))
+		.map_err(err)?
+		.map(DataFrame)
 }
 /// Install into an rnx-created `polars` module. All native values remain opaque.
 pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String> {
@@ -229,6 +237,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		),
 	];
 	#[cfg(feature = "generated")]
-	catalogue.extend(generated::catalogue::CATALOGUE.iter().map(|(k, v)| (k.to_string(), *v)));
+	catalogue.extend(
+		generated::catalogue::CATALOGUE
+			.iter()
+			.map(|(k, v)| (k.to_string(), *v)),
+	);
 	Ok(catalogue)
 }

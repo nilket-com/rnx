@@ -6,28 +6,31 @@ use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 use std::sync::Arc;
 
 fn run(script: &str) -> String {
-    let mut polars = Module::with_crate("polars").unwrap();
-    rnx_polars::build(&mut polars).unwrap();
-    let mut fixtures = Module::with_crate("fx").unwrap();
-    rnx_polars::generated::fixtures::install(&mut fixtures).unwrap();
-    let mut context = Context::with_default_modules().unwrap();
-    context.install(polars).unwrap();
-    context.install(fixtures).unwrap();
-    let runtime = Arc::new(context.runtime().unwrap());
-    let mut sources = Sources::new();
-    sources.insert(Source::memory(script).unwrap()).unwrap();
-    let mut diagnostics = rune::Diagnostics::new();
-    let built = rune::prepare(&mut sources).with_context(&context).with_diagnostics(&mut diagnostics).build();
-    if built.is_err() {
-        eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
-    }
-    let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
-    rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
+	let mut polars = Module::with_crate("polars").unwrap();
+	rnx_polars::build(&mut polars).unwrap();
+	let mut fixtures = Module::with_crate("fx").unwrap();
+	rnx_polars::generated::fixtures::install(&mut fixtures).unwrap();
+	let mut context = Context::with_default_modules().unwrap();
+	context.install(polars).unwrap();
+	context.install(fixtures).unwrap();
+	let runtime = Arc::new(context.runtime().unwrap());
+	let mut sources = Sources::new();
+	sources.insert(Source::memory(script).unwrap()).unwrap();
+	let mut diagnostics = rune::Diagnostics::new();
+	let built = rune::prepare(&mut sources)
+		.with_context(&context)
+		.with_diagnostics(&mut diagnostics)
+		.build();
+	if built.is_err() {
+		eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
+	}
+	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
 }
 
 #[test]
 fn rechunk_is_owned_from_both_branches() {
-    let result = run(r#"
+	let result = run(r#"
         fn bits(v) { let s = ""; for b in v { s = s + if b { "1" } else { "0" }; } s }
         pub fn main() {
             let single = { let ca = fx::series_nulls().i64().unwrap(); ca.rechunk() };
@@ -40,12 +43,12 @@ fn rechunk_is_owned_from_both_branches() {
             `${single.len().unwrap()} ${single.null_count().unwrap()} ${single.chunk_lengths().unwrap().len()} | ${joined.len().unwrap()} ${joined.chunk_lengths().unwrap().len()} ${joined.null_count().unwrap()} ${mask} ${joined.get(3).unwrap() == Some(1)} | ${multi.chunk_lengths().unwrap().len()} ${multi.len().unwrap()} | ${empty.len().unwrap()}`
         }
     "#);
-    assert_eq!(result, "3 1 1 | 6 1 2 101101 true | 2 6 | 0");
+	assert_eq!(result, "3 1 1 | 6 1 2 101101 true | 2 6 | 0");
 }
 
 #[test]
 fn physical_representations_convert_logical_inners_and_keep_physical_ones() {
-    let result = run(r#"
+	let result = run(r#"
         pub fn main() {
             let physical = fx::series_i64().implode().unwrap();
             let same = physical.to_physical_repr();
@@ -59,5 +62,5 @@ fn physical_representations_convert_logical_inners_and_keep_physical_ones() {
             `${inner(same)} ${same.len().unwrap()} | ${inner(logical)} ${inner(converted)} ${converted.len().unwrap()} | ${field_temporal(st)} ${field_temporal(pst)} ${pst.len().unwrap()}`
         }
     "#);
-    assert_eq!(result, "false 1 | true false 1 | true false 3");
+	assert_eq!(result, "false 1 | true false 1 | true false 3");
 }

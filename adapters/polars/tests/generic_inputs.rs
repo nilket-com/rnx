@@ -7,28 +7,31 @@ use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 use std::sync::Arc;
 
 fn run(script: &str) -> String {
-    let mut polars = Module::with_crate("polars").unwrap();
-    rnx_polars::build(&mut polars).unwrap();
-    let mut fixtures = Module::with_crate("fx").unwrap();
-    rnx_polars::generated::fixtures::install(&mut fixtures).unwrap();
-    let mut context = Context::with_default_modules().unwrap();
-    context.install(polars).unwrap();
-    context.install(fixtures).unwrap();
-    let runtime = Arc::new(context.runtime().unwrap());
-    let mut sources = Sources::new();
-    sources.insert(Source::memory(script).unwrap()).unwrap();
-    let mut diagnostics = rune::Diagnostics::new();
-    let built = rune::prepare(&mut sources).with_context(&context).with_diagnostics(&mut diagnostics).build();
-    if built.is_err() {
-        eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
-    }
-    let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
-    rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
+	let mut polars = Module::with_crate("polars").unwrap();
+	rnx_polars::build(&mut polars).unwrap();
+	let mut fixtures = Module::with_crate("fx").unwrap();
+	rnx_polars::generated::fixtures::install(&mut fixtures).unwrap();
+	let mut context = Context::with_default_modules().unwrap();
+	context.install(polars).unwrap();
+	context.install(fixtures).unwrap();
+	let runtime = Arc::new(context.runtime().unwrap());
+	let mut sources = Sources::new();
+	sources.insert(Source::memory(script).unwrap()).unwrap();
+	let mut diagnostics = rune::Diagnostics::new();
+	let built = rune::prepare(&mut sources)
+		.with_context(&context)
+		.with_diagnostics(&mut diagnostics)
+		.build();
+	if built.is_err() {
+		eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
+	}
+	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
 }
 
 #[test]
 fn frame_chains_take_string_vectors_and_keep_them() {
-    let result = run(r#"
+	let result = run(r#"
         pub fn main() {
             let df = fx::df();
             let names = ["x", "z"];
@@ -45,12 +48,12 @@ fn frame_chains_take_string_vectors_and_keep_them() {
             }
         }
     "#);
-    assert_eq!(result, "2 true 0 2 3 ColumnNotFound true");
+	assert_eq!(result, "2 true 0 2 3 ColumnNotFound true");
 }
 
 #[test]
 fn lazy_and_expression_chains_take_expression_vectors() {
-    let result = run(r#"
+	let result = run(r#"
         pub fn main() {
             let df = fx::df();
             let renamed = df.lazy().rename(["x"], ["xx"], true).unwrap().collect().unwrap();
@@ -64,12 +67,12 @@ fn lazy_and_expression_chains_take_expression_vectors() {
             `${renamed.column("xx").is_ok()} ${grouped.height().unwrap()} ${sorted.column("x").unwrap().i64().unwrap().get(0).unwrap() == Some(3)} ${over.height().unwrap()} ${listed.is_ok()} ${picked.width()} ${by.len()}`
         }
     "#);
-    assert_eq!(result, "true 3 true 3 true 2 1");
+	assert_eq!(result, "true 3 true 3 true 2 1");
 }
 
 #[test]
 fn list_builders_take_script_vectors_borrowed_for_the_call() {
-    let result = run(r#"
+	let result = run(r#"
         pub fn main() {
             let strings = ["a", "", "bc"];
             let sb = polars::ListStringChunkedBuilder::new("s", 2, 8).unwrap();
@@ -89,5 +92,5 @@ fn list_builders_take_script_vectors_borrowed_for_the_call() {
             `${s.len().unwrap()} ${b.len().unwrap()} ${o.len().unwrap()} ${strings[2]} ${bytes[0][1]} ${over.is_err()}`
         }
     "#);
-    assert_eq!(result, "3 2 1 bc 255 true");
+	assert_eq!(result, "3 2 1 bc 255 true");
 }

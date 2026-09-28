@@ -6,29 +6,32 @@ use std::sync::Arc;
 static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 fn run(script: &str) -> String {
-    let mut polars = Module::with_crate("polars").unwrap();
-    rnx_polars::build(&mut polars).unwrap();
-    let mut fixtures = Module::with_crate("fx").unwrap();
-    rnx_polars::generated::fixtures::install(&mut fixtures).unwrap();
-    let mut context = Context::with_default_modules().unwrap();
-    context.install(polars).unwrap();
-    context.install(fixtures).unwrap();
-    let runtime = Arc::new(context.runtime().unwrap());
-    let mut sources = Sources::new();
-    sources.insert(Source::memory(script).unwrap()).unwrap();
-    let mut diagnostics = rune::Diagnostics::new();
-    let built = rune::prepare(&mut sources).with_context(&context).with_diagnostics(&mut diagnostics).build();
-    if built.is_err() {
-        eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
-    }
-    let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
-    rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
+	let mut polars = Module::with_crate("polars").unwrap();
+	rnx_polars::build(&mut polars).unwrap();
+	let mut fixtures = Module::with_crate("fx").unwrap();
+	rnx_polars::generated::fixtures::install(&mut fixtures).unwrap();
+	let mut context = Context::with_default_modules().unwrap();
+	context.install(polars).unwrap();
+	context.install(fixtures).unwrap();
+	let runtime = Arc::new(context.runtime().unwrap());
+	let mut sources = Sources::new();
+	sources.insert(Source::memory(script).unwrap()).unwrap();
+	let mut diagnostics = rune::Diagnostics::new();
+	let built = rune::prepare(&mut sources)
+		.with_context(&context)
+		.with_diagnostics(&mut diagnostics)
+		.build();
+	if built.is_err() {
+		eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
+	}
+	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
 }
 
 #[test]
 fn masks_nulls_and_chunks_keep_their_shape() {
-    let _s = SERIAL.lock().unwrap();
-    let result = run(r#"
+	let _s = SERIAL.lock().unwrap();
+	let result = run(r#"
         fn bits(v) { let s = ""; for b in v { s = s + if b { "1" } else { "0" }; } s }
         pub fn main() {
             let one = fx::series_nulls().i64().unwrap();
@@ -45,13 +48,13 @@ fn masks_nulls_and_chunks_keep_their_shape() {
             `${single} ${per.len()} ${first} ${second} ${whole} ${unmasked} ${one.len().unwrap()}`
         }
     "#);
-    assert_eq!(result, "101 2 101 none 101111 none 3");
+	assert_eq!(result, "101 2 101 none 101111 none 3");
 }
 
 #[test]
 fn the_bit_bound_is_exact_and_cumulative_across_chunks() {
-    let _s = SERIAL.lock().unwrap();
-    let result = run(r#"
+	let _s = SERIAL.lock().unwrap();
+	let result = run(r#"
         pub fn main() {
             let one = fx::series_nulls().i64().unwrap();
             polars::set_materialize_limit(3);
@@ -73,5 +76,8 @@ fn the_bit_bound_is_exact_and_cumulative_across_chunks() {
             }
         }
     "#);
-    assert_eq!(result, "true MaterializeLimit rechunk_validity: 3 validity bits with 0 already copied, more than the bound of 2 | iter_validities: 3 validity bits with 3 already copied, more than the bound of 5 | 2 true 6");
+	assert_eq!(
+		result,
+		"true MaterializeLimit rechunk_validity: 3 validity bits with 0 already copied, more than the bound of 2 | iter_validities: 3 validity bits with 3 already copied, more than the bound of 5 | 2 true 6"
+	);
 }

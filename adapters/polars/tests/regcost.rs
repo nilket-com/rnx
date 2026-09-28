@@ -24,8 +24,13 @@ fn time(label: &str, fill: impl Fn(&mut Module) -> Result<(), rnx::rune::Context
 fn registration_breakdown() {
 	time("empty module", |_| Ok(()));
 	time("types only", rnx_polars::generated::types::install);
-	time("types + support", |m| { rnx_polars::generated::types::install(m)?; rnx_polars::generated::support::install(m) });
+	time("types + support", |m| {
+		rnx_polars::generated::types::install(m)?;
+		rnx_polars::generated::support::install(m)
+	});
 	// generated functions need the hand-written wrapper types, so their
 	// cost is full build() minus the lines above
-	time("full build()", |m| rnx_polars::build(m).map(|_| ()).map_err(|_| unreachable!()));
+	time("full build()", |m| {
+		rnx_polars::build(m).map(|_| ()).map_err(|_| unreachable!())
+	});
 }
