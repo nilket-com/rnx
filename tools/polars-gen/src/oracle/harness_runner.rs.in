@@ -1,0 +1,418 @@
+
+/// One Rust oracle run: a panic outside the staged setup is a target panic.
+fn run_staged(f: fn() -> Staged) -> Staged {
+    match std::panic::catch_unwind(f) {
+        Ok(s) => s,
+        Err(e) => Staged::Ran(Side::Panic(crate_oracle::panic_text(e))),
+    }
+}
+
+struct Harness {
+    context: Context,
+    runtime: Arc<rune::runtime::RuntimeContext>,
+}
+
+impl Harness {
+    fn new() -> Harness {
+        let mut m = Module::with_crate("polars").unwrap();
+        rnx_polars::build(&mut m).unwrap();
+        let mut f = Module::with_crate("fx").unwrap();
+        rnx_polars::generated::fixtures::install(&mut f).unwrap();
+        let mut context = Context::with_default_modules().unwrap();
+        context.install(m).unwrap();
+        context.install(f).unwrap();
+        let runtime = Arc::new(context.runtime().unwrap());
+        Harness { context, runtime }
+    }
+
+    /// Run one case the way the main test does: compile the script; run
+    /// the script's setup and the first Rust run's staged setup; only when
+    /// both succeed, pass the prepared values into the measured call, run
+    /// the oracle a second time (with its own staged setup), and classify
+    /// under the case's policy.
+    fn run(&self, case: &Case) -> (Outcome, String) {
+        let unrun = || Side::Broken("target not run".to_string());
+        let policy = if case.unordered { crate_oracle::UNORDERED } else { crate_oracle::ORDERED };
+        let mut sources = Sources::new();
+        sources.insert(Source::memory(case.script).unwrap()).unwrap();
+        let unit = match rune::prepare(&mut sources).with_context(&self.context).build() {
+            Ok(u) => Arc::new(u),
+            Err(e) => return crate_oracle::classify(policy, &Setup::NotRun, &Setup::NotRun, &Side::Broken(format!("compile: {e}")), None, &unrun(), &unrun()),
+        };
+        let mut vm = Vm::new(self.runtime.clone(), unit);
+        let (rune_setup, prepared) = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| vm.call(["setup"], ()).map_err(|e| format!("vm: {e}")))) {
+            Ok(Ok(v)) => (Setup::Ok, Some(v)),
+            Ok(Err(e)) => (Setup::Failed(e), None),
+            Err(e) => (Setup::Failed(crate_oracle::panic_text(e)), None),
+        };
+        let run1 = run_staged(case.oracle);
+        let (rust_setup, oracle) = match run1 {
+            Staged::SetupFailed(e) => (Setup::Failed(e), unrun()),
+            Staged::Ran(side) => (Setup::Ok, side),
+        };
+        if rune_setup != Setup::Ok || rust_setup != Setup::Ok {
+            return crate_oracle::classify(policy, &rune_setup, &rust_setup, &unrun(), None, &unrun(), &unrun());
+        }
+        let prepared = prepared.unwrap();
+        let (first, second) = {
+            let run = move || -> (Side, Option<Side>) {
+                let out = match vm.call(["main"], (prepared,)) { Ok(o) => o, Err(e) => return (Side::Broken(format!("vm: {e}")), None) };
+                let (r, r2) = match rune::from_value::<(Value, Value)>(out) { Ok(x) => x, Err(e) => return (Side::Broken(e.to_string()), None) };
+                let first = (case.fmt)(r);
+                let second = if case.has_receiver { Some((case.fmt)(r2)) } else { None };
+                (first, second)
+            };
+            match std::panic::catch_unwind(std::panic::AssertUnwindSafe(run)) {
+                Ok(x) => x,
+                Err(e) => (Side::Panic(crate_oracle::panic_text(e)), None),
+            }
+        };
+        // the second run has its own staged setup; a setup failure there is
+        // a disagreement with the first run, never a setup skip
+        let again = match run_staged(case.oracle) {
+            Staged::SetupFailed(e) => Side::Broken(format!("second run setup failed: {e}")),
+            Staged::Ran(side) => side,
+        };
+        crate_oracle::classify(policy, &rune_setup, &rust_setup, &first, second.as_ref(), &oracle, &again)
+    }
+}
+
+/// The engine's counters are process-global, so the two tests of this
+/// binary never interleave: whichever starts second waits.
+static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+#[test]
+fn generated_bindings_match_polars() {
+    let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let h = Harness::new();
+    let mut results = Vec::new();
+    let mut tally: std::collections::BTreeMap<&str, usize> = std::collections::BTreeMap::new();
+    let mut bad = Vec::new();
+    // Polars panics are expected outcomes here; keep the log readable.
+    let previous = std::panic::take_hook();
+    std::panic::set_hook(Box::new(|_| {}));
+    for case in CASES {
+        let (outcome, detail) = h.run(case);
+        *tally.entry(outcome.name()).or_insert(0) += 1;
+        if !outcome.approved() && !outcome.setup_failed() {
+            bad.push(format!("{}: {}: {}", case.path, outcome.name(), detail.chars().take(300).collect::<String>()));
+        }
+        results.push(serde_json::json!({"id": case.id, "path": case.path, "status": outcome.name(), "unordered": case.unordered, "policy": case.policy, "detail": detail.chars().take(400).collect::<String>()}));
+    }
+    std::panic::set_hook(previous);
+    let verified = results.iter().filter(|r| ["match", "row_order_differs", "both_error", "both_panic"].contains(&r["status"].as_str().unwrap())).count();
+    let out = serde_json::json!({"cases": CASES.len(), "verified": verified, "tally": tally, "results": results});
+    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("oracle-results.json");
+    std::fs::write(&path, serde_json::to_string_pretty(&out).unwrap() + "\n").unwrap();
+    eprintln!("oracle tally: {tally:?}");
+    assert!(bad.is_empty(), "{} case(s) failed:\n{}", bad.len(), bad.join("\n"));
+}
+
+/// Integrated negative controls through the same runner: each injected
+/// wrong binding must come out as a failing outcome.
+#[test]
+fn oracle_runner_fails_closed() {
+    use rnx_polars::generated::fixtures::show_dataframe as show_df;
+    let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let h = Harness::new();
+    let previous = std::panic::take_hook();
+    std::panic::set_hook(Box::new(|_| {}));
+    fn df_side(v: Value) -> Side { show_df(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn ran(f: fn() -> Side) -> Staged { Staged::Ran(f()) }
+    fn reversed() -> Side { Side::Value(crate_oracle::frame_repr(&df().reverse())) }
+    fn same() -> Side { Side::Value(crate_oracle::frame_repr(&df())) }
+    fn alternating() -> Side {
+        static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        Side::Value(crate_oracle::Repr::Text(format!("run{}", N.fetch_add(1, std::sync::atomic::Ordering::SeqCst))))
+    }
+    fn panics() -> Side { panic!("polars panic") }
+    fn nth() -> usize {
+        static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        N.fetch_add(1, std::sync::atomic::Ordering::SeqCst) % 2
+    }
+    fn first_then_reversed() -> Side { if nth() == 0 { same() } else { reversed() } }
+    fn first_then_error() -> Side { if nth() == 0 { same() } else { Side::Error("ComputeError".into()) } }
+    fn first_then_panic() -> Side { if nth() == 0 { same() } else { panic!("second run") } }
+    let controls: &[(&str, Case, &[Outcome])] = &[
+        ("unreversed frame against Rust reverse", Case { id: "c1", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(reversed) }, &[Outcome::Mismatch]),
+        ("unreversed frame is still wrong under an unordered policy when a cell differs", Case { id: "c1b", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: true, policy: "control", fmt: df_side, oracle: || Staged::Ran(Side::Value(crate_oracle::frame_repr(&polars::df!("x" => [1i64, 2, 4], "y" => ["a", "b", "c"], "z" => [1.5f64, 2.5, 3.5]).unwrap()))) }, &[Outcome::Mismatch]),
+        ("wrong second call on the same receiver", Case { id: "c2", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a.reverse(), a) }", has_receiver: true, unordered: false, policy: "control", fmt: df_side, oracle: || ran(reversed) }, &[Outcome::ReuseFailed]),
+        ("wrong second order under the default policy", Case { id: "c2b", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, a.reverse()) }", has_receiver: true, unordered: false, policy: "control", fmt: df_side, oracle: || ran(same) }, &[Outcome::ReuseFailed]),
+        ("compile error against a nondeterministic oracle", Case { id: "c3", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = ; }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(alternating) }, &[Outcome::Broken]),
+        ("a script panic (a VM error) against a Rust panic", Case { id: "c4", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { panic(\"unrelated\") }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(panics) }, &[Outcome::Broken]),
+        ("a binding that panics in Polars against a Rust panic with another message", Case { id: "c4b", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::series(); (a.select_chunk(2), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || panic!("a different panic") }, &[Outcome::PanicMismatch]),
+        ("a value against a panicking oracle", Case { id: "c5", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(panics) }, &[Outcome::OraclePanicked]),
+        ("a wrong value against a nondeterministic oracle", Case { id: "c6", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(alternating) }, &[Outcome::Nondeterministic]),
+        ("a matching first run whose second run changes value", Case { id: "c7", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(first_then_reversed) }, &[Outcome::Nondeterministic]),
+        ("a matching first run whose second run errors", Case { id: "c7b", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(first_then_error) }, &[Outcome::Nondeterministic]),
+        ("a matching first run whose second run panics", Case { id: "c7c", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(first_then_panic) }, &[Outcome::Nondeterministic]),
+    ];
+    // join order: permuting rows passes only for a justified unordered join
+    // case; an explicit order on the same operation, and an unrelated
+    // ordered operation, must fail
+    fn lf_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_lazyframe(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn joined_reversed() -> Side {
+        let d = lf().inner_join(lf(), expr(), expr()).collect().unwrap().reverse();
+        Side::Value(crate_oracle::frame_repr(&d).prefixed("collected "))
+    }
+    // `LazyFrame::join` returns a `LazyFrame` on 0.55.2 and a `PolarsResult`
+    // at rc2; the control accepts either so it compiles on every release.
+    trait IntoLazy { fn into_lazy(self) -> p::LazyFrame; }
+    impl IntoLazy for p::LazyFrame { fn into_lazy(self) -> p::LazyFrame { self } }
+    impl IntoLazy for p::PolarsResult<p::LazyFrame> { fn into_lazy(self) -> p::LazyFrame { self.unwrap() } }
+    fn ordered_join_reversed() -> Side {
+        let mut args = p::JoinArgs::new(p::JoinType::Inner); args.maintain_order = p::MaintainOrderJoin::Left;
+        let d = lf().join(lf(), [expr()], [expr()], args).into_lazy().collect().unwrap().reverse();
+        Side::Value(crate_oracle::frame_repr(&d).prefixed("collected "))
+    }
+    // The order policy of each join control is the production decision
+    // (`Release::policy` on the control's parameters), substituted by the
+    // generator; j2 and j4 are asserted ordered at generation time.
+    const J1_UNORDERED: bool = @J1@;
+    let (j1_expected, j1_pass): (&[Outcome], bool) = if J1_UNORDERED { (&[Outcome::RowOrderDiffers, Outcome::Match], true) } else { (&[Outcome::Mismatch, Outcome::Nondeterministic], false) };
+    // an explicit order the release file does not record: deterministic on
+    // every release, so the control never depends on an unspecified order
+    fn leftright_order_join_reversed() -> Side {
+        let mut args = p::JoinArgs::new(p::JoinType::Inner); args.maintain_order = p::MaintainOrderJoin::LeftRight;
+        let d = lf().join(lf(), [expr()], [expr()], args).into_lazy().collect().unwrap().reverse();
+        Side::Value(crate_oracle::frame_repr(&d).prefixed("collected "))
+    }
+    let join_controls: &[(&str, Case, &[Outcome], bool)] = &[
+        ("permuted rows pass for a justified unordered join iff the policy says unordered", Case { id: "j1", path: "control", script: "pub fn setup() { [fx::lf(), fx::lf(), fx::expr(), fx::expr()] } pub fn main(__fx) { let a = __fx[0]; (a.inner_join(__fx[1], __fx[2], __fx[3]), ()) }", has_receiver: false, unordered: J1_UNORDERED, policy: "@J1_POLICY@", fmt: lf_side, oracle: || ran(joined_reversed) }, j1_expected, j1_pass),
+        ("permuted rows fail for the same join with an explicit order", Case { id: "j2", path: "control", script: "pub fn setup() { [fx::lf(), fx::lf(), polars::JoinArgs::default_().with_maintain_order(polars::MaintainOrderJoin::Left())] } pub fn main(__fx) { let a = __fx[0]; let args = __fx[2]; let j = match a.join(__fx[1], [fx::expr()], [fx::expr()], args) { Ok(v) => v, Err(e) => panic(`join: ${e}`) }; (j, ()) }", has_receiver: false, unordered: @J2@, policy: "@J2_POLICY@", fmt: lf_side, oracle: || ran(ordered_join_reversed) }, &[Outcome::Mismatch], false),
+        ("permuted rows fail for an unrelated ordered operation", Case { id: "j3", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "ordered", fmt: df_side, oracle: || ran(reversed) }, &[Outcome::Mismatch], false),
+        ("permuted rows fail for the same join with an unrecognized configuration", Case { id: "j4", path: "control", script: "pub fn setup() { [fx::lf(), fx::lf(), polars::JoinArgs::default_().with_maintain_order(polars::MaintainOrderJoin::LeftRight())] } pub fn main(__fx) { let a = __fx[0]; let args = __fx[2]; let j = match a.join(__fx[1], [fx::expr()], [fx::expr()], args) { Ok(v) => v, Err(e) => panic(`join: ${e}`) }; (j, ()) }", has_receiver: false, unordered: @J4@, policy: "@J4_POLICY@", fmt: lf_side, oracle: || ran(leftright_order_join_reversed) }, &[Outcome::Mismatch], false),
+    ];
+    // setup failures are structural: a failing setup stage on both sides
+    // credits nothing and calls the target zero times, whatever the
+    // message; on one side it is a failure; a compile error is judged
+    // before any setup; a target panic that says "fixture:" is a panic
+    let engine_started = |h: &Harness| -> i64 {
+        let script = "pub fn main() { (polars::engine_counts().0, ()) }";
+        let mut sources = Sources::new();
+        sources.insert(Source::memory(script).unwrap()).unwrap();
+        let unit = rune::prepare(&mut sources).with_context(&h.context).build().unwrap();
+        let mut vm = Vm::new(h.runtime.clone(), Arc::new(unit));
+        rune::from_value::<(i64, rune::Value)>(vm.call(["main"], ()).unwrap()).unwrap().0
+    };
+    fn setup_fails() -> Staged { Staged::SetupFailed("control setup failed".into()) }
+    fn setup_refused() -> Staged { match std::panic::catch_unwind(|| { let _: usize = usize::try_from(-1i64).unwrap_or_else(|_| panic!("fixture: narrow failed")); }) { Ok(()) => Staged::Ran(same()), Err(e) => Staged::SetupFailed(crate_oracle::panic_text(e)) } }
+    fn later_setup_fails() -> Staged { match std::panic::catch_unwind(|| { let _ = df(); panic!("second construction failed") }) { Ok(()) => Staged::Ran(same()), Err(e) => Staged::SetupFailed(crate_oracle::panic_text(e)) } }
+    fn fixture_worded_panic() -> Side { panic!("fixture: a target panic that mentions the word") }
+    let zero_call_controls: &[(&str, Case)] = &[
+        ("untagged setup panic on both sides", Case { id: "s1", path: "control", script: "pub fn setup() { panic(\"control setup failed\") } pub fn main(__fx) { let a = fx::df(); (a.height(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: setup_fails }),
+        ("a constructor returning an error, unwrapped in setup, on both sides", Case { id: "s2", path: "control", script: "pub fn setup() { [match polars::BooleanChunkedBuilder::new(\"x\", -1) { Ok(v) => v, Err(e) => panic(`fixture: ${e}`) }] } pub fn main(__fx) { let a = fx::df(); (a.height(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: setup_refused }),
+        ("a first fixture that succeeds, then a later fixture that fails, on both sides", Case { id: "s8", path: "control", script: "pub fn setup() { let a = fx::df(); let b = panic(\"second construction failed\"); [a, b] } pub fn main(__fx) { let a = __fx[0]; (a.height(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: later_setup_fails }),
+    ];
+    let mut failures = Vec::new();
+    for (label, case) in zero_call_controls {
+        let before = engine_started(&h);
+        let (outcome, detail) = h.run(case);
+        let after = engine_started(&h);
+        if outcome != Outcome::FixtureFailed || outcome.approved() || after != before {
+            failures.push(format!("{label}: got {} ({detail}); engine threads started {before} -> {after}", outcome.name()));
+        }
+    }
+    let one_sided_controls: &[(&str, Case, Outcome)] = &[
+        ("rune setup fails, rust setup succeeds", Case { id: "s3", path: "control", script: "pub fn setup() { panic(\"only here\") } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(same) }, Outcome::SetupMismatch),
+        ("rust setup fails, rune setup succeeds", Case { id: "s4", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: setup_fails }, Outcome::SetupMismatch),
+        ("a script that does not compile while rust setup fails", Case { id: "s5", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = ; }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: setup_fails }, Outcome::Broken),
+        ("a wrong value while the second rust run fails with a fixture-worded panic", Case { id: "s6", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a.reverse(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || if nth() == 0 { Staged::Ran(same()) } else { panic!("fixture: second run") } }, Outcome::Nondeterministic),
+        ("a target panic that mentions fixture: is a target panic", Case { id: "s7", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(fixture_worded_panic) }, Outcome::OraclePanicked),
+        ("a first rust run whose setup succeeds, then a second run whose setup fails", Case { id: "s9", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || if nth() == 0 { Staged::Ran(same()) } else { Staged::SetupFailed("second run setup".into()) } }, Outcome::Nondeterministic),
+    ];
+    // the null-series comparator: name, dtype and length are the whole
+    // logical content of an all-null array, and each must be distinguished
+    fn null_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__series__implementations__null__nullchunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    let null_controls: &[(&str, Case)] = &[
+        ("a null series of another length fails", Case { id: "n1", path: "control", script: "pub fn setup() { [fx::null_chunked()] } pub fn main(__fx) { (__fx[0], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: null_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text("x:Null:len=3".into()))) }),
+        ("a null series of another name fails", Case { id: "n2", path: "control", script: "pub fn setup() { [fx::null_chunked()] } pub fn main(__fx) { (__fx[0], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: null_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text("y:Null:len=2".into()))) }),
+        ("a null series of another dtype fails", Case { id: "n3", path: "control", script: "pub fn setup() { [fx::null_chunked()] } pub fn main(__fx) { (__fx[0], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: null_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text("x:Int64:len=2".into()))) }),
+    ];
+    for (label, case) in null_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != Outcome::Mismatch { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // the array comparator (record 0076): an alias array is compared as the
+    // series it converts to, element by element; each control changes what
+    // Debug's formatting would hide
+    fn i64_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__datatypes__int64chunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn f64_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__datatypes__float64chunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn list_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__datatypes__listchunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn struct_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__chunked_array__struct___structchunked(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn long_changed() -> Staged {
+        let mut v: Vec<i64> = (0..40).collect();
+        v[20] = 21;
+        Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), v))))
+    }
+    fn null_moved() -> Staged { Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), [None, Some(1i64), Some(3)])))) }
+    fn float_alike() -> Staged { Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), [0.3f64])))) }
+    fn long_same() -> Staged { Staged::Ran(Side::Value(crate_oracle::series_repr(&series_long()))) }
+    let array_controls: &[(&str, Case, Outcome)] = &[
+        ("a changed element outside Debug's window fails", Case { id: "a1", path: "control", script: "pub fn setup() { [fx::series_long()] } pub fn main(__fx) { (match __fx[0].i64() { Ok(v) => v, Err(e) => panic(`i64: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: i64_side, oracle: long_changed }, Outcome::Mismatch),
+        ("a moved null fails", Case { id: "a2", path: "control", script: "pub fn setup() { [fx::series_nulls()] } pub fn main(__fx) { (match __fx[0].i64() { Ok(v) => v, Err(e) => panic(`i64: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: i64_side, oracle: null_moved }, Outcome::Mismatch),
+        ("floats that display alike fail", Case { id: "a3", path: "control", script: "pub fn setup() { [fx::series_float_sum()] } pub fn main(__fx) { (match __fx[0].f64() { Ok(v) => v, Err(e) => panic(`f64: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: f64_side, oracle: float_alike }, Outcome::Mismatch),
+        ("a changed inner element of a list cell, beyond Debug's ellipsis, fails", Case { id: "a5", path: "control", script: "pub fn setup() { [fx::series_list_long()] } pub fn main(__fx) { (match __fx[0].list() { Ok(v) => v, Err(e) => panic(`list: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: list_side, oracle: || { let mut inner: Vec<i64> = (0..40).collect(); inner[20] = 999; Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), [p::Series::new("i".into(), inner)])))) } }, Outcome::Mismatch),
+        ("a null moved inside a list cell fails", Case { id: "a6", path: "control", script: "pub fn setup() { [fx::series_list_nulls()] } pub fn main(__fx) { (match __fx[0].list() { Ok(v) => v, Err(e) => panic(`list: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: list_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("x".into(), [p::Series::new("i".into(), [None, Some(1i64), Some(3)])])))) }, Outcome::Mismatch),
+        ("a changed struct field value fails", Case { id: "a7", path: "control", script: "pub fn setup() { [fx::series_struct()] } pub fn main(__fx) { (match __fx[0].struct_() { Ok(v) => v, Err(e) => panic(`struct: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: struct_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&p::IntoSeries::into_series(p::df!("x" => [1i64, 2, 4], "y" => ["a", "b", "c"], "z" => [1.5f64, 2.5, 3.5]).unwrap().into_struct("x".into()))))) }, Outcome::Mismatch),
+        ("a null struct against a valid struct with null fields fails", Case { id: "a9", path: "control", script: "pub fn setup() { [fx::series_struct_null_field()] } pub fn main(__fx) { (match __fx[0].struct_() { Ok(v) => v, Err(e) => panic(`struct: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: struct_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::full_null("s".into(), 1, series_struct_null_field().dtype())))) }, Outcome::Mismatch),
+        ("a null struct inside a list cell fails", Case { id: "a10", path: "control", script: "pub fn setup() { [fx::series_list_of_struct()] } pub fn main(__fx) { (match __fx[0].list() { Ok(v) => v, Err(e) => panic(`list: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: list_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&p::Series::new("l".into(), [p::Series::full_null("s".into(), 1, series_struct_null_field().dtype())])))) }, Outcome::Mismatch),
+        ("the same struct with a null field matches", Case { id: "a11", path: "control", script: "pub fn setup() { [fx::series_struct_null_field()] } pub fn main(__fx) { (match __fx[0].struct_() { Ok(v) => v, Err(e) => panic(`struct: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: struct_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&series_struct_null_field()))) }, Outcome::Match),
+        ("the same struct matches", Case { id: "a8", path: "control", script: "pub fn setup() { [fx::series_struct()] } pub fn main(__fx) { (match __fx[0].struct_() { Ok(v) => v, Err(e) => panic(`struct: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: struct_side, oracle: || Staged::Ran(Side::Value(crate_oracle::series_repr(&series_struct()))) }, Outcome::Match),
+        ("the same long array matches", Case { id: "a4", path: "control", script: "pub fn setup() { [fx::series_long()] } pub fn main(__fx) { (match __fx[0].i64() { Ok(v) => v, Err(e) => panic(`i64: ${e}`) }, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: i64_side, oracle: long_same }, Outcome::Match),
+    ];
+    for (label, case, expected) in array_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // record 0077: the materialization bound through a real binding
+    // (`DataFrame::materialized_column_iter`, three columns) with the
+    // test-support limit; the receiver stays usable after a refusal
+    fn cols_side(v: Value) -> Side { match rune::from_value::<Result<Vec<rune::Value>, rune::Value>>(v) { Ok(Ok(items)) => { let mut out = Vec::new(); for i in items { match rnx_polars::generated::fixtures::show_w_polars_core__series__series(&i) { Ok(r) => out.push(r.to_text()), Err(e) => return Side::Broken(e) } } Side::Value(crate_oracle::Repr::Text(format!("[{}]", out.iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", ")))) } Ok(Err(e)) => crate_oracle::rune_error_kind(&e).map(Side::Error).unwrap_or_else(Side::Broken), Err(e) => Side::Broken(e.to_string()) } }
+    fn cols_text() -> String { format!("[{}]", df().materialized_column_iter().map(|c| { let t = crate_oracle::series_repr(c).to_text(); format!("{}:{t}", t.len()) }).collect::<Vec<_>>().join(", ")) }
+    let bound_controls: &[(&str, Case, Outcome)] = &[
+        ("a bound below the length refuses on both sides with MaterializeLimit", Case { id: "b1", path: "control", script: "pub fn setup() { [fx::df()] } pub fn main(__fx) { polars::set_materialize_limit(2); let r = __fx[0].materialized_column_iter(); polars::set_materialize_limit(0); (r, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: cols_side, oracle: || Staged::Ran(Side::Error("MaterializeLimit".into())) }, Outcome::BothError),
+        ("a bound equal to the length succeeds", Case { id: "b2", path: "control", script: "pub fn setup() { [fx::df()] } pub fn main(__fx) { polars::set_materialize_limit(3); let r = __fx[0].materialized_column_iter(); polars::set_materialize_limit(0); (r, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: cols_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(cols_text()))) }, Outcome::Match),
+        ("the receiver is usable after a refusal", Case { id: "b3", path: "control", script: "pub fn setup() { [fx::df()] } pub fn main(__fx) { let a = __fx[0]; polars::set_materialize_limit(2); let _ = a.materialized_column_iter(); polars::set_materialize_limit(0); (a.materialized_column_iter(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: cols_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(cols_text()))) }, Outcome::Match),
+        ("a wrong bound-refusal claim fails: value against MaterializeLimit", Case { id: "b4", path: "control", script: "pub fn setup() { [fx::df()] } pub fn main(__fx) { (__fx[0].materialized_column_iter(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: cols_side, oracle: || Staged::Ran(Side::Error("MaterializeLimit".into())) }, Outcome::Mismatch),
+    ];
+    for (label, case, expected) in bound_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // length-framed vectors: equal-length string vectors whose element
+    // texts would join alike stay apart; a changed and a reordered element fail
+    fn strs_side(v: Value) -> Side { match rune::from_value::<Vec<String>>(v) { Ok(items) => Side::Value(crate_oracle::Repr::Text(format!("[{}]", items.iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", ")))), Err(e) => Side::Broken(e.to_string()) } }
+    let framed = |v: &[&str]| format!("[{}]", v.iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "));
+    let seq_controls: Vec<(&str, Case, Outcome)> = vec![
+        ("the string collision is a mismatch", Case { id: "q1", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { ([\"a, b\", \"c\"], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: strs_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("[{}]", ["a", "b, c"].iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "))))) }, Outcome::Mismatch),
+        ("a changed element fails", Case { id: "q2", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { ([\"a\", \"b\"], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: strs_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("[{}]", ["a", "c"].iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "))))) }, Outcome::Mismatch),
+        ("reordered elements fail", Case { id: "q3", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { ([\"a\", \"b\"], ()) }", has_receiver: false, unordered: true, policy: "control", fmt: strs_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("[{}]", ["b", "a"].iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "))))) }, Outcome::Mismatch),
+        ("the same vector matches", Case { id: "q4", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { ([\"a, b\", \"c\"], ()) }", has_receiver: false, unordered: false, policy: "control", fmt: strs_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("[{}]", ["a, b", "c"].iter().map(|e| format!("{}:{e}", e.len())).collect::<Vec<_>>().join(", "))))) }, Outcome::Match),
+    ];
+    let _ = framed;
+    for (label, case, expected) in &seq_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // record 0093: integer read-back. `first()` on [u64::MAX, 2^32 + 1, 1]
+    // must be a ConversionError on the script side and, through the checked
+    // Rust formatter, on the Rust side (both_error); a wrapping Rust
+    // formatter (the pre-0093 `as i64`) must disagree (mismatch), so the
+    // oracle can no longer report two wrapped integers as a match; an
+    // in-range element still matches as a value.
+    fn readback_side(v: Value) -> Side { match rune::from_value::<Result<rune::Value, rune::Value>>(v) { Ok(Ok(v)) => match rune::from_value::<Option<i64>>(v) { Ok(Some(x)) => Side::Value(crate_oracle::Repr::Text(format!("Some({x})"))), Ok(None) => Side::Value(crate_oracle::Repr::Text("None".into())), Err(e) => Side::Broken(e.to_string()) }, Ok(Err(e)) => crate_oracle::rune_error_kind(&e).map(Side::Error).unwrap_or_else(Side::Broken), Err(e) => Side::Broken(e.to_string()) } }
+    fn checked(v: Option<u64>) -> Side { match v { Some(v) => match i64::try_from(v) { Ok(x) => Side::Value(crate_oracle::Repr::Text(format!("Some({x})"))), Err(_) => Side::Error("ConversionError".into()) }, None => Side::Value(crate_oracle::Repr::Text("None".into())) } }
+    fn extremes() -> p::UInt64Chunked { series_u64_extremes().u64().unwrap().clone() }
+    let readback_controls: Vec<(&str, Case, Outcome)> = vec![
+        ("u64::MAX read back is a ConversionError on both sides", Case { id: "r1", path: "control", script: "pub fn setup() { [fx::series_u64_extremes()] } pub fn main(__fx) { (__fx[0].u64().unwrap().first(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: readback_side, oracle: || Staged::Ran(checked(extremes().first())) }, Outcome::BothError),
+        ("a wrapping Rust formatter disagrees with the checked binding", Case { id: "r2", path: "control", script: "pub fn setup() { [fx::series_u64_extremes()] } pub fn main(__fx) { (__fx[0].u64().unwrap().first(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: readback_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("Some({})", extremes().first().unwrap() as i64)))) }, Outcome::Mismatch),
+        ("an in-range u64 element matches", Case { id: "r3", path: "control", script: "pub fn setup() { [fx::series_u64_extremes()] } pub fn main(__fx) { (__fx[0].u64().unwrap().last(), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: readback_side, oracle: || Staged::Ran(checked(extremes().last())) }, Outcome::Match),
+    ];
+    for (label, case, expected) in &readback_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // record 0094: a categorical hash is its exact hex token. The fixture's
+    // hash has its high bit set, so a Rust formatter that casts through
+    // `i64`, or one that drops the high bit (a truncating binding), must
+    // disagree with the script's token.
+    fn token_side(v: Value) -> Side { match rune::from_value::<String>(v) { Ok(s) => Side::Value(crate_oracle::Repr::Text(s)), Err(e) => Side::Broken(e.to_string()) } }
+    fn cats_hash() -> u64 { categories().hash() }
+    const TOKEN_SCRIPT: &str = "pub fn setup() { [fx::categories()] } pub fn main(__fx) { (__fx[0].hash(), ()) }";
+    let token_controls: Vec<(&str, Case, Outcome)> = vec![
+        ("the hash token matches the exact Rust hex", Case { id: "h1", path: "control", script: TOKEN_SCRIPT, has_receiver: false, unordered: false, policy: "control", fmt: token_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("{:016x}", cats_hash())))) }, Outcome::Match),
+        ("a Rust formatter casting through i64 disagrees", Case { id: "h2", path: "control", script: TOKEN_SCRIPT, has_receiver: false, unordered: false, policy: "control", fmt: token_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("{}", cats_hash() as i64)))) }, Outcome::Mismatch),
+        ("a token without the high bit disagrees", Case { id: "h3", path: "control", script: TOKEN_SCRIPT, has_receiver: false, unordered: false, policy: "control", fmt: token_side, oracle: || Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("{:016x}", cats_hash() & i64::MAX as u64)))) }, Outcome::Mismatch),
+    ];
+    assert!(cats_hash() > i64::MAX as u64, "the token controls need a hash with its high bit set");
+    for (label, case, expected) in &token_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // record 0078: assignment operators mutate the Rune value the way the
+    // Rust impl does (the whole left value compared, the right operand
+    // preserved), `not_` leaves its receiver, and the From constructors
+    // narrow or cast as documented
+    type Flags = polars::chunked_array::flags::StatisticsFlags;
+    fn flags_pair_side(v: Value) -> Side { match rune::from_value::<(rune::Value, rune::Value)>(v) { Ok((a, b)) => { let sa = match rnx_polars::generated::fixtures::show_w_polars_core__chunked_array__flags__statisticsflags(&a) { Ok(s) => s.to_text(), Err(e) => return Side::Broken(e) }; let sb = match rnx_polars::generated::fixtures::show_w_polars_core__chunked_array__flags__statisticsflags(&b) { Ok(s) => s.to_text(), Err(e) => return Side::Broken(e) }; Side::Value(crate_oracle::Repr::Text(format!("a={sa};b={sb}"))) } Err(e) => Side::Broken(e.to_string()) } }
+    fn sel_pair_side(v: Value) -> Side { match rune::from_value::<(rune::Value, rune::Value)>(v) { Ok((a, b)) => { let sa = match rnx_polars::generated::fixtures::show_w_polars_plan__dsl__selector__datatypeselector(&a) { Ok(s) => s.to_text(), Err(e) => return Side::Broken(e) }; let sb = match rnx_polars::generated::fixtures::show_w_polars_plan__dsl__selector__datatypeselector(&b) { Ok(s) => s.to_text(), Err(e) => return Side::Broken(e) }; Side::Value(crate_oracle::Repr::Text(format!("a={sa};b={sb}"))) } Err(e) => Side::Broken(e.to_string()) } }
+    fn scalar_fallible_side(v: Value) -> Side { match rune::from_value::<Result<rune::Value, rune::Value>>(v) { Ok(Ok(v)) => rnx_polars::generated::fixtures::show_w_polars_core__scalar__scalar(&v).map(Side::Value).unwrap_or_else(Side::Broken), Ok(Err(e)) => crate_oracle::rune_error_kind(&e).map(Side::Error).unwrap_or_else(Side::Broken), Err(e) => Side::Broken(e.to_string()) } }
+    fn scalar_side(v: Value) -> Side { rnx_polars::generated::fixtures::show_w_polars_core__scalar__scalar(&v).map(Side::Value).unwrap_or_else(Side::Broken) }
+    fn pair_text<A: std::fmt::Debug, B: std::fmt::Debug>(a: &A, b: &B) -> Staged { Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("a={a:?};b={b:?}")))) }
+    fn scalar_text(s: polars::prelude::Scalar) -> Staged { Staged::Ran(Side::Value(crate_oracle::Repr::Text(format!("{s:?}")))) }
+    const FB3: &str = "match polars::StatisticsFlags::from_bits_retain(3) { Ok(v) => v, Err(e) => panic(`${e}`) }";
+    const FB6: &str = "match polars::StatisticsFlags::from_bits_retain(6) { Ok(v) => v, Err(e) => panic(`${e}`) }";
+    let flags_script = |op: &str| format!("pub fn setup() {{ [{FB3}, {FB6}] }} pub fn main(__fx) {{ let a = __fx[0]; let b = __fx[1]; a {op} b; ((a, b), ()) }}");
+    let op_scripts: Vec<&'static str> = ["-=", "&=", "|=", "^="].iter().map(|op| &*Box::leak(flags_script(op).into_boxed_str())).collect();
+    let op_controls: Vec<(&str, Case, Outcome)> = vec![
+        ("`-=` on flags with several bits set", Case { id: "o1", path: "control", script: op_scripts[0], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a -= b; pair_text(&a, &b) } }, Outcome::Match),
+        ("`&=` on flags with several bits set", Case { id: "o2", path: "control", script: op_scripts[1], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a &= b; pair_text(&a, &b) } }, Outcome::Match),
+        ("`|=` on flags with several bits set", Case { id: "o3", path: "control", script: op_scripts[2], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a |= b; pair_text(&a, &b) } }, Outcome::Match),
+        ("`^=` on flags with several bits set", Case { id: "o4", path: "control", script: op_scripts[3], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a ^= b; pair_text(&a, &b) } }, Outcome::Match),
+        ("`^=` against the `|=` result fails: the whole left value is compared", Case { id: "o5", path: "control", script: op_scripts[3], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); let b = Flags::from_bits_retain(6); a |= b; pair_text(&a, &b) } }, Outcome::Mismatch),
+        ("a changed right operand fails: the right operand is compared too", Case { id: "o6", path: "control", script: op_scripts[2], has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let mut a = Flags::from_bits_retain(3); a |= Flags::from_bits_retain(6); pair_text(&a, &a) } }, Outcome::Mismatch),
+        ("`not_()` returns the complement and leaves the receiver", Case { id: "o7", path: "control", script: "pub fn setup() { [match polars::StatisticsFlags::from_bits_retain(3) { Ok(v) => v, Err(e) => panic(`${e}`) }] } pub fn main(__fx) { let a = __fx[0]; let r = a.not_(); ((a, r), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let a = Flags::from_bits_retain(3); let r = !a; pair_text(&a, &r) } }, Outcome::Match),
+        ("a receiver claimed changed by `not_()` fails", Case { id: "o8", path: "control", script: "pub fn setup() { [match polars::StatisticsFlags::from_bits_retain(3) { Ok(v) => v, Err(e) => panic(`${e}`) }] } pub fn main(__fx) { let a = __fx[0]; let r = a.not_(); ((a, r), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: flags_pair_side, oracle: || { let a = !Flags::from_bits_retain(3); pair_text(&a, &a) } }, Outcome::Mismatch),
+        ("`-=` on selectors that differ", Case { id: "o9", path: "control", script: "pub fn setup() { [polars::DataTypeSelector::Wildcard(), polars::DataTypeSelector::Float()] } pub fn main(__fx) { let a = __fx[0]; let b = __fx[1]; a -= b; ((a, b), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: sel_pair_side, oracle: || { let mut a = polars_plan::dsl::DataTypeSelector::Wildcard; let b = polars_plan::dsl::DataTypeSelector::Float; a -= b.clone(); pair_text(&a, &b) } }, Outcome::Match),
+        ("`from_i8` at -128", Case { id: "o10", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_i8(-128), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_fallible_side, oracle: || scalar_text(polars::prelude::Scalar::from(-128i8)) }, Outcome::Match),
+        ("`from_i8` at 127", Case { id: "o11", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_i8(127), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_fallible_side, oracle: || scalar_text(polars::prelude::Scalar::from(127i8)) }, Outcome::Match),
+        ("`from_i8` at 128 refuses with the conversion kind on both sides", Case { id: "o12", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_i8(128), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_fallible_side, oracle: || Staged::Ran(match i8::try_from(128i64) { Ok(v) => Side::Value(crate_oracle::Repr::Text(format!("{:?}", polars::prelude::Scalar::from(v)))), Err(_) => Side::Error("ConversionError".into()) }) }, Outcome::BothError),
+        ("`from_f32` with 0.1 gives the f32-rounded value", Case { id: "o13", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_f32(0.1), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_side, oracle: || scalar_text(polars::prelude::Scalar::from(0.1f32)) }, Outcome::Match),
+        ("`from_f32` with 1e40 gives infinity", Case { id: "o14", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_f32(1e40), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_side, oracle: || scalar_text(polars::prelude::Scalar::from(f32::INFINITY)) }, Outcome::Match),
+        ("`from_f32` against the f64 scalar fails", Case { id: "o15", path: "control", script: "pub fn setup() { [] } pub fn main(__fx) { (polars::Scalar::from_f32(0.1), ()) }", has_receiver: false, unordered: false, policy: "control", fmt: scalar_side, oracle: || scalar_text(polars::prelude::Scalar::from(0.1f64)) }, Outcome::Mismatch),
+    ];
+    for (label, case, expected) in &op_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    // an aliased operand (`a |= a`, and a second binding to the same value)
+    // is refused by Rune's dynamic borrow check before the Rust impl runs;
+    // the value is unchanged afterwards
+    {
+        let script = "pub fn setup() { [match polars::StatisticsFlags::from_bits_retain(3) { Ok(v) => v, Err(e) => panic(`${e}`) }] } pub fn aliased(__fx) { let a = __fx[0]; a |= a; a } pub fn rebound(__fx) { let a = __fx[0]; let b = a; a |= b; a } pub fn after(__fx) { __fx[0] }";
+        let mut sources = Sources::new();
+        sources.insert(Source::memory(script).unwrap()).unwrap();
+        let unit = Arc::new(rune::prepare(&mut sources).with_context(&h.context).build().unwrap());
+        let mut vm = Vm::new(h.runtime.clone(), unit);
+        let fx = vm.call(["setup"], ()).unwrap();
+        for name in ["aliased", "rebound"] {
+            match vm.call([name], (fx.clone(),)) {
+                Ok(_) => failures.push(format!("aliased operand `{name}` was not refused")),
+                // Rune 0.14.2 words the shared read of an exclusively held value "Cannot read, value is -X000000"
+                Err(e) => { let t = e.to_string(); if !(t.contains("borrow") || t.contains("Cannot read")) { failures.push(format!("aliased operand `{name}`: not a borrow refusal: {t}")); } }
+            }
+        }
+        let after = vm.call(["after"], (fx,)).unwrap();
+        let shown = rnx_polars::generated::fixtures::show_w_polars_core__chunked_array__flags__statisticsflags(&after).map(|s| s.to_text());
+        let expected = format!("{:?}", Flags::from_bits_retain(3));
+        if shown.as_deref() != Ok(expected.as_str()) { failures.push(format!("aliased operand: value after the refusal {shown:?}, expected {expected}")); }
+    }
+    // two cases of one path (two receivers) survive result collection independently
+    {
+        let twin = |id: &'static str| Case { id, path: "control::twin", script: "pub fn setup() { [] } pub fn main(__fx) { let a = fx::df(); (a, ()) }", has_receiver: false, unordered: false, policy: "control", fmt: df_side, oracle: || ran(same) };
+        let results: Vec<(&str, Outcome)> = [twin("t1"), twin("t1__on__other")].iter().map(|c| (c.id, h.run(c).0)).collect();
+        if results.len() != 2 || results.iter().any(|(_, o)| *o != Outcome::Match) || results[0].0 == results[1].0 {
+            failures.push(format!("twin receivers: {results:?}"));
+        }
+    }
+    for (label, case, expected) in one_sided_controls {
+        let (outcome, detail) = h.run(case);
+        if outcome != *expected || outcome.approved() || outcome.setup_failed() {
+            failures.push(format!("{label}: got {} ({detail}), expected {}", outcome.name(), expected.name()));
+        }
+    }
+    for (label, case, expected, passes) in join_controls {
+        let (outcome, detail) = h.run(case);
+        let ok = expected.contains(&outcome) && (*passes == outcome.approved());
+        if !ok { failures.push(format!("{label}: got {} ({detail})", outcome.name())); }
+    }
+    for (label, case, expected) in controls {
+        let (outcome, detail) = h.run(case);
+        if outcome.approved() || !expected.contains(&outcome) {
+            failures.push(format!("{label}: got {} ({detail})", outcome.name()));
+        }
+    }
+    std::panic::set_hook(previous);
+    assert!(failures.is_empty(), "controls that did not fail closed:\n{}", failures.join("\n"));
+}

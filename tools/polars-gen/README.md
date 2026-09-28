@@ -24,6 +24,28 @@ that cannot affect order, and a citation), and the oracle exclusions. `0.55.2.to
 the wrapper identity rules (equivalent aliases share one wrapper,
 same-name distinct types get distinct Rune paths).
 
+Since record 0114 the source is split by concern. `--self-test` runs all
+34 self-tests in their historical order (the `SELF_TESTS` list in
+`main.rs`). `cargo test --release --locked` runs each one through its
+module's `#[test]` wrapper.
+
+| module | concern |
+|---|---|
+| `main.rs` | CLI, the `SELF_TESTS` list |
+| `pipeline.rs` | the ordered dispatch chain: every callable through the family rules, deferred operator/`INDEX_GET` groups, census dispositions |
+| `release.rs` | the release file: schema, provenance, order policy |
+| `world/` | `World` and wrappers (`mod.rs`), argument/return mapping (`mapping.rs`), impl-head and bound proof (`proof.rs`) |
+| `emit/` | binding text: `Emitted`/`Entry` (`mod.rs`), callables and methods, free functions, instantiations, types, and `output.rs` (writing or `--check`) |
+| `families/` | one module per admission rule, with its gate, release schema, emitter and self-test |
+| `oracle/` | fixtures, the `Oracle` recipes, `emit.rs`; the fixed test-harness text is in `harness_*.rs.in` |
+| `census.rs` | the instantiation, iterator, conversion and callback censuses in `surface.json` |
+| `text.rs` | string helpers shared by the above |
+
+A new family rule goes in its own module under `families/`, with one call
+site in `pipeline.rs` and, if it has one, one oracle arm in
+`oracle/emit.rs`. It changes `world/`, `emit/` or `oracle/` only for a
+shared capability its plan names.
+
 Record 0082 admits immutable borrowed slices: a `&[T]` return, an
 iterator item `&[T]`, or a callback argument (`&[u8]`, `Option<&[u8]>`)
 whose element has a script conversion is copied into an owned Rune
