@@ -8921,6 +8921,9 @@ fn p_c373b069___null__nullchunkedbuilder_as_core__clone__clone(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::cast::CastOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_787c0a73_d_array__cast__castoptions_as_core__clone__clone(this: &W_polars_core__chunked_array__cast__CastOptions) -> W_polars_core__chunked_array__cast__CastOptions { W_polars_core__chunked_array__cast__CastOptions(this.0.clone()) }
+/// Polars: `polars_core::chunked_array::cast::CastOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_af584e0a_hunked_array__cast__castoptions_as_core__cmp__eq(this: &W_polars_core__chunked_array__cast__CastOptions, other: &W_polars_core__chunked_array__cast__CastOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::chunked_array::cast::CastOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_c6426246_array__cast__castoptions_as_core__cmp__partialeq(this: &W_polars_core__chunked_array__cast__CastOptions, other: &W_polars_core__chunked_array__cast__CastOptions) -> bool { this.0 == other.0 }
@@ -8930,9 +8933,15 @@ fn p_6ae3cac0_ray__cast__castoptions_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::chunked_array::cast::CastOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_ca4c7e40_ked_array__cast__castoptions_as_core__fmt__debug(this: &W_polars_core__chunked_array__cast__CastOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::chunked_array::cast::CastOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_cf7747ef_ked_array__cast__castoptions_as_core__hash__hash(this: &W_polars_core__chunked_array__cast__CastOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f8c93311_ay__flags__statisticsflags_as_core__clone__clone(this: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlags { W_polars_core__chunked_array__flags__StatisticsFlags(this.0.clone()) }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_36cfbb59_d_array__flags__statisticsflags_as_core__cmp__eq(this: &W_polars_core__chunked_array__flags__StatisticsFlags, other: &W_polars_core__chunked_array__flags__StatisticsFlags) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_c4daae80___flags__statisticsflags_as_core__cmp__partialeq(this: &W_polars_core__chunked_array__flags__StatisticsFlags, other: &W_polars_core__chunked_array__flags__StatisticsFlags) -> bool { this.0 == other.0 }
@@ -8969,6 +8978,12 @@ fn p_2c1f07d0_y__flags__statisticsflags_as_core__ops__bit__not(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlagsIM as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_4b377447___flags__statisticsflagsim_as_core__clone__clone(this: &W_polars_core__chunked_array__flags__StatisticsFlagsIM) -> W_polars_core__chunked_array__flags__StatisticsFlagsIM { W_polars_core__chunked_array__flags__StatisticsFlagsIM(this.0.clone()) }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlagsIM as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_1e3b84eb_array__flags__statisticsflagsim_as_core__cmp__eq(this: &W_polars_core__chunked_array__flags__StatisticsFlagsIM, other: &W_polars_core__chunked_array__flags__StatisticsFlagsIM) -> bool { this.0 == other.0 }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlagsIM as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_3903acc8_flags__statisticsflagsim_as_core__cmp__partialeq(this: &W_polars_core__chunked_array__flags__StatisticsFlagsIM, other: &W_polars_core__chunked_array__flags__StatisticsFlagsIM) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlagsIM as core::convert::From<polars_core::chunked_array::flags::StatisticsFlags>`. from_statistics_flags(value: StatisticsFlags) -> StatisticsFlagsIM
 #[rune::function(free, path = W_polars_core__chunked_array__flags__StatisticsFlagsIM::from_statistics_flags)]
 fn f_6c1cc0dc_rs_core__chunked_array__flags__statisticsflagsim(value: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlagsIM { let __r = <polars::chunked_array::flags::StatisticsFlagsIM as From<polars::chunked_array::flags::StatisticsFlags>>::from(value.0.clone()); W_polars_core__chunked_array__flags__StatisticsFlagsIM(__r) }
@@ -8978,12 +8993,18 @@ fn p_9171defa_ay__flags__statisticsflagsim_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::ExplodeOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_ed688b19_array__ops__explodeoptions_as_core__clone__clone(this: &W_polars_core__chunked_array__ops__ExplodeOptions) -> W_polars_core__chunked_array__ops__ExplodeOptions { W_polars_core__chunked_array__ops__ExplodeOptions(this.0.clone()) }
+/// Polars: `polars_core::chunked_array::ops::ExplodeOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_baf023e4_nked_array__ops__explodeoptions_as_core__cmp__eq(this: &W_polars_core__chunked_array__ops__ExplodeOptions, other: &W_polars_core__chunked_array__ops__ExplodeOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::chunked_array::ops::ExplodeOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_3147d860_ray__ops__explodeoptions_as_core__cmp__partialeq(this: &W_polars_core__chunked_array__ops__ExplodeOptions, other: &W_polars_core__chunked_array__ops__ExplodeOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::chunked_array::ops::ExplodeOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_2f7a8194_d_array__ops__explodeoptions_as_core__fmt__debug(this: &W_polars_core__chunked_array__ops__ExplodeOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::chunked_array::ops::ExplodeOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_6eaae49c_d_array__ops__explodeoptions_as_core__hash__hash(this: &W_polars_core__chunked_array__ops__ExplodeOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::chunked_array::ops::FillNullStrategy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f9614fa5_ray__ops__fillnullstrategy_as_core__clone__clone(this: &W_polars_core__chunked_array__ops__FillNullStrategy) -> W_polars_core__chunked_array__ops__FillNullStrategy { W_polars_core__chunked_array__ops__FillNullStrategy(this.0.clone()) }
@@ -8996,6 +9017,9 @@ fn p_c444a93d_array__ops__fillnullstrategy_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_4ab24996_h_sorted__searchsortedside_as_core__clone__clone(this: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide) -> W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide { W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide(this.0.clone()) }
+/// Polars: `polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_e45fa70c_search_sorted__searchsortedside_as_core__cmp__eq(this: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide, other: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_c7af2fbf_sorted__searchsortedside_as_core__cmp__partialeq(this: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide, other: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide) -> bool { this.0 == other.0 }
@@ -9005,9 +9029,15 @@ fn p_bcd34a7a_rted__searchsortedside_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_3ba76a74_rch_sorted__searchsortedside_as_core__fmt__debug(this: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_7de17d19_rch_sorted__searchsortedside_as_core__hash__hash(this: &W_polars_core__chunked_array__ops__search_sorted__SearchSortedSide, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_83e30ef3_tions__sortmultipleoptions_as_core__clone__clone(this: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions { W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions(this.0.clone()) }
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_a5488ee9_t__options__sortmultipleoptions_as_core__cmp__eq(this: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions, other: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e25a91e9_ons__sortmultipleoptions_as_core__cmp__partialeq(this: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions, other: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions) -> bool { this.0 == other.0 }
@@ -9020,9 +9050,15 @@ fn p_a57c33b4_s__sortmultipleoptions_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_ea4106e7_options__sortmultipleoptions_as_core__fmt__debug(this: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_c92197c6_options__sortmultipleoptions_as_core__hash__hash(this: &W_polars_core__chunked_array__ops__sort__options__SortMultipleOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_61ae14b9_sort__options__sortoptions_as_core__clone__clone(this: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> W_polars_core__chunked_array__ops__sort__options__SortOptions { W_polars_core__chunked_array__ops__sort__options__SortOptions(this.0.clone()) }
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_0e9979b2_ops__sort__options__sortoptions_as_core__cmp__eq(this: &W_polars_core__chunked_array__ops__sort__options__SortOptions, other: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e1ddcfaf_rt__options__sortoptions_as_core__cmp__partialeq(this: &W_polars_core__chunked_array__ops__sort__options__SortOptions, other: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> bool { this.0 == other.0 }
@@ -9035,6 +9071,9 @@ fn p_a52bb73a___options__sortoptions_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_7b063c10___sort__options__sortoptions_as_core__fmt__debug(this: &W_polars_core__chunked_array__ops__sort__options__SortOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::chunked_array::ops::sort::options::SortOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_09939bd3___sort__options__sortoptions_as_core__hash__hash(this: &W_polars_core__chunked_array__ops__sort__options__SortOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::datatypes::BinaryOffsetType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_825e24bc_atatypes__binaryoffsettype_as_core__clone__clone(this: &W_polars_core__datatypes__BinaryOffsetType) -> W_polars_core__datatypes__BinaryOffsetType { W_polars_core__datatypes__BinaryOffsetType(this.0.clone()) }
@@ -9104,15 +9143,27 @@ fn p_bfa49e68_core__datatypes__uint8type_as_core__clone__clone(this: &W_polars_c
 /// Polars: `polars_core::datatypes::dtype::CompatLevel as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_dc785fe4_atypes__dtype__compatlevel_as_core__clone__clone(this: &W_polars_core__datatypes__dtype__CompatLevel) -> W_polars_core__datatypes__dtype__CompatLevel { W_polars_core__datatypes__dtype__CompatLevel(this.0.clone()) }
+/// Polars: `polars_core::datatypes::dtype::CompatLevel as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_7b7fd75d___datatypes__dtype__compatlevel_as_core__cmp__eq(this: &W_polars_core__datatypes__dtype__CompatLevel, other: &W_polars_core__datatypes__dtype__CompatLevel) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::datatypes::dtype::CompatLevel as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_158069ff_ypes__dtype__compatlevel_as_core__cmp__partialeq(this: &W_polars_core__datatypes__dtype__CompatLevel, other: &W_polars_core__datatypes__dtype__CompatLevel) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::datatypes::dtype::CompatLevel as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_2c9ef818_atatypes__dtype__compatlevel_as_core__fmt__debug(this: &W_polars_core__datatypes__dtype__CompatLevel, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::datatypes::dtype::CompatLevel as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_761ba34e_atatypes__dtype__compatlevel_as_core__hash__hash(this: &W_polars_core__datatypes__dtype__CompatLevel, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::datatypes::dtype::DataType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_d5beb85c_datatypes__dtype__datatype_as_core__clone__clone(this: &W_polars_core__datatypes__dtype__DataType) -> W_polars_core__datatypes__dtype__DataType { W_polars_core__datatypes__dtype__DataType(this.0.clone()) }
+/// Polars: `polars_core::datatypes::dtype::DataType as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_3f38aa27_ore__datatypes__dtype__datatype_as_core__cmp__eq(this: &W_polars_core__datatypes__dtype__DataType, other: &W_polars_core__datatypes__dtype__DataType) -> bool { this.0 == other.0 }
+/// Polars: `polars_core::datatypes::dtype::DataType as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_7aa07c19_tatypes__dtype__datatype_as_core__cmp__partialeq(this: &W_polars_core__datatypes__dtype__DataType, other: &W_polars_core__datatypes__dtype__DataType) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::datatypes::dtype::DataType as core::convert::From<polars_dtype::categorical::CategoricalPhysical>`. from_categorical_physical(value: CategoricalPhysical) -> DataType
 #[rune::function(free, path = W_polars_core__datatypes__dtype__DataType::from_categorical_physical)]
 fn f_c3e73ac8_hysical__polars_core__datatypes__dtype__datatype(value: &W_polars_dtype__categorical__CategoricalPhysical) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::DataType as From<polars_dtype::categorical::CategoricalPhysical>>::from(value.0.clone()); W_polars_core__datatypes__dtype__DataType(__r) }
@@ -9122,9 +9173,15 @@ fn p_19f7b58a___datatypes__dtype__datatype_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::datatypes::dtype::DataType as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_67693477_datatypes__dtype__datatype_as_core__fmt__display(this: &W_polars_core__datatypes__dtype__DataType, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::datatypes::dtype::DataType as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_1904a078___datatypes__dtype__datatype_as_core__hash__hash(this: &W_polars_core__datatypes__dtype__DataType, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::datatypes::dtype::UnknownKind as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_81cfac00_atypes__dtype__unknownkind_as_core__clone__clone(this: &W_polars_core__datatypes__dtype__UnknownKind) -> W_polars_core__datatypes__dtype__UnknownKind { W_polars_core__datatypes__dtype__UnknownKind(this.0.clone()) }
+/// Polars: `polars_core::datatypes::dtype::UnknownKind as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_88eb5481___datatypes__dtype__unknownkind_as_core__cmp__eq(this: &W_polars_core__datatypes__dtype__UnknownKind, other: &W_polars_core__datatypes__dtype__UnknownKind) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::datatypes::dtype::UnknownKind as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_05a5cf19_ypes__dtype__unknownkind_as_core__cmp__partialeq(this: &W_polars_core__datatypes__dtype__UnknownKind, other: &W_polars_core__datatypes__dtype__UnknownKind) -> bool { this.0 == other.0 }
@@ -9134,21 +9191,36 @@ fn p_d7f15131_es__dtype__unknownkind_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::datatypes::dtype::UnknownKind as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_679b2af4_atatypes__dtype__unknownkind_as_core__fmt__debug(this: &W_polars_core__datatypes__dtype__UnknownKind, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::datatypes::dtype::UnknownKind as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_1c05e875_atatypes__dtype__unknownkind_as_core__hash__hash(this: &W_polars_core__datatypes__dtype__UnknownKind, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::datatypes::field::Field as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_8addd2a4_e__datatypes__field__field_as_core__clone__clone(this: &W_polars_core__datatypes__field__Field) -> W_polars_core__datatypes__field__Field { W_polars_core__datatypes__field__Field(this.0.clone()) }
+/// Polars: `polars_core::datatypes::field::Field as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_079ce4e4_s_core__datatypes__field__field_as_core__cmp__eq(this: &W_polars_core__datatypes__field__Field, other: &W_polars_core__datatypes__field__Field) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::datatypes::field::Field as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_15f254a0__datatypes__field__field_as_core__cmp__partialeq(this: &W_polars_core__datatypes__field__Field, other: &W_polars_core__datatypes__field__Field) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::datatypes::field::Field as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_e4f351db_ore__datatypes__field__field_as_core__fmt__debug(this: &W_polars_core__datatypes__field__Field, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::datatypes::field::Field as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_6f303d0d_ore__datatypes__field__field_as_core__hash__hash(this: &W_polars_core__datatypes__field__Field, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_80377a00_poral__time_unit__timeunit_as_core__clone__clone(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> W_polars_core__datatypes__temporal__time_unit__TimeUnit { W_polars_core__datatypes__temporal__time_unit__TimeUnit(this.0.clone()) }
+/// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_f2957ab7___temporal__time_unit__timeunit_as_core__cmp__eq(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit, other: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_d10b8ff0_ral__time_unit__timeunit_as_core__cmp__partialeq(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit, other: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> bool { this.0 == other.0 }
+/// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::cmp::PartialOrd`.
+#[rune::function(instance, protocol = PARTIAL_CMP)]
+fn p_a0123a49_al__time_unit__timeunit_as_core__cmp__partialord(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit, other: &W_polars_core__datatypes__temporal__time_unit__TimeUnit) -> Option<core::cmp::Ordering> { core::cmp::PartialOrd::partial_cmp(&this.0, &other.0) }
 /// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::convert::From<&polars_arrow::datatypes::TimeUnit>`. from_time_unit_ref(value: TimeUnit) -> TimeUnit
 #[rune::function(free, path = W_polars_core__datatypes__temporal__time_unit__TimeUnit::from_time_unit_ref)]
 fn f_111727c1_s_core__datatypes__temporal__time_unit__timeunit(value: &W_polars_arrow__datatypes__TimeUnit) -> W_polars_core__datatypes__temporal__time_unit__TimeUnit { let __r = <polars_core::datatypes::TimeUnit as From<&polars::prelude::datatypes::ArrowTimeUnit>>::from(&value.0); W_polars_core__datatypes__temporal__time_unit__TimeUnit(__r) }
@@ -9158,9 +9230,15 @@ fn p_27f8cf16_emporal__time_unit__timeunit_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_d802bb4e_poral__time_unit__timeunit_as_core__fmt__display(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::datatypes::temporal::time_unit::TimeUnit as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_e4cc3422_emporal__time_unit__timeunit_as_core__hash__hash(this: &W_polars_core__datatypes__temporal__time_unit__TimeUnit, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::datatypes::temporal::time_zone::TimeZone as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_6b512183_poral__time_zone__timezone_as_core__clone__clone(this: &W_polars_core__datatypes__temporal__time_zone__TimeZone) -> W_polars_core__datatypes__temporal__time_zone__TimeZone { W_polars_core__datatypes__temporal__time_zone__TimeZone(this.0.clone()) }
+/// Polars: `polars_core::datatypes::temporal::time_zone::TimeZone as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_aac8758e___temporal__time_zone__timezone_as_core__cmp__eq(this: &W_polars_core__datatypes__temporal__time_zone__TimeZone, other: &W_polars_core__datatypes__temporal__time_zone__TimeZone) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::datatypes::temporal::time_zone::TimeZone as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_9869ee65_ral__time_zone__timezone_as_core__cmp__partialeq(this: &W_polars_core__datatypes__temporal__time_zone__TimeZone, other: &W_polars_core__datatypes__temporal__time_zone__TimeZone) -> bool { this.0 == other.0 }
@@ -9170,9 +9248,15 @@ fn p_2602c5b3_emporal__time_zone__timezone_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::datatypes::temporal::time_zone::TimeZone as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_3139b6ef_poral__time_zone__timezone_as_core__fmt__display(this: &W_polars_core__datatypes__temporal__time_zone__TimeZone, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::datatypes::temporal::time_zone::TimeZone as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_fd1a516a_emporal__time_zone__timezone_as_core__hash__hash(this: &W_polars_core__datatypes__temporal__time_zone__TimeZone, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::frame::PivotColumnNaming as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_ee50e56c___frame__pivotcolumnnaming_as_core__clone__clone(this: &W_polars_core__frame__PivotColumnNaming) -> W_polars_core__frame__PivotColumnNaming { W_polars_core__frame__PivotColumnNaming(this.0.clone()) }
+/// Polars: `polars_core::frame::PivotColumnNaming as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_6f044185__core__frame__pivotcolumnnaming_as_core__cmp__eq(this: &W_polars_core__frame__PivotColumnNaming, other: &W_polars_core__frame__PivotColumnNaming) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::frame::PivotColumnNaming as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_09d70872_frame__pivotcolumnnaming_as_core__cmp__partialeq(this: &W_polars_core__frame__PivotColumnNaming, other: &W_polars_core__frame__PivotColumnNaming) -> bool { this.0 == other.0 }
@@ -9182,9 +9266,15 @@ fn p_a40be9cf_ame__pivotcolumnnaming_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::frame::PivotColumnNaming as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_0690e0f0_re__frame__pivotcolumnnaming_as_core__fmt__debug(this: &W_polars_core__frame__PivotColumnNaming, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::frame::PivotColumnNaming as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_597047cc_re__frame__pivotcolumnnaming_as_core__hash__hash(this: &W_polars_core__frame__PivotColumnNaming, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::frame::UniqueKeepStrategy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_e7655cfc__frame__uniquekeepstrategy_as_core__clone__clone(this: &W_polars_core__frame__UniqueKeepStrategy) -> W_polars_core__frame__UniqueKeepStrategy { W_polars_core__frame__UniqueKeepStrategy(this.0.clone()) }
+/// Polars: `polars_core::frame::UniqueKeepStrategy as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_08d7be7d_core__frame__uniquekeepstrategy_as_core__cmp__eq(this: &W_polars_core__frame__UniqueKeepStrategy, other: &W_polars_core__frame__UniqueKeepStrategy) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::frame::UniqueKeepStrategy as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_6b2dd042_rame__uniquekeepstrategy_as_core__cmp__partialeq(this: &W_polars_core__frame__UniqueKeepStrategy, other: &W_polars_core__frame__UniqueKeepStrategy) -> bool { this.0 == other.0 }
@@ -9194,9 +9284,15 @@ fn p_ec06cb05_me__uniquekeepstrategy_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::frame::UniqueKeepStrategy as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_df0f79ba_e__frame__uniquekeepstrategy_as_core__fmt__debug(this: &W_polars_core__frame__UniqueKeepStrategy, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::frame::UniqueKeepStrategy as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_180b63e8_e__frame__uniquekeepstrategy_as_core__hash__hash(this: &W_polars_core__frame__UniqueKeepStrategy, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::frame::column::Column as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2d1c06dd_ore__frame__column__column_as_core__clone__clone(this: &W_polars_core__frame__column__Column) -> W_polars_core__frame__column__Column { W_polars_core__frame__column__Column(this.0.clone()) }
+/// Polars: `polars_core::frame::column::Column as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_9bef3223_e__frame__column__column_as_core__cmp__partialeq(this: &W_polars_core__frame__column__Column, other: &W_polars_core__frame__column__Column) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::frame::column::Column as core::convert::From<polars_core::frame::column::scalar::ScalarColumn>`. from_scalar_column(value: ScalarColumn) -> Column
 #[rune::function(free, path = W_polars_core__frame__column__Column::from_scalar_column)]
 fn f_d59c4694_scalarcolumn__polars_core__frame__column__column(value: &W_polars_core__frame__column__scalar__ScalarColumn) -> W_polars_core__frame__column__Column { let __arg0 = value.0.clone(); let __r = crate::engine::infallible(crate::engine::run("polars::Column::from_scalar_column", move || <polars::frame::column::Column as From<polars::frame::column::ScalarColumn>>::from(__arg0)), "polars::Column::from_scalar_column"); W_polars_core__frame__column__Column(__r) }
@@ -9218,6 +9314,9 @@ fn p_5d39abb8_column__scalar__scalarcolumn_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::frame::dataframe::DataFrame as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_183e2539_rame__dataframe__dataframe_as_core__clone__clone(this: &DataFrame) -> DataFrame { DataFrame(this.0.clone()) }
+/// Polars: `polars_core::frame::dataframe::DataFrame as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_b972b356_me__dataframe__dataframe_as_core__cmp__partialeq(this: &DataFrame, other: &DataFrame) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::frame::dataframe::DataFrame as core::default::Default`.
 #[rune::function(free, path = DataFrame::default_)]
 fn p_3352e5bb___dataframe__dataframe_as_core__default__default() -> DataFrame { DataFrame(<polars::frame::DataFrame>::default()) }
@@ -9227,6 +9326,9 @@ fn p_e1a5a36b__frame__dataframe__dataframe_as_core__fmt__debug(this: &DataFrame,
 /// Polars: `polars_core::frame::explode::UnpivotArgsIR as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_fded30a5_me__explode__unpivotargsir_as_core__clone__clone(this: &W_polars_core__frame__explode__UnpivotArgsIR) -> W_polars_core__frame__explode__UnpivotArgsIR { W_polars_core__frame__explode__UnpivotArgsIR(this.0.clone()) }
+/// Polars: `polars_core::frame::explode::UnpivotArgsIR as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_d931828c___frame__explode__unpivotargsir_as_core__cmp__eq(this: &W_polars_core__frame__explode__UnpivotArgsIR, other: &W_polars_core__frame__explode__UnpivotArgsIR) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::frame::explode::UnpivotArgsIR as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e7a3c056___explode__unpivotargsir_as_core__cmp__partialeq(this: &W_polars_core__frame__explode__UnpivotArgsIR, other: &W_polars_core__frame__explode__UnpivotArgsIR) -> bool { this.0 == other.0 }
@@ -9236,6 +9338,9 @@ fn p_848925a8_explode__unpivotargsir_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::frame::explode::UnpivotArgsIR as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_7a122dd9_rame__explode__unpivotargsir_as_core__fmt__debug(this: &W_polars_core__frame__explode__UnpivotArgsIR, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::frame::explode::UnpivotArgsIR as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_eb69a724_rame__explode__unpivotargsir_as_core__hash__hash(this: &W_polars_core__frame__explode__UnpivotArgsIR, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::frame::group_by::GroupByMethod as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_852d6f78_e__group_by__groupbymethod_as_core__clone__clone(this: &W_polars_core__frame__group_by__GroupByMethod) -> W_polars_core__frame__group_by__GroupByMethod { W_polars_core__frame__group_by__GroupByMethod(this.0.clone()) }
@@ -9257,6 +9362,9 @@ fn p_1af8b781_by__position__grouppositions_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::frame::group_by::position::GroupsIdx as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b1b2732f_up_by__position__groupsidx_as_core__clone__clone(this: &W_polars_core__frame__group_by__position__GroupsIdx) -> W_polars_core__frame__group_by__position__GroupsIdx { W_polars_core__frame__group_by__position__GroupsIdx(this.0.clone()) }
+/// Polars: `polars_core::frame::group_by::position::GroupsIdx as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_a9b6f654___group_by__position__groupsidx_as_core__cmp__eq(this: &W_polars_core__frame__group_by__position__GroupsIdx, other: &W_polars_core__frame__group_by__position__GroupsIdx) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::frame::group_by::position::GroupsIdx as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_f09f7295__by__position__groupsidx_as_core__cmp__partialeq(this: &W_polars_core__frame__group_by__position__GroupsIdx, other: &W_polars_core__frame__group_by__position__GroupsIdx) -> bool { this.0 == other.0 }
@@ -9269,6 +9377,9 @@ fn p_6c713403_roup_by__position__groupsidx_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::frame::group_by::position::GroupsType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f2af2bd7_p_by__position__groupstype_as_core__clone__clone(this: &W_polars_core__frame__group_by__position__GroupsType) -> W_polars_core__frame__group_by__position__GroupsType { W_polars_core__frame__group_by__position__GroupsType(this.0.clone()) }
+/// Polars: `polars_core::frame::group_by::position::GroupsType as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_4a28399c__group_by__position__groupstype_as_core__cmp__eq(this: &W_polars_core__frame__group_by__position__GroupsType, other: &W_polars_core__frame__group_by__position__GroupsType) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::frame::group_by::position::GroupsType as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_6aaaae02_by__position__groupstype_as_core__cmp__partialeq(this: &W_polars_core__frame__group_by__position__GroupsType, other: &W_polars_core__frame__group_by__position__GroupsType) -> bool { this.0 == other.0 }
@@ -9284,6 +9395,9 @@ fn p_05114a8e_oup_by__position__groupstype_as_core__fmt__debug(this: &W_polars_c
 /// Polars: `polars_core::scalar::Scalar as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_8fba6366_olars_core__scalar__scalar_as_core__clone__clone(this: &W_polars_core__scalar__Scalar) -> W_polars_core__scalar__Scalar { W_polars_core__scalar__Scalar(this.0.clone()) }
+/// Polars: `polars_core::scalar::Scalar as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_e1056afd_polars_core__scalar__scalar_as_core__cmp__eq(this: &W_polars_core__scalar__Scalar, other: &W_polars_core__scalar__Scalar) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::scalar::Scalar as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_dfbeeb25_ars_core__scalar__scalar_as_core__cmp__partialeq(this: &W_polars_core__scalar__Scalar, other: &W_polars_core__scalar__Scalar) -> bool { this.0 == other.0 }
@@ -9341,9 +9455,15 @@ fn p_921cc534_s_core__scalar__scalar_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::scalar::Scalar as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_d8ae41dd_polars_core__scalar__scalar_as_core__fmt__debug(this: &W_polars_core__scalar__Scalar, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::scalar::Scalar as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_675f469e_polars_core__scalar__scalar_as_core__hash__hash(this: &W_polars_core__scalar__Scalar, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::series::Series as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_6e2f06bb_olars_core__series__series_as_core__clone__clone(this: &W_polars_core__series__Series) -> W_polars_core__series__Series { W_polars_core__series__Series(this.0.clone()) }
+/// Polars: `polars_core::series::Series as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_8b4f648d_ars_core__series__series_as_core__cmp__partialeq(this: &W_polars_core__series__Series, other: &W_polars_core__series__Series) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::series::Series as core::convert::From<polars_core::chunked_array::logical::date::DateChunked>`. from_date_chunked(value: DateChunked) -> Series
 #[rune::function(free, path = W_polars_core__series__Series::from_date_chunked)]
 fn f_36f6b8e5___date__datechunked__polars_core__series__series(value: &W_polars_core__chunked_array__logical__date__DateChunked) -> W_polars_core__series__Series { let __arg0 = value.0.clone(); let __r = crate::engine::infallible(crate::engine::run("polars::Series::from_date_chunked", move || <polars::series::Series as From<polars_core::datatypes::DateChunked>>::from(__arg0)), "polars::Series::from_date_chunked"); W_polars_core__series__Series(__r) }
@@ -9377,6 +9497,9 @@ fn p_9b74a847_tations__null__nullchunked_as_core__clone__clone(this: &W_polars_c
 /// Polars: `polars_core::series::ops::NullBehavior as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_7bd095c6__series__ops__nullbehavior_as_core__clone__clone(this: &W_polars_core__series__ops__NullBehavior) -> W_polars_core__series__ops__NullBehavior { W_polars_core__series__ops__NullBehavior(this.0.clone()) }
+/// Polars: `polars_core::series::ops::NullBehavior as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_b4d063f5_core__series__ops__nullbehavior_as_core__cmp__eq(this: &W_polars_core__series__ops__NullBehavior, other: &W_polars_core__series__ops__NullBehavior) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::series::ops::NullBehavior as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_4cc3fe7c_eries__ops__nullbehavior_as_core__cmp__partialeq(this: &W_polars_core__series__ops__NullBehavior, other: &W_polars_core__series__ops__NullBehavior) -> bool { this.0 == other.0 }
@@ -9386,24 +9509,42 @@ fn p_cf2a3a96_ies__ops__nullbehavior_as_core__default__default() -> W_polars_cor
 /// Polars: `polars_core::series::ops::NullBehavior as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_939b232e_e__series__ops__nullbehavior_as_core__fmt__debug(this: &W_polars_core__series__ops__NullBehavior, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::series::ops::NullBehavior as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_19b96d18_e__series__ops__nullbehavior_as_core__hash__hash(this: &W_polars_core__series__ops__NullBehavior, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_core::series::series_trait::IsSorted as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_92c7504e_es__series_trait__issorted_as_core__clone__clone(this: &W_polars_core__series__series_trait__IsSorted) -> W_polars_core__series__series_trait__IsSorted { W_polars_core__series__series_trait__IsSorted(this.0.clone()) }
+/// Polars: `polars_core::series::series_trait::IsSorted as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_58275524__series__series_trait__issorted_as_core__cmp__eq(this: &W_polars_core__series__series_trait__IsSorted, other: &W_polars_core__series__series_trait__IsSorted) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::series::series_trait::IsSorted as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_21c7cda4___series_trait__issorted_as_core__cmp__partialeq(this: &W_polars_core__series__series_trait__IsSorted, other: &W_polars_core__series__series_trait__IsSorted) -> bool { this.0 == other.0 }
 /// Polars: `polars_core::series::series_trait::IsSorted as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_09646560_ries__series_trait__issorted_as_core__fmt__debug(this: &W_polars_core__series__series_trait__IsSorted, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::series::series_trait::IsSorted as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_b36a3ce3_ries__series_trait__issorted_as_core__hash__hash(this: &W_polars_core__series__series_trait__IsSorted, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_dtype::categorical::CategoricalPhysical as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_9ac11106_rical__categoricalphysical_as_core__clone__clone(this: &W_polars_dtype__categorical__CategoricalPhysical) -> W_polars_dtype__categorical__CategoricalPhysical { W_polars_dtype__categorical__CategoricalPhysical(this.0.clone()) }
+/// Polars: `polars_dtype::categorical::CategoricalPhysical as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_0cee26e3_ategorical__categoricalphysical_as_core__cmp__eq(this: &W_polars_dtype__categorical__CategoricalPhysical, other: &W_polars_dtype__categorical__CategoricalPhysical) -> bool { this.0 == other.0 }
 /// Polars: `polars_dtype::categorical::CategoricalPhysical as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_8d40d870_cal__categoricalphysical_as_core__cmp__partialeq(this: &W_polars_dtype__categorical__CategoricalPhysical, other: &W_polars_dtype__categorical__CategoricalPhysical) -> bool { this.0 == other.0 }
 /// Polars: `polars_dtype::categorical::CategoricalPhysical as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_2f670921_gorical__categoricalphysical_as_core__fmt__debug(this: &W_polars_dtype__categorical__CategoricalPhysical, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_dtype::categorical::CategoricalPhysical as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_39316dc4_gorical__categoricalphysical_as_core__hash__hash(this: &W_polars_dtype__categorical__CategoricalPhysical, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_dtype::categorical::CategoricalPhysical as core::str::traits::FromStr`.
+#[rune::function(free, path = W_polars_dtype__categorical__CategoricalPhysical::parse)]
+fn p_0b434565_ategoricalphysical_as_core__str__traits__fromstr(s: &str) -> Result<W_polars_dtype__categorical__CategoricalPhysical, Error> { <polars_dtype::categorical::CategoricalPhysical as core::str::FromStr>::from_str(s).map(W_polars_dtype__categorical__CategoricalPhysical).map_err(|e| Error::conversion(&format!("parse: {e:?}"))) }
 /// Polars: `polars_dtype::categorical::Categories as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_9bb33ac7_ype__categorical__categories_as_core__fmt__debug(this: &W_polars_dtype__categorical__Categories, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -9497,18 +9638,33 @@ fn p_ea64c0d8_currency_config__fetchconfig_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::cloud::credential_provider::CredentialProviderFunction as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_1f69dab4_credentialproviderfunction_as_core__clone__clone(this: &W_polars_io__cloud__credential_provider__CredentialProviderFunction) -> W_polars_io__cloud__credential_provider__CredentialProviderFunction { W_polars_io__cloud__credential_provider__CredentialProviderFunction(this.0.clone()) }
+/// Polars: `polars_io::cloud::credential_provider::CredentialProviderFunction as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_9f18b210_der__credentialproviderfunction_as_core__cmp__eq(this: &W_polars_io__cloud__credential_provider__CredentialProviderFunction, other: &W_polars_io__cloud__credential_provider__CredentialProviderFunction) -> bool { this.0 == other.0 }
+/// Polars: `polars_io::cloud::credential_provider::CredentialProviderFunction as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_704537c1_edentialproviderfunction_as_core__cmp__partialeq(this: &W_polars_io__cloud__credential_provider__CredentialProviderFunction, other: &W_polars_io__cloud__credential_provider__CredentialProviderFunction) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::cloud::credential_provider::CredentialProviderFunction as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_e5b60ef6___credentialproviderfunction_as_core__fmt__debug(this: &W_polars_io__cloud__credential_provider__CredentialProviderFunction, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::cloud::credential_provider::CredentialProviderFunction as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_15ba3049___credentialproviderfunction_as_core__hash__hash(this: &W_polars_io__cloud__credential_provider__CredentialProviderFunction, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::cloud::credential_provider::PlCredentialProvider as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_5863ac39_ider__plcredentialprovider_as_core__clone__clone(this: &W_polars_io__cloud__credential_provider__PlCredentialProvider) -> W_polars_io__cloud__credential_provider__PlCredentialProvider { W_polars_io__cloud__credential_provider__PlCredentialProvider(this.0.clone()) }
+/// Polars: `polars_io::cloud::credential_provider::PlCredentialProvider as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_7f4c1ea0__provider__plcredentialprovider_as_core__cmp__eq(this: &W_polars_io__cloud__credential_provider__PlCredentialProvider, other: &W_polars_io__cloud__credential_provider__PlCredentialProvider) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::cloud::credential_provider::PlCredentialProvider as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_b7e11bcb_er__plcredentialprovider_as_core__cmp__partialeq(this: &W_polars_io__cloud__credential_provider__PlCredentialProvider, other: &W_polars_io__cloud__credential_provider__PlCredentialProvider) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::cloud::credential_provider::PlCredentialProvider as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_4d8add5b_ovider__plcredentialprovider_as_core__fmt__debug(this: &W_polars_io__cloud__credential_provider__PlCredentialProvider, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::cloud::credential_provider::PlCredentialProvider as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_4136eba7_ovider__plcredentialprovider_as_core__hash__hash(this: &W_polars_io__cloud__credential_provider__PlCredentialProvider, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::cloud::dns::CachingResolver as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_d6dc4651_loud__dns__cachingresolver_as_core__clone__clone(this: &W_polars_io__cloud__dns__CachingResolver) -> W_polars_io__cloud__dns__CachingResolver { W_polars_io__cloud__dns__CachingResolver(this.0.clone()) }
@@ -9533,15 +9689,24 @@ fn p_ec56ed2e___cloud__glob__cloudlocation_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::cloud::options::CloudConfig as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_c4513053_loud__options__cloudconfig_as_core__clone__clone(this: &W_polars_io__cloud__options__CloudConfig) -> W_polars_io__cloud__options__CloudConfig { W_polars_io__cloud__options__CloudConfig(this.0.clone()) }
+/// Polars: `polars_io::cloud::options::CloudConfig as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_c9c54f70_io__cloud__options__cloudconfig_as_core__cmp__eq(this: &W_polars_io__cloud__options__CloudConfig, other: &W_polars_io__cloud__options__CloudConfig) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::cloud::options::CloudConfig as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_86b1fc82_ud__options__cloudconfig_as_core__cmp__partialeq(this: &W_polars_io__cloud__options__CloudConfig, other: &W_polars_io__cloud__options__CloudConfig) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::cloud::options::CloudConfig as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_e18edaaa__cloud__options__cloudconfig_as_core__fmt__debug(this: &W_polars_io__cloud__options__CloudConfig, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::cloud::options::CloudConfig as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_d908f51f__cloud__options__cloudconfig_as_core__hash__hash(this: &W_polars_io__cloud__options__CloudConfig, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::cloud::options::CloudOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_564ac14b_oud__options__cloudoptions_as_core__clone__clone(this: &W_polars_io__cloud__options__CloudOptions) -> W_polars_io__cloud__options__CloudOptions { W_polars_io__cloud__options__CloudOptions(this.0.clone()) }
+/// Polars: `polars_io::cloud::options::CloudOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_cd415fd4_o__cloud__options__cloudoptions_as_core__cmp__eq(this: &W_polars_io__cloud__options__CloudOptions, other: &W_polars_io__cloud__options__CloudOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::cloud::options::CloudOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_b4a36246_d__options__cloudoptions_as_core__cmp__partialeq(this: &W_polars_io__cloud__options__CloudOptions, other: &W_polars_io__cloud__options__CloudOptions) -> bool { this.0 == other.0 }
@@ -9551,9 +9716,15 @@ fn p_fcd0c468__options__cloudoptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::cloud::options::CloudOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_ff875098_cloud__options__cloudoptions_as_core__fmt__debug(this: &W_polars_io__cloud__options__CloudOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::cloud::options::CloudOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_bd168aeb_cloud__options__cloudoptions_as_core__hash__hash(this: &W_polars_io__cloud__options__CloudOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::cloud::options::CloudRetryConfig as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_5e0f8373__options__cloudretryconfig_as_core__clone__clone(this: &W_polars_io__cloud__options__CloudRetryConfig) -> W_polars_io__cloud__options__CloudRetryConfig { W_polars_io__cloud__options__CloudRetryConfig(this.0.clone()) }
+/// Polars: `polars_io::cloud::options::CloudRetryConfig as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_bca8b740_loud__options__cloudretryconfig_as_core__cmp__eq(this: &W_polars_io__cloud__options__CloudRetryConfig, other: &W_polars_io__cloud__options__CloudRetryConfig) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::cloud::options::CloudRetryConfig as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_ac019549_ptions__cloudretryconfig_as_core__cmp__partialeq(this: &W_polars_io__cloud__options__CloudRetryConfig, other: &W_polars_io__cloud__options__CloudRetryConfig) -> bool { this.0 == other.0 }
@@ -9563,6 +9734,9 @@ fn p_fbb9fc9b_ions__cloudretryconfig_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::cloud::options::CloudRetryConfig as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_c18c7fac_d__options__cloudretryconfig_as_core__fmt__debug(this: &W_polars_io__cloud__options__CloudRetryConfig, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::cloud::options::CloudRetryConfig as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_adeb4f07_d__options__cloudretryconfig_as_core__hash__hash(this: &W_polars_io__cloud__options__CloudRetryConfig, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::cloud::options::CloudType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_1593f97f__cloud__options__cloudtype_as_core__clone__clone(this: &W_polars_io__cloud__options__CloudType) -> W_polars_io__cloud__options__CloudType { W_polars_io__cloud__options__CloudType(this.0.clone()) }
@@ -9590,6 +9764,9 @@ fn p_cde553ac_re__inner__polarsobjectstore_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::csv::read::options::CommentPrefix as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_4385af8b_ad__options__commentprefix_as_core__clone__clone(this: &W_polars_io__csv__read__options__CommentPrefix) -> W_polars_io__csv__read__options__CommentPrefix { W_polars_io__csv__read__options__CommentPrefix(this.0.clone()) }
+/// Polars: `polars_io::csv::read::options::CommentPrefix as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_827f1208_v__read__options__commentprefix_as_core__cmp__eq(this: &W_polars_io__csv__read__options__CommentPrefix, other: &W_polars_io__csv__read__options__CommentPrefix) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::csv::read::options::CommentPrefix as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_48c7623e___options__commentprefix_as_core__cmp__partialeq(this: &W_polars_io__csv__read__options__CommentPrefix, other: &W_polars_io__csv__read__options__CommentPrefix) -> bool { this.0 == other.0 }
@@ -9599,9 +9776,15 @@ fn f_814edb37_tr__polars_io__csv__read__options__commentprefix(value: &str) -> W
 /// Polars: `polars_io::csv::read::options::CommentPrefix as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_c17308f9_read__options__commentprefix_as_core__fmt__debug(this: &W_polars_io__csv__read__options__CommentPrefix, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::csv::read::options::CommentPrefix as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_ecf912ab_read__options__commentprefix_as_core__hash__hash(this: &W_polars_io__csv__read__options__CommentPrefix, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::csv::read::options::CsvEncoding as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b4f20c5d_read__options__csvencoding_as_core__clone__clone(this: &W_polars_io__csv__read__options__CsvEncoding) -> W_polars_io__csv__read__options__CsvEncoding { W_polars_io__csv__read__options__CsvEncoding(this.0.clone()) }
+/// Polars: `polars_io::csv::read::options::CsvEncoding as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_2cd613ac_csv__read__options__csvencoding_as_core__cmp__eq(this: &W_polars_io__csv__read__options__CsvEncoding, other: &W_polars_io__csv__read__options__CsvEncoding) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::csv::read::options::CsvEncoding as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_71feb059_ad__options__csvencoding_as_core__cmp__partialeq(this: &W_polars_io__csv__read__options__CsvEncoding, other: &W_polars_io__csv__read__options__CsvEncoding) -> bool { this.0 == other.0 }
@@ -9611,9 +9794,15 @@ fn p_624ab269___options__csvencoding_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::csv::read::options::CsvEncoding as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_744b2a31___read__options__csvencoding_as_core__fmt__debug(this: &W_polars_io__csv__read__options__CsvEncoding, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::csv::read::options::CsvEncoding as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_fd19db50___read__options__csvencoding_as_core__hash__hash(this: &W_polars_io__csv__read__options__CsvEncoding, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::csv::read::options::CsvParseOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_de7c00cc___options__csvparseoptions_as_core__clone__clone(this: &W_polars_io__csv__read__options__CsvParseOptions) -> W_polars_io__csv__read__options__CsvParseOptions { W_polars_io__csv__read__options__CsvParseOptions(this.0.clone()) }
+/// Polars: `polars_io::csv::read::options::CsvParseOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_4a1af435__read__options__csvparseoptions_as_core__cmp__eq(this: &W_polars_io__csv__read__options__CsvParseOptions, other: &W_polars_io__csv__read__options__CsvParseOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::csv::read::options::CsvParseOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_c2252bff_options__csvparseoptions_as_core__cmp__partialeq(this: &W_polars_io__csv__read__options__CsvParseOptions, other: &W_polars_io__csv__read__options__CsvParseOptions) -> bool { this.0 == other.0 }
@@ -9623,9 +9812,15 @@ fn p_2cf0f60e_tions__csvparseoptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::csv::read::options::CsvParseOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_3a3f1a51_ad__options__csvparseoptions_as_core__fmt__debug(this: &W_polars_io__csv__read__options__CsvParseOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::csv::read::options::CsvParseOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_02a1f794_ad__options__csvparseoptions_as_core__hash__hash(this: &W_polars_io__csv__read__options__CsvParseOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::csv::read::options::CsvReadOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_653ab779_d__options__csvreadoptions_as_core__clone__clone(this: &W_polars_io__csv__read__options__CsvReadOptions) -> W_polars_io__csv__read__options__CsvReadOptions { W_polars_io__csv__read__options__CsvReadOptions(this.0.clone()) }
+/// Polars: `polars_io::csv::read::options::CsvReadOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_a3596f24___read__options__csvreadoptions_as_core__cmp__eq(this: &W_polars_io__csv__read__options__CsvReadOptions, other: &W_polars_io__csv__read__options__CsvReadOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::csv::read::options::CsvReadOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e9b51fdd__options__csvreadoptions_as_core__cmp__partialeq(this: &W_polars_io__csv__read__options__CsvReadOptions, other: &W_polars_io__csv__read__options__CsvReadOptions) -> bool { this.0 == other.0 }
@@ -9635,15 +9830,24 @@ fn p_98ed0cd6_ptions__csvreadoptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::csv::read::options::CsvReadOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_429c03f8_ead__options__csvreadoptions_as_core__fmt__debug(this: &W_polars_io__csv__read__options__CsvReadOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::csv::read::options::CsvReadOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_ceb0db7d_ead__options__csvreadoptions_as_core__hash__hash(this: &W_polars_io__csv__read__options__CsvReadOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::csv::read::options::NullValues as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_8ca59201__read__options__nullvalues_as_core__clone__clone(this: &W_polars_io__csv__read__options__NullValues) -> W_polars_io__csv__read__options__NullValues { W_polars_io__csv__read__options__NullValues(this.0.clone()) }
+/// Polars: `polars_io::csv::read::options::NullValues as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_fe94c502__csv__read__options__nullvalues_as_core__cmp__eq(this: &W_polars_io__csv__read__options__NullValues, other: &W_polars_io__csv__read__options__NullValues) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::csv::read::options::NullValues as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_1f31c9c2_ead__options__nullvalues_as_core__cmp__partialeq(this: &W_polars_io__csv__read__options__NullValues, other: &W_polars_io__csv__read__options__NullValues) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::csv::read::options::NullValues as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_dfbf11e3_v__read__options__nullvalues_as_core__fmt__debug(this: &W_polars_io__csv__read__options__NullValues, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::csv::read::options::NullValues as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_0be648b2_v__read__options__nullvalues_as_core__hash__hash(this: &W_polars_io__csv__read__options__NullValues, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::csv::read::options::NullValuesCompiled as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_54b0412c_ptions__nullvaluescompiled_as_core__clone__clone(this: &W_polars_io__csv__read__options__NullValuesCompiled) -> W_polars_io__csv__read__options__NullValuesCompiled { W_polars_io__csv__read__options__NullValuesCompiled(this.0.clone()) }
@@ -9653,6 +9857,9 @@ fn p_372890ce__options__nullvaluescompiled_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::csv::write::options::CsvWriterOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_1b9fb010__options__csvwriteroptions_as_core__clone__clone(this: &W_polars_io__csv__write__options__CsvWriterOptions) -> W_polars_io__csv__write__options__CsvWriterOptions { W_polars_io__csv__write__options__CsvWriterOptions(this.0.clone()) }
+/// Polars: `polars_io::csv::write::options::CsvWriterOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_92195daf_rite__options__csvwriteroptions_as_core__cmp__eq(this: &W_polars_io__csv__write__options__CsvWriterOptions, other: &W_polars_io__csv__write__options__CsvWriterOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::csv::write::options::CsvWriterOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_9cbb4786_ptions__csvwriteroptions_as_core__cmp__partialeq(this: &W_polars_io__csv__write__options__CsvWriterOptions, other: &W_polars_io__csv__write__options__CsvWriterOptions) -> bool { this.0 == other.0 }
@@ -9662,9 +9869,15 @@ fn p_6c6fdc2e_ions__csvwriteroptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::csv::write::options::CsvWriterOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_1abb846d_e__options__csvwriteroptions_as_core__fmt__debug(this: &W_polars_io__csv__write__options__CsvWriterOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::csv::write::options::CsvWriterOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_e9da73f6_e__options__csvwriteroptions_as_core__hash__hash(this: &W_polars_io__csv__write__options__CsvWriterOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::csv::write::options::QuoteStyle as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_07913a7f_write__options__quotestyle_as_core__clone__clone(this: &W_polars_io__csv__write__options__QuoteStyle) -> W_polars_io__csv__write__options__QuoteStyle { W_polars_io__csv__write__options__QuoteStyle(this.0.clone()) }
+/// Polars: `polars_io::csv::write::options::QuoteStyle as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_30489e38_csv__write__options__quotestyle_as_core__cmp__eq(this: &W_polars_io__csv__write__options__QuoteStyle, other: &W_polars_io__csv__write__options__QuoteStyle) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::csv::write::options::QuoteStyle as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_eedfb5e6_ite__options__quotestyle_as_core__cmp__partialeq(this: &W_polars_io__csv__write__options__QuoteStyle, other: &W_polars_io__csv__write__options__QuoteStyle) -> bool { this.0 == other.0 }
@@ -9674,9 +9887,15 @@ fn p_49339554_e__options__quotestyle_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::csv::write::options::QuoteStyle as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_c5a394df___write__options__quotestyle_as_core__fmt__debug(this: &W_polars_io__csv__write__options__QuoteStyle, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::csv::write::options::QuoteStyle as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_0731234f___write__options__quotestyle_as_core__hash__hash(this: &W_polars_io__csv__write__options__QuoteStyle, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::csv::write::options::SerializeOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f132a796__options__serializeoptions_as_core__clone__clone(this: &W_polars_io__csv__write__options__SerializeOptions) -> W_polars_io__csv__write__options__SerializeOptions { W_polars_io__csv__write__options__SerializeOptions(this.0.clone()) }
+/// Polars: `polars_io::csv::write::options::SerializeOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_c24ef6eb_rite__options__serializeoptions_as_core__cmp__eq(this: &W_polars_io__csv__write__options__SerializeOptions, other: &W_polars_io__csv__write__options__SerializeOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::csv::write::options::SerializeOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_7ade6fb3_ptions__serializeoptions_as_core__cmp__partialeq(this: &W_polars_io__csv__write__options__SerializeOptions, other: &W_polars_io__csv__write__options__SerializeOptions) -> bool { this.0 == other.0 }
@@ -9686,6 +9905,9 @@ fn p_5e30f25a_ions__serializeoptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::csv::write::options::SerializeOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_1da82027_e__options__serializeoptions_as_core__fmt__debug(this: &W_polars_io__csv__write__options__SerializeOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::csv::write::options::SerializeOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_a25cc0f3_e__options__serializeoptions_as_core__hash__hash(this: &W_polars_io__csv__write__options__SerializeOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::csv::write::write_impl::CsvSerializer as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2f629a1b__write_impl__csvserializer_as_core__clone__clone(this: &W_polars_io__csv__write__write_impl__CsvSerializer) -> W_polars_io__csv__write__write_impl__CsvSerializer { W_polars_io__csv__write__write_impl__CsvSerializer(this.0.clone()) }
@@ -9710,6 +9932,9 @@ fn p_38465d76__async__ipcreadoptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_acc7c341_pc_metadata__plipcmetadata_as_core__clone__clone(this: &W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata) -> W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata { W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata(this.0.clone()) }
+/// Polars: `polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_6eecc37e__pl_ipc_metadata__plipcmetadata_as_core__cmp__eq(this: &W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata, other: &W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_549e53c8__metadata__plipcmetadata_as_core__cmp__partialeq(this: &W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata, other: &W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata) -> bool { this.0 == other.0 }
@@ -9719,9 +9944,15 @@ fn p_1bc81a94_etadata__plipcmetadata_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_2805af37__ipc_metadata__plipcmetadata_as_core__fmt__debug(this: &W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_4b6f79e5__ipc_metadata__plipcmetadata_as_core__hash__hash(this: &W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::ipc::write::IpcCompression as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_d82be3e9_ipc__write__ipccompression_as_core__clone__clone(this: &W_polars_io__ipc__write__IpcCompression) -> W_polars_io__ipc__write__IpcCompression { W_polars_io__ipc__write__IpcCompression(this.0.clone()) }
+/// Polars: `polars_io::ipc::write::IpcCompression as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_6ced7b7b__io__ipc__write__ipccompression_as_core__cmp__eq(this: &W_polars_io__ipc__write__IpcCompression, other: &W_polars_io__ipc__write__IpcCompression) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::ipc::write::IpcCompression as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_b6d78e03_c__write__ipccompression_as_core__cmp__partialeq(this: &W_polars_io__ipc__write__IpcCompression, other: &W_polars_io__ipc__write__IpcCompression) -> bool { this.0 == other.0 }
@@ -9731,9 +9962,15 @@ fn p_93ddfd65__write__ipccompression_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::ipc::write::IpcCompression as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_a580c291___ipc__write__ipccompression_as_core__fmt__debug(this: &W_polars_io__ipc__write__IpcCompression, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::ipc::write::IpcCompression as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_e9de6ba4___ipc__write__ipccompression_as_core__hash__hash(this: &W_polars_io__ipc__write__IpcCompression, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::ipc::write::IpcWriterOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_10a36726_c__write__ipcwriteroptions_as_core__clone__clone(this: &W_polars_io__ipc__write__IpcWriterOptions) -> W_polars_io__ipc__write__IpcWriterOptions { W_polars_io__ipc__write__IpcWriterOptions(this.0.clone()) }
+/// Polars: `polars_io::ipc::write::IpcWriterOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_3cf13ce1_o__ipc__write__ipcwriteroptions_as_core__cmp__eq(this: &W_polars_io__ipc__write__IpcWriterOptions, other: &W_polars_io__ipc__write__IpcWriterOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::ipc::write::IpcWriterOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_ecd50bb9__write__ipcwriteroptions_as_core__cmp__partialeq(this: &W_polars_io__ipc__write__IpcWriterOptions, other: &W_polars_io__ipc__write__IpcWriterOptions) -> bool { this.0 == other.0 }
@@ -9743,6 +9980,9 @@ fn p_e39378a0_rite__ipcwriteroptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::ipc::write::IpcWriterOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_8b4b7147_ipc__write__ipcwriteroptions_as_core__fmt__debug(this: &W_polars_io__ipc__write__IpcWriterOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::ipc::write::IpcWriterOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_5bf88c81_ipc__write__ipcwriteroptions_as_core__hash__hash(this: &W_polars_io__ipc__write__IpcWriterOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::metrics::IOMetrics as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_17f7d338_ars_io__metrics__iometrics_as_core__clone__clone(this: &W_polars_io__metrics__IOMetrics) -> W_polars_io__metrics__IOMetrics { W_polars_io__metrics__IOMetrics(this.0.clone()) }
@@ -9761,6 +10001,9 @@ fn p_a18ed1d3_rs_io__metrics__optiometrics_as_core__fmt__debug(this: &W_polars_i
 /// Polars: `polars_io::options::ExternalCompression as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_a06ea4a9_tions__externalcompression_as_core__clone__clone(this: &W_polars_io__options__ExternalCompression) -> W_polars_io__options__ExternalCompression { W_polars_io__options__ExternalCompression(this.0.clone()) }
+/// Polars: `polars_io::options::ExternalCompression as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_3b1d4e85_o__options__externalcompression_as_core__cmp__eq(this: &W_polars_io__options__ExternalCompression, other: &W_polars_io__options__ExternalCompression) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::options::ExternalCompression as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_d39608f6_ons__externalcompression_as_core__cmp__partialeq(this: &W_polars_io__options__ExternalCompression, other: &W_polars_io__options__ExternalCompression) -> bool { this.0 == other.0 }
@@ -9770,9 +10013,15 @@ fn p_0c65527c_s__externalcompression_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::options::ExternalCompression as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_f413c47e_options__externalcompression_as_core__fmt__debug(this: &W_polars_io__options__ExternalCompression, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::options::ExternalCompression as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_8530ca73_options__externalcompression_as_core__hash__hash(this: &W_polars_io__options__ExternalCompression, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::options::HiveOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_e7f8e96f_s_io__options__hiveoptions_as_core__clone__clone(this: &W_polars_io__options__HiveOptions) -> W_polars_io__options__HiveOptions { W_polars_io__options__HiveOptions(this.0.clone()) }
+/// Polars: `polars_io::options::HiveOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_4d8daaeb_polars_io__options__hiveoptions_as_core__cmp__eq(this: &W_polars_io__options__HiveOptions, other: &W_polars_io__options__HiveOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::options::HiveOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_8e68d80d_io__options__hiveoptions_as_core__cmp__partialeq(this: &W_polars_io__options__HiveOptions, other: &W_polars_io__options__HiveOptions) -> bool { this.0 == other.0 }
@@ -9782,18 +10031,30 @@ fn p_67327926___options__hiveoptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::options::HiveOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_f60f2259_ars_io__options__hiveoptions_as_core__fmt__debug(this: &W_polars_io__options__HiveOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::options::HiveOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_cd2fa7ac_ars_io__options__hiveoptions_as_core__hash__hash(this: &W_polars_io__options__HiveOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::options::RowIndex as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b49738d8_lars_io__options__rowindex_as_core__clone__clone(this: &W_polars_io__options__RowIndex) -> W_polars_io__options__RowIndex { W_polars_io__options__RowIndex(this.0.clone()) }
+/// Polars: `polars_io::options::RowIndex as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_397c1d3e_polars_io__options__rowindex_as_core__cmp__eq(this: &W_polars_io__options__RowIndex, other: &W_polars_io__options__RowIndex) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::options::RowIndex as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_05aeb7b6_rs_io__options__rowindex_as_core__cmp__partialeq(this: &W_polars_io__options__RowIndex, other: &W_polars_io__options__RowIndex) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::options::RowIndex as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_869932e0_polars_io__options__rowindex_as_core__fmt__debug(this: &W_polars_io__options__RowIndex, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::options::RowIndex as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_ba851366_polars_io__options__rowindex_as_core__hash__hash(this: &W_polars_io__options__RowIndex, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::parquet::read::options::ParallelStrategy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_dbb749d9__options__parallelstrategy_as_core__clone__clone(this: &W_polars_io__parquet__read__options__ParallelStrategy) -> W_polars_io__parquet__read__options__ParallelStrategy { W_polars_io__parquet__read__options__ParallelStrategy(this.0.clone()) }
+/// Polars: `polars_io::parquet::read::options::ParallelStrategy as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_313817ed_read__options__parallelstrategy_as_core__cmp__eq(this: &W_polars_io__parquet__read__options__ParallelStrategy, other: &W_polars_io__parquet__read__options__ParallelStrategy) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::parquet::read::options::ParallelStrategy as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_5581fe44_ptions__parallelstrategy_as_core__cmp__partialeq(this: &W_polars_io__parquet__read__options__ParallelStrategy, other: &W_polars_io__parquet__read__options__ParallelStrategy) -> bool { this.0 == other.0 }
@@ -9803,9 +10064,15 @@ fn p_c974681f_ions__parallelstrategy_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::parquet::read::options::ParallelStrategy as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_89c77260_d__options__parallelstrategy_as_core__fmt__debug(this: &W_polars_io__parquet__read__options__ParallelStrategy, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::parquet::read::options::ParallelStrategy as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_d7f9e3fd_d__options__parallelstrategy_as_core__hash__hash(this: &W_polars_io__parquet__read__options__ParallelStrategy, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::parquet::read::options::ParquetOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_365e922c_d__options__parquetoptions_as_core__clone__clone(this: &W_polars_io__parquet__read__options__ParquetOptions) -> W_polars_io__parquet__read__options__ParquetOptions { W_polars_io__parquet__read__options__ParquetOptions(this.0.clone()) }
+/// Polars: `polars_io::parquet::read::options::ParquetOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_571e2532___read__options__parquetoptions_as_core__cmp__eq(this: &W_polars_io__parquet__read__options__ParquetOptions, other: &W_polars_io__parquet__read__options__ParquetOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::parquet::read::options::ParquetOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_7804825a__options__parquetoptions_as_core__cmp__partialeq(this: &W_polars_io__parquet__read__options__ParquetOptions, other: &W_polars_io__parquet__read__options__ParquetOptions) -> bool { this.0 == other.0 }
@@ -9815,21 +10082,33 @@ fn p_f31650ac_ptions__parquetoptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::parquet::read::options::ParquetOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_ba2b8fa8_ead__options__parquetoptions_as_core__fmt__debug(this: &W_polars_io__parquet__read__options__ParquetOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::parquet::read::options::ParquetOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_fe0011d8_ead__options__parquetoptions_as_core__hash__hash(this: &W_polars_io__parquet__read__options__ParquetOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::parquet::read::read_impl::PrefilterMaskSetting as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_0f52c72f_impl__prefiltermasksetting_as_core__clone__clone(this: &W_polars_io__parquet__read__read_impl__PrefilterMaskSetting) -> W_polars_io__parquet__read__read_impl__PrefilterMaskSetting { W_polars_io__parquet__read__read_impl__PrefilterMaskSetting(this.0.clone()) }
 /// Polars: `polars_io::parquet::write::key_value_metadata::KeyValueMetadata as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_5fc3799b_metadata__keyvaluemetadata_as_core__clone__clone(this: &W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata) -> W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata { W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata(this.0.clone()) }
+/// Polars: `polars_io::parquet::write::key_value_metadata::KeyValueMetadata as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_1d7b1722_alue_metadata__keyvaluemetadata_as_core__cmp__eq(this: &W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata, other: &W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::parquet::write::key_value_metadata::KeyValueMetadata as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_7c69d61d_tadata__keyvaluemetadata_as_core__cmp__partialeq(this: &W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata, other: &W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::parquet::write::key_value_metadata::KeyValueMetadata as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_8a307243_e_metadata__keyvaluemetadata_as_core__fmt__debug(this: &W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::parquet::write::key_value_metadata::KeyValueMetadata as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_f8d90711_e_metadata__keyvaluemetadata_as_core__hash__hash(this: &W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::parquet::write::options::ParquetCompression as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2460c78b_ptions__parquetcompression_as_core__clone__clone(this: &W_polars_io__parquet__write__options__ParquetCompression) -> W_polars_io__parquet__write__options__ParquetCompression { W_polars_io__parquet__write__options__ParquetCompression(this.0.clone()) }
+/// Polars: `polars_io::parquet::write::options::ParquetCompression as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_37286c90_te__options__parquetcompression_as_core__cmp__eq(this: &W_polars_io__parquet__write__options__ParquetCompression, other: &W_polars_io__parquet__write__options__ParquetCompression) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::parquet::write::options::ParquetCompression as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_27a6a5dc_ions__parquetcompression_as_core__cmp__partialeq(this: &W_polars_io__parquet__write__options__ParquetCompression, other: &W_polars_io__parquet__write__options__ParquetCompression) -> bool { this.0 == other.0 }
@@ -9839,9 +10118,15 @@ fn p_b44bd258_ns__parquetcompression_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::parquet::write::options::ParquetCompression as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_fa4a7266__options__parquetcompression_as_core__fmt__debug(this: &W_polars_io__parquet__write__options__ParquetCompression, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::parquet::write::options::ParquetCompression as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_cd1e1271__options__parquetcompression_as_core__hash__hash(this: &W_polars_io__parquet__write__options__ParquetCompression, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::parquet::write::options::ParquetWriteOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_df5ac108_tions__parquetwriteoptions_as_core__clone__clone(this: &W_polars_io__parquet__write__options__ParquetWriteOptions) -> W_polars_io__parquet__write__options__ParquetWriteOptions { W_polars_io__parquet__write__options__ParquetWriteOptions(this.0.clone()) }
+/// Polars: `polars_io::parquet::write::options::ParquetWriteOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_514e836a_e__options__parquetwriteoptions_as_core__cmp__eq(this: &W_polars_io__parquet__write__options__ParquetWriteOptions, other: &W_polars_io__parquet__write__options__ParquetWriteOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_io::parquet::write::options::ParquetWriteOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_f0bb3fb2_ons__parquetwriteoptions_as_core__cmp__partialeq(this: &W_polars_io__parquet__write__options__ParquetWriteOptions, other: &W_polars_io__parquet__write__options__ParquetWriteOptions) -> bool { this.0 == other.0 }
@@ -9851,6 +10136,9 @@ fn p_d2486d17_s__parquetwriteoptions_as_core__default__default() -> W_polars_io_
 /// Polars: `polars_io::parquet::write::options::ParquetWriteOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_66b396b9_options__parquetwriteoptions_as_core__fmt__debug(this: &W_polars_io__parquet__write__options__ParquetWriteOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::parquet::write::options::ParquetWriteOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_d90cf9ef_options__parquetwriteoptions_as_core__hash__hash(this: &W_polars_io__parquet__write__options__ParquetWriteOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_io::predicates::ColumnPredicateExpr as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_175ca853_cates__columnpredicateexpr_as_core__clone__clone(this: &W_polars_io__predicates__ColumnPredicateExpr) -> W_polars_io__predicates__ColumnPredicateExpr { W_polars_io__predicates__ColumnPredicateExpr(this.0.clone()) }
@@ -9914,9 +10202,18 @@ fn p_f5d4de20_rquet__scanargsparquet_as_core__default__default() -> W_polars_laz
 /// Polars: `polars_ops::frame::join::args::CrossJoinOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_4a66d159_in__args__crossjoinoptions_as_core__clone__clone(this: &W_polars_ops__frame__join__args__CrossJoinOptions) -> W_polars_ops__frame__join__args__CrossJoinOptions { W_polars_ops__frame__join__args__CrossJoinOptions(this.0.clone()) }
+/// Polars: `polars_ops::frame::join::args::CrossJoinOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_85430d0b_e__join__args__crossjoinoptions_as_core__cmp__eq(this: &W_polars_ops__frame__join__args__CrossJoinOptions, other: &W_polars_ops__frame__join__args__CrossJoinOptions) -> bool { this.0 == other.0 }
+/// Polars: `polars_ops::frame::join::args::CrossJoinOptions as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_41a87f0a___args__crossjoinoptions_as_core__cmp__partialeq(this: &W_polars_ops__frame__join__args__CrossJoinOptions, other: &W_polars_ops__frame__join__args__CrossJoinOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_ops::frame::join::args::CrossJoinOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_e7b7ad11_join__args__crossjoinoptions_as_core__fmt__debug(this: &W_polars_ops__frame__join__args__CrossJoinOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_ops::frame::join::args::CrossJoinOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_cd221b89_join__args__crossjoinoptions_as_core__hash__hash(this: &W_polars_ops__frame__join__args__CrossJoinOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_ops::frame::join::args::JoinArgs as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_825f7566_rame__join__args__joinargs_as_core__clone__clone(this: &W_polars_ops__frame__join__args__JoinArgs) -> W_polars_ops__frame__join__args__JoinArgs { W_polars_ops__frame__join__args__JoinArgs(this.0.clone()) }
@@ -9944,6 +10241,9 @@ fn p_cd1ddd12_e__join__args__joinbuildside_as_core__fmt__debug(this: &W_polars_o
 /// Polars: `polars_ops::frame::join::args::JoinCoalesce as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b470e0bd___join__args__joincoalesce_as_core__clone__clone(this: &W_polars_ops__frame__join__args__JoinCoalesce) -> W_polars_ops__frame__join__args__JoinCoalesce { W_polars_ops__frame__join__args__JoinCoalesce(this.0.clone()) }
+/// Polars: `polars_ops::frame::join::args::JoinCoalesce as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_644e326a_frame__join__args__joincoalesce_as_core__cmp__eq(this: &W_polars_ops__frame__join__args__JoinCoalesce, other: &W_polars_ops__frame__join__args__JoinCoalesce) -> bool { this.0 == other.0 }
 /// Polars: `polars_ops::frame::join::args::JoinCoalesce as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_3c40e0ef_join__args__joincoalesce_as_core__cmp__partialeq(this: &W_polars_ops__frame__join__args__JoinCoalesce, other: &W_polars_ops__frame__join__args__JoinCoalesce) -> bool { this.0 == other.0 }
@@ -9953,6 +10253,9 @@ fn p_ca80a713_in__args__joincoalesce_as_core__default__default() -> W_polars_ops
 /// Polars: `polars_ops::frame::join::args::JoinCoalesce as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_55647ebe_me__join__args__joincoalesce_as_core__fmt__debug(this: &W_polars_ops__frame__join__args__JoinCoalesce, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_ops::frame::join::args::JoinCoalesce as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_0864f866_me__join__args__joincoalesce_as_core__hash__hash(this: &W_polars_ops__frame__join__args__JoinCoalesce, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_ops::frame::join::args::JoinType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_6536e253_rame__join__args__jointype_as_core__clone__clone(this: &W_polars_ops__frame__join__args__JoinType) -> W_polars_ops__frame__join__args__JoinType { W_polars_ops__frame__join__args__JoinType(this.0.clone()) }
@@ -9971,15 +10274,24 @@ fn p_beb47d94_rame__join__args__jointype_as_core__fmt__display(this: &W_polars_o
 /// Polars: `polars_ops::frame::join::args::JoinTypeOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_39c95194_oin__args__jointypeoptions_as_core__clone__clone(this: &W_polars_ops__frame__join__args__JoinTypeOptions) -> W_polars_ops__frame__join__args__JoinTypeOptions { W_polars_ops__frame__join__args__JoinTypeOptions(this.0.clone()) }
+/// Polars: `polars_ops::frame::join::args::JoinTypeOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_d06e352c_me__join__args__jointypeoptions_as_core__cmp__eq(this: &W_polars_ops__frame__join__args__JoinTypeOptions, other: &W_polars_ops__frame__join__args__JoinTypeOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_ops::frame::join::args::JoinTypeOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_87eb09b3_n__args__jointypeoptions_as_core__cmp__partialeq(this: &W_polars_ops__frame__join__args__JoinTypeOptions, other: &W_polars_ops__frame__join__args__JoinTypeOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_ops::frame::join::args::JoinTypeOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_03264158__join__args__jointypeoptions_as_core__fmt__debug(this: &W_polars_ops__frame__join__args__JoinTypeOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_ops::frame::join::args::JoinTypeOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_47667ba5__join__args__jointypeoptions_as_core__hash__hash(this: &W_polars_ops__frame__join__args__JoinTypeOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_ops::frame::join::args::JoinValidation as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f5cb86f6_join__args__joinvalidation_as_core__clone__clone(this: &W_polars_ops__frame__join__args__JoinValidation) -> W_polars_ops__frame__join__args__JoinValidation { W_polars_ops__frame__join__args__JoinValidation(this.0.clone()) }
+/// Polars: `polars_ops::frame::join::args::JoinValidation as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_90eb18b9_ame__join__args__joinvalidation_as_core__cmp__eq(this: &W_polars_ops__frame__join__args__JoinValidation, other: &W_polars_ops__frame__join__args__JoinValidation) -> bool { this.0 == other.0 }
 /// Polars: `polars_ops::frame::join::args::JoinValidation as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_8af24d5b_in__args__joinvalidation_as_core__cmp__partialeq(this: &W_polars_ops__frame__join__args__JoinValidation, other: &W_polars_ops__frame__join__args__JoinValidation) -> bool { this.0 == other.0 }
@@ -9992,9 +10304,15 @@ fn p_54fa501a___join__args__joinvalidation_as_core__fmt__debug(this: &W_polars_o
 /// Polars: `polars_ops::frame::join::args::JoinValidation as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_1371cdd4_join__args__joinvalidation_as_core__fmt__display(this: &W_polars_ops__frame__join__args__JoinValidation, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_ops::frame::join::args::JoinValidation as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_5a2eb05d___join__args__joinvalidation_as_core__hash__hash(this: &W_polars_ops__frame__join__args__JoinValidation, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_ops::frame::join::args::MaintainOrderJoin as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_a340b261_n__args__maintainorderjoin_as_core__clone__clone(this: &W_polars_ops__frame__join__args__MaintainOrderJoin) -> W_polars_ops__frame__join__args__MaintainOrderJoin { W_polars_ops__frame__join__args__MaintainOrderJoin(this.0.clone()) }
+/// Polars: `polars_ops::frame::join::args::MaintainOrderJoin as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_c5591c68___join__args__maintainorderjoin_as_core__cmp__eq(this: &W_polars_ops__frame__join__args__MaintainOrderJoin, other: &W_polars_ops__frame__join__args__MaintainOrderJoin) -> bool { this.0 == other.0 }
 /// Polars: `polars_ops::frame::join::args::MaintainOrderJoin as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_b631f48c__args__maintainorderjoin_as_core__cmp__partialeq(this: &W_polars_ops__frame__join__args__MaintainOrderJoin, other: &W_polars_ops__frame__join__args__MaintainOrderJoin) -> bool { this.0 == other.0 }
@@ -10004,6 +10322,9 @@ fn p_83828824_rgs__maintainorderjoin_as_core__default__default() -> W_polars_ops
 /// Polars: `polars_ops::frame::join::args::MaintainOrderJoin as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_eaf63aed_oin__args__maintainorderjoin_as_core__fmt__debug(this: &W_polars_ops__frame__join__args__MaintainOrderJoin, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_ops::frame::join::args::MaintainOrderJoin as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_cd10a7b6_oin__args__maintainorderjoin_as_core__hash__hash(this: &W_polars_ops__frame__join__args__MaintainOrderJoin, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_ops::series::ops::horizontal::NullStrategy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_076b3879___horizontal__nullstrategy_as_core__clone__clone(this: &W_polars_ops__series__ops__horizontal__NullStrategy) -> W_polars_ops__series__ops__horizontal__NullStrategy { W_polars_ops__series__ops__horizontal__NullStrategy(this.0.clone()) }
@@ -10016,6 +10337,9 @@ fn p_6bd26fd4_ps__horizontal__nullstrategy_as_core__fmt__debug(this: &W_polars_o
 /// Polars: `polars_ops::series::ops::linear_space::ClosedInterval as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_96226868_near_space__closedinterval_as_core__clone__clone(this: &W_polars_ops__series__ops__linear_space__ClosedInterval) -> W_polars_ops__series__ops__linear_space__ClosedInterval { W_polars_ops__series__ops__linear_space__ClosedInterval(this.0.clone()) }
+/// Polars: `polars_ops::series::ops::linear_space::ClosedInterval as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_03298ab5_s__linear_space__closedinterval_as_core__cmp__eq(this: &W_polars_ops__series__ops__linear_space__ClosedInterval, other: &W_polars_ops__series__ops__linear_space__ClosedInterval) -> bool { this.0 == other.0 }
 /// Polars: `polars_ops::series::ops::linear_space::ClosedInterval as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_f6cc61fa_ar_space__closedinterval_as_core__cmp__partialeq(this: &W_polars_ops__series__ops__linear_space__ClosedInterval, other: &W_polars_ops__series__ops__linear_space__ClosedInterval) -> bool { this.0 == other.0 }
@@ -10025,6 +10349,9 @@ fn p_459f98ec__space__closedinterval_as_core__default__default() -> W_polars_ops
 /// Polars: `polars_ops::series::ops::linear_space::ClosedInterval as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_63a5c84b_linear_space__closedinterval_as_core__fmt__debug(this: &W_polars_ops__series__ops__linear_space__ClosedInterval, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_ops::series::ops::linear_space::ClosedInterval as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_b8773732_linear_space__closedinterval_as_core__hash__hash(this: &W_polars_ops__series__ops__linear_space__ClosedInterval, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::arity::ChainedThen as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_17b7897f_n__dsl__arity__chainedthen_as_core__clone__clone(this: &W_polars_plan__dsl__arity__ChainedThen) -> W_polars_plan__dsl__arity__ChainedThen { W_polars_plan__dsl__arity__ChainedThen(this.0.clone()) }
@@ -10043,6 +10370,9 @@ fn f_7634057c_lplan__polars_plan__dsl__builder_dsl__dslbuilder(value: &W_polars_
 /// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_3c38cd1e_atatype_expr__datatypeexpr_as_core__clone__clone(this: &W_polars_plan__dsl__datatype_expr__DataTypeExpr) -> W_polars_plan__dsl__datatype_expr__DataTypeExpr { W_polars_plan__dsl__datatype_expr__DataTypeExpr(this.0.clone()) }
+/// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_c34f0d20_sl__datatype_expr__datatypeexpr_as_core__cmp__eq(this: &W_polars_plan__dsl__datatype_expr__DataTypeExpr, other: &W_polars_plan__dsl__datatype_expr__DataTypeExpr) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_539294e9_atype_expr__datatypeexpr_as_core__cmp__partialeq(this: &W_polars_plan__dsl__datatype_expr__DataTypeExpr, other: &W_polars_plan__dsl__datatype_expr__DataTypeExpr) -> bool { this.0 == other.0 }
@@ -10052,6 +10382,9 @@ fn f_784f7fc3_e__polars_plan__dsl__datatype_expr__datatypeexpr(value: &W_polars_
 /// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_d8b814de__datatype_expr__datatypeexpr_as_core__fmt__debug(this: &W_polars_plan__dsl__datatype_expr__DataTypeExpr, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_c736d597__datatype_expr__datatypeexpr_as_core__hash__hash(this: &W_polars_plan__dsl__datatype_expr__DataTypeExpr, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::expr::AggExpr as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_22d2fa83_s_plan__dsl__expr__aggexpr_as_core__clone__clone(this: &W_polars_plan__dsl__expr__AggExpr) -> W_polars_plan__dsl__expr__AggExpr { W_polars_plan__dsl__expr__AggExpr(this.0.clone()) }
@@ -10061,15 +10394,24 @@ fn p_716df085_plan__dsl__expr__aggexpr_as_core__cmp__partialeq(this: &W_polars_p
 /// Polars: `polars_plan::dsl::expr::EvalVariant as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_150719e1_an__dsl__expr__evalvariant_as_core__clone__clone(this: &W_polars_plan__dsl__expr__EvalVariant) -> W_polars_plan__dsl__expr__EvalVariant { W_polars_plan__dsl__expr__EvalVariant(this.0.clone()) }
+/// Polars: `polars_plan::dsl::expr::EvalVariant as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_fc36674e_rs_plan__dsl__expr__evalvariant_as_core__cmp__eq(this: &W_polars_plan__dsl__expr__EvalVariant, other: &W_polars_plan__dsl__expr__EvalVariant) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::expr::EvalVariant as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e00b7569___dsl__expr__evalvariant_as_core__cmp__partialeq(this: &W_polars_plan__dsl__expr__EvalVariant, other: &W_polars_plan__dsl__expr__EvalVariant) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::expr::EvalVariant as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_00fc1e05_plan__dsl__expr__evalvariant_as_core__fmt__debug(this: &W_polars_plan__dsl__expr__EvalVariant, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::expr::EvalVariant as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_ac7e7b38_plan__dsl__expr__evalvariant_as_core__hash__hash(this: &W_polars_plan__dsl__expr__EvalVariant, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::expr::Excluded as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_4ab5cb2e__plan__dsl__expr__excluded_as_core__clone__clone(this: &W_polars_plan__dsl__expr__Excluded) -> W_polars_plan__dsl__expr__Excluded { W_polars_plan__dsl__expr__Excluded(this.0.clone()) }
+/// Polars: `polars_plan::dsl::expr::Excluded as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_ce47eaa6_olars_plan__dsl__expr__excluded_as_core__cmp__eq(this: &W_polars_plan__dsl__expr__Excluded, other: &W_polars_plan__dsl__expr__Excluded) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::expr::Excluded as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_32f8c850_lan__dsl__expr__excluded_as_core__cmp__partialeq(this: &W_polars_plan__dsl__expr__Excluded, other: &W_polars_plan__dsl__expr__Excluded) -> bool { this.0 == other.0 }
@@ -10079,6 +10421,9 @@ fn p_f50df4b5_rs_plan__dsl__expr__excluded_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::expr::Excluded as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_b4a2eade__plan__dsl__expr__excluded_as_core__fmt__display(this: &W_polars_plan__dsl__expr__Excluded, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::expr::Excluded as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_f890698e_rs_plan__dsl__expr__excluded_as_core__hash__hash(this: &W_polars_plan__dsl__expr__Excluded, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::expr::Expr as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_e7eb8c1f_lars_plan__dsl__expr__expr_as_core__clone__clone(this: &Expr) -> Expr { Expr(this.0.clone()) }
@@ -10139,6 +10484,9 @@ fn p_7a4794c5_lars_plan__dsl__expr__expr_as_core__fmt__display(this: &Expr, f: &
 /// Polars: `polars_plan::dsl::expr::Operator as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b2b6c75a__plan__dsl__expr__operator_as_core__clone__clone(this: &W_polars_plan__dsl__expr__Operator) -> W_polars_plan__dsl__expr__Operator { W_polars_plan__dsl__expr__Operator(this.0.clone()) }
+/// Polars: `polars_plan::dsl::expr::Operator as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_a601f4ba_olars_plan__dsl__expr__operator_as_core__cmp__eq(this: &W_polars_plan__dsl__expr__Operator, other: &W_polars_plan__dsl__expr__Operator) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::expr::Operator as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_c421676f_lan__dsl__expr__operator_as_core__cmp__partialeq(this: &W_polars_plan__dsl__expr__Operator, other: &W_polars_plan__dsl__expr__Operator) -> bool { this.0 == other.0 }
@@ -10148,12 +10496,21 @@ fn p_c4b687de_rs_plan__dsl__expr__operator_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::expr::Operator as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_45737d6c__plan__dsl__expr__operator_as_core__fmt__display(this: &W_polars_plan__dsl__expr__Operator, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::expr::Operator as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_309101d2_rs_plan__dsl__expr__operator_as_core__hash__hash(this: &W_polars_plan__dsl__expr__Operator, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::expr::RenameAliasFn as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_1e419244___dsl__expr__renamealiasfn_as_core__clone__clone(this: &W_polars_plan__dsl__expr__RenameAliasFn) -> W_polars_plan__dsl__expr__RenameAliasFn { W_polars_plan__dsl__expr__RenameAliasFn(this.0.clone()) }
+/// Polars: `polars_plan::dsl::expr::RenameAliasFn as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_32e11cb1__plan__dsl__expr__renamealiasfn_as_core__cmp__eq(this: &W_polars_plan__dsl__expr__RenameAliasFn, other: &W_polars_plan__dsl__expr__RenameAliasFn) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::expr::RenameAliasFn as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_3a62660c_dsl__expr__renamealiasfn_as_core__cmp__partialeq(this: &W_polars_plan__dsl__expr__RenameAliasFn, other: &W_polars_plan__dsl__expr__RenameAliasFn) -> bool { this.0 == other.0 }
+/// Polars: `polars_plan::dsl::expr::RenameAliasFn as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_254731ac_an__dsl__expr__renamealiasfn_as_core__hash__hash(this: &W_polars_plan__dsl__expr__RenameAliasFn, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::expr::datatype_fn::ArrayDataTypeFunction as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_bb541c16__fn__arraydatatypefunction_as_core__clone__clone(this: &W_polars_plan__dsl__expr__datatype_fn__ArrayDataTypeFunction) -> W_polars_plan__dsl__expr__datatype_fn__ArrayDataTypeFunction { W_polars_plan__dsl__expr__datatype_fn__ArrayDataTypeFunction(this.0.clone()) }
@@ -10178,6 +10535,9 @@ fn p_e80ca033___structdatatypefunction_as_core__cmp__partialeq(this: &W_polars_p
 /// Polars: `polars_plan::dsl::file_scan::CastColumnsPolicy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b3d4e40b_le_scan__castcolumnspolicy_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__CastColumnsPolicy) -> W_polars_plan__dsl__file_scan__CastColumnsPolicy { W_polars_plan__dsl__file_scan__CastColumnsPolicy(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::CastColumnsPolicy as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_1b0dc005_l__file_scan__castcolumnspolicy_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__CastColumnsPolicy, other: &W_polars_plan__dsl__file_scan__CastColumnsPolicy) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::CastColumnsPolicy as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_881a6c15__scan__castcolumnspolicy_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__CastColumnsPolicy, other: &W_polars_plan__dsl__file_scan__CastColumnsPolicy) -> bool { this.0 == other.0 }
@@ -10187,18 +10547,30 @@ fn p_b2c364f9_can__castcolumnspolicy_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::file_scan::CastColumnsPolicy as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_7835ffc7_file_scan__castcolumnspolicy_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__CastColumnsPolicy, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::CastColumnsPolicy as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_d813adb4_file_scan__castcolumnspolicy_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__CastColumnsPolicy, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::ColumnMapping as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_716fe956___file_scan__columnmapping_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__ColumnMapping) -> W_polars_plan__dsl__file_scan__ColumnMapping { W_polars_plan__dsl__file_scan__ColumnMapping(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::ColumnMapping as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_172b535d___dsl__file_scan__columnmapping_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__ColumnMapping, other: &W_polars_plan__dsl__file_scan__ColumnMapping) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::ColumnMapping as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_3d49e6a1_file_scan__columnmapping_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__ColumnMapping, other: &W_polars_plan__dsl__file_scan__ColumnMapping) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::ColumnMapping as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_f7d65673_sl__file_scan__columnmapping_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__ColumnMapping, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::ColumnMapping as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_9164f529_sl__file_scan__columnmapping_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__ColumnMapping, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::ExtraColumnsPolicy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_eb1307b5_e_scan__extracolumnspolicy_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__ExtraColumnsPolicy) -> W_polars_plan__dsl__file_scan__ExtraColumnsPolicy { W_polars_plan__dsl__file_scan__ExtraColumnsPolicy(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::ExtraColumnsPolicy as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_1e35c522___file_scan__extracolumnspolicy_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__ExtraColumnsPolicy, other: &W_polars_plan__dsl__file_scan__ExtraColumnsPolicy) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::ExtraColumnsPolicy as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_9d4c258a_scan__extracolumnspolicy_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__ExtraColumnsPolicy, other: &W_polars_plan__dsl__file_scan__ExtraColumnsPolicy) -> bool { this.0 == other.0 }
@@ -10208,6 +10580,9 @@ fn p_b01d1af8_an__extracolumnspolicy_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::file_scan::ExtraColumnsPolicy as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_44247135_ile_scan__extracolumnspolicy_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__ExtraColumnsPolicy, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::ExtraColumnsPolicy as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_c3a25567_ile_scan__extracolumnspolicy_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__ExtraColumnsPolicy, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::FileScanDsl as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_5ea84261_sl__file_scan__filescandsl_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__FileScanDsl) -> W_polars_plan__dsl__file_scan__FileScanDsl { W_polars_plan__dsl__file_scan__FileScanDsl(this.0.clone()) }
@@ -10217,12 +10592,24 @@ fn p_92201be7__dsl__file_scan__filescandsl_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::file_scan::FileScanIR as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_0954cd30_dsl__file_scan__filescanir_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__FileScanIR) -> W_polars_plan__dsl__file_scan__FileScanIR { W_polars_plan__dsl__file_scan__FileScanIR(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::FileScanIR as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_cc49ee67_lan__dsl__file_scan__filescanir_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__FileScanIR, other: &W_polars_plan__dsl__file_scan__FileScanIR) -> bool { this.0 == other.0 }
+/// Polars: `polars_plan::dsl::file_scan::FileScanIR as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_278df7d7_l__file_scan__filescanir_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__FileScanIR, other: &W_polars_plan__dsl__file_scan__FileScanIR) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::FileScanIR as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_17a00340___dsl__file_scan__filescanir_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__FileScanIR, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::FileScanIR as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_9110c593___dsl__file_scan__filescanir_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__FileScanIR, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::MissingColumnsPolicy as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_fabbbd6b_scan__missingcolumnspolicy_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__MissingColumnsPolicy) -> W_polars_plan__dsl__file_scan__MissingColumnsPolicy { W_polars_plan__dsl__file_scan__MissingColumnsPolicy(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::MissingColumnsPolicy as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_310bf029_file_scan__missingcolumnspolicy_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__MissingColumnsPolicy, other: &W_polars_plan__dsl__file_scan__MissingColumnsPolicy) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::MissingColumnsPolicy as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_f62f5311_an__missingcolumnspolicy_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__MissingColumnsPolicy, other: &W_polars_plan__dsl__file_scan__MissingColumnsPolicy) -> bool { this.0 == other.0 }
@@ -10232,9 +10619,15 @@ fn p_46cbdb35___missingcolumnspolicy_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::file_scan::MissingColumnsPolicy as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_8935405c_e_scan__missingcolumnspolicy_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__MissingColumnsPolicy, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::MissingColumnsPolicy as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_7eb407eb_e_scan__missingcolumnspolicy_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__MissingColumnsPolicy, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::PredicateFileSkip as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f0c433a2_le_scan__predicatefileskip_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__PredicateFileSkip) -> W_polars_plan__dsl__file_scan__PredicateFileSkip { W_polars_plan__dsl__file_scan__PredicateFileSkip(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::PredicateFileSkip as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_ccc93c4b_l__file_scan__predicatefileskip_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__PredicateFileSkip, other: &W_polars_plan__dsl__file_scan__PredicateFileSkip) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::PredicateFileSkip as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_8bfb60b7__scan__predicatefileskip_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__PredicateFileSkip, other: &W_polars_plan__dsl__file_scan__PredicateFileSkip) -> bool { this.0 == other.0 }
@@ -10244,9 +10637,15 @@ fn p_e4fc9250_can__predicatefileskip_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::file_scan::PredicateFileSkip as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_0399c809_file_scan__predicatefileskip_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__PredicateFileSkip, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::PredicateFileSkip as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_4bb23654_file_scan__predicatefileskip_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__PredicateFileSkip, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_87009bf1__dsl__file_scan__scanflags_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__ScanFlags) -> W_polars_plan__dsl__file_scan__ScanFlags { W_polars_plan__dsl__file_scan__ScanFlags(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_6db3fcc9_plan__dsl__file_scan__scanflags_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__ScanFlags, other: &W_polars_plan__dsl__file_scan__ScanFlags) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_53601a2c_sl__file_scan__scanflags_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__ScanFlags, other: &W_polars_plan__dsl__file_scan__ScanFlags) -> bool { this.0 == other.0 }
@@ -10283,12 +10682,24 @@ fn p_a7747898_dsl__file_scan__scanflags_as_core__ops__bit__not(this: &W_polars_p
 /// Polars: `polars_plan::dsl::file_scan::TableStatistics as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_6effb034_file_scan__tablestatistics_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__TableStatistics) -> W_polars_plan__dsl__file_scan__TableStatistics { W_polars_plan__dsl__file_scan__TableStatistics(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::TableStatistics as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_27f3214f_dsl__file_scan__tablestatistics_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__TableStatistics, other: &W_polars_plan__dsl__file_scan__TableStatistics) -> bool { this.0 == other.0 }
+/// Polars: `polars_plan::dsl::file_scan::TableStatistics as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_591cf227_le_scan__tablestatistics_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__TableStatistics, other: &W_polars_plan__dsl__file_scan__TableStatistics) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::TableStatistics as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_9478666d___file_scan__tablestatistics_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__TableStatistics, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::TableStatistics as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_215073f7___file_scan__tablestatistics_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__TableStatistics, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::UnifiedScanArgs as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_47fe215a_file_scan__unifiedscanargs_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__UnifiedScanArgs) -> W_polars_plan__dsl__file_scan__UnifiedScanArgs { W_polars_plan__dsl__file_scan__UnifiedScanArgs(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::UnifiedScanArgs as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_b2a10ec4_dsl__file_scan__unifiedscanargs_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__UnifiedScanArgs, other: &W_polars_plan__dsl__file_scan__UnifiedScanArgs) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::UnifiedScanArgs as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_924e389f_le_scan__unifiedscanargs_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__UnifiedScanArgs, other: &W_polars_plan__dsl__file_scan__UnifiedScanArgs) -> bool { this.0 == other.0 }
@@ -10298,27 +10709,45 @@ fn p_a1b5619a__scan__unifiedscanargs_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::file_scan::UnifiedScanArgs as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_d8891fd3___file_scan__unifiedscanargs_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__UnifiedScanArgs, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::UnifiedScanArgs as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_9c833372___file_scan__unifiedscanargs_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__UnifiedScanArgs, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::default_values::DefaultFieldValues as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_9cebb798_values__defaultfieldvalues_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__default_values__DefaultFieldValues) -> W_polars_plan__dsl__file_scan__default_values__DefaultFieldValues { W_polars_plan__dsl__file_scan__default_values__DefaultFieldValues(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::default_values::DefaultFieldValues as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_038b40ea_ault_values__defaultfieldvalues_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__default_values__DefaultFieldValues, other: &W_polars_plan__dsl__file_scan__default_values__DefaultFieldValues) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::default_values::DefaultFieldValues as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_1da7ca99_lues__defaultfieldvalues_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__default_values__DefaultFieldValues, other: &W_polars_plan__dsl__file_scan__default_values__DefaultFieldValues) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::default_values::DefaultFieldValues as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_7da64c97_t_values__defaultfieldvalues_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__default_values__DefaultFieldValues, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::default_values::DefaultFieldValues as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_56ddd947_t_values__defaultfieldvalues_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__default_values__DefaultFieldValues, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::default_values::IcebergDefaultFieldValues as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_5cdfcf06__icebergdefaultfieldvalues_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__default_values__IcebergDefaultFieldValues) -> W_polars_plan__dsl__file_scan__default_values__IcebergDefaultFieldValues { W_polars_plan__dsl__file_scan__default_values__IcebergDefaultFieldValues(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::default_values::IcebergDefaultFieldValues as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_a437da6f_lues__icebergdefaultfieldvalues_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__default_values__IcebergDefaultFieldValues, other: &W_polars_plan__dsl__file_scan__default_values__IcebergDefaultFieldValues) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::default_values::IcebergDefaultFieldValues as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_08a3cc25_cebergdefaultfieldvalues_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__default_values__IcebergDefaultFieldValues, other: &W_polars_plan__dsl__file_scan__default_values__IcebergDefaultFieldValues) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::default_values::IcebergDefaultFieldValues as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_2eb8f31b_s__icebergdefaultfieldvalues_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__default_values__IcebergDefaultFieldValues, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::default_values::IcebergDefaultFieldValues as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_d88a69c1_s__icebergdefaultfieldvalues_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__default_values__IcebergDefaultFieldValues, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::file_scan::deletion::DeletionFilesList as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_180ea95d_eletion__deletionfileslist_as_core__clone__clone(this: &W_polars_plan__dsl__file_scan__deletion__DeletionFilesList) -> W_polars_plan__dsl__file_scan__deletion__DeletionFilesList { W_polars_plan__dsl__file_scan__deletion__DeletionFilesList(this.0.clone()) }
+/// Polars: `polars_plan::dsl::file_scan::deletion::DeletionFilesList as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_b33c605f_an__deletion__deletionfileslist_as_core__cmp__eq(this: &W_polars_plan__dsl__file_scan__deletion__DeletionFilesList, other: &W_polars_plan__dsl__file_scan__deletion__DeletionFilesList) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::file_scan::deletion::DeletionFilesList as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_b35fc84b_etion__deletionfileslist_as_core__cmp__partialeq(this: &W_polars_plan__dsl__file_scan__deletion__DeletionFilesList, other: &W_polars_plan__dsl__file_scan__deletion__DeletionFilesList) -> bool { this.0 == other.0 }
@@ -10328,6 +10757,9 @@ fn p_66ae3447__deletion__deletionfileslist_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::file_scan::deletion::DeletionFilesList as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_989abb62_eletion__deletionfileslist_as_core__fmt__display(this: &W_polars_plan__dsl__file_scan__deletion__DeletionFilesList, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::deletion::DeletionFilesList as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_bb769f39__deletion__deletionfileslist_as_core__hash__hash(this: &W_polars_plan__dsl__file_scan__deletion__DeletionFilesList, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::function_expr::FunctionExpr as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_9dafb1cf_unction_expr__functionexpr_as_core__clone__clone(this: &W_polars_plan__dsl__function_expr__FunctionExpr) -> W_polars_plan__dsl__function_expr__FunctionExpr { W_polars_plan__dsl__function_expr__FunctionExpr(this.0.clone()) }
@@ -10367,6 +10799,9 @@ fn p_cdd0379a_pr__binary__binaryfunction_as_core__fmt__display(this: &W_polars_p
 /// Polars: `polars_plan::dsl::function_expr::boolean::BooleanFunction as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_a252a037___boolean__booleanfunction_as_core__clone__clone(this: &W_polars_plan__dsl__function_expr__boolean__BooleanFunction) -> W_polars_plan__dsl__function_expr__boolean__BooleanFunction { W_polars_plan__dsl__function_expr__boolean__BooleanFunction(this.0.clone()) }
+/// Polars: `polars_plan::dsl::function_expr::boolean::BooleanFunction as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_bf167b1b__expr__boolean__booleanfunction_as_core__cmp__eq(this: &W_polars_plan__dsl__function_expr__boolean__BooleanFunction, other: &W_polars_plan__dsl__function_expr__boolean__BooleanFunction) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::function_expr::boolean::BooleanFunction as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_4d24f634_boolean__booleanfunction_as_core__cmp__partialeq(this: &W_polars_plan__dsl__function_expr__boolean__BooleanFunction, other: &W_polars_plan__dsl__function_expr__boolean__BooleanFunction) -> bool { this.0 == other.0 }
@@ -10376,9 +10811,15 @@ fn p_79560abe_pr__boolean__booleanfunction_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::function_expr::boolean::BooleanFunction as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_9396089e___boolean__booleanfunction_as_core__fmt__display(this: &W_polars_plan__dsl__function_expr__boolean__BooleanFunction, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::function_expr::boolean::BooleanFunction as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_82b5e5ad_pr__boolean__booleanfunction_as_core__hash__hash(this: &W_polars_plan__dsl__function_expr__boolean__BooleanFunction, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::function_expr::cat::CategoricalFunction as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_96752c74___cat__categoricalfunction_as_core__clone__clone(this: &W_polars_plan__dsl__function_expr__cat__CategoricalFunction) -> W_polars_plan__dsl__function_expr__cat__CategoricalFunction { W_polars_plan__dsl__function_expr__cat__CategoricalFunction(this.0.clone()) }
+/// Polars: `polars_plan::dsl::function_expr::cat::CategoricalFunction as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_5ce7f7ad__expr__cat__categoricalfunction_as_core__cmp__eq(this: &W_polars_plan__dsl__function_expr__cat__CategoricalFunction, other: &W_polars_plan__dsl__function_expr__cat__CategoricalFunction) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::function_expr::cat::CategoricalFunction as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_b7b0630e_cat__categoricalfunction_as_core__cmp__partialeq(this: &W_polars_plan__dsl__function_expr__cat__CategoricalFunction, other: &W_polars_plan__dsl__function_expr__cat__CategoricalFunction) -> bool { this.0 == other.0 }
@@ -10388,9 +10829,15 @@ fn p_3118cbbf_pr__cat__categoricalfunction_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::function_expr::cat::CategoricalFunction as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_69129d4e___cat__categoricalfunction_as_core__fmt__display(this: &W_polars_plan__dsl__function_expr__cat__CategoricalFunction, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::function_expr::cat::CategoricalFunction as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_f578f182_pr__cat__categoricalfunction_as_core__hash__hash(this: &W_polars_plan__dsl__function_expr__cat__CategoricalFunction, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::function_expr::list::ListFunction as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_24168779_n_expr__list__listfunction_as_core__clone__clone(this: &W_polars_plan__dsl__function_expr__list__ListFunction) -> W_polars_plan__dsl__function_expr__list__ListFunction { W_polars_plan__dsl__function_expr__list__ListFunction(this.0.clone()) }
+/// Polars: `polars_plan::dsl::function_expr::list::ListFunction as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_81d92a2c_nction_expr__list__listfunction_as_core__cmp__eq(this: &W_polars_plan__dsl__function_expr__list__ListFunction, other: &W_polars_plan__dsl__function_expr__list__ListFunction) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::function_expr::list::ListFunction as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_3b5b7d8c_expr__list__listfunction_as_core__cmp__partialeq(this: &W_polars_plan__dsl__function_expr__list__ListFunction, other: &W_polars_plan__dsl__function_expr__list__ListFunction) -> bool { this.0 == other.0 }
@@ -10400,9 +10847,15 @@ fn p_e6f73fca_ion_expr__list__listfunction_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::function_expr::list::ListFunction as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_ed0cc752_n_expr__list__listfunction_as_core__fmt__display(this: &W_polars_plan__dsl__function_expr__list__ListFunction, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::function_expr::list::ListFunction as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_0e770eb8_ion_expr__list__listfunction_as_core__hash__hash(this: &W_polars_plan__dsl__function_expr__list__ListFunction, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::function_expr::pow::PowFunction as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b631c058_ion_expr__pow__powfunction_as_core__clone__clone(this: &W_polars_plan__dsl__function_expr__pow__PowFunction) -> W_polars_plan__dsl__function_expr__pow__PowFunction { W_polars_plan__dsl__function_expr__pow__PowFunction(this.0.clone()) }
+/// Polars: `polars_plan::dsl::function_expr::pow::PowFunction as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_8c22d632_function_expr__pow__powfunction_as_core__cmp__eq(this: &W_polars_plan__dsl__function_expr__pow__PowFunction, other: &W_polars_plan__dsl__function_expr__pow__PowFunction) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::function_expr::pow::PowFunction as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_ff9c5785_n_expr__pow__powfunction_as_core__cmp__partialeq(this: &W_polars_plan__dsl__function_expr__pow__PowFunction, other: &W_polars_plan__dsl__function_expr__pow__PowFunction) -> bool { this.0 == other.0 }
@@ -10412,9 +10865,15 @@ fn p_2a2096bc_ction_expr__pow__powfunction_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::function_expr::pow::PowFunction as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_ce59daac_ion_expr__pow__powfunction_as_core__fmt__display(this: &W_polars_plan__dsl__function_expr__pow__PowFunction, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::function_expr::pow::PowFunction as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_a3895883_ction_expr__pow__powfunction_as_core__hash__hash(this: &W_polars_plan__dsl__function_expr__pow__PowFunction, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::function_expr::struct_::StructFunction as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b312d647_r__struct___structfunction_as_core__clone__clone(this: &W_polars_plan__dsl__function_expr__struct___StructFunction) -> W_polars_plan__dsl__function_expr__struct___StructFunction { W_polars_plan__dsl__function_expr__struct___StructFunction(this.0.clone()) }
+/// Polars: `polars_plan::dsl::function_expr::struct_::StructFunction as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_f79940fd_n_expr__struct___structfunction_as_core__cmp__eq(this: &W_polars_plan__dsl__function_expr__struct___StructFunction, other: &W_polars_plan__dsl__function_expr__struct___StructFunction) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::function_expr::struct_::StructFunction as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_16602686__struct___structfunction_as_core__cmp__partialeq(this: &W_polars_plan__dsl__function_expr__struct___StructFunction, other: &W_polars_plan__dsl__function_expr__struct___StructFunction) -> bool { this.0 == other.0 }
@@ -10424,9 +10883,15 @@ fn p_019e5d50_xpr__struct___structfunction_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::function_expr::struct_::StructFunction as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_844205c0_r__struct___structfunction_as_core__fmt__display(this: &W_polars_plan__dsl__function_expr__struct___StructFunction, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::function_expr::struct_::StructFunction as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_59922157_xpr__struct___structfunction_as_core__hash__hash(this: &W_polars_plan__dsl__function_expr__struct___StructFunction, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::match_to_schema::MatchToSchemaPerColumn as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_80f9c205_ma__matchtoschemapercolumn_as_core__clone__clone(this: &W_polars_plan__dsl__match_to_schema__MatchToSchemaPerColumn) -> W_polars_plan__dsl__match_to_schema__MatchToSchemaPerColumn { W_polars_plan__dsl__match_to_schema__MatchToSchemaPerColumn(this.0.clone()) }
+/// Polars: `polars_plan::dsl::match_to_schema::MatchToSchemaPerColumn as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_57cdc97f__schema__matchtoschemapercolumn_as_core__cmp__eq(this: &W_polars_plan__dsl__match_to_schema__MatchToSchemaPerColumn, other: &W_polars_plan__dsl__match_to_schema__MatchToSchemaPerColumn) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::match_to_schema::MatchToSchemaPerColumn as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_edd27cf2___matchtoschemapercolumn_as_core__cmp__partialeq(this: &W_polars_plan__dsl__match_to_schema__MatchToSchemaPerColumn, other: &W_polars_plan__dsl__match_to_schema__MatchToSchemaPerColumn) -> bool { this.0 == other.0 }
@@ -10436,6 +10901,9 @@ fn p_97837e13_hema__matchtoschemapercolumn_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::match_to_schema::MissingColumnsPolicyOrExpr as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_36d04fd8_missingcolumnspolicyorexpr_as_core__clone__clone(this: &W_polars_plan__dsl__match_to_schema__MissingColumnsPolicyOrExpr) -> W_polars_plan__dsl__match_to_schema__MissingColumnsPolicyOrExpr { W_polars_plan__dsl__match_to_schema__MissingColumnsPolicyOrExpr(this.0.clone()) }
+/// Polars: `polars_plan::dsl::match_to_schema::MissingColumnsPolicyOrExpr as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_443885e8_ema__missingcolumnspolicyorexpr_as_core__cmp__eq(this: &W_polars_plan__dsl__match_to_schema__MissingColumnsPolicyOrExpr, other: &W_polars_plan__dsl__match_to_schema__MissingColumnsPolicyOrExpr) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::match_to_schema::MissingColumnsPolicyOrExpr as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_6b84ca1d_ssingcolumnspolicyorexpr_as_core__cmp__partialeq(this: &W_polars_plan__dsl__match_to_schema__MissingColumnsPolicyOrExpr, other: &W_polars_plan__dsl__match_to_schema__MissingColumnsPolicyOrExpr) -> bool { this.0 == other.0 }
@@ -10445,15 +10913,24 @@ fn p_554512ec___missingcolumnspolicyorexpr_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::match_to_schema::UpcastOrForbid as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_6ba97355__to_schema__upcastorforbid_as_core__clone__clone(this: &W_polars_plan__dsl__match_to_schema__UpcastOrForbid) -> W_polars_plan__dsl__match_to_schema__UpcastOrForbid { W_polars_plan__dsl__match_to_schema__UpcastOrForbid(this.0.clone()) }
+/// Polars: `polars_plan::dsl::match_to_schema::UpcastOrForbid as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_c8e5c70b_match_to_schema__upcastorforbid_as_core__cmp__eq(this: &W_polars_plan__dsl__match_to_schema__UpcastOrForbid, other: &W_polars_plan__dsl__match_to_schema__UpcastOrForbid) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::match_to_schema::UpcastOrForbid as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_baa9daf3_o_schema__upcastorforbid_as_core__cmp__partialeq(this: &W_polars_plan__dsl__match_to_schema__UpcastOrForbid, other: &W_polars_plan__dsl__match_to_schema__UpcastOrForbid) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::match_to_schema::UpcastOrForbid as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_83138ff0_ch_to_schema__upcastorforbid_as_core__fmt__debug(this: &W_polars_plan__dsl__match_to_schema__UpcastOrForbid, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::match_to_schema::UpcastOrForbid as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_e9270d83_ch_to_schema__upcastorforbid_as_core__hash__hash(this: &W_polars_plan__dsl__match_to_schema__UpcastOrForbid, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::AnonymousScanOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b2e7fa47_ions__anonymousscanoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__AnonymousScanOptions) -> W_polars_plan__dsl__options__AnonymousScanOptions { W_polars_plan__dsl__options__AnonymousScanOptions(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::AnonymousScanOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_5a89e4cc___options__anonymousscanoptions_as_core__cmp__eq(this: &W_polars_plan__dsl__options__AnonymousScanOptions, other: &W_polars_plan__dsl__options__AnonymousScanOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::AnonymousScanOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_db180849_ns__anonymousscanoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__AnonymousScanOptions, other: &W_polars_plan__dsl__options__AnonymousScanOptions) -> bool { this.0 == other.0 }
@@ -10463,9 +10940,15 @@ fn p_42c9d56f___anonymousscanoptions_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::options::AnonymousScanOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_a21c156d_ptions__anonymousscanoptions_as_core__fmt__debug(this: &W_polars_plan__dsl__options__AnonymousScanOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::AnonymousScanOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_4e4e4e44_ptions__anonymousscanoptions_as_core__hash__hash(this: &W_polars_plan__dsl__options__AnonymousScanOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::DistinctOptionsDSL as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_bd492fce_ptions__distinctoptionsdsl_as_core__clone__clone(this: &W_polars_plan__dsl__options__DistinctOptionsDSL) -> W_polars_plan__dsl__options__DistinctOptionsDSL { W_polars_plan__dsl__options__DistinctOptionsDSL(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::DistinctOptionsDSL as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_a2144c49_sl__options__distinctoptionsdsl_as_core__cmp__eq(this: &W_polars_plan__dsl__options__DistinctOptionsDSL, other: &W_polars_plan__dsl__options__DistinctOptionsDSL) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::DistinctOptionsDSL as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_359a1c83_ions__distinctoptionsdsl_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__DistinctOptionsDSL, other: &W_polars_plan__dsl__options__DistinctOptionsDSL) -> bool { this.0 == other.0 }
@@ -10475,18 +10958,30 @@ fn p_5e7bef32_ns__distinctoptionsdsl_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::options::DistinctOptionsDSL as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_fbb074d2__options__distinctoptionsdsl_as_core__fmt__debug(this: &W_polars_plan__dsl__options__DistinctOptionsDSL, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::DistinctOptionsDSL as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_b8c5bb66__options__distinctoptionsdsl_as_core__hash__hash(this: &W_polars_plan__dsl__options__DistinctOptionsDSL, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::FileWriteFormat as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_5739525b___options__filewriteformat_as_core__clone__clone(this: &W_polars_plan__dsl__options__FileWriteFormat) -> W_polars_plan__dsl__options__FileWriteFormat { W_polars_plan__dsl__options__FileWriteFormat(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::FileWriteFormat as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_4df60b4e___dsl__options__filewriteformat_as_core__cmp__eq(this: &W_polars_plan__dsl__options__FileWriteFormat, other: &W_polars_plan__dsl__options__FileWriteFormat) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::FileWriteFormat as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e5db4e98_options__filewriteformat_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__FileWriteFormat, other: &W_polars_plan__dsl__options__FileWriteFormat) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::FileWriteFormat as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_ccc1222b_sl__options__filewriteformat_as_core__fmt__debug(this: &W_polars_plan__dsl__options__FileWriteFormat, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::FileWriteFormat as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_ecacc220_sl__options__filewriteformat_as_core__hash__hash(this: &W_polars_plan__dsl__options__FileWriteFormat, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::GroupbyOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_86bd9cdb_l__options__groupbyoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__GroupbyOptions) -> W_polars_plan__dsl__options__GroupbyOptions { W_polars_plan__dsl__options__GroupbyOptions(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::GroupbyOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_0a7443c1_n__dsl__options__groupbyoptions_as_core__cmp__eq(this: &W_polars_plan__dsl__options__GroupbyOptions, other: &W_polars_plan__dsl__options__GroupbyOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::GroupbyOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_a726d4a8__options__groupbyoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__GroupbyOptions, other: &W_polars_plan__dsl__options__GroupbyOptions) -> bool { this.0 == other.0 }
@@ -10496,9 +10991,15 @@ fn p_fb01e6b0_ptions__groupbyoptions_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::options::GroupbyOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_2899009a_dsl__options__groupbyoptions_as_core__fmt__debug(this: &W_polars_plan__dsl__options__GroupbyOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::GroupbyOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_133751d6_dsl__options__groupbyoptions_as_core__hash__hash(this: &W_polars_plan__dsl__options__GroupbyOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::HConcatOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_3b843bce_l__options__hconcatoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__HConcatOptions) -> W_polars_plan__dsl__options__HConcatOptions { W_polars_plan__dsl__options__HConcatOptions(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::HConcatOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_6b676671_n__dsl__options__hconcatoptions_as_core__cmp__eq(this: &W_polars_plan__dsl__options__HConcatOptions, other: &W_polars_plan__dsl__options__HConcatOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::HConcatOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_cd530488__options__hconcatoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__HConcatOptions, other: &W_polars_plan__dsl__options__HConcatOptions) -> bool { this.0 == other.0 }
@@ -10508,6 +11009,9 @@ fn p_47619b34_ptions__hconcatoptions_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::options::HConcatOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_3ed1a351_dsl__options__hconcatoptions_as_core__fmt__debug(this: &W_polars_plan__dsl__options__HConcatOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::HConcatOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_48c30166_dsl__options__hconcatoptions_as_core__hash__hash(this: &W_polars_plan__dsl__options__HConcatOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::JoinOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_d1b87977__dsl__options__joinoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__JoinOptions) -> W_polars_plan__dsl__options__JoinOptions { W_polars_plan__dsl__options__JoinOptions(this.0.clone()) }
@@ -10538,15 +11042,24 @@ fn p_e49f8368__dsl__options__joinoptionsir_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::options::JoinTypeOptionsIR as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_0dcf7f16_options__jointypeoptionsir_as_core__clone__clone(this: &W_polars_plan__dsl__options__JoinTypeOptionsIR) -> W_polars_plan__dsl__options__JoinTypeOptionsIR { W_polars_plan__dsl__options__JoinTypeOptionsIR(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::JoinTypeOptionsIR as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_8bc67ed2_dsl__options__jointypeoptionsir_as_core__cmp__eq(this: &W_polars_plan__dsl__options__JoinTypeOptionsIR, other: &W_polars_plan__dsl__options__JoinTypeOptionsIR) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::JoinTypeOptionsIR as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_ef7eb037_tions__jointypeoptionsir_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__JoinTypeOptionsIR, other: &W_polars_plan__dsl__options__JoinTypeOptionsIR) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::JoinTypeOptionsIR as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_f3ea5b8c___options__jointypeoptionsir_as_core__fmt__debug(this: &W_polars_plan__dsl__options__JoinTypeOptionsIR, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::JoinTypeOptionsIR as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_05749d4c___options__jointypeoptionsir_as_core__hash__hash(this: &W_polars_plan__dsl__options__JoinTypeOptionsIR, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::LogicalPlanUdfOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_d703186f_ons__logicalplanudfoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__LogicalPlanUdfOptions) -> W_polars_plan__dsl__options__LogicalPlanUdfOptions { W_polars_plan__dsl__options__LogicalPlanUdfOptions(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::LogicalPlanUdfOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_6d8f23dc__options__logicalplanudfoptions_as_core__cmp__eq(this: &W_polars_plan__dsl__options__LogicalPlanUdfOptions, other: &W_polars_plan__dsl__options__LogicalPlanUdfOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::LogicalPlanUdfOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_5d050719_s__logicalplanudfoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__LogicalPlanUdfOptions, other: &W_polars_plan__dsl__options__LogicalPlanUdfOptions) -> bool { this.0 == other.0 }
@@ -10556,15 +11069,24 @@ fn p_73d61927_tions__logicalplanudfoptions_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::options::RollingCovOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2826953b_options__rollingcovoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__RollingCovOptions) -> W_polars_plan__dsl__options__RollingCovOptions { W_polars_plan__dsl__options__RollingCovOptions(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::RollingCovOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_7698f2b6_dsl__options__rollingcovoptions_as_core__cmp__eq(this: &W_polars_plan__dsl__options__RollingCovOptions, other: &W_polars_plan__dsl__options__RollingCovOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::RollingCovOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e720b3d5_tions__rollingcovoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__RollingCovOptions, other: &W_polars_plan__dsl__options__RollingCovOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::RollingCovOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_67efe0ab___options__rollingcovoptions_as_core__fmt__debug(this: &W_polars_plan__dsl__options__RollingCovOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::RollingCovOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_12fb08d0___options__rollingcovoptions_as_core__hash__hash(this: &W_polars_plan__dsl__options__RollingCovOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::StrptimeOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b94d9ed8___options__strptimeoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__StrptimeOptions) -> W_polars_plan__dsl__options__StrptimeOptions { W_polars_plan__dsl__options__StrptimeOptions(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::StrptimeOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_ad79cd9b___dsl__options__strptimeoptions_as_core__cmp__eq(this: &W_polars_plan__dsl__options__StrptimeOptions, other: &W_polars_plan__dsl__options__StrptimeOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::StrptimeOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_fa3f59a6_options__strptimeoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__StrptimeOptions, other: &W_polars_plan__dsl__options__StrptimeOptions) -> bool { this.0 == other.0 }
@@ -10574,9 +11096,15 @@ fn p_e0ae5dee_tions__strptimeoptions_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::options::StrptimeOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_806b3717_sl__options__strptimeoptions_as_core__fmt__debug(this: &W_polars_plan__dsl__options__StrptimeOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::StrptimeOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_7f822715_sl__options__strptimeoptions_as_core__hash__hash(this: &W_polars_plan__dsl__options__StrptimeOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::UnionArgs as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_18b4f355_n__dsl__options__unionargs_as_core__clone__clone(this: &W_polars_plan__dsl__options__UnionArgs) -> W_polars_plan__dsl__options__UnionArgs { W_polars_plan__dsl__options__UnionArgs(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::UnionArgs as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_9306474b_s_plan__dsl__options__unionargs_as_core__cmp__eq(this: &W_polars_plan__dsl__options__UnionArgs, other: &W_polars_plan__dsl__options__UnionArgs) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::UnionArgs as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_a18d5b27__dsl__options__unionargs_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__UnionArgs, other: &W_polars_plan__dsl__options__UnionArgs) -> bool { this.0 == other.0 }
@@ -10586,9 +11114,15 @@ fn p_dd3d9557_sl__options__unionargs_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::options::UnionArgs as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_f0bbec70_lan__dsl__options__unionargs_as_core__fmt__debug(this: &W_polars_plan__dsl__options__UnionArgs, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::UnionArgs as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_27b7adcc_lan__dsl__options__unionargs_as_core__hash__hash(this: &W_polars_plan__dsl__options__UnionArgs, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::UnionOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_6066993e_dsl__options__unionoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__UnionOptions) -> W_polars_plan__dsl__options__UnionOptions { W_polars_plan__dsl__options__UnionOptions(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::UnionOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_6c97024b_lan__dsl__options__unionoptions_as_core__cmp__eq(this: &W_polars_plan__dsl__options__UnionOptions, other: &W_polars_plan__dsl__options__UnionOptions) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::UnionOptions as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_1f4fb1f5_l__options__unionoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__UnionOptions, other: &W_polars_plan__dsl__options__UnionOptions) -> bool { this.0 == other.0 }
@@ -10601,18 +11135,30 @@ fn p_a0fa611d__options__unionoptions_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::options::UnionOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_d9afe383___dsl__options__unionoptions_as_core__fmt__debug(this: &W_polars_plan__dsl__options__UnionOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::UnionOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_bbb20e3e___dsl__options__unionoptions_as_core__hash__hash(this: &W_polars_plan__dsl__options__UnionOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::UnpivotArgsDSL as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_75df6b5f_l__options__unpivotargsdsl_as_core__clone__clone(this: &W_polars_plan__dsl__options__UnpivotArgsDSL) -> W_polars_plan__dsl__options__UnpivotArgsDSL { W_polars_plan__dsl__options__UnpivotArgsDSL(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::UnpivotArgsDSL as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_b274a946_n__dsl__options__unpivotargsdsl_as_core__cmp__eq(this: &W_polars_plan__dsl__options__UnpivotArgsDSL, other: &W_polars_plan__dsl__options__UnpivotArgsDSL) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::UnpivotArgsDSL as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_7a5fe204__options__unpivotargsdsl_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__UnpivotArgsDSL, other: &W_polars_plan__dsl__options__UnpivotArgsDSL) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::UnpivotArgsDSL as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_a08b2d22_dsl__options__unpivotargsdsl_as_core__fmt__debug(this: &W_polars_plan__dsl__options__UnpivotArgsDSL, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::UnpivotArgsDSL as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_23f89535_dsl__options__unpivotargsdsl_as_core__hash__hash(this: &W_polars_plan__dsl__options__UnpivotArgsDSL, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::WindowMapping as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_ed432d4d_sl__options__windowmapping_as_core__clone__clone(this: &W_polars_plan__dsl__options__WindowMapping) -> W_polars_plan__dsl__options__WindowMapping { W_polars_plan__dsl__options__WindowMapping(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::WindowMapping as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_d55cce10_an__dsl__options__windowmapping_as_core__cmp__eq(this: &W_polars_plan__dsl__options__WindowMapping, other: &W_polars_plan__dsl__options__WindowMapping) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::WindowMapping as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_150a01e2___options__windowmapping_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__WindowMapping, other: &W_polars_plan__dsl__options__WindowMapping) -> bool { this.0 == other.0 }
@@ -10622,6 +11168,9 @@ fn p_920233f9_options__windowmapping_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::dsl::options::WindowMapping as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_14d9c9a4__dsl__options__windowmapping_as_core__fmt__debug(this: &W_polars_plan__dsl__options__WindowMapping, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::WindowMapping as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_3aa66d4d__dsl__options__windowmapping_as_core__hash__hash(this: &W_polars_plan__dsl__options__WindowMapping, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::file_provider::FileProviderArgs as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_2732db9b_e_provider__fileproviderargs_as_core__fmt__debug(this: &W_polars_plan__dsl__options__file_provider__FileProviderArgs, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
@@ -10655,21 +11204,33 @@ fn p_2de2e878_rovider__icebergpathprovider_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergCommitMode as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_acc774ef_k_state__icebergcommitmode_as_core__clone__clone(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergCommitMode) -> W_polars_plan__dsl__options__iceberg_sink_state__IcebergCommitMode { W_polars_plan__dsl__options__iceberg_sink_state__IcebergCommitMode(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergCommitMode as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_8ed3787c_g_sink_state__icebergcommitmode_as_core__cmp__eq(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergCommitMode, other: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergCommitMode) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergCommitMode as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_f764da4d_state__icebergcommitmode_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergCommitMode, other: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergCommitMode) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergCommitMode as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_117619a9_ink_state__icebergcommitmode_as_core__fmt__debug(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergCommitMode, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergCommitMode as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_a2b22a70_ink_state__icebergcommitmode_as_core__hash__hash(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergCommitMode, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergSinkState as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_92f89e74_nk_state__icebergsinkstate_as_core__clone__clone(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergSinkState) -> W_polars_plan__dsl__options__iceberg_sink_state__IcebergSinkState { W_polars_plan__dsl__options__iceberg_sink_state__IcebergSinkState(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergSinkState as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_901743d3_rg_sink_state__icebergsinkstate_as_core__cmp__eq(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergSinkState, other: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergSinkState) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergSinkState as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_cf3f8e97__state__icebergsinkstate_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergSinkState, other: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergSinkState) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergSinkState as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_3ff332ce_sink_state__icebergsinkstate_as_core__fmt__debug(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergSinkState, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::iceberg_sink_state::IcebergSinkState as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_0eb03e15_sink_state__icebergsinkstate_as_core__hash__hash(this: &W_polars_plan__dsl__options__iceberg_sink_state__IcebergSinkState, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::sink::CallbackSinkType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_ab708617_ns__sink__callbacksinktype_as_core__clone__clone(this: &W_polars_plan__dsl__options__sink__CallbackSinkType) -> W_polars_plan__dsl__options__sink__CallbackSinkType { W_polars_plan__dsl__options__sink__CallbackSinkType(this.0.clone()) }
@@ -10736,12 +11297,18 @@ fn p_3f539814_tions__sink__sinkdestination_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::options::sink::SinkTarget as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_08c31ab5__options__sink__sinktarget_as_core__clone__clone(this: &W_polars_plan__dsl__options__sink__SinkTarget) -> W_polars_plan__dsl__options__sink__SinkTarget { W_polars_plan__dsl__options__sink__SinkTarget(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::sink::SinkTarget as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_c94add6a__dsl__options__sink__sinktarget_as_core__cmp__eq(this: &W_polars_plan__dsl__options__sink__SinkTarget, other: &W_polars_plan__dsl__options__sink__SinkTarget) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::sink::SinkTarget as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_d7fce41a_ptions__sink__sinktarget_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__sink__SinkTarget, other: &W_polars_plan__dsl__options__sink__SinkTarget) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::options::sink::SinkTarget as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_438d83d0_l__options__sink__sinktarget_as_core__fmt__debug(this: &W_polars_plan__dsl__options__sink__SinkTarget, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::sink::SinkTarget as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_4435f0a2_l__options__sink__sinktarget_as_core__hash__hash(this: &W_polars_plan__dsl__options__sink__SinkTarget, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::sink::SinkType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_d2efe9a6_l__options__sink__sinktype_as_core__clone__clone(this: &W_polars_plan__dsl__options__sink__SinkType) -> W_polars_plan__dsl__options__sink__SinkType { W_polars_plan__dsl__options__sink__SinkType(this.0.clone()) }
@@ -10823,15 +11390,27 @@ fn p_fd6d8935_sl__scan_sources__scansource_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::scan_sources::ScanSources as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_e66cd64c__scan_sources__scansources_as_core__clone__clone(this: &W_polars_plan__dsl__scan_sources__ScanSources) -> W_polars_plan__dsl__scan_sources__ScanSources { W_polars_plan__dsl__scan_sources__ScanSources(this.0.clone()) }
+/// Polars: `polars_plan::dsl::scan_sources::ScanSources as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_ea8de1ee__dsl__scan_sources__scansources_as_core__cmp__eq(this: &W_polars_plan__dsl__scan_sources__ScanSources, other: &W_polars_plan__dsl__scan_sources__ScanSources) -> bool { this.0 == other.0 }
+/// Polars: `polars_plan::dsl::scan_sources::ScanSources as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_1a068b2d_can_sources__scansources_as_core__cmp__partialeq(this: &W_polars_plan__dsl__scan_sources__ScanSources, other: &W_polars_plan__dsl__scan_sources__ScanSources) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::scan_sources::ScanSources as core::default::Default`.
 #[rune::function(free, path = W_polars_plan__dsl__scan_sources__ScanSources::default_)]
 fn p_26fc135c_n_sources__scansources_as_core__default__default() -> W_polars_plan__dsl__scan_sources__ScanSources { W_polars_plan__dsl__scan_sources__ScanSources(<polars_plan::dsl::ScanSources>::default()) }
 /// Polars: `polars_plan::dsl::scan_sources::ScanSources as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_1cd579b4_l__scan_sources__scansources_as_core__fmt__debug(this: &W_polars_plan__dsl__scan_sources__ScanSources, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::scan_sources::ScanSources as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_f02411f3_l__scan_sources__scansources_as_core__hash__hash(this: &W_polars_plan__dsl__scan_sources__ScanSources, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2d0933b9_selector__datatypeselector_as_core__clone__clone(this: &W_polars_plan__dsl__selector__DataTypeSelector) -> W_polars_plan__dsl__selector__DataTypeSelector { W_polars_plan__dsl__selector__DataTypeSelector(this.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_0bebbe66_dsl__selector__datatypeselector_as_core__cmp__eq(this: &W_polars_plan__dsl__selector__DataTypeSelector, other: &W_polars_plan__dsl__selector__DataTypeSelector) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_e47b821f_lector__datatypeselector_as_core__cmp__partialeq(this: &W_polars_plan__dsl__selector__DataTypeSelector, other: &W_polars_plan__dsl__selector__DataTypeSelector) -> bool { this.0 == other.0 }
@@ -10841,6 +11420,9 @@ fn p_6614de86___selector__datatypeselector_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_83726194_selector__datatypeselector_as_core__fmt__display(this: &W_polars_plan__dsl__selector__DataTypeSelector, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_bfafe104___selector__datatypeselector_as_core__hash__hash(this: &W_polars_plan__dsl__selector__DataTypeSelector, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::ops::arith::SubAssign`.
 #[rune::function(instance, protocol = SUB_ASSIGN)]
 fn p_c2c47655__datatypeselector_as_core__ops__arith__subassign(this: &mut W_polars_plan__dsl__selector__DataTypeSelector, rhs: &W_polars_plan__dsl__selector__DataTypeSelector) { <polars_plan::dsl::DataTypeSelector as core::ops::SubAssign>::sub_assign(&mut this.0, rhs.0.clone()) }
@@ -10856,6 +11438,9 @@ fn p_70c4f4e3_datatypeselector_as_core__ops__bit__bitxorassign(this: &mut W_pola
 /// Polars: `polars_plan::dsl::selector::Selector as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_11ec609b_n__dsl__selector__selector_as_core__clone__clone(this: &W_polars_plan__dsl__selector__Selector) -> W_polars_plan__dsl__selector__Selector { W_polars_plan__dsl__selector__Selector(this.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::Selector as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_c6eeaf16_s_plan__dsl__selector__selector_as_core__cmp__eq(this: &W_polars_plan__dsl__selector__Selector, other: &W_polars_plan__dsl__selector__Selector) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::selector::Selector as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_100e5c07__dsl__selector__selector_as_core__cmp__partialeq(this: &W_polars_plan__dsl__selector__Selector, other: &W_polars_plan__dsl__selector__Selector) -> bool { this.0 == other.0 }
@@ -10865,6 +11450,9 @@ fn p_1b0117fa_lan__dsl__selector__selector_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::selector::Selector as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_c8de88ec_n__dsl__selector__selector_as_core__fmt__display(this: &W_polars_plan__dsl__selector__Selector, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::selector::Selector as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_5fc27cf5_lan__dsl__selector__selector_as_core__hash__hash(this: &W_polars_plan__dsl__selector__Selector, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::selector::Selector as core::ops::arith::SubAssign`.
 #[rune::function(instance, protocol = SUB_ASSIGN)]
 fn p_cae05586_elector__selector_as_core__ops__arith__subassign(this: &mut W_polars_plan__dsl__selector__Selector, rhs: &W_polars_plan__dsl__selector__Selector) { <polars_plan::dsl::Selector as core::ops::SubAssign>::sub_assign(&mut this.0, rhs.0.clone()) }
@@ -10880,6 +11468,9 @@ fn p_97d785e3_lector__selector_as_core__ops__bit__bitxorassign(this: &mut W_pola
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_9ee32a45_dsl__selector__timeunitset_as_core__clone__clone(this: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { W_polars_plan__dsl__selector__TimeUnitSet(this.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_aa49a169_lan__dsl__selector__timeunitset_as_core__cmp__eq(this: &W_polars_plan__dsl__selector__TimeUnitSet, other: &W_polars_plan__dsl__selector__TimeUnitSet) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_8101c898_l__selector__timeunitset_as_core__cmp__partialeq(this: &W_polars_plan__dsl__selector__TimeUnitSet, other: &W_polars_plan__dsl__selector__TimeUnitSet) -> bool { this.0 == other.0 }
@@ -10892,6 +11483,9 @@ fn p_3b86c614___dsl__selector__timeunitset_as_core__fmt__debug(this: &W_polars_p
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_9d113f22_dsl__selector__timeunitset_as_core__fmt__display(this: &W_polars_plan__dsl__selector__TimeUnitSet, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_60235dd2___dsl__selector__timeunitset_as_core__hash__hash(this: &W_polars_plan__dsl__selector__TimeUnitSet, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_131cc460___selector__timeunitset_as_core__ops__arith__sub(this: &W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__dsl__selector__TimeUnitSet(__r) }
@@ -10922,12 +11516,18 @@ fn p_9b478329_sl__selector__timeunitset_as_core__ops__bit__not(this: &W_polars_p
 /// Polars: `polars_plan::dsl::selector::TimeZoneSet as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_06ece4c0_dsl__selector__timezoneset_as_core__clone__clone(this: &W_polars_plan__dsl__selector__TimeZoneSet) -> W_polars_plan__dsl__selector__TimeZoneSet { W_polars_plan__dsl__selector__TimeZoneSet(this.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::TimeZoneSet as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_427c6d58_lan__dsl__selector__timezoneset_as_core__cmp__eq(this: &W_polars_plan__dsl__selector__TimeZoneSet, other: &W_polars_plan__dsl__selector__TimeZoneSet) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::selector::TimeZoneSet as core::cmp::PartialEq`.
 #[rune::function(instance, protocol = PARTIAL_EQ)]
 fn p_1135ac58_l__selector__timezoneset_as_core__cmp__partialeq(this: &W_polars_plan__dsl__selector__TimeZoneSet, other: &W_polars_plan__dsl__selector__TimeZoneSet) -> bool { this.0 == other.0 }
 /// Polars: `polars_plan::dsl::selector::TimeZoneSet as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_651a00da___dsl__selector__timezoneset_as_core__fmt__debug(this: &W_polars_plan__dsl__selector__TimeZoneSet, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::selector::TimeZoneSet as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_297ace29___dsl__selector__timezoneset_as_core__hash__hash(this: &W_polars_plan__dsl__selector__TimeZoneSet, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::udf::UserDefinedFunction as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_854ec679___udf__userdefinedfunction_as_core__clone__clone(this: &W_polars_plan__dsl__udf__UserDefinedFunction) -> W_polars_plan__dsl__udf__UserDefinedFunction { W_polars_plan__dsl__udf__UserDefinedFunction(this.0.clone()) }
@@ -17519,10 +18119,13 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_a695a7c2_nymousownedlistbuilder_as_core__default__default)?;
     m.function_meta(p_c373b069___null__nullchunkedbuilder_as_core__clone__clone)?;
     m.function_meta(p_787c0a73_d_array__cast__castoptions_as_core__clone__clone)?;
+    m.function_meta(p_af584e0a_hunked_array__cast__castoptions_as_core__cmp__eq)?;
     m.function_meta(p_c6426246_array__cast__castoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_6ae3cac0_ray__cast__castoptions_as_core__default__default)?;
     m.function_meta(p_ca4c7e40_ked_array__cast__castoptions_as_core__fmt__debug)?;
+    m.function_meta(p_cf7747ef_ked_array__cast__castoptions_as_core__hash__hash)?;
     m.function_meta(p_f8c93311_ay__flags__statisticsflags_as_core__clone__clone)?;
+    m.function_meta(p_36cfbb59_d_array__flags__statisticsflags_as_core__cmp__eq)?;
     m.function_meta(p_c4daae80___flags__statisticsflags_as_core__cmp__partialeq)?;
     m.function_meta(p_62787664_rray__flags__statisticsflags_as_core__fmt__debug)?;
     m.function_meta(p_886ce722__flags__statisticsflags_as_core__ops__arith__sub)?;
@@ -17535,28 +18138,38 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_94eab3be__statisticsflags_as_core__ops__bit__bitxorassign)?;
     m.function_meta(p_2c1f07d0_y__flags__statisticsflags_as_core__ops__bit__not)?;
     m.function_meta(p_4b377447___flags__statisticsflagsim_as_core__clone__clone)?;
+    m.function_meta(p_1e3b84eb_array__flags__statisticsflagsim_as_core__cmp__eq)?;
+    m.function_meta(p_3903acc8_flags__statisticsflagsim_as_core__cmp__partialeq)?;
     m.function_meta(f_6c1cc0dc_rs_core__chunked_array__flags__statisticsflagsim)?;
     m.function_meta(p_9171defa_ay__flags__statisticsflagsim_as_core__fmt__debug)?;
     m.function_meta(p_ed688b19_array__ops__explodeoptions_as_core__clone__clone)?;
+    m.function_meta(p_baf023e4_nked_array__ops__explodeoptions_as_core__cmp__eq)?;
     m.function_meta(p_3147d860_ray__ops__explodeoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_2f7a8194_d_array__ops__explodeoptions_as_core__fmt__debug)?;
+    m.function_meta(p_6eaae49c_d_array__ops__explodeoptions_as_core__hash__hash)?;
     m.function_meta(p_f9614fa5_ray__ops__fillnullstrategy_as_core__clone__clone)?;
     m.function_meta(p_d715fa87_y__ops__fillnullstrategy_as_core__cmp__partialeq)?;
     m.function_meta(p_c444a93d_array__ops__fillnullstrategy_as_core__fmt__debug)?;
     m.function_meta(p_4ab24996_h_sorted__searchsortedside_as_core__clone__clone)?;
+    m.function_meta(p_e45fa70c_search_sorted__searchsortedside_as_core__cmp__eq)?;
     m.function_meta(p_c7af2fbf_sorted__searchsortedside_as_core__cmp__partialeq)?;
     m.function_meta(p_bcd34a7a_rted__searchsortedside_as_core__default__default)?;
     m.function_meta(p_3ba76a74_rch_sorted__searchsortedside_as_core__fmt__debug)?;
+    m.function_meta(p_7de17d19_rch_sorted__searchsortedside_as_core__hash__hash)?;
     m.function_meta(p_83e30ef3_tions__sortmultipleoptions_as_core__clone__clone)?;
+    m.function_meta(p_a5488ee9_t__options__sortmultipleoptions_as_core__cmp__eq)?;
     m.function_meta(p_e25a91e9_ons__sortmultipleoptions_as_core__cmp__partialeq)?;
     m.function_meta(f_5e279452_d_array__ops__sort__options__sortmultipleoptions)?;
     m.function_meta(p_a57c33b4_s__sortmultipleoptions_as_core__default__default)?;
     m.function_meta(p_ea4106e7_options__sortmultipleoptions_as_core__fmt__debug)?;
+    m.function_meta(p_c92197c6_options__sortmultipleoptions_as_core__hash__hash)?;
     m.function_meta(p_61ae14b9_sort__options__sortoptions_as_core__clone__clone)?;
+    m.function_meta(p_0e9979b2_ops__sort__options__sortoptions_as_core__cmp__eq)?;
     m.function_meta(p_e1ddcfaf_rt__options__sortoptions_as_core__cmp__partialeq)?;
     m.function_meta(f_638ca6dd___chunked_array__ops__sort__options__sortoptions)?;
     m.function_meta(p_a52bb73a___options__sortoptions_as_core__default__default)?;
     m.function_meta(p_7b063c10___sort__options__sortoptions_as_core__fmt__debug)?;
+    m.function_meta(p_09939bd3___sort__options__sortoptions_as_core__hash__hash)?;
     m.function_meta(p_825e24bc_atatypes__binaryoffsettype_as_core__clone__clone)?;
     m.function_meta(p_ffb1e306_ore__datatypes__binarytype_as_core__clone__clone)?;
     m.function_meta(p_5fc41980_re__datatypes__booleantype_as_core__clone__clone)?;
@@ -17580,37 +18193,56 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_0a310b72_ore__datatypes__uint64type_as_core__clone__clone)?;
     m.function_meta(p_bfa49e68_core__datatypes__uint8type_as_core__clone__clone)?;
     m.function_meta(p_dc785fe4_atypes__dtype__compatlevel_as_core__clone__clone)?;
+    m.function_meta(p_7b7fd75d___datatypes__dtype__compatlevel_as_core__cmp__eq)?;
     m.function_meta(p_158069ff_ypes__dtype__compatlevel_as_core__cmp__partialeq)?;
     m.function_meta(p_2c9ef818_atatypes__dtype__compatlevel_as_core__fmt__debug)?;
+    m.function_meta(p_761ba34e_atatypes__dtype__compatlevel_as_core__hash__hash)?;
     m.function_meta(p_d5beb85c_datatypes__dtype__datatype_as_core__clone__clone)?;
+    m.function_meta(p_3f38aa27_ore__datatypes__dtype__datatype_as_core__cmp__eq)?;
+    m.function_meta(p_7aa07c19_tatypes__dtype__datatype_as_core__cmp__partialeq)?;
     m.function_meta(f_c3e73ac8_hysical__polars_core__datatypes__dtype__datatype)?;
     m.function_meta(p_19f7b58a___datatypes__dtype__datatype_as_core__fmt__debug)?;
     m.function_meta(p_67693477_datatypes__dtype__datatype_as_core__fmt__display)?;
+    m.function_meta(p_1904a078___datatypes__dtype__datatype_as_core__hash__hash)?;
     m.function_meta(p_81cfac00_atypes__dtype__unknownkind_as_core__clone__clone)?;
+    m.function_meta(p_88eb5481___datatypes__dtype__unknownkind_as_core__cmp__eq)?;
     m.function_meta(p_05a5cf19_ypes__dtype__unknownkind_as_core__cmp__partialeq)?;
     m.function_meta(p_d7f15131_es__dtype__unknownkind_as_core__default__default)?;
     m.function_meta(p_679b2af4_atatypes__dtype__unknownkind_as_core__fmt__debug)?;
+    m.function_meta(p_1c05e875_atatypes__dtype__unknownkind_as_core__hash__hash)?;
     m.function_meta(p_8addd2a4_e__datatypes__field__field_as_core__clone__clone)?;
+    m.function_meta(p_079ce4e4_s_core__datatypes__field__field_as_core__cmp__eq)?;
     m.function_meta(p_15f254a0__datatypes__field__field_as_core__cmp__partialeq)?;
     m.function_meta(p_e4f351db_ore__datatypes__field__field_as_core__fmt__debug)?;
+    m.function_meta(p_6f303d0d_ore__datatypes__field__field_as_core__hash__hash)?;
     m.function_meta(p_80377a00_poral__time_unit__timeunit_as_core__clone__clone)?;
+    m.function_meta(p_f2957ab7___temporal__time_unit__timeunit_as_core__cmp__eq)?;
     m.function_meta(p_d10b8ff0_ral__time_unit__timeunit_as_core__cmp__partialeq)?;
+    m.function_meta(p_a0123a49_al__time_unit__timeunit_as_core__cmp__partialord)?;
     m.function_meta(f_111727c1_s_core__datatypes__temporal__time_unit__timeunit)?;
     m.function_meta(p_27f8cf16_emporal__time_unit__timeunit_as_core__fmt__debug)?;
     m.function_meta(p_d802bb4e_poral__time_unit__timeunit_as_core__fmt__display)?;
+    m.function_meta(p_e4cc3422_emporal__time_unit__timeunit_as_core__hash__hash)?;
     m.function_meta(p_6b512183_poral__time_zone__timezone_as_core__clone__clone)?;
+    m.function_meta(p_aac8758e___temporal__time_zone__timezone_as_core__cmp__eq)?;
     m.function_meta(p_9869ee65_ral__time_zone__timezone_as_core__cmp__partialeq)?;
     m.function_meta(p_2602c5b3_emporal__time_zone__timezone_as_core__fmt__debug)?;
     m.function_meta(p_3139b6ef_poral__time_zone__timezone_as_core__fmt__display)?;
+    m.function_meta(p_fd1a516a_emporal__time_zone__timezone_as_core__hash__hash)?;
     m.function_meta(p_ee50e56c___frame__pivotcolumnnaming_as_core__clone__clone)?;
+    m.function_meta(p_6f044185__core__frame__pivotcolumnnaming_as_core__cmp__eq)?;
     m.function_meta(p_09d70872_frame__pivotcolumnnaming_as_core__cmp__partialeq)?;
     m.function_meta(p_a40be9cf_ame__pivotcolumnnaming_as_core__default__default)?;
     m.function_meta(p_0690e0f0_re__frame__pivotcolumnnaming_as_core__fmt__debug)?;
+    m.function_meta(p_597047cc_re__frame__pivotcolumnnaming_as_core__hash__hash)?;
     m.function_meta(p_e7655cfc__frame__uniquekeepstrategy_as_core__clone__clone)?;
+    m.function_meta(p_08d7be7d_core__frame__uniquekeepstrategy_as_core__cmp__eq)?;
     m.function_meta(p_6b2dd042_rame__uniquekeepstrategy_as_core__cmp__partialeq)?;
     m.function_meta(p_ec06cb05_me__uniquekeepstrategy_as_core__default__default)?;
     m.function_meta(p_df0f79ba_e__frame__uniquekeepstrategy_as_core__fmt__debug)?;
+    m.function_meta(p_180b63e8_e__frame__uniquekeepstrategy_as_core__hash__hash)?;
     m.function_meta(p_2d1c06dd_ore__frame__column__column_as_core__clone__clone)?;
+    m.function_meta(p_9bef3223_e__frame__column__column_as_core__cmp__partialeq)?;
     m.function_meta(f_d59c4694_scalarcolumn__polars_core__frame__column__column)?;
     m.function_meta(f_c2c2954f_ries__series__polars_core__frame__column__column)?;
     m.function_meta(p_68160b34__frame__column__column_as_core__default__default)?;
@@ -17618,12 +18250,15 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_202b4483_lumn__scalar__scalarcolumn_as_core__clone__clone)?;
     m.function_meta(p_5d39abb8_column__scalar__scalarcolumn_as_core__fmt__debug)?;
     m.function_meta(p_183e2539_rame__dataframe__dataframe_as_core__clone__clone)?;
+    m.function_meta(p_b972b356_me__dataframe__dataframe_as_core__cmp__partialeq)?;
     m.function_meta(p_3352e5bb___dataframe__dataframe_as_core__default__default)?;
     m.function_meta(p_e1a5a36b__frame__dataframe__dataframe_as_core__fmt__debug)?;
     m.function_meta(p_fded30a5_me__explode__unpivotargsir_as_core__clone__clone)?;
+    m.function_meta(p_d931828c___frame__explode__unpivotargsir_as_core__cmp__eq)?;
     m.function_meta(p_e7a3c056___explode__unpivotargsir_as_core__cmp__partialeq)?;
     m.function_meta(p_848925a8_explode__unpivotargsir_as_core__default__default)?;
     m.function_meta(p_7a122dd9_rame__explode__unpivotargsir_as_core__fmt__debug)?;
+    m.function_meta(p_eb69a724_rame__explode__unpivotargsir_as_core__hash__hash)?;
     m.function_meta(p_852d6f78_e__group_by__groupbymethod_as_core__clone__clone)?;
     m.function_meta(p_daed314c_ame__group_by__groupbymethod_as_core__fmt__debug)?;
     m.function_meta(p_08409c5b_e__group_by__groupbymethod_as_core__fmt__display)?;
@@ -17631,15 +18266,18 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_be5fbd4d_sition__grouppositions_as_core__default__default)?;
     m.function_meta(p_1af8b781_by__position__grouppositions_as_core__fmt__debug)?;
     m.function_meta(p_b1b2732f_up_by__position__groupsidx_as_core__clone__clone)?;
+    m.function_meta(p_a9b6f654___group_by__position__groupsidx_as_core__cmp__eq)?;
     m.function_meta(p_f09f7295__by__position__groupsidx_as_core__cmp__partialeq)?;
     m.function_meta(p_16611741_y__position__groupsidx_as_core__default__default)?;
     m.function_meta(p_6c713403_roup_by__position__groupsidx_as_core__fmt__debug)?;
     m.function_meta(p_f2af2bd7_p_by__position__groupstype_as_core__clone__clone)?;
+    m.function_meta(p_4a28399c__group_by__position__groupstype_as_core__cmp__eq)?;
     m.function_meta(p_6aaaae02_by__position__groupstype_as_core__cmp__partialeq)?;
     m.function_meta(f_20ff3b55_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(p_4abb1f5b___position__groupstype_as_core__default__default)?;
     m.function_meta(p_05114a8e_oup_by__position__groupstype_as_core__fmt__debug)?;
     m.function_meta(p_8fba6366_olars_core__scalar__scalar_as_core__clone__clone)?;
+    m.function_meta(p_e1056afd_polars_core__scalar__scalar_as_core__cmp__eq)?;
     m.function_meta(p_dfbeeb25_ars_core__scalar__scalar_as_core__cmp__partialeq)?;
     m.function_meta(f_31ac90bc__convert__from_bool__polars_core__scalar__scalar)?;
     m.function_meta(f_189669ed_e__convert__from_i8__polars_core__scalar__scalar)?;
@@ -17659,7 +18297,9 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_a8fb684b_alloc__vec__vec_u8___polars_core__scalar__scalar)?;
     m.function_meta(p_921cc534_s_core__scalar__scalar_as_core__default__default)?;
     m.function_meta(p_d8ae41dd_polars_core__scalar__scalar_as_core__fmt__debug)?;
+    m.function_meta(p_675f469e_polars_core__scalar__scalar_as_core__hash__hash)?;
     m.function_meta(p_6e2f06bb_olars_core__series__series_as_core__clone__clone)?;
+    m.function_meta(p_8b4f648d_ars_core__series__series_as_core__cmp__partialeq)?;
     m.function_meta(f_36f6b8e5___date__datechunked__polars_core__series__series)?;
     m.function_meta(f_5e9e47be_me__datetimechunked__polars_core__series__series)?;
     m.function_meta(f_0c440bdc_on__durationchunked__polars_core__series__series)?;
@@ -17671,15 +18311,22 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_46813350_metic__list__numericlistop_as_core__clone__clone)?;
     m.function_meta(p_9b74a847_tations__null__nullchunked_as_core__clone__clone)?;
     m.function_meta(p_7bd095c6__series__ops__nullbehavior_as_core__clone__clone)?;
+    m.function_meta(p_b4d063f5_core__series__ops__nullbehavior_as_core__cmp__eq)?;
     m.function_meta(p_4cc3fe7c_eries__ops__nullbehavior_as_core__cmp__partialeq)?;
     m.function_meta(p_cf2a3a96_ies__ops__nullbehavior_as_core__default__default)?;
     m.function_meta(p_939b232e_e__series__ops__nullbehavior_as_core__fmt__debug)?;
+    m.function_meta(p_19b96d18_e__series__ops__nullbehavior_as_core__hash__hash)?;
     m.function_meta(p_92c7504e_es__series_trait__issorted_as_core__clone__clone)?;
+    m.function_meta(p_58275524__series__series_trait__issorted_as_core__cmp__eq)?;
     m.function_meta(p_21c7cda4___series_trait__issorted_as_core__cmp__partialeq)?;
     m.function_meta(p_09646560_ries__series_trait__issorted_as_core__fmt__debug)?;
+    m.function_meta(p_b36a3ce3_ries__series_trait__issorted_as_core__hash__hash)?;
     m.function_meta(p_9ac11106_rical__categoricalphysical_as_core__clone__clone)?;
+    m.function_meta(p_0cee26e3_ategorical__categoricalphysical_as_core__cmp__eq)?;
     m.function_meta(p_8d40d870_cal__categoricalphysical_as_core__cmp__partialeq)?;
     m.function_meta(p_2f670921_gorical__categoricalphysical_as_core__fmt__debug)?;
+    m.function_meta(p_39316dc4_gorical__categoricalphysical_as_core__hash__hash)?;
+    m.function_meta(p_0b434565_ategoricalphysical_as_core__str__traits__fromstr)?;
     m.function_meta(p_9bb33ac7_ype__categorical__categories_as_core__fmt__debug)?;
     m.function_meta(p_86d5d964_ategorical__frozencategories_as_core__fmt__debug)?;
     m.function_meta(p_7e853523__mapping__categoricalmapping_as_core__fmt__debug)?;
@@ -17711,10 +18358,15 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_d9902af4_rrency_config__fetchconfig_as_core__clone__clone)?;
     m.function_meta(p_ea64c0d8_currency_config__fetchconfig_as_core__fmt__debug)?;
     m.function_meta(p_1f69dab4_credentialproviderfunction_as_core__clone__clone)?;
+    m.function_meta(p_9f18b210_der__credentialproviderfunction_as_core__cmp__eq)?;
+    m.function_meta(p_704537c1_edentialproviderfunction_as_core__cmp__partialeq)?;
     m.function_meta(p_e5b60ef6___credentialproviderfunction_as_core__fmt__debug)?;
+    m.function_meta(p_15ba3049___credentialproviderfunction_as_core__hash__hash)?;
     m.function_meta(p_5863ac39_ider__plcredentialprovider_as_core__clone__clone)?;
+    m.function_meta(p_7f4c1ea0__provider__plcredentialprovider_as_core__cmp__eq)?;
     m.function_meta(p_b7e11bcb_er__plcredentialprovider_as_core__cmp__partialeq)?;
     m.function_meta(p_4d8add5b_ovider__plcredentialprovider_as_core__fmt__debug)?;
+    m.function_meta(p_4136eba7_ovider__plcredentialprovider_as_core__hash__hash)?;
     m.function_meta(p_d6dc4651_loud__dns__cachingresolver_as_core__clone__clone)?;
     m.function_meta(p_19748bf8__cloud__dns__cachingresolver_as_core__fmt__debug)?;
     m.function_meta(p_75722465_ud__dns__dnsresolverconfig_as_core__clone__clone)?;
@@ -17723,16 +18375,22 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_d5c944b2_d__glob__cloudlocation_as_core__default__default)?;
     m.function_meta(p_ec56ed2e___cloud__glob__cloudlocation_as_core__fmt__debug)?;
     m.function_meta(p_c4513053_loud__options__cloudconfig_as_core__clone__clone)?;
+    m.function_meta(p_c9c54f70_io__cloud__options__cloudconfig_as_core__cmp__eq)?;
     m.function_meta(p_86b1fc82_ud__options__cloudconfig_as_core__cmp__partialeq)?;
     m.function_meta(p_e18edaaa__cloud__options__cloudconfig_as_core__fmt__debug)?;
+    m.function_meta(p_d908f51f__cloud__options__cloudconfig_as_core__hash__hash)?;
     m.function_meta(p_564ac14b_oud__options__cloudoptions_as_core__clone__clone)?;
+    m.function_meta(p_cd415fd4_o__cloud__options__cloudoptions_as_core__cmp__eq)?;
     m.function_meta(p_b4a36246_d__options__cloudoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_fcd0c468__options__cloudoptions_as_core__default__default)?;
     m.function_meta(p_ff875098_cloud__options__cloudoptions_as_core__fmt__debug)?;
+    m.function_meta(p_bd168aeb_cloud__options__cloudoptions_as_core__hash__hash)?;
     m.function_meta(p_5e0f8373__options__cloudretryconfig_as_core__clone__clone)?;
+    m.function_meta(p_bca8b740_loud__options__cloudretryconfig_as_core__cmp__eq)?;
     m.function_meta(p_ac019549_ptions__cloudretryconfig_as_core__cmp__partialeq)?;
     m.function_meta(p_fbb9fc9b_ions__cloudretryconfig_as_core__default__default)?;
     m.function_meta(p_c18c7fac_d__options__cloudretryconfig_as_core__fmt__debug)?;
+    m.function_meta(p_adeb4f07_d__options__cloudretryconfig_as_core__hash__hash)?;
     m.function_meta(p_1593f97f__cloud__options__cloudtype_as_core__clone__clone)?;
     m.function_meta(p_aaf21348_loud__options__cloudtype_as_core__cmp__partialeq)?;
     m.function_meta(p_8c4c835e_o__cloud__options__cloudtype_as_core__fmt__debug)?;
@@ -17742,38 +18400,54 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_cae4a327___inner__polarsobjectstore_as_core__clone__clone)?;
     m.function_meta(p_cde553ac_re__inner__polarsobjectstore_as_core__fmt__debug)?;
     m.function_meta(p_4385af8b_ad__options__commentprefix_as_core__clone__clone)?;
+    m.function_meta(p_827f1208_v__read__options__commentprefix_as_core__cmp__eq)?;
     m.function_meta(p_48c7623e___options__commentprefix_as_core__cmp__partialeq)?;
     m.function_meta(f_814edb37_tr__polars_io__csv__read__options__commentprefix)?;
     m.function_meta(p_c17308f9_read__options__commentprefix_as_core__fmt__debug)?;
+    m.function_meta(p_ecf912ab_read__options__commentprefix_as_core__hash__hash)?;
     m.function_meta(p_b4f20c5d_read__options__csvencoding_as_core__clone__clone)?;
+    m.function_meta(p_2cd613ac_csv__read__options__csvencoding_as_core__cmp__eq)?;
     m.function_meta(p_71feb059_ad__options__csvencoding_as_core__cmp__partialeq)?;
     m.function_meta(p_624ab269___options__csvencoding_as_core__default__default)?;
     m.function_meta(p_744b2a31___read__options__csvencoding_as_core__fmt__debug)?;
+    m.function_meta(p_fd19db50___read__options__csvencoding_as_core__hash__hash)?;
     m.function_meta(p_de7c00cc___options__csvparseoptions_as_core__clone__clone)?;
+    m.function_meta(p_4a1af435__read__options__csvparseoptions_as_core__cmp__eq)?;
     m.function_meta(p_c2252bff_options__csvparseoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_2cf0f60e_tions__csvparseoptions_as_core__default__default)?;
     m.function_meta(p_3a3f1a51_ad__options__csvparseoptions_as_core__fmt__debug)?;
+    m.function_meta(p_02a1f794_ad__options__csvparseoptions_as_core__hash__hash)?;
     m.function_meta(p_653ab779_d__options__csvreadoptions_as_core__clone__clone)?;
+    m.function_meta(p_a3596f24___read__options__csvreadoptions_as_core__cmp__eq)?;
     m.function_meta(p_e9b51fdd__options__csvreadoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_98ed0cd6_ptions__csvreadoptions_as_core__default__default)?;
     m.function_meta(p_429c03f8_ead__options__csvreadoptions_as_core__fmt__debug)?;
+    m.function_meta(p_ceb0db7d_ead__options__csvreadoptions_as_core__hash__hash)?;
     m.function_meta(p_8ca59201__read__options__nullvalues_as_core__clone__clone)?;
+    m.function_meta(p_fe94c502__csv__read__options__nullvalues_as_core__cmp__eq)?;
     m.function_meta(p_1f31c9c2_ead__options__nullvalues_as_core__cmp__partialeq)?;
     m.function_meta(p_dfbf11e3_v__read__options__nullvalues_as_core__fmt__debug)?;
+    m.function_meta(p_0be648b2_v__read__options__nullvalues_as_core__hash__hash)?;
     m.function_meta(p_54b0412c_ptions__nullvaluescompiled_as_core__clone__clone)?;
     m.function_meta(p_372890ce__options__nullvaluescompiled_as_core__fmt__debug)?;
     m.function_meta(p_1b9fb010__options__csvwriteroptions_as_core__clone__clone)?;
+    m.function_meta(p_92195daf_rite__options__csvwriteroptions_as_core__cmp__eq)?;
     m.function_meta(p_9cbb4786_ptions__csvwriteroptions_as_core__cmp__partialeq)?;
     m.function_meta(p_6c6fdc2e_ions__csvwriteroptions_as_core__default__default)?;
     m.function_meta(p_1abb846d_e__options__csvwriteroptions_as_core__fmt__debug)?;
+    m.function_meta(p_e9da73f6_e__options__csvwriteroptions_as_core__hash__hash)?;
     m.function_meta(p_07913a7f_write__options__quotestyle_as_core__clone__clone)?;
+    m.function_meta(p_30489e38_csv__write__options__quotestyle_as_core__cmp__eq)?;
     m.function_meta(p_eedfb5e6_ite__options__quotestyle_as_core__cmp__partialeq)?;
     m.function_meta(p_49339554_e__options__quotestyle_as_core__default__default)?;
     m.function_meta(p_c5a394df___write__options__quotestyle_as_core__fmt__debug)?;
+    m.function_meta(p_0731234f___write__options__quotestyle_as_core__hash__hash)?;
     m.function_meta(p_f132a796__options__serializeoptions_as_core__clone__clone)?;
+    m.function_meta(p_c24ef6eb_rite__options__serializeoptions_as_core__cmp__eq)?;
     m.function_meta(p_7ade6fb3_ptions__serializeoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_5e30f25a_ions__serializeoptions_as_core__default__default)?;
     m.function_meta(p_1da82027_e__options__serializeoptions_as_core__fmt__debug)?;
+    m.function_meta(p_a25cc0f3_e__options__serializeoptions_as_core__hash__hash)?;
     m.function_meta(p_2f629a1b__write_impl__csvserializer_as_core__clone__clone)?;
     m.function_meta(p_ba50fd2f___ipc_file__ipcscanoptions_as_core__clone__clone)?;
     m.function_meta(p_4cf3f7cd_ipc_file__ipcscanoptions_as_core__cmp__partialeq)?;
@@ -17782,53 +18456,75 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_2b5d3231_ader_async__ipcreadoptions_as_core__clone__clone)?;
     m.function_meta(p_38465d76__async__ipcreadoptions_as_core__default__default)?;
     m.function_meta(p_acc7c341_pc_metadata__plipcmetadata_as_core__clone__clone)?;
+    m.function_meta(p_6eecc37e__pl_ipc_metadata__plipcmetadata_as_core__cmp__eq)?;
     m.function_meta(p_549e53c8__metadata__plipcmetadata_as_core__cmp__partialeq)?;
     m.function_meta(p_1bc81a94_etadata__plipcmetadata_as_core__default__default)?;
     m.function_meta(p_2805af37__ipc_metadata__plipcmetadata_as_core__fmt__debug)?;
+    m.function_meta(p_4b6f79e5__ipc_metadata__plipcmetadata_as_core__hash__hash)?;
     m.function_meta(p_d82be3e9_ipc__write__ipccompression_as_core__clone__clone)?;
+    m.function_meta(p_6ced7b7b__io__ipc__write__ipccompression_as_core__cmp__eq)?;
     m.function_meta(p_b6d78e03_c__write__ipccompression_as_core__cmp__partialeq)?;
     m.function_meta(p_93ddfd65__write__ipccompression_as_core__default__default)?;
     m.function_meta(p_a580c291___ipc__write__ipccompression_as_core__fmt__debug)?;
+    m.function_meta(p_e9de6ba4___ipc__write__ipccompression_as_core__hash__hash)?;
     m.function_meta(p_10a36726_c__write__ipcwriteroptions_as_core__clone__clone)?;
+    m.function_meta(p_3cf13ce1_o__ipc__write__ipcwriteroptions_as_core__cmp__eq)?;
     m.function_meta(p_ecd50bb9__write__ipcwriteroptions_as_core__cmp__partialeq)?;
     m.function_meta(p_e39378a0_rite__ipcwriteroptions_as_core__default__default)?;
     m.function_meta(p_8b4b7147_ipc__write__ipcwriteroptions_as_core__fmt__debug)?;
+    m.function_meta(p_5bf88c81_ipc__write__ipcwriteroptions_as_core__hash__hash)?;
     m.function_meta(p_17f7d338_ars_io__metrics__iometrics_as_core__clone__clone)?;
     m.function_meta(p_dc592844_io__metrics__iometrics_as_core__default__default)?;
     m.function_meta(p_b7f962b9_olars_io__metrics__iometrics_as_core__fmt__debug)?;
     m.function_meta(p_9e1771e8__io__metrics__optiometrics_as_core__clone__clone)?;
     m.function_meta(p_a18ed1d3_rs_io__metrics__optiometrics_as_core__fmt__debug)?;
     m.function_meta(p_a06ea4a9_tions__externalcompression_as_core__clone__clone)?;
+    m.function_meta(p_3b1d4e85_o__options__externalcompression_as_core__cmp__eq)?;
     m.function_meta(p_d39608f6_ons__externalcompression_as_core__cmp__partialeq)?;
     m.function_meta(p_0c65527c_s__externalcompression_as_core__default__default)?;
     m.function_meta(p_f413c47e_options__externalcompression_as_core__fmt__debug)?;
+    m.function_meta(p_8530ca73_options__externalcompression_as_core__hash__hash)?;
     m.function_meta(p_e7f8e96f_s_io__options__hiveoptions_as_core__clone__clone)?;
+    m.function_meta(p_4d8daaeb_polars_io__options__hiveoptions_as_core__cmp__eq)?;
     m.function_meta(p_8e68d80d_io__options__hiveoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_67327926___options__hiveoptions_as_core__default__default)?;
     m.function_meta(p_f60f2259_ars_io__options__hiveoptions_as_core__fmt__debug)?;
+    m.function_meta(p_cd2fa7ac_ars_io__options__hiveoptions_as_core__hash__hash)?;
     m.function_meta(p_b49738d8_lars_io__options__rowindex_as_core__clone__clone)?;
+    m.function_meta(p_397c1d3e_polars_io__options__rowindex_as_core__cmp__eq)?;
     m.function_meta(p_05aeb7b6_rs_io__options__rowindex_as_core__cmp__partialeq)?;
     m.function_meta(p_869932e0_polars_io__options__rowindex_as_core__fmt__debug)?;
+    m.function_meta(p_ba851366_polars_io__options__rowindex_as_core__hash__hash)?;
     m.function_meta(p_dbb749d9__options__parallelstrategy_as_core__clone__clone)?;
+    m.function_meta(p_313817ed_read__options__parallelstrategy_as_core__cmp__eq)?;
     m.function_meta(p_5581fe44_ptions__parallelstrategy_as_core__cmp__partialeq)?;
     m.function_meta(p_c974681f_ions__parallelstrategy_as_core__default__default)?;
     m.function_meta(p_89c77260_d__options__parallelstrategy_as_core__fmt__debug)?;
+    m.function_meta(p_d7f9e3fd_d__options__parallelstrategy_as_core__hash__hash)?;
     m.function_meta(p_365e922c_d__options__parquetoptions_as_core__clone__clone)?;
+    m.function_meta(p_571e2532___read__options__parquetoptions_as_core__cmp__eq)?;
     m.function_meta(p_7804825a__options__parquetoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_f31650ac_ptions__parquetoptions_as_core__default__default)?;
     m.function_meta(p_ba2b8fa8_ead__options__parquetoptions_as_core__fmt__debug)?;
+    m.function_meta(p_fe0011d8_ead__options__parquetoptions_as_core__hash__hash)?;
     m.function_meta(p_0f52c72f_impl__prefiltermasksetting_as_core__clone__clone)?;
     m.function_meta(p_5fc3799b_metadata__keyvaluemetadata_as_core__clone__clone)?;
+    m.function_meta(p_1d7b1722_alue_metadata__keyvaluemetadata_as_core__cmp__eq)?;
     m.function_meta(p_7c69d61d_tadata__keyvaluemetadata_as_core__cmp__partialeq)?;
     m.function_meta(p_8a307243_e_metadata__keyvaluemetadata_as_core__fmt__debug)?;
+    m.function_meta(p_f8d90711_e_metadata__keyvaluemetadata_as_core__hash__hash)?;
     m.function_meta(p_2460c78b_ptions__parquetcompression_as_core__clone__clone)?;
+    m.function_meta(p_37286c90_te__options__parquetcompression_as_core__cmp__eq)?;
     m.function_meta(p_27a6a5dc_ions__parquetcompression_as_core__cmp__partialeq)?;
     m.function_meta(p_b44bd258_ns__parquetcompression_as_core__default__default)?;
     m.function_meta(p_fa4a7266__options__parquetcompression_as_core__fmt__debug)?;
+    m.function_meta(p_cd1e1271__options__parquetcompression_as_core__hash__hash)?;
     m.function_meta(p_df5ac108_tions__parquetwriteoptions_as_core__clone__clone)?;
+    m.function_meta(p_514e836a_e__options__parquetwriteoptions_as_core__cmp__eq)?;
     m.function_meta(p_f0bb3fb2_ons__parquetwriteoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_d2486d17_s__parquetwriteoptions_as_core__default__default)?;
     m.function_meta(p_66b396b9_options__parquetwriteoptions_as_core__fmt__debug)?;
+    m.function_meta(p_d90cf9ef_options__parquetwriteoptions_as_core__hash__hash)?;
     m.function_meta(p_175ca853_cates__columnpredicateexpr_as_core__clone__clone)?;
     m.function_meta(p_7491e981_edicates__columnpredicates_as_core__clone__clone)?;
     m.function_meta(p_d2dd0170_ates__columnpredicates_as_core__default__default)?;
@@ -17850,7 +18546,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_28d7051d___parquet__scanargsparquet_as_core__clone__clone)?;
     m.function_meta(p_f5d4de20_rquet__scanargsparquet_as_core__default__default)?;
     m.function_meta(p_4a66d159_in__args__crossjoinoptions_as_core__clone__clone)?;
+    m.function_meta(p_85430d0b_e__join__args__crossjoinoptions_as_core__cmp__eq)?;
+    m.function_meta(p_41a87f0a___args__crossjoinoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_e7b7ad11_join__args__crossjoinoptions_as_core__fmt__debug)?;
+    m.function_meta(p_cd221b89_join__args__crossjoinoptions_as_core__hash__hash)?;
     m.function_meta(p_825f7566_rame__join__args__joinargs_as_core__clone__clone)?;
     m.function_meta(p_e3090232_me__join__args__joinargs_as_core__cmp__partialeq)?;
     m.function_meta(f_eca8bc8e_ointype__polars_ops__frame__join__args__joinargs)?;
@@ -17860,51 +18559,67 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_cbec3aca_oin__args__joinbuildside_as_core__cmp__partialeq)?;
     m.function_meta(p_cd1ddd12_e__join__args__joinbuildside_as_core__fmt__debug)?;
     m.function_meta(p_b470e0bd___join__args__joincoalesce_as_core__clone__clone)?;
+    m.function_meta(p_644e326a_frame__join__args__joincoalesce_as_core__cmp__eq)?;
     m.function_meta(p_3c40e0ef_join__args__joincoalesce_as_core__cmp__partialeq)?;
     m.function_meta(p_ca80a713_in__args__joincoalesce_as_core__default__default)?;
     m.function_meta(p_55647ebe_me__join__args__joincoalesce_as_core__fmt__debug)?;
+    m.function_meta(p_0864f866_me__join__args__joincoalesce_as_core__hash__hash)?;
     m.function_meta(p_6536e253_rame__join__args__jointype_as_core__clone__clone)?;
     m.function_meta(p_b00eb877_me__join__args__jointype_as_core__cmp__partialeq)?;
     m.function_meta(p_e825474a___join__args__jointype_as_core__default__default)?;
     m.function_meta(p_dcc4dda7__frame__join__args__jointype_as_core__fmt__debug)?;
     m.function_meta(p_beb47d94_rame__join__args__jointype_as_core__fmt__display)?;
     m.function_meta(p_39c95194_oin__args__jointypeoptions_as_core__clone__clone)?;
+    m.function_meta(p_d06e352c_me__join__args__jointypeoptions_as_core__cmp__eq)?;
     m.function_meta(p_87eb09b3_n__args__jointypeoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_03264158__join__args__jointypeoptions_as_core__fmt__debug)?;
+    m.function_meta(p_47667ba5__join__args__jointypeoptions_as_core__hash__hash)?;
     m.function_meta(p_f5cb86f6_join__args__joinvalidation_as_core__clone__clone)?;
+    m.function_meta(p_90eb18b9_ame__join__args__joinvalidation_as_core__cmp__eq)?;
     m.function_meta(p_8af24d5b_in__args__joinvalidation_as_core__cmp__partialeq)?;
     m.function_meta(p_a78e5c50___args__joinvalidation_as_core__default__default)?;
     m.function_meta(p_54fa501a___join__args__joinvalidation_as_core__fmt__debug)?;
     m.function_meta(p_1371cdd4_join__args__joinvalidation_as_core__fmt__display)?;
+    m.function_meta(p_5a2eb05d___join__args__joinvalidation_as_core__hash__hash)?;
     m.function_meta(p_a340b261_n__args__maintainorderjoin_as_core__clone__clone)?;
+    m.function_meta(p_c5591c68___join__args__maintainorderjoin_as_core__cmp__eq)?;
     m.function_meta(p_b631f48c__args__maintainorderjoin_as_core__cmp__partialeq)?;
     m.function_meta(p_83828824_rgs__maintainorderjoin_as_core__default__default)?;
     m.function_meta(p_eaf63aed_oin__args__maintainorderjoin_as_core__fmt__debug)?;
+    m.function_meta(p_cd10a7b6_oin__args__maintainorderjoin_as_core__hash__hash)?;
     m.function_meta(p_076b3879___horizontal__nullstrategy_as_core__clone__clone)?;
     m.function_meta(p_514d5998_horizontal__nullstrategy_as_core__cmp__partialeq)?;
     m.function_meta(p_6bd26fd4_ps__horizontal__nullstrategy_as_core__fmt__debug)?;
     m.function_meta(p_96226868_near_space__closedinterval_as_core__clone__clone)?;
+    m.function_meta(p_03298ab5_s__linear_space__closedinterval_as_core__cmp__eq)?;
     m.function_meta(p_f6cc61fa_ar_space__closedinterval_as_core__cmp__partialeq)?;
     m.function_meta(p_459f98ec__space__closedinterval_as_core__default__default)?;
     m.function_meta(p_63a5c84b_linear_space__closedinterval_as_core__fmt__debug)?;
+    m.function_meta(p_b8773732_linear_space__closedinterval_as_core__hash__hash)?;
     m.function_meta(p_17b7897f_n__dsl__arity__chainedthen_as_core__clone__clone)?;
     m.function_meta(p_062dee50_n__dsl__arity__chainedwhen_as_core__clone__clone)?;
     m.function_meta(p_62894699_ars_plan__dsl__arity__then_as_core__clone__clone)?;
     m.function_meta(p_da204555_ars_plan__dsl__arity__when_as_core__clone__clone)?;
     m.function_meta(f_7634057c_lplan__polars_plan__dsl__builder_dsl__dslbuilder)?;
     m.function_meta(p_3c38cd1e_atatype_expr__datatypeexpr_as_core__clone__clone)?;
+    m.function_meta(p_c34f0d20_sl__datatype_expr__datatypeexpr_as_core__cmp__eq)?;
     m.function_meta(p_539294e9_atype_expr__datatypeexpr_as_core__cmp__partialeq)?;
     m.function_meta(f_784f7fc3_e__polars_plan__dsl__datatype_expr__datatypeexpr)?;
     m.function_meta(p_d8b814de__datatype_expr__datatypeexpr_as_core__fmt__debug)?;
+    m.function_meta(p_c736d597__datatype_expr__datatypeexpr_as_core__hash__hash)?;
     m.function_meta(p_22d2fa83_s_plan__dsl__expr__aggexpr_as_core__clone__clone)?;
     m.function_meta(p_716df085_plan__dsl__expr__aggexpr_as_core__cmp__partialeq)?;
     m.function_meta(p_150719e1_an__dsl__expr__evalvariant_as_core__clone__clone)?;
+    m.function_meta(p_fc36674e_rs_plan__dsl__expr__evalvariant_as_core__cmp__eq)?;
     m.function_meta(p_e00b7569___dsl__expr__evalvariant_as_core__cmp__partialeq)?;
     m.function_meta(p_00fc1e05_plan__dsl__expr__evalvariant_as_core__fmt__debug)?;
+    m.function_meta(p_ac7e7b38_plan__dsl__expr__evalvariant_as_core__hash__hash)?;
     m.function_meta(p_4ab5cb2e__plan__dsl__expr__excluded_as_core__clone__clone)?;
+    m.function_meta(p_ce47eaa6_olars_plan__dsl__expr__excluded_as_core__cmp__eq)?;
     m.function_meta(p_32f8c850_lan__dsl__expr__excluded_as_core__cmp__partialeq)?;
     m.function_meta(p_f50df4b5_rs_plan__dsl__expr__excluded_as_core__fmt__debug)?;
     m.function_meta(p_b4a2eade__plan__dsl__expr__excluded_as_core__fmt__display)?;
+    m.function_meta(p_f890698e_rs_plan__dsl__expr__excluded_as_core__hash__hash)?;
     m.function_meta(p_e7eb8c1f_lars_plan__dsl__expr__expr_as_core__clone__clone)?;
     m.function_meta(p_a16a848c_rs_plan__dsl__expr__expr_as_core__cmp__partialeq)?;
     m.function_meta(f_62a06d30_dsl__expr__aggexpr__polars_plan__dsl__expr__expr)?;
@@ -17925,11 +18640,15 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_a564fb06_polars_plan__dsl__expr__expr_as_core__fmt__debug)?;
     m.function_meta(p_7a4794c5_lars_plan__dsl__expr__expr_as_core__fmt__display)?;
     m.function_meta(p_b2b6c75a__plan__dsl__expr__operator_as_core__clone__clone)?;
+    m.function_meta(p_a601f4ba_olars_plan__dsl__expr__operator_as_core__cmp__eq)?;
     m.function_meta(p_c421676f_lan__dsl__expr__operator_as_core__cmp__partialeq)?;
     m.function_meta(p_c4b687de_rs_plan__dsl__expr__operator_as_core__fmt__debug)?;
     m.function_meta(p_45737d6c__plan__dsl__expr__operator_as_core__fmt__display)?;
+    m.function_meta(p_309101d2_rs_plan__dsl__expr__operator_as_core__hash__hash)?;
     m.function_meta(p_1e419244___dsl__expr__renamealiasfn_as_core__clone__clone)?;
+    m.function_meta(p_32e11cb1__plan__dsl__expr__renamealiasfn_as_core__cmp__eq)?;
     m.function_meta(p_3a62660c_dsl__expr__renamealiasfn_as_core__cmp__partialeq)?;
+    m.function_meta(p_254731ac_an__dsl__expr__renamealiasfn_as_core__hash__hash)?;
     m.function_meta(p_bb541c16__fn__arraydatatypefunction_as_core__clone__clone)?;
     m.function_meta(p_fe586e6b_n__arraydatatypefunction_as_core__cmp__partialeq)?;
     m.function_meta(p_b40a87ff_atype_fn__datatypefunction_as_core__clone__clone)?;
@@ -17938,29 +18657,43 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_aa64cd32_fn__structdatatypefunction_as_core__clone__clone)?;
     m.function_meta(p_e80ca033___structdatatypefunction_as_core__cmp__partialeq)?;
     m.function_meta(p_b3d4e40b_le_scan__castcolumnspolicy_as_core__clone__clone)?;
+    m.function_meta(p_1b0dc005_l__file_scan__castcolumnspolicy_as_core__cmp__eq)?;
     m.function_meta(p_881a6c15__scan__castcolumnspolicy_as_core__cmp__partialeq)?;
     m.function_meta(p_b2c364f9_can__castcolumnspolicy_as_core__default__default)?;
     m.function_meta(p_7835ffc7_file_scan__castcolumnspolicy_as_core__fmt__debug)?;
+    m.function_meta(p_d813adb4_file_scan__castcolumnspolicy_as_core__hash__hash)?;
     m.function_meta(p_716fe956___file_scan__columnmapping_as_core__clone__clone)?;
+    m.function_meta(p_172b535d___dsl__file_scan__columnmapping_as_core__cmp__eq)?;
     m.function_meta(p_3d49e6a1_file_scan__columnmapping_as_core__cmp__partialeq)?;
     m.function_meta(p_f7d65673_sl__file_scan__columnmapping_as_core__fmt__debug)?;
+    m.function_meta(p_9164f529_sl__file_scan__columnmapping_as_core__hash__hash)?;
     m.function_meta(p_eb1307b5_e_scan__extracolumnspolicy_as_core__clone__clone)?;
+    m.function_meta(p_1e35c522___file_scan__extracolumnspolicy_as_core__cmp__eq)?;
     m.function_meta(p_9d4c258a_scan__extracolumnspolicy_as_core__cmp__partialeq)?;
     m.function_meta(p_b01d1af8_an__extracolumnspolicy_as_core__default__default)?;
     m.function_meta(p_44247135_ile_scan__extracolumnspolicy_as_core__fmt__debug)?;
+    m.function_meta(p_c3a25567_ile_scan__extracolumnspolicy_as_core__hash__hash)?;
     m.function_meta(p_5ea84261_sl__file_scan__filescandsl_as_core__clone__clone)?;
     m.function_meta(p_92201be7__dsl__file_scan__filescandsl_as_core__fmt__debug)?;
     m.function_meta(p_0954cd30_dsl__file_scan__filescanir_as_core__clone__clone)?;
+    m.function_meta(p_cc49ee67_lan__dsl__file_scan__filescanir_as_core__cmp__eq)?;
+    m.function_meta(p_278df7d7_l__file_scan__filescanir_as_core__cmp__partialeq)?;
     m.function_meta(p_17a00340___dsl__file_scan__filescanir_as_core__fmt__debug)?;
+    m.function_meta(p_9110c593___dsl__file_scan__filescanir_as_core__hash__hash)?;
     m.function_meta(p_fabbbd6b_scan__missingcolumnspolicy_as_core__clone__clone)?;
+    m.function_meta(p_310bf029_file_scan__missingcolumnspolicy_as_core__cmp__eq)?;
     m.function_meta(p_f62f5311_an__missingcolumnspolicy_as_core__cmp__partialeq)?;
     m.function_meta(p_46cbdb35___missingcolumnspolicy_as_core__default__default)?;
     m.function_meta(p_8935405c_e_scan__missingcolumnspolicy_as_core__fmt__debug)?;
+    m.function_meta(p_7eb407eb_e_scan__missingcolumnspolicy_as_core__hash__hash)?;
     m.function_meta(p_f0c433a2_le_scan__predicatefileskip_as_core__clone__clone)?;
+    m.function_meta(p_ccc93c4b_l__file_scan__predicatefileskip_as_core__cmp__eq)?;
     m.function_meta(p_8bfb60b7__scan__predicatefileskip_as_core__cmp__partialeq)?;
     m.function_meta(p_e4fc9250_can__predicatefileskip_as_core__default__default)?;
     m.function_meta(p_0399c809_file_scan__predicatefileskip_as_core__fmt__debug)?;
+    m.function_meta(p_4bb23654_file_scan__predicatefileskip_as_core__hash__hash)?;
     m.function_meta(p_87009bf1__dsl__file_scan__scanflags_as_core__clone__clone)?;
+    m.function_meta(p_6db3fcc9_plan__dsl__file_scan__scanflags_as_core__cmp__eq)?;
     m.function_meta(p_53601a2c_sl__file_scan__scanflags_as_core__cmp__partialeq)?;
     m.function_meta(p_85813242_n__dsl__file_scan__scanflags_as_core__fmt__debug)?;
     m.function_meta(p_e3a6c61b_l__file_scan__scanflags_as_core__ops__arith__sub)?;
@@ -17973,21 +18706,32 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_22b5ae1a__scan__scanflags_as_core__ops__bit__bitxorassign)?;
     m.function_meta(p_a7747898_dsl__file_scan__scanflags_as_core__ops__bit__not)?;
     m.function_meta(p_6effb034_file_scan__tablestatistics_as_core__clone__clone)?;
+    m.function_meta(p_27f3214f_dsl__file_scan__tablestatistics_as_core__cmp__eq)?;
+    m.function_meta(p_591cf227_le_scan__tablestatistics_as_core__cmp__partialeq)?;
     m.function_meta(p_9478666d___file_scan__tablestatistics_as_core__fmt__debug)?;
+    m.function_meta(p_215073f7___file_scan__tablestatistics_as_core__hash__hash)?;
     m.function_meta(p_47fe215a_file_scan__unifiedscanargs_as_core__clone__clone)?;
+    m.function_meta(p_b2a10ec4_dsl__file_scan__unifiedscanargs_as_core__cmp__eq)?;
     m.function_meta(p_924e389f_le_scan__unifiedscanargs_as_core__cmp__partialeq)?;
     m.function_meta(p_a1b5619a__scan__unifiedscanargs_as_core__default__default)?;
     m.function_meta(p_d8891fd3___file_scan__unifiedscanargs_as_core__fmt__debug)?;
+    m.function_meta(p_9c833372___file_scan__unifiedscanargs_as_core__hash__hash)?;
     m.function_meta(p_9cebb798_values__defaultfieldvalues_as_core__clone__clone)?;
+    m.function_meta(p_038b40ea_ault_values__defaultfieldvalues_as_core__cmp__eq)?;
     m.function_meta(p_1da7ca99_lues__defaultfieldvalues_as_core__cmp__partialeq)?;
     m.function_meta(p_7da64c97_t_values__defaultfieldvalues_as_core__fmt__debug)?;
+    m.function_meta(p_56ddd947_t_values__defaultfieldvalues_as_core__hash__hash)?;
     m.function_meta(p_5cdfcf06__icebergdefaultfieldvalues_as_core__clone__clone)?;
+    m.function_meta(p_a437da6f_lues__icebergdefaultfieldvalues_as_core__cmp__eq)?;
     m.function_meta(p_08a3cc25_cebergdefaultfieldvalues_as_core__cmp__partialeq)?;
     m.function_meta(p_2eb8f31b_s__icebergdefaultfieldvalues_as_core__fmt__debug)?;
+    m.function_meta(p_d88a69c1_s__icebergdefaultfieldvalues_as_core__hash__hash)?;
     m.function_meta(p_180ea95d_eletion__deletionfileslist_as_core__clone__clone)?;
+    m.function_meta(p_b33c605f_an__deletion__deletionfileslist_as_core__cmp__eq)?;
     m.function_meta(p_b35fc84b_etion__deletionfileslist_as_core__cmp__partialeq)?;
     m.function_meta(p_66ae3447__deletion__deletionfileslist_as_core__fmt__debug)?;
     m.function_meta(p_989abb62_eletion__deletionfileslist_as_core__fmt__display)?;
+    m.function_meta(p_bb769f39__deletion__deletionfileslist_as_core__hash__hash)?;
     m.function_meta(p_9dafb1cf_unction_expr__functionexpr_as_core__clone__clone)?;
     m.function_meta(p_85dc10ee_ction_expr__functionexpr_as_core__cmp__partialeq)?;
     m.function_meta(f_88b19c4c_n__polars_plan__dsl__function_expr__functionexpr)?;
@@ -18001,53 +18745,77 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_91a8209f_expr__binary__binaryfunction_as_core__fmt__debug)?;
     m.function_meta(p_cdd0379a_pr__binary__binaryfunction_as_core__fmt__display)?;
     m.function_meta(p_a252a037___boolean__booleanfunction_as_core__clone__clone)?;
+    m.function_meta(p_bf167b1b__expr__boolean__booleanfunction_as_core__cmp__eq)?;
     m.function_meta(p_4d24f634_boolean__booleanfunction_as_core__cmp__partialeq)?;
     m.function_meta(p_79560abe_pr__boolean__booleanfunction_as_core__fmt__debug)?;
     m.function_meta(p_9396089e___boolean__booleanfunction_as_core__fmt__display)?;
+    m.function_meta(p_82b5e5ad_pr__boolean__booleanfunction_as_core__hash__hash)?;
     m.function_meta(p_96752c74___cat__categoricalfunction_as_core__clone__clone)?;
+    m.function_meta(p_5ce7f7ad__expr__cat__categoricalfunction_as_core__cmp__eq)?;
     m.function_meta(p_b7b0630e_cat__categoricalfunction_as_core__cmp__partialeq)?;
     m.function_meta(p_3118cbbf_pr__cat__categoricalfunction_as_core__fmt__debug)?;
     m.function_meta(p_69129d4e___cat__categoricalfunction_as_core__fmt__display)?;
+    m.function_meta(p_f578f182_pr__cat__categoricalfunction_as_core__hash__hash)?;
     m.function_meta(p_24168779_n_expr__list__listfunction_as_core__clone__clone)?;
+    m.function_meta(p_81d92a2c_nction_expr__list__listfunction_as_core__cmp__eq)?;
     m.function_meta(p_3b5b7d8c_expr__list__listfunction_as_core__cmp__partialeq)?;
     m.function_meta(p_e6f73fca_ion_expr__list__listfunction_as_core__fmt__debug)?;
     m.function_meta(p_ed0cc752_n_expr__list__listfunction_as_core__fmt__display)?;
+    m.function_meta(p_0e770eb8_ion_expr__list__listfunction_as_core__hash__hash)?;
     m.function_meta(p_b631c058_ion_expr__pow__powfunction_as_core__clone__clone)?;
+    m.function_meta(p_8c22d632_function_expr__pow__powfunction_as_core__cmp__eq)?;
     m.function_meta(p_ff9c5785_n_expr__pow__powfunction_as_core__cmp__partialeq)?;
     m.function_meta(p_2a2096bc_ction_expr__pow__powfunction_as_core__fmt__debug)?;
     m.function_meta(p_ce59daac_ion_expr__pow__powfunction_as_core__fmt__display)?;
+    m.function_meta(p_a3895883_ction_expr__pow__powfunction_as_core__hash__hash)?;
     m.function_meta(p_b312d647_r__struct___structfunction_as_core__clone__clone)?;
+    m.function_meta(p_f79940fd_n_expr__struct___structfunction_as_core__cmp__eq)?;
     m.function_meta(p_16602686__struct___structfunction_as_core__cmp__partialeq)?;
     m.function_meta(p_019e5d50_xpr__struct___structfunction_as_core__fmt__debug)?;
     m.function_meta(p_844205c0_r__struct___structfunction_as_core__fmt__display)?;
+    m.function_meta(p_59922157_xpr__struct___structfunction_as_core__hash__hash)?;
     m.function_meta(p_80f9c205_ma__matchtoschemapercolumn_as_core__clone__clone)?;
+    m.function_meta(p_57cdc97f__schema__matchtoschemapercolumn_as_core__cmp__eq)?;
     m.function_meta(p_edd27cf2___matchtoschemapercolumn_as_core__cmp__partialeq)?;
     m.function_meta(p_97837e13_hema__matchtoschemapercolumn_as_core__fmt__debug)?;
     m.function_meta(p_36d04fd8_missingcolumnspolicyorexpr_as_core__clone__clone)?;
+    m.function_meta(p_443885e8_ema__missingcolumnspolicyorexpr_as_core__cmp__eq)?;
     m.function_meta(p_6b84ca1d_ssingcolumnspolicyorexpr_as_core__cmp__partialeq)?;
     m.function_meta(p_554512ec___missingcolumnspolicyorexpr_as_core__fmt__debug)?;
     m.function_meta(p_6ba97355__to_schema__upcastorforbid_as_core__clone__clone)?;
+    m.function_meta(p_c8e5c70b_match_to_schema__upcastorforbid_as_core__cmp__eq)?;
     m.function_meta(p_baa9daf3_o_schema__upcastorforbid_as_core__cmp__partialeq)?;
     m.function_meta(p_83138ff0_ch_to_schema__upcastorforbid_as_core__fmt__debug)?;
+    m.function_meta(p_e9270d83_ch_to_schema__upcastorforbid_as_core__hash__hash)?;
     m.function_meta(p_b2e7fa47_ions__anonymousscanoptions_as_core__clone__clone)?;
+    m.function_meta(p_5a89e4cc___options__anonymousscanoptions_as_core__cmp__eq)?;
     m.function_meta(p_db180849_ns__anonymousscanoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_42c9d56f___anonymousscanoptions_as_core__default__default)?;
     m.function_meta(p_a21c156d_ptions__anonymousscanoptions_as_core__fmt__debug)?;
+    m.function_meta(p_4e4e4e44_ptions__anonymousscanoptions_as_core__hash__hash)?;
     m.function_meta(p_bd492fce_ptions__distinctoptionsdsl_as_core__clone__clone)?;
+    m.function_meta(p_a2144c49_sl__options__distinctoptionsdsl_as_core__cmp__eq)?;
     m.function_meta(p_359a1c83_ions__distinctoptionsdsl_as_core__cmp__partialeq)?;
     m.function_meta(p_5e7bef32_ns__distinctoptionsdsl_as_core__default__default)?;
     m.function_meta(p_fbb074d2__options__distinctoptionsdsl_as_core__fmt__debug)?;
+    m.function_meta(p_b8c5bb66__options__distinctoptionsdsl_as_core__hash__hash)?;
     m.function_meta(p_5739525b___options__filewriteformat_as_core__clone__clone)?;
+    m.function_meta(p_4df60b4e___dsl__options__filewriteformat_as_core__cmp__eq)?;
     m.function_meta(p_e5db4e98_options__filewriteformat_as_core__cmp__partialeq)?;
     m.function_meta(p_ccc1222b_sl__options__filewriteformat_as_core__fmt__debug)?;
+    m.function_meta(p_ecacc220_sl__options__filewriteformat_as_core__hash__hash)?;
     m.function_meta(p_86bd9cdb_l__options__groupbyoptions_as_core__clone__clone)?;
+    m.function_meta(p_0a7443c1_n__dsl__options__groupbyoptions_as_core__cmp__eq)?;
     m.function_meta(p_a726d4a8__options__groupbyoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_fb01e6b0_ptions__groupbyoptions_as_core__default__default)?;
     m.function_meta(p_2899009a_dsl__options__groupbyoptions_as_core__fmt__debug)?;
+    m.function_meta(p_133751d6_dsl__options__groupbyoptions_as_core__hash__hash)?;
     m.function_meta(p_3b843bce_l__options__hconcatoptions_as_core__clone__clone)?;
+    m.function_meta(p_6b676671_n__dsl__options__hconcatoptions_as_core__cmp__eq)?;
     m.function_meta(p_cd530488__options__hconcatoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_47619b34_ptions__hconcatoptions_as_core__default__default)?;
     m.function_meta(p_3ed1a351_dsl__options__hconcatoptions_as_core__fmt__debug)?;
+    m.function_meta(p_48c30166_dsl__options__hconcatoptions_as_core__hash__hash)?;
     m.function_meta(p_d1b87977__dsl__options__joinoptions_as_core__clone__clone)?;
     m.function_meta(p_23e3f8fc_sl__options__joinoptions_as_core__cmp__partialeq)?;
     m.function_meta(f_552f08ae_ptionsir__polars_plan__dsl__options__joinoptions)?;
@@ -18058,34 +18826,49 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_42c75cd3_ptions__polars_plan__dsl__options__joinoptionsir)?;
     m.function_meta(p_e49f8368__dsl__options__joinoptionsir_as_core__fmt__debug)?;
     m.function_meta(p_0dcf7f16_options__jointypeoptionsir_as_core__clone__clone)?;
+    m.function_meta(p_8bc67ed2_dsl__options__jointypeoptionsir_as_core__cmp__eq)?;
     m.function_meta(p_ef7eb037_tions__jointypeoptionsir_as_core__cmp__partialeq)?;
     m.function_meta(p_f3ea5b8c___options__jointypeoptionsir_as_core__fmt__debug)?;
+    m.function_meta(p_05749d4c___options__jointypeoptionsir_as_core__hash__hash)?;
     m.function_meta(p_d703186f_ons__logicalplanudfoptions_as_core__clone__clone)?;
+    m.function_meta(p_6d8f23dc__options__logicalplanudfoptions_as_core__cmp__eq)?;
     m.function_meta(p_5d050719_s__logicalplanudfoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_73d61927_tions__logicalplanudfoptions_as_core__fmt__debug)?;
     m.function_meta(p_2826953b_options__rollingcovoptions_as_core__clone__clone)?;
+    m.function_meta(p_7698f2b6_dsl__options__rollingcovoptions_as_core__cmp__eq)?;
     m.function_meta(p_e720b3d5_tions__rollingcovoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_67efe0ab___options__rollingcovoptions_as_core__fmt__debug)?;
+    m.function_meta(p_12fb08d0___options__rollingcovoptions_as_core__hash__hash)?;
     m.function_meta(p_b94d9ed8___options__strptimeoptions_as_core__clone__clone)?;
+    m.function_meta(p_ad79cd9b___dsl__options__strptimeoptions_as_core__cmp__eq)?;
     m.function_meta(p_fa3f59a6_options__strptimeoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_e0ae5dee_tions__strptimeoptions_as_core__default__default)?;
     m.function_meta(p_806b3717_sl__options__strptimeoptions_as_core__fmt__debug)?;
+    m.function_meta(p_7f822715_sl__options__strptimeoptions_as_core__hash__hash)?;
     m.function_meta(p_18b4f355_n__dsl__options__unionargs_as_core__clone__clone)?;
+    m.function_meta(p_9306474b_s_plan__dsl__options__unionargs_as_core__cmp__eq)?;
     m.function_meta(p_a18d5b27__dsl__options__unionargs_as_core__cmp__partialeq)?;
     m.function_meta(p_dd3d9557_sl__options__unionargs_as_core__default__default)?;
     m.function_meta(p_f0bbec70_lan__dsl__options__unionargs_as_core__fmt__debug)?;
+    m.function_meta(p_27b7adcc_lan__dsl__options__unionargs_as_core__hash__hash)?;
     m.function_meta(p_6066993e_dsl__options__unionoptions_as_core__clone__clone)?;
+    m.function_meta(p_6c97024b_lan__dsl__options__unionoptions_as_core__cmp__eq)?;
     m.function_meta(p_1f4fb1f5_l__options__unionoptions_as_core__cmp__partialeq)?;
     m.function_meta(f_7dbe83ab_ionargs__polars_plan__dsl__options__unionoptions)?;
     m.function_meta(p_a0fa611d__options__unionoptions_as_core__default__default)?;
     m.function_meta(p_d9afe383___dsl__options__unionoptions_as_core__fmt__debug)?;
+    m.function_meta(p_bbb20e3e___dsl__options__unionoptions_as_core__hash__hash)?;
     m.function_meta(p_75df6b5f_l__options__unpivotargsdsl_as_core__clone__clone)?;
+    m.function_meta(p_b274a946_n__dsl__options__unpivotargsdsl_as_core__cmp__eq)?;
     m.function_meta(p_7a5fe204__options__unpivotargsdsl_as_core__cmp__partialeq)?;
     m.function_meta(p_a08b2d22_dsl__options__unpivotargsdsl_as_core__fmt__debug)?;
+    m.function_meta(p_23f89535_dsl__options__unpivotargsdsl_as_core__hash__hash)?;
     m.function_meta(p_ed432d4d_sl__options__windowmapping_as_core__clone__clone)?;
+    m.function_meta(p_d55cce10_an__dsl__options__windowmapping_as_core__cmp__eq)?;
     m.function_meta(p_150a01e2___options__windowmapping_as_core__cmp__partialeq)?;
     m.function_meta(p_920233f9_options__windowmapping_as_core__default__default)?;
     m.function_meta(p_14d9c9a4__dsl__options__windowmapping_as_core__fmt__debug)?;
+    m.function_meta(p_3aa66d4d__dsl__options__windowmapping_as_core__hash__hash)?;
     m.function_meta(p_2732db9b_e_provider__fileproviderargs_as_core__fmt__debug)?;
     m.function_meta(p_17ee198f_provider__fileprovidertype_as_core__clone__clone)?;
     m.function_meta(p_df6f3756_ovider__fileprovidertype_as_core__cmp__partialeq)?;
@@ -18097,11 +18880,15 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_9587c5ed_der__icebergpathprovider_as_core__cmp__partialeq)?;
     m.function_meta(p_2de2e878_rovider__icebergpathprovider_as_core__fmt__debug)?;
     m.function_meta(p_acc774ef_k_state__icebergcommitmode_as_core__clone__clone)?;
+    m.function_meta(p_8ed3787c_g_sink_state__icebergcommitmode_as_core__cmp__eq)?;
     m.function_meta(p_f764da4d_state__icebergcommitmode_as_core__cmp__partialeq)?;
     m.function_meta(p_117619a9_ink_state__icebergcommitmode_as_core__fmt__debug)?;
+    m.function_meta(p_a2b22a70_ink_state__icebergcommitmode_as_core__hash__hash)?;
     m.function_meta(p_92f89e74_nk_state__icebergsinkstate_as_core__clone__clone)?;
+    m.function_meta(p_901743d3_rg_sink_state__icebergsinkstate_as_core__cmp__eq)?;
     m.function_meta(p_cf3f8e97__state__icebergsinkstate_as_core__cmp__partialeq)?;
     m.function_meta(p_3ff332ce_sink_state__icebergsinkstate_as_core__fmt__debug)?;
+    m.function_meta(p_0eb03e15_sink_state__icebergsinkstate_as_core__hash__hash)?;
     m.function_meta(p_ab708617_ns__sink__callbacksinktype_as_core__clone__clone)?;
     m.function_meta(p_6da6ea8d___sink__callbacksinktype_as_core__cmp__partialeq)?;
     m.function_meta(p_70334159_ions__sink__callbacksinktype_as_core__fmt__debug)?;
@@ -18124,8 +18911,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_aee7421e_s__sink__sinkdestination_as_core__cmp__partialeq)?;
     m.function_meta(p_3f539814_tions__sink__sinkdestination_as_core__fmt__debug)?;
     m.function_meta(p_08c31ab5__options__sink__sinktarget_as_core__clone__clone)?;
+    m.function_meta(p_c94add6a__dsl__options__sink__sinktarget_as_core__cmp__eq)?;
     m.function_meta(p_d7fce41a_ptions__sink__sinktarget_as_core__cmp__partialeq)?;
     m.function_meta(p_438d83d0_l__options__sink__sinktarget_as_core__fmt__debug)?;
+    m.function_meta(p_4435f0a2_l__options__sink__sinktarget_as_core__hash__hash)?;
     m.function_meta(p_d2efe9a6_l__options__sink__sinktype_as_core__clone__clone)?;
     m.function_meta(p_d3bff970__options__sink__sinktype_as_core__cmp__partialeq)?;
     m.function_meta(p_8e59e3c4_dsl__options__sink__sinktype_as_core__fmt__debug)?;
@@ -18153,29 +18942,38 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_3243f37e___scan_sources__scansource_as_core__clone__clone)?;
     m.function_meta(p_fd6d8935_sl__scan_sources__scansource_as_core__fmt__debug)?;
     m.function_meta(p_e66cd64c__scan_sources__scansources_as_core__clone__clone)?;
+    m.function_meta(p_ea8de1ee__dsl__scan_sources__scansources_as_core__cmp__eq)?;
+    m.function_meta(p_1a068b2d_can_sources__scansources_as_core__cmp__partialeq)?;
     m.function_meta(p_26fc135c_n_sources__scansources_as_core__default__default)?;
     m.function_meta(p_1cd579b4_l__scan_sources__scansources_as_core__fmt__debug)?;
+    m.function_meta(p_f02411f3_l__scan_sources__scansources_as_core__hash__hash)?;
     m.function_meta(p_2d0933b9_selector__datatypeselector_as_core__clone__clone)?;
+    m.function_meta(p_0bebbe66_dsl__selector__datatypeselector_as_core__cmp__eq)?;
     m.function_meta(p_e47b821f_lector__datatypeselector_as_core__cmp__partialeq)?;
     m.function_meta(p_6614de86___selector__datatypeselector_as_core__fmt__debug)?;
     m.function_meta(p_83726194_selector__datatypeselector_as_core__fmt__display)?;
+    m.function_meta(p_bfafe104___selector__datatypeselector_as_core__hash__hash)?;
     m.function_meta(p_c2c47655__datatypeselector_as_core__ops__arith__subassign)?;
     m.function_meta(p_f2c23cb8_datatypeselector_as_core__ops__bit__bitandassign)?;
     m.function_meta(p_b3a2c320__datatypeselector_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_70c4f4e3_datatypeselector_as_core__ops__bit__bitxorassign)?;
     m.function_meta(p_11ec609b_n__dsl__selector__selector_as_core__clone__clone)?;
+    m.function_meta(p_c6eeaf16_s_plan__dsl__selector__selector_as_core__cmp__eq)?;
     m.function_meta(p_100e5c07__dsl__selector__selector_as_core__cmp__partialeq)?;
     m.function_meta(p_1b0117fa_lan__dsl__selector__selector_as_core__fmt__debug)?;
     m.function_meta(p_c8de88ec_n__dsl__selector__selector_as_core__fmt__display)?;
+    m.function_meta(p_5fc27cf5_lan__dsl__selector__selector_as_core__hash__hash)?;
     m.function_meta(p_cae05586_elector__selector_as_core__ops__arith__subassign)?;
     m.function_meta(p_978c27f1_lector__selector_as_core__ops__bit__bitandassign)?;
     m.function_meta(p_44dd694a_elector__selector_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_97d785e3_lector__selector_as_core__ops__bit__bitxorassign)?;
     m.function_meta(p_9ee32a45_dsl__selector__timeunitset_as_core__clone__clone)?;
+    m.function_meta(p_aa49a169_lan__dsl__selector__timeunitset_as_core__cmp__eq)?;
     m.function_meta(p_8101c898_l__selector__timeunitset_as_core__cmp__partialeq)?;
     m.function_meta(f_312cd853_imeunit__polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(p_3b86c614___dsl__selector__timeunitset_as_core__fmt__debug)?;
     m.function_meta(p_9d113f22_dsl__selector__timeunitset_as_core__fmt__display)?;
+    m.function_meta(p_60235dd2___dsl__selector__timeunitset_as_core__hash__hash)?;
     m.function_meta(p_131cc460___selector__timeunitset_as_core__ops__arith__sub)?;
     m.function_meta(p_343279b0_ctor__timeunitset_as_core__ops__arith__subassign)?;
     m.function_meta(p_dbe35a29__selector__timeunitset_as_core__ops__bit__bitand)?;
@@ -18186,8 +18984,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_31098c8a_tor__timeunitset_as_core__ops__bit__bitxorassign)?;
     m.function_meta(p_9b478329_sl__selector__timeunitset_as_core__ops__bit__not)?;
     m.function_meta(p_06ece4c0_dsl__selector__timezoneset_as_core__clone__clone)?;
+    m.function_meta(p_427c6d58_lan__dsl__selector__timezoneset_as_core__cmp__eq)?;
     m.function_meta(p_1135ac58_l__selector__timezoneset_as_core__cmp__partialeq)?;
     m.function_meta(p_651a00da___dsl__selector__timezoneset_as_core__fmt__debug)?;
+    m.function_meta(p_297ace29___dsl__selector__timezoneset_as_core__hash__hash)?;
     m.function_meta(p_854ec679___udf__userdefinedfunction_as_core__clone__clone)?;
     m.function_meta(p_1ac9d1d0_sl__udf__userdefinedfunction_as_core__fmt__debug)?;
     m.function_meta(p_419aa6c7_frame__opt_state__optflags_as_core__clone__clone)?;
