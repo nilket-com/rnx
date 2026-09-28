@@ -1,5 +1,5 @@
 {
-  "cases": 2934,
+  "cases": 3210,
   "results": [
     {
       "detail": "false",
@@ -13930,7 +13930,7 @@
       "unordered": false
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
       "id": "polars_lazy__frame__lazyframe__unique",
       "path": "polars_lazy::frame::LazyFrame::unique",
       "policy": "unordered: default arguments [Polars documents unique as order-unspecified unless maintain_order is set]",
@@ -13938,11 +13938,11 @@
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
-      "status": "row_order_differs",
+      "status": "match",
       "unordered": true
     },
     {
@@ -17610,6 +17610,94 @@
       "unordered": false
     },
     {
+      "detail": ":Float32:[Float32(1.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__float32chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Float64:[Float64(1.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__float64chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int16:[Int16(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__int16chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int32:[Int32(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__int32chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int64:[Int64(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__int64chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int8:[Int8(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__int8chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt16:[UInt16(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__uint16chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt32:[UInt32(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__uint32chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt64:[UInt64(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__uint64chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt8:[UInt8(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__uint8chunked_polars_core_566_3864",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Boolean:[Boolean(true)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__iter__traits__collect__fromiterator__on__booleanchunked_polars_core_566_3866",
+      "path": "polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__chunked_array__cast__castoptions_as_core__cmp__partialeq",
       "path": "polars_core::chunked_array::cast::CastOptions as core::cmp::PartialEq",
@@ -17653,6 +17741,14 @@
       "detail": "true",
       "id": "polars_core__chunked_array__flags__statisticsflags_as_core__cmp__partialeq",
       "path": "polars_core::chunked_array::flags::StatisticsFlags as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "StatisticsFlags(IS_SORTED_DSC)",
+      "id": "polars_core__chunked_array__flags__statisticsflags_as_core__iter__traits__collect__fromiterator__on__statisticsflags_polars_core_2899_3128",
+      "path": "polars_core::chunked_array::flags::StatisticsFlags as core::iter::traits::collect::FromIterator",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18485,6 +18581,302 @@
       "detail": "shape: (3,)\nSeries: 'x' [i64]\n[\n\t1\n\t2\n\t3\n]",
       "id": "polars_core__series__series_as_core__fmt__display",
       "path": "polars_core::series::Series as core::fmt::Display",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt8:[UInt8(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11537",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt8:[UInt8(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11539",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt8:[UInt8(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11541",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt16:[UInt16(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11543",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt16:[UInt16(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11545",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt16:[UInt16(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11547",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt32:[UInt32(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11549",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt32:[UInt32(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11551",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt32:[UInt32(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11553",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt64:[UInt64(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11555",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt64:[UInt64(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11557",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":UInt64:[UInt64(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11559",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int8:[Int8(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11561",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int8:[Int8(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11563",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int8:[Int8(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11565",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int16:[Int16(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11567",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int16:[Int16(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11569",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int16:[Int16(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11571",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int32:[Int32(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11573",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int32:[Int32(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11575",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int32:[Int32(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11577",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int64:[Int64(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11579",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int64:[Int64(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11581",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Int64:[Int64(2)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11583",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Float32:[Float32(1.5)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11585",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Float32:[Float32(1.5)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11587",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Float32:[Float32(1.5)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11589",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Float64:[Float64(1.5)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11591",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Float64:[Float64(1.5)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11593",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Float64:[Float64(1.5)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11595",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Boolean:[Boolean(true)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11597",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Boolean:[Boolean(true)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11599",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Boolean:[Boolean(true)]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11601",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":String:[String(\"x\")]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11603",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":String:[String(\"x\")]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11605",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":String:[String(\"x\")]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11607",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":String:[String(\"x\")]",
+      "id": "polars_core__series__series_as_core__iter__traits__collect__fromiterator__on__series_polars_core_12_11609",
+      "path": "polars_core::series::Series as core::iter::traits::collect::FromIterator",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19874,6 +20266,14 @@
       "unordered": false
     },
     {
+      "detail": "ScanFlags(0x2)",
+      "id": "polars_plan__dsl__file_scan__scanflags_as_core__iter__traits__collect__fromiterator__on__scanflags_polars_plan_7519_7663",
+      "path": "polars_plan::dsl::file_scan::ScanFlags as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "recv=ScanFlags(0x0);ret=()",
       "id": "polars_plan__dsl__file_scan__scanflags_as_core__ops__arith__subassign",
       "path": "polars_plan::dsl::file_scan::ScanFlags as core::ops::arith::SubAssign",
@@ -20610,6 +21010,14 @@
       "unordered": false
     },
     {
+      "detail": "TimeUnitSet(MICRO_SECONDS)",
+      "id": "polars_plan__dsl__selector__timeunitset_as_core__iter__traits__collect__fromiterator__on__timeunitset_polars_plan_6453_6626",
+      "path": "polars_plan::dsl::selector::TimeUnitSet as core::iter::traits::collect::FromIterator",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "recv=TimeUnitSet(0x0);ret=()",
       "id": "polars_plan__dsl__selector__timeunitset_as_core__ops__arith__subassign",
       "path": "polars_plan::dsl::selector::TimeUnitSet as core::ops::arith::SubAssign",
@@ -20669,6 +21077,14 @@
       "detail": "OptFlags(PROJECTION_PUSHDOWN | PREDICATE_PUSHDOWN | CLUSTER_WITH_COLUMNS | TYPE_COERCION | SIMPLIFY_EXPR | TYPE_CHECK | SLICE_PUSHDOWN | COMM_SUBPLAN_ELIM | COMM_SUBEXPR_ELIM | ROW_ESTIMATE | FAST_PROJECTION | CHECK_ORDER_OBSERVE | SORT_COLLAPSE | PARTITION_HIVE)",
       "id": "polars_plan__frame__opt_state__optflags_as_core__default__default",
       "path": "polars_plan::frame::opt_state::OptFlags as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "OptFlags(PROJECTION_PUSHDOWN | PREDICATE_PUSHDOWN | CLUSTER_WITH_COLUMNS | TYPE_COERCION | SIMPLIFY_EXPR | TYPE_CHECK | SLICE_PUSHDOWN | COMM_SUBPLAN_ELIM | COMM_SUBEXPR_ELIM | ROW_ESTIMATE | FAST_PROJECTION | CHECK_ORDER_OBSERVE | SORT_COLLAPSE | PARTITION_HIVE)",
+      "id": "polars_plan__frame__opt_state__optflags_as_core__iter__traits__collect__fromiterator__on__optflags_polars_plan_7129_8593",
+      "path": "polars_plan::frame::opt_state::OptFlags as core::iter::traits::collect::FromIterator",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -23472,13 +23888,1805 @@
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__frame__dataframe__dataframe_as_core__ops__index__index__on__dataframe_polars_core_9_7770",
+      "path": "polars_core::frame::dataframe::DataFrame as core::ops::index::Index",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__frame__dataframe__dataframe_as_core__ops__index__index__on__dataframe_polars_core_9_7796",
+      "path": "polars_core::frame::dataframe::DataFrame as core::ops::index::Index",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(3.0), Float32(5.0), Float32(7.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float32chunked_float32chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(3.0), Float64(5.0), Float64(7.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float64chunked_float64chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(2), Int16(4), Int16(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int16chunked_int16chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(2), Int32(4), Int32(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int32chunked_int32chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(4), Int64(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int64chunked_int64chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(2), Int8(4), Int8(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int8chunked_int8chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(2), UInt16(4), UInt16(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint16chunked_uint16chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(2), UInt32(4), UInt32(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint32chunked_uint32chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(2), UInt64(4), UInt64(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint64chunked_uint64chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(2), UInt8(4), UInt8(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint8chunked_uint8chunked_polars_core_566_3789",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(3.0), Float32(4.0), Float32(5.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float32chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(3.5), Float32(4.5), Float32(5.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float32chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(3.0), Float64(4.0), Float64(5.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float64chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(3.5), Float64(4.5), Float64(5.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float64chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(2), Int16(3), Int16(4)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int16chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(3), Int16(4), Int16(5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int16chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(2), Int32(3), Int32(4)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int32chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(3), Int32(4), Int32(5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int32chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(3), Int64(4)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int64chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(3), Int64(4), Int64(5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int64chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(2), Int8(3), Int8(4)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int8chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(3), Int8(4), Int8(5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int8chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(2), UInt16(3), UInt16(4)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint16chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(3), UInt16(4), UInt16(5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint16chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(2), UInt32(3), UInt32(4)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint32chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(3), UInt32(4), UInt32(5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint32chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(2), UInt64(3), UInt64(4)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint64chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(3), UInt64(4), UInt64(5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint64chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(2), UInt8(3), UInt8(4)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint8chunked_f64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(3), UInt8(4), UInt8(5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint8chunked_i64_polars_core_566_3795",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(1.0), Float32(1.0), Float32(1.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float32chunked_float32chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(1.0), Float64(1.0), Float64(1.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float64chunked_float64chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(1), Int16(1), Int16(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int16chunked_int16chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(1), Int32(1), Int32(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int32chunked_int32chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(1), Int64(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int64chunked_int64chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(1), Int8(1), Int8(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int8chunked_int8chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(1), UInt16(1), UInt16(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint16chunked_uint16chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(1), UInt32(1), UInt32(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint32chunked_uint32chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(1), UInt64(1), UInt64(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint64chunked_uint64chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(1), UInt8(1), UInt8(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint8chunked_uint8chunked_polars_core_566_3825",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(1.0), Float32(1.6666667), Float32(2.3333335)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float32chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(0.75), Float32(1.25), Float32(1.75)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float32chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(1.0), Float64(1.6666666666666665), Float64(2.333333333333333)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float64chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(0.75), Float64(1.25), Float64(1.75)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float64chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(1), Int16(2), Int16(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int16chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(0), Int16(1), Int16(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int16chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(1), Int32(2), Int32(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int32chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(0), Int32(1), Int32(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int32chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int64chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(1), Int64(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int64chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(1), Int8(2), Int8(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int8chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(0), Int8(1), Int8(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int8chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(1), UInt16(2), UInt16(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint16chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(0), UInt16(1), UInt16(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint16chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(1), UInt32(2), UInt32(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint32chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(1), UInt32(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint32chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(1), UInt64(2), UInt64(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint64chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(0), UInt64(1), UInt64(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint64chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(1), UInt8(2), UInt8(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint8chunked_f64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(0), UInt8(1), UInt8(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint8chunked_i64_polars_core_566_3831",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(2.25), Float32(6.25), Float32(12.25)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float32chunked_float32chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(2.25), Float64(6.25), Float64(12.25)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float64chunked_float64chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(1), Int16(4), Int16(9)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int16chunked_int16chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(1), Int32(4), Int32(9)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int32chunked_int32chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(4), Int64(9)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int64chunked_int64chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(1), Int8(4), Int8(9)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int8chunked_int8chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(1), UInt16(4), UInt16(9)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint16chunked_uint16chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(1), UInt32(4), UInt32(9)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint32chunked_uint32chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(1), UInt64(4), UInt64(9)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint64chunked_uint64chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(1), UInt8(4), UInt8(9)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint8chunked_uint8chunked_polars_core_566_3813",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(2.25), Float32(3.75), Float32(5.25)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float32chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(3.0), Float32(5.0), Float32(7.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float32chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(2.25), Float64(3.75), Float64(5.25)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float64chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(3.0), Float64(5.0), Float64(7.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float64chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(1), Int16(2), Int16(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int16chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(2), Int16(4), Int16(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int16chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(1), Int32(2), Int32(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int32chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(2), Int32(4), Int32(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int32chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int64chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(4), Int64(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int64chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(1), Int8(2), Int8(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int8chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(2), Int8(4), Int8(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int8chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(1), UInt16(2), UInt16(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint16chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(2), UInt16(4), UInt16(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint16chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(1), UInt32(2), UInt32(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint32chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(2), UInt32(4), UInt32(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint32chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(1), UInt64(2), UInt64(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint64chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(2), UInt64(4), UInt64(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint64chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(1), UInt8(2), UInt8(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint8chunked_f64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(2), UInt8(4), UInt8(6)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint8chunked_i64_polars_core_566_3819",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(0.0), Float32(0.0), Float32(0.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float32chunked_float32chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(0.0), Float64(0.0), Float64(0.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float64chunked_float64chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(0), Int16(0), Int16(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int16chunked_int16chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(0), Int32(0), Int32(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int32chunked_int32chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int64chunked_int64chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(0), Int8(0), Int8(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int8chunked_int8chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(0), UInt16(0), UInt16(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint16chunked_uint16chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(0), UInt32(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint32chunked_uint32chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(0), UInt64(0), UInt64(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint64chunked_uint64chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(0), UInt8(0), UInt8(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint8chunked_uint8chunked_polars_core_566_3837",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(0.0), Float32(1.0), Float32(0.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float32chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(1.5), Float32(0.5), Float32(1.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float32chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(0.0), Float64(1.0), Float64(0.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float64chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(1.5), Float64(0.5), Float64(1.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float64chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(0), Int16(0), Int16(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int16chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(1), Int16(0), Int16(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int16chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(0), Int32(0), Int32(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int32chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(1), Int32(0), Int32(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int32chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int64chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(0), Int64(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int64chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(0), Int8(0), Int8(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int8chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(1), Int8(0), Int8(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int8chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(0), UInt16(0), UInt16(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint16chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(1), UInt16(0), UInt16(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint16chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(0), UInt32(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint32chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(1), UInt32(0), UInt32(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint32chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(0), UInt64(0), UInt64(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint64chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(1), UInt64(0), UInt64(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint64chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(0), UInt8(0), UInt8(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint8chunked_f64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(1), UInt8(0), UInt8(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint8chunked_i64_polars_core_566_3843",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(0.0), Float32(0.0), Float32(0.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float32chunked_float32chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(0.0), Float64(0.0), Float64(0.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float64chunked_float64chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(0), Int16(0), Int16(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int16chunked_int16chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(0), Int32(0), Int32(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int32chunked_int32chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int64chunked_int64chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(0), Int8(0), Int8(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int8chunked_int8chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(0), UInt16(0), UInt16(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint16chunked_uint16chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(0), UInt32(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint32chunked_uint32chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(0), UInt64(0), UInt64(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint64chunked_uint64chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(0), UInt8(0), UInt8(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint8chunked_uint8chunked_polars_core_566_3801",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(0.0), Float32(1.0), Float32(2.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float32chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float32:[Float32(-0.5), Float32(0.5), Float32(1.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float32chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(0.0), Float64(1.0), Float64(2.0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float64chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Float64:[Float64(-0.5), Float64(0.5), Float64(1.5)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float64chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(0), Int16(1), Int16(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int16chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(-1), Int16(0), Int16(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int16chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(0), Int32(1), Int32(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int32chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(-1), Int32(0), Int32(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int32chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(1), Int64(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int64chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(-1), Int64(0), Int64(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int64chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(0), Int8(1), Int8(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int8chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(-1), Int8(0), Int8(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int8chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(0), UInt16(1), UInt16(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint16chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(65535), UInt16(0), UInt16(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint16chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(1), UInt32(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint32chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(4294967295), UInt32(0), UInt32(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint32chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(0), UInt64(1), UInt64(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint64chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(18446744073709551615), UInt64(0), UInt64(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint64chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(0), UInt8(1), UInt8(2)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint8chunked_f64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(255), UInt8(0), UInt8(1)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint8chunked_i64_polars_core_566_3807",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(1), Int16(2), Int16(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__int16chunked_int16chunked_polars_core_566_3848",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(1), Int32(2), Int32(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__int32chunked_int32chunked_polars_core_566_3848",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__int64chunked_int64chunked_polars_core_566_3848",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(1), Int8(2), Int8(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__int8chunked_int8chunked_polars_core_566_3848",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(1), UInt16(2), UInt16(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__uint16chunked_uint16chunked_polars_core_566_3848",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(1), UInt32(2), UInt32(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__uint32chunked_uint32chunked_polars_core_566_3848",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(1), UInt64(2), UInt64(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__uint64chunked_uint64chunked_polars_core_566_3848",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(1), UInt8(2), UInt8(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__uint8chunked_uint8chunked_polars_core_566_3848",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(1), Int16(2), Int16(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__int16chunked_int16chunked_polars_core_566_3851",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(1), Int32(2), Int32(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__int32chunked_int32chunked_polars_core_566_3851",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__int64chunked_int64chunked_polars_core_566_3851",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(1), Int8(2), Int8(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__int8chunked_int8chunked_polars_core_566_3851",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(1), UInt16(2), UInt16(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__uint16chunked_uint16chunked_polars_core_566_3851",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(1), UInt32(2), UInt32(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__uint32chunked_uint32chunked_polars_core_566_3851",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(1), UInt64(2), UInt64(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__uint64chunked_uint64chunked_polars_core_566_3851",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(1), UInt8(2), UInt8(3)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__uint8chunked_uint8chunked_polars_core_566_3851",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int16:[Int16(0), Int16(0), Int16(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__int16chunked_int16chunked_polars_core_566_3854",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int32:[Int32(0), Int32(0), Int32(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__int32chunked_int32chunked_polars_core_566_3854",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__int64chunked_int64chunked_polars_core_566_3854",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int8:[Int8(0), Int8(0), Int8(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__int8chunked_int8chunked_polars_core_566_3854",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt16:[UInt16(0), UInt16(0), UInt16(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__uint16chunked_uint16chunked_polars_core_566_3854",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt32:[UInt32(0), UInt32(0), UInt32(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__uint32chunked_uint32chunked_polars_core_566_3854",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt64:[UInt64(0), UInt64(0), UInt64(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__uint64chunked_uint64chunked_polars_core_566_3854",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:UInt8:[UInt8(0), UInt8(0), UInt8(0)]",
+      "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__uint8chunked_uint8chunked_polars_core_566_3854",
+      "path": "polars_core::chunked_array::ChunkedArray as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(4), Int64(6)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__add__on__column_column_polars_core_650_7415",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(3), Int64(4)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__add__on__column_f64_polars_core_650_7463",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(3), Int64(4), Int64(5)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__add__on__column_i64_polars_core_650_7463",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(1), Int64(1)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__div__on__column_column_polars_core_650_7433",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__div__on__column_f64_polars_core_650_7481",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(1), Int64(1)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__div__on__column_i64_polars_core_650_7481",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(4), Int64(9)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__mul__on__column_column_polars_core_650_7427",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__mul__on__column_f64_polars_core_650_7475",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(4), Int64(6)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__mul__on__column_i64_polars_core_650_7475",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__rem__on__column_column_polars_core_650_7439",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__rem__on__column_f64_polars_core_650_7487",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(0), Int64(1)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__rem__on__column_i64_polars_core_650_7487",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__sub__on__column_column_polars_core_650_7421",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(1), Int64(2)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__sub__on__column_f64_polars_core_650_7469",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(-1), Int64(0), Int64(1)]",
+      "id": "polars_core__frame__column__column_as_core__ops__arith__sub__on__column_i64_polars_core_650_7469",
+      "path": "polars_core::frame::column::Column as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__frame__column__column_as_core__ops__bit__bitand__on__column_column_polars_core_650_7445",
+      "path": "polars_core::frame::column::Column as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__frame__column__column_as_core__ops__bit__bitor__on__column_column_polars_core_650_7451",
+      "path": "polars_core::frame::column::Column as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__frame__column__column_as_core__ops__bit__bitxor__on__column_column_polars_core_650_7457",
+      "path": "polars_core::frame::column::Column as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(4), Int64(6)]",
+      "id": "polars_core__series__series_as_core__ops__arith__add__on__series_series_polars_core_12_11469",
+      "path": "polars_core::series::Series as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(3), Int64(4)]",
+      "id": "polars_core__series__series_as_core__ops__arith__add__on__series_f64_polars_core_12_11490",
+      "path": "polars_core::series::Series as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(3), Int64(4), Int64(5)]",
+      "id": "polars_core__series__series_as_core__ops__arith__add__on__series_i64_polars_core_12_11490",
+      "path": "polars_core::series::Series as core::ops::arith::Add",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(1), Int64(1)]",
+      "id": "polars_core__series__series_as_core__ops__arith__div__on__series_series_polars_core_12_11478",
+      "path": "polars_core::series::Series as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__series__series_as_core__ops__arith__div__on__series_f64_polars_core_12_11496",
+      "path": "polars_core::series::Series as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(1), Int64(1)]",
+      "id": "polars_core__series__series_as_core__ops__arith__div__on__series_i64_polars_core_12_11496",
+      "path": "polars_core::series::Series as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(4), Int64(9)]",
+      "id": "polars_core__series__series_as_core__ops__arith__mul__on__series_series_polars_core_12_11475",
+      "path": "polars_core::series::Series as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__series__series_as_core__ops__arith__mul__on__series_f64_polars_core_12_11502",
+      "path": "polars_core::series::Series as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(2), Int64(4), Int64(6)]",
+      "id": "polars_core__series__series_as_core__ops__arith__mul__on__series_i64_polars_core_12_11502",
+      "path": "polars_core::series::Series as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__series__series_as_core__ops__arith__rem__on__series_series_polars_core_12_11481",
+      "path": "polars_core::series::Series as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__series__series_as_core__ops__arith__rem__on__series_f64_polars_core_12_11508",
+      "path": "polars_core::series::Series as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(0), Int64(1)]",
+      "id": "polars_core__series__series_as_core__ops__arith__rem__on__series_i64_polars_core_12_11508",
+      "path": "polars_core::series::Series as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__series__series_as_core__ops__arith__sub__on__series_series_polars_core_12_11472",
+      "path": "polars_core::series::Series as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(1), Int64(2)]",
+      "id": "polars_core__series__series_as_core__ops__arith__sub__on__series_f64_polars_core_12_11484",
+      "path": "polars_core::series::Series as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(-1), Int64(0), Int64(1)]",
+      "id": "polars_core__series__series_as_core__ops__arith__sub__on__series_i64_polars_core_12_11484",
+      "path": "polars_core::series::Series as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__series__series_as_core__ops__bit__bitand__on__series_series_polars_core_12_11433",
+      "path": "polars_core::series::Series as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(1), Int64(2), Int64(3)]",
+      "id": "polars_core__series__series_as_core__ops__bit__bitor__on__series_series_polars_core_12_11445",
+      "path": "polars_core::series::Series as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Int64:[Int64(0), Int64(0), Int64(0)]",
+      "id": "polars_core__series__series_as_core__ops__bit__bitxor__on__series_series_polars_core_12_11457",
+      "path": "polars_core::series::Series as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(1)) | (Int64(1))]",
+      "id": "polars_plan__dsl__expr__expr_as_core__ops__arith__div__on__expr_expr_polars_plan_225_1675",
+      "path": "polars_plan::dsl::expr::Expr as core::ops::arith::Div",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(4)) | (Int64(9))]",
+      "id": "polars_plan__dsl__expr__expr_as_core__ops__arith__mul__on__expr_expr_polars_plan_225_1678",
+      "path": "polars_plan::dsl::expr::Expr as core::ops::arith::Mul",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(0)) | (Int64(0)) | (Int64(0))]",
+      "id": "polars_plan__dsl__expr__expr_as_core__ops__arith__rem__on__expr_expr_polars_plan_225_1681",
+      "path": "polars_plan::dsl::expr::Expr as core::ops::arith::Rem",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(0)) | (Int64(0)) | (Int64(0))]",
+      "id": "polars_plan__dsl__expr__expr_as_core__ops__arith__sub__on__expr_expr_polars_plan_225_1672",
+      "path": "polars_plan::dsl::expr::Expr as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Difference(Wildcard, Wildcard)",
+      "id": "polars_plan__dsl__selector__datatypeselector_as_core__ops__arith__sub__on__datatypeselector_datatypeselector_polars_plan_763_6767",
+      "path": "polars_plan::dsl::selector::DataTypeSelector as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Intersect(Wildcard, Wildcard)",
+      "id": "polars_plan__dsl__selector__datatypeselector_as_core__ops__bit__bitand__on__datatypeselector_datatypeselector_polars_plan_763_6757",
+      "path": "polars_plan::dsl::selector::DataTypeSelector as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Union(Wildcard, Wildcard)",
+      "id": "polars_plan__dsl__selector__datatypeselector_as_core__ops__bit__bitor__on__datatypeselector_datatypeselector_polars_plan_763_6752",
+      "path": "polars_plan::dsl::selector::DataTypeSelector as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "ExclusiveOr(Wildcard, Wildcard)",
+      "id": "polars_plan__dsl__selector__datatypeselector_as_core__ops__bit__bitxor__on__datatypeselector_datatypeselector_polars_plan_763_6762",
+      "path": "polars_plan::dsl::selector::DataTypeSelector as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Difference(Wildcard, Wildcard)",
+      "id": "polars_plan__dsl__selector__selector_as_core__ops__arith__sub__on__selector_selector_polars_plan_630_6896",
+      "path": "polars_plan::dsl::selector::Selector as core::ops::arith::Sub",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Intersect(Wildcard, Wildcard)",
+      "id": "polars_plan__dsl__selector__selector_as_core__ops__bit__bitand__on__selector_selector_polars_plan_630_6886",
+      "path": "polars_plan::dsl::selector::Selector as core::ops::bit::BitAnd",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Union(Wildcard, Wildcard)",
+      "id": "polars_plan__dsl__selector__selector_as_core__ops__bit__bitor__on__selector_selector_polars_plan_630_6881",
+      "path": "polars_plan::dsl::selector::Selector as core::ops::bit::BitOr",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "ExclusiveOr(Wildcard, Wildcard)",
+      "id": "polars_plan__dsl__selector__selector_as_core__ops__bit__bitxor__on__selector_selector_polars_plan_630_6891",
+      "path": "polars_plan::dsl::selector::Selector as core::ops::bit::BitXor",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
     }
   ],
   "tally": {
     "both_error": 130,
     "both_panic": 31,
-    "match": 2771,
-    "row_order_differs": 2
+    "match": 3048,
+    "row_order_differs": 1
   },
-  "verified": 2934
+  "verified": 3210
 }

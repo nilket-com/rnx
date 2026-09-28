@@ -8909,6 +8909,39 @@ fn g_3a721c91_polars_plan__dsl__udf__infer_udf_output_dtype(f: rune::runtime::Fu
 /// Polars: `polars_plan::dsl::udf::try_infer_udf_output_dtype`. try_infer_udf_output_dtype(f: callback, input_fields: vector of Field) -> result of DataType (fallible)
 #[rune::function(path = try_infer_udf_output_dtype)]
 fn g_ec8f1f18_olars_plan__dsl__udf__try_infer_udf_output_dtype(f: rune::runtime::Function, input_fields: rune::Value) -> Result<W_polars_core__datatypes__dtype__DataType, Error> { let __cb_f = support::callback::install("try_infer_udf_output_dtype", f)?; let __cb_callable_f = move |__cb_a0: &[polars::frame::column::Column]| { support::callback::bridge::<_, W_polars_core__frame__column__Column>("try_infer_udf_output_dtype", &__cb_f, (__cb_a0.iter().map(|__r| { let __r = __r.clone(); W_polars_core__frame__column__Column(__r) }).collect::<Vec<_>>(),)).and_then(|__cb_result| support::callback::convert("try_infer_udf_output_dtype", || Ok::<_, Error>(__cb_result.0.clone()))).map_err(support::callback::compute_error) }; let __t0 = support::borrow_vec(&input_fields, "input_fields")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__datatypes__field__Field>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &__cb_callable_f; let __arg1 = &__t0[..]; let __r = crate::engine::run("polars::try_infer_udf_output_dtype", move || polars_plan::dsl::udf::try_infer_udf_output_dtype(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__dtype__DataType(__r) }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__Float32Chunked::from_iter_option_native)]
+fn i_49feed78___datatypes__float32chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { support::vec_len_bounded(&v, "Float32Chunked::from_iter_option_native")?; let __v: Vec<Option<f32>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<f64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some((v as f32)), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__Float32Chunked(<polars_core::datatypes::Float32Chunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__Float64Chunked::from_iter_option_native)]
+fn i_0b591e21___datatypes__float64chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { support::vec_len_bounded(&v, "Float64Chunked::from_iter_option_native")?; let __v: Vec<Option<f64>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<f64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__Float64Chunked(<polars_core::datatypes::Float64Chunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::from_iter_option_native)]
+fn i_50622dd3_re__datatypes__int16chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { support::vec_len_bounded(&v, "Int16Chunked::from_iter_option_native")?; let __v: Vec<Option<i16>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<i16>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__Int16Chunked(<polars_core::datatypes::Int16Chunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::from_iter_option_native)]
+fn i_dba82fea_re__datatypes__int32chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { support::vec_len_bounded(&v, "Int32Chunked::from_iter_option_native")?; let __v: Vec<Option<i32>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<i32>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__Int32Chunked(<polars_core::datatypes::Int32Chunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::from_iter_option_native)]
+fn i_f83a3fca_re__datatypes__int64chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { support::vec_len_bounded(&v, "Int64Chunked::from_iter_option_native")?; let __v: Vec<Option<i64>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__Int64Chunked(<polars_core::datatypes::Int64Chunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::from_iter_option_native)]
+fn i_da64e009_ore__datatypes__int8chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { support::vec_len_bounded(&v, "Int8Chunked::from_iter_option_native")?; let __v: Vec<Option<i8>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<i8>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__Int8Chunked(<polars_core::datatypes::Int8Chunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::from_iter_option_native)]
+fn i_d15d2758_e__datatypes__uint16chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { support::vec_len_bounded(&v, "UInt16Chunked::from_iter_option_native")?; let __v: Vec<Option<u16>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<u16>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__UInt16Chunked(<polars_core::datatypes::UInt16Chunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::from_iter_option_native)]
+fn i_33a10f66_e__datatypes__uint32chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { support::vec_len_bounded(&v, "UInt32Chunked::from_iter_option_native")?; let __v: Vec<Option<u32>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<u32>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__aliases__IdxCa(<polars_core::datatypes::IdxCa as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::from_iter_option_native)]
+fn i_117a78c6_e__datatypes__uint64chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { support::vec_len_bounded(&v, "UInt64Chunked::from_iter_option_native")?; let __v: Vec<Option<u64>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<u64>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__UInt64Chunked(<polars_core::datatypes::UInt64Chunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<<T as PolarsNumericType>::Native>>).
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::from_iter_option_native)]
+fn i_17897f49_re__datatypes__uint8chunked_polars_core_566_3864(v: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { support::vec_len_bounded(&v, "UInt8Chunked::from_iter_option_native")?; let __v: Vec<Option<u8>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<u8>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__UInt8Chunked(<polars_core::datatypes::UInt8Chunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::chunked_array::ChunkedArray as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<bool>>).
+#[rune::function(free, path = W_polars_core__datatypes__BooleanChunked::from_iter_option_bool)]
+fn i_579a0073___datatypes__booleanchunked_polars_core_566_3866(v: rune::Value) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { support::vec_len_bounded(&v, "BooleanChunked::from_iter_option_bool")?; let __v: Vec<Option<bool>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<bool> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__datatypes__BooleanChunked(<polars_core::datatypes::BooleanChunked as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
 /// Polars: `polars_core::chunked_array::builder::boolean::BooleanChunkedBuilder as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f4c35408_ean__booleanchunkedbuilder_as_core__clone__clone(this: &W_polars_core__chunked_array__builder__boolean__BooleanChunkedBuilder) -> W_polars_core__chunked_array__builder__boolean__BooleanChunkedBuilder { W_polars_core__chunked_array__builder__boolean__BooleanChunkedBuilder(this.0.clone()) }
@@ -8954,6 +8987,9 @@ fn p_c4daae80___flags__statisticsflags_as_core__cmp__partialeq(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_62787664_rray__flags__statisticsflags_as_core__fmt__debug(this: &W_polars_core__chunked_array__flags__StatisticsFlags, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<StatisticsFlags>).
+#[rune::function(free, path = W_polars_core__chunked_array__flags__StatisticsFlags::from_iter_self)]
+fn i_9e08712e_ay__flags__statisticsflags_polars_core_2899_3128(v: rune::Value) -> Result<W_polars_core__chunked_array__flags__StatisticsFlags, Error> { support::vec_len_bounded(&v, "StatisticsFlags::from_iter_self")?; let __v: Vec<polars::chunked_array::flags::StatisticsFlags> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__chunked_array__flags__StatisticsFlags>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__chunked_array__flags__StatisticsFlags(<polars::chunked_array::flags::StatisticsFlags as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
 /// Polars: `polars_core::chunked_array::flags::StatisticsFlags as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_886ce722__flags__statisticsflags_as_core__ops__arith__sub(this: &W_polars_core__chunked_array__flags__StatisticsFlags, rhs: &W_polars_core__chunked_array__flags__StatisticsFlags) -> W_polars_core__chunked_array__flags__StatisticsFlags { let __r = this.0.clone() - rhs.0.clone(); W_polars_core__chunked_array__flags__StatisticsFlags(__r) }
@@ -9575,6 +9611,117 @@ fn p_fe4a7b06_polars_core__series__series_as_core__fmt__debug(this: &W_polars_co
 /// Polars: `polars_core::series::Series as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_75fab2ca_olars_core__series__series_as_core__fmt__display(this: &W_polars_core__series__Series, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<u8>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_u8)]
+fn i_ba9c1a6a_polars_core__series__series_polars_core_12_11537(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_u8")?; let __v: Vec<Option<u8>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<u8>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<u8>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_u8)]
+fn i_ba9c11b8_polars_core__series__series_polars_core_12_11539(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_u8")?; let __v: Vec<u8> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&u8>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_u8)]
+fn i_ba8f7f9f_polars_core__series__series_polars_core_12_11541(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_u8")?; let __v: Vec<u8> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<u16>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_u16)]
+fn i_ba8f8105_polars_core__series__series_polars_core_12_11543(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_u16")?; let __v: Vec<Option<u16>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<u16>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<u16>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_u16)]
+fn i_ba8f82a3_polars_core__series__series_polars_core_12_11545(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_u16")?; let __v: Vec<u16> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&u16>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_u16)]
+fn i_ba8f8c49_polars_core__series__series_polars_core_12_11547(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_u16")?; let __v: Vec<u16> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<u32>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_u32)]
+fn i_ba908a07_polars_core__series__series_polars_core_12_11549(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_u32")?; let __v: Vec<Option<u32>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<u32>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<u32>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_u32)]
+fn i_bab1127a_polars_core__series__series_polars_core_12_11551(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_u32")?; let __v: Vec<u32> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&u32>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_u32)]
+fn i_bab110dc_polars_core__series__series_polars_core_12_11553(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_u32")?; let __v: Vec<u32> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<u64>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_u64)]
+fn i_bab1148e_polars_core__series__series_polars_core_12_11555(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_u64")?; let __v: Vec<Option<u64>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<u64>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<u64>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_u64)]
+fn i_bab11fe0_polars_core__series__series_polars_core_12_11557(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_u64")?; let __v: Vec<u64> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u64>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&u64>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_u64)]
+fn i_bab1f4e2_polars_core__series__series_polars_core_12_11559(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_u64")?; let __v: Vec<u64> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u64>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<i8>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_i8)]
+fn i_bab2bf69_polars_core__series__series_polars_core_12_11561(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_i8")?; let __v: Vec<Option<i8>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<i8>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<i8>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_i8)]
+fn i_bab2a5c3_polars_core__series__series_polars_core_12_11563(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_i8")?; let __v: Vec<i8> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<i8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&i8>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_i8)]
+fn i_bab2a425_polars_core__series__series_polars_core_12_11565(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_i8")?; let __v: Vec<i8> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<i8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<i16>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_i16)]
+fn i_bab2aebf_polars_core__series__series_polars_core_12_11567(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_i16")?; let __v: Vec<Option<i16>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<i16>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<i16>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_i16)]
+fn i_bab2a111_polars_core__series__series_polars_core_12_11569(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_i16")?; let __v: Vec<i16> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<i16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&i16>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_i16)]
+fn i_bab2e2b4_polars_core__series__series_polars_core_12_11571(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_i16")?; let __v: Vec<i16> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<i16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<i32>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_i32)]
+fn i_bab2e452_polars_core__series__series_polars_core_12_11573(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_i32")?; let __v: Vec<Option<i32>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(support::narrow::<i32>(v, "v")?), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<i32>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_i32)]
+fn i_bab2edf8_polars_core__series__series_polars_core_12_11575(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_i32")?; let __v: Vec<i32> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<i32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&i32>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_i32)]
+fn i_bab2eb66_polars_core__series__series_polars_core_12_11577(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_i32")?; let __v: Vec<i32> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<i32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<i64>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_i64)]
+fn i_bab2d80c_polars_core__series__series_polars_core_12_11579(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_i64")?; let __v: Vec<Option<i64>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<i64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<i64>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_i64)]
+fn i_ba96a1d3_polars_core__series__series_polars_core_12_11581(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_i64")?; let __v: Vec<i64> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&i64>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_i64)]
+fn i_ba96a779_polars_core__series__series_polars_core_12_11583(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_i64")?; let __v: Vec<i64> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<f32>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_f32)]
+fn i_ba96a68f_polars_core__series__series_polars_core_12_11585(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_f32")?; let __v: Vec<Option<f32>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<f64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some((v as f32)), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<f32>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_f32)]
+fn i_ba96a035_polars_core__series__series_polars_core_12_11587(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_f32")?; let __v: Vec<f32> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "v")?; Ok::<_, Error>((v as f32)) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&f32>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_f32)]
+fn i_ba969c7b_polars_core__series__series_polars_core_12_11589(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_f32")?; let __v: Vec<f32> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "v")?; Ok::<_, Error>((v as f32)) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<f64>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_f64)]
+fn i_ba9133be_polars_core__series__series_polars_core_12_11591(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_f64")?; let __v: Vec<Option<f64>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<f64> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<f64>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_f64)]
+fn i_ba913610_polars_core__series__series_polars_core_12_11593(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_f64")?; let __v: Vec<f64> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&f64>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_f64)]
+fn i_ba91316a_polars_core__series__series_polars_core_12_11595(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_f64")?; let __v: Vec<f64> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<bool>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_bool)]
+fn i_ba9133cc_polars_core__series__series_polars_core_12_11597(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_bool")?; let __v: Vec<Option<bool>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<bool> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<bool>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_bool)]
+fn i_ba913626_polars_core__series__series_polars_core_12_11599(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_bool")?; let __v: Vec<bool> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: bool = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&bool>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_ref_bool)]
+fn i_45eabd9e_polars_core__series__series_polars_core_12_11601(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_ref_bool")?; let __v: Vec<bool> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: bool = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<&str>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_str)]
+fn i_45eab2f0_polars_core__series__series_polars_core_12_11603(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_str")?; let __v: Vec<Option<String>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<String> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter().map(|s| s.as_deref())))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<&str>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_str)]
+fn i_45eab74a_polars_core__series__series_polars_core_12_11605(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_str")?; let __v: Vec<String> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.iter().map(|s| s.as_str())))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<Option<String>>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_option_string)]
+fn i_45eab1ac_polars_core__series__series_polars_core_12_11607(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_option_string")?; let __v: Vec<Option<String>> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: Option<String> = support::borrow_element(&v, "v")?; Ok::<_, Error>(match v { Some(v) => Some(v), None => None }) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+/// Polars: `polars_core::series::Series as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<String>).
+#[rune::function(free, path = W_polars_core__series__Series::from_iter_string)]
+fn i_45ea5206_polars_core__series__series_polars_core_12_11609(v: rune::Value) -> Result<W_polars_core__series__Series, Error> { support::vec_len_bounded(&v, "Series::from_iter_string")?; let __v: Vec<String> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_core__series__Series(<polars::series::Series as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
 /// Polars: `polars_core::series::amortized_iter::AmortSeries as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_f68573fa_mortized_iter__amortseries_as_core__clone__clone(this: &W_polars_core__series__amortized_iter__AmortSeries) -> W_polars_core__series__amortized_iter__AmortSeries { W_polars_core__series__amortized_iter__AmortSeries(this.0.clone()) }
@@ -10679,6 +10826,9 @@ fn p_a564fb06_polars_plan__dsl__expr__expr_as_core__fmt__debug(this: &Expr, f: &
 /// Polars: `polars_plan::dsl::expr::Expr as core::fmt::Display`.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn p_7a4794c5_lars_plan__dsl__expr__expr_as_core__fmt__display(this: &Expr, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::expr::Expr as core::ops::arith::Neg`.
+#[rune::function(instance, path = neg)]
+fn p_43014908_s_plan__dsl__expr__expr_as_core__ops__arith__neg(this: &Expr) -> Expr { Expr(-this.0.clone()) }
 /// Polars: `polars_plan::dsl::expr::Operator as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_b2b6c75a__plan__dsl__expr__operator_as_core__clone__clone(this: &W_polars_plan__dsl__expr__Operator) -> W_polars_plan__dsl__expr__Operator { W_polars_plan__dsl__expr__Operator(this.0.clone()) }
@@ -10850,6 +11000,9 @@ fn p_53601a2c_sl__file_scan__scanflags_as_core__cmp__partialeq(this: &W_polars_p
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_85813242_n__dsl__file_scan__scanflags_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__ScanFlags, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<ScanFlags>).
+#[rune::function(free, path = W_polars_plan__dsl__file_scan__ScanFlags::from_iter_self)]
+fn i_047e022d__dsl__file_scan__scanflags_polars_plan_7519_7663(v: rune::Value) -> Result<W_polars_plan__dsl__file_scan__ScanFlags, Error> { support::vec_len_bounded(&v, "ScanFlags::from_iter_self")?; let __v: Vec<polars_plan::dsl::ScanFlags> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_plan__dsl__file_scan__ScanFlags>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_plan__dsl__file_scan__ScanFlags(<polars_plan::dsl::ScanFlags as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_e3a6c61b_l__file_scan__scanflags_as_core__ops__arith__sub(this: &W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) -> W_polars_plan__dsl__file_scan__ScanFlags { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__dsl__file_scan__ScanFlags(__r) }
@@ -11633,6 +11786,9 @@ fn p_b3a2c320__datatypeselector_as_core__ops__bit__bitorassign(this: &mut W_pola
 /// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::ops::bit::BitXorAssign`.
 #[rune::function(instance, protocol = BIT_XOR_ASSIGN)]
 fn p_70c4f4e3_datatypeselector_as_core__ops__bit__bitxorassign(this: &mut W_polars_plan__dsl__selector__DataTypeSelector, rhs: &W_polars_plan__dsl__selector__DataTypeSelector) { <polars_plan::dsl::DataTypeSelector as core::ops::BitXorAssign>::bitxor_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::DataTypeSelector as core::ops::bit::Not`.
+#[rune::function(instance, path = not_)]
+fn p_4447f075_elector__datatypeselector_as_core__ops__bit__not(this: &W_polars_plan__dsl__selector__DataTypeSelector) -> W_polars_plan__dsl__selector__DataTypeSelector { W_polars_plan__dsl__selector__DataTypeSelector(<polars_plan::dsl::DataTypeSelector as core::ops::Not>::not(this.0.clone())) }
 /// Polars: `polars_plan::dsl::selector::Selector as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_11ec609b_n__dsl__selector__selector_as_core__clone__clone(this: &W_polars_plan__dsl__selector__Selector) -> W_polars_plan__dsl__selector__Selector { W_polars_plan__dsl__selector__Selector(this.0.clone()) }
@@ -11663,6 +11819,9 @@ fn p_44dd694a_elector__selector_as_core__ops__bit__bitorassign(this: &mut W_pola
 /// Polars: `polars_plan::dsl::selector::Selector as core::ops::bit::BitXorAssign`.
 #[rune::function(instance, protocol = BIT_XOR_ASSIGN)]
 fn p_97d785e3_lector__selector_as_core__ops__bit__bitxorassign(this: &mut W_polars_plan__dsl__selector__Selector, rhs: &W_polars_plan__dsl__selector__Selector) { <polars_plan::dsl::Selector as core::ops::BitXorAssign>::bitxor_assign(&mut this.0, rhs.0.clone()) }
+/// Polars: `polars_plan::dsl::selector::Selector as core::ops::bit::Not`.
+#[rune::function(instance, path = not_)]
+fn p_16ee00e5___dsl__selector__selector_as_core__ops__bit__not(this: &W_polars_plan__dsl__selector__Selector) -> W_polars_plan__dsl__selector__Selector { W_polars_plan__dsl__selector__Selector(<polars_plan::dsl::Selector as core::ops::Not>::not(this.0.clone())) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_9ee32a45_dsl__selector__timeunitset_as_core__clone__clone(this: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { W_polars_plan__dsl__selector__TimeUnitSet(this.0.clone()) }
@@ -11684,6 +11843,9 @@ fn p_9d113f22_dsl__selector__timeunitset_as_core__fmt__display(this: &W_polars_p
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::hash::Hash`.
 #[rune::function(instance, protocol = HASH)]
 fn p_60235dd2___dsl__selector__timeunitset_as_core__hash__hash(this: &W_polars_plan__dsl__selector__TimeUnitSet, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<TimeUnitSet>).
+#[rune::function(free, path = W_polars_plan__dsl__selector__TimeUnitSet::from_iter_self)]
+fn i_a370a678_dsl__selector__timeunitset_polars_plan_6453_6626(v: rune::Value) -> Result<W_polars_plan__dsl__selector__TimeUnitSet, Error> { support::vec_len_bounded(&v, "TimeUnitSet::from_iter_self")?; let __v: Vec<polars_plan::dsl::TimeUnitSet> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_plan__dsl__selector__TimeUnitSet>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_plan__dsl__selector__TimeUnitSet(<polars_plan::dsl::TimeUnitSet as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_131cc460___selector__timeunitset_as_core__ops__arith__sub(this: &W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__dsl__selector__TimeUnitSet(__r) }
@@ -11741,6 +11903,9 @@ fn p_daa4d180_e__opt_state__optflags_as_core__default__default() -> W_polars_pla
 /// Polars: `polars_plan::frame::opt_state::OptFlags as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_15aad8a9___frame__opt_state__optflags_as_core__fmt__debug(this: &W_polars_plan__frame__opt_state__OptFlags, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::frame::opt_state::OptFlags as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<OptFlags>).
+#[rune::function(free, path = W_polars_plan__frame__opt_state__OptFlags::from_iter_self)]
+fn i_77e55b32_frame__opt_state__optflags_polars_plan_7129_8593(v: rune::Value) -> Result<W_polars_plan__frame__opt_state__OptFlags, Error> { support::vec_len_bounded(&v, "OptFlags::from_iter_self")?; let __v: Vec<polars_plan::frame::AllowedOptimizations> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_plan__frame__opt_state__OptFlags>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_plan__frame__opt_state__OptFlags(<polars_plan::frame::AllowedOptimizations as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
 /// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_0e7083fb_me__opt_state__optflags_as_core__ops__arith__sub(this: &W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) -> W_polars_plan__frame__opt_state__OptFlags { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__frame__opt_state__OptFlags(__r) }
@@ -13241,6 +13406,315 @@ fn f_9b77d222_s__lit__literal__lit_polars_core__series__series(this: &W_polars_c
 /// Polars: `polars_plan::plans::lit::Literal::lit`. lit() -> Expr
 #[rune::function(instance, path = lit)]
 fn f_b07b8716_s__lit__literal__lit_polars_core__scalar__scalar(this: &W_polars_core__scalar__Scalar) -> Expr { let __r = <polars_core::scalar::Scalar as polars_plan::plans::Literal>::lit(this.0.clone()); Expr(__r) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, Float32Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_fe5da3ad_polars_core__datatypes__float32chunked_add(this: &W_polars_core__datatypes__Float32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float32Chunked>() { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 + &__b.0)); } Err(Error::conversion("Float32Chunked +: the right-hand side is not float, int, Float32Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, Float32Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_b5191b4d_polars_core__datatypes__float32chunked_div(this: &W_polars_core__datatypes__Float32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float32Chunked>() { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 / &__b.0)); } Err(Error::conversion("Float32Chunked /: the right-hand side is not float, int, Float32Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, Float32Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_2c9d9098_polars_core__datatypes__float32chunked_mul(this: &W_polars_core__datatypes__Float32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float32Chunked>() { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 * &__b.0)); } Err(Error::conversion("Float32Chunked *: the right-hand side is not float, int, Float32Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, Float32Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_06ac0fe6_polars_core__datatypes__float32chunked_rem(this: &W_polars_core__datatypes__Float32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float32Chunked>() { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 % &__b.0)); } Err(Error::conversion("Float32Chunked %: the right-hand side is not float, int, Float32Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, Float32Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_096d4d2c_polars_core__datatypes__float32chunked_sub(this: &W_polars_core__datatypes__Float32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float32Chunked>() { return Ok(W_polars_core__datatypes__Float32Chunked(&this.0 - &__b.0)); } Err(Error::conversion("Float32Chunked -: the right-hand side is not float, int, Float32Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, Float64Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_85bab859_polars_core__datatypes__float64chunked_add(this: &W_polars_core__datatypes__Float64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float64Chunked>() { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 + &__b.0)); } Err(Error::conversion("Float64Chunked +: the right-hand side is not float, int, Float64Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, Float64Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_95383ea1_polars_core__datatypes__float64chunked_div(this: &W_polars_core__datatypes__Float64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float64Chunked>() { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 / &__b.0)); } Err(Error::conversion("Float64Chunked /: the right-hand side is not float, int, Float64Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, Float64Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_8c8b1564_polars_core__datatypes__float64chunked_mul(this: &W_polars_core__datatypes__Float64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float64Chunked>() { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 * &__b.0)); } Err(Error::conversion("Float64Chunked *: the right-hand side is not float, int, Float64Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, Float64Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_4d6994de_polars_core__datatypes__float64chunked_rem(this: &W_polars_core__datatypes__Float64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float64Chunked>() { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 % &__b.0)); } Err(Error::conversion("Float64Chunked %: the right-hand side is not float, int, Float64Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, Float64Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_58f69ea0_polars_core__datatypes__float64chunked_sub(this: &W_polars_core__datatypes__Float64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Float64Chunked>() { return Ok(W_polars_core__datatypes__Float64Chunked(&this.0 - &__b.0)); } Err(Error::conversion("Float64Chunked -: the right-hand side is not float, int, Float64Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, Int16Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_1bd9ad69_polars_core__datatypes__int16chunked_add(this: &W_polars_core__datatypes__Int16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int16Chunked>() { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 + &__b.0)); } Err(Error::conversion("Int16Chunked +: the right-hand side is not float, int, Int16Chunked")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: Int16Chunked).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_6f3f9977_polars_core__datatypes__int16chunked_bitand(this: &W_polars_core__datatypes__Int16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int16Chunked>() { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 & &__b.0)); } Err(Error::conversion("Int16Chunked &: the right-hand side is not Int16Chunked")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: Int16Chunked).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_fb39bf23_polars_core__datatypes__int16chunked_bitor(this: &W_polars_core__datatypes__Int16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int16Chunked>() { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 | &__b.0)); } Err(Error::conversion("Int16Chunked |: the right-hand side is not Int16Chunked")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: Int16Chunked).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_f5ca2daf_polars_core__datatypes__int16chunked_bitxor(this: &W_polars_core__datatypes__Int16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int16Chunked>() { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 ^ &__b.0)); } Err(Error::conversion("Int16Chunked ^: the right-hand side is not Int16Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, Int16Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_f2dcf925_polars_core__datatypes__int16chunked_div(this: &W_polars_core__datatypes__Int16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int16Chunked>() { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 / &__b.0)); } Err(Error::conversion("Int16Chunked /: the right-hand side is not float, int, Int16Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, Int16Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_7c5976ec_polars_core__datatypes__int16chunked_mul(this: &W_polars_core__datatypes__Int16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int16Chunked>() { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 * &__b.0)); } Err(Error::conversion("Int16Chunked *: the right-hand side is not float, int, Int16Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, Int16Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_482a9916_polars_core__datatypes__int16chunked_rem(this: &W_polars_core__datatypes__Int16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int16Chunked>() { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 % &__b.0)); } Err(Error::conversion("Int16Chunked %: the right-hand side is not float, int, Int16Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, Int16Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_5d61c9f0_polars_core__datatypes__int16chunked_sub(this: &W_polars_core__datatypes__Int16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int16Chunked>() { return Ok(W_polars_core__datatypes__Int16Chunked(&this.0 - &__b.0)); } Err(Error::conversion("Int16Chunked -: the right-hand side is not float, int, Int16Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, Int32Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_aa148e30_polars_core__datatypes__int32chunked_add(this: &W_polars_core__datatypes__Int32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int32Chunked>() { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 + &__b.0)); } Err(Error::conversion("Int32Chunked +: the right-hand side is not float, int, Int32Chunked")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: Int32Chunked).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_980f3cbc_polars_core__datatypes__int32chunked_bitand(this: &W_polars_core__datatypes__Int32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int32Chunked>() { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 & &__b.0)); } Err(Error::conversion("Int32Chunked &: the right-hand side is not Int32Chunked")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: Int32Chunked).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_2eb18a0d_polars_core__datatypes__int32chunked_bitor(this: &W_polars_core__datatypes__Int32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int32Chunked>() { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 | &__b.0)); } Err(Error::conversion("Int32Chunked |: the right-hand side is not Int32Chunked")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: Int32Chunked).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_b2cc0750_polars_core__datatypes__int32chunked_bitxor(this: &W_polars_core__datatypes__Int32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int32Chunked>() { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 ^ &__b.0)); } Err(Error::conversion("Int32Chunked ^: the right-hand side is not Int32Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, Int32Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_4fba1068_polars_core__datatypes__int32chunked_div(this: &W_polars_core__datatypes__Int32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int32Chunked>() { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 / &__b.0)); } Err(Error::conversion("Int32Chunked /: the right-hand side is not float, int, Int32Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, Int32Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_2cedb2dd_polars_core__datatypes__int32chunked_mul(this: &W_polars_core__datatypes__Int32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int32Chunked>() { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 * &__b.0)); } Err(Error::conversion("Int32Chunked *: the right-hand side is not float, int, Int32Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, Int32Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_a99123e8_polars_core__datatypes__int32chunked_rem(this: &W_polars_core__datatypes__Int32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int32Chunked>() { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 % &__b.0)); } Err(Error::conversion("Int32Chunked %: the right-hand side is not float, int, Int32Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, Int32Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_a6acbc36_polars_core__datatypes__int32chunked_sub(this: &W_polars_core__datatypes__Int32Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int32Chunked>() { return Ok(W_polars_core__datatypes__Int32Chunked(&this.0 - &__b.0)); } Err(Error::conversion("Int32Chunked -: the right-hand side is not float, int, Int32Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, Int64Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_e57a9ef4_polars_core__datatypes__int64chunked_add(this: &W_polars_core__datatypes__Int64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int64Chunked>() { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 + &__b.0)); } Err(Error::conversion("Int64Chunked +: the right-hand side is not float, int, Int64Chunked")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: Int64Chunked).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_6684051f_polars_core__datatypes__int64chunked_bitand(this: &W_polars_core__datatypes__Int64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int64Chunked>() { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 & &__b.0)); } Err(Error::conversion("Int64Chunked &: the right-hand side is not Int64Chunked")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: Int64Chunked).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_c212221c_polars_core__datatypes__int64chunked_bitor(this: &W_polars_core__datatypes__Int64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int64Chunked>() { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 | &__b.0)); } Err(Error::conversion("Int64Chunked |: the right-hand side is not Int64Chunked")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: Int64Chunked).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_d42ede7f_polars_core__datatypes__int64chunked_bitxor(this: &W_polars_core__datatypes__Int64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int64Chunked>() { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 ^ &__b.0)); } Err(Error::conversion("Int64Chunked ^: the right-hand side is not Int64Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, Int64Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_bb2c41e4_polars_core__datatypes__int64chunked_div(this: &W_polars_core__datatypes__Int64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int64Chunked>() { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 / &__b.0)); } Err(Error::conversion("Int64Chunked /: the right-hand side is not float, int, Int64Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, Int64Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_b55b15a2_polars_core__datatypes__int64chunked_mul(this: &W_polars_core__datatypes__Int64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int64Chunked>() { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 * &__b.0)); } Err(Error::conversion("Int64Chunked *: the right-hand side is not float, int, Int64Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, Int64Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_2b2b776f_polars_core__datatypes__int64chunked_rem(this: &W_polars_core__datatypes__Int64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int64Chunked>() { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 % &__b.0)); } Err(Error::conversion("Int64Chunked %: the right-hand side is not float, int, Int64Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, Int64Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_5b31a43d_polars_core__datatypes__int64chunked_sub(this: &W_polars_core__datatypes__Int64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int64Chunked>() { return Ok(W_polars_core__datatypes__Int64Chunked(&this.0 - &__b.0)); } Err(Error::conversion("Int64Chunked -: the right-hand side is not float, int, Int64Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, Int8Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_fb80b009_polars_core__datatypes__int8chunked_add(this: &W_polars_core__datatypes__Int8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int8Chunked>() { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 + &__b.0)); } Err(Error::conversion("Int8Chunked +: the right-hand side is not float, int, Int8Chunked")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: Int8Chunked).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_514126b7_polars_core__datatypes__int8chunked_bitand(this: &W_polars_core__datatypes__Int8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int8Chunked>() { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 & &__b.0)); } Err(Error::conversion("Int8Chunked &: the right-hand side is not Int8Chunked")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: Int8Chunked).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_ed276c5d_polars_core__datatypes__int8chunked_bitor(this: &W_polars_core__datatypes__Int8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int8Chunked>() { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 | &__b.0)); } Err(Error::conversion("Int8Chunked |: the right-hand side is not Int8Chunked")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: Int8Chunked).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_d6c47398_polars_core__datatypes__int8chunked_bitxor(this: &W_polars_core__datatypes__Int8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int8Chunked>() { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 ^ &__b.0)); } Err(Error::conversion("Int8Chunked ^: the right-hand side is not Int8Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, Int8Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_aaea1d35_polars_core__datatypes__int8chunked_div(this: &W_polars_core__datatypes__Int8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int8Chunked>() { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 / &__b.0)); } Err(Error::conversion("Int8Chunked /: the right-hand side is not float, int, Int8Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, Int8Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_586f811c_polars_core__datatypes__int8chunked_mul(this: &W_polars_core__datatypes__Int8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int8Chunked>() { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 * &__b.0)); } Err(Error::conversion("Int8Chunked *: the right-hand side is not float, int, Int8Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, Int8Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_fd3edea9_polars_core__datatypes__int8chunked_rem(this: &W_polars_core__datatypes__Int8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int8Chunked>() { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 % &__b.0)); } Err(Error::conversion("Int8Chunked %: the right-hand side is not float, int, Int8Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, Int8Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_ef1872cb_polars_core__datatypes__int8chunked_sub(this: &W_polars_core__datatypes__Int8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__Int8Chunked>() { return Ok(W_polars_core__datatypes__Int8Chunked(&this.0 - &__b.0)); } Err(Error::conversion("Int8Chunked -: the right-hand side is not float, int, Int8Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, UInt16Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_c22cd48d_polars_core__datatypes__uint16chunked_add(this: &W_polars_core__datatypes__UInt16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>() { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 + &__b.0)); } Err(Error::conversion("UInt16Chunked +: the right-hand side is not float, int, UInt16Chunked")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: UInt16Chunked).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_28fb2cea_polars_core__datatypes__uint16chunked_bitand(this: &W_polars_core__datatypes__UInt16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>() { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 & &__b.0)); } Err(Error::conversion("UInt16Chunked &: the right-hand side is not UInt16Chunked")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: UInt16Chunked).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_cf6e128c_polars_core__datatypes__uint16chunked_bitor(this: &W_polars_core__datatypes__UInt16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>() { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 | &__b.0)); } Err(Error::conversion("UInt16Chunked |: the right-hand side is not UInt16Chunked")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: UInt16Chunked).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_57f6c066_polars_core__datatypes__uint16chunked_bitxor(this: &W_polars_core__datatypes__UInt16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>() { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 ^ &__b.0)); } Err(Error::conversion("UInt16Chunked ^: the right-hand side is not UInt16Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, UInt16Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_771df179_polars_core__datatypes__uint16chunked_div(this: &W_polars_core__datatypes__UInt16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>() { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 / &__b.0)); } Err(Error::conversion("UInt16Chunked /: the right-hand side is not float, int, UInt16Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, UInt16Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_f18ca3e8_polars_core__datatypes__uint16chunked_mul(this: &W_polars_core__datatypes__UInt16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>() { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 * &__b.0)); } Err(Error::conversion("UInt16Chunked *: the right-hand side is not float, int, UInt16Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, UInt16Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_729033ce_polars_core__datatypes__uint16chunked_rem(this: &W_polars_core__datatypes__UInt16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>() { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 % &__b.0)); } Err(Error::conversion("UInt16Chunked %: the right-hand side is not float, int, UInt16Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, UInt16Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_7a64b724_polars_core__datatypes__uint16chunked_sub(this: &W_polars_core__datatypes__UInt16Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt16Chunked>() { return Ok(W_polars_core__datatypes__UInt16Chunked(&this.0 - &__b.0)); } Err(Error::conversion("UInt16Chunked -: the right-hand side is not float, int, UInt16Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, UInt32Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_5ebfaa1d_polars_core__datatypes__uint32chunked_add(this: &W_polars_core__datatypes__aliases__IdxCa, rhs: rune::Value) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>() { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 + &__b.0)); } Err(Error::conversion("UInt32Chunked +: the right-hand side is not float, int, UInt32Chunked")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: UInt32Chunked).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_cf06f39a_polars_core__datatypes__uint32chunked_bitand(this: &W_polars_core__datatypes__aliases__IdxCa, rhs: rune::Value) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>() { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 & &__b.0)); } Err(Error::conversion("UInt32Chunked &: the right-hand side is not UInt32Chunked")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: UInt32Chunked).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_a024714d_polars_core__datatypes__uint32chunked_bitor(this: &W_polars_core__datatypes__aliases__IdxCa, rhs: rune::Value) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>() { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 | &__b.0)); } Err(Error::conversion("UInt32Chunked |: the right-hand side is not UInt32Chunked")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: UInt32Chunked).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_6fe9aa3a_polars_core__datatypes__uint32chunked_bitxor(this: &W_polars_core__datatypes__aliases__IdxCa, rhs: rune::Value) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>() { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 ^ &__b.0)); } Err(Error::conversion("UInt32Chunked ^: the right-hand side is not UInt32Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, UInt32Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_77ce2a0d_polars_core__datatypes__uint32chunked_div(this: &W_polars_core__datatypes__aliases__IdxCa, rhs: rune::Value) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>() { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 / &__b.0)); } Err(Error::conversion("UInt32Chunked /: the right-hand side is not float, int, UInt32Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, UInt32Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_fe5290c8_polars_core__datatypes__uint32chunked_mul(this: &W_polars_core__datatypes__aliases__IdxCa, rhs: rune::Value) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>() { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 * &__b.0)); } Err(Error::conversion("UInt32Chunked *: the right-hand side is not float, int, UInt32Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, UInt32Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_096ad686_polars_core__datatypes__uint32chunked_rem(this: &W_polars_core__datatypes__aliases__IdxCa, rhs: rune::Value) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>() { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 % &__b.0)); } Err(Error::conversion("UInt32Chunked %: the right-hand side is not float, int, UInt32Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, UInt32Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_1f271e54_polars_core__datatypes__uint32chunked_sub(this: &W_polars_core__datatypes__aliases__IdxCa, rhs: rune::Value) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__aliases__IdxCa>() { return Ok(W_polars_core__datatypes__aliases__IdxCa(&this.0 - &__b.0)); } Err(Error::conversion("UInt32Chunked -: the right-hand side is not float, int, UInt32Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, UInt64Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_4015c726_polars_core__datatypes__uint64chunked_add(this: &W_polars_core__datatypes__UInt64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>() { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 + &__b.0)); } Err(Error::conversion("UInt64Chunked +: the right-hand side is not float, int, UInt64Chunked")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: UInt64Chunked).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_0e7158ff_polars_core__datatypes__uint64chunked_bitand(this: &W_polars_core__datatypes__UInt64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>() { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 & &__b.0)); } Err(Error::conversion("UInt64Chunked &: the right-hand side is not UInt64Chunked")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: UInt64Chunked).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_8b5963bf_polars_core__datatypes__uint64chunked_bitor(this: &W_polars_core__datatypes__UInt64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>() { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 | &__b.0)); } Err(Error::conversion("UInt64Chunked |: the right-hand side is not UInt64Chunked")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: UInt64Chunked).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_5bc4ebe4_polars_core__datatypes__uint64chunked_bitxor(this: &W_polars_core__datatypes__UInt64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>() { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 ^ &__b.0)); } Err(Error::conversion("UInt64Chunked ^: the right-hand side is not UInt64Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, UInt64Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_ccd9620e_polars_core__datatypes__uint64chunked_div(this: &W_polars_core__datatypes__UInt64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>() { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 / &__b.0)); } Err(Error::conversion("UInt64Chunked /: the right-hand side is not float, int, UInt64Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, UInt64Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_76ae760b_polars_core__datatypes__uint64chunked_mul(this: &W_polars_core__datatypes__UInt64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>() { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 * &__b.0)); } Err(Error::conversion("UInt64Chunked *: the right-hand side is not float, int, UInt64Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, UInt64Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_1fcad508_polars_core__datatypes__uint64chunked_rem(this: &W_polars_core__datatypes__UInt64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>() { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 % &__b.0)); } Err(Error::conversion("UInt64Chunked %: the right-hand side is not float, int, UInt64Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, UInt64Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_0c495286_polars_core__datatypes__uint64chunked_sub(this: &W_polars_core__datatypes__UInt64Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt64Chunked>() { return Ok(W_polars_core__datatypes__UInt64Chunked(&this.0 - &__b.0)); } Err(Error::conversion("UInt64Chunked -: the right-hand side is not float, int, UInt64Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, UInt8Chunked).
+#[rune::function(instance, protocol = ADD)]
+fn o_0da7355c_polars_core__datatypes__uint8chunked_add(this: &W_polars_core__datatypes__UInt8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>() { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 + &__b.0)); } Err(Error::conversion("UInt8Chunked +: the right-hand side is not float, int, UInt8Chunked")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: UInt8Chunked).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_c537c4bd_polars_core__datatypes__uint8chunked_bitand(this: &W_polars_core__datatypes__UInt8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>() { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 & &__b.0)); } Err(Error::conversion("UInt8Chunked &: the right-hand side is not UInt8Chunked")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: UInt8Chunked).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_ef12d1d5_polars_core__datatypes__uint8chunked_bitor(this: &W_polars_core__datatypes__UInt8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>() { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 | &__b.0)); } Err(Error::conversion("UInt8Chunked |: the right-hand side is not UInt8Chunked")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: UInt8Chunked).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_6be38422_polars_core__datatypes__uint8chunked_bitxor(this: &W_polars_core__datatypes__UInt8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>() { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 ^ &__b.0)); } Err(Error::conversion("UInt8Chunked ^: the right-hand side is not UInt8Chunked")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, UInt8Chunked).
+#[rune::function(instance, protocol = DIV)]
+fn o_388540f4_polars_core__datatypes__uint8chunked_div(this: &W_polars_core__datatypes__UInt8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>() { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 / &__b.0)); } Err(Error::conversion("UInt8Chunked /: the right-hand side is not float, int, UInt8Chunked")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, UInt8Chunked).
+#[rune::function(instance, protocol = MUL)]
+fn o_2f02d5fe_polars_core__datatypes__uint8chunked_mul(this: &W_polars_core__datatypes__UInt8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>() { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 * &__b.0)); } Err(Error::conversion("UInt8Chunked *: the right-hand side is not float, int, UInt8Chunked")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, UInt8Chunked).
+#[rune::function(instance, protocol = REM)]
+fn o_4c7d3fac_polars_core__datatypes__uint8chunked_rem(this: &W_polars_core__datatypes__UInt8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>() { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 % &__b.0)); } Err(Error::conversion("UInt8Chunked %: the right-hand side is not float, int, UInt8Chunked")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, UInt8Chunked).
+#[rune::function(instance, protocol = SUB)]
+fn o_40211142_polars_core__datatypes__uint8chunked_sub(this: &W_polars_core__datatypes__UInt8Chunked, rhs: rune::Value) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__datatypes__UInt8Chunked>() { return Ok(W_polars_core__datatypes__UInt8Chunked(&this.0 - &__b.0)); } Err(Error::conversion("UInt8Chunked -: the right-hand side is not float, int, UInt8Chunked")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, Column).
+#[rune::function(instance, protocol = ADD)]
+fn o_9d5d388c_polars_core__frame__column__column_add(this: &W_polars_core__frame__column__Column, rhs: rune::Value) -> Result<W_polars_core__frame__column__Column, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__frame__column__Column>() { return Ok(W_polars_core__frame__column__Column((&this.0 + &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Column +: the right-hand side is not float, int, Column")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: Column).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_336ec225_polars_core__frame__column__column_bitand(this: &W_polars_core__frame__column__Column, rhs: rune::Value) -> Result<W_polars_core__frame__column__Column, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__frame__column__Column>() { return Ok(W_polars_core__frame__column__Column((&this.0 & &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Column &: the right-hand side is not Column")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: Column).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_2c242e49_polars_core__frame__column__column_bitor(this: &W_polars_core__frame__column__Column, rhs: rune::Value) -> Result<W_polars_core__frame__column__Column, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__frame__column__Column>() { return Ok(W_polars_core__frame__column__Column((&this.0 | &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Column |: the right-hand side is not Column")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: Column).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_569cb14a_polars_core__frame__column__column_bitxor(this: &W_polars_core__frame__column__Column, rhs: rune::Value) -> Result<W_polars_core__frame__column__Column, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__frame__column__Column>() { return Ok(W_polars_core__frame__column__Column((&this.0 ^ &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Column ^: the right-hand side is not Column")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, Column).
+#[rune::function(instance, protocol = DIV)]
+fn o_9e8c5455_polars_core__frame__column__column_div(this: &W_polars_core__frame__column__Column, rhs: rune::Value) -> Result<W_polars_core__frame__column__Column, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__frame__column__Column>() { return Ok(W_polars_core__frame__column__Column((&this.0 / &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Column /: the right-hand side is not float, int, Column")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, Column).
+#[rune::function(instance, protocol = MUL)]
+fn o_f8226680_polars_core__frame__column__column_mul(this: &W_polars_core__frame__column__Column, rhs: rune::Value) -> Result<W_polars_core__frame__column__Column, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__frame__column__Column>() { return Ok(W_polars_core__frame__column__Column((&this.0 * &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Column *: the right-hand side is not float, int, Column")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, Column).
+#[rune::function(instance, protocol = REM)]
+fn o_c70f28da_polars_core__frame__column__column_rem(this: &W_polars_core__frame__column__Column, rhs: rune::Value) -> Result<W_polars_core__frame__column__Column, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__frame__column__Column>() { return Ok(W_polars_core__frame__column__Column((&this.0 % &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Column %: the right-hand side is not float, int, Column")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, Column).
+#[rune::function(instance, protocol = SUB)]
+fn o_c08b3c04_polars_core__frame__column__column_sub(this: &W_polars_core__frame__column__Column, rhs: rune::Value) -> Result<W_polars_core__frame__column__Column, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__frame__column__Column(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__frame__column__Column>() { return Ok(W_polars_core__frame__column__Column((&this.0 - &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Column -: the right-hand side is not float, int, Column")) }
+/// Polars: `Add` (record 0113: one operator over its proven impls: float, int, Series).
+#[rune::function(instance, protocol = ADD)]
+fn o_1a45d928_polars_core__series__series_add(this: &W_polars_core__series__Series, rhs: rune::Value) -> Result<W_polars_core__series__Series, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 + __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 + __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__series__Series>() { return Ok(W_polars_core__series__Series((&this.0 + &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Series +: the right-hand side is not float, int, Series")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: Series).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_a074c65b_polars_core__series__series_bitand(this: &W_polars_core__series__Series, rhs: rune::Value) -> Result<W_polars_core__series__Series, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__series__Series>() { return Ok(W_polars_core__series__Series((&this.0 & &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Series &: the right-hand side is not Series")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: Series).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_ba792ea4_polars_core__series__series_bitor(this: &W_polars_core__series__Series, rhs: rune::Value) -> Result<W_polars_core__series__Series, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__series__Series>() { return Ok(W_polars_core__series__Series((&this.0 | &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Series |: the right-hand side is not Series")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: Series).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_0dffc93b_polars_core__series__series_bitxor(this: &W_polars_core__series__Series, rhs: rune::Value) -> Result<W_polars_core__series__Series, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_core__series__Series>() { return Ok(W_polars_core__series__Series((&this.0 ^ &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Series ^: the right-hand side is not Series")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: float, int, Series).
+#[rune::function(instance, protocol = DIV)]
+fn o_0b806538_polars_core__series__series_div(this: &W_polars_core__series__Series, rhs: rune::Value) -> Result<W_polars_core__series__Series, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 / __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 / __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__series__Series>() { return Ok(W_polars_core__series__Series((&this.0 / &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Series /: the right-hand side is not float, int, Series")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: float, int, Series).
+#[rune::function(instance, protocol = MUL)]
+fn o_677b153d_polars_core__series__series_mul(this: &W_polars_core__series__Series, rhs: rune::Value) -> Result<W_polars_core__series__Series, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 * __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 * __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__series__Series>() { return Ok(W_polars_core__series__Series((&this.0 * &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Series *: the right-hand side is not float, int, Series")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: float, int, Series).
+#[rune::function(instance, protocol = REM)]
+fn o_cbfb6173_polars_core__series__series_rem(this: &W_polars_core__series__Series, rhs: rune::Value) -> Result<W_polars_core__series__Series, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 % __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 % __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__series__Series>() { return Ok(W_polars_core__series__Series((&this.0 % &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Series %: the right-hand side is not float, int, Series")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: float, int, Series).
+#[rune::function(instance, protocol = SUB)]
+fn o_c677c961_polars_core__series__series_sub(this: &W_polars_core__series__Series, rhs: rune::Value) -> Result<W_polars_core__series__Series, Error> { if let Ok(__v) = rune::from_value::<f64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 - __v)); } if let Ok(__v) = rune::from_value::<i64>(rhs.clone()) { return Ok(W_polars_core__series__Series(&this.0 - __v)); } if let Ok(__b) = rhs.borrow_ref::<W_polars_core__series__Series>() { return Ok(W_polars_core__series__Series((&this.0 - &__b.0).map_err(Error::from)?)); } Err(Error::conversion("Series -: the right-hand side is not float, int, Series")) }
+/// Polars: `Div` (record 0113: one operator over its proven impls: Expr).
+#[rune::function(instance, protocol = DIV)]
+fn o_dc0862d4_polars_plan__dsl__expr__expr_div(this: &Expr, rhs: rune::Value) -> Result<Expr, Error> { if let Ok(__b) = rhs.borrow_ref::<Expr>() { return Ok(Expr(this.0.clone() / __b.0.clone())); } Err(Error::conversion("Expr /: the right-hand side is not Expr")) }
+/// Polars: `Mul` (record 0113: one operator over its proven impls: Expr).
+#[rune::function(instance, protocol = MUL)]
+fn o_5a78051e_polars_plan__dsl__expr__expr_mul(this: &Expr, rhs: rune::Value) -> Result<Expr, Error> { if let Ok(__b) = rhs.borrow_ref::<Expr>() { return Ok(Expr(this.0.clone() * __b.0.clone())); } Err(Error::conversion("Expr *: the right-hand side is not Expr")) }
+/// Polars: `Rem` (record 0113: one operator over its proven impls: Expr).
+#[rune::function(instance, protocol = REM)]
+fn o_32486ac7_polars_plan__dsl__expr__expr_rem(this: &Expr, rhs: rune::Value) -> Result<Expr, Error> { if let Ok(__b) = rhs.borrow_ref::<Expr>() { return Ok(Expr(this.0.clone() % __b.0.clone())); } Err(Error::conversion("Expr %: the right-hand side is not Expr")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: Expr).
+#[rune::function(instance, protocol = SUB)]
+fn o_35a054c1_polars_plan__dsl__expr__expr_sub(this: &Expr, rhs: rune::Value) -> Result<Expr, Error> { if let Ok(__b) = rhs.borrow_ref::<Expr>() { return Ok(Expr(this.0.clone() - __b.0.clone())); } Err(Error::conversion("Expr -: the right-hand side is not Expr")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: DataTypeSelector).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_30b9ed0b_ars_plan__dsl__selector__datatypeselector_bitand(this: &W_polars_plan__dsl__selector__DataTypeSelector, rhs: rune::Value) -> Result<W_polars_plan__dsl__selector__DataTypeSelector, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_plan__dsl__selector__DataTypeSelector>() { return Ok(W_polars_plan__dsl__selector__DataTypeSelector(this.0.clone() & __b.0.clone())); } Err(Error::conversion("DataTypeSelector &: the right-hand side is not DataTypeSelector")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: DataTypeSelector).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_9be114b5_lars_plan__dsl__selector__datatypeselector_bitor(this: &W_polars_plan__dsl__selector__DataTypeSelector, rhs: rune::Value) -> Result<W_polars_plan__dsl__selector__DataTypeSelector, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_plan__dsl__selector__DataTypeSelector>() { return Ok(W_polars_plan__dsl__selector__DataTypeSelector(this.0.clone() | __b.0.clone())); } Err(Error::conversion("DataTypeSelector |: the right-hand side is not DataTypeSelector")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: DataTypeSelector).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_6afc9c13_ars_plan__dsl__selector__datatypeselector_bitxor(this: &W_polars_plan__dsl__selector__DataTypeSelector, rhs: rune::Value) -> Result<W_polars_plan__dsl__selector__DataTypeSelector, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_plan__dsl__selector__DataTypeSelector>() { return Ok(W_polars_plan__dsl__selector__DataTypeSelector(this.0.clone() ^ __b.0.clone())); } Err(Error::conversion("DataTypeSelector ^: the right-hand side is not DataTypeSelector")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: DataTypeSelector).
+#[rune::function(instance, protocol = SUB)]
+fn o_fa5392b3_polars_plan__dsl__selector__datatypeselector_sub(this: &W_polars_plan__dsl__selector__DataTypeSelector, rhs: rune::Value) -> Result<W_polars_plan__dsl__selector__DataTypeSelector, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_plan__dsl__selector__DataTypeSelector>() { return Ok(W_polars_plan__dsl__selector__DataTypeSelector(this.0.clone() - __b.0.clone())); } Err(Error::conversion("DataTypeSelector -: the right-hand side is not DataTypeSelector")) }
+/// Polars: `BitAnd` (record 0113: one operator over its proven impls: Selector).
+#[rune::function(instance, protocol = BIT_AND)]
+fn o_b71e4b07_polars_plan__dsl__selector__selector_bitand(this: &W_polars_plan__dsl__selector__Selector, rhs: rune::Value) -> Result<W_polars_plan__dsl__selector__Selector, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_plan__dsl__selector__Selector>() { return Ok(W_polars_plan__dsl__selector__Selector(this.0.clone() & __b.0.clone())); } Err(Error::conversion("Selector &: the right-hand side is not Selector")) }
+/// Polars: `BitOr` (record 0113: one operator over its proven impls: Selector).
+#[rune::function(instance, protocol = BIT_OR)]
+fn o_c6580359_polars_plan__dsl__selector__selector_bitor(this: &W_polars_plan__dsl__selector__Selector, rhs: rune::Value) -> Result<W_polars_plan__dsl__selector__Selector, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_plan__dsl__selector__Selector>() { return Ok(W_polars_plan__dsl__selector__Selector(this.0.clone() | __b.0.clone())); } Err(Error::conversion("Selector |: the right-hand side is not Selector")) }
+/// Polars: `BitXor` (record 0113: one operator over its proven impls: Selector).
+#[rune::function(instance, protocol = BIT_XOR)]
+fn o_1517d1ff_polars_plan__dsl__selector__selector_bitxor(this: &W_polars_plan__dsl__selector__Selector, rhs: rune::Value) -> Result<W_polars_plan__dsl__selector__Selector, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_plan__dsl__selector__Selector>() { return Ok(W_polars_plan__dsl__selector__Selector(this.0.clone() ^ __b.0.clone())); } Err(Error::conversion("Selector ^: the right-hand side is not Selector")) }
+/// Polars: `Sub` (record 0113: one operator over its proven impls: Selector).
+#[rune::function(instance, protocol = SUB)]
+fn o_3a0515d0_polars_plan__dsl__selector__selector_sub(this: &W_polars_plan__dsl__selector__Selector, rhs: rune::Value) -> Result<W_polars_plan__dsl__selector__Selector, Error> { if let Ok(__b) = rhs.borrow_ref::<W_polars_plan__dsl__selector__Selector>() { return Ok(W_polars_plan__dsl__selector__Selector(this.0.clone() - __b.0.clone())); } Err(Error::conversion("Selector -: the right-hand side is not Selector")) }
+/// Polars: `polars_core::frame::dataframe::DataFrame as core::ops::index::Index` (record 0113: one INDEX_GET over its proven keys).
+#[rune::function(instance, protocol = INDEX_GET)]
+fn x_2d2e134b_polars_core__frame__dataframe__dataframe_index(this: &DataFrame, key: rune::Value) -> Result<W_polars_core__frame__column__Column, Error> { if let Ok(__i) = rune::from_value::<i64>(key.clone()) { let __i = support::narrow::<usize>(__i, "index")?; return Ok(W_polars_core__frame__column__Column(this.0[__i].clone())); } if let Ok(__s) = rune::from_value::<String>(key.clone()) { return Ok(W_polars_core__frame__column__Column(this.0[__s.as_str()].clone())); } Err(Error::conversion("DataFrame[]: the key is not an admitted key")) }
 /// Variant `Null` of `polars_arrow::datatypes::ArrowDataType`.
 #[rune::function(free, path = W_polars_arrow__datatypes__ArrowDataType::Null)]
 fn v_28f6f718_polars_arrow__datatypes__arrowdatatype__null() -> W_polars_arrow__datatypes__ArrowDataType { W_polars_arrow__datatypes__ArrowDataType(<polars::prelude::datatypes::ArrowDataType>::Null) }
@@ -18313,6 +18787,17 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_fbb4e594_polars_plan__dsl__map_multiple)?;
     m.function_meta(g_3a721c91_polars_plan__dsl__udf__infer_udf_output_dtype)?;
     m.function_meta(g_ec8f1f18_olars_plan__dsl__udf__try_infer_udf_output_dtype)?;
+    m.function_meta(i_49feed78___datatypes__float32chunked_polars_core_566_3864)?;
+    m.function_meta(i_0b591e21___datatypes__float64chunked_polars_core_566_3864)?;
+    m.function_meta(i_50622dd3_re__datatypes__int16chunked_polars_core_566_3864)?;
+    m.function_meta(i_dba82fea_re__datatypes__int32chunked_polars_core_566_3864)?;
+    m.function_meta(i_f83a3fca_re__datatypes__int64chunked_polars_core_566_3864)?;
+    m.function_meta(i_da64e009_ore__datatypes__int8chunked_polars_core_566_3864)?;
+    m.function_meta(i_d15d2758_e__datatypes__uint16chunked_polars_core_566_3864)?;
+    m.function_meta(i_33a10f66_e__datatypes__uint32chunked_polars_core_566_3864)?;
+    m.function_meta(i_117a78c6_e__datatypes__uint64chunked_polars_core_566_3864)?;
+    m.function_meta(i_17897f49_re__datatypes__uint8chunked_polars_core_566_3864)?;
+    m.function_meta(i_579a0073___datatypes__booleanchunked_polars_core_566_3866)?;
     m.function_meta(p_f4c35408_ean__booleanchunkedbuilder_as_core__clone__clone)?;
     m.function_meta(p_a695a7c2_nymousownedlistbuilder_as_core__default__default)?;
     m.function_meta(p_c373b069___null__nullchunkedbuilder_as_core__clone__clone)?;
@@ -18328,6 +18813,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_36cfbb59_d_array__flags__statisticsflags_as_core__cmp__eq)?;
     m.function_meta(p_c4daae80___flags__statisticsflags_as_core__cmp__partialeq)?;
     m.function_meta(p_62787664_rray__flags__statisticsflags_as_core__fmt__debug)?;
+    m.function_meta(i_9e08712e_ay__flags__statisticsflags_polars_core_2899_3128)?;
     m.function_meta(p_886ce722__flags__statisticsflags_as_core__ops__arith__sub)?;
     m.function_meta(p_cd414ea0___statisticsflags_as_core__ops__arith__subassign)?;
     m.function_meta(p_ab0a3a03_flags__statisticsflags_as_core__ops__bit__bitand)?;
@@ -18535,6 +19021,43 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_137ab81d_s_core__series__series_as_core__default__default)?;
     m.function_meta(p_fe4a7b06_polars_core__series__series_as_core__fmt__debug)?;
     m.function_meta(p_75fab2ca_olars_core__series__series_as_core__fmt__display)?;
+    m.function_meta(i_ba9c1a6a_polars_core__series__series_polars_core_12_11537)?;
+    m.function_meta(i_ba9c11b8_polars_core__series__series_polars_core_12_11539)?;
+    m.function_meta(i_ba8f7f9f_polars_core__series__series_polars_core_12_11541)?;
+    m.function_meta(i_ba8f8105_polars_core__series__series_polars_core_12_11543)?;
+    m.function_meta(i_ba8f82a3_polars_core__series__series_polars_core_12_11545)?;
+    m.function_meta(i_ba8f8c49_polars_core__series__series_polars_core_12_11547)?;
+    m.function_meta(i_ba908a07_polars_core__series__series_polars_core_12_11549)?;
+    m.function_meta(i_bab1127a_polars_core__series__series_polars_core_12_11551)?;
+    m.function_meta(i_bab110dc_polars_core__series__series_polars_core_12_11553)?;
+    m.function_meta(i_bab1148e_polars_core__series__series_polars_core_12_11555)?;
+    m.function_meta(i_bab11fe0_polars_core__series__series_polars_core_12_11557)?;
+    m.function_meta(i_bab1f4e2_polars_core__series__series_polars_core_12_11559)?;
+    m.function_meta(i_bab2bf69_polars_core__series__series_polars_core_12_11561)?;
+    m.function_meta(i_bab2a5c3_polars_core__series__series_polars_core_12_11563)?;
+    m.function_meta(i_bab2a425_polars_core__series__series_polars_core_12_11565)?;
+    m.function_meta(i_bab2aebf_polars_core__series__series_polars_core_12_11567)?;
+    m.function_meta(i_bab2a111_polars_core__series__series_polars_core_12_11569)?;
+    m.function_meta(i_bab2e2b4_polars_core__series__series_polars_core_12_11571)?;
+    m.function_meta(i_bab2e452_polars_core__series__series_polars_core_12_11573)?;
+    m.function_meta(i_bab2edf8_polars_core__series__series_polars_core_12_11575)?;
+    m.function_meta(i_bab2eb66_polars_core__series__series_polars_core_12_11577)?;
+    m.function_meta(i_bab2d80c_polars_core__series__series_polars_core_12_11579)?;
+    m.function_meta(i_ba96a1d3_polars_core__series__series_polars_core_12_11581)?;
+    m.function_meta(i_ba96a779_polars_core__series__series_polars_core_12_11583)?;
+    m.function_meta(i_ba96a68f_polars_core__series__series_polars_core_12_11585)?;
+    m.function_meta(i_ba96a035_polars_core__series__series_polars_core_12_11587)?;
+    m.function_meta(i_ba969c7b_polars_core__series__series_polars_core_12_11589)?;
+    m.function_meta(i_ba9133be_polars_core__series__series_polars_core_12_11591)?;
+    m.function_meta(i_ba913610_polars_core__series__series_polars_core_12_11593)?;
+    m.function_meta(i_ba91316a_polars_core__series__series_polars_core_12_11595)?;
+    m.function_meta(i_ba9133cc_polars_core__series__series_polars_core_12_11597)?;
+    m.function_meta(i_ba913626_polars_core__series__series_polars_core_12_11599)?;
+    m.function_meta(i_45eabd9e_polars_core__series__series_polars_core_12_11601)?;
+    m.function_meta(i_45eab2f0_polars_core__series__series_polars_core_12_11603)?;
+    m.function_meta(i_45eab74a_polars_core__series__series_polars_core_12_11605)?;
+    m.function_meta(i_45eab1ac_polars_core__series__series_polars_core_12_11607)?;
+    m.function_meta(i_45ea5206_polars_core__series__series_polars_core_12_11609)?;
     m.function_meta(p_f68573fa_mortized_iter__amortseries_as_core__clone__clone)?;
     m.function_meta(p_46813350_metic__list__numericlistop_as_core__clone__clone)?;
     m.function_meta(p_9b74a847_tations__null__nullchunked_as_core__clone__clone)?;
@@ -18903,6 +19426,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_426f233f__plan__dsl__expr__expr_as_core__default__default)?;
     m.function_meta(p_a564fb06_polars_plan__dsl__expr__expr_as_core__fmt__debug)?;
     m.function_meta(p_7a4794c5_lars_plan__dsl__expr__expr_as_core__fmt__display)?;
+    m.function_meta(p_43014908_s_plan__dsl__expr__expr_as_core__ops__arith__neg)?;
     m.function_meta(p_b2b6c75a__plan__dsl__expr__operator_as_core__clone__clone)?;
     m.function_meta(p_a601f4ba_olars_plan__dsl__expr__operator_as_core__cmp__eq)?;
     m.function_meta(p_c421676f_lan__dsl__expr__operator_as_core__cmp__partialeq)?;
@@ -18960,6 +19484,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6db3fcc9_plan__dsl__file_scan__scanflags_as_core__cmp__eq)?;
     m.function_meta(p_53601a2c_sl__file_scan__scanflags_as_core__cmp__partialeq)?;
     m.function_meta(p_85813242_n__dsl__file_scan__scanflags_as_core__fmt__debug)?;
+    m.function_meta(i_047e022d__dsl__file_scan__scanflags_polars_plan_7519_7663)?;
     m.function_meta(p_e3a6c61b_l__file_scan__scanflags_as_core__ops__arith__sub)?;
     m.function_meta(p_c969a7b2_e_scan__scanflags_as_core__ops__arith__subassign)?;
     m.function_meta(p_465cffe6___file_scan__scanflags_as_core__ops__bit__bitand)?;
@@ -19221,6 +19746,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_f2c23cb8_datatypeselector_as_core__ops__bit__bitandassign)?;
     m.function_meta(p_b3a2c320__datatypeselector_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_70c4f4e3_datatypeselector_as_core__ops__bit__bitxorassign)?;
+    m.function_meta(p_4447f075_elector__datatypeselector_as_core__ops__bit__not)?;
     m.function_meta(p_11ec609b_n__dsl__selector__selector_as_core__clone__clone)?;
     m.function_meta(p_c6eeaf16_s_plan__dsl__selector__selector_as_core__cmp__eq)?;
     m.function_meta(p_100e5c07__dsl__selector__selector_as_core__cmp__partialeq)?;
@@ -19231,6 +19757,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_978c27f1_lector__selector_as_core__ops__bit__bitandassign)?;
     m.function_meta(p_44dd694a_elector__selector_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_97d785e3_lector__selector_as_core__ops__bit__bitxorassign)?;
+    m.function_meta(p_16ee00e5___dsl__selector__selector_as_core__ops__bit__not)?;
     m.function_meta(p_9ee32a45_dsl__selector__timeunitset_as_core__clone__clone)?;
     m.function_meta(p_aa49a169_lan__dsl__selector__timeunitset_as_core__cmp__eq)?;
     m.function_meta(p_8101c898_l__selector__timeunitset_as_core__cmp__partialeq)?;
@@ -19238,6 +19765,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_3b86c614___dsl__selector__timeunitset_as_core__fmt__debug)?;
     m.function_meta(p_9d113f22_dsl__selector__timeunitset_as_core__fmt__display)?;
     m.function_meta(p_60235dd2___dsl__selector__timeunitset_as_core__hash__hash)?;
+    m.function_meta(i_a370a678_dsl__selector__timeunitset_polars_plan_6453_6626)?;
     m.function_meta(p_131cc460___selector__timeunitset_as_core__ops__arith__sub)?;
     m.function_meta(p_343279b0_ctor__timeunitset_as_core__ops__arith__subassign)?;
     m.function_meta(p_dbe35a29__selector__timeunitset_as_core__ops__bit__bitand)?;
@@ -19257,6 +19785,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_419aa6c7_frame__opt_state__optflags_as_core__clone__clone)?;
     m.function_meta(p_daa4d180_e__opt_state__optflags_as_core__default__default)?;
     m.function_meta(p_15aad8a9___frame__opt_state__optflags_as_core__fmt__debug)?;
+    m.function_meta(i_77e55b32_frame__opt_state__optflags_polars_plan_7129_8593)?;
     m.function_meta(p_0e7083fb_me__opt_state__optflags_as_core__ops__arith__sub)?;
     m.function_meta(p_7feccd84_t_state__optflags_as_core__ops__arith__subassign)?;
     m.function_meta(p_196558ab_e__opt_state__optflags_as_core__ops__bit__bitand)?;
@@ -19673,6 +20202,109 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_af6477e6_s__lit__literal__lit_polars_utils__float16__pf16)?;
     m.function_meta(f_9b77d222_s__lit__literal__lit_polars_core__series__series)?;
     m.function_meta(f_b07b8716_s__lit__literal__lit_polars_core__scalar__scalar)?;
+    m.function_meta(o_fe5da3ad_polars_core__datatypes__float32chunked_add)?;
+    m.function_meta(o_b5191b4d_polars_core__datatypes__float32chunked_div)?;
+    m.function_meta(o_2c9d9098_polars_core__datatypes__float32chunked_mul)?;
+    m.function_meta(o_06ac0fe6_polars_core__datatypes__float32chunked_rem)?;
+    m.function_meta(o_096d4d2c_polars_core__datatypes__float32chunked_sub)?;
+    m.function_meta(o_85bab859_polars_core__datatypes__float64chunked_add)?;
+    m.function_meta(o_95383ea1_polars_core__datatypes__float64chunked_div)?;
+    m.function_meta(o_8c8b1564_polars_core__datatypes__float64chunked_mul)?;
+    m.function_meta(o_4d6994de_polars_core__datatypes__float64chunked_rem)?;
+    m.function_meta(o_58f69ea0_polars_core__datatypes__float64chunked_sub)?;
+    m.function_meta(o_1bd9ad69_polars_core__datatypes__int16chunked_add)?;
+    m.function_meta(o_6f3f9977_polars_core__datatypes__int16chunked_bitand)?;
+    m.function_meta(o_fb39bf23_polars_core__datatypes__int16chunked_bitor)?;
+    m.function_meta(o_f5ca2daf_polars_core__datatypes__int16chunked_bitxor)?;
+    m.function_meta(o_f2dcf925_polars_core__datatypes__int16chunked_div)?;
+    m.function_meta(o_7c5976ec_polars_core__datatypes__int16chunked_mul)?;
+    m.function_meta(o_482a9916_polars_core__datatypes__int16chunked_rem)?;
+    m.function_meta(o_5d61c9f0_polars_core__datatypes__int16chunked_sub)?;
+    m.function_meta(o_aa148e30_polars_core__datatypes__int32chunked_add)?;
+    m.function_meta(o_980f3cbc_polars_core__datatypes__int32chunked_bitand)?;
+    m.function_meta(o_2eb18a0d_polars_core__datatypes__int32chunked_bitor)?;
+    m.function_meta(o_b2cc0750_polars_core__datatypes__int32chunked_bitxor)?;
+    m.function_meta(o_4fba1068_polars_core__datatypes__int32chunked_div)?;
+    m.function_meta(o_2cedb2dd_polars_core__datatypes__int32chunked_mul)?;
+    m.function_meta(o_a99123e8_polars_core__datatypes__int32chunked_rem)?;
+    m.function_meta(o_a6acbc36_polars_core__datatypes__int32chunked_sub)?;
+    m.function_meta(o_e57a9ef4_polars_core__datatypes__int64chunked_add)?;
+    m.function_meta(o_6684051f_polars_core__datatypes__int64chunked_bitand)?;
+    m.function_meta(o_c212221c_polars_core__datatypes__int64chunked_bitor)?;
+    m.function_meta(o_d42ede7f_polars_core__datatypes__int64chunked_bitxor)?;
+    m.function_meta(o_bb2c41e4_polars_core__datatypes__int64chunked_div)?;
+    m.function_meta(o_b55b15a2_polars_core__datatypes__int64chunked_mul)?;
+    m.function_meta(o_2b2b776f_polars_core__datatypes__int64chunked_rem)?;
+    m.function_meta(o_5b31a43d_polars_core__datatypes__int64chunked_sub)?;
+    m.function_meta(o_fb80b009_polars_core__datatypes__int8chunked_add)?;
+    m.function_meta(o_514126b7_polars_core__datatypes__int8chunked_bitand)?;
+    m.function_meta(o_ed276c5d_polars_core__datatypes__int8chunked_bitor)?;
+    m.function_meta(o_d6c47398_polars_core__datatypes__int8chunked_bitxor)?;
+    m.function_meta(o_aaea1d35_polars_core__datatypes__int8chunked_div)?;
+    m.function_meta(o_586f811c_polars_core__datatypes__int8chunked_mul)?;
+    m.function_meta(o_fd3edea9_polars_core__datatypes__int8chunked_rem)?;
+    m.function_meta(o_ef1872cb_polars_core__datatypes__int8chunked_sub)?;
+    m.function_meta(o_c22cd48d_polars_core__datatypes__uint16chunked_add)?;
+    m.function_meta(o_28fb2cea_polars_core__datatypes__uint16chunked_bitand)?;
+    m.function_meta(o_cf6e128c_polars_core__datatypes__uint16chunked_bitor)?;
+    m.function_meta(o_57f6c066_polars_core__datatypes__uint16chunked_bitxor)?;
+    m.function_meta(o_771df179_polars_core__datatypes__uint16chunked_div)?;
+    m.function_meta(o_f18ca3e8_polars_core__datatypes__uint16chunked_mul)?;
+    m.function_meta(o_729033ce_polars_core__datatypes__uint16chunked_rem)?;
+    m.function_meta(o_7a64b724_polars_core__datatypes__uint16chunked_sub)?;
+    m.function_meta(o_5ebfaa1d_polars_core__datatypes__uint32chunked_add)?;
+    m.function_meta(o_cf06f39a_polars_core__datatypes__uint32chunked_bitand)?;
+    m.function_meta(o_a024714d_polars_core__datatypes__uint32chunked_bitor)?;
+    m.function_meta(o_6fe9aa3a_polars_core__datatypes__uint32chunked_bitxor)?;
+    m.function_meta(o_77ce2a0d_polars_core__datatypes__uint32chunked_div)?;
+    m.function_meta(o_fe5290c8_polars_core__datatypes__uint32chunked_mul)?;
+    m.function_meta(o_096ad686_polars_core__datatypes__uint32chunked_rem)?;
+    m.function_meta(o_1f271e54_polars_core__datatypes__uint32chunked_sub)?;
+    m.function_meta(o_4015c726_polars_core__datatypes__uint64chunked_add)?;
+    m.function_meta(o_0e7158ff_polars_core__datatypes__uint64chunked_bitand)?;
+    m.function_meta(o_8b5963bf_polars_core__datatypes__uint64chunked_bitor)?;
+    m.function_meta(o_5bc4ebe4_polars_core__datatypes__uint64chunked_bitxor)?;
+    m.function_meta(o_ccd9620e_polars_core__datatypes__uint64chunked_div)?;
+    m.function_meta(o_76ae760b_polars_core__datatypes__uint64chunked_mul)?;
+    m.function_meta(o_1fcad508_polars_core__datatypes__uint64chunked_rem)?;
+    m.function_meta(o_0c495286_polars_core__datatypes__uint64chunked_sub)?;
+    m.function_meta(o_0da7355c_polars_core__datatypes__uint8chunked_add)?;
+    m.function_meta(o_c537c4bd_polars_core__datatypes__uint8chunked_bitand)?;
+    m.function_meta(o_ef12d1d5_polars_core__datatypes__uint8chunked_bitor)?;
+    m.function_meta(o_6be38422_polars_core__datatypes__uint8chunked_bitxor)?;
+    m.function_meta(o_388540f4_polars_core__datatypes__uint8chunked_div)?;
+    m.function_meta(o_2f02d5fe_polars_core__datatypes__uint8chunked_mul)?;
+    m.function_meta(o_4c7d3fac_polars_core__datatypes__uint8chunked_rem)?;
+    m.function_meta(o_40211142_polars_core__datatypes__uint8chunked_sub)?;
+    m.function_meta(o_9d5d388c_polars_core__frame__column__column_add)?;
+    m.function_meta(o_336ec225_polars_core__frame__column__column_bitand)?;
+    m.function_meta(o_2c242e49_polars_core__frame__column__column_bitor)?;
+    m.function_meta(o_569cb14a_polars_core__frame__column__column_bitxor)?;
+    m.function_meta(o_9e8c5455_polars_core__frame__column__column_div)?;
+    m.function_meta(o_f8226680_polars_core__frame__column__column_mul)?;
+    m.function_meta(o_c70f28da_polars_core__frame__column__column_rem)?;
+    m.function_meta(o_c08b3c04_polars_core__frame__column__column_sub)?;
+    m.function_meta(o_1a45d928_polars_core__series__series_add)?;
+    m.function_meta(o_a074c65b_polars_core__series__series_bitand)?;
+    m.function_meta(o_ba792ea4_polars_core__series__series_bitor)?;
+    m.function_meta(o_0dffc93b_polars_core__series__series_bitxor)?;
+    m.function_meta(o_0b806538_polars_core__series__series_div)?;
+    m.function_meta(o_677b153d_polars_core__series__series_mul)?;
+    m.function_meta(o_cbfb6173_polars_core__series__series_rem)?;
+    m.function_meta(o_c677c961_polars_core__series__series_sub)?;
+    m.function_meta(o_dc0862d4_polars_plan__dsl__expr__expr_div)?;
+    m.function_meta(o_5a78051e_polars_plan__dsl__expr__expr_mul)?;
+    m.function_meta(o_32486ac7_polars_plan__dsl__expr__expr_rem)?;
+    m.function_meta(o_35a054c1_polars_plan__dsl__expr__expr_sub)?;
+    m.function_meta(o_30b9ed0b_ars_plan__dsl__selector__datatypeselector_bitand)?;
+    m.function_meta(o_9be114b5_lars_plan__dsl__selector__datatypeselector_bitor)?;
+    m.function_meta(o_6afc9c13_ars_plan__dsl__selector__datatypeselector_bitxor)?;
+    m.function_meta(o_fa5392b3_polars_plan__dsl__selector__datatypeselector_sub)?;
+    m.function_meta(o_b71e4b07_polars_plan__dsl__selector__selector_bitand)?;
+    m.function_meta(o_c6580359_polars_plan__dsl__selector__selector_bitor)?;
+    m.function_meta(o_1517d1ff_polars_plan__dsl__selector__selector_bitxor)?;
+    m.function_meta(o_3a0515d0_polars_plan__dsl__selector__selector_sub)?;
+    m.function_meta(x_2d2e134b_polars_core__frame__dataframe__dataframe_index)?;
     m.function_meta(v_28f6f718_polars_arrow__datatypes__arrowdatatype__null)?;
     m.function_meta(v_0672668a_polars_arrow__datatypes__arrowdatatype__boolean)?;
     m.function_meta(v_46ba4b50_polars_arrow__datatypes__arrowdatatype__int8)?;
