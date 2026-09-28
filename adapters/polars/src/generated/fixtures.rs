@@ -383,6 +383,8 @@ pub fn show_w_polars_plan__dsl__options__windowmapping(v: &rune::Value) -> Resul
 pub fn show_w_polars_plan__dsl__options__sink__sinktypeir(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__options__sink__SinkTypeIR>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_plan::dsl::options::sink::UnifiedSinkArgs` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_plan__dsl__options__sink__unifiedsinkargs(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__options__sink__UnifiedSinkArgs>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_plan::dsl::plan::DslPlan` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_plan__dsl__plan__dslplan(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__plan__DslPlan>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_plan::dsl::selector::DataTypeSelector` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_plan__dsl__selector__datatypeselector(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_plan__dsl__selector__DataTypeSelector>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_plan::dsl::selector::Selector` held in a Rune value, for the oracle tests.

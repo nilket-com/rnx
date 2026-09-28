@@ -3334,6 +3334,57 @@ fn generic_input_self_test() {
     println!("generic-input self-test: ok");
 }
 
+/// Record 0109: a non-Clone owner moves. A `self` receiver takes the
+/// wrapper by value and passes `this.0`; a Clone owner still clones; a
+/// top-level non-Clone argument moves; one inside a container stays refused.
+fn move_semantics_self_test() {
+    let series = "polars_core::series::Series";
+    let ns = "polars_plan::dsl::string::StringNameSpace";
+    let sup = |path: &str, clone: bool| Supporting {
+        key: path.to_string(), kind: "struct".into(), canonical_path: path.to_string(),
+        found_paths: vec![format!("polars::{}", path.rsplit("::").next().unwrap())], crate_paths: vec![path.to_string()],
+        public_fields: 0, fields_canonical: vec![], variant_shapes: vec![], variant_payloads: vec![], generic: false, lifetime: false, hidden: false,
+        derived: if clone { vec!["Clone".into(), "Debug".into()] } else { vec!["Debug".into()] }, alias_target: None, implementors: vec![], impls: vec![],
+    };
+    let mk = |key: &str, owner: &str, receiver: &str, params: Vec<(&str, String)>| Callable {
+        key: key.into(), kind: "inherent".into(), krate: "polars_core".into(), owner: owner.into(), name: key.into(), canonical_path: format!("{owner}::{key}"),
+        found_paths: vec![], crate_paths: vec![], receiver: receiver.into(),
+        params: params.into_iter().map(|(n, t)| Param { name: n.into(), ty: t.clone(), ty_canonical: t }).collect(),
+        ret: None, ret_canonical: Some("bool".into()), generics_canonical: vec![],
+        impl_for: None, impl_bounds: vec![], impl_head: None, impl_where: vec![], impl_assoc: vec![], docs_first: None, owner_generic: false, is_unsafe: false, is_async: false,
+        deprecated: false, hidden: false, implementors: vec![], trait_reachable: false, derived: false, bucket: "mechanical".into(), rules: vec![],
+    };
+    let inv = Inventory {
+        callables: vec![
+            mk("ns_consume", ns, "self", vec![]),
+            mk("series_consume", series, "self", vec![]),
+            mk("take_ns", series, "&self", vec![("n", ns.to_string())]),
+            mk("take_vec", series, "&self", vec![("v", format!("alloc::vec::Vec<{ns}>"))]),
+        ],
+        supporting: vec![sup(series, true), sup(ns, false)], provenance: None,
+    };
+    let release = Release { name: "t".into(), source: "t".into(), provenance: ReleaseProvenance::default(), instantiation: InstantiationScope::default(), api_crates: vec!["polars_core".into(), "polars_plan".into()], unordered: vec![], excluded_oracle: vec![], refused: vec![], bitmap_returns: vec![], bitmap_inputs: vec![], iterator_returns: vec![], cow_returns: vec![], free_instantiations: vec![], method_scalar_generics: vec![], bounded_readbacks: vec![], hash_tokens: vec![], null_aware_returns: vec![], sized_self_methods: vec![], external_bounds: vec![], chunk_snapshots: vec![], indexed_chunk_snapshots: vec![], array_snapshots: vec![], iter_snapshots: vec![], view_snapshots: vec![], owned_iter_snapshots: vec![], layout_snapshots: vec![], callback_mutable: vec![], callback_invocation: vec![], callback_sink: vec![], callback_safe: vec![], callback_recipe: vec![] };
+    let world = World::new(&inv, &release, &["mechanical"]);
+    let emit = |key: &str| {
+        let mut e = Emitted { from_names: BTreeMap::new(), functions: String::new(), registrations: vec![], catalogue: vec![], entries: vec![], taken: BTreeMap::new(), fn_index: 0 };
+        emit_callable(&world, &mut e, inv.callables.iter().find(|c| c.key == key).unwrap(), &["mechanical"]);
+        (e.entries[0].status.clone(), e.entries[0].reason.clone().unwrap_or_default(), e.functions)
+    };
+    let (status, reason, f) = emit("ns_consume");
+    assert_eq!(status, "generated", "{reason}");
+    assert!(f.contains("(this: W_polars_plan__dsl__string__StringNameSpace)") && f.contains("(this.0)"), "moved receiver:\n{f}");
+    let (status, reason, f) = emit("series_consume");
+    assert_eq!(status, "generated", "{reason}");
+    assert!(f.contains("this: &") && f.contains("this.0.clone()"), "a Clone receiver still clones:\n{f}");
+    let (status, reason, f) = emit("take_ns");
+    assert_eq!(status, "generated", "{reason}");
+    assert!(f.contains("n: W_polars_plan__dsl__string__StringNameSpace") && f.contains("n.0"), "moved argument:\n{f}");
+    let (status, reason, _) = emit("take_vec");
+    assert_eq!(status, "unsupported");
+    assert!(reason.contains("by-value argument of a non-Clone type"), "{reason}");
+    println!("move-semantics self-test: ok");
+}
+
 /// Record 0108: a method binds at most METHOD_ARITY arguments, receiver
 /// included (Rune's InstanceFunction goes through Function); a longer one is
 /// refused with the arity reason instead of emitting code that cannot compile.
@@ -3932,6 +3983,7 @@ fn from_naming_self_test() {
     cow_return_self_test();
     free_instantiation_self_test();
     method_arity_self_test();
+    move_semantics_self_test();
     native_substitution_self_test();
     method_scalar_generic_self_test();
     checked_readback_self_test();
@@ -4877,7 +4929,14 @@ impl World {
                             return Err(Unsupported("generic instantiation", t.render()));
                         }
                         if !self.clonable.contains(path) {
-                            return Err(Unsupported("by-value argument of a non-Clone type", t.render()));
+                            // record 0109: moved out of the Rune value at the top
+                            // level; inside a container it would move out of a
+                            // shared element, which stays refused
+                            if depth > 0 {
+                                return Err(Unsupported("by-value argument of a non-Clone type", t.render()));
+                            }
+                            let doc = format!("{} (moved: the Rune value is consumed)", w.rune_name);
+                            return Ok(shaped(ok_arg(&w.rust, format!("{name}.0"), &doc)?, format!("W-move:{path}")));
                         }
                         let doc = w.rune_name.clone();
                         return Ok(shaped(ok_arg(&format!("&{}", w.rust), format!("{name}.0.clone()"), &doc)?, format!("W:{path}")));
@@ -6332,10 +6391,9 @@ fn emit_method_with(world: &World, out: &mut Emitted, c: &Callable, owner: &str,
     }
     let (recv_sig, mut recv_expr, recv_note) = match c.receiver.as_str() {
         "none" => ("".to_string(), None, None),
-        "self" if !world.clonable.contains(owner) => {
-            out.unsupported(c, "receiver consumes a non-Clone type", owner);
-            return;
-        }
+        // Record 0109: a non-Clone owner is moved out of the Rune value, as
+        // Rust moves it; the slot is taken, a later use is an access error.
+        "self" if !world.clonable.contains(owner) => (format!("this: {}", w.rust), Some("this.0".to_string()), Some("consumes the Rune value, as in Rust; a later use of it is an access error")),
         "self" => (format!("this: &{}", w.rust), Some("this.0.clone()".to_string()), Some("consumes in Rust; the Rune value is cloned and stays usable")),
         "&self" if deref => (format!("this: &{}", w.rust), Some("&*this.0".to_string()), Some("through Deref, as Rust's autoderef would")),
         "&mut self" if deref => (format!("this: &mut {}", w.rust), Some("&mut *this.0".to_string()), Some("through DerefMut; mutates the Rune value in place")),
@@ -7689,8 +7747,11 @@ impl<'a> Oracle<'a> {
         for e in entries {
             if e.status != "generated" { continue }
             let Some(info) = &e.oracle else { continue };
-            if info.receiver != "&self" || !info.params.is_empty() { continue }
             let Some((owner, _)) = &info.owner else { continue };
+            // record 0109: a consuming producer on a Clone owner (`Expr::str`)
+            // projects a fixture too; the Rune source is cloned, Rust takes it by value
+            let consuming = info.receiver == "self" && self.world.clonable.contains(owner);
+            if !(info.receiver == "&self" || consuming) || !info.params.is_empty() { continue }
             if owner == canonical { continue }
             let ret = info.ret_canonical.as_deref().unwrap_or("");
             let (target, fallible) = match ty::parse(ret) {
@@ -7713,7 +7774,7 @@ impl<'a> Oracle<'a> {
             };
             let rune_call = format!("{recv_rune}.{}()", info.rune_name);
             let rune = if info.fallible { format!("match {rune_call} {{ Ok(v) => v, Err(e) => panic(`fixture: {} failed: ${{e}}`) }}", info.rune_name) } else { rune_call };
-            let rust_call = format!("{}(&{recv_rust})", info.callee);
+            let rust_call = format!("{}({}{recv_rust})", info.callee, if info.receiver == "self" { "" } else { "&" });
             let rust_call = if fallible { format!("match {rust_call} {{ Ok(v) => v, Err(e) => panic!(\"fixture: {} failed: {{e}}\") }}", info.rune_name) } else { rust_call };
             let rust = if by_ref { format!("{rust_call}.clone()") } else { rust_call };
             let via = match typed { Some(f) => format!(" on {}", f.1), None => String::new() };
@@ -8316,6 +8377,9 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
         } else {
             let script = match (&info.rune_owner, info.receiver.as_str()) {
                 (Some(_), "none") => format!("{} pub fn main(__fx) {{ let r = {}::{}({args_r}); (r, ()) }}", setup_fn(&setup_rune), info.rune_owner.as_ref().unwrap(), info.rune_name),
+                // record 0109: a moved receiver takes one call; its reuse is an
+                // access error, covered by tests/move_semantics.rs
+                (Some(_), "self") if owner.is_some_and(|c| !world.clonable.contains(c)) => format!("{} pub fn main(__fx) {{ let a = __fx[0]; let r = a.{}({args_r}); (r, ()) }}", setup_fn(&setup_rune), info.rune_name),
                 (Some(_), _) => {
                     let mut twice = setup_rune.clone();
                     twice.extend(rune_args.iter().cloned());
@@ -8367,7 +8431,8 @@ fn emit_oracle(world: &World, entries: &mut [Entry], inv: &Inventory) -> (String
         let d = format!("case{}", o.recipe_note(&e.canonical_path, &[script.as_str()]));
         if let Some(b) = e.bindings.get_mut(bi) { b.disposition = Some(d.clone()); b.case_id = Some(id.clone()); }
         if single { e.execution = Some(d); }
-        cases.push(OracleCase { id, path: e.canonical_path.clone(), script, has_receiver: !mutating && (info.receiver == "self" || info.receiver == "&self"), fmt, oracle, unordered, policy });
+        let moved = info.receiver == "self" && owner.is_some_and(|c| !world.clonable.contains(c));
+        cases.push(OracleCase { id, path: e.canonical_path.clone(), script, has_receiver: !mutating && !moved && (info.receiver == "self" || info.receiver == "&self"), fmt, oracle, unordered, policy });
     }
     // callable-level disposition of a multi-binding entry: a case if any
     // binding has one, else the first binding's reason
