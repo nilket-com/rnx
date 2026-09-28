@@ -8381,6 +8381,305 @@ fn generic_input_self_test() {
 	println!("generic-input self-test: ok");
 }
 
+/// Record 0111: protocol admission. `Hash` binds HASH only with a proven
+/// `Eq` (which installs EQ); without `Eq` it is refused; `TrivialClone` is
+/// a marker; `PartialOrd` on `&Self` binds PARTIAL_CMP; bitflags traits are
+/// refused by name.
+fn protocols_self_test() {
+	let keyed = "polars_core::datatypes::TimeUnit";
+	let loose = "polars_ops::frame::join::JoinType";
+	let sup = |path: &str| Supporting {
+		key: path.to_string(),
+		kind: "enum".into(),
+		canonical_path: path.to_string(),
+		found_paths: vec![format!("polars::{}", path.rsplit("::").next().unwrap())],
+		crate_paths: vec![path.to_string()],
+		public_fields: 0,
+		fields_canonical: vec![],
+		variant_shapes: vec![],
+		variant_payloads: vec![],
+		generic: false,
+		lifetime: false,
+		hidden: false,
+		derived: vec!["Clone".into()],
+		alias_target: None,
+		implementors: vec![],
+		impls: vec![],
+	};
+	let imp = |owner: &str,
+	           tr: &str,
+	           path: &str,
+	           receiver: &str,
+	           params: Vec<&str>,
+	           ret: Option<&str>| Callable {
+		key: format!("{owner}:{tr}"),
+		kind: "foreign_trait_impl".into(),
+		krate: "polars_core".into(),
+		owner: owner.into(),
+		name: path.rsplit("::").next().unwrap().into(),
+		canonical_path: format!("{owner} as {path}"),
+		found_paths: vec![],
+		crate_paths: vec![],
+		receiver: receiver.into(),
+		params: params
+			.into_iter()
+			.enumerate()
+			.map(|(i, t)| Param {
+				name: format!("a{i}"),
+				ty: t.into(),
+				ty_canonical: t.into(),
+			})
+			.collect(),
+		ret: None,
+		ret_canonical: ret.map(String::from),
+		generics_canonical: vec![],
+		impl_for: Some(owner.into()),
+		impl_bounds: vec![],
+		impl_head: None,
+		impl_where: vec![],
+		impl_assoc: vec![],
+		docs_first: None,
+		owner_generic: false,
+		is_unsafe: false,
+		is_async: false,
+		deprecated: false,
+		hidden: false,
+		implementors: vec![],
+		trait_reachable: true,
+		derived: false,
+		bucket: "mechanical".into(),
+		rules: vec![],
+	};
+	let opt = "core::option::Option<core::cmp::Ordering>";
+	let calls = vec![
+		imp(keyed, "Eq", "core::cmp::Eq", "&self", vec![], None),
+		// the real inventory shape: `fn hash<H: Hasher>(&self, state: &mut H)`
+		imp(
+			keyed,
+			"Hash",
+			"core::hash::Hash",
+			"&self",
+			vec!["&mut __H"],
+			None,
+		),
+		imp(
+			keyed,
+			"TrivialClone",
+			"core::clone::TrivialClone",
+			"none",
+			vec![],
+			None,
+		),
+		imp(
+			keyed,
+			"PartialOrd",
+			"core::cmp::PartialOrd",
+			"&self",
+			vec!["&Self"],
+			Some(opt),
+		),
+		imp(
+			keyed,
+			"Flags",
+			"bitflags::traits::Flags",
+			"&self",
+			vec![],
+			Some("u32"),
+		),
+		imp(
+			loose,
+			"Hash",
+			"core::hash::Hash",
+			"&self",
+			vec!["&mut H"],
+			None,
+		),
+		// review of 0111: drifted shapes must be refused before any text
+		imp(
+			keyed,
+			"bad_hash_param",
+			"core::hash::Hash",
+			"&self",
+			vec!["&mut u64"],
+			None,
+		),
+		imp(
+			keyed,
+			"bad_hash_ret",
+			"core::hash::Hash",
+			"&self",
+			vec!["&mut H"],
+			Some("bool"),
+		),
+		imp(
+			keyed,
+			"bad_hash_path",
+			"other::hash::Hash",
+			"&self",
+			vec!["&mut H"],
+			None,
+		),
+		imp(
+			keyed,
+			"bad_partial_ord_ret",
+			"core::cmp::PartialOrd",
+			"&self",
+			vec!["&Self"],
+			Some("bool"),
+		),
+		imp(
+			keyed,
+			"bad_ord_params",
+			"core::cmp::Ord",
+			"&self",
+			vec!["&Self", "&Self"],
+			Some("core::cmp::Ordering"),
+		),
+		imp(
+			keyed,
+			"bad_from_str_recv",
+			"core::str::traits::FromStr",
+			"&self",
+			vec!["&str"],
+			Some("core::result::Result<Self, Self::Err>"),
+		),
+		imp(
+			keyed,
+			"bad_from_str_ret",
+			"core::str::traits::FromStr",
+			"none",
+			vec!["&str"],
+			Some("Self"),
+		),
+		imp(
+			keyed,
+			"bad_eq_param",
+			"core::cmp::Eq",
+			"&self",
+			vec!["&Self"],
+			None,
+		),
+	];
+	let inv = Inventory {
+		callables: calls.clone(),
+		supporting: vec![sup(keyed), sup(loose)],
+		provenance: None,
+	};
+	let release = Release {
+		name: "t".into(),
+		source: "t".into(),
+		provenance: ReleaseProvenance::default(),
+		instantiation: InstantiationScope::default(),
+		api_crates: vec!["polars_core".into(), "polars_ops".into()],
+		unordered: vec![],
+		excluded_oracle: vec![],
+		refused: vec![],
+		bitmap_returns: vec![],
+		bitmap_inputs: vec![],
+		iterator_returns: vec![],
+		cow_returns: vec![],
+		free_instantiations: vec![],
+		method_scalar_generics: vec![],
+		bounded_readbacks: vec![],
+		hash_tokens: vec![],
+		null_aware_returns: vec![],
+		sized_self_methods: vec![],
+		external_bounds: vec![],
+		chunk_snapshots: vec![],
+		indexed_chunk_snapshots: vec![],
+		array_snapshots: vec![],
+		iter_snapshots: vec![],
+		view_snapshots: vec![],
+		owned_iter_snapshots: vec![],
+		layout_snapshots: vec![],
+		callback_mutable: vec![],
+		callback_invocation: vec![],
+		callback_sink: vec![],
+		callback_safe: vec![],
+		callback_recipe: vec![],
+	};
+	let world = World::new(&inv, &release, &["mechanical"]);
+	let mut out = Emitted {
+		from_names: BTreeMap::new(),
+		functions: String::new(),
+		registrations: vec![],
+		catalogue: vec![],
+		entries: vec![],
+		taken: BTreeMap::new(),
+		fn_index: 0,
+	};
+	let mut wrote: BTreeMap<String, bool> = BTreeMap::new();
+	for c in &calls {
+		let before = (out.functions.len(), out.registrations.len());
+		emit_foreign(&world, &mut out, c);
+		wrote.insert(
+			c.key.clone(),
+			(out.functions.len(), out.registrations.len()) != before,
+		);
+	}
+	for bad in [
+		"bad_hash_param",
+		"bad_hash_ret",
+		"bad_hash_path",
+		"bad_partial_ord_ret",
+		"bad_ord_params",
+		"bad_from_str_recv",
+		"bad_from_str_ret",
+		"bad_eq_param",
+	] {
+		let k = format!("{keyed}:{bad}");
+		let e = out.entries.iter().find(|e| e.key == k).unwrap();
+		assert!(
+			e.status == "unsupported"
+				&& e.reason
+					.as_deref()
+					.unwrap_or("")
+					.starts_with("protocol shape"),
+			"{bad}: {} {:?}",
+			e.status,
+			e.reason
+		);
+		assert!(!wrote[&k], "{bad}: a refused shape wrote binding text");
+	}
+	let st = |k: &str| {
+		out.entries
+			.iter()
+			.find(|e| e.key == k)
+			.map(|e| (e.status.to_string(), e.reason.clone().unwrap_or_default()))
+			.unwrap()
+	};
+	assert_eq!(st(&format!("{keyed}:Eq")).0, "adapted");
+	assert!(
+		out.functions.contains("protocol = EQ") && out.functions.contains("this.0 == other.0"),
+		"Eq installs EQ from ==:\n{}",
+		out.functions
+	);
+	assert_eq!(st(&format!("{keyed}:Hash")).0, "generated");
+	assert!(
+		out.functions.contains("protocol = HASH")
+			&& out
+				.functions
+				.contains("core::hash::Hash::hash(&this.0, hasher)"),
+		"{}",
+		out.functions
+	);
+	let (s, r) = st(&format!("{loose}:Hash"));
+	assert!(
+		s == "unsupported" && r.starts_with("Hash without a proven Eq"),
+		"{s} {r}"
+	);
+	let (s, r) = st(&format!("{keyed}:TrivialClone"));
+	assert!(s == "adapted" && r.starts_with("marker:"), "{s} {r}");
+	assert_eq!(st(&format!("{keyed}:PartialOrd")).0, "generated");
+	assert!(out.functions.contains("protocol = PARTIAL_CMP"));
+	let (s, r) = st(&format!("{keyed}:Flags"));
+	assert!(
+		s == "unsupported" && r.starts_with("bitflags trait impl"),
+		"{s} {r}"
+	);
+	println!("protocols self-test: ok");
+}
+
 /// Record 0110: trait receivers are proven from impl records. A concrete
 /// head resolves to its alias wrapper by exact identity; a generic head is
 /// admitted per alias only when its bound holds; a blanket impl and a generic
@@ -10921,6 +11220,7 @@ fn from_naming_self_test() {
 	method_arity_self_test();
 	move_semantics_self_test();
 	trait_receivers_self_test();
+	protocols_self_test();
 	native_substitution_self_test();
 	method_scalar_generic_self_test();
 	checked_readback_self_test();
@@ -15432,6 +15732,106 @@ fn proven_trait_receivers(world: &World, c: &Callable) -> (Vec<String>, Vec<Stri
 	(out, why)
 }
 
+/// Record 0111 (review round 1): the exact shape each mapped protocol trait
+/// has in the pinned inventories. `Ok` for traits this record does not map.
+fn protocol_shape(c: &Callable, owner: &str, tname: &str) -> Result<(), String> {
+	let path = c
+		.canonical_path
+		.split(" as ")
+		.nth(1)
+		.unwrap_or("")
+		.split('<')
+		.next()
+		.unwrap_or("");
+	let params: Vec<&str> = c.params.iter().map(|p| p.ty_canonical.as_str()).collect();
+	let ret = c.ret_canonical.as_deref();
+	let self_ref = |p: &str| p == "&Self" || p == format!("&{owner}");
+	let generic_hasher = |p: &str| {
+		p.strip_prefix("&mut ").is_some_and(|g| {
+			let g = g.strip_prefix("__").unwrap_or(g);
+			g.chars().next().is_some_and(|ch| ch.is_ascii_uppercase())
+				&& g.chars().all(|ch| ch.is_ascii_alphanumeric())
+		})
+	};
+	let (want_path, ok) = match tname {
+		"TrivialClone" => (
+			"core::clone::TrivialClone",
+			c.receiver == "none" && params.is_empty() && ret.is_none(),
+		),
+		"Drop" => (
+			"core::ops::drop::Drop",
+			c.receiver == "&mut self" && params.is_empty() && ret.is_none(),
+		),
+		"Eq" => (
+			"core::cmp::Eq",
+			matches!(c.receiver.as_str(), "&self" | "none") && params.is_empty() && ret.is_none(),
+		),
+		"Hash" => (
+			"core::hash::Hash",
+			c.receiver == "&self"
+				&& params.len() == 1
+				&& generic_hasher(params[0])
+				&& ret.is_none(),
+		),
+		"PartialEq" => (
+			"core::cmp::PartialEq",
+			c.receiver == "&self"
+				&& params.len() == 1
+				&& self_ref(params[0])
+				&& ret == Some("bool"),
+		),
+		"PartialOrd" => (
+			"core::cmp::PartialOrd",
+			c.receiver == "&self"
+				&& params.len() == 1
+				&& self_ref(params[0])
+				&& ret == Some("core::option::Option<core::cmp::Ordering>"),
+		),
+		"Ord" => (
+			"core::cmp::Ord",
+			c.receiver == "&self"
+				&& params.len() == 1
+				&& self_ref(params[0])
+				&& ret == Some("core::cmp::Ordering"),
+		),
+		"FromStr" => (
+			"core::str::traits::FromStr",
+			c.receiver == "none"
+				&& params == ["&str"]
+				&& matches!(
+					ret,
+					Some("core::result::Result<Self, Self::Err>")
+						| Some("polars_error::PolarsResult<Self>")
+				),
+		),
+		_ => return Ok(()),
+	};
+	if path != want_path {
+		return Err(format!("{tname}: trait path `{path}` is not `{want_path}`"));
+	}
+	if !ok {
+		return Err(format!(
+			"{tname}: receiver `{}`, params {params:?}, return {ret:?} is not the recorded shape",
+			c.receiver
+		));
+	}
+	Ok(())
+}
+
+/// Record 0111: a one-parameter trait method whose parameter is `&Self` or `&Owner`.
+fn self_param(c: &Callable, owner: &str) -> bool {
+	c.params.len() == 1
+		&& (c.params[0].ty_canonical == format!("&{owner}") || c.params[0].ty_canonical == "&Self")
+}
+
+/// Record 0111: the owner has a recorded foreign impl of `trait_` (by short name, unbounded).
+fn owner_has_trait(world: &World, owner: &str, trait_: &str) -> bool {
+	world.impls.get(owner).is_some_and(|v| {
+		v.iter()
+			.any(|(short, _, bounds)| short == trait_ && bounds.iter().all(|(_, b)| b.is_empty()))
+	})
+}
+
 /// Record 0110: types the generator converts to Rune scalars (strings), never wrapped.
 const SCALAR_MAPPED: &[&str] = &["alloc::string::String", "polars_utils::pl_str::PlSmallStr"];
 
@@ -16831,6 +17231,43 @@ fn emit_foreign(world: &World, out: &mut Emitted, c: &Callable) {
 		out.unsupported(c, "owner not wrapped", owner.clone().as_str());
 		return;
 	};
+	// record 0111 (review round 1): every mapped trait is admitted only on its
+	// exact recorded shape (trait path, receiver, parameters, return); a
+	// drifted shape is a named refusal before any binding text is written
+	if let Err(why) = protocol_shape(c, owner, &tname) {
+		out.unsupported(c, "protocol shape", &why);
+		return;
+	}
+	// record 0111: markers with no operation of their own, cited
+	if tname == "TrivialClone" {
+		out.adapted(c, "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation", &format!("{} {tname}", rune_path(w)));
+		return;
+	}
+	if tname == "Drop" {
+		out.adapted(c, "marker: the destructor runs when the owning Rune value is dropped, exactly once, moved or not (tests/protocols.rs drop control); there is no script-callable drop", &format!("{} {tname}", rune_path(w)));
+		return;
+	}
+	// record 0111: a proven Rust `Eq` installs Rune's EQ from the same `==`
+	// (Rune maps compare keys with EQ, rune 0.14.2 hashbrown/table.rs:287-335);
+	// the row stays a marker, the callable is equality itself
+	if tname == "Eq" && !w.hand {
+		let key = (w.rust.clone(), "<EQ>".to_string());
+		if !out.taken.contains_key(&key) {
+			let idx = out.fn_index;
+			let ident = rust_ident("p", &c.canonical_path, idx);
+			out.fn_index += 1;
+			writeln!(out.functions, "/// Polars: `{}` (record 0111: EQ from the Rust `==`, Eq proven).\n#[rune::function(instance, protocol = EQ)]\nfn {ident}(this: &{1}, other: &{1}) -> bool {{ this.0 == other.0 }}", c.canonical_path, w.rust).unwrap();
+			out.registrations
+				.push(format!("m.function_meta({ident})?;"));
+			out.taken.insert(key, c.canonical_path.clone());
+		}
+		out.adapted(
+			c,
+			"marker: total equality; installs Rune EQ from the Rust ==",
+			&format!("{} Eq (EQ)", rune_path(w)),
+		);
+		return;
+	}
 	if matches!(tname.as_str(), "Eq" | "StructuralPartialEq" | "Copy") {
 		out.adapted(
 			c,
@@ -16925,7 +17362,7 @@ fn emit_foreign(world: &World, out: &mut Emitted, c: &Callable) {
 			),
 			"DEBUG_FMT",
 		),
-		"PartialEq" if c.params.len() == 1 && c.params[0].ty_canonical == format!("&{owner}") => (
+		"PartialEq" if self_param(c, owner) => (
 			format!(
 				"#[rune::function(instance, protocol = PARTIAL_EQ)]\nfn {ident}(this: &{0}, other: &{0}) -> bool {{ this.0 == other.0 }}",
 				w.rust
@@ -17019,6 +17456,66 @@ fn emit_foreign(world: &World, out: &mut Emitted, c: &Callable) {
 			),
 			"NEG",
 		),
+		"Hash" if w.hand => {
+			out.unsupported(
+				c,
+				"Hash on a hand-written wrapper",
+				"its EQ is not generated",
+			);
+			return;
+		}
+		"Hash" if !owner_has_trait(world, owner, "Eq") => {
+			out.unsupported(
+				c,
+				"Hash without a proven Eq",
+				"Rune map keys compare with EQ; a hashable key without total equality is refused",
+			);
+			return;
+		}
+		"Hash" => (
+			format!(
+				"#[rune::function(instance, protocol = HASH)]\nfn {ident}(this: &{0}, hasher: &mut rune::runtime::Hasher) {{ core::hash::Hash::hash(&this.0, hasher) }}",
+				w.rust
+			),
+			"HASH (with EQ from the proven Eq)",
+		),
+		"PartialOrd" if self_param(c, owner) => (
+			format!(
+				"#[rune::function(instance, protocol = PARTIAL_CMP)]\nfn {ident}(this: &{0}, other: &{0}) -> Option<core::cmp::Ordering> {{ core::cmp::PartialOrd::partial_cmp(&this.0, &other.0) }}",
+				w.rust
+			),
+			"PARTIAL_CMP",
+		),
+		"Ord" if self_param(c, owner) => (
+			format!(
+				"#[rune::function(instance, protocol = CMP)]\nfn {ident}(this: &{0}, other: &{0}) -> core::cmp::Ordering {{ core::cmp::Ord::cmp(&this.0, &other.0) }}",
+				w.rust
+			),
+			"CMP",
+		),
+		"FromStr" if c.params.len() == 1 && c.params[0].ty_canonical == "&str" => (
+			format!(
+				"#[rune::function(free, path = {0}::parse)]\nfn {ident}(s: &str) -> Result<{0}, Error> {{ <{1} as core::str::FromStr>::from_str(s).map({0}).map_err(|e| Error::conversion(&format!(\"parse: {{e:?}}\"))) }}",
+				w.rust, w.spell
+			),
+			"parse(s) (FromStr; a failed parse is a catchable conversion error)",
+		),
+		"Flags" | "PublicFlags" => {
+			out.unsupported(c, "bitflags trait impl", "its operations are the type's inherent bitflags methods, bound separately; the trait adds Bits-typed internals with no script value");
+			return;
+		}
+		"Write" => {
+			out.unsupported(c, "mutable I/O trait", "Write needs a byte-buffer input, a write count and I/O error routing that no binding boundary defines");
+			return;
+		}
+		"TryFrom" => {
+			out.unsupported(
+				c,
+				"conversion source without a script value",
+				tname.as_str(),
+			);
+			return;
+		}
 		_ => {
 			out.unsupported(
 				c,
@@ -19214,6 +19711,84 @@ fn emit_oracle(
 						"crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"{}\", __recv == __recv2)))",
 					),
 				),
+				// record 0111: a real map lookup through HASH and EQ; equal
+				// fixtures must find each other, as in a Rust HashSet
+				"Hash" => (
+					format!(
+						"{} pub fn main(__fx) {{ let a = __fx[0]; let b = __fx[1]; let m = std::collections::HashMap::new(); m.insert(a, 1); (`${{m.contains_key(b)}} ${{std::ops::eq(a, b)}} ${{m.len()}}`, ()) }}",
+						setup_fn(&[recv_rune.clone(), recv_rune.clone()])
+					),
+					plain_side("rune::from_value::<String>(v).map_err(|e| e.to_string())"),
+					staged(
+						&[
+							("__recv".to_string(), recv_rust.clone()),
+							("__recv2".to_string(), recv_rust.clone()),
+						],
+						"{ let eq = __recv == __recv2; let mut s = std::collections::HashSet::new(); s.insert(__recv); crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"{} {} {}\", s.contains(&__recv2), eq, s.len()))) }",
+					),
+				),
+				"PartialOrd" | "Ord" => {
+					let (f, rust) = if tname == "Ord" {
+						("cmp", "Some(core::cmp::Ord::cmp(&__recv, &__recv2))")
+					} else {
+						(
+							"partial_cmp",
+							"core::cmp::PartialOrd::partial_cmp(&__recv, &__recv2)",
+						)
+					};
+					let wrap = if tname == "Ord" {
+						"Some(std::ops::cmp(a, b))"
+					} else {
+						"std::ops::partial_cmp(a, b)"
+					};
+					let _ = f;
+					(
+						format!(
+							"{} pub fn main(__fx) {{ let a = __fx[0]; let b = __fx[1]; let o = {wrap}; (match o {{ Some(x) => if x == std::cmp::Ordering::Less {{ \"Some(Less)\" }} else if x == std::cmp::Ordering::Equal {{ \"Some(Equal)\" }} else {{ \"Some(Greater)\" }}, None => \"None\" }}, ()) }}",
+							setup_fn(&[recv_rune.clone(), recv_rune.clone()])
+						),
+						plain_side("rune::from_value::<String>(v).map_err(|e| e.to_string())"),
+						staged(
+							&[
+								("__recv".to_string(), recv_rust.clone()),
+								("__recv2".to_string(), recv_rust.clone()),
+							],
+							&format!(
+								"crate_oracle::Side::Value(crate_oracle::Repr::Text(format!(\"{{:?}}\", {rust})))"
+							),
+						),
+					)
+				}
+				// record 0111: `parse` of the fixture's own Display text,
+				// compared by equality with the fixture on both sides
+				"FromStr" => {
+					let c = owner.unwrap();
+					let w = &world.wrappers[c];
+					if !owner_has_trait(world, c, "Display")
+						|| !owner_has_trait(world, c, "PartialEq")
+					{
+						skip(
+							e,
+							"FromStr round trip needs Display and PartialEq on the type".into(),
+						);
+						continue;
+					}
+					(
+						format!(
+							"{} pub fn main(__fx) {{ let a = __fx[0]; (match {}::parse(`${{a}}`) {{ Ok(v) => `ok ${{v == a}}`, Err(e) => \"err\" }}, ()) }}",
+							setup_fn(&[recv_rune.clone()]),
+							rune_path(w)
+						),
+						plain_side("rune::from_value::<String>(v).map_err(|e| e.to_string())"),
+						staged(
+							&one(&recv_rust),
+							&format!(
+								"crate_oracle::Side::Value(crate_oracle::Repr::Text(match <{} as core::str::FromStr>::from_str(&format!(\"{{}}\", __recv)) {{ Ok(v) => format!(\"ok {{}}\", v == __recv), Err(_) => \"err\".to_string() }}))",
+								w.spell
+							),
+						),
+					)
+				}
 				"Default" => {
 					let c = owner.unwrap();
 					let Some(show) = o.show(c) else {

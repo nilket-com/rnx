@@ -1,5 +1,5 @@
 {
-  "cases": 2802,
+  "cases": 2878,
   "results": [
     {
       "detail": "false",
@@ -13930,7 +13930,7 @@
       "unordered": false
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
       "id": "polars_lazy__frame__lazyframe__unique",
       "path": "polars_lazy::frame::LazyFrame::unique",
       "policy": "unordered: default arguments [Polars documents unique as order-unspecified unless maintain_order is set]",
@@ -13938,11 +13938,11 @@
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
-      "status": "row_order_differs",
+      "status": "match",
       "unordered": true
     },
     {
@@ -17626,6 +17626,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__chunked_array__cast__castoptions_as_core__hash__hash",
+      "path": "polars_core::chunked_array::cast::CastOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__chunked_array__flags__statisticsflags_as_core__cmp__partialeq",
       "path": "polars_core::chunked_array::flags::StatisticsFlags as core::cmp::PartialEq",
@@ -17674,6 +17682,14 @@
       "unordered": false
     },
     {
+      "detail": "true",
+      "id": "polars_core__chunked_array__flags__statisticsflagsim_as_core__cmp__partialeq",
+      "path": "polars_core::chunked_array::flags::StatisticsFlagsIM as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "ret=ChunkedArrayFlagsIM(StatisticsFlags(IS_SORTED_DSC));src=StatisticsFlags(IS_SORTED_DSC)",
       "id": "polars_core__chunked_array__flags__statisticsflagsim_as_core__convert__from_polars_core__chunked_array__flags__statisticsflags_",
       "path": "polars_core::chunked_array::flags::StatisticsFlagsIM as core::convert::From",
@@ -17706,6 +17722,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__chunked_array__ops__search_sorted__searchsortedside_as_core__hash__hash",
+      "path": "polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__chunked_array__ops__sort__options__sortmultipleoptions_as_core__cmp__partialeq",
       "path": "polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::cmp::PartialEq",
@@ -17725,6 +17749,14 @@
       "detail": "SortMultipleOptions { descending: [false], nulls_last: [false], multithreaded: true, maintain_order: false, limit: None }",
       "id": "polars_core__chunked_array__ops__sort__options__sortmultipleoptions_as_core__default__default",
       "path": "polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_core__chunked_array__ops__sort__options__sortmultipleoptions_as_core__hash__hash",
+      "path": "polars_core::chunked_array::ops::sort::options::SortMultipleOptions as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -17754,9 +17786,33 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__chunked_array__ops__sort__options__sortoptions_as_core__hash__hash",
+      "path": "polars_core::chunked_array::ops::sort::options::SortOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__datatypes__dtype__compatlevel_as_core__cmp__partialeq",
       "path": "polars_core::datatypes::dtype::CompatLevel as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_core__datatypes__dtype__compatlevel_as_core__hash__hash",
+      "path": "polars_core::datatypes::dtype::CompatLevel as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true",
+      "id": "polars_core__datatypes__dtype__datatype_as_core__cmp__partialeq",
+      "path": "polars_core::datatypes::dtype::DataType as core::cmp::PartialEq",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -17778,6 +17834,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__datatypes__dtype__datatype_as_core__hash__hash",
+      "path": "polars_core::datatypes::dtype::DataType as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__datatypes__dtype__unknownkind_as_core__cmp__partialeq",
       "path": "polars_core::datatypes::dtype::UnknownKind as core::cmp::PartialEq",
@@ -17794,6 +17858,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__datatypes__dtype__unknownkind_as_core__hash__hash",
+      "path": "polars_core::datatypes::dtype::UnknownKind as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__datatypes__field__field_as_core__cmp__partialeq",
       "path": "polars_core::datatypes::field::Field as core::cmp::PartialEq",
@@ -17802,9 +17874,25 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__datatypes__field__field_as_core__hash__hash",
+      "path": "polars_core::datatypes::field::Field as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__datatypes__temporal__time_unit__timeunit_as_core__cmp__partialeq",
       "path": "polars_core::datatypes::temporal::time_unit::TimeUnit as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "Some(Equal)",
+      "id": "polars_core__datatypes__temporal__time_unit__timeunit_as_core__cmp__partialord",
+      "path": "polars_core::datatypes::temporal::time_unit::TimeUnit as core::cmp::PartialOrd",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -17826,6 +17914,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__datatypes__temporal__time_unit__timeunit_as_core__hash__hash",
+      "path": "polars_core::datatypes::temporal::time_unit::TimeUnit as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__frame__pivotcolumnnaming_as_core__cmp__partialeq",
       "path": "polars_core::frame::PivotColumnNaming as core::cmp::PartialEq",
@@ -17842,6 +17938,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__frame__pivotcolumnnaming_as_core__hash__hash",
+      "path": "polars_core::frame::PivotColumnNaming as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__frame__uniquekeepstrategy_as_core__cmp__partialeq",
       "path": "polars_core::frame::UniqueKeepStrategy as core::cmp::PartialEq",
@@ -17853,6 +17957,22 @@
       "detail": "Any",
       "id": "polars_core__frame__uniquekeepstrategy_as_core__default__default",
       "path": "polars_core::frame::UniqueKeepStrategy as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_core__frame__uniquekeepstrategy_as_core__hash__hash",
+      "path": "polars_core::frame::UniqueKeepStrategy as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true",
+      "id": "polars_core__frame__column__column_as_core__cmp__partialeq",
+      "path": "polars_core::frame::column::Column as core::cmp::PartialEq",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -17882,6 +18002,14 @@
       "unordered": false
     },
     {
+      "detail": "true",
+      "id": "polars_core__frame__dataframe__dataframe_as_core__cmp__partialeq",
+      "path": "polars_core::frame::dataframe::DataFrame as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "shape=(0, 0); columns=[]; rows=[]",
       "id": "polars_core__frame__dataframe__dataframe_as_core__default__default",
       "path": "polars_core::frame::dataframe::DataFrame as core::default::Default",
@@ -17901,6 +18029,14 @@
       "detail": "UnpivotArgsIR { on: [], index: [], variable_name: \"\", value_name: \"\" }",
       "id": "polars_core__frame__explode__unpivotargsir_as_core__default__default",
       "path": "polars_core::frame::explode::UnpivotArgsIR as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_core__frame__explode__unpivotargsir_as_core__hash__hash",
+      "path": "polars_core::frame::explode::UnpivotArgsIR as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18098,6 +18234,22 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__scalar__scalar_as_core__hash__hash",
+      "path": "polars_core::scalar::Scalar as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true",
+      "id": "polars_core__series__series_as_core__cmp__partialeq",
+      "path": "polars_core::series::Series as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "ret=x:Date:[Date(1), Date(2), Date(3)];src=x:Date:[Date(1), Date(2), Date(3)]",
       "id": "polars_core__series__series_as_core__convert__from_polars_core__chunked_array__logical__date__datechunked_",
       "path": "polars_core::series::Series as core::convert::From",
@@ -18162,6 +18314,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__series__ops__nullbehavior_as_core__hash__hash",
+      "path": "polars_core::series::ops::NullBehavior as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__series__series_trait__issorted_as_core__cmp__partialeq",
       "path": "polars_core::series::series_trait::IsSorted as core::cmp::PartialEq",
@@ -18170,9 +18330,25 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_core__series__series_trait__issorted_as_core__hash__hash",
+      "path": "polars_core::series::series_trait::IsSorted as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_dtype__categorical__categoricalphysical_as_core__cmp__partialeq",
       "path": "polars_dtype::categorical::CategoricalPhysical as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_dtype__categorical__categoricalphysical_as_core__hash__hash",
+      "path": "polars_dtype::categorical::CategoricalPhysical as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18226,6 +18402,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__cloud__options__cloudoptions_as_core__hash__hash",
+      "path": "polars_io::cloud::options::CloudOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__cloud__options__cloudretryconfig_as_core__cmp__partialeq",
       "path": "polars_io::cloud::options::CloudRetryConfig as core::cmp::PartialEq",
@@ -18237,6 +18421,14 @@
       "detail": "CloudRetryConfig { max_retries: None, retry_timeout: None, retry_init_backoff: None, retry_max_backoff: None, retry_base_multiplier: None }",
       "id": "polars_io__cloud__options__cloudretryconfig_as_core__default__default",
       "path": "polars_io::cloud::options::CloudRetryConfig as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_io__cloud__options__cloudretryconfig_as_core__hash__hash",
+      "path": "polars_io::cloud::options::CloudRetryConfig as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18266,6 +18458,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__csv__read__options__commentprefix_as_core__hash__hash",
+      "path": "polars_io::csv::read::options::CommentPrefix as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__csv__read__options__csvencoding_as_core__cmp__partialeq",
       "path": "polars_io::csv::read::options::CsvEncoding as core::cmp::PartialEq",
@@ -18277,6 +18477,14 @@
       "detail": "Utf8",
       "id": "polars_io__csv__read__options__csvencoding_as_core__default__default",
       "path": "polars_io::csv::read::options::CsvEncoding as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_io__csv__read__options__csvencoding_as_core__hash__hash",
+      "path": "polars_io::csv::read::options::CsvEncoding as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18298,6 +18506,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__csv__read__options__csvparseoptions_as_core__hash__hash",
+      "path": "polars_io::csv::read::options::CsvParseOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__csv__read__options__csvreadoptions_as_core__cmp__partialeq",
       "path": "polars_io::csv::read::options::CsvReadOptions as core::cmp::PartialEq",
@@ -18314,9 +18530,25 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__csv__read__options__csvreadoptions_as_core__hash__hash",
+      "path": "polars_io::csv::read::options::CsvReadOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__csv__read__options__nullvalues_as_core__cmp__partialeq",
       "path": "polars_io::csv::read::options::NullValues as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_io__csv__read__options__nullvalues_as_core__hash__hash",
+      "path": "polars_io::csv::read::options::NullValues as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18338,6 +18570,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__csv__write__options__csvwriteroptions_as_core__hash__hash",
+      "path": "polars_io::csv::write::options::CsvWriterOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__csv__write__options__quotestyle_as_core__cmp__partialeq",
       "path": "polars_io::csv::write::options::QuoteStyle as core::cmp::PartialEq",
@@ -18354,6 +18594,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__csv__write__options__quotestyle_as_core__hash__hash",
+      "path": "polars_io::csv::write::options::QuoteStyle as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__csv__write__options__serializeoptions_as_core__cmp__partialeq",
       "path": "polars_io::csv::write::options::SerializeOptions as core::cmp::PartialEq",
@@ -18365,6 +18613,14 @@
       "detail": "SerializeOptions { date_format: None, time_format: None, datetime_format: None, float_scientific: None, float_precision: None, decimal_comma: false, separator: 44, quote_char: 34, null: \"\", line_terminator: \"\\n\", quote_style: Necessary }",
       "id": "polars_io__csv__write__options__serializeoptions_as_core__default__default",
       "path": "polars_io::csv::write::options::SerializeOptions as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_io__csv__write__options__serializeoptions_as_core__hash__hash",
+      "path": "polars_io::csv::write::options::SerializeOptions as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18402,6 +18658,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__ipc__pl_ipc_metadata__plipcmetadata_as_core__hash__hash",
+      "path": "polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__ipc__write__ipccompression_as_core__cmp__partialeq",
       "path": "polars_io::ipc::write::IpcCompression as core::cmp::PartialEq",
@@ -18418,6 +18682,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__ipc__write__ipccompression_as_core__hash__hash",
+      "path": "polars_io::ipc::write::IpcCompression as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__ipc__write__ipcwriteroptions_as_core__cmp__partialeq",
       "path": "polars_io::ipc::write::IpcWriterOptions as core::cmp::PartialEq",
@@ -18429,6 +18701,14 @@
       "detail": "IpcWriterOptions { compression: None, compat_level: CompatLevel(1), record_batch_size: None, record_batch_statistics: false }",
       "id": "polars_io__ipc__write__ipcwriteroptions_as_core__default__default",
       "path": "polars_io::ipc::write::IpcWriterOptions as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_io__ipc__write__ipcwriteroptions_as_core__hash__hash",
+      "path": "polars_io::ipc::write::IpcWriterOptions as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18458,6 +18738,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__options__externalcompression_as_core__hash__hash",
+      "path": "polars_io::options::ExternalCompression as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__options__hiveoptions_as_core__cmp__partialeq",
       "path": "polars_io::options::HiveOptions as core::cmp::PartialEq",
@@ -18469,6 +18757,14 @@
       "detail": "HiveOptions { enabled: Some(true), hive_start_idx: 0, schema: None, try_parse_dates: true }",
       "id": "polars_io__options__hiveoptions_as_core__default__default",
       "path": "polars_io::options::HiveOptions as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_io__options__hiveoptions_as_core__hash__hash",
+      "path": "polars_io::options::HiveOptions as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18490,6 +18786,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__parquet__read__options__parallelstrategy_as_core__hash__hash",
+      "path": "polars_io::parquet::read::options::ParallelStrategy as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__parquet__read__options__parquetoptions_as_core__cmp__partialeq",
       "path": "polars_io::parquet::read::options::ParquetOptions as core::cmp::PartialEq",
@@ -18506,9 +18810,25 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__parquet__read__options__parquetoptions_as_core__hash__hash",
+      "path": "polars_io::parquet::read::options::ParquetOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__parquet__write__key_value_metadata__keyvaluemetadata_as_core__cmp__partialeq",
       "path": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_io__parquet__write__key_value_metadata__keyvaluemetadata_as_core__hash__hash",
+      "path": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18530,6 +18850,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_io__parquet__write__options__parquetcompression_as_core__hash__hash",
+      "path": "polars_io::parquet::write::options::ParquetCompression as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__parquet__write__options__parquetwriteoptions_as_core__cmp__partialeq",
       "path": "polars_io::parquet::write::options::ParquetWriteOptions as core::cmp::PartialEq",
@@ -18541,6 +18869,14 @@
       "detail": "ParquetWriteOptions { compression: Zstd(None), statistics: StatisticsOptions { min_value: true, max_value: true, distinct_count: false, null_count: true, binary_statistics_truncate_length: None }, row_group_size: None, data_page_size: None, key_value_metadata: None, arrow_schema: None, compat_level: None }",
       "id": "polars_io__parquet__write__options__parquetwriteoptions_as_core__default__default",
       "path": "polars_io::parquet::write::options::ParquetWriteOptions as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_io__parquet__write__options__parquetwriteoptions_as_core__hash__hash",
+      "path": "polars_io::parquet::write::options::ParquetWriteOptions as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18610,6 +18946,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_ops__frame__join__args__joincoalesce_as_core__hash__hash",
+      "path": "polars_ops::frame::join::args::JoinCoalesce as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_ops__frame__join__args__jointype_as_core__cmp__partialeq",
       "path": "polars_ops::frame::join::args::JoinType as core::cmp::PartialEq",
@@ -18658,6 +19002,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_ops__frame__join__args__joinvalidation_as_core__hash__hash",
+      "path": "polars_ops::frame::join::args::JoinValidation as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_ops__frame__join__args__maintainorderjoin_as_core__cmp__partialeq",
       "path": "polars_ops::frame::join::args::MaintainOrderJoin as core::cmp::PartialEq",
@@ -18669,6 +19021,14 @@
       "detail": "None",
       "id": "polars_ops__frame__join__args__maintainorderjoin_as_core__default__default",
       "path": "polars_ops::frame::join::args::MaintainOrderJoin as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_ops__frame__join__args__maintainorderjoin_as_core__hash__hash",
+      "path": "polars_ops::frame::join::args::MaintainOrderJoin as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18698,6 +19058,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_ops__series__ops__linear_space__closedinterval_as_core__hash__hash",
+      "path": "polars_ops::series::ops::linear_space::ClosedInterval as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__datatype_expr__datatypeexpr_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::datatype_expr::DataTypeExpr as core::cmp::PartialEq",
@@ -18714,9 +19082,25 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__datatype_expr__datatypeexpr_as_core__hash__hash",
+      "path": "polars_plan::dsl::datatype_expr::DataTypeExpr as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__expr__evalvariant_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::expr::EvalVariant as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__expr__evalvariant_as_core__hash__hash",
+      "path": "polars_plan::dsl::expr::EvalVariant as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18733,6 +19117,14 @@
       "detail": "\"x\"",
       "id": "polars_plan__dsl__expr__excluded_as_core__fmt__display",
       "path": "polars_plan::dsl::expr::Excluded as core::fmt::Display",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__expr__excluded_as_core__hash__hash",
+      "path": "polars_plan::dsl::expr::Excluded as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18882,9 +19274,25 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__expr__operator_as_core__hash__hash",
+      "path": "polars_plan::dsl::expr::Operator as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__expr__renamealiasfn_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::expr::RenameAliasFn as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__expr__renamealiasfn_as_core__hash__hash",
+      "path": "polars_plan::dsl::expr::RenameAliasFn as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18930,6 +19338,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__file_scan__castcolumnspolicy_as_core__hash__hash",
+      "path": "polars_plan::dsl::file_scan::CastColumnsPolicy as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__file_scan__extracolumnspolicy_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::file_scan::ExtraColumnsPolicy as core::cmp::PartialEq",
@@ -18941,6 +19357,14 @@
       "detail": "Raise",
       "id": "polars_plan__dsl__file_scan__extracolumnspolicy_as_core__default__default",
       "path": "polars_plan::dsl::file_scan::ExtraColumnsPolicy as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__file_scan__extracolumnspolicy_as_core__hash__hash",
+      "path": "polars_plan::dsl::file_scan::ExtraColumnsPolicy as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18962,6 +19386,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__file_scan__missingcolumnspolicy_as_core__hash__hash",
+      "path": "polars_plan::dsl::file_scan::MissingColumnsPolicy as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__file_scan__predicatefileskip_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::file_scan::PredicateFileSkip as core::cmp::PartialEq",
@@ -18973,6 +19405,14 @@
       "detail": "PredicateFileSkip { no_residual_predicate: false, original_len: 0 }",
       "id": "polars_plan__dsl__file_scan__predicatefileskip_as_core__default__default",
       "path": "polars_plan::dsl::file_scan::PredicateFileSkip as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__file_scan__predicatefileskip_as_core__hash__hash",
+      "path": "polars_plan::dsl::file_scan::PredicateFileSkip as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19037,6 +19477,14 @@
       "detail": "UnifiedScanArgs { schema: None, cloud_options: None, hive_options: HiveOptions { enabled: Some(true), hive_start_idx: 0, schema: None, try_parse_dates: true }, rechunk: false, cache: false, glob: true, hidden_file_prefix: None, projection: None, column_mapping: None, default_values: None, row_index: None, pre_slice: None, cast_columns_policy: CastColumnsPolicy { integer_upcast: false, integer_to_f",
       "id": "polars_plan__dsl__file_scan__unifiedscanargs_as_core__default__default",
       "path": "polars_plan::dsl::file_scan::UnifiedScanArgs as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__file_scan__unifiedscanargs_as_core__hash__hash",
+      "path": "polars_plan::dsl::file_scan::UnifiedScanArgs as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19122,6 +19570,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__function_expr__boolean__booleanfunction_as_core__hash__hash",
+      "path": "polars_plan::dsl::function_expr::boolean::BooleanFunction as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__function_expr__cat__categoricalfunction_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::function_expr::cat::CategoricalFunction as core::cmp::PartialEq",
@@ -19133,6 +19589,14 @@
       "detail": "cat.get_categories",
       "id": "polars_plan__dsl__function_expr__cat__categoricalfunction_as_core__fmt__display",
       "path": "polars_plan::dsl::function_expr::cat::CategoricalFunction as core::fmt::Display",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__function_expr__cat__categoricalfunction_as_core__hash__hash",
+      "path": "polars_plan::dsl::function_expr::cat::CategoricalFunction as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19154,6 +19618,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__function_expr__list__listfunction_as_core__hash__hash",
+      "path": "polars_plan::dsl::function_expr::list::ListFunction as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__function_expr__pow__powfunction_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::function_expr::pow::PowFunction as core::cmp::PartialEq",
@@ -19165,6 +19637,14 @@
       "detail": "pow",
       "id": "polars_plan__dsl__function_expr__pow__powfunction_as_core__fmt__display",
       "path": "polars_plan::dsl::function_expr::pow::PowFunction as core::fmt::Display",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__function_expr__pow__powfunction_as_core__hash__hash",
+      "path": "polars_plan::dsl::function_expr::pow::PowFunction as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19186,6 +19666,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__function_expr__struct___structfunction_as_core__hash__hash",
+      "path": "polars_plan::dsl::function_expr::struct_::StructFunction as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__match_to_schema__missingcolumnspolicyorexpr_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::match_to_schema::MissingColumnsPolicyOrExpr as core::cmp::PartialEq",
@@ -19197,6 +19685,14 @@
       "detail": "true",
       "id": "polars_plan__dsl__match_to_schema__upcastorforbid_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::match_to_schema::UpcastOrForbid as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__match_to_schema__upcastorforbid_as_core__hash__hash",
+      "path": "polars_plan::dsl::match_to_schema::UpcastOrForbid as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19218,6 +19714,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__anonymousscanoptions_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::AnonymousScanOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__options__distinctoptionsdsl_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::options::DistinctOptionsDSL as core::cmp::PartialEq",
@@ -19234,9 +19738,25 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__distinctoptionsdsl_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::DistinctOptionsDSL as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__options__filewriteformat_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::options::FileWriteFormat as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__filewriteformat_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::FileWriteFormat as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19258,6 +19778,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__groupbyoptions_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::GroupbyOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__options__hconcatoptions_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::options::HConcatOptions as core::cmp::PartialEq",
@@ -19269,6 +19797,14 @@
       "detail": "HConcatOptions { parallel: true, strict: false, broadcast_unit_length: false }",
       "id": "polars_plan__dsl__options__hconcatoptions_as_core__default__default",
       "path": "polars_plan::dsl::options::HConcatOptions as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__hconcatoptions_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::HConcatOptions as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19330,6 +19866,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__strptimeoptions_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::StrptimeOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__options__unionargs_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::options::UnionArgs as core::cmp::PartialEq",
@@ -19341,6 +19885,14 @@
       "detail": "UnionArgs { parallel: true, rechunk: false, to_supertypes: false, diagonal: false, strict: false, from_partitioned_ds: false, maintain_order: true }",
       "id": "polars_plan__dsl__options__unionargs_as_core__default__default",
       "path": "polars_plan::dsl::options::UnionArgs as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__unionargs_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::UnionArgs as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19370,6 +19922,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__unionoptions_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::UnionOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__options__windowmapping_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::options::WindowMapping as core::cmp::PartialEq",
@@ -19386,9 +19946,25 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__windowmapping_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::WindowMapping as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_plan__dsl__options__iceberg_sink_state__icebergcommitmode_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::options::iceberg_sink_state::IcebergCommitMode as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__options__iceberg_sink_state__icebergcommitmode_as_core__hash__hash",
+      "path": "polars_plan::dsl::options::iceberg_sink_state::IcebergCommitMode as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19458,6 +20034,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__selector__datatypeselector_as_core__hash__hash",
+      "path": "polars_plan::dsl::selector::DataTypeSelector as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "recv=Difference(Wildcard, Wildcard);ret=()",
       "id": "polars_plan__dsl__selector__datatypeselector_as_core__ops__arith__subassign",
       "path": "polars_plan::dsl::selector::DataTypeSelector as core::ops::arith::SubAssign",
@@ -19501,6 +20085,14 @@
       "detail": "cs.all()",
       "id": "polars_plan__dsl__selector__selector_as_core__fmt__display",
       "path": "polars_plan::dsl::selector::Selector as core::fmt::Display",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__selector__selector_as_core__hash__hash",
+      "path": "polars_plan::dsl::selector::Selector as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -19562,6 +20154,14 @@
       "unordered": false
     },
     {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__selector__timeunitset_as_core__hash__hash",
+      "path": "polars_plan::dsl::selector::TimeUnitSet as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "recv=TimeUnitSet(0x0);ret=()",
       "id": "polars_plan__dsl__selector__timeunitset_as_core__ops__arith__subassign",
       "path": "polars_plan::dsl::selector::TimeUnitSet as core::ops::arith::SubAssign",
@@ -19605,6 +20205,14 @@
       "detail": "true",
       "id": "polars_plan__dsl__selector__timezoneset_as_core__cmp__partialeq",
       "path": "polars_plan::dsl::selector::TimeZoneSet as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_plan__dsl__selector__timezoneset_as_core__hash__hash",
+      "path": "polars_plan::dsl::selector::TimeZoneSet as core::hash::Hash",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -22421,8 +23029,8 @@
   "tally": {
     "both_error": 130,
     "both_panic": 31,
-    "match": 2639,
-    "row_order_differs": 2
+    "match": 2716,
+    "row_order_differs": 1
   },
-  "verified": 2802
+  "verified": 2878
 }
