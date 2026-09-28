@@ -10,7 +10,7 @@ publish = false
 default = ["generated"]
 # Record 0073: the generated bindings. Off gives the hand-written adapter
 # alone, at its former launch cost; see plans/0073_polars_generator_evidence.md.
-generated = []
+generated = ["dep:serde", "dep:serde_json"]
 test-support = ["dep:tokio"]
 
 # Record 0068: the presentation matrix drives a wrapper-shaped binary as a
@@ -60,6 +60,9 @@ polars-utils = { version = "=0.55.2", default-features = false }
 # record 0078: `TrustedLen` by its home crate; `polars_core::utils::arrow` is not re-exported at rc2
 polars-arrow = { version = "=0.55.2", default-features = false }
 tokio = { version = "1", features = ["rt"], optional = true }
+# Record 0112: the JSON boundary of the generated serde bindings (to_json/from_json).
+serde = { version = "1", optional = true }
+serde_json = { version = "1", optional = true }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

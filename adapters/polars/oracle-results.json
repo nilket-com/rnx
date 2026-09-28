@@ -1,5 +1,5 @@
 {
-  "cases": 2878,
+  "cases": 2934,
   "results": [
     {
       "detail": "false",
@@ -13930,7 +13930,7 @@
       "unordered": false
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
       "id": "polars_lazy__frame__lazyframe__unique",
       "path": "polars_lazy::frame::LazyFrame::unique",
       "policy": "unordered: default arguments [Polars documents unique as order-unspecified unless maintain_order is set]",
@@ -13938,11 +13938,11 @@
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
-      "status": "match",
+      "status": "row_order_differs",
       "unordered": true
     },
     {
@@ -17634,6 +17634,22 @@
       "unordered": false
     },
     {
+      "detail": "\"Strict\"",
+      "id": "polars_core__chunked_array__cast__castoptions_as_serde_core__de__deserialize",
+      "path": "polars_core::chunked_array::cast::CastOptions as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Strict\"",
+      "id": "polars_core__chunked_array__cast__castoptions_as_serde_core__ser__serialize",
+      "path": "polars_core::chunked_array::cast::CastOptions as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__chunked_array__flags__statisticsflags_as_core__cmp__partialeq",
       "path": "polars_core::chunked_array::flags::StatisticsFlags as core::cmp::PartialEq",
@@ -17682,6 +17698,22 @@
       "unordered": false
     },
     {
+      "detail": "\"IS_SORTED_DSC\"",
+      "id": "polars_core__chunked_array__flags__statisticsflags_as_serde_core__de__deserialize",
+      "path": "polars_core::chunked_array::flags::StatisticsFlags as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"IS_SORTED_DSC\"",
+      "id": "polars_core__chunked_array__flags__statisticsflags_as_serde_core__ser__serialize",
+      "path": "polars_core::chunked_array::flags::StatisticsFlags as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__chunked_array__flags__statisticsflagsim_as_core__cmp__partialeq",
       "path": "polars_core::chunked_array::flags::StatisticsFlagsIM as core::cmp::PartialEq",
@@ -17706,6 +17738,22 @@
       "unordered": false
     },
     {
+      "detail": "\"Mean\"",
+      "id": "polars_core__chunked_array__ops__fillnullstrategy_as_serde_core__de__deserialize",
+      "path": "polars_core::chunked_array::ops::FillNullStrategy as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Mean\"",
+      "id": "polars_core__chunked_array__ops__fillnullstrategy_as_serde_core__ser__serialize",
+      "path": "polars_core::chunked_array::ops::FillNullStrategy as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__chunked_array__ops__search_sorted__searchsortedside_as_core__cmp__partialeq",
       "path": "polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::cmp::PartialEq",
@@ -17725,6 +17773,22 @@
       "detail": "true true 1",
       "id": "polars_core__chunked_array__ops__search_sorted__searchsortedside_as_core__hash__hash",
       "path": "polars_core::chunked_array::ops::search_sorted::SearchSortedSide as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Any\"",
+      "id": "polars_core__chunked_array__ops__search_sorted__searchsortedside_as_serde_core__de__deserialize",
+      "path": "polars_core::chunked_array::ops::search_sorted::SearchSortedSide as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Any\"",
+      "id": "polars_core__chunked_array__ops__search_sorted__searchsortedside_as_serde_core__ser__serialize",
+      "path": "polars_core::chunked_array::ops::search_sorted::SearchSortedSide as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -17762,6 +17826,22 @@
       "unordered": false
     },
     {
+      "detail": "{\"descending\":[false],\"nulls_last\":[false],\"multithreaded\":true,\"maintain_order\":false,\"limit\":null}",
+      "id": "polars_core__chunked_array__ops__sort__options__sortmultipleoptions_as_serde_core__de__deserialize",
+      "path": "polars_core::chunked_array::ops::sort::options::SortMultipleOptions as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"descending\":[false],\"nulls_last\":[false],\"multithreaded\":true,\"maintain_order\":false,\"limit\":null}",
+      "id": "polars_core__chunked_array__ops__sort__options__sortmultipleoptions_as_serde_core__ser__serialize",
+      "path": "polars_core::chunked_array::ops::sort::options::SortMultipleOptions as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__chunked_array__ops__sort__options__sortoptions_as_core__cmp__partialeq",
       "path": "polars_core::chunked_array::ops::sort::options::SortOptions as core::cmp::PartialEq",
@@ -17794,6 +17874,22 @@
       "unordered": false
     },
     {
+      "detail": "{\"descending\":false,\"nulls_last\":false,\"multithreaded\":true,\"maintain_order\":false,\"limit\":null}",
+      "id": "polars_core__chunked_array__ops__sort__options__sortoptions_as_serde_core__de__deserialize",
+      "path": "polars_core::chunked_array::ops::sort::options::SortOptions as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"descending\":false,\"nulls_last\":false,\"multithreaded\":true,\"maintain_order\":false,\"limit\":null}",
+      "id": "polars_core__chunked_array__ops__sort__options__sortoptions_as_serde_core__ser__serialize",
+      "path": "polars_core::chunked_array::ops::sort::options::SortOptions as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__datatypes__dtype__compatlevel_as_core__cmp__partialeq",
       "path": "polars_core::datatypes::dtype::CompatLevel as core::cmp::PartialEq",
@@ -17805,6 +17901,22 @@
       "detail": "true true 1",
       "id": "polars_core__datatypes__dtype__compatlevel_as_core__hash__hash",
       "path": "polars_core::datatypes::dtype::CompatLevel as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "1",
+      "id": "polars_core__datatypes__dtype__compatlevel_as_serde_core__de__deserialize",
+      "path": "polars_core::datatypes::dtype::CompatLevel as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "1",
+      "id": "polars_core__datatypes__dtype__compatlevel_as_serde_core__ser__serialize",
+      "path": "polars_core::datatypes::dtype::CompatLevel as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -17866,6 +17978,22 @@
       "unordered": false
     },
     {
+      "detail": "\"Float\"",
+      "id": "polars_core__datatypes__dtype__unknownkind_as_serde_core__de__deserialize",
+      "path": "polars_core::datatypes::dtype::UnknownKind as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Float\"",
+      "id": "polars_core__datatypes__dtype__unknownkind_as_serde_core__ser__serialize",
+      "path": "polars_core::datatypes::dtype::UnknownKind as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__datatypes__field__field_as_core__cmp__partialeq",
       "path": "polars_core::datatypes::field::Field as core::cmp::PartialEq",
@@ -17922,6 +18050,22 @@
       "unordered": false
     },
     {
+      "detail": "\"Nanoseconds\"",
+      "id": "polars_core__datatypes__temporal__time_unit__timeunit_as_serde_core__de__deserialize",
+      "path": "polars_core::datatypes::temporal::time_unit::TimeUnit as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Nanoseconds\"",
+      "id": "polars_core__datatypes__temporal__time_unit__timeunit_as_serde_core__ser__serialize",
+      "path": "polars_core::datatypes::temporal::time_unit::TimeUnit as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__frame__pivotcolumnnaming_as_core__cmp__partialeq",
       "path": "polars_core::frame::PivotColumnNaming as core::cmp::PartialEq",
@@ -17946,6 +18090,22 @@
       "unordered": false
     },
     {
+      "detail": "\"Combine\"",
+      "id": "polars_core__frame__pivotcolumnnaming_as_serde_core__de__deserialize",
+      "path": "polars_core::frame::PivotColumnNaming as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Combine\"",
+      "id": "polars_core__frame__pivotcolumnnaming_as_serde_core__ser__serialize",
+      "path": "polars_core::frame::PivotColumnNaming as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__frame__uniquekeepstrategy_as_core__cmp__partialeq",
       "path": "polars_core::frame::UniqueKeepStrategy as core::cmp::PartialEq",
@@ -17965,6 +18125,22 @@
       "detail": "true true 1",
       "id": "polars_core__frame__uniquekeepstrategy_as_core__hash__hash",
       "path": "polars_core::frame::UniqueKeepStrategy as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"First\"",
+      "id": "polars_core__frame__uniquekeepstrategy_as_serde_core__de__deserialize",
+      "path": "polars_core::frame::UniqueKeepStrategy as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"First\"",
+      "id": "polars_core__frame__uniquekeepstrategy_as_serde_core__ser__serialize",
+      "path": "polars_core::frame::UniqueKeepStrategy as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18037,6 +18213,22 @@
       "detail": "true true 1",
       "id": "polars_core__frame__explode__unpivotargsir_as_core__hash__hash",
       "path": "polars_core::frame::explode::UnpivotArgsIR as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"on\":[],\"index\":[],\"variable_name\":\"\",\"value_name\":\"\"}",
+      "id": "polars_core__frame__explode__unpivotargsir_as_serde_core__de__deserialize",
+      "path": "polars_core::frame::explode::UnpivotArgsIR as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"on\":[],\"index\":[],\"variable_name\":\"\",\"value_name\":\"\"}",
+      "id": "polars_core__frame__explode__unpivotargsir_as_serde_core__ser__serialize",
+      "path": "polars_core::frame::explode::UnpivotArgsIR as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18322,6 +18514,22 @@
       "unordered": false
     },
     {
+      "detail": "\"Drop\"",
+      "id": "polars_core__series__ops__nullbehavior_as_serde_core__de__deserialize",
+      "path": "polars_core::series::ops::NullBehavior as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Drop\"",
+      "id": "polars_core__series__ops__nullbehavior_as_serde_core__ser__serialize",
+      "path": "polars_core::series::ops::NullBehavior as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__series__series_trait__issorted_as_core__cmp__partialeq",
       "path": "polars_core::series::series_trait::IsSorted as core::cmp::PartialEq",
@@ -18349,6 +18557,22 @@
       "detail": "true true 1",
       "id": "polars_dtype__categorical__categoricalphysical_as_core__hash__hash",
       "path": "polars_dtype::categorical::CategoricalPhysical as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"U8\"",
+      "id": "polars_dtype__categorical__categoricalphysical_as_serde_core__de__deserialize",
+      "path": "polars_dtype::categorical::CategoricalPhysical as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"U8\"",
+      "id": "polars_dtype__categorical__categoricalphysical_as_serde_core__ser__serialize",
+      "path": "polars_dtype::categorical::CategoricalPhysical as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18466,6 +18690,22 @@
       "unordered": false
     },
     {
+      "detail": "{\"Single\":120}",
+      "id": "polars_io__csv__read__options__commentprefix_as_serde_core__de__deserialize",
+      "path": "polars_io::csv::read::options::CommentPrefix as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"Single\":120}",
+      "id": "polars_io__csv__read__options__commentprefix_as_serde_core__ser__serialize",
+      "path": "polars_io::csv::read::options::CommentPrefix as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__csv__read__options__csvencoding_as_core__cmp__partialeq",
       "path": "polars_io::csv::read::options::CsvEncoding as core::cmp::PartialEq",
@@ -18490,6 +18730,22 @@
       "unordered": false
     },
     {
+      "detail": "\"Utf8\"",
+      "id": "polars_io__csv__read__options__csvencoding_as_serde_core__de__deserialize",
+      "path": "polars_io::csv::read::options::CsvEncoding as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Utf8\"",
+      "id": "polars_io__csv__read__options__csvencoding_as_serde_core__ser__serialize",
+      "path": "polars_io::csv::read::options::CsvEncoding as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__csv__read__options__csvparseoptions_as_core__cmp__partialeq",
       "path": "polars_io::csv::read::options::CsvParseOptions as core::cmp::PartialEq",
@@ -18509,6 +18765,22 @@
       "detail": "true true 1",
       "id": "polars_io__csv__read__options__csvparseoptions_as_core__hash__hash",
       "path": "polars_io::csv::read::options::CsvParseOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"separator\":44,\"quote_char\":34,\"eol_char\":10,\"encoding\":\"Utf8\",\"null_values\":null,\"missing_is_null\":true,\"truncate_ragged_lines\":false,\"comment_prefix\":null,\"try_parse_dates\":false,\"decimal_comma\":false}",
+      "id": "polars_io__csv__read__options__csvparseoptions_as_serde_core__de__deserialize",
+      "path": "polars_io::csv::read::options::CsvParseOptions as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"separator\":44,\"quote_char\":34,\"eol_char\":10,\"encoding\":\"Utf8\",\"null_values\":null,\"missing_is_null\":true,\"truncate_ragged_lines\":false,\"comment_prefix\":null,\"try_parse_dates\":false,\"decimal_comma\":false}",
+      "id": "polars_io__csv__read__options__csvparseoptions_as_serde_core__ser__serialize",
+      "path": "polars_io::csv::read::options::CsvParseOptions as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18554,6 +18826,22 @@
       "unordered": false
     },
     {
+      "detail": "{\"AllColumnsSingle\":\"x\"}",
+      "id": "polars_io__csv__read__options__nullvalues_as_serde_core__de__deserialize",
+      "path": "polars_io::csv::read::options::NullValues as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"AllColumnsSingle\":\"x\"}",
+      "id": "polars_io__csv__read__options__nullvalues_as_serde_core__ser__serialize",
+      "path": "polars_io::csv::read::options::NullValues as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__csv__write__options__csvwriteroptions_as_core__cmp__partialeq",
       "path": "polars_io::csv::write::options::CsvWriterOptions as core::cmp::PartialEq",
@@ -18573,6 +18861,22 @@
       "detail": "true true 1",
       "id": "polars_io__csv__write__options__csvwriteroptions_as_core__hash__hash",
       "path": "polars_io::csv::write::options::CsvWriterOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"include_bom\":false,\"compression\":\"Uncompressed\",\"check_extension\":true,\"include_header\":true,\"batch_size\":1024,\"serialize_options\":{\"date_format\":null,\"time_format\":null,\"datetime_format\":null,\"float_scientific\":null,\"float_precision\":null,\"decimal_comma\":false,\"separator\":44,\"quote_char\":34,\"null\":\"\",\"line_terminator\":\"\\n\",\"quote_style\":\"Necessary\"}}",
+      "id": "polars_io__csv__write__options__csvwriteroptions_as_serde_core__de__deserialize",
+      "path": "polars_io::csv::write::options::CsvWriterOptions as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"include_bom\":false,\"compression\":\"Uncompressed\",\"check_extension\":true,\"include_header\":true,\"batch_size\":1024,\"serialize_options\":{\"date_format\":null,\"time_format\":null,\"datetime_format\":null,\"float_scientific\":null,\"float_precision\":null,\"decimal_comma\":false,\"separator\":44,\"quote_char\":34,\"null\":\"\",\"line_terminator\":\"\\n\",\"quote_style\":\"Necessary\"}}",
+      "id": "polars_io__csv__write__options__csvwriteroptions_as_serde_core__ser__serialize",
+      "path": "polars_io::csv::write::options::CsvWriterOptions as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18602,6 +18906,22 @@
       "unordered": false
     },
     {
+      "detail": "\"Necessary\"",
+      "id": "polars_io__csv__write__options__quotestyle_as_serde_core__de__deserialize",
+      "path": "polars_io::csv::write::options::QuoteStyle as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Necessary\"",
+      "id": "polars_io__csv__write__options__quotestyle_as_serde_core__ser__serialize",
+      "path": "polars_io::csv::write::options::QuoteStyle as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__csv__write__options__serializeoptions_as_core__cmp__partialeq",
       "path": "polars_io::csv::write::options::SerializeOptions as core::cmp::PartialEq",
@@ -18626,6 +18946,22 @@
       "unordered": false
     },
     {
+      "detail": "{\"date_format\":null,\"time_format\":null,\"datetime_format\":null,\"float_scientific\":null,\"float_precision\":null,\"decimal_comma\":false,\"separator\":44,\"quote_char\":34,\"null\":\"\",\"line_terminator\":\"\\n\",\"quote_style\":\"Necessary\"}",
+      "id": "polars_io__csv__write__options__serializeoptions_as_serde_core__de__deserialize",
+      "path": "polars_io::csv::write::options::SerializeOptions as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"date_format\":null,\"time_format\":null,\"datetime_format\":null,\"float_scientific\":null,\"float_precision\":null,\"decimal_comma\":false,\"separator\":44,\"quote_char\":34,\"null\":\"\",\"line_terminator\":\"\\n\",\"quote_style\":\"Necessary\"}",
+      "id": "polars_io__csv__write__options__serializeoptions_as_serde_core__ser__serialize",
+      "path": "polars_io::csv::write::options::SerializeOptions as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__ipc__ipc_file__ipcscanoptions_as_core__cmp__partialeq",
       "path": "polars_io::ipc::ipc_file::IpcScanOptions as core::cmp::PartialEq",
@@ -18637,6 +18973,22 @@
       "detail": "IpcScanOptions { record_batch_statistics: false, checked: UnsafeBool(true) }",
       "id": "polars_io__ipc__ipc_file__ipcscanoptions_as_core__default__default",
       "path": "polars_io::ipc::ipc_file::IpcScanOptions as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"record_batch_statistics\":false,\"checked\":true}",
+      "id": "polars_io__ipc__ipc_file__ipcscanoptions_as_serde_core__de__deserialize",
+      "path": "polars_io::ipc::ipc_file::IpcScanOptions as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"record_batch_statistics\":false,\"checked\":true}",
+      "id": "polars_io__ipc__ipc_file__ipcscanoptions_as_serde_core__ser__serialize",
+      "path": "polars_io::ipc::ipc_file::IpcScanOptions as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18666,6 +19018,22 @@
       "unordered": false
     },
     {
+      "detail": "{\"record_batch_cum_len\":[]}",
+      "id": "polars_io__ipc__pl_ipc_metadata__plipcmetadata_as_serde_core__de__deserialize",
+      "path": "polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"record_batch_cum_len\":[]}",
+      "id": "polars_io__ipc__pl_ipc_metadata__plipcmetadata_as_serde_core__ser__serialize",
+      "path": "polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__ipc__write__ipccompression_as_core__cmp__partialeq",
       "path": "polars_io::ipc::write::IpcCompression as core::cmp::PartialEq",
@@ -18690,6 +19058,22 @@
       "unordered": false
     },
     {
+      "detail": "\"LZ4\"",
+      "id": "polars_io__ipc__write__ipccompression_as_serde_core__de__deserialize",
+      "path": "polars_io::ipc::write::IpcCompression as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"LZ4\"",
+      "id": "polars_io__ipc__write__ipccompression_as_serde_core__ser__serialize",
+      "path": "polars_io::ipc::write::IpcCompression as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_io__ipc__write__ipcwriteroptions_as_core__cmp__partialeq",
       "path": "polars_io::ipc::write::IpcWriterOptions as core::cmp::PartialEq",
@@ -18709,6 +19093,22 @@
       "detail": "true true 1",
       "id": "polars_io__ipc__write__ipcwriteroptions_as_core__hash__hash",
       "path": "polars_io::ipc::write::IpcWriterOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"compression\":null,\"compat_level\":1,\"record_batch_size\":null,\"record_batch_statistics\":false}",
+      "id": "polars_io__ipc__write__ipcwriteroptions_as_serde_core__de__deserialize",
+      "path": "polars_io::ipc::write::IpcWriterOptions as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"compression\":null,\"compat_level\":1,\"record_batch_size\":null,\"record_batch_statistics\":false}",
+      "id": "polars_io__ipc__write__ipcwriteroptions_as_serde_core__ser__serialize",
+      "path": "polars_io::ipc::write::IpcWriterOptions as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18741,6 +19141,22 @@
       "detail": "true true 1",
       "id": "polars_io__options__externalcompression_as_core__hash__hash",
       "path": "polars_io::options::ExternalCompression as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Uncompressed\"",
+      "id": "polars_io__options__externalcompression_as_serde_core__de__deserialize",
+      "path": "polars_io::options::ExternalCompression as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Uncompressed\"",
+      "id": "polars_io__options__externalcompression_as_serde_core__ser__serialize",
+      "path": "polars_io::options::ExternalCompression as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18789,6 +19205,22 @@
       "detail": "true true 1",
       "id": "polars_io__parquet__read__options__parallelstrategy_as_core__hash__hash",
       "path": "polars_io::parquet::read::options::ParallelStrategy as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"None\"",
+      "id": "polars_io__parquet__read__options__parallelstrategy_as_serde_core__de__deserialize",
+      "path": "polars_io::parquet::read::options::ParallelStrategy as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"None\"",
+      "id": "polars_io__parquet__read__options__parallelstrategy_as_serde_core__ser__serialize",
+      "path": "polars_io::parquet::read::options::ParallelStrategy as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -18853,6 +19285,22 @@
       "detail": "true true 1",
       "id": "polars_io__parquet__write__options__parquetcompression_as_core__hash__hash",
       "path": "polars_io::parquet::write::options::ParquetCompression as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Uncompressed\"",
+      "id": "polars_io__parquet__write__options__parquetcompression_as_serde_core__de__deserialize",
+      "path": "polars_io::parquet::write::options::ParquetCompression as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "\"Uncompressed\"",
+      "id": "polars_io__parquet__write__options__parquetcompression_as_serde_core__ser__serialize",
+      "path": "polars_io::parquet::write::options::ParquetCompression as serde_core::ser::Serialize",
       "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
@@ -23029,8 +23477,8 @@
   "tally": {
     "both_error": 130,
     "both_panic": 31,
-    "match": 2716,
-    "row_order_differs": 1
+    "match": 2771,
+    "row_order_differs": 2
   },
-  "verified": 2878
+  "verified": 2934
 }

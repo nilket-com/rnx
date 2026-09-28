@@ -1540,6 +1540,100 @@ pub mod categorical_fixtures {
 	}
 }
 
+/// Record 0112: the JSON boundary for serde impls. The bound counts UTF-8
+/// bytes of JSON text and is inclusive: a text of exactly `limit` bytes
+/// passes, `limit + 1` refuses. Serialization writes through
+/// [`BoundedJson`], which refuses the write that would cross the bound, so
+/// no unbounded text is ever built; a script text is measured before any
+/// parsing. This is a pinned-version interchange format, not a promise of
+/// stability across Polars releases or feature sets.
+pub(crate) const JSON_LIMIT: usize = 64 << 20;
+
+#[cfg(feature = "test-support")]
+static TEST_JSON_LIMIT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+/// The JSON byte bound in force: the production constant, or under
+/// `test-support` the override set by `polars::set_json_limit` (0 = production).
+pub(crate) fn json_limit() -> usize {
+	#[cfg(feature = "test-support")]
+	{
+		let t = TEST_JSON_LIMIT.load(std::sync::atomic::Ordering::SeqCst);
+		if t > 0 {
+			return t;
+		}
+	}
+	JSON_LIMIT
+}
+
+/// Test-support only: a low JSON byte bound for the controls; 0 restores
+/// the production bound.
+#[cfg(feature = "test-support")]
+#[rune::function(path = set_json_limit)]
+pub(crate) fn set_json_limit(n: i64) {
+	TEST_JSON_LIMIT.store(n.max(0) as usize, std::sync::atomic::Ordering::SeqCst);
+}
+
+/// A writer that keeps at most `limit` bytes and refuses the write that
+/// would cross it; `over` records why the serializer stopped.
+struct BoundedJson {
+	buf: Vec<u8>,
+	limit: usize,
+	over: bool,
+}
+
+impl std::io::Write for BoundedJson {
+	fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+		// the cumulative bound, stated without an overflowing addition
+		if b.len() > self.limit - self.buf.len() {
+			self.over = true;
+			return Err(std::io::Error::other("json byte bound"));
+		}
+		self.buf.extend_from_slice(b);
+		Ok(b.len())
+	}
+	fn flush(&mut self) -> std::io::Result<()> {
+		Ok(())
+	}
+}
+
+/// `value` as JSON text under the byte bound.
+pub(crate) fn to_json<T: serde::Serialize + ?Sized>(value: &T, op: &str) -> Result<String, Error> {
+	let limit = json_limit();
+	let mut w = BoundedJson {
+		buf: Vec::new(),
+		limit,
+		over: false,
+	};
+	match serde_json::to_writer(&mut w, value) {
+		Ok(()) => Ok(String::from_utf8(w.buf).expect("serde_json writes UTF-8")),
+		Err(_) if w.over => Err(Error(
+			"JsonLimit".into(),
+			format!("{op}: the JSON text exceeds the bound of {limit} bytes"),
+		)),
+		Err(e) => Err(Error("Json".into(), format!("{op}: {e}"))),
+	}
+}
+
+/// A script's JSON text must fit the byte bound before anything parses it.
+pub(crate) fn json_len_ok(s: &str, op: &str) -> Result<(), Error> {
+	let limit = json_limit();
+	if s.len() > limit {
+		return Err(Error(
+			"JsonLimit".into(),
+			format!(
+				"{op}: {} bytes of JSON text, more than the bound of {limit}",
+				s.len()
+			),
+		));
+	}
+	Ok(())
+}
+
+/// A value of `T` from JSON text already checked by [`json_len_ok`].
+pub(crate) fn from_json<T: serde::de::DeserializeOwned>(s: &str, op: &str) -> Result<T, Error> {
+	serde_json::from_str(s).map_err(|e| Error("Json".into(), format!("{op}: {e}")))
+}
+
 pub(crate) fn vec_len(value: &rune::Value, name: &str) -> Result<usize, Error> {
 	value
 		.borrow_ref::<rune::runtime::Vec>()
@@ -1829,6 +1923,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
 	m.function_meta(Error::display)?;
 	#[cfg(feature = "test-support")]
 	m.function_meta(set_materialize_limit)?;
+	#[cfg(feature = "test-support")]
+	m.function_meta(set_json_limit)?;
 	Ok(())
 }
 

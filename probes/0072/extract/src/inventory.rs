@@ -383,6 +383,11 @@ pub struct Callable {
 	pub derived: bool,
 	#[serde(skip)]
 	pub inputs_raw: Vec<(String, Type)>,
+	/// Record 0112: the lifetime arguments of a foreign impl's trait
+	/// (`'de` for `impl<'de> Deserialize<'de>`, `'static` for a borrowing
+	/// `Deserialize<'static>`); omitted when empty.
+	#[serde(skip_serializing_if = "Vec::is_empty")]
+	pub trait_lifetimes: Vec<String>,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -1268,6 +1273,21 @@ impl<'a> Walker<'a> {
 								trait_reachable: false,
 								derived,
 								inputs_raw,
+								trait_lifetimes: match tr.args.as_deref() {
+									Some(rustdoc_types::GenericArgs::AngleBracketed {
+										args,
+										..
+									}) => args
+										.iter()
+										.filter_map(|a| match a {
+											rustdoc_types::GenericArg::Lifetime(l) => {
+												Some(l.clone())
+											}
+											_ => None,
+										})
+										.collect(),
+									_ => vec![],
+								},
 							});
 						}
 						Resolved::Unknown(why) => self
@@ -1454,6 +1474,7 @@ impl<'a> Walker<'a> {
 			trait_reachable,
 			derived: false,
 			inputs_raw: f.sig.inputs.clone(),
+			trait_lifetimes: vec![],
 		};
 		self.inv.callables.push(call);
 		let i = self.inv.callables.len() - 1;

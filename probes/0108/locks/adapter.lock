@@ -3240,6 +3240,7 @@ dependencies = [
  "polars-time",
  "polars-utils",
  "rnx",
+ "serde",
  "serde_json",
  "tokio",
 ]

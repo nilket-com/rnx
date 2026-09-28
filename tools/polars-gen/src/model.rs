@@ -72,6 +72,9 @@ pub struct Callable {
 	pub derived: bool,
 	pub bucket: String,
 	pub rules: Vec<String>,
+	/// Record 0112: lifetime arguments of a foreign impl's trait (`'de`, `'static`).
+	#[serde(default)]
+	pub trait_lifetimes: Vec<String>,
 }
 
 #[derive(Deserialize, Clone)]

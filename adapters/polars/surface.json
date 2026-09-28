@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 410,
-    "generated": 2409,
+    "generated": 2475,
     "out_of_scope": 710,
-    "unsupported": 1542
+    "unsupported": 1476
   },
   "entries": [
     {
@@ -69263,7 +69263,7 @@
       "canonical_path": "polars_core::chunked_array::ChunkedArray as serde_core::ser::Serialize",
       "key": "polars_core:566:3962",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde shape: Serialize: impl on `polars_core::chunked_array::ChunkedArray<T>` with bounds [(\"T\", \"polars_core::datatypes::PolarsPhysicalType\")] is not a concrete head of the owner",
       "signature": "(S) -> core::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error>",
       "status": "unsupported"
     },
@@ -69506,22 +69506,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__cast__castoptions_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__cast__castoptions_as_serde_core__de__deserialize",
+          "receiver": "polars_core::chunked_array::cast::CastOptions",
+          "route": "protocol",
+          "rune": "polars::CastOptions from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::cast::CastOptions as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:1339:2858",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CastOptions from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__cast__castoptions_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__cast__castoptions_as_serde_core__ser__serialize",
+          "receiver": "polars_core::chunked_array::cast::CastOptions",
+          "route": "protocol",
+          "rune": "polars::CastOptions to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::cast::CastOptions as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:1339:2856",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CastOptions to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "mechanical",
@@ -69914,22 +69940,48 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__flags__statisticsflags_as_serde_core__de__deserialize",
+          "disposition": "case (fixture via constructor from_bits_retain (fallible))",
+          "id": "polars_core__chunked_array__flags__statisticsflags_as_serde_core__de__deserialize",
+          "receiver": "polars_core::chunked_array::flags::StatisticsFlags",
+          "route": "protocol",
+          "rune": "polars::StatisticsFlags from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::flags::StatisticsFlags as serde_core::de::Deserialize",
+      "execution": "case (fixture via constructor from_bits_retain (fallible))",
+      "fallible": true,
       "key": "polars_core:2899:3072",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::StatisticsFlags from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__flags__statisticsflags_as_serde_core__ser__serialize",
+          "disposition": "case (fixture via constructor from_bits_retain (fallible))",
+          "id": "polars_core__chunked_array__flags__statisticsflags_as_serde_core__ser__serialize",
+          "receiver": "polars_core::chunked_array::flags::StatisticsFlags",
+          "route": "protocol",
+          "rune": "polars::StatisticsFlags to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::flags::StatisticsFlags as serde_core::ser::Serialize",
+      "execution": "case (fixture via constructor from_bits_retain (fallible))",
+      "fallible": true,
       "key": "polars_core:2899:3070",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::StatisticsFlags to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -70197,22 +70249,46 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_core__chunked_array__ops__explodeoptions_as_serde_core__de__deserialize",
+          "receiver": "polars_core::chunked_array::ops::ExplodeOptions",
+          "route": "protocol",
+          "rune": "polars::ExplodeOptions from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::ExplodeOptions as serde_core::de::Deserialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_core:1205:1264",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ExplodeOptions from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_core__chunked_array__ops__explodeoptions_as_serde_core__ser__serialize",
+          "receiver": "polars_core::chunked_array::ops::ExplodeOptions",
+          "route": "protocol",
+          "rune": "polars::ExplodeOptions to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::ExplodeOptions as serde_core::ser::Serialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_core:1205:1262",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ExplodeOptions to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -70318,22 +70394,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__fillnullstrategy_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__fillnullstrategy_as_serde_core__de__deserialize",
+          "receiver": "polars_core::chunked_array::ops::FillNullStrategy",
+          "route": "protocol",
+          "rune": "polars::FillNullStrategy from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::FillNullStrategy as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:1749:1809",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::FillNullStrategy from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__fillnullstrategy_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__fillnullstrategy_as_serde_core__ser__serialize",
+          "receiver": "polars_core::chunked_array::ops::FillNullStrategy",
+          "route": "protocol",
+          "rune": "polars::FillNullStrategy to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::FillNullStrategy as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:1749:1807",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::FillNullStrategy to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -70484,22 +70586,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__search_sorted__searchsortedside_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__search_sorted__searchsortedside_as_serde_core__de__deserialize",
+          "receiver": "polars_core::chunked_array::ops::search_sorted::SearchSortedSide",
+          "route": "protocol",
+          "rune": "polars::SearchSortedSide from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::search_sorted::SearchSortedSide as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:890:956",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::SearchSortedSide from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__search_sorted__searchsortedside_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__search_sorted__searchsortedside_as_serde_core__ser__serialize",
+          "receiver": "polars_core::chunked_array::ops::search_sorted::SearchSortedSide",
+          "route": "protocol",
+          "rune": "polars::SearchSortedSide to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::search_sorted::SearchSortedSide as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:890:952",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::SearchSortedSide to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -70663,22 +70791,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__sort__options__sortmultipleoptions_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__sort__options__sortmultipleoptions_as_serde_core__de__deserialize",
+          "receiver": "polars_core::chunked_array::ops::sort::options::SortMultipleOptions",
+          "route": "protocol",
+          "rune": "polars::SortMultipleOptions from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::sort::options::SortMultipleOptions as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:980:1144",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::SortMultipleOptions from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__sort__options__sortmultipleoptions_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__sort__options__sortmultipleoptions_as_serde_core__ser__serialize",
+          "receiver": "polars_core::chunked_array::ops::sort::options::SortMultipleOptions",
+          "route": "protocol",
+          "rune": "polars::SortMultipleOptions to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::sort::options::SortMultipleOptions as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:980:1142",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::SortMultipleOptions to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -70862,22 +71016,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__sort__options__sortoptions_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__sort__options__sortoptions_as_serde_core__de__deserialize",
+          "receiver": "polars_core::chunked_array::ops::sort::options::SortOptions",
+          "route": "protocol",
+          "rune": "polars::SortOptions from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::sort::options::SortOptions as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:987:1053",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::SortOptions from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__sort__options__sortoptions_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__sort__options__sortoptions_as_serde_core__ser__serialize",
+          "receiver": "polars_core::chunked_array::ops::sort::options::SortOptions",
+          "route": "protocol",
+          "rune": "polars::SortOptions to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::sort::options::SortOptions as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:987:1051",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::SortOptions to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -71536,22 +71716,46 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_core__datatypes__listtype_as_serde_core__de__deserialize",
+          "receiver": "polars_core::datatypes::ListType",
+          "route": "protocol",
+          "rune": "polars::ListType from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::ListType as serde_core::de::Deserialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_core:1529:6725",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ListType from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_core__datatypes__listtype_as_serde_core__ser__serialize",
+          "receiver": "polars_core::datatypes::ListType",
+          "route": "protocol",
+          "rune": "polars::ListType to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::ListType as serde_core::ser::Serialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_core:1529:6723",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ListType to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -72097,22 +72301,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__datatypes__dtype__compatlevel_as_serde_core__de__deserialize",
+          "disposition": "case (fixture via constructor newest)",
+          "id": "polars_core__datatypes__dtype__compatlevel_as_serde_core__de__deserialize",
+          "receiver": "polars_core::datatypes::dtype::CompatLevel",
+          "route": "protocol",
+          "rune": "polars::CompatLevel from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::dtype::CompatLevel as serde_core::de::Deserialize",
+      "execution": "case (fixture via constructor newest)",
+      "fallible": true,
       "key": "polars_core:3247:4652",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CompatLevel from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__datatypes__dtype__compatlevel_as_serde_core__ser__serialize",
+          "disposition": "case (fixture via constructor newest)",
+          "id": "polars_core__datatypes__dtype__compatlevel_as_serde_core__ser__serialize",
+          "receiver": "polars_core::datatypes::dtype::CompatLevel",
+          "route": "protocol",
+          "rune": "polars::CompatLevel to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::dtype::CompatLevel as serde_core::ser::Serialize",
+      "execution": "case (fixture via constructor newest)",
+      "fallible": true,
       "key": "polars_core:3247:4650",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CompatLevel to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -72295,7 +72525,7 @@
       "canonical_path": "polars_core::datatypes::dtype::DataType as serde_core::de::Deserialize",
       "key": "polars_core:3:4564",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(D) -> core::result::Result<Self, D::Error>",
       "status": "unsupported"
     },
@@ -72304,7 +72534,7 @@
       "canonical_path": "polars_core::datatypes::dtype::DataType as serde_core::ser::Serialize",
       "key": "polars_core:3:4566",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(S) -> core::result::Result<S::Ok, S::Error>",
       "status": "unsupported"
     },
@@ -72457,22 +72687,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__datatypes__dtype__unknownkind_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__datatypes__dtype__unknownkind_as_serde_core__de__deserialize",
+          "receiver": "polars_core::datatypes::dtype::UnknownKind",
+          "route": "protocol",
+          "rune": "polars::UnknownKind from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::dtype::UnknownKind as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:4318:4379",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::UnknownKind from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__datatypes__dtype__unknownkind_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__datatypes__dtype__unknownkind_as_serde_core__ser__serialize",
+          "receiver": "polars_core::datatypes::dtype::UnknownKind",
+          "route": "protocol",
+          "rune": "polars::UnknownKind to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::dtype::UnknownKind as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:4318:4377",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::UnknownKind to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -72621,7 +72877,7 @@
       "canonical_path": "polars_core::datatypes::field::Field as serde_core::de::Deserialize",
       "key": "polars_core:884:4738",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: Field -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -72630,7 +72886,7 @@
       "canonical_path": "polars_core::datatypes::field::Field as serde_core::ser::Serialize",
       "key": "polars_core:884:4736",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: Field -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -72827,22 +73083,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__datatypes__temporal__time_unit__timeunit_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__datatypes__temporal__time_unit__timeunit_as_serde_core__de__deserialize",
+          "receiver": "polars_core::datatypes::temporal::time_unit::TimeUnit",
+          "route": "protocol",
+          "rune": "polars::TimeUnit from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::temporal::time_unit::TimeUnit as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:626:4848",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::TimeUnit from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__datatypes__temporal__time_unit__timeunit_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__datatypes__temporal__time_unit__timeunit_as_serde_core__ser__serialize",
+          "receiver": "polars_core::datatypes::temporal::time_unit::TimeUnit",
+          "route": "protocol",
+          "rune": "polars::TimeUnit to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::temporal::time_unit::TimeUnit as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:626:4846",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::TimeUnit to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -72979,22 +73261,46 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_core__datatypes__temporal__time_zone__timezone_as_serde_core__de__deserialize",
+          "receiver": "polars_core::datatypes::temporal::time_zone::TimeZone",
+          "route": "protocol",
+          "rune": "polars::TimeZone from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::temporal::time_zone::TimeZone as serde_core::de::Deserialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_core:3279:4937",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::TimeZone from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_core__datatypes__temporal__time_zone__timezone_as_serde_core__ser__serialize",
+          "receiver": "polars_core::datatypes::temporal::time_zone::TimeZone",
+          "route": "protocol",
+          "rune": "polars::TimeZone to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::datatypes::temporal::time_zone::TimeZone as serde_core::ser::Serialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_core:3279:4935",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::TimeZone to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -73172,22 +73478,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__pivotcolumnnaming_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__frame__pivotcolumnnaming_as_serde_core__de__deserialize",
+          "receiver": "polars_core::frame::PivotColumnNaming",
+          "route": "protocol",
+          "rune": "polars::PivotColumnNaming from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::PivotColumnNaming as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:8965:9024",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::PivotColumnNaming from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__pivotcolumnnaming_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__frame__pivotcolumnnaming_as_serde_core__ser__serialize",
+          "receiver": "polars_core::frame::PivotColumnNaming",
+          "route": "protocol",
+          "rune": "polars::PivotColumnNaming to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::PivotColumnNaming as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:8965:9022",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::PivotColumnNaming to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -73374,22 +73706,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__uniquekeepstrategy_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__frame__uniquekeepstrategy_as_serde_core__de__deserialize",
+          "receiver": "polars_core::frame::UniqueKeepStrategy",
+          "route": "protocol",
+          "rune": "polars::UniqueKeepStrategy from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::UniqueKeepStrategy as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7666:8944",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::UniqueKeepStrategy from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__uniquekeepstrategy_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__frame__uniquekeepstrategy_as_serde_core__ser__serialize",
+          "receiver": "polars_core::frame::UniqueKeepStrategy",
+          "route": "protocol",
+          "rune": "polars::UniqueKeepStrategy to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::UniqueKeepStrategy as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7666:8942",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::UniqueKeepStrategy to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -73764,7 +74122,7 @@
       "canonical_path": "polars_core::frame::column::Column as serde_core::de::Deserialize",
       "key": "polars_core:650:7489",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: Column reaches polars_core::frame::column::Column",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -73773,7 +74131,7 @@
       "canonical_path": "polars_core::frame::column::Column as serde_core::ser::Serialize",
       "key": "polars_core:650:7491",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: Column reaches polars_core::frame::column::Column",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -73835,7 +74193,7 @@
       "canonical_path": "polars_core::frame::column::scalar::ScalarColumn as serde_core::de::Deserialize",
       "key": "polars_core:7054:7149",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: ScalarColumn reaches polars_core::frame::column::scalar::ScalarColumn: no public field, its content cannot be shown to be frame-free",
       "signature": "(D) -> core::result::Result<Self, D::Error>",
       "status": "unsupported"
     },
@@ -73844,7 +74202,7 @@
       "canonical_path": "polars_core::frame::column::scalar::ScalarColumn as serde_core::ser::Serialize",
       "key": "polars_core:7054:7147",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: ScalarColumn reaches polars_core::frame::column::scalar::ScalarColumn: no public field, its content cannot be shown to be frame-free",
       "signature": "(S) -> core::result::Result<S::Ok, S::Error>",
       "status": "unsupported"
     },
@@ -74039,7 +74397,7 @@
       "canonical_path": "polars_core::frame::dataframe::DataFrame as serde_core::de::Deserialize",
       "key": "polars_core:9:7800",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: DataFrame reaches polars_core::frame::dataframe::DataFrame",
       "signature": "(D) -> core::result::Result<Self, D::Error>",
       "status": "unsupported"
     },
@@ -74048,7 +74406,7 @@
       "canonical_path": "polars_core::frame::dataframe::DataFrame as serde_core::ser::Serialize",
       "key": "polars_core:9:7798",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: DataFrame reaches polars_core::frame::dataframe::DataFrame",
       "signature": "(S) -> core::result::Result<S::Ok, S::Error>",
       "status": "unsupported"
     },
@@ -74181,22 +74539,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__explode__unpivotargsir_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__frame__explode__unpivotargsir_as_serde_core__de__deserialize",
+          "receiver": "polars_core::frame::explode::UnpivotArgsIR",
+          "route": "protocol",
+          "rune": "polars::UnpivotArgsIR from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::explode::UnpivotArgsIR as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7810:7870",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::UnpivotArgsIR from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__frame__explode__unpivotargsir_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__frame__explode__unpivotargsir_as_serde_core__ser__serialize",
+          "receiver": "polars_core::frame::explode::UnpivotArgsIR",
+          "route": "protocol",
+          "rune": "polars::UnpivotArgsIR to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::explode::UnpivotArgsIR as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:7810:7868",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::UnpivotArgsIR to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -75319,7 +75703,7 @@
       "canonical_path": "polars_core::scalar::Scalar as serde_core::de::Deserialize",
       "key": "polars_core:658:9902",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: Scalar reaches polars_core::scalar::Scalar: no public field, its content cannot be shown to be frame-free",
       "signature": "(D) -> core::result::Result<Self, D::Error>",
       "status": "unsupported"
     },
@@ -75328,7 +75712,7 @@
       "canonical_path": "polars_core::scalar::Scalar as serde_core::ser::Serialize",
       "key": "polars_core:658:9900",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: Scalar reaches polars_core::scalar::Scalar: no public field, its content cannot be shown to be frame-free",
       "signature": "(S) -> core::result::Result<S::Ok, S::Error>",
       "status": "unsupported"
     },
@@ -75391,7 +75775,7 @@
       "canonical_path": "polars_core::schema::iceberg::IcebergColumn as serde_core::de::Deserialize",
       "key": "polars_core:9993:10065",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "owner not wrapped: polars_core::schema::iceberg::IcebergColumn",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -75400,7 +75784,7 @@
       "canonical_path": "polars_core::schema::iceberg::IcebergColumn as serde_core::ser::Serialize",
       "key": "polars_core:9993:10063",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "owner not wrapped: polars_core::schema::iceberg::IcebergColumn",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -75463,7 +75847,7 @@
       "canonical_path": "polars_core::schema::iceberg::IcebergColumnType as serde_core::de::Deserialize",
       "key": "polars_core:10007:10146",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "owner not wrapped: polars_core::schema::iceberg::IcebergColumnType",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -75472,7 +75856,7 @@
       "canonical_path": "polars_core::schema::iceberg::IcebergColumnType as serde_core::ser::Serialize",
       "key": "polars_core:10007:10144",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "owner not wrapped: polars_core::schema::iceberg::IcebergColumnType",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -75562,7 +75946,7 @@
       "canonical_path": "polars_core::schema::iceberg::IcebergSchema as serde_core::de::Deserialize",
       "key": "polars_core:9919:9981",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "owner not wrapped: polars_core::schema::iceberg::IcebergSchema",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -75571,7 +75955,7 @@
       "canonical_path": "polars_core::schema::iceberg::IcebergSchema as serde_core::ser::Serialize",
       "key": "polars_core:9919:9979",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "owner not wrapped: polars_core::schema::iceberg::IcebergSchema",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -76479,7 +76863,7 @@
       "canonical_path": "polars_core::series::Series as serde_core::de::Deserialize",
       "key": "polars_core:12:11430",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: Series reaches polars_core::series::Series",
       "signature": "(D) -> core::result::Result<Self, <D as Deserializer>::Error>",
       "status": "unsupported"
     },
@@ -76488,7 +76872,7 @@
       "canonical_path": "polars_core::series::Series as serde_core::ser::Serialize",
       "key": "polars_core:12:11428",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: Series reaches polars_core::series::Series",
       "signature": "(S) -> core::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error>",
       "status": "unsupported"
     },
@@ -76758,22 +77142,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__series__ops__nullbehavior_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_core__series__ops__nullbehavior_as_serde_core__de__deserialize",
+          "receiver": "polars_core::series::ops::NullBehavior",
+          "route": "protocol",
+          "rune": "polars::NullBehavior from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::series::ops::NullBehavior as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:10881:10940",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::NullBehavior from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__series__ops__nullbehavior_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_core__series__ops__nullbehavior_as_serde_core__ser__serialize",
+          "receiver": "polars_core::series::ops::NullBehavior",
+          "route": "protocol",
+          "rune": "polars::NullBehavior to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::series::ops::NullBehavior as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_core:10881:10938",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::NullBehavior to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -77094,22 +77504,48 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_dtype__categorical__categoricalphysical_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_dtype__categorical__categoricalphysical_as_serde_core__de__deserialize",
+          "receiver": "polars_dtype::categorical::CategoricalPhysical",
+          "route": "protocol",
+          "rune": "polars::CategoricalPhysical from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_dtype::categorical::CategoricalPhysical as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_dtype:186:275",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CategoricalPhysical from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_dtype__categorical__categoricalphysical_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_dtype__categorical__categoricalphysical_as_serde_core__ser__serialize",
+          "receiver": "polars_dtype::categorical::CategoricalPhysical",
+          "route": "protocol",
+          "rune": "polars::CategoricalPhysical to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_dtype::categorical::CategoricalPhysical as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_dtype:186:271",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CategoricalPhysical to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -78214,7 +78650,7 @@
       "canonical_path": "polars_io::cloud::credential_provider::PlCredentialProvider as serde_core::de::Deserialize",
       "key": "polars_io:300:1788",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: PlCredentialProvider -> CredentialProviderFunction reaches polars_io::cloud::credential_provider::CredentialProviderFunction: no public field, its content cannot be shown to be frame-free",
       "signature": "(D) -> core::result::Result<Self, D::Error>",
       "status": "unsupported"
     },
@@ -78223,7 +78659,7 @@
       "canonical_path": "polars_io::cloud::credential_provider::PlCredentialProvider as serde_core::ser::Serialize",
       "key": "polars_io:300:1790",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: PlCredentialProvider -> CredentialProviderFunction reaches polars_io::cloud::credential_provider::CredentialProviderFunction: no public field, its content cannot be shown to be frame-free",
       "signature": "(S) -> core::result::Result<S::Ok, S::Error>",
       "status": "unsupported"
     },
@@ -78500,22 +78936,46 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_io__cloud__options__cloudconfig_as_serde_core__de__deserialize",
+          "receiver": "polars_io::cloud::options::CloudConfig",
+          "route": "protocol",
+          "rune": "polars::CloudConfig from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::cloud::options::CloudConfig as serde_core::de::Deserialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_io:190:278",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CloudConfig from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_io__cloud__options__cloudconfig_as_serde_core__ser__serialize",
+          "receiver": "polars_io::cloud::options::CloudConfig",
+          "route": "protocol",
+          "rune": "polars::CloudConfig to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::cloud::options::CloudConfig as serde_core::ser::Serialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_io:190:274",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CloudConfig to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -78650,7 +79110,7 @@
       "canonical_path": "polars_io::cloud::options::CloudOptions as serde_core::de::Deserialize",
       "key": "polars_io:169:368",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: CloudOptions -> CloudRetryConfig -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -78659,7 +79119,7 @@
       "canonical_path": "polars_io::cloud::options::CloudOptions as serde_core::ser::Serialize",
       "key": "polars_io:169:366",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: CloudOptions -> CloudRetryConfig -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -78816,7 +79276,7 @@
       "canonical_path": "polars_io::cloud::options::CloudRetryConfig as serde_core::de::Deserialize",
       "key": "polars_io:294:453",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: CloudRetryConfig -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -78825,7 +79285,7 @@
       "canonical_path": "polars_io::cloud::options::CloudRetryConfig as serde_core::ser::Serialize",
       "key": "polars_io:294:451",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: CloudRetryConfig -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -79184,22 +79644,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__read__options__commentprefix_as_serde_core__de__deserialize",
+          "disposition": "case (fixture via constructor new_from_str)",
+          "id": "polars_io__csv__read__options__commentprefix_as_serde_core__de__deserialize",
+          "receiver": "polars_io::csv::read::options::CommentPrefix",
+          "route": "protocol",
+          "rune": "polars::CommentPrefix from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::read::options::CommentPrefix as serde_core::de::Deserialize",
+      "execution": "case (fixture via constructor new_from_str)",
+      "fallible": true,
       "key": "polars_io:2428:2666",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CommentPrefix from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__read__options__commentprefix_as_serde_core__ser__serialize",
+          "disposition": "case (fixture via constructor new_from_str)",
+          "id": "polars_io__csv__read__options__commentprefix_as_serde_core__ser__serialize",
+          "receiver": "polars_io::csv::read::options::CommentPrefix",
+          "route": "protocol",
+          "rune": "polars::CommentPrefix to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::read::options::CommentPrefix as serde_core::ser::Serialize",
+      "execution": "case (fixture via constructor new_from_str)",
+      "fallible": true,
       "key": "polars_io:2428:2664",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CommentPrefix to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -79350,22 +79836,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__read__options__csvencoding_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__csv__read__options__csvencoding_as_serde_core__de__deserialize",
+          "receiver": "polars_io::csv::read::options::CsvEncoding",
+          "route": "protocol",
+          "rune": "polars::CsvEncoding from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::read::options::CsvEncoding as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:2171:2582",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CsvEncoding from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__read__options__csvencoding_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__csv__read__options__csvencoding_as_serde_core__ser__serialize",
+          "receiver": "polars_io::csv::read::options::CsvEncoding",
+          "route": "protocol",
+          "rune": "polars::CsvEncoding to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::read::options::CsvEncoding as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:2171:2580",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CsvEncoding to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -79496,22 +80008,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__read__options__csvparseoptions_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__csv__read__options__csvparseoptions_as_serde_core__de__deserialize",
+          "receiver": "polars_io::csv::read::options::CsvParseOptions",
+          "route": "protocol",
+          "rune": "polars::CsvParseOptions from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::read::options::CsvParseOptions as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:2299:2504",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CsvParseOptions from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__read__options__csvparseoptions_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__csv__read__options__csvparseoptions_as_serde_core__ser__serialize",
+          "receiver": "polars_io::csv::read::options::CsvParseOptions",
+          "route": "protocol",
+          "rune": "polars::CsvParseOptions to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::read::options::CsvParseOptions as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:2299:2502",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CsvParseOptions to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -79646,7 +80184,7 @@
       "canonical_path": "polars_io::csv::read::options::CsvReadOptions as serde_core::de::Deserialize",
       "key": "polars_io:2311:2405",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: CsvReadOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -79655,7 +80193,7 @@
       "canonical_path": "polars_io::csv::read::options::CsvReadOptions as serde_core::ser::Serialize",
       "key": "polars_io:2311:2403",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: CsvReadOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -79766,22 +80304,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__read__options__nullvalues_as_serde_core__de__deserialize",
+          "disposition": "case (fixture via variant AllColumnsSingle)",
+          "id": "polars_io__csv__read__options__nullvalues_as_serde_core__de__deserialize",
+          "receiver": "polars_io::csv::read::options::NullValues",
+          "route": "protocol",
+          "rune": "polars::NullValues from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::read::options::NullValues as serde_core::de::Deserialize",
+      "execution": "case (fixture via variant AllColumnsSingle)",
+      "fallible": true,
       "key": "polars_io:2424:2750",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::NullValues from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__read__options__nullvalues_as_serde_core__ser__serialize",
+          "disposition": "case (fixture via variant AllColumnsSingle)",
+          "id": "polars_io__csv__read__options__nullvalues_as_serde_core__ser__serialize",
+          "receiver": "polars_io::csv::read::options::NullValues",
+          "route": "protocol",
+          "rune": "polars::NullValues to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::read::options::NullValues as serde_core::ser::Serialize",
+      "execution": "case (fixture via variant AllColumnsSingle)",
+      "fallible": true,
       "key": "polars_io:2424:2748",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::NullValues to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -79963,22 +80527,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__write__options__csvwriteroptions_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__csv__write__options__csvwriteroptions_as_serde_core__de__deserialize",
+          "receiver": "polars_io::csv::write::options::CsvWriterOptions",
+          "route": "protocol",
+          "rune": "polars::CsvWriterOptions from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::options::CsvWriterOptions as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3103:3165",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CsvWriterOptions from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__write__options__csvwriteroptions_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__csv__write__options__csvwriteroptions_as_serde_core__ser__serialize",
+          "receiver": "polars_io::csv::write::options::CsvWriterOptions",
+          "route": "protocol",
+          "rune": "polars::CsvWriterOptions to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::options::CsvWriterOptions as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3103:3163",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::CsvWriterOptions to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -80129,22 +80719,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__write__options__quotestyle_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__csv__write__options__quotestyle_as_serde_core__de__deserialize",
+          "receiver": "polars_io::csv::write::options::QuoteStyle",
+          "route": "protocol",
+          "rune": "polars::QuoteStyle from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::options::QuoteStyle as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3195:3337",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::QuoteStyle from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__write__options__quotestyle_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__csv__write__options__quotestyle_as_serde_core__ser__serialize",
+          "receiver": "polars_io::csv::write::options::QuoteStyle",
+          "route": "protocol",
+          "rune": "polars::QuoteStyle to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::options::QuoteStyle as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3195:3335",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::QuoteStyle to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -80275,22 +80891,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__write__options__serializeoptions_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__csv__write__options__serializeoptions_as_serde_core__de__deserialize",
+          "receiver": "polars_io::csv::write::options::SerializeOptions",
+          "route": "protocol",
+          "rune": "polars::SerializeOptions from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::options::SerializeOptions as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3102:3257",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::SerializeOptions from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__write__options__serializeoptions_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__csv__write__options__serializeoptions_as_serde_core__ser__serialize",
+          "receiver": "polars_io::csv::write::options::SerializeOptions",
+          "route": "protocol",
+          "rune": "polars::SerializeOptions to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::options::SerializeOptions as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3102:3255",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::SerializeOptions to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -80428,22 +81070,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__ipc__ipc_file__ipcscanoptions_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__ipc__ipc_file__ipcscanoptions_as_serde_core__de__deserialize",
+          "receiver": "polars_io::ipc::ipc_file::IpcScanOptions",
+          "route": "protocol",
+          "rune": "polars::IpcScanOptions from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcScanOptions as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3658:3718",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::IpcScanOptions from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__ipc__ipc_file__ipcscanoptions_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__ipc__ipc_file__ipcscanoptions_as_serde_core__ser__serialize",
+          "receiver": "polars_io::ipc::ipc_file::IpcScanOptions",
+          "route": "protocol",
+          "rune": "polars::IpcScanOptions to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcScanOptions as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3658:3716",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::IpcScanOptions to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -80616,22 +81284,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__ipc__pl_ipc_metadata__plipcmetadata_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__ipc__pl_ipc_metadata__plipcmetadata_as_serde_core__de__deserialize",
+          "receiver": "polars_io::ipc::pl_ipc_metadata::PlIpcMetadata",
+          "route": "protocol",
+          "rune": "polars::PlIpcMetadata from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:4254:4316",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::PlIpcMetadata from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__ipc__pl_ipc_metadata__plipcmetadata_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__ipc__pl_ipc_metadata__plipcmetadata_as_serde_core__ser__serialize",
+          "receiver": "polars_io::ipc::pl_ipc_metadata::PlIpcMetadata",
+          "route": "protocol",
+          "rune": "polars::PlIpcMetadata to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:4254:4314",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::PlIpcMetadata to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -80791,22 +81485,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__ipc__write__ipccompression_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__ipc__write__ipccompression_as_serde_core__de__deserialize",
+          "receiver": "polars_io::ipc::write::IpcCompression",
+          "route": "protocol",
+          "rune": "polars::IpcCompression from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcCompression as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3946:4231",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::IpcCompression from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__ipc__write__ipccompression_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__ipc__write__ipccompression_as_serde_core__ser__serialize",
+          "receiver": "polars_io::ipc::write::IpcCompression",
+          "route": "protocol",
+          "rune": "polars::IpcCompression to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcCompression as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3946:4229",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::IpcCompression to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -80957,22 +81677,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__ipc__write__ipcwriteroptions_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__ipc__write__ipcwriteroptions_as_serde_core__de__deserialize",
+          "receiver": "polars_io::ipc::write::IpcWriterOptions",
+          "route": "protocol",
+          "rune": "polars::IpcWriterOptions from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcWriterOptions as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3951:4017",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::IpcWriterOptions from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__ipc__write__ipcwriteroptions_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__ipc__write__ipcwriteroptions_as_serde_core__ser__serialize",
+          "receiver": "polars_io::ipc::write::IpcWriterOptions",
+          "route": "protocol",
+          "rune": "polars::IpcWriterOptions to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcWriterOptions as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3951:4015",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::IpcWriterOptions to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -81247,22 +81993,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__options__externalcompression_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__options__externalcompression_as_serde_core__de__deserialize",
+          "receiver": "polars_io::options::ExternalCompression",
+          "route": "protocol",
+          "rune": "polars::ExternalCompression from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::options::ExternalCompression as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3097:4652",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ExternalCompression from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__options__externalcompression_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__options__externalcompression_as_serde_core__ser__serialize",
+          "receiver": "polars_io::options::ExternalCompression",
+          "route": "protocol",
+          "rune": "polars::ExternalCompression to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::options::ExternalCompression as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:3097:4650",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ExternalCompression to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -81397,7 +82169,7 @@
       "canonical_path": "polars_io::options::HiveOptions as serde_core::de::Deserialize",
       "key": "polars_io:4503:4568",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: HiveOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -81406,7 +82178,7 @@
       "canonical_path": "polars_io::options::HiveOptions as serde_core::ser::Serialize",
       "key": "polars_io:4503:4566",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: HiveOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -81515,22 +82287,46 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_io__options__rowindex_as_serde_core__de__deserialize",
+          "receiver": "polars_io::options::RowIndex",
+          "route": "protocol",
+          "rune": "polars::RowIndex from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::options::RowIndex as serde_core::de::Deserialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_io:2290:4487",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::RowIndex from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_io__options__rowindex_as_serde_core__ser__serialize",
+          "receiver": "polars_io::options::RowIndex",
+          "route": "protocol",
+          "rune": "polars::RowIndex to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::options::RowIndex as serde_core::ser::Serialize",
+      "execution": "no fixture for the receiver type",
+      "fallible": true,
       "key": "polars_io:2290:4485",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::RowIndex to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -81681,22 +82477,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__parquet__read__options__parallelstrategy_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__parquet__read__options__parallelstrategy_as_serde_core__de__deserialize",
+          "receiver": "polars_io::parquet::read::options::ParallelStrategy",
+          "route": "protocol",
+          "rune": "polars::ParallelStrategy from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::options::ParallelStrategy as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:4750:4896",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ParallelStrategy from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__parquet__read__options__parallelstrategy_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__parquet__read__options__parallelstrategy_as_serde_core__ser__serialize",
+          "receiver": "polars_io::parquet::read::options::ParallelStrategy",
+          "route": "protocol",
+          "rune": "polars::ParallelStrategy to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::options::ParallelStrategy as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:4750:4894",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ParallelStrategy to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -81831,7 +82653,7 @@
       "canonical_path": "polars_io::parquet::read::options::ParquetOptions as serde_core::de::Deserialize",
       "key": "polars_io:4753:4815",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: ParquetOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -81840,7 +82662,7 @@
       "canonical_path": "polars_io::parquet::read::options::ParquetOptions as serde_core::ser::Serialize",
       "key": "polars_io:4753:4813",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: ParquetOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -81996,7 +82818,7 @@
       "canonical_path": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata as serde_core::de::Deserialize",
       "key": "polars_io:5100:5287",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: KeyValueMetadata -> KeyValue reaches polars_parquet_format::parquet_format::KeyValue, which has no supporting record",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -82005,7 +82827,7 @@
       "canonical_path": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata as serde_core::ser::Serialize",
       "key": "polars_io:5100:5285",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: KeyValueMetadata -> KeyValue reaches polars_parquet_format::parquet_format::KeyValue, which has no supporting record",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -82167,22 +82989,48 @@
       "status": "adapted"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__parquet__write__options__parquetcompression_as_serde_core__de__deserialize",
+          "disposition": "case",
+          "id": "polars_io__parquet__write__options__parquetcompression_as_serde_core__de__deserialize",
+          "receiver": "polars_io::parquet::write::options::ParquetCompression",
+          "route": "protocol",
+          "rune": "polars::ParquetCompression from_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::options::ParquetCompression as serde_core::de::Deserialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:5302:5464",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ParquetCompression from_json",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__parquet__write__options__parquetcompression_as_serde_core__ser__serialize",
+          "disposition": "case",
+          "id": "polars_io__parquet__write__options__parquetcompression_as_serde_core__ser__serialize",
+          "receiver": "polars_io::parquet::write::options::ParquetCompression",
+          "route": "protocol",
+          "rune": "polars::ParquetCompression to_json"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::options::ParquetCompression as serde_core::ser::Serialize",
+      "execution": "case",
+      "fallible": true,
       "key": "polars_io:5302:5462",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "note": "record 0112: JSON through serde_json, byte-bounded",
+      "rune": "polars::ParquetCompression to_json",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -82317,7 +83165,7 @@
       "canonical_path": "polars_io::parquet::write::options::ParquetWriteOptions as serde_core::de::Deserialize",
       "key": "polars_io:5310:5377",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: ParquetWriteOptions -> KeyValueMetadata -> KeyValue reaches polars_parquet_format::parquet_format::KeyValue, which has no supporting record",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -82326,7 +83174,7 @@
       "canonical_path": "polars_io::parquet::write::options::ParquetWriteOptions as serde_core::ser::Serialize",
       "key": "polars_io:5310:5375",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: ParquetWriteOptions -> KeyValueMetadata -> KeyValue reaches polars_parquet_format::parquet_format::KeyValue, which has no supporting record",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -82440,7 +83288,7 @@
       "canonical_path": "polars_io::predicates::ColumnStats as serde_core::de::Deserialize",
       "key": "polars_io:5745:5818",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: ColumnStats reaches polars_io::predicates::ColumnStats: no public field, its content cannot be shown to be frame-free",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -82449,7 +83297,7 @@
       "canonical_path": "polars_io::predicates::ColumnStats as serde_core::ser::Serialize",
       "key": "polars_io:5745:5816",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde through an unbounded IPC buffer: ColumnStats reaches polars_io::predicates::ColumnStats: no public field, its content cannot be shown to be frame-free",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -82958,7 +83806,7 @@
       "canonical_path": "polars_io::utils::sync_on_close::SyncOnCloseType as serde_core::de::Deserialize",
       "key": "polars_io:6932:7456",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -82967,7 +83815,7 @@
       "canonical_path": "polars_io::utils::sync_on_close::SyncOnCloseType as serde_core::ser::Serialize",
       "key": "polars_io:6932:7454",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -95453,7 +96301,7 @@
       "canonical_path": "polars_schema::schema::Schema as serde_core::de::Deserialize",
       "key": "polars_schema:3:360",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde shape: Deserialize: impl on `polars_schema::schema::Schema<Field, Metadata>` with bounds [(\"Field\", \"serde_core::de::Deserialize\"), (\"Metadata\", \"serde_core::de::Deserialize\")] is not a concrete head of the owner",
       "signature": "(__D) -> core::result::Result<Self, __D::Error>",
       "status": "unsupported"
     },
@@ -95462,7 +96310,7 @@
       "canonical_path": "polars_schema::schema::Schema as serde_core::ser::Serialize",
       "key": "polars_schema:3:356",
       "kind": "foreign_trait_impl",
-      "reason": "bucket: generic",
+      "reason": "serde shape: Serialize: impl on `polars_schema::schema::Schema<Field, Metadata>` with bounds [(\"Field\", \"serde_core::ser::Serialize\"), (\"Metadata\", \"serde_core::ser::Serialize\")] is not a concrete head of the owner",
       "signature": "(__S) -> core::result::Result<__S::Ok, __S::Error>",
       "status": "unsupported"
     },
@@ -106561,6 +107409,10 @@
       {
         "reason": "no public fields, no Default, no constructor binding",
         "type": "polars_core::datatypes::Int8Type"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_core::datatypes::ListType"
       },
       {
         "reason": "no public fields, no Default, no constructor binding",
@@ -147246,7 +148098,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2878,
+  "oracle_cases": 2934,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -148497,6 +149349,14 @@
       "reason": "no fixture for the receiver type"
     },
     {
+      "path": "polars_core::chunked_array::ops::ExplodeOptions as serde_core::de::Deserialize",
+      "reason": "no fixture for the receiver type"
+    },
+    {
+      "path": "polars_core::chunked_array::ops::ExplodeOptions as serde_core::ser::Serialize",
+      "reason": "no fixture for the receiver type"
+    },
+    {
       "path": "polars_core::chunked_array::ops::FillNullStrategy as core::clone::Clone",
       "reason": "protocol Clone has no script-level trigger"
     },
@@ -148593,6 +149453,14 @@
       "reason": "no fixture for the receiver type"
     },
     {
+      "path": "polars_core::datatypes::ListType as serde_core::de::Deserialize",
+      "reason": "no fixture for the receiver type"
+    },
+    {
+      "path": "polars_core::datatypes::ListType as serde_core::ser::Serialize",
+      "reason": "no fixture for the receiver type"
+    },
+    {
       "path": "polars_core::datatypes::StringType as core::clone::Clone",
       "reason": "no fixture for the receiver type"
     },
@@ -148674,6 +149542,14 @@
     },
     {
       "path": "polars_core::datatypes::temporal::time_zone::TimeZone as core::hash::Hash",
+      "reason": "no fixture for the receiver type"
+    },
+    {
+      "path": "polars_core::datatypes::temporal::time_zone::TimeZone as serde_core::de::Deserialize",
+      "reason": "no fixture for the receiver type"
+    },
+    {
+      "path": "polars_core::datatypes::temporal::time_zone::TimeZone as serde_core::ser::Serialize",
       "reason": "no fixture for the receiver type"
     },
     {
@@ -148997,6 +149873,14 @@
       "reason": "no fixture for the receiver type"
     },
     {
+      "path": "polars_io::cloud::options::CloudConfig as serde_core::de::Deserialize",
+      "reason": "no fixture for the receiver type"
+    },
+    {
+      "path": "polars_io::cloud::options::CloudConfig as serde_core::ser::Serialize",
+      "reason": "no fixture for the receiver type"
+    },
+    {
       "path": "polars_io::cloud::options::CloudOptions as core::clone::Clone",
       "reason": "protocol Clone has no script-level trigger"
     },
@@ -149202,6 +150086,14 @@
     },
     {
       "path": "polars_io::options::RowIndex as core::hash::Hash",
+      "reason": "no fixture for the receiver type"
+    },
+    {
+      "path": "polars_io::options::RowIndex as serde_core::de::Deserialize",
+      "reason": "no fixture for the receiver type"
+    },
+    {
+      "path": "polars_io::options::RowIndex as serde_core::ser::Serialize",
       "reason": "no fixture for the receiver type"
     },
     {
@@ -150920,6 +151812,14 @@
       "rune": "polars::ListChunked",
       "shared_with": [],
       "type": "polars_core::datatypes::ListChunked"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_core::datatypes::ListType",
+      "rule": "api type",
+      "rune": "polars::ListType",
+      "shared_with": [],
+      "type": "polars_core::datatypes::ListType"
     },
     {
       "hand_written": false,

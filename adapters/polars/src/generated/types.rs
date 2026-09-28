@@ -208,6 +208,10 @@ pub struct W_polars_core__datatypes__Int8Type(pub(crate) polars_core::datatypes:
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = ListChunked)]
 pub struct W_polars_core__datatypes__ListChunked(pub(crate) polars_core::datatypes::ListChunked);
+/// `polars_core::datatypes::ListType`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListType)]
+pub struct W_polars_core__datatypes__ListType(pub(crate) polars_core::datatypes::ListType);
 /// polars_core::datatypes::StringChunked = `polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = StringChunked)]
@@ -1137,6 +1141,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_core__datatypes__Int8Chunked>()?;
     m.ty::<W_polars_core__datatypes__Int8Type>()?;
     m.ty::<W_polars_core__datatypes__ListChunked>()?;
+    m.ty::<W_polars_core__datatypes__ListType>()?;
     m.ty::<W_polars_core__datatypes__StringChunked>()?;
     m.ty::<W_polars_core__datatypes__StringType>()?;
     m.ty::<W_polars_core__datatypes__TimeType>()?;
