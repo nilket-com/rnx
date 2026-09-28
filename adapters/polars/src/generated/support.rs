@@ -1634,6 +1634,21 @@ pub(crate) fn from_json<T: serde::de::DeserializeOwned>(s: &str, op: &str) -> Re
 	serde_json::from_str(s).map_err(|e| Error("Json".into(), format!("{op}: {e}")))
 }
 
+/// Record 0113 (review): a script vector that a whole call will copy is
+/// measured first, without copying, and refused above the materialize bound
+/// (inclusive: exactly `limit` items pass). The source vector is untouched.
+pub(crate) fn vec_len_bounded(value: &rune::Value, op: &str) -> Result<usize, Error> {
+	let n = vec_len(value, op)?;
+	let limit = materialize_limit();
+	if n > limit {
+		return Err(Error(
+			"MaterializeLimit".into(),
+			format!("{op}: {n} items, more than the bound of {limit}"),
+		));
+	}
+	Ok(n)
+}
+
 pub(crate) fn vec_len(value: &rune::Value, name: &str) -> Result<usize, Error> {
 	value
 		.borrow_ref::<rune::runtime::Vec>()
