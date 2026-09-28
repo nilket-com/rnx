@@ -396,6 +396,14 @@ pub struct W_polars_error__abort__QueryAborted(pub(crate) polars::error::abort::
 #[derive(rune::Any)]
 #[rune(item = ::polars, name = PolarsWarning)]
 pub struct W_polars_error__warning__PolarsWarning(pub(crate) polars::error::PolarsWarning);
+/// `polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = CloudWriterIoTraitWrap)]
+pub struct W_polars_io__cloud__cloud_writer__io_trait_wrap__CloudWriterIoTraitWrap(pub(crate) polars_io::cloud::cloud_writer::CloudWriterIoTraitWrap);
+/// `polars_io::cloud::cloud_writer::writer::CloudWriter`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = CloudWriter)]
+pub struct W_polars_io__cloud__cloud_writer__writer__CloudWriter(pub(crate) polars_io::cloud::cloud_writer::CloudWriter);
 /// `polars_io::cloud::concurrency::ConcurrencyController`
 #[derive(rune::Any)]
 #[rune(item = ::polars, name = ConcurrencyController)]
@@ -492,6 +500,10 @@ pub struct W_polars_io__cloud__polars_object_store__inner__PolarsObjectStore(pub
 #[derive(rune::Any)]
 #[rune(item = ::polars, name = Builder)]
 pub struct W_polars_io__csv__read__builder__Builder(pub(crate) polars_io::csv::read::builder::Builder);
+/// `polars_io::csv::read::builder::Utf8Field`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = Utf8Field)]
+pub struct W_polars_io__csv__read__builder__Utf8Field(pub(crate) polars_io::csv::read::builder::Utf8Field);
 /// `polars_io::csv::read::options::CommentPrefix`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = CommentPrefix)]
@@ -1048,6 +1060,10 @@ pub struct W_polars_plan__frame__opt_state__OptFlags(pub(crate) polars_plan::fra
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = LiteralValue)]
 pub struct W_polars_plan__plans__lit__LiteralValue(pub(crate) polars_plan::plans::LiteralValue);
+/// `polars_plan::plans::lit::Null`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = Null)]
+pub struct W_polars_plan__plans__lit__Null(pub(crate) polars_plan::plans::Null);
 /// `polars_row::row::RowEncodingOptions`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::row, name = RowEncodingOptions)]
@@ -1168,6 +1184,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_error__PolarsError>()?;
     m.ty::<W_polars_error__abort__QueryAborted>()?;
     m.ty::<W_polars_error__warning__PolarsWarning>()?;
+    m.ty::<W_polars_io__cloud__cloud_writer__io_trait_wrap__CloudWriterIoTraitWrap>()?;
+    m.ty::<W_polars_io__cloud__cloud_writer__writer__CloudWriter>()?;
     m.ty::<W_polars_io__cloud__concurrency__ConcurrencyController>()?;
     m.ty::<W_polars_io__cloud__concurrency__ControllerConfig>()?;
     m.ty::<W_polars_io__cloud__concurrency__IoSample>()?;
@@ -1192,6 +1210,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_io__cloud__polars_object_store__PolarsObjectStoreError>()?;
     m.ty::<W_polars_io__cloud__polars_object_store__inner__PolarsObjectStore>()?;
     m.ty::<W_polars_io__csv__read__builder__Builder>()?;
+    m.ty::<W_polars_io__csv__read__builder__Utf8Field>()?;
     m.ty::<W_polars_io__csv__read__options__CommentPrefix>()?;
     m.ty::<W_polars_io__csv__read__options__CsvEncoding>()?;
     m.ty::<W_polars_io__csv__read__options__CsvParseOptions>()?;
@@ -1331,6 +1350,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_plan__dsl__udf__UserDefinedFunction>()?;
     m.ty::<W_polars_plan__frame__opt_state__OptFlags>()?;
     m.ty::<W_polars_plan__plans__lit__LiteralValue>()?;
+    m.ty::<W_polars_plan__plans__lit__Null>()?;
     m.ty::<W_polars_row__row__RowEncodingOptions>()?;
     m.ty::<W_polars_utils__float16__pf16>()?;
     m.ty::<W_polars_utils__index__NullableIdxSize>()?;

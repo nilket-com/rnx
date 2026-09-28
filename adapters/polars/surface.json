@@ -3844,9 +3844,9 @@
           "key": "polars_lazy:230",
           "path": "polars_lazy::frame::LazyFrame::collect_concurrently",
           "routed_today": true,
-          "rune": "polars::LazyFrame::collect_concurrently",
+          "rune": null,
           "sink": "plan execution",
-          "status": "generated"
+          "status": "unsupported"
         },
         {
           "cite": "polars-lazy-0.55.2/src/frame/mod.rs: `to_alp` (DSL to IR conversion resolves every field)",
@@ -4119,11 +4119,11 @@
     "by_disposition": {
       "assign: generated": 24,
       "assign: out_of_scope": 5,
-      "from: adapted": 18,
-      "from: generated": 57,
+      "from: adapted": 19,
+      "from: generated": 58,
       "from: not eligible": 18,
       "from: out_of_scope": 30,
-      "from: unsupported": 92,
+      "from: unsupported": 90,
       "not: generated": 4,
       "not: out_of_scope": 1,
       "not: unsupported": 2
@@ -4964,7 +4964,7 @@
       },
       {
         "class": "from",
-        "disposition": "unsupported: conversion source: by-value argument of a non-Clone type: value (polars_io::cloud::cloud_writer::writer::CloudWriter)",
+        "disposition": "generated",
         "key": "polars_io:800:869",
         "name": "from_cloud_writer",
         "owner": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap",
@@ -4972,7 +4972,7 @@
       },
       {
         "class": "from",
-        "disposition": "unsupported: duplicate listing whose retained listing is unsupported: conversion source: by-value argument of a non-Clone type: value (polars_io::cloud::cloud_writer::writer::CloudWriter)",
+        "disposition": "adapted: duplicate listing of impl polars_io:869: rustdoc lists it on this source type's page as well; its retained listing is on polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap; bound there as `from_cloud_writer`",
         "key": "polars_io:797:869",
         "name": "",
         "owner": "polars_io::cloud::cloud_writer::writer::CloudWriter",
@@ -6141,10 +6141,10 @@
     ]
   },
   "counts": {
-    "adapted": 329,
-    "generated": 2125,
+    "adapted": 330,
+    "generated": 2207,
     "out_of_scope": 710,
-    "unsupported": 1907
+    "unsupported": 1824
   },
   "entries": [
     {
@@ -34401,13 +34401,27 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_core__frame__builder__dataframebuilder__freeze",
+          "receiver": "polars_core::frame::builder::DataFrameBuilder",
+          "reentry": "unwind",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrameBuilder::freeze"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_core::frame::builder::DataFrameBuilder::freeze",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_core:6979",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_core::frame::builder::DataFrameBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; routed through the engine thread",
+      "rune": "polars::DataFrameBuilder::freeze",
       "signature": "() -> polars_core::frame::dataframe::DataFrame",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -45729,13 +45743,28 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__series__builder__seriesbuilder__freeze",
+          "disposition": "case (fixture via constructor new)",
+          "id": "polars_core__series__builder__seriesbuilder__freeze",
+          "receiver": "polars_core::series::builder::SeriesBuilder",
+          "reentry": "unwind",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::SeriesBuilder::freeze"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::series::builder::SeriesBuilder::freeze",
+      "execution": "case (fixture via constructor new)",
+      "fallible": false,
       "key": "polars_core:10595",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_core::series::builder::SeriesBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; routed through the engine thread",
+      "rune": "polars::SeriesBuilder::freeze",
       "signature": "(polars_utils::pl_str::PlSmallStr) -> polars_core::series::Series",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -47462,13 +47491,28 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_io__csv__read__builder__builder__into_series",
+          "disposition": "case (fixture via constructor new (fallible), variant Boolean)",
+          "id": "polars_io__csv__read__builder__builder__into_series",
+          "receiver": "polars_io::csv::read::builder::Builder",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::Builder::into_series"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_io::csv::read::builder::Builder::into_series",
+      "execution": "case (fixture via constructor new (fallible), variant Boolean)",
+      "fallible": true,
       "key": "polars_io:2224",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_io::csv::read::builder::Builder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; routed through the engine thread",
+      "rune": "polars::Builder::into_series",
       "signature": "() -> polars_error::PolarsResult<polars_core::series::Series>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -50169,94 +50213,220 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__allow_parallel",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::allow_parallel"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_lazy::frame::JoinBuilder::allow_parallel",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": false,
       "key": "polars_lazy:532",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::JoinBuilder::allow_parallel",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__build_side",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::build_side"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_lazy::frame::JoinBuilder::build_side",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": true,
       "key": "polars_lazy:540",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::JoinBuilder::build_side",
       "signature": "(core::option::Option<polars_ops::frame::join::args::JoinBuildSide>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__coalesce",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::coalesce"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_lazy::frame::JoinBuilder::coalesce",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": false,
       "key": "polars_lazy:536",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::JoinBuilder::coalesce",
       "signature": "(polars_ops::frame::join::args::JoinCoalesce) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_lazy__frame__joinbuilder__finish",
+          "disposition": "case (fixture via constructor new)",
+          "id": "polars_lazy__frame__joinbuilder__finish",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "reentry": "unwind",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::JoinBuilder::finish"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_lazy::frame::JoinBuilder::finish",
+      "execution": "case (fixture via constructor new)",
+      "fallible": false,
       "key": "polars_lazy:317",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; routed through the engine thread",
+      "rune": "polars::JoinBuilder::finish",
       "signature": "() -> polars_lazy::frame::LazyFrame",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__force_parallel",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::force_parallel"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_lazy::frame::JoinBuilder::force_parallel",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": false,
       "key": "polars_lazy:533",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::JoinBuilder::force_parallel",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__how",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::how"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_lazy::frame::JoinBuilder::how",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": false,
       "key": "polars_lazy:526",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::JoinBuilder::how",
       "signature": "(polars_ops::frame::join::args::JoinType) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__join_nulls",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::join_nulls"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_lazy::frame::JoinBuilder::join_nulls",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": false,
       "key": "polars_lazy:534",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::JoinBuilder::join_nulls",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_lazy__frame__joinbuilder__join_where",
+          "disposition": "case (fixture via constructor new)",
+          "id": "polars_lazy__frame__joinbuilder__join_where",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::JoinBuilder::join_where"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::JoinBuilder::join_where",
+      "execution": "case (fixture via constructor new)",
+      "fallible": true,
       "key": "polars_lazy:542",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; routed through the engine thread; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::JoinBuilder::join_where",
       "signature": "(alloc::vec::Vec<polars_plan::dsl::expr::Expr>) -> polars_lazy::frame::LazyFrame",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__left_on",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::left_on"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::JoinBuilder::left_on",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": true,
       "key": "polars_lazy:530",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::JoinBuilder::left_on",
       "signature": "(E) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__maintain_order",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::maintain_order"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_lazy::frame::JoinBuilder::maintain_order",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": false,
       "key": "polars_lazy:538",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::JoinBuilder::maintain_order",
       "signature": "(polars_ops::frame::join::args::MaintainOrderJoin) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -50282,49 +50452,111 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__on",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::on"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::JoinBuilder::on",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": true,
       "key": "polars_lazy:529",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::JoinBuilder::on",
       "signature": "(E) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__right_on",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::right_on"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::JoinBuilder::right_on",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": true,
       "key": "polars_lazy:531",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::JoinBuilder::right_on",
       "signature": "(E) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__suffix",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::suffix"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_lazy::frame::JoinBuilder::suffix",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": false,
       "key": "polars_lazy:535",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::JoinBuilder::suffix",
       "signature": "(S) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__validate",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "route": "inherent",
+          "rune": "polars::JoinBuilder::validate"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_lazy::frame::JoinBuilder::validate",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": false,
       "key": "polars_lazy:527",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::JoinBuilder::validate",
       "signature": "(polars_ops::frame::join::args::JoinValidation) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+          "id": "polars_lazy__frame__joinbuilder__with",
+          "receiver": "polars_lazy::frame::JoinBuilder",
+          "reentry": "unwind",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::JoinBuilder::with"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::JoinBuilder::with",
+      "execution": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)",
+      "fallible": false,
       "key": "polars_lazy:525",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_lazy::frame::JoinBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; routed through the engine thread",
+      "rune": "polars::JoinBuilder::with",
       "signature": "(polars_lazy::frame::LazyFrame) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "callback",
@@ -50474,27 +50706,13 @@
       "status": "generated"
     },
     {
-      "bindings": [
-        {
-          "disposition": "return type has no comparison (W_polars_lazy__frame__exitable__InProcessQuery)",
-          "id": "polars_lazy__frame__lazyframe__collect_concurrently",
-          "receiver": "polars_lazy::frame::LazyFrame",
-          "reentry": "error",
-          "route": "inherent",
-          "route_reason": "executes callbacks",
-          "rune": "polars::LazyFrame::collect_concurrently"
-        }
-      ],
       "bucket": "mechanical",
       "canonical_path": "polars_lazy::frame::LazyFrame::collect_concurrently",
-      "execution": "return type has no comparison (W_polars_lazy__frame__exitable__InProcessQuery)",
-      "fallible": true,
       "key": "polars_lazy:230",
       "kind": "inherent",
-      "note": "consumes in Rust; the Rune value is cloned and stays usable; routed through the engine thread",
-      "rune": "polars::LazyFrame::collect_concurrently",
+      "reason": "release policy: the query runs on a detached rayon job that ends with tx.send(result).unwrap(); dropping the returned InProcessQuery before the result arrives makes that send fail, and rayon aborts the whole process on the panic (found by record 0109's fixture for InProcessQuery::fetch); a script must not be able to abort rnx (polars-lazy 0.55.2 src/frame/exitable.rs:19-35 (send().unwrap() in RAYON.spawn_fifo / spawn_blocking); rayon aborts on a panic in spawn)",
       "signature": "() -> polars_error::PolarsResult<polars_lazy::frame::exitable::InProcessQuery>",
-      "status": "generated"
+      "status": "unsupported"
     },
     {
       "bindings": [
@@ -53843,76 +54061,180 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__binary__binarynamespace__contains_literal",
+          "disposition": "case (fixture via producer Expr::binary)",
+          "id": "polars_plan__dsl__binary__binarynamespace__contains_literal",
+          "receiver": "polars_plan::dsl::binary::BinaryNameSpace",
+          "route": "inherent",
+          "rune": "polars::BinaryNameSpace::contains_literal"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::binary::BinaryNameSpace::contains_literal",
+      "execution": "case (fixture via producer Expr::binary)",
+      "fallible": false,
       "key": "polars_plan:552",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::binary::BinaryNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::BinaryNameSpace::contains_literal",
       "signature": "(polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__binary__binarynamespace__ends_with",
+          "disposition": "case (fixture via producer Expr::binary)",
+          "id": "polars_plan__dsl__binary__binarynamespace__ends_with",
+          "receiver": "polars_plan::dsl::binary::BinaryNameSpace",
+          "route": "inherent",
+          "rune": "polars::BinaryNameSpace::ends_with"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::binary::BinaryNameSpace::ends_with",
+      "execution": "case (fixture via producer Expr::binary)",
+      "fallible": false,
       "key": "polars_plan:553",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::binary::BinaryNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::BinaryNameSpace::ends_with",
       "signature": "(polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__binary__binarynamespace__get",
+          "disposition": "case (fixture via producer Expr::binary)",
+          "id": "polars_plan__dsl__binary__binarynamespace__get",
+          "receiver": "polars_plan::dsl::binary::BinaryNameSpace",
+          "route": "inherent",
+          "rune": "polars::BinaryNameSpace::get"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::binary::BinaryNameSpace::get",
+      "execution": "case (fixture via producer Expr::binary)",
+      "fallible": false,
       "key": "polars_plan:559",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::binary::BinaryNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::BinaryNameSpace::get",
       "signature": "(polars_plan::dsl::expr::Expr, bool) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__binary__binarynamespace__head",
+          "disposition": "case (fixture via producer Expr::binary)",
+          "id": "polars_plan__dsl__binary__binarynamespace__head",
+          "receiver": "polars_plan::dsl::binary::BinaryNameSpace",
+          "route": "inherent",
+          "rune": "polars::BinaryNameSpace::head"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::binary::BinaryNameSpace::head",
+      "execution": "case (fixture via producer Expr::binary)",
+      "fallible": false,
       "key": "polars_plan:557",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::binary::BinaryNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::BinaryNameSpace::head",
       "signature": "(polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__binary__binarynamespace__size_bytes",
+          "disposition": "case (fixture via producer Expr::binary)",
+          "id": "polars_plan__dsl__binary__binarynamespace__size_bytes",
+          "receiver": "polars_plan::dsl::binary::BinaryNameSpace",
+          "route": "inherent",
+          "rune": "polars::BinaryNameSpace::size_bytes"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::binary::BinaryNameSpace::size_bytes",
+      "execution": "case (fixture via producer Expr::binary)",
+      "fallible": false,
       "key": "polars_plan:555",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::binary::BinaryNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::BinaryNameSpace::size_bytes",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__binary__binarynamespace__slice",
+          "disposition": "case (fixture via producer Expr::binary)",
+          "id": "polars_plan__dsl__binary__binarynamespace__slice",
+          "receiver": "polars_plan::dsl::binary::BinaryNameSpace",
+          "route": "inherent",
+          "rune": "polars::BinaryNameSpace::slice"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::binary::BinaryNameSpace::slice",
+      "execution": "case (fixture via producer Expr::binary)",
+      "fallible": false,
       "key": "polars_plan:556",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::binary::BinaryNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::BinaryNameSpace::slice",
       "signature": "(polars_plan::dsl::expr::Expr, polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__binary__binarynamespace__starts_with",
+          "disposition": "case (fixture via producer Expr::binary)",
+          "id": "polars_plan__dsl__binary__binarynamespace__starts_with",
+          "receiver": "polars_plan::dsl::binary::BinaryNameSpace",
+          "route": "inherent",
+          "rune": "polars::BinaryNameSpace::starts_with"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::binary::BinaryNameSpace::starts_with",
+      "execution": "case (fixture via producer Expr::binary)",
+      "fallible": false,
       "key": "polars_plan:554",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::binary::BinaryNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::BinaryNameSpace::starts_with",
       "signature": "(polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__binary__binarynamespace__tail",
+          "disposition": "case (fixture via producer Expr::binary)",
+          "id": "polars_plan__dsl__binary__binarynamespace__tail",
+          "receiver": "polars_plan::dsl::binary::BinaryNameSpace",
+          "route": "inherent",
+          "rune": "polars::BinaryNameSpace::tail"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::binary::BinaryNameSpace::tail",
+      "execution": "case (fixture via producer Expr::binary)",
+      "fallible": false,
       "key": "polars_plan:558",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::binary::BinaryNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::BinaryNameSpace::tail",
       "signature": "(polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "callback",
@@ -53924,58 +54246,131 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__builder_dsl__dslbuilder__build",
+          "disposition": "case (fixture via constructor from_existing_df)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__build",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::build"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::build",
+      "execution": "case (fixture via constructor from_existing_df)",
+      "fallible": false,
       "key": "polars_plan:650",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::build",
       "signature": "() -> polars_plan::dsl::plan::DslPlan",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__cache",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::cache"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::cache",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": false,
       "key": "polars_plan:628",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::cache",
       "signature": "() -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__distinct",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::distinct"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::distinct",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": false,
       "key": "polars_plan:658",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::distinct",
       "signature": "(polars_plan::dsl::options::DistinctOptionsDSL) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__drop",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::drop"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::drop",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": false,
       "key": "polars_plan:629",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::drop",
       "signature": "(polars_plan::dsl::selector::Selector) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__drop_nans",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::drop_nans"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::drop_nans",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": true,
       "key": "polars_plan:635",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::DslBuilder::drop_nans",
       "signature": "(core::option::Option<polars_plan::dsl::selector::Selector>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__drop_nulls",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::drop_nulls"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::drop_nulls",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": true,
       "key": "polars_plan:636",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::DslBuilder::drop_nulls",
       "signature": "(core::option::Option<polars_plan::dsl::selector::Selector>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -53998,40 +54393,88 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (polars_core::chunked_array::ops::ExplodeOptions)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__explode",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::explode"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::explode",
+      "execution": "no fixture for a parameter (polars_core::chunked_array::ops::ExplodeOptions)",
+      "fallible": false,
       "key": "polars_plan:654",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::explode",
       "signature": "(polars_plan::dsl::selector::Selector, polars_core::chunked_array::ops::ExplodeOptions, bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__fill_nan",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::fill_nan"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::fill_nan",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": false,
       "key": "polars_plan:637",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::fill_nan",
       "signature": "(polars_plan::dsl::expr::Expr) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__fill_null",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::fill_null"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::fill_null",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": false,
       "key": "polars_plan:634",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::fill_null",
       "signature": "(polars_plan::dsl::expr::Expr) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__filter",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::filter"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::filter",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": false,
       "key": "polars_plan:645",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::filter",
       "signature": "(polars_plan::dsl::expr::Expr) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -54057,13 +54500,25 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__gather",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::gather"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::gather",
+      "execution": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+      "fallible": false,
       "key": "polars_plan:663",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::gather",
       "signature": "(polars_plan::dsl::plan::DslPlan, bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "option_struct",
@@ -54129,22 +54584,46 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__remove",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::remove"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::remove",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": false,
       "key": "polars_plan:646",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::DslBuilder::remove",
       "signature": "(polars_plan::dsl::expr::Expr) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__row_index",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::row_index"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::row_index",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": true,
       "key": "polars_plan:656",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::DslBuilder::row_index",
       "signature": "(polars_utils::pl_str::PlSmallStr, core::option::Option<polars_utils::index::IdxSize>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "option_struct",
@@ -54179,22 +54658,48 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__slice",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::slice"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::slice",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": true,
       "key": "polars_plan:660",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::DslBuilder::slice",
       "signature": "(i64, polars_utils::index::IdxSize) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__sort",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DslBuilder::sort"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::sort",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
+      "fallible": true,
       "key": "polars_plan:652",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; routed through the engine thread; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::DslBuilder::sort",
       "signature": "(alloc::vec::Vec<polars_plan::dsl::expr::Expr>, polars_core::chunked_array::ops::sort::options::SortMultipleOptions) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -54206,40 +54711,91 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)",
+          "id": "polars_plan__dsl__builder_dsl__dslbuilder__with_context",
+          "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
+          "route": "inherent",
+          "rune": "polars::DslBuilder::with_context"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::with_context",
+      "execution": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)",
+      "fallible": true,
       "key": "polars_plan:644",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::builder_dsl::DslBuilder",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::DslBuilder::with_context",
       "signature": "(alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__cat__categoricalnamespace__get_categories",
+          "disposition": "case (fixture via producer Expr::cat)",
+          "id": "polars_plan__dsl__cat__categoricalnamespace__get_categories",
+          "receiver": "polars_plan::dsl::cat::CategoricalNameSpace",
+          "route": "inherent",
+          "rune": "polars::CategoricalNameSpace::get_categories"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::cat::CategoricalNameSpace::get_categories",
+      "execution": "case (fixture via producer Expr::cat)",
+      "fallible": false,
       "key": "polars_plan:224",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::cat::CategoricalNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::CategoricalNameSpace::get_categories",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__cat__categoricalnamespace__physical",
+          "disposition": "case (fixture via producer Expr::cat)",
+          "id": "polars_plan__dsl__cat__categoricalnamespace__physical",
+          "receiver": "polars_plan::dsl::cat::CategoricalNameSpace",
+          "route": "inherent",
+          "rune": "polars::CategoricalNameSpace::physical"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::cat::CategoricalNameSpace::physical",
+      "execution": "case (fixture via producer Expr::cat)",
+      "fallible": false,
       "key": "polars_plan:228",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::cat::CategoricalNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::CategoricalNameSpace::physical",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__cat__categoricalnamespace__to",
+          "disposition": "case (fixture via producer Expr::cat)",
+          "id": "polars_plan__dsl__cat__categoricalnamespace__to",
+          "receiver": "polars_plan::dsl::cat::CategoricalNameSpace",
+          "route": "inherent",
+          "rune": "polars::CategoricalNameSpace::to"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::cat::CategoricalNameSpace::to",
+      "execution": "case (fixture via producer Expr::cat)",
+      "fallible": false,
       "key": "polars_plan:226",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::cat::CategoricalNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::CategoricalNameSpace::to",
       "signature": "(impl core::convert::Into<polars_plan::dsl::datatype_expr::DataTypeExpr>, bool) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -58134,202 +58690,490 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__agg",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__agg",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::agg"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::agg",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2972",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::agg",
       "signature": "(E) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__arg_max",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__arg_max",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::arg_max"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::arg_max",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2966",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::arg_max",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__arg_min",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__arg_min",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::arg_min"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::arg_min",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2965",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::arg_min",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__eval",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__eval",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::eval"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::eval",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2971",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::eval",
       "signature": "(E) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__first",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__first",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::first"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::first",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2962",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::first",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__get",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__get",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::get"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::get",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2961",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::get",
       "signature": "(polars_plan::dsl::expr::Expr, bool) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__head",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__head",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::head"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::head",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2969",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::head",
       "signature": "(polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__join",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__join",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::join"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::join",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2964",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::join",
       "signature": "(polars_plan::dsl::expr::Expr, bool) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__last",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__last",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::last"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::last",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2963",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::last",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__len",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__len",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::len"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::len",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2952",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::len",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__max",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__max",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::max"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::max",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2953",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::max",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__mean",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__mean",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::mean"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::mean",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2956",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::mean",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__median",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__median",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::median"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::median",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2957",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::median",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__min",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__min",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::min"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::min",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2954",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::min",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__shift",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__shift",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::shift"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::shift",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2967",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::shift",
       "signature": "(polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__slice",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__slice",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::slice"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::slice",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2968",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::slice",
       "signature": "(polars_plan::dsl::expr::Expr, polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__sort",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__sort",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "reentry": "unwind",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::ListNameSpace::sort"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::sort",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2960",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; routed through the engine thread",
+      "rune": "polars::ListNameSpace::sort",
       "signature": "(polars_core::chunked_array::ops::sort::options::SortOptions) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__std",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__std",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::std"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::std",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": true,
       "key": "polars_plan:2958",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::ListNameSpace::std",
       "signature": "(u8) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__sum",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__sum",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::sum"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::sum",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2955",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::sum",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__tail",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__tail",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::tail"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::tail",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": false,
       "key": "polars_plan:2970",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ListNameSpace::tail",
       "signature": "(polars_plan::dsl::expr::Expr) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__list__listnamespace__var",
+          "disposition": "case (fixture via producer Expr::list)",
+          "id": "polars_plan__dsl__list__listnamespace__var",
+          "receiver": "polars_plan::dsl::list::ListNameSpace",
+          "route": "inherent",
+          "rune": "polars::ListNameSpace::var"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::list::ListNameSpace::var",
+      "execution": "case (fixture via producer Expr::list)",
+      "fallible": true,
       "key": "polars_plan:2959",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::list::ListNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::ListNameSpace::var",
       "signature": "(u8) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__name__exprnamenamespace__keep",
+          "disposition": "case (fixture via producer Expr::name)",
+          "id": "polars_plan__dsl__name__exprnamenamespace__keep",
+          "receiver": "polars_plan::dsl::name::ExprNameNameSpace",
+          "route": "inherent",
+          "rune": "polars::ExprNameNameSpace::keep"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::name::ExprNameNameSpace::keep",
+      "execution": "case (fixture via producer Expr::name)",
+      "fallible": false,
       "key": "polars_plan:3250",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::name::ExprNameNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ExprNameNameSpace::keep",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "option_struct",
@@ -58350,58 +59194,136 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__name__exprnamenamespace__prefix",
+          "disposition": "case (fixture via producer Expr::name)",
+          "id": "polars_plan__dsl__name__exprnamenamespace__prefix",
+          "receiver": "polars_plan::dsl::name::ExprNameNameSpace",
+          "route": "inherent",
+          "rune": "polars::ExprNameNameSpace::prefix"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::name::ExprNameNameSpace::prefix",
+      "execution": "case (fixture via producer Expr::name)",
+      "fallible": false,
       "key": "polars_plan:3252",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::name::ExprNameNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ExprNameNameSpace::prefix",
       "signature": "(&str) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__name__exprnamenamespace__prefix_fields",
+          "disposition": "case (fixture via producer Expr::name)",
+          "id": "polars_plan__dsl__name__exprnamenamespace__prefix_fields",
+          "receiver": "polars_plan::dsl::name::ExprNameNameSpace",
+          "route": "inherent",
+          "rune": "polars::ExprNameNameSpace::prefix_fields"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::name::ExprNameNameSpace::prefix_fields",
+      "execution": "case (fixture via producer Expr::name)",
+      "fallible": false,
       "key": "polars_plan:3257",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::name::ExprNameNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ExprNameNameSpace::prefix_fields",
       "signature": "(&str) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__name__exprnamenamespace__suffix",
+          "disposition": "case (fixture via producer Expr::name)",
+          "id": "polars_plan__dsl__name__exprnamenamespace__suffix",
+          "receiver": "polars_plan::dsl::name::ExprNameNameSpace",
+          "route": "inherent",
+          "rune": "polars::ExprNameNameSpace::suffix"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::name::ExprNameNameSpace::suffix",
+      "execution": "case (fixture via producer Expr::name)",
+      "fallible": false,
       "key": "polars_plan:3253",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::name::ExprNameNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ExprNameNameSpace::suffix",
       "signature": "(&str) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__name__exprnamenamespace__suffix_fields",
+          "disposition": "case (fixture via producer Expr::name)",
+          "id": "polars_plan__dsl__name__exprnamenamespace__suffix_fields",
+          "receiver": "polars_plan::dsl::name::ExprNameNameSpace",
+          "route": "inherent",
+          "rune": "polars::ExprNameNameSpace::suffix_fields"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::name::ExprNameNameSpace::suffix_fields",
+      "execution": "case (fixture via producer Expr::name)",
+      "fallible": false,
       "key": "polars_plan:3258",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::name::ExprNameNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ExprNameNameSpace::suffix_fields",
       "signature": "(&str) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__name__exprnamenamespace__to_lowercase",
+          "disposition": "case (fixture via producer Expr::name)",
+          "id": "polars_plan__dsl__name__exprnamenamespace__to_lowercase",
+          "receiver": "polars_plan::dsl::name::ExprNameNameSpace",
+          "route": "inherent",
+          "rune": "polars::ExprNameNameSpace::to_lowercase"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::name::ExprNameNameSpace::to_lowercase",
+      "execution": "case (fixture via producer Expr::name)",
+      "fallible": false,
       "key": "polars_plan:3254",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::name::ExprNameNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ExprNameNameSpace::to_lowercase",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__name__exprnamenamespace__to_uppercase",
+          "disposition": "case (fixture via producer Expr::name)",
+          "id": "polars_plan__dsl__name__exprnamenamespace__to_uppercase",
+          "receiver": "polars_plan::dsl::name::ExprNameNameSpace",
+          "route": "inherent",
+          "rune": "polars::ExprNameNameSpace::to_uppercase"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::name::ExprNameNameSpace::to_uppercase",
+      "execution": "case (fixture via producer Expr::name)",
+      "fallible": false,
       "key": "polars_plan:3255",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::name::ExprNameNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::ExprNameNameSpace::to_uppercase",
       "signature": "() -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "conversion",
@@ -58485,22 +59407,44 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+          "id": "polars_plan__dsl__options__file_provider__fileprovidertype__get_path_or_file",
+          "receiver": "polars_plan::dsl::options::file_provider::FileProviderType",
+          "route": "inherent",
+          "rune": "polars::FileProviderType::get_path_or_file"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::options::file_provider::FileProviderType::get_path_or_file",
+      "execution": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+      "fallible": true,
       "key": "polars_plan:3441",
       "kind": "inherent",
-      "reason": "by-value argument of a non-Clone type: args (polars_plan::dsl::options::file_provider::FileProviderArgs)",
+      "rune": "polars::FileProviderType::get_path_or_file",
       "signature": "(polars_plan::dsl::options::file_provider::FileProviderArgs) -> polars_error::PolarsResult<polars_plan::dsl::options::file_provider::FileProviderReturn>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+          "id": "polars_plan__dsl__options__file_provider__hivepathprovider__get_path",
+          "receiver": "polars_plan::dsl::options::file_provider::HivePathProvider",
+          "route": "inherent",
+          "rune": "polars::HivePathProvider::get_path"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::options::file_provider::HivePathProvider::get_path",
+      "execution": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_plan:3510",
       "kind": "inherent",
-      "reason": "by-value argument of a non-Clone type: args (polars_plan::dsl::options::file_provider::FileProviderArgs)",
+      "rune": "polars::HivePathProvider::get_path",
       "signature": "(polars_plan::dsl::options::file_provider::FileProviderArgs) -> polars_error::PolarsResult<alloc::string::String>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -58524,13 +59468,24 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+          "id": "polars_plan__dsl__options__file_provider__icebergpathprovider__get_path",
+          "receiver": "polars_plan::dsl::options::file_provider::IcebergPathProvider",
+          "route": "inherent",
+          "rune": "polars::IcebergPathProvider::get_path"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::options::file_provider::IcebergPathProvider::get_path",
+      "execution": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_plan:3581",
       "kind": "inherent",
-      "reason": "by-value argument of a non-Clone type: args (polars_plan::dsl::options::file_provider::FileProviderArgs)",
+      "rune": "polars::IcebergPathProvider::get_path",
       "signature": "(polars_plan::dsl::options::file_provider::FileProviderArgs) -> polars_error::PolarsResult<alloc::string::String>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -59810,58 +60765,136 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__struct___structnamespace__drop",
+          "disposition": "case (fixture via producer Expr::struct_)",
+          "id": "polars_plan__dsl__struct___structnamespace__drop",
+          "receiver": "polars_plan::dsl::struct_::StructNameSpace",
+          "route": "inherent",
+          "rune": "polars::StructNameSpace::drop"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::drop",
+      "execution": "case (fixture via producer Expr::struct_)",
+      "fallible": true,
       "key": "polars_plan:6911",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::StructNameSpace::drop",
       "signature": "(I, bool) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__struct___structnamespace__field_by_index",
+          "disposition": "case (fixture via producer Expr::struct_)",
+          "id": "polars_plan__dsl__struct___structnamespace__field_by_index",
+          "receiver": "polars_plan::dsl::struct_::StructNameSpace",
+          "route": "inherent",
+          "rune": "polars::StructNameSpace::field_by_index"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::field_by_index",
+      "execution": "case (fixture via producer Expr::struct_)",
+      "fallible": false,
       "key": "polars_plan:6907",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::StructNameSpace::field_by_index",
       "signature": "(i64) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__struct___structnamespace__field_by_name",
+          "disposition": "case (fixture via producer Expr::struct_)",
+          "id": "polars_plan__dsl__struct___structnamespace__field_by_name",
+          "receiver": "polars_plan::dsl::struct_::StructNameSpace",
+          "route": "inherent",
+          "rune": "polars::StructNameSpace::field_by_name"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::field_by_name",
+      "execution": "case (fixture via producer Expr::struct_)",
+      "fallible": false,
       "key": "polars_plan:6909",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error",
+      "rune": "polars::StructNameSpace::field_by_name",
       "signature": "(&str) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__struct___structnamespace__field_by_names",
+          "disposition": "case (fixture via producer Expr::struct_)",
+          "id": "polars_plan__dsl__struct___structnamespace__field_by_names",
+          "receiver": "polars_plan::dsl::struct_::StructNameSpace",
+          "route": "inherent",
+          "rune": "polars::StructNameSpace::field_by_names"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::field_by_names",
+      "execution": "case (fixture via producer Expr::struct_)",
+      "fallible": true,
       "key": "polars_plan:6908",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::StructNameSpace::field_by_names",
       "signature": "(I) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__struct___structnamespace__rename_fields",
+          "disposition": "case (fixture via producer Expr::struct_)",
+          "id": "polars_plan__dsl__struct___structnamespace__rename_fields",
+          "receiver": "polars_plan::dsl::struct_::StructNameSpace",
+          "route": "inherent",
+          "rune": "polars::StructNameSpace::rename_fields"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::rename_fields",
+      "execution": "case (fixture via producer Expr::struct_)",
+      "fallible": true,
       "key": "polars_plan:6910",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::StructNameSpace::rename_fields",
       "signature": "(I) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_plan__dsl__struct___structnamespace__with_fields",
+          "disposition": "case (fixture via producer Expr::struct_)",
+          "id": "polars_plan__dsl__struct___structnamespace__with_fields",
+          "receiver": "polars_plan::dsl::struct_::StructNameSpace",
+          "route": "inherent",
+          "rune": "polars::StructNameSpace::with_fields"
+        }
+      ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::struct_::StructNameSpace::with_fields",
+      "execution": "case (fixture via producer Expr::struct_)",
+      "fallible": true,
       "key": "polars_plan:6912",
       "kind": "inherent",
-      "reason": "receiver consumes a non-Clone type: polars_plan::dsl::struct_::StructNameSpace",
+      "note": "consumes the Rune value, as in Rust; a later use of it is an access error; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::StructNameSpace::with_fields",
       "signature": "(alloc::vec::Vec<polars_plan::dsl::expr::Expr>) -> polars_plan::dsl::expr::Expr",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -75578,13 +76611,25 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (polars_io::cloud::cloud_writer::writer::CloudWriter)",
+          "id": "polars_io__cloud__cloud_writer__io_trait_wrap__cloudwriteriotraitwrap_as_core__convert__from_polars_io__cloud__cloud_writer__writer__cloudwriter_",
+          "receiver": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap",
+          "route": "inherent",
+          "rune": "polars::CloudWriterIoTraitWrap::from_cloud_writer"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap as core::convert::From",
+      "execution": "no fixture for a parameter (polars_io::cloud::cloud_writer::writer::CloudWriter)",
+      "fallible": false,
       "key": "polars_io:800:869",
       "kind": "foreign_trait_impl",
-      "reason": "conversion source: by-value argument of a non-Clone type: value (polars_io::cloud::cloud_writer::writer::CloudWriter)",
+      "note": "From<CloudWriter> as `from_cloud_writer`",
+      "rune": "polars::CloudWriterIoTraitWrap::from_cloud_writer",
       "signature": "(polars_io::cloud::cloud_writer::writer::CloudWriter) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "conversion",
@@ -75610,9 +76655,10 @@
       "counterpart": "polars_io:800:869",
       "key": "polars_io:797:869",
       "kind": "foreign_trait_impl",
-      "reason": "duplicate listing whose retained listing is unsupported: conversion source: by-value argument of a non-Clone type: value (polars_io::cloud::cloud_writer::writer::CloudWriter)",
+      "reason": "duplicate listing of impl polars_io:869: rustdoc lists it on this source type's page as well; its retained listing is on polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap; bound there as `from_cloud_writer`",
+      "rune": "polars::CloudWriterIoTraitWrap::from_cloud_writer",
       "signature": "(polars_io::cloud::cloud_writer::writer::CloudWriter) -> Self",
-      "status": "unsupported"
+      "status": "adapted"
     },
     {
       "bindings": [
@@ -100258,22 +101304,22 @@
           "receiver": "polars_plan::plans::lit::LiteralValue",
           "route": "implementor",
           "rune": "polars::LiteralValue::lit"
+        },
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_plan__plans__lit__literal__lit__on__null",
+          "receiver": "polars_plan::plans::lit::Null",
+          "route": "implementor",
+          "rune": "polars::Null::lit"
         }
       ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::plans::lit::Literal::lit",
-      "exceptions": [
-        {
-          "reason": "receiver consumes a non-Clone type: polars_plan::plans::lit::Null",
-          "receiver": "polars_plan::plans::lit::Null",
-          "route": "implementor"
-        }
-      ],
-      "execution": "case (fixture via constructor new_idxsize (fallible))",
+      "execution": "case (on 1 of 2 receivers)",
       "fallible": false,
       "key": "polars_plan:13335",
       "kind": "trait_method",
-      "rune": "polars::LiteralValue::lit",
+      "rune": "polars::LiteralValue::lit polars::Null::lit",
       "signature": "() -> polars_plan::dsl::expr::Expr",
       "status": "generated"
     },
@@ -100664,10 +101710,22 @@
         "type": "polars_lazy::frame::JoinBuilder"
       },
       {
+        "recipe": "producer Expr::binary",
+        "rune": "fx::expr().binary()",
+        "rust": "<polars_plan::dsl::Expr>::binary(expr())",
+        "type": "polars_plan::dsl::binary::BinaryNameSpace"
+      },
+      {
         "recipe": "constructor from_existing_df",
         "rune": "polars::DslBuilder::from_existing_df(fx::df())",
         "rust": "<polars_plan::dsl::DslBuilder>::from_existing_df(df())",
         "type": "polars_plan::dsl::builder_dsl::DslBuilder"
+      },
+      {
+        "recipe": "producer Expr::cat",
+        "rune": "fx::expr().cat()",
+        "rust": "<polars_plan::dsl::Expr>::cat(expr())",
+        "type": "polars_plan::dsl::cat::CategoricalNameSpace"
       },
       {
         "recipe": "variant Name",
@@ -100694,6 +101752,18 @@
         "type": "polars_plan::dsl::function_expr::struct_::StructFunction"
       },
       {
+        "recipe": "producer Expr::list",
+        "rune": "fx::expr().list()",
+        "rust": "<polars_plan::dsl::Expr>::list(expr())",
+        "type": "polars_plan::dsl::list::ListNameSpace"
+      },
+      {
+        "recipe": "producer Expr::name",
+        "rune": "fx::expr().name()",
+        "rust": "<polars_plan::dsl::Expr>::name(expr())",
+        "type": "polars_plan::dsl::name::ExprNameNameSpace"
+      },
+      {
         "recipe": "variant Csv",
         "rune": "polars::FileWriteFormat::Csv(polars::CsvWriterOptions::default_())",
         "rust": "<polars_plan::dsl::FileWriteFormat>::Csv(<polars_io::csv::write::CsvWriterOptions>::default())",
@@ -100716,6 +101786,12 @@
         "rune": "match polars::TimeUnitSet::from_bits_retain(2) { Ok(v) => v, Err(e) => panic(`fixture: from_bits_retain failed: ${e}`) }",
         "rust": "<polars_plan::dsl::TimeUnitSet>::from_bits_retain(2u8)",
         "type": "polars_plan::dsl::selector::TimeUnitSet"
+      },
+      {
+        "recipe": "producer Expr::struct_",
+        "rune": "fx::expr().struct_()",
+        "rust": "<polars_plan::dsl::Expr>::struct_(expr())",
+        "type": "polars_plan::dsl::struct_::StructNameSpace"
       },
       {
         "recipe": "constructor new_idxsize (fallible)",
@@ -100846,6 +101922,14 @@
         "type": "polars_error::PolarsError"
       },
       {
+        "reason": "constructors exist but none has fixtures for all arguments",
+        "type": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::cloud::cloud_writer::writer::CloudWriter"
+      },
+      {
         "reason": "public fields, no Default, no constructor binding",
         "type": "polars_io::cloud::concurrency::IoSample"
       },
@@ -100880,6 +101964,10 @@
       {
         "reason": "no public fields, no Default, no constructor binding",
         "type": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::csv::read::builder::Utf8Field"
       },
       {
         "reason": "no public fields, no Default, no constructor binding",
@@ -100942,14 +102030,6 @@
         "type": "polars_plan::dsl::arity::When"
       },
       {
-        "reason": "no public fields, no Default, no constructor binding",
-        "type": "polars_plan::dsl::binary::BinaryNameSpace"
-      },
-      {
-        "reason": "no public fields, no Default, no constructor binding",
-        "type": "polars_plan::dsl::cat::CategoricalNameSpace"
-      },
-      {
         "reason": "no unit variant and no variant whose payload has fixtures",
         "type": "polars_plan::dsl::expr::AggExpr"
       },
@@ -100983,15 +102063,7 @@
       },
       {
         "reason": "public fields, no Default, no constructor binding",
-        "type": "polars_plan::dsl::list::ListNameSpace"
-      },
-      {
-        "reason": "public fields, no Default, no constructor binding",
         "type": "polars_plan::dsl::match_to_schema::MatchToSchemaPerColumn"
-      },
-      {
-        "reason": "no public fields, no Default, no constructor binding",
-        "type": "polars_plan::dsl::name::ExprNameNameSpace"
       },
       {
         "reason": "no unit variant and no variant whose payload has fixtures",
@@ -101082,12 +102154,12 @@
         "type": "polars_plan::dsl::scan_sources::ScanSources"
       },
       {
-        "reason": "no public fields, no Default, no constructor binding",
-        "type": "polars_plan::dsl::struct_::StructNameSpace"
-      },
-      {
         "reason": "public fields, no Default, no constructor binding",
         "type": "polars_plan::dsl::udf::UserDefinedFunction"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_plan::plans::lit::Null"
       },
       {
         "reason": "Default impl without a generated default_ binding (the impl is on the generic base), no constructor binding",
@@ -141482,7 +142554,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 2439,
+  "oracle_cases": 2489,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -141805,6 +142877,10 @@
       "reason": "no fixture for a parameter (core::option::Option<&polars_core::datatypes::temporal::time_zone::TimeZone>)"
     },
     {
+      "path": "polars_core::frame::builder::DataFrameBuilder::freeze",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
       "path": "polars_core::frame::builder::DataFrameBuilder::freeze_reset",
       "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     },
@@ -142121,16 +143197,64 @@
       "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     },
     {
+      "path": "polars_lazy::frame::JoinBuilder::allow_parallel",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::build_side",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::coalesce",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::force_parallel",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::how",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::join_nulls",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::left_on",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::maintain_order",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
       "path": "polars_lazy::frame::JoinBuilder::new",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::on",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::right_on",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::suffix",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::validate",
+      "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
+    },
+    {
+      "path": "polars_lazy::frame::JoinBuilder::with",
       "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
     },
     {
       "path": "polars_lazy::frame::LazyFrame::collect_all_with_engine",
       "reason": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)"
-    },
-    {
-      "path": "polars_lazy::frame::LazyFrame::collect_concurrently",
-      "reason": "return type has no comparison (W_polars_lazy__frame__exitable__InProcessQuery)"
     },
     {
       "path": "polars_lazy::frame::LazyFrame::explain_all",
@@ -142329,16 +143453,76 @@
       "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     },
     {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::cache",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::distinct",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::drop",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::drop_nans",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::drop_nulls",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
       "path": "polars_plan::dsl::builder_dsl::DslBuilder::expand_paths",
       "reason": "no fixture for a parameter (polars_plan::dsl::scan_sources::ScanSources)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::explode",
+      "reason": "no fixture for a parameter (polars_core::chunked_array::ops::ExplodeOptions)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::fill_nan",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::fill_null",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::filter",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
     },
     {
       "path": "polars_plan::dsl::builder_dsl::DslBuilder::from_existing_df",
       "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
     },
     {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::gather",
+      "reason": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::remove",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::row_index",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
       "path": "polars_plan::dsl::builder_dsl::DslBuilder::scan_parquet",
       "reason": "no fixture for a parameter (polars_plan::dsl::scan_sources::ScanSources)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::slice",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::sort",
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
+    },
+    {
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::with_context",
+      "reason": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)"
     },
     {
       "path": "polars_plan::dsl::datatype_expr::DataTypeExpr::into_datatype",
@@ -142413,7 +143597,19 @@
       "reason": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)"
     },
     {
+      "path": "polars_plan::dsl::options::file_provider::FileProviderType::get_path_or_file",
+      "reason": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)"
+    },
+    {
+      "path": "polars_plan::dsl::options::file_provider::HivePathProvider::get_path",
+      "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
+    },
+    {
       "path": "polars_plan::dsl::options::file_provider::IcebergPathProvider::file_part_prefix_mut",
+      "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_plan::dsl::options::file_provider::IcebergPathProvider::get_path",
       "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
     },
     {
@@ -142939,6 +144135,10 @@
     {
       "path": "polars_error::warning::PolarsWarning as core::fmt::Debug",
       "reason": "protocol Debug has no script-level trigger"
+    },
+    {
+      "path": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap as core::convert::From",
+      "reason": "no fixture for a parameter (polars_io::cloud::cloud_writer::writer::CloudWriter)"
     },
     {
       "path": "polars_io::cloud::concurrency::ConcurrencyController as core::fmt::Debug",
@@ -144427,12 +145627,16 @@
     {
       "path": "polars_lazy::scan::file_list_reader::LazyFileListReader::with_sources",
       "reason": "no fixture for the receiver type (constructors exist but none has fixtures for all arguments)"
+    },
+    {
+      "path": "polars_plan::plans::lit::Literal::lit",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     }
   ],
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "deb828aad356aba000ae915cc2b1faa1c8bcd27803352fe2673dc0fd6af32b47",
+    "sha256": "af6759fe3f4b05b5f86b89134f3469b2aa61dcfd9291e7bf10660cd82abfc4cf",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",
@@ -145243,6 +146447,22 @@
     },
     {
       "hand_written": false,
+      "identity": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap",
+      "rule": "api type",
+      "rune": "polars::CloudWriterIoTraitWrap",
+      "shared_with": [],
+      "type": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_io::cloud::cloud_writer::writer::CloudWriter",
+      "rule": "api type",
+      "rune": "polars::CloudWriter",
+      "shared_with": [],
+      "type": "polars_io::cloud::cloud_writer::writer::CloudWriter"
+    },
+    {
+      "hand_written": false,
       "identity": "polars_io::cloud::concurrency::ConcurrencyController",
       "rule": "api type",
       "rune": "polars::ConcurrencyController",
@@ -145432,6 +146652,14 @@
       "rune": "polars::Builder",
       "shared_with": [],
       "type": "polars_io::csv::read::builder::Builder"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_io::csv::read::builder::Utf8Field",
+      "rule": "api type",
+      "rune": "polars::Utf8Field",
+      "shared_with": [],
+      "type": "polars_io::csv::read::builder::Utf8Field"
     },
     {
       "hand_written": false,
@@ -146568,6 +147796,14 @@
       "rune": "polars::LiteralValue",
       "shared_with": [],
       "type": "polars_plan::plans::lit::LiteralValue"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_plan::plans::lit::Null",
+      "rule": "api type",
+      "rune": "polars::Null",
+      "shared_with": [],
+      "type": "polars_plan::plans::lit::Null"
     },
     {
       "hand_written": false,

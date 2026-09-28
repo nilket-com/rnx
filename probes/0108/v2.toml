@@ -688,6 +688,10 @@ rust = '|_: p::DataType| p::DataType::Float64'
 # Record 0084: operations the mapping rules would admit but the release
 # refuses until a binding validates the source contract at runtime.
 [[refused]]
+path = "polars_lazy::frame::LazyFrame::collect_concurrently"
+reason = "the query runs on a detached rayon job that ends with tx.send(result).unwrap(); dropping the returned InProcessQuery before the result arrives makes that send fail, and rayon aborts the whole process on the panic (found by record 0109's fixture for InProcessQuery::fetch); a script must not be able to abort rnx"
+cite = "polars-lazy da47b74 crates/polars-lazy/src/frame/exitable.rs:16-35 (send().unwrap() in RAYON.spawn_fifo / spawn_blocking); rayon aborts on a panic in spawn"
+[[refused]]
 path = "polars_core::chunked_array::ChunkedArray::match_chunks"
 reason = "the single-chunk receiver and the chunk-length sum are debug_assert! only, before sliced_unchecked; a release binding would be undefined behaviour on bad input"
 cite = "polars-core 0.55.2 src/chunked_array/mod.rs:845-866; probes/0083/probe B"

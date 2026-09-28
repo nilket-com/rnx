@@ -1,5 +1,5 @@
 {
-  "cases": 2439,
+  "cases": 2489,
   "results": [
     {
       "detail": "false",
@@ -12234,6 +12234,14 @@
       "unordered": false
     },
     {
+      "detail": "x:Int64:[]",
+      "id": "polars_core__series__builder__seriesbuilder__freeze",
+      "path": "polars_core::series::builder::SeriesBuilder::freeze",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "true",
       "id": "polars_core__series__builder__seriesbuilder__is_empty",
       "path": "polars_core::series::builder::SeriesBuilder::is_empty",
@@ -12533,6 +12541,14 @@
       "detail": "Boolean",
       "id": "polars_io__csv__read__builder__builder__dtype",
       "path": "polars_io::csv::read::builder::Builder::dtype",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "x:Boolean:[]",
+      "id": "polars_io__csv__read__builder__builder__into_series",
+      "path": "polars_io::csv::read::builder::Builder::into_series",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -12898,6 +12914,22 @@
       "unordered": false
     },
     {
+      "detail": "'with' not set in join builder",
+      "id": "polars_lazy__frame__joinbuilder__finish",
+      "path": "polars_lazy::frame::JoinBuilder::finish",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
+      "detail": "with not set",
+      "id": "polars_lazy__frame__joinbuilder__join_where",
+      "path": "polars_lazy::frame::JoinBuilder::join_where",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_panic",
+      "unordered": false
+    },
+    {
       "detail": "collected shape=(2, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
       "id": "polars_lazy__frame__lazyframe__bottom_k",
       "path": "polars_lazy::frame::LazyFrame::bottom_k",
@@ -13258,15 +13290,15 @@
       "unordered": false
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
       "id": "polars_lazy__frame__lazyframe__unique",
       "path": "polars_lazy::frame::LazyFrame::unique",
       "policy": "unordered: default arguments [Polars documents unique as order-unspecified unless maintain_order is set]",
-      "status": "row_order_differs",
+      "status": "match",
       "unordered": true
     },
     {
-      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
+      "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5))]",
       "id": "polars_lazy__frame__lazyframe__unique_generic",
       "path": "polars_lazy::frame::LazyFrame::unique_generic",
       "policy": "unordered: default arguments [as unique]",
@@ -13597,6 +13629,102 @@
       "detail": "false",
       "id": "polars_ops__frame__join__args__joinvalidation__needs_checks",
       "path": "polars_ops::frame::join::args::JoinValidation::needs_checks",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__binary__binarynamespace__contains_literal",
+      "path": "polars_plan::dsl::binary::BinaryNameSpace::contains_literal",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__binary__binarynamespace__ends_with",
+      "path": "polars_plan::dsl::binary::BinaryNameSpace::ends_with",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: ExprContext",
+      "id": "polars_plan__dsl__binary__binarynamespace__get",
+      "path": "polars_plan::dsl::binary::BinaryNameSpace::get",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: ExprContext",
+      "id": "polars_plan__dsl__binary__binarynamespace__head",
+      "path": "polars_plan::dsl::binary::BinaryNameSpace::head",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: ExprContext",
+      "id": "polars_plan__dsl__binary__binarynamespace__size_bytes",
+      "path": "polars_plan::dsl::binary::BinaryNameSpace::size_bytes",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: ExprContext",
+      "id": "polars_plan__dsl__binary__binarynamespace__slice",
+      "path": "polars_plan::dsl::binary::BinaryNameSpace::slice",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__binary__binarynamespace__starts_with",
+      "path": "polars_plan::dsl::binary::BinaryNameSpace::starts_with",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: ExprContext",
+      "id": "polars_plan__dsl__binary__binarynamespace__tail",
+      "path": "polars_plan::dsl::binary::BinaryNameSpace::tail",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "DataFrameScan { df: shape: (3, 3)\nto see more, compile with the 'fmt' or 'fmt_no_tty' feature, schema: Schema { fields: {\"x\": Int64, \"y\": String, \"z\": Float64}, metadata: () } }",
+      "id": "polars_plan__dsl__builder_dsl__dslbuilder__build",
+      "path": "polars_plan::dsl::builder_dsl::DslBuilder::build",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: ExprContext",
+      "id": "polars_plan__dsl__cat__categoricalnamespace__get_categories",
+      "path": "polars_plan::dsl::cat::CategoricalNameSpace::get_categories",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__cat__categoricalnamespace__physical",
+      "path": "polars_plan::dsl::cat::CategoricalNameSpace::physical",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__cat__categoricalnamespace__to",
+      "path": "polars_plan::dsl::cat::CategoricalNameSpace::to",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -14818,6 +14946,230 @@
       "unordered": false
     },
     {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__agg",
+      "path": "polars_plan::dsl::list::ListNameSpace::agg",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__arg_max",
+      "path": "polars_plan::dsl::list::ListNameSpace::arg_max",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__arg_min",
+      "path": "polars_plan::dsl::list::ListNameSpace::arg_min",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__eval",
+      "path": "polars_plan::dsl::list::ListNameSpace::eval",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__first",
+      "path": "polars_plan::dsl::list::ListNameSpace::first",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__get",
+      "path": "polars_plan::dsl::list::ListNameSpace::get",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__head",
+      "path": "polars_plan::dsl::list::ListNameSpace::head",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__join",
+      "path": "polars_plan::dsl::list::ListNameSpace::join",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__last",
+      "path": "polars_plan::dsl::list::ListNameSpace::last",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__len",
+      "path": "polars_plan::dsl::list::ListNameSpace::len",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__max",
+      "path": "polars_plan::dsl::list::ListNameSpace::max",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__mean",
+      "path": "polars_plan::dsl::list::ListNameSpace::mean",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__median",
+      "path": "polars_plan::dsl::list::ListNameSpace::median",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__min",
+      "path": "polars_plan::dsl::list::ListNameSpace::min",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__shift",
+      "path": "polars_plan::dsl::list::ListNameSpace::shift",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__slice",
+      "path": "polars_plan::dsl::list::ListNameSpace::slice",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__sort",
+      "path": "polars_plan::dsl::list::ListNameSpace::sort",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__std",
+      "path": "polars_plan::dsl::list::ListNameSpace::std",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__sum",
+      "path": "polars_plan::dsl::list::ListNameSpace::sum",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__tail",
+      "path": "polars_plan::dsl::list::ListNameSpace::tail",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__list__listnamespace__var",
+      "path": "polars_plan::dsl::list::ListNameSpace::var",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__name__exprnamenamespace__keep",
+      "path": "polars_plan::dsl::name::ExprNameNameSpace::keep",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[xx:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__name__exprnamenamespace__prefix",
+      "path": "polars_plan::dsl::name::ExprNameNameSpace::prefix",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__name__exprnamenamespace__prefix_fields",
+      "path": "polars_plan::dsl::name::ExprNameNameSpace::prefix_fields",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[xx:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__name__exprnamenamespace__suffix",
+      "path": "polars_plan::dsl::name::ExprNameNameSpace::suffix",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__name__exprnamenamespace__suffix_fields",
+      "path": "polars_plan::dsl::name::ExprNameNameSpace::suffix_fields",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__name__exprnamenamespace__to_lowercase",
+      "path": "polars_plan::dsl::name::ExprNameNameSpace::to_lowercase",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "selected shape=(3, 1); columns=[X:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+      "id": "polars_plan__dsl__name__exprnamenamespace__to_uppercase",
+      "path": "polars_plan::dsl::name::ExprNameNameSpace::to_uppercase",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "false",
       "id": "polars_plan__dsl__options__groupbyoptions__is_dynamic",
       "path": "polars_plan::dsl::options::GroupbyOptions::is_dynamic",
@@ -15053,6 +15405,54 @@
       "detail": "TimeUnitSet(MICRO_SECONDS)",
       "id": "polars_plan__dsl__selector__timeunitset__union",
       "path": "polars_plan::dsl::selector::TimeUnitSet::union",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__struct___structnamespace__drop",
+      "path": "polars_plan::dsl::struct_::StructNameSpace::drop",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__struct___structnamespace__field_by_index",
+      "path": "polars_plan::dsl::struct_::StructNameSpace::field_by_index",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__struct___structnamespace__field_by_name",
+      "path": "polars_plan::dsl::struct_::StructNameSpace::field_by_name",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__struct___structnamespace__field_by_names",
+      "path": "polars_plan::dsl::struct_::StructNameSpace::field_by_names",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: ExprContext",
+      "id": "polars_plan__dsl__struct___structnamespace__rename_fields",
+      "path": "polars_plan::dsl::struct_::StructNameSpace::rename_fields",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "select error: Context",
+      "id": "polars_plan__dsl__struct___structnamespace__with_fields",
+      "path": "polars_plan::dsl::struct_::StructNameSpace::with_fields",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -19516,9 +19916,9 @@
   ],
   "tally": {
     "both_error": 98,
-    "both_panic": 17,
-    "match": 2322,
-    "row_order_differs": 2
+    "both_panic": 19,
+    "match": 2371,
+    "row_order_differs": 1
   },
-  "verified": 2439
+  "verified": 2489
 }
