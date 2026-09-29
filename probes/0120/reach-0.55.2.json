@@ -1,0 +1,1130 @@
+[
+  {
+    "arrow_dtype": "Int8",
+    "concrete": "PrimitiveArray<i8>",
+    "item": "i8",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int8",
+    "concrete": "PrimitiveArray<i8>",
+    "item": "i8",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int8",
+    "concrete": "PrimitiveArray<i8>",
+    "item": "i8",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int8",
+    "concrete": "PrimitiveArray<i8>",
+    "item": "i8",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int8",
+    "concrete": "PrimitiveArray<i8>",
+    "item": "i8",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int8",
+    "concrete": "PrimitiveArray<i8>",
+    "item": "i8",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int16",
+    "concrete": "PrimitiveArray<i16>",
+    "item": "i16",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int16",
+    "concrete": "PrimitiveArray<i16>",
+    "item": "i16",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int16",
+    "concrete": "PrimitiveArray<i16>",
+    "item": "i16",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int16",
+    "concrete": "PrimitiveArray<i16>",
+    "item": "i16",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int16",
+    "concrete": "PrimitiveArray<i16>",
+    "item": "i16",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int16",
+    "concrete": "PrimitiveArray<i16>",
+    "item": "i16",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "i32",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "i32",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "i32",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "i32",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "i32",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "i32",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "i64",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "i64",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "i64",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "i64",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "i64",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "i64",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt8",
+    "concrete": "PrimitiveArray<u8>",
+    "item": "u8",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt8",
+    "concrete": "PrimitiveArray<u8>",
+    "item": "u8",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt8",
+    "concrete": "PrimitiveArray<u8>",
+    "item": "u8",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt8",
+    "concrete": "PrimitiveArray<u8>",
+    "item": "u8",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt8",
+    "concrete": "PrimitiveArray<u8>",
+    "item": "u8",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt8",
+    "concrete": "PrimitiveArray<u8>",
+    "item": "u8",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt16",
+    "concrete": "PrimitiveArray<u16>",
+    "item": "u16",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt16",
+    "concrete": "PrimitiveArray<u16>",
+    "item": "u16",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt16",
+    "concrete": "PrimitiveArray<u16>",
+    "item": "u16",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt16",
+    "concrete": "PrimitiveArray<u16>",
+    "item": "u16",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt16",
+    "concrete": "PrimitiveArray<u16>",
+    "item": "u16",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt16",
+    "concrete": "PrimitiveArray<u16>",
+    "item": "u16",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt32",
+    "concrete": "PrimitiveArray<u32>",
+    "item": "u32",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt32",
+    "concrete": "PrimitiveArray<u32>",
+    "item": "u32",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt32",
+    "concrete": "PrimitiveArray<u32>",
+    "item": "u32",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt32",
+    "concrete": "PrimitiveArray<u32>",
+    "item": "u32",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt32",
+    "concrete": "PrimitiveArray<u32>",
+    "item": "u32",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt32",
+    "concrete": "PrimitiveArray<u32>",
+    "item": "u32",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt64",
+    "concrete": "PrimitiveArray<u64>",
+    "item": "u64",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt64",
+    "concrete": "PrimitiveArray<u64>",
+    "item": "u64",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt64",
+    "concrete": "PrimitiveArray<u64>",
+    "item": "u64",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt64",
+    "concrete": "PrimitiveArray<u64>",
+    "item": "u64",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt64",
+    "concrete": "PrimitiveArray<u64>",
+    "item": "u64",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "UInt64",
+    "concrete": "PrimitiveArray<u64>",
+    "item": "u64",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float32",
+    "concrete": "PrimitiveArray<f32>",
+    "item": "f32",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float32",
+    "concrete": "PrimitiveArray<f32>",
+    "item": "f32",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float32",
+    "concrete": "PrimitiveArray<f32>",
+    "item": "f32",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float32",
+    "concrete": "PrimitiveArray<f32>",
+    "item": "f32",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float32",
+    "concrete": "PrimitiveArray<f32>",
+    "item": "f32",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float32",
+    "concrete": "PrimitiveArray<f32>",
+    "item": "f32",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float64",
+    "concrete": "PrimitiveArray<f64>",
+    "item": "f64",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float64",
+    "concrete": "PrimitiveArray<f64>",
+    "item": "f64",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float64",
+    "concrete": "PrimitiveArray<f64>",
+    "item": "f64",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float64",
+    "concrete": "PrimitiveArray<f64>",
+    "item": "f64",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float64",
+    "concrete": "PrimitiveArray<f64>",
+    "item": "f64",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Float64",
+    "concrete": "PrimitiveArray<f64>",
+    "item": "f64",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Boolean",
+    "concrete": "BooleanArray",
+    "item": "bool",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Boolean",
+    "concrete": "BooleanArray",
+    "item": "bool",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Boolean",
+    "concrete": "BooleanArray",
+    "item": "bool",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Boolean",
+    "concrete": "BooleanArray",
+    "item": "bool",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Boolean",
+    "concrete": "BooleanArray",
+    "item": "bool",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Boolean",
+    "concrete": "BooleanArray",
+    "item": "bool",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Utf8View",
+    "concrete": "Utf8ViewArray",
+    "item": "str",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Utf8View",
+    "concrete": "Utf8ViewArray",
+    "item": "str",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Utf8View",
+    "concrete": "Utf8ViewArray",
+    "item": "str",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeUtf8",
+    "concrete": "Utf8Array<i64>",
+    "item": "str",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeUtf8",
+    "concrete": "Utf8Array<i64>",
+    "item": "str",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Utf8View",
+    "concrete": "Utf8ViewArray",
+    "item": "str",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Null",
+    "concrete": "NullArray",
+    "item": "null",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Null",
+    "concrete": "NullArray",
+    "item": "null",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Null",
+    "concrete": "NullArray",
+    "item": "null",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Null",
+    "concrete": "NullArray",
+    "item": "null",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Null",
+    "concrete": "NullArray",
+    "item": "null",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Null",
+    "concrete": "NullArray",
+    "item": "null",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "BinaryView",
+    "concrete": "BinaryViewArray",
+    "item": "binary",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "BinaryView",
+    "concrete": "BinaryViewArray",
+    "item": "binary",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "BinaryView",
+    "concrete": "BinaryViewArray",
+    "item": "binary",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeBinary",
+    "concrete": "BinaryArray<i64>",
+    "item": "binary",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeBinary",
+    "concrete": "BinaryArray<i64>",
+    "item": "binary",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "BinaryView",
+    "concrete": "BinaryViewArray",
+    "item": "binary",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "BinaryView",
+    "concrete": "BinaryViewArray",
+    "item": "binary_offset",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "BinaryView",
+    "concrete": "BinaryViewArray",
+    "item": "binary_offset",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "BinaryView",
+    "concrete": "BinaryViewArray",
+    "item": "binary_offset",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeBinary",
+    "concrete": "BinaryArray<i64>",
+    "item": "binary_offset",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeBinary",
+    "concrete": "BinaryArray<i64>",
+    "item": "binary_offset",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "BinaryView",
+    "concrete": "BinaryViewArray",
+    "item": "binary_offset",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Date32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "date",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Date32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "date",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "date",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Date32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "date",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Date32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "date",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int32",
+    "concrete": "PrimitiveArray<i32>",
+    "item": "date",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Timestamp(Millisecond, None)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "datetime_ms",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Timestamp(Millisecond, None)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "datetime_ms",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "datetime_ms",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Timestamp(Millisecond, None)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "datetime_ms",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Timestamp(Millisecond, None)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "datetime_ms",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "datetime_ms",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Duration(Millisecond)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "duration_ms",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Duration(Millisecond)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "duration_ms",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "duration_ms",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Duration(Millisecond)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "duration_ms",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Duration(Millisecond)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "duration_ms",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "duration_ms",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Time64(Nanosecond)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "time",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Time64(Nanosecond)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "time",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "time",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Time64(Nanosecond)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "time",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Time64(Nanosecond)",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "time",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "time",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "item": "i128",
+    "level": "newest",
+    "script": "script error: InvalidOperation"
+  },
+  {
+    "item": "i128",
+    "level": "oldest",
+    "script": "script error: InvalidOperation"
+  },
+  {
+    "item": "u128",
+    "level": "newest",
+    "script": "script error: InvalidOperation"
+  },
+  {
+    "item": "u128",
+    "level": "oldest",
+    "script": "script error: InvalidOperation"
+  },
+  {
+    "item": "f16",
+    "level": "newest",
+    "script": "script error: InvalidOperation"
+  },
+  {
+    "item": "f16",
+    "level": "oldest",
+    "script": "script error: InvalidOperation"
+  },
+  {
+    "item": "decimal",
+    "level": "newest",
+    "script": "compile: Some(Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 82:107, kind: MissingItemParameters { item: ::polars::DataType::Decimal, parameters: [None, None] } }) }))"
+  },
+  {
+    "item": "decimal",
+    "level": "oldest",
+    "script": "compile: Some(Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 82:107, kind: MissingItemParameters { item: ::polars::DataType::Decimal, parameters: [None, None] } }) }))"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Int64, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_i64",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Int64, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_i64",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Int64, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_i64",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "list_i64",
+    "level": "newest",
+    "route": "ListChunked::get",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Int64, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_i64",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Int64, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_i64",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Int64, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_i64",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Int64",
+    "concrete": "PrimitiveArray<i64>",
+    "item": "list_i64",
+    "level": "oldest",
+    "route": "ListChunked::get",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Utf8View, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_str",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Utf8View, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_str",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Utf8View, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_str",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Utf8View",
+    "concrete": "Utf8ViewArray",
+    "item": "list_str",
+    "level": "newest",
+    "route": "ListChunked::get",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: LargeUtf8, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_str",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: LargeUtf8, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_str",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "LargeList(Field { name: \"item\", dtype: Utf8View, is_nullable: true, metadata: None })",
+    "concrete": "ListArray<i64>",
+    "item": "list_str",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Utf8View",
+    "concrete": "Utf8ViewArray",
+    "item": "list_str",
+    "level": "oldest",
+    "route": "ListChunked::get",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Struct([Field { name: \"\", dtype: Int64, is_nullable: true, metadata: None }, Field { name: \"y\", dtype: Utf8View, is_nullable: true, metadata: None }])",
+    "concrete": "StructArray",
+    "item": "struct",
+    "level": "newest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Struct([Field { name: \"\", dtype: Int64, is_nullable: true, metadata: None }, Field { name: \"y\", dtype: Utf8View, is_nullable: true, metadata: None }])",
+    "concrete": "StructArray",
+    "item": "struct",
+    "level": "newest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Struct([Field { name: \"\", dtype: Int64, is_nullable: true, metadata: None }, Field { name: \"y\", dtype: Utf8View, is_nullable: true, metadata: None }])",
+    "concrete": "StructArray",
+    "item": "struct",
+    "level": "newest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Struct([Field { name: \"\", dtype: Int64, is_nullable: true, metadata: None }, Field { name: \"y\", dtype: LargeUtf8, is_nullable: true, metadata: None }])",
+    "concrete": "StructArray",
+    "item": "struct",
+    "level": "oldest",
+    "route": "Series::to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Struct([Field { name: \"\", dtype: Int64, is_nullable: true, metadata: None }, Field { name: \"y\", dtype: LargeUtf8, is_nullable: true, metadata: None }])",
+    "concrete": "StructArray",
+    "item": "struct",
+    "level": "oldest",
+    "route": "Column::rechunk_to_arrow",
+    "script": "reached"
+  },
+  {
+    "arrow_dtype": "Struct([Field { name: \"\", dtype: Int64, is_nullable: true, metadata: None }, Field { name: \"y\", dtype: Utf8View, is_nullable: true, metadata: None }])",
+    "concrete": "StructArray",
+    "item": "struct",
+    "level": "oldest",
+    "route": "Series::into_chunks",
+    "script": "reached"
+  }
+]
