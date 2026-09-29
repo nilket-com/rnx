@@ -18,6 +18,7 @@ pub(crate) fn generate(
 	inv: &Inventory,
 	release: &Release,
 	buckets: &Vec<&str>,
+	frozen: &[crate::freeze::Frozen],
 ) -> (Emitted, Vec<PairRecord>) {
 	let mut out = Emitted {
 		from_names: plan_from_names(&inv),
@@ -27,6 +28,10 @@ pub(crate) fn generate(
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: frozen
+			.iter()
+			.map(|f| ((f.key.clone(), f.rune.clone()), f.id.clone()))
+			.collect(),
 	};
 	let mut callables: Vec<&Callable> = inv.callables.iter().collect();
 	callables.sort_by(|a, b| {

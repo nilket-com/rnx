@@ -1368,8 +1368,12 @@ pub(crate) fn copy_slice<T: Clone, U>(
 	let n = slice.len();
 	reserve(n, "slice elements", method)?;
 	let mut out = Vec::with_capacity(n);
-	for e in slice {
-		out.push(conv(e.clone())?);
+	for (i, e) in slice.iter().enumerate() {
+		// review of 0120: a failing element names its index; no partial vector
+		out.push(
+			conv(e.clone())
+				.map_err(|Error(kind, msg)| Error(kind, format!("{msg} (element {i})")))?,
+		);
 	}
 	Ok(out)
 }
@@ -2253,6 +2257,19 @@ impl ArrayRef {
 		array_snapshot_bool(a, "values_bool")
 	}
 
+	/// Record 0120: a binary view array's values (the array Polars uses for
+	/// binary), raw bytes as script integers, nulls as `None`.
+	#[rune::function(instance, path = values_binary)]
+	pub(crate) fn values_binary(&self) -> Result<Vec<Option<Vec<i64>>>, Error> {
+		let a = self.downcast::<polars_arrow::array::BinaryViewArray>(
+			"values_binary",
+			"a binary view array",
+		)?;
+		// 0102's one-array snapshot: one chunk slot + cells + payload bytes,
+		// bounded before any copy
+		array_snapshot_binview(a, "values_binary")
+	}
+
 	/// The Arrow data type, as Polars names it.
 	#[rune::function(instance, path = dtype_name)]
 	pub(crate) fn dtype_name(&self) -> String {
@@ -2266,6 +2283,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
 	m.function_meta(ArrayRef::values_i64)?;
 	m.function_meta(ArrayRef::values_str)?;
 	m.function_meta(ArrayRef::values_bool)?;
+	m.function_meta(ArrayRef::values_binary)?;
 	m.function_meta(ArrayRef::dtype_name)?;
 	m.ty::<Sink>()?;
 	m.function_meta(Sink::new)?;

@@ -321,6 +321,7 @@ pub(crate) fn checked_readback_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();
@@ -527,6 +528,7 @@ pub(crate) fn cow_return_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();
@@ -678,6 +680,7 @@ pub(crate) fn iterator_return_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();

@@ -215,6 +215,7 @@ pub(crate) fn protocols_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let mut wrote: BTreeMap<String, bool> = BTreeMap::new();
 	for c in &calls {

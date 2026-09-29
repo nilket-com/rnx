@@ -1208,6 +1208,7 @@ pub(crate) fn native_substitution_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();
@@ -1860,6 +1861,7 @@ pub(crate) fn sized_self_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();
@@ -2061,6 +2063,7 @@ pub(crate) fn null_aware_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str, native: Option<&str>| {
 		let mut e = empty();
@@ -2385,6 +2388,7 @@ pub(crate) fn hash_token_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();

@@ -736,6 +736,7 @@ pub(crate) fn callback_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let mut emitted = empty();
 	emit_callable(

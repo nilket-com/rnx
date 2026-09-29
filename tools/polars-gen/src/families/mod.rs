@@ -6,6 +6,7 @@
 //! and each site keeps its semantics (first match, or run all).
 pub(crate) mod bounds;
 pub(crate) mod callbacks;
+pub(crate) mod concrete_arrays;
 pub(crate) mod conversions;
 pub(crate) mod dtype_owners;
 pub(crate) mod free_instantiations;

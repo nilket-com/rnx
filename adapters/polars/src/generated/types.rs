@@ -4,6 +4,58 @@
 use polars::prelude as p;
 use rnx::rune;
 
+/// polars_arrow::array::binary::BinaryArray<i64> = `polars_arrow::array::binary::BinaryArray<i64>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = LargeBinaryArray)]
+pub struct W_polars_arrow__array__binary__BinaryArray_i64_(pub(crate) polars_arrow::array::BinaryArray<i64>);
+/// polars_arrow::array::list::ListArray<i64> = `polars_arrow::array::list::ListArray<i64>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = LargeListArray)]
+pub struct W_polars_arrow__array__list__ListArray_i64_(pub(crate) polars_arrow::array::ListArray<i64>);
+/// polars_arrow::array::primitive::PrimitiveArray<f32> = `polars_arrow::array::primitive::PrimitiveArray<f32>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = Float32Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_f32_(pub(crate) polars_arrow::array::PrimitiveArray<f32>);
+/// polars_arrow::array::primitive::PrimitiveArray<f64> = `polars_arrow::array::primitive::PrimitiveArray<f64>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = Float64Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_f64_(pub(crate) polars_arrow::array::PrimitiveArray<f64>);
+/// polars_arrow::array::primitive::PrimitiveArray<i16> = `polars_arrow::array::primitive::PrimitiveArray<i16>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = Int16Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_i16_(pub(crate) polars_arrow::array::PrimitiveArray<i16>);
+/// polars_arrow::array::primitive::PrimitiveArray<i32> = `polars_arrow::array::primitive::PrimitiveArray<i32>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = Int32Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_i32_(pub(crate) polars_arrow::array::PrimitiveArray<i32>);
+/// polars_arrow::array::primitive::PrimitiveArray<i64> = `polars_arrow::array::primitive::PrimitiveArray<i64>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = Int64Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_i64_(pub(crate) polars_arrow::array::PrimitiveArray<i64>);
+/// polars_arrow::array::primitive::PrimitiveArray<i8> = `polars_arrow::array::primitive::PrimitiveArray<i8>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = Int8Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_i8_(pub(crate) polars_arrow::array::PrimitiveArray<i8>);
+/// polars_arrow::array::primitive::PrimitiveArray<u16> = `polars_arrow::array::primitive::PrimitiveArray<u16>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = UInt16Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_u16_(pub(crate) polars_arrow::array::PrimitiveArray<u16>);
+/// polars_arrow::array::primitive::PrimitiveArray<u32> = `polars_arrow::array::primitive::PrimitiveArray<u32>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = UInt32Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_u32_(pub(crate) polars_arrow::array::PrimitiveArray<u32>);
+/// polars_arrow::array::primitive::PrimitiveArray<u64> = `polars_arrow::array::primitive::PrimitiveArray<u64>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = UInt64Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_u64_(pub(crate) polars_arrow::array::PrimitiveArray<u64>);
+/// polars_arrow::array::primitive::PrimitiveArray<u8> = `polars_arrow::array::primitive::PrimitiveArray<u8>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = UInt8Array)]
+pub struct W_polars_arrow__array__primitive__PrimitiveArray_u8_(pub(crate) polars_arrow::array::PrimitiveArray<u8>);
+/// polars_arrow::array::utf8::Utf8Array<i64> = `polars_arrow::array::utf8::Utf8Array<i64>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = LargeStringArray)]
+pub struct W_polars_arrow__array__utf8__Utf8Array_i64_(pub(crate) polars_arrow::array::Utf8Array<i64>);
 /// `polars_arrow::datatypes::ArrowDataType`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::arrow, name = ArrowDataType)]
@@ -1238,6 +1290,19 @@ pub struct W_polars_utils__pl_path__CloudScheme(pub(crate) polars::polars_utils:
 pub struct W_polars_utils__pl_path__PlRefPath(pub(crate) polars::polars_utils::pl_path::PlRefPath);
 
 pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
+    m.ty::<W_polars_arrow__array__binary__BinaryArray_i64_>()?;
+    m.ty::<W_polars_arrow__array__list__ListArray_i64_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_f32_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_f64_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_i16_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_i32_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_i64_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_i8_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_u16_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_u32_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_u64_>()?;
+    m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_u8_>()?;
+    m.ty::<W_polars_arrow__array__utf8__Utf8Array_i64_>()?;
     m.ty::<W_polars_arrow__datatypes__ArrowDataType>()?;
     m.ty::<W_polars_arrow__datatypes__TimeUnit>()?;
     m.ty::<W_polars_arrow__datatypes__field__Field>()?;

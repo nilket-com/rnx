@@ -235,6 +235,7 @@ pub(crate) fn free_instantiation_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();

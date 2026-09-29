@@ -252,6 +252,25 @@ pub(crate) fn freeze_self_test() {
 		Some("::polars::arrow::StructArray"),
 		"without the prefix it is an ordinary namespaced wrapper"
 	);
+	// record 0120: an entry gaining receivers keeps its frozen ids; the new
+	// first receiver no longer takes the plain id a frozen binding holds
+	let mut ids = std::collections::BTreeMap::new();
+	ids.insert(
+		("k".to_string(), "polars::arrow::ArrayRef::len".to_string()),
+		"p__len".to_string(),
+	);
+	let mut bs = vec![
+		crate::emit::Binding::for_test("p__len", "polars::arrow::Int64Array::len"),
+		crate::emit::Binding::for_test("p__len__on__arrayref", "polars::arrow::ArrayRef::len"),
+	];
+	let recv = vec![
+		"a::Int64Array<i64>".to_string(),
+		"support::ArrayRef".to_string(),
+	];
+	crate::emit::pin_frozen_ids(&ids, "k", "p::len", &recv, &mut bs);
+	assert_eq!(bs[1].id, "p__len", "the frozen binding keeps its id");
+	assert_ne!(bs[0].id, "p__len", "a new binding never takes a frozen id");
+	assert!(bs[0].id.contains("__on__"), "{}", bs[0].id);
 	println!("freeze self-test: ok");
 }
 

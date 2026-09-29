@@ -1,0 +1,2110 @@
+{
+ "counts": {
+  "cross_crate": 1,
+  "deferred_changed": 0,
+  "deferred_kept": 100,
+  "deferred_reason_refined": 39,
+  "grown_bindings": 198,
+  "grown_rows": 13,
+  "guards": {
+   "below_len": 6,
+   "range_len_all": 10
+  },
+  "identities": 17,
+  "not_reachable": 0,
+  "owner_bindings": 166,
+  "owners": {
+   "generated": 46,
+   "refused": 137
+  },
+  "unreviewed": 0
+ },
+ "cross_crate": [
+  {
+   "from": "unsupported",
+   "key": "polars_core:4978",
+   "path": "polars_core::chunked_array::ChunkedArray::get_row_encoded_array",
+   "review": "pass: returns an owned LargeBinaryArray (BinaryArray<i64>, a listed identity); its readers are guarded and bounded",
+   "to": "generated"
+  }
+ ],
+ "deferred_changed": [],
+ "deferred_reason_refined": [
+  {
+   "key": "polars_arrow:4911",
+   "now": "on every implementor: concrete array rule: a mutable receiver: read-side only",
+   "path": "polars_arrow::array::Array::as_any_mut",
+   "was": "on every implementor: inner mutable borrow: return (&mut dyn core::any::Any): no script contract for a mutable borrow that is not the receiver"
+  },
+  {
+   "key": "polars_arrow:4915",
+   "now": "on every implementor: concrete array rule: a mutable receiver: read-side only",
+   "path": "polars_arrow::array::Array::dtype_mut",
+   "was": "on every implementor: inner mutable borrow: return (&mut polars_arrow::datatypes::ArrowDataType): no script contract for a mutable borrow that is not the receiver"
+  },
+  {
+   "key": "polars_arrow:4925",
+   "now": "on every implementor: concrete array rule: a mutable receiver: read-side only",
+   "path": "polars_arrow::array::Array::slice",
+   "was": "on every implementor: deref route needs DerefMut: support::ArrayRef"
+  },
+  {
+   "key": "polars_arrow:4917",
+   "now": "on every implementor: name taken on this type by: polars_arrow::array::primitive::PrimitiveArray::validity",
+   "path": "polars_arrow::array::Array::validity",
+   "was": "on every implementor: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)"
+  },
+  {
+   "key": "polars_arrow:5037",
+   "now": "on every implementor: name taken on this type by: polars_arrow::array::binary::BinaryArray::offsets",
+   "path": "polars_arrow::array::GenericBinaryArray::offsets",
+   "was": "no wrapped implementor: polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray"
+  },
+  {
+   "key": "polars_arrow:5036",
+   "now": "on every implementor: name taken on this type by: polars_arrow::array::binary::BinaryArray::values",
+   "path": "polars_arrow::array::GenericBinaryArray::values",
+   "was": "no wrapped implementor: polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray"
+  },
+  {
+   "key": "polars_arrow:4894",
+   "now": "on every implementor: concrete array rule: index argument `offset` without a required receiver guard",
+   "path": "polars_arrow::array::Splitable::check_bound",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:4895",
+   "now": "on every implementor: concrete array rule: index argument `offset` without a required receiver guard",
+   "path": "polars_arrow::array::Splitable::split_at",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:1260",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::dtype",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1266",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::extend",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1265",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::extend_nulls",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1262",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::freeze",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1263",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::freeze_reset",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1264",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::len",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1271",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::opt_gather_extend",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1261",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::reserve",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1267",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::subslice_extend",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1269",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::subslice_extend_each_repeated",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:1268",
+   "now": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 448 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;",
+   "path": "polars_arrow::array::builder::ArrayBuilder::subslice_extend_repeated",
+   "was": "no wrapped implementor: polars_core::chunked_array::object::builder::ObjectChunkedBuilder, blanket, blanket, T, alloc::boxed::Box, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 432 wrapped types: trait `polars_arrow::array::builder::StaticArrayBuilder` is outside the inventory;"
+  },
+  {
+   "key": "polars_arrow:4165",
+   "now": "on every implementor: name taken on this type by: polars_arrow::array::utf8::Utf8Array::len",
+   "path": "polars_arrow::array::iterator::ArrayAccessor::len",
+   "was": "no wrapped implementor: polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::boolean::BooleanArray, polars_arrow::array::fixed_size_list::Fixed"
+  },
+  {
+   "key": "polars_arrow:3282",
+   "now": "on every implementor: slice element: return (foreign type: Self::ValueT)",
+   "path": "polars_arrow::array::static_array::StaticArray::as_slice",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3286",
+   "now": "on every implementor: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121",
+   "path": "polars_arrow::array::static_array::StaticArray::from_vec",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3287",
+   "now": "on every implementor: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121",
+   "path": "polars_arrow::array::static_array::StaticArray::from_zeroable_vec",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3289",
+   "now": "on every implementor: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121",
+   "path": "polars_arrow::array::static_array::StaticArray::full",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3288",
+   "now": "on every implementor: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121",
+   "path": "polars_arrow::array::static_array::StaticArray::full_null",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3277",
+   "now": "on every implementor: concrete array rule: index argument `idx` without a required receiver guard",
+   "path": "polars_arrow::array::static_array::StaticArray::get",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3283",
+   "now": "on every implementor: unreachable polars type: return (polars_arrow::bitmap::utils::zip_validity::ZipValidity<Self::ValueT, Self::ValueIterT, polars_arrow::bitmap::utils::iterator::BitmapIter>)",
+   "path": "polars_arrow::array::static_array::StaticArray::iter",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3279",
+   "now": "on every implementor: foreign type: return (Self::ValueT)",
+   "path": "polars_arrow::array::static_array::StaticArray::last",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3280",
+   "now": "on every implementor: concrete array rule: index argument `idx` without a required receiver guard",
+   "path": "polars_arrow::array::static_array::StaticArray::value",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3284",
+   "now": "on every implementor: foreign type: return (Self::ValueIterT)",
+   "path": "polars_arrow::array::static_array::StaticArray::values_iter",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3285",
+   "now": "on every implementor: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+   "path": "polars_arrow::array::static_array::StaticArray::with_validity_typed",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::struct_::StructArray, polars_core::chunked_array::object::ObjectArray, polars_arrow::arra"
+  },
+  {
+   "key": "polars_arrow:3348",
+   "now": "on every implementor: trait arms: 2 impls differ in 0 parameters; a dispatch decides by exactly one",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::arr_from_iter",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::binary::BinaryArray, polars_arrow::array:"
+  },
+  {
+   "key": "polars_arrow:3349",
+   "now": "on every implementor: trait arms: 2 impls differ in 0 parameters; a dispatch decides by exactly one",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::arr_from_iter_trusted",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::binary::BinaryArray, polars_arrow::array:"
+  },
+  {
+   "key": "polars_arrow:3350",
+   "now": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::binary::BinaryArray, polars_arrow::array:",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::try_arr_from_iter",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::binary::BinaryArray, polars_arrow::array:"
+  },
+  {
+   "key": "polars_arrow:3351",
+   "now": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::binary::BinaryArray, polars_arrow::array:",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::try_arr_from_iter_trusted",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::binary::BinaryArray, polars_arrow::array:"
+  },
+  {
+   "key": "polars_arrow:12876",
+   "now": "on every implementor: concrete array rule: the legacy array module is deferred to record 0121",
+   "path": "polars_arrow::legacy::array::default_arrays::FromData::from_data_default",
+   "was": "no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::boolean::BooleanArray"
+  },
+  {
+   "key": "polars_arrow:13070",
+   "now": "on every implementor: concrete array rule: the legacy array module is deferred to record 0121",
+   "path": "polars_arrow::legacy::array::slice::SlicedArray::slice_typed",
+   "was": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, T"
+  },
+  {
+   "key": "polars_arrow:13075",
+   "now": "on every implementor: concrete array rule: the legacy array module is deferred to record 0121",
+   "path": "polars_arrow::legacy::array::utf8::BinaryFromIter::from_values_iter",
+   "was": "no wrapped implementor: polars_arrow::array::binary::BinaryArray [polars_arrow::array::binary::BinaryArray<i64>: not wrapped]"
+  },
+  {
+   "key": "polars_arrow:13074",
+   "now": "on every implementor: concrete array rule: the legacy array module is deferred to record 0121",
+   "path": "polars_arrow::legacy::array::utf8::Utf8FromIter::from_values_iter",
+   "was": "no wrapped implementor: polars_arrow::array::utf8::Utf8Array [polars_arrow::array::utf8::Utf8Array<i64>: not wrapped]"
+  }
+ ],
+ "grown": [
+  {
+   "added": [
+    "polars::arrow::LargeListArray::dtype",
+    "polars::arrow::StructArray::dtype"
+   ],
+   "key": "polars_arrow:4914",
+   "path": "polars_arrow::array::Array::dtype"
+  },
+  {
+   "added": [
+    "polars::arrow::Float16Array::has_nulls",
+    "polars::arrow::Float32Array::has_nulls",
+    "polars::arrow::Float64Array::has_nulls",
+    "polars::arrow::Int128Array::has_nulls",
+    "polars::arrow::Int16Array::has_nulls",
+    "polars::arrow::Int32Array::has_nulls",
+    "polars::arrow::Int64Array::has_nulls",
+    "polars::arrow::Int8Array::has_nulls",
+    "polars::arrow::LargeBinaryArray::has_nulls",
+    "polars::arrow::LargeListArray::has_nulls",
+    "polars::arrow::LargeStringArray::has_nulls",
+    "polars::arrow::StructArray::has_nulls",
+    "polars::arrow::UInt128Array::has_nulls",
+    "polars::arrow::UInt16Array::has_nulls",
+    "polars::arrow::UInt32Array::has_nulls",
+    "polars::arrow::UInt64Array::has_nulls",
+    "polars::arrow::UInt8Array::has_nulls"
+   ],
+   "key": "polars_arrow:4919",
+   "path": "polars_arrow::array::Array::has_nulls"
+  },
+  {
+   "added": [
+    "polars::arrow::Float16Array::is_empty",
+    "polars::arrow::Float32Array::is_empty",
+    "polars::arrow::Float64Array::is_empty",
+    "polars::arrow::Int128Array::is_empty",
+    "polars::arrow::Int16Array::is_empty",
+    "polars::arrow::Int32Array::is_empty",
+    "polars::arrow::Int64Array::is_empty",
+    "polars::arrow::Int8Array::is_empty",
+    "polars::arrow::LargeBinaryArray::is_empty",
+    "polars::arrow::LargeListArray::is_empty",
+    "polars::arrow::LargeStringArray::is_empty",
+    "polars::arrow::StructArray::is_empty",
+    "polars::arrow::UInt128Array::is_empty",
+    "polars::arrow::UInt16Array::is_empty",
+    "polars::arrow::UInt32Array::is_empty",
+    "polars::arrow::UInt64Array::is_empty",
+    "polars::arrow::UInt8Array::is_empty"
+   ],
+   "key": "polars_arrow:4913",
+   "path": "polars_arrow::array::Array::is_empty"
+  },
+  {
+   "added": [
+    "polars::arrow::Float16Array::is_null",
+    "polars::arrow::Float32Array::is_null",
+    "polars::arrow::Float64Array::is_null",
+    "polars::arrow::Int128Array::is_null",
+    "polars::arrow::Int16Array::is_null",
+    "polars::arrow::Int32Array::is_null",
+    "polars::arrow::Int64Array::is_null",
+    "polars::arrow::Int8Array::is_null",
+    "polars::arrow::LargeBinaryArray::is_null",
+    "polars::arrow::LargeListArray::is_null",
+    "polars::arrow::LargeStringArray::is_null",
+    "polars::arrow::StructArray::is_null",
+    "polars::arrow::UInt128Array::is_null",
+    "polars::arrow::UInt16Array::is_null",
+    "polars::arrow::UInt32Array::is_null",
+    "polars::arrow::UInt64Array::is_null",
+    "polars::arrow::UInt8Array::is_null"
+   ],
+   "key": "polars_arrow:4920",
+   "path": "polars_arrow::array::Array::is_null"
+  },
+  {
+   "added": [
+    "polars::arrow::Float16Array::is_valid",
+    "polars::arrow::Float32Array::is_valid",
+    "polars::arrow::Float64Array::is_valid",
+    "polars::arrow::Int128Array::is_valid",
+    "polars::arrow::Int16Array::is_valid",
+    "polars::arrow::Int32Array::is_valid",
+    "polars::arrow::Int64Array::is_valid",
+    "polars::arrow::Int8Array::is_valid",
+    "polars::arrow::LargeBinaryArray::is_valid",
+    "polars::arrow::LargeListArray::is_valid",
+    "polars::arrow::LargeStringArray::is_valid",
+    "polars::arrow::StructArray::is_valid",
+    "polars::arrow::UInt128Array::is_valid",
+    "polars::arrow::UInt16Array::is_valid",
+    "polars::arrow::UInt32Array::is_valid",
+    "polars::arrow::UInt64Array::is_valid",
+    "polars::arrow::UInt8Array::is_valid"
+   ],
+   "key": "polars_arrow:4922",
+   "path": "polars_arrow::array::Array::is_valid"
+  },
+  {
+   "added": [
+    "polars::arrow::Float16Array::null_count",
+    "polars::arrow::Float32Array::null_count",
+    "polars::arrow::Float64Array::null_count",
+    "polars::arrow::Int128Array::null_count",
+    "polars::arrow::Int16Array::null_count",
+    "polars::arrow::Int32Array::null_count",
+    "polars::arrow::Int64Array::null_count",
+    "polars::arrow::Int8Array::null_count",
+    "polars::arrow::LargeBinaryArray::null_count",
+    "polars::arrow::LargeListArray::null_count",
+    "polars::arrow::LargeStringArray::null_count",
+    "polars::arrow::StructArray::null_count",
+    "polars::arrow::UInt128Array::null_count",
+    "polars::arrow::UInt16Array::null_count",
+    "polars::arrow::UInt32Array::null_count",
+    "polars::arrow::UInt64Array::null_count",
+    "polars::arrow::UInt8Array::null_count"
+   ],
+   "key": "polars_arrow:4918",
+   "path": "polars_arrow::array::Array::null_count"
+  },
+  {
+   "added": [
+    "polars::arrow::Float16Array::split_at_boxed",
+    "polars::arrow::Float32Array::split_at_boxed",
+    "polars::arrow::Float64Array::split_at_boxed",
+    "polars::arrow::Int128Array::split_at_boxed",
+    "polars::arrow::Int16Array::split_at_boxed",
+    "polars::arrow::Int32Array::split_at_boxed",
+    "polars::arrow::Int64Array::split_at_boxed",
+    "polars::arrow::Int8Array::split_at_boxed",
+    "polars::arrow::LargeBinaryArray::split_at_boxed",
+    "polars::arrow::LargeListArray::split_at_boxed",
+    "polars::arrow::LargeStringArray::split_at_boxed",
+    "polars::arrow::StructArray::split_at_boxed",
+    "polars::arrow::UInt128Array::split_at_boxed",
+    "polars::arrow::UInt16Array::split_at_boxed",
+    "polars::arrow::UInt32Array::split_at_boxed",
+    "polars::arrow::UInt64Array::split_at_boxed",
+    "polars::arrow::UInt8Array::split_at_boxed"
+   ],
+   "key": "polars_arrow:4923",
+   "path": "polars_arrow::array::Array::split_at_boxed"
+  },
+  {
+   "added": [
+    "polars::arrow::Float16Array::to_boxed",
+    "polars::arrow::Float32Array::to_boxed",
+    "polars::arrow::Float64Array::to_boxed",
+    "polars::arrow::Int128Array::to_boxed",
+    "polars::arrow::Int16Array::to_boxed",
+    "polars::arrow::Int32Array::to_boxed",
+    "polars::arrow::Int64Array::to_boxed",
+    "polars::arrow::Int8Array::to_boxed",
+    "polars::arrow::LargeBinaryArray::to_boxed",
+    "polars::arrow::LargeListArray::to_boxed",
+    "polars::arrow::LargeStringArray::to_boxed",
+    "polars::arrow::StructArray::to_boxed",
+    "polars::arrow::UInt128Array::to_boxed",
+    "polars::arrow::UInt16Array::to_boxed",
+    "polars::arrow::UInt32Array::to_boxed",
+    "polars::arrow::UInt64Array::to_boxed",
+    "polars::arrow::UInt8Array::to_boxed"
+   ],
+   "key": "polars_arrow:4930",
+   "path": "polars_arrow::array::Array::to_boxed"
+  },
+  {
+   "added": [
+    "polars::arrow::Float16Array::into_boxed",
+    "polars::arrow::Float32Array::into_boxed",
+    "polars::arrow::Float64Array::into_boxed",
+    "polars::arrow::Int128Array::into_boxed",
+    "polars::arrow::Int16Array::into_boxed",
+    "polars::arrow::Int32Array::into_boxed",
+    "polars::arrow::Int64Array::into_boxed",
+    "polars::arrow::Int8Array::into_boxed",
+    "polars::arrow::LargeBinaryArray::into_boxed",
+    "polars::arrow::LargeListArray::into_boxed",
+    "polars::arrow::LargeStringArray::into_boxed",
+    "polars::arrow::StructArray::into_boxed",
+    "polars::arrow::UInt128Array::into_boxed",
+    "polars::arrow::UInt16Array::into_boxed",
+    "polars::arrow::UInt32Array::into_boxed",
+    "polars::arrow::UInt64Array::into_boxed",
+    "polars::arrow::UInt8Array::into_boxed"
+   ],
+   "key": "polars_arrow:4931",
+   "path": "polars_arrow::array::IntoBoxedArray::into_boxed"
+  },
+  {
+   "added": [
+    "polars::BinaryOffsetChunked::downcast_as_array",
+    "polars::Float16Chunked::downcast_as_array",
+    "polars::Float32Chunked::downcast_as_array",
+    "polars::Float64Chunked::downcast_as_array",
+    "polars::IdxCa::downcast_as_array",
+    "polars::Int128Chunked::downcast_as_array",
+    "polars::Int16Chunked::downcast_as_array",
+    "polars::Int32Chunked::downcast_as_array",
+    "polars::Int64Chunked::downcast_as_array",
+    "polars::Int8Chunked::downcast_as_array",
+    "polars::ListChunked::downcast_as_array",
+    "polars::UInt128Chunked::downcast_as_array",
+    "polars::UInt16Chunked::downcast_as_array",
+    "polars::UInt64Chunked::downcast_as_array",
+    "polars::UInt8Chunked::downcast_as_array"
+   ],
+   "key": "polars_core:4808",
+   "path": "polars_core::chunked_array::ChunkedArray::downcast_as_array"
+  },
+  {
+   "added": [
+    "polars::BinaryOffsetChunked::downcast_get",
+    "polars::Float16Chunked::downcast_get",
+    "polars::Float32Chunked::downcast_get",
+    "polars::Float64Chunked::downcast_get",
+    "polars::IdxCa::downcast_get",
+    "polars::Int128Chunked::downcast_get",
+    "polars::Int16Chunked::downcast_get",
+    "polars::Int32Chunked::downcast_get",
+    "polars::Int64Chunked::downcast_get",
+    "polars::Int8Chunked::downcast_get",
+    "polars::ListChunked::downcast_get",
+    "polars::UInt128Chunked::downcast_get",
+    "polars::UInt16Chunked::downcast_get",
+    "polars::UInt64Chunked::downcast_get",
+    "polars::UInt8Chunked::downcast_get"
+   ],
+   "key": "polars_core:4807",
+   "path": "polars_core::chunked_array::ChunkedArray::downcast_get"
+  },
+  {
+   "added": [
+    "polars::BinaryOffsetChunked::downcast_into_iter",
+    "polars::Float16Chunked::downcast_into_iter",
+    "polars::Float32Chunked::downcast_into_iter",
+    "polars::Float64Chunked::downcast_into_iter",
+    "polars::IdxCa::downcast_into_iter",
+    "polars::Int128Chunked::downcast_into_iter",
+    "polars::Int16Chunked::downcast_into_iter",
+    "polars::Int32Chunked::downcast_into_iter",
+    "polars::Int64Chunked::downcast_into_iter",
+    "polars::Int8Chunked::downcast_into_iter",
+    "polars::ListChunked::downcast_into_iter",
+    "polars::UInt128Chunked::downcast_into_iter",
+    "polars::UInt16Chunked::downcast_into_iter",
+    "polars::UInt64Chunked::downcast_into_iter",
+    "polars::UInt8Chunked::downcast_into_iter"
+   ],
+   "key": "polars_core:4803",
+   "path": "polars_core::chunked_array::ChunkedArray::downcast_into_iter"
+  },
+  {
+   "added": [
+    "polars::BinaryOffsetChunked::downcast_iter",
+    "polars::Float16Chunked::downcast_iter",
+    "polars::Float32Chunked::downcast_iter",
+    "polars::Float64Chunked::downcast_iter",
+    "polars::IdxCa::downcast_iter",
+    "polars::Int128Chunked::downcast_iter",
+    "polars::Int16Chunked::downcast_iter",
+    "polars::Int32Chunked::downcast_iter",
+    "polars::Int64Chunked::downcast_iter",
+    "polars::Int8Chunked::downcast_iter",
+    "polars::ListChunked::downcast_iter",
+    "polars::UInt128Chunked::downcast_iter",
+    "polars::UInt16Chunked::downcast_iter",
+    "polars::UInt64Chunked::downcast_iter",
+    "polars::UInt8Chunked::downcast_iter"
+   ],
+   "key": "polars_core:4804",
+   "path": "polars_core::chunked_array::ChunkedArray::downcast_iter"
+  }
+ ],
+ "guards": [
+  {
+   "guard": "below_len",
+   "param": "i",
+   "path": "polars_arrow::array::binary::BinaryArray::get"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "offset",
+   "path": "polars_arrow::array::binary::BinaryArray::sliced"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "length",
+   "path": "polars_arrow::array::binary::BinaryArray::sliced"
+  },
+  {
+   "guard": "below_len",
+   "param": "i",
+   "path": "polars_arrow::array::binary::BinaryArray::value"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "offset",
+   "path": "polars_arrow::array::list::ListArray::sliced"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "length",
+   "path": "polars_arrow::array::list::ListArray::sliced"
+  },
+  {
+   "guard": "below_len",
+   "param": "i",
+   "path": "polars_arrow::array::list::ListArray::value"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "offset",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::sliced"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "length",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::sliced"
+  },
+  {
+   "guard": "below_len",
+   "param": "i",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::value"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "offset",
+   "path": "polars_arrow::array::struct_::StructArray::sliced"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "length",
+   "path": "polars_arrow::array::struct_::StructArray::sliced"
+  },
+  {
+   "guard": "below_len",
+   "param": "i",
+   "path": "polars_arrow::array::utf8::Utf8Array::get"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "offset",
+   "path": "polars_arrow::array::utf8::Utf8Array::sliced"
+  },
+  {
+   "guard": "range_len_all",
+   "param": "length",
+   "path": "polars_arrow::array::utf8::Utf8Array::sliced"
+  },
+  {
+   "guard": "below_len",
+   "param": "i",
+   "path": "polars_arrow::array::utf8::Utf8Array::value"
+  }
+ ],
+ "identities": [
+  "polars_arrow::array::binary::BinaryArray<i64>",
+  "polars_arrow::array::list::ListArray<i64>",
+  "polars_arrow::array::primitive::PrimitiveArray<f32>",
+  "polars_arrow::array::primitive::PrimitiveArray<f64>",
+  "polars_arrow::array::primitive::PrimitiveArray<i128>",
+  "polars_arrow::array::primitive::PrimitiveArray<i16>",
+  "polars_arrow::array::primitive::PrimitiveArray<i32>",
+  "polars_arrow::array::primitive::PrimitiveArray<i64>",
+  "polars_arrow::array::primitive::PrimitiveArray<i8>",
+  "polars_arrow::array::primitive::PrimitiveArray<polars_utils::float16::pf16>",
+  "polars_arrow::array::primitive::PrimitiveArray<u128>",
+  "polars_arrow::array::primitive::PrimitiveArray<u16>",
+  "polars_arrow::array::primitive::PrimitiveArray<u32>",
+  "polars_arrow::array::primitive::PrimitiveArray<u64>",
+  "polars_arrow::array::primitive::PrimitiveArray<u8>",
+  "polars_arrow::array::struct_::StructArray",
+  "polars_arrow::array::utf8::Utf8Array<i64>"
+ ],
+ "owners": [
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:162:613",
+   "path": "polars_arrow::array::binary::BinaryArray as core::clone::Clone",
+   "reason": "0113 family: Clone: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:162:658",
+   "path": "polars_arrow::array::binary::BinaryArray as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:162:660",
+   "path": "polars_arrow::array::binary::BinaryArray as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:162:662",
+   "path": "polars_arrow::array::binary::BinaryArray as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:162:304",
+   "path": "polars_arrow::array::binary::BinaryArray as core::convert::From",
+   "reason": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:162:449",
+   "path": "polars_arrow::array::binary::BinaryArray as core::convert::From",
+   "reason": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:162:601",
+   "path": "polars_arrow::array::binary::BinaryArray as core::fmt::Debug",
+   "reason": "0113 family: Debug: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:162:611",
+   "path": "polars_arrow::array::binary::BinaryArray as core::iter::traits::collect::FromIterator",
+   "reason": "from_iter head: bounds [(\"O\", \"polars_arrow::types::offset::Offset\"), (\"P\", \"core::convert::AsRef<[u8]>\")] on `polars_arrow::array::binary::BinaryArray<O>` are not decided here"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:162:609",
+   "path": "polars_arrow::array::binary::BinaryArray as core::iter::traits::collect::IntoIterator",
+   "reason": "0113 family: IntoIterator: iteration: the items borrow the receiver or have no proven finite bound, and no snapshot rule covers them in this record"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: foreign type: return (alloc::sync::Arc<dyn polars_arrow::array::Array>)"
+   ],
+   "key": "polars_arrow:514",
+   "path": "polars_arrow::array::binary::BinaryArray::arced",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:513",
+   "path": "polars_arrow::array::binary::BinaryArray::boxed",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_binary_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:520",
+   "path": "polars_arrow::array::binary::BinaryArray::default_dtype",
+   "reach": "static"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:502",
+   "path": "polars_arrow::array::binary::BinaryArray::dtype",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_binary_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:493",
+   "path": "polars_arrow::array::binary::BinaryArray::from",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:523",
+   "path": "polars_arrow::array::binary::BinaryArray::from_iter_values",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:492",
+   "path": "polars_arrow::array::binary::BinaryArray::from_slice",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:525",
+   "path": "polars_arrow::array::binary::BinaryArray::from_trusted_len_iter",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:522",
+   "path": "polars_arrow::array::binary::BinaryArray::from_trusted_len_values_iter",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:501",
+   "path": "polars_arrow::array::binary::BinaryArray::get",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_binary_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)"
+   ],
+   "key": "polars_arrow:515",
+   "path": "polars_arrow::array::binary::BinaryArray::into_inner",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: foreign type: return (either::Either<polars_arrow::array::binary::BinaryArray<i64>, polars_arrow::array::binary::mutable::MutableBinaryArray<i64>>)"
+   ],
+   "key": "polars_arrow:516",
+   "path": "polars_arrow::array::binary::BinaryArray::into_mut",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::utils::zip_validity::ZipValidity<&[u8], polars_arrow::array::binary::iterator::BinaryValueIter<i64>, polars_arrow::bitmap::utils::iterator::BitmapIter>)"
+   ],
+   "key": "polars_arrow:494",
+   "path": "polars_arrow::array::binary::BinaryArray::iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:498",
+   "path": "polars_arrow::array::binary::BinaryArray::len",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_binary_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:521",
+   "path": "polars_arrow::array::binary::BinaryArray::new",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:518",
+   "path": "polars_arrow::array::binary::BinaryArray::new_empty",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:519",
+   "path": "polars_arrow::array::binary::BinaryArray::new_null",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::array::iterator::NonNullValuesIter<polars_arrow::array::binary::BinaryArray<i64>>)"
+   ],
+   "key": "polars_arrow:496",
+   "path": "polars_arrow::array::binary::BinaryArray::non_null_values_iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:504",
+   "path": "polars_arrow::array::binary::BinaryArray::offsets",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_binary_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:511",
+   "path": "polars_arrow::array::binary::BinaryArray::set_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:506",
+   "path": "polars_arrow::array::binary::BinaryArray::slice",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:508",
+   "path": "polars_arrow::array::binary::BinaryArray::sliced",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_binary_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:512",
+   "path": "polars_arrow::array::binary::BinaryArray::take_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:527",
+   "path": "polars_arrow::array::binary::BinaryArray::try_from_trusted_len_iter",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:488",
+   "path": "polars_arrow::array::binary::BinaryArray::try_new",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:505",
+   "path": "polars_arrow::array::binary::BinaryArray::validity",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_binary_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:499",
+   "path": "polars_arrow::array::binary::BinaryArray::value",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_binary_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:503",
+   "path": "polars_arrow::array::binary::BinaryArray::values",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_binary_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::array::binary::iterator::BinaryValueIter<i64>)"
+   ],
+   "key": "polars_arrow:495",
+   "path": "polars_arrow::array::binary::BinaryArray::values_iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)"
+   ],
+   "key": "polars_arrow:510",
+   "path": "polars_arrow::array::binary::BinaryArray::with_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1188:2437",
+   "path": "polars_arrow::array::list::ListArray as core::clone::Clone",
+   "reason": "0113 family: Clone: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1188:2471",
+   "path": "polars_arrow::array::list::ListArray as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1188:2473",
+   "path": "polars_arrow::array::list::ListArray as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1188:2312",
+   "path": "polars_arrow::array::list::ListArray as core::convert::From",
+   "reason": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1188:2427",
+   "path": "polars_arrow::array::list::ListArray as core::fmt::Debug",
+   "reason": "0113 family: Debug: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1188:2435",
+   "path": "polars_arrow::array::list::ListArray as core::iter::traits::collect::IntoIterator",
+   "reason": "0113 family: IntoIterator: iteration: the items borrow the receiver or have no proven finite bound, and no snapshot rule covers them in this record"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: foreign type: return (alloc::sync::Arc<dyn polars_arrow::array::Array>)"
+   ],
+   "key": "polars_arrow:2356",
+   "path": "polars_arrow::array::list::ListArray::arced",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:2355",
+   "path": "polars_arrow::array::list::ListArray::boxed",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_list_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:2365",
+   "path": "polars_arrow::array::list::ListArray::default_datatype",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:2367",
+   "path": "polars_arrow::array::list::ListArray::get_child_field",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:2369",
+   "path": "polars_arrow::array::list::ListArray::get_child_type",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)"
+   ],
+   "key": "polars_arrow:2346",
+   "path": "polars_arrow::array::list::ListArray::into_inner",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::utils::zip_validity::ZipValidity<support::ArrayRef, polars_arrow::array::list::iterator::ListValuesIter<i64>, polars_arrow::bitmap::utils::iterator::BitmapIter>)"
+   ],
+   "key": "polars_arrow:2336",
+   "path": "polars_arrow::array::list::ListArray::iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:2358",
+   "path": "polars_arrow::array::list::ListArray::len",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_list_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:2343",
+   "path": "polars_arrow::array::list::ListArray::new",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:2344",
+   "path": "polars_arrow::array::list::ListArray::new_empty",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:2345",
+   "path": "polars_arrow::array::list::ListArray::new_null",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::array::iterator::NonNullValuesIter<polars_arrow::array::list::ListArray<i64>>)"
+   ],
+   "key": "polars_arrow:2338",
+   "path": "polars_arrow::array::list::ListArray::non_null_values_iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:2362",
+   "path": "polars_arrow::array::list::ListArray::offsets",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_list_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:2353",
+   "path": "polars_arrow::array::list::ListArray::set_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:2348",
+   "path": "polars_arrow::array::list::ListArray::slice",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:2350",
+   "path": "polars_arrow::array::list::ListArray::sliced",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_list_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:2354",
+   "path": "polars_arrow::array::list::ListArray::take_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:2368",
+   "path": "polars_arrow::array::list::ListArray::try_get_child",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:2342",
+   "path": "polars_arrow::array::list::ListArray::try_new",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:2361",
+   "path": "polars_arrow::array::list::ListArray::validity",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_list_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:2359",
+   "path": "polars_arrow::array::list::ListArray::value",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_list_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: borrowed return of a non-Clone type: return (&support::ArrayRef)"
+   ],
+   "key": "polars_arrow:2363",
+   "path": "polars_arrow::array::list::ListArray::values",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::array::list::iterator::ListValuesIter<i64>)"
+   ],
+   "key": "polars_arrow:2337",
+   "path": "polars_arrow::array::list::ListArray::values_iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)"
+   ],
+   "key": "polars_arrow:2352",
+   "path": "polars_arrow::array::list::ListArray::with_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3159",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::clone::Clone",
+   "reason": "0113 family: Clone: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3221",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3223",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3225",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:2935",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::convert::From",
+   "reason": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3146",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::convert::From",
+   "reason": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3187",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::default::Default",
+   "reason": "0113 family: Default: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3144",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::fmt::Debug",
+   "reason": "0113 family: Debug: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3148",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::iter::traits::collect::FromIterator",
+   "reason": "from_iter head: bounds [(\"T\", \"polars_arrow::types::native::NativeType\"), (\"Ptr\", \"core::borrow::Borrow<core::option::Option<T>>\")] on `polars_arrow::array::primitive::PrimitiveArray<T>` are not decided here"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3153",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::iter::traits::collect::IntoIterator",
+   "reason": "0113 family: IntoIterator: iteration: the items borrow the receiver or have no proven finite bound, and no snapshot rule covers them in this record"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1217:3157",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::iter::traits::collect::IntoIterator",
+   "reason": "0113 family: IntoIterator: iteration: the items borrow the receiver or have no proven finite bound, and no snapshot rule covers them in this record"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3064",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::apply_validity",
+   "reason": "callback audit: refused"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: foreign type: return (alloc::sync::Arc<dyn polars_arrow::array::Array>)"
+   ],
+   "key": "polars_arrow:3061",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::arced",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 13,
+   "disposition": "generated",
+   "key": "polars_arrow:3060",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::boxed",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_float32_array, polars::arrow::ArrayRef::as_float64_array, polars::arrow::ArrayRef::as_int128_array, polars::arrow::ArrayRef::as_int16_array, polars::arrow::ArrayRef::as_int32_array, polars::arrow::ArrayRef::as_int64_array, polars::arrow::ArrayRef::as_int8_array, polars::arrow::ArrayRef::as_float16_array, polars::arrow::ArrayRef::as_uint128_array, polars::arrow::ArrayRef::as_uint16_array, polars::arrow::ArrayRef::as_uint32_array, polars::arrow::ArrayRef::as_uint64_array, polars::arrow::ArrayRef::as_uint8_array"
+  },
+  {
+   "bindings": 13,
+   "disposition": "generated",
+   "key": "polars_arrow:3050",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::dtype",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_float32_array, polars::arrow::ArrayRef::as_float64_array, polars::arrow::ArrayRef::as_int128_array, polars::arrow::ArrayRef::as_int16_array, polars::arrow::ArrayRef::as_int32_array, polars::arrow::ArrayRef::as_int64_array, polars::arrow::ArrayRef::as_int8_array, polars::arrow::ArrayRef::as_float16_array, polars::arrow::ArrayRef::as_uint128_array, polars::arrow::ArrayRef::as_uint16_array, polars::arrow::ArrayRef::as_uint32_array, polars::arrow::ArrayRef::as_uint64_array, polars::arrow::ArrayRef::as_uint8_array"
+  },
+  {
+   "bindings": 12,
+   "disposition": "generated",
+   "key": "polars_arrow:3084",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::fill_with",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_float32_array, polars::arrow::ArrayRef::as_float64_array, polars::arrow::ArrayRef::as_int128_array, polars::arrow::ArrayRef::as_int16_array, polars::arrow::ArrayRef::as_int32_array, polars::arrow::ArrayRef::as_int64_array, polars::arrow::ArrayRef::as_int8_array, polars::arrow::ArrayRef::as_uint128_array, polars::arrow::ArrayRef::as_uint16_array, polars::arrow::ArrayRef::as_uint32_array, polars::arrow::ArrayRef::as_uint64_array, polars::arrow::ArrayRef::as_uint8_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:3068",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_inner",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:3075",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_slice",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:3079",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_trusted_len_iter",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:3077",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_trusted_len_values_iter",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:3074",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_values",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "bindings": 12,
+   "disposition": "generated",
+   "key": "polars_arrow:3043",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_vec",
+   "reach": "static"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:3066",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::get_mut_values",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)"
+   ],
+   "key": "polars_arrow:3067",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::into_inner",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: foreign type: return (either::Either<polars_arrow::array::primitive::PrimitiveArray<f32>, polars_arrow::array::primitive::mutable::MutablePrimitiveArray<f32>>)",
+    "unsupported: foreign type: return (either::Either<polars_arrow::array::primitive::PrimitiveArray<f64>, polars_arrow::array::primitive::mutable::MutablePrimitiveArray<f64>>)",
+    "unsupported: foreign type: return (either::Either<polars_arrow::array::primitive::PrimitiveArray<i128>, polars_arrow::array::primitive::mutable::MutablePrimitiveArray<i128>>)",
+    "unsupported: foreign type: return (either::Either<polars_arrow::array::primitive::PrimitiveArray<i16>, polars_arrow::array::primitive::mutable::MutablePrimitiveArray<i16>>)"
+   ],
+   "key": "polars_arrow:3071",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::into_mut",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::utils::zip_validity::ZipValidity<&f32, core::slice::iter::Iter<f32>, polars_arrow::bitmap::utils::iterator::BitmapIter>)",
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::utils::zip_validity::ZipValidity<&f64, core::slice::iter::Iter<f64>, polars_arrow::bitmap::utils::iterator::BitmapIter>)",
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::utils::zip_validity::ZipValidity<&i128, core::slice::iter::Iter<i128>, polars_arrow::bitmap::utils::iterator::BitmapIter>)",
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::utils::zip_validity::ZipValidity<&i16, core::slice::iter::Iter<i16>, polars_arrow::bitmap::utils::iterator::BitmapIter>)"
+   ],
+   "key": "polars_arrow:3044",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 13,
+   "disposition": "generated",
+   "key": "polars_arrow:3047",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::len",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_float32_array, polars::arrow::ArrayRef::as_float64_array, polars::arrow::ArrayRef::as_int128_array, polars::arrow::ArrayRef::as_int16_array, polars::arrow::ArrayRef::as_int32_array, polars::arrow::ArrayRef::as_int64_array, polars::arrow::ArrayRef::as_int8_array, polars::arrow::ArrayRef::as_float16_array, polars::arrow::ArrayRef::as_uint128_array, polars::arrow::ArrayRef::as_uint16_array, polars::arrow::ArrayRef::as_uint32_array, polars::arrow::ArrayRef::as_uint64_array, polars::arrow::ArrayRef::as_uint8_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:3082",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::new",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:3072",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::new_empty",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:3073",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::new_null",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::array::iterator::NonNullValuesIter<[f32]>)",
+    "unsupported: unreachable polars type: return (polars_arrow::array::iterator::NonNullValuesIter<[f64]>)",
+    "unsupported: unreachable polars type: return (polars_arrow::array::iterator::NonNullValuesIter<[i128]>)",
+    "unsupported: unreachable polars type: return (polars_arrow::array::iterator::NonNullValuesIter<[i16]>)"
+   ],
+   "key": "polars_arrow:3046",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::non_null_values_iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:3058",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::set_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:3063",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::set_values",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:3053",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::slice",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 13,
+   "disposition": "generated",
+   "key": "polars_arrow:3055",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::sliced",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_float32_array, polars::arrow::ArrayRef::as_float64_array, polars::arrow::ArrayRef::as_int128_array, polars::arrow::ArrayRef::as_int16_array, polars::arrow::ArrayRef::as_int32_array, polars::arrow::ArrayRef::as_int64_array, polars::arrow::ArrayRef::as_int8_array, polars::arrow::ArrayRef::as_float16_array, polars::arrow::ArrayRef::as_uint128_array, polars::arrow::ArrayRef::as_uint16_array, polars::arrow::ArrayRef::as_uint32_array, polars::arrow::ArrayRef::as_uint64_array, polars::arrow::ArrayRef::as_uint8_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:3059",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::take_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:3042",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::to",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:3083",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::transmute",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:3040",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::try_new",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 13,
+   "disposition": "generated",
+   "key": "polars_arrow:3049",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::validity",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_float32_array, polars::arrow::ArrayRef::as_float64_array, polars::arrow::ArrayRef::as_int128_array, polars::arrow::ArrayRef::as_int16_array, polars::arrow::ArrayRef::as_int32_array, polars::arrow::ArrayRef::as_int64_array, polars::arrow::ArrayRef::as_int8_array, polars::arrow::ArrayRef::as_float16_array, polars::arrow::ArrayRef::as_uint128_array, polars::arrow::ArrayRef::as_uint16_array, polars::arrow::ArrayRef::as_uint32_array, polars::arrow::ArrayRef::as_uint64_array, polars::arrow::ArrayRef::as_uint8_array"
+  },
+  {
+   "bindings": 13,
+   "disposition": "generated",
+   "key": "polars_arrow:3051",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::value",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_float32_array, polars::arrow::ArrayRef::as_float64_array, polars::arrow::ArrayRef::as_int128_array, polars::arrow::ArrayRef::as_int16_array, polars::arrow::ArrayRef::as_int32_array, polars::arrow::ArrayRef::as_int64_array, polars::arrow::ArrayRef::as_int8_array, polars::arrow::ArrayRef::as_float16_array, polars::arrow::ArrayRef::as_uint128_array, polars::arrow::ArrayRef::as_uint16_array, polars::arrow::ArrayRef::as_uint32_array, polars::arrow::ArrayRef::as_uint64_array, polars::arrow::ArrayRef::as_uint8_array"
+  },
+  {
+   "bindings": 13,
+   "disposition": "generated",
+   "key": "polars_arrow:3048",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::values",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_float32_array, polars::arrow::ArrayRef::as_float64_array, polars::arrow::ArrayRef::as_int128_array, polars::arrow::ArrayRef::as_int16_array, polars::arrow::ArrayRef::as_int32_array, polars::arrow::ArrayRef::as_int64_array, polars::arrow::ArrayRef::as_int8_array, polars::arrow::ArrayRef::as_float16_array, polars::arrow::ArrayRef::as_uint128_array, polars::arrow::ArrayRef::as_uint16_array, polars::arrow::ArrayRef::as_uint32_array, polars::arrow::ArrayRef::as_uint64_array, polars::arrow::ArrayRef::as_uint8_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: foreign type: return (core::slice::iter::Iter<f32>)",
+    "unsupported: foreign type: return (core::slice::iter::Iter<f64>)",
+    "unsupported: foreign type: return (core::slice::iter::Iter<i128>)",
+    "unsupported: foreign type: return (core::slice::iter::Iter<i16>)"
+   ],
+   "key": "polars_arrow:3045",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::values_iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3076",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::with_slice",
+   "reason": "callback audit: refused"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)"
+   ],
+   "key": "polars_arrow:3057",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::with_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: values (polars_buffer::buffer::Buffer<f32>)",
+    "unsupported: unreachable polars type: values (polars_buffer::buffer::Buffer<f64>)",
+    "unsupported: unreachable polars type: values (polars_buffer::buffer::Buffer<i128>)",
+    "unsupported: unreachable polars type: values (polars_buffer::buffer::Buffer<i16>)"
+   ],
+   "key": "polars_arrow:3062",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::with_values",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3065",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::with_values_mut",
+   "reason": "callback audit: refused"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:1232:3552",
+   "path": "polars_arrow::array::struct_::StructArray as core::clone::Clone",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_struct_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:1232:3570",
+   "path": "polars_arrow::array::struct_::StructArray as core::cmp::PartialEq",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_struct_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1232:3572",
+   "path": "polars_arrow::array::struct_::StructArray as core::cmp::PartialEq",
+   "reason": "protocol shape: PartialEq: receiver `&self`, params [\"&&dyn polars_arrow::array::Array\"], return Some(\"bool\") is not the recorded shape"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:1232:3546",
+   "path": "polars_arrow::array::struct_::StructArray as core::fmt::Debug",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_struct_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:1232:3550",
+   "path": "polars_arrow::array::struct_::StructArray as core::iter::traits::collect::IntoIterator",
+   "reason": "0113 family: IntoIterator: iteration: the items borrow the receiver or have no proven finite bound, and no snapshot rule covers them in this record"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3482",
+   "path": "polars_arrow::array::struct_::StructArray::arced",
+   "reason": "foreign type: return (alloc::sync::Arc<dyn polars_arrow::array::Array>)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3481",
+   "path": "polars_arrow::array::struct_::StructArray::boxed",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_struct_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3487",
+   "path": "polars_arrow::array::struct_::StructArray::fields",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_struct_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3489",
+   "path": "polars_arrow::array::struct_::StructArray::get_fields",
+   "reason": "concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3473",
+   "path": "polars_arrow::array::struct_::StructArray::into_data",
+   "reason": "unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3464",
+   "path": "polars_arrow::array::struct_::StructArray::iter",
+   "reason": "unreachable polars type: return (polars_arrow::bitmap::utils::zip_validity::ZipValidity<alloc::vec::Vec<alloc::boxed::Box<dyn polars_arrow::scalar::Scalar>>, polars_arrow::array::struct_::iterator::StructValueIter, polars_arrow::bitmap::utils::iterator::BitmapIter>)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3484",
+   "path": "polars_arrow::array::struct_::StructArray::len",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_struct_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3469",
+   "path": "polars_arrow::array::struct_::StructArray::new",
+   "reason": "concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3470",
+   "path": "polars_arrow::array::struct_::StructArray::new_empty",
+   "reason": "concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3471",
+   "path": "polars_arrow::array::struct_::StructArray::new_null",
+   "reason": "concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3479",
+   "path": "polars_arrow::array::struct_::StructArray::set_validity",
+   "reason": "concrete array rule: a mutable receiver: read-side only"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3474",
+   "path": "polars_arrow::array::struct_::StructArray::slice",
+   "reason": "concrete array rule: a mutable receiver: read-side only"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3476",
+   "path": "polars_arrow::array::struct_::StructArray::sliced",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_struct_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3480",
+   "path": "polars_arrow::array::struct_::StructArray::take_validity",
+   "reason": "concrete array rule: a mutable receiver: read-side only"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3468",
+   "path": "polars_arrow::array::struct_::StructArray::try_new",
+   "reason": "concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3485",
+   "path": "polars_arrow::array::struct_::StructArray::validity",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_struct_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3486",
+   "path": "polars_arrow::array::struct_::StructArray::values",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_struct_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3465",
+   "path": "polars_arrow::array::struct_::StructArray::values_iter",
+   "reason": "unreachable polars type: return (polars_arrow::array::struct_::iterator::StructValueIter)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3478",
+   "path": "polars_arrow::array::struct_::StructArray::with_validity",
+   "reason": "unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:4088",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::clone::Clone",
+   "reason": "0113 family: Clone: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:4111",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:4113",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:4115",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::cmp::PartialEq",
+   "reason": "0113 family: PartialEq: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:3813",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::convert::From",
+   "reason": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:3943",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::convert::From",
+   "reason": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:4109",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::default::Default",
+   "reason": "0113 family: Default: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:4076",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::fmt::Debug",
+   "reason": "0113 family: Debug: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:4078",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::iter::traits::collect::FromIterator",
+   "reason": "from_iter head: bounds [(\"O\", \"polars_arrow::types::offset::Offset\"), (\"P\", \"core::convert::AsRef<str>\")] on `polars_arrow::array::utf8::Utf8Array<O>` are not decided here"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:3293:4086",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::iter::traits::collect::IntoIterator",
+   "reason": "0113 family: IntoIterator: iteration: the items borrow the receiver or have no proven finite bound, and no snapshot rule covers them in this record"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [],
+   "key": "polars_arrow:4016",
+   "path": "polars_arrow::array::utf8::Utf8Array::apply_validity",
+   "reason": "callback audit: refused"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: foreign type: return (alloc::sync::Arc<dyn polars_arrow::array::Array>)"
+   ],
+   "key": "polars_arrow:4004",
+   "path": "polars_arrow::array::utf8::Utf8Array::arced",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:4003",
+   "path": "polars_arrow::array::utf8::Utf8Array::boxed",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:4009",
+   "path": "polars_arrow::array::utf8::Utf8Array::default_dtype",
+   "reach": "static"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3992",
+   "path": "polars_arrow::array::utf8::Utf8Array::dtype",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:3984",
+   "path": "polars_arrow::array::utf8::Utf8Array::from",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:4012",
+   "path": "polars_arrow::array::utf8::Utf8Array::from_iter_values",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:3982",
+   "path": "polars_arrow::array::utf8::Utf8Array::from_slice",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:3983",
+   "path": "polars_arrow::array::utf8::Utf8Array::from_trusted_len_iter",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:3981",
+   "path": "polars_arrow::array::utf8::Utf8Array::from_trusted_len_values_iter",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3991",
+   "path": "polars_arrow::array::utf8::Utf8Array::get",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)"
+   ],
+   "key": "polars_arrow:4005",
+   "path": "polars_arrow::array::utf8::Utf8Array::into_inner",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: foreign type: return (either::Either<polars_arrow::array::utf8::Utf8Array<i64>, polars_arrow::array::utf8::mutable::MutableUtf8Array<i64>>)"
+   ],
+   "key": "polars_arrow:4006",
+   "path": "polars_arrow::array::utf8::Utf8Array::into_mut",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::bitmap::utils::zip_validity::ZipValidity<&str, polars_arrow::array::utf8::iterator::Utf8ValuesIter<i64>, polars_arrow::bitmap::utils::iterator::BitmapIter>)"
+   ],
+   "key": "polars_arrow:3985",
+   "path": "polars_arrow::array::utf8::Utf8Array::iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3988",
+   "path": "polars_arrow::array::utf8::Utf8Array::len",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:4011",
+   "path": "polars_arrow::array::utf8::Utf8Array::new",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:4007",
+   "path": "polars_arrow::array::utf8::Utf8Array::new_empty",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:4008",
+   "path": "polars_arrow::array::utf8::Utf8Array::new_null",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::array::iterator::NonNullValuesIter<polars_arrow::array::utf8::Utf8Array<i64>>)"
+   ],
+   "key": "polars_arrow:3987",
+   "path": "polars_arrow::array::utf8::Utf8Array::non_null_values_iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3994",
+   "path": "polars_arrow::array::utf8::Utf8Array::offsets",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:4001",
+   "path": "polars_arrow::array::utf8::Utf8Array::set_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:3996",
+   "path": "polars_arrow::array::utf8::Utf8Array::slice",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3998",
+   "path": "polars_arrow::array::utf8::Utf8Array::sliced",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a mutable receiver: read-side only"
+   ],
+   "key": "polars_arrow:4002",
+   "path": "polars_arrow::array::utf8::Utf8Array::take_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:4017",
+   "path": "polars_arrow::array::utf8::Utf8Array::to_binary",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unresolved: function-level generics are out of this record's scope"
+   ],
+   "key": "polars_arrow:4015",
+   "path": "polars_arrow::array::utf8::Utf8Array::try_from_trusted_len_iter",
+   "reason": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: concrete array rule: a dtype argument `dtype`: construction and dtype validation are deferred to record 0121"
+   ],
+   "key": "polars_arrow:3980",
+   "path": "polars_arrow::array::utf8::Utf8Array::try_new",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3995",
+   "path": "polars_arrow::array::utf8::Utf8Array::validity",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3989",
+   "path": "polars_arrow::array::utf8::Utf8Array::value",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "bindings": 1,
+   "disposition": "generated",
+   "key": "polars_arrow:3993",
+   "path": "polars_arrow::array::utf8::Utf8Array::values",
+   "reach": "by downcast: polars::arrow::ArrayRef::as_large_string_array"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: return (polars_arrow::array::utf8::iterator::Utf8ValuesIter<i64>)"
+   ],
+   "key": "polars_arrow:3986",
+   "path": "polars_arrow::array::utf8::Utf8Array::values_iter",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "disposition": "refused",
+   "exceptions": [
+    "unsupported: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)"
+   ],
+   "key": "polars_arrow:4000",
+   "path": "polars_arrow::array::utf8::Utf8Array::with_validity",
+   "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "bindings": 15,
+   "disposition": "generated",
+   "key": "polars_arrow:3329",
+   "path": "polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype",
+   "reach": "trait method, by downcast: polars::arrow::ArrayRef::as_float16_array, polars::arrow::ArrayRef::as_float32_array, polars::arrow::ArrayRef::as_float64_array, polars::arrow::ArrayRef::as_int128_array, polars::arrow::ArrayRef::as_int16_array, polars::arrow::ArrayRef::as_int32_array, polars::arrow::ArrayRef::as_int64_array, polars::arrow::ArrayRef::as_int8_array, polars::arrow::ArrayRef::as_large_binary_array, polars::arrow::ArrayRef::as_large_string_array, polars::arrow::ArrayRef::as_uint128_array, polars::arrow::ArrayRef::as_uint16_array, polars::arrow::ArrayRef::as_uint32_array, polars::arrow::ArrayRef::as_uint64_array, polars::arrow::ArrayRef::as_uint8_array"
+  }
+ ],
+ "unreviewed": []
+}

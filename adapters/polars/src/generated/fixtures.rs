@@ -61,8 +61,47 @@ pub mod values {
     pub fn frozen_categories() -> polars_dtype::categorical::FrozenCategories { crate::generated::support::categorical_fixtures::frozen_categories() }
     pub fn categorical_mapping() -> polars_dtype::categorical::CategoricalMapping { crate::generated::support::categorical_fixtures::mapping() }
     pub fn group_by() -> p::LazyGroupBy { lf().group_by_stable([p::col("y")]) }
+    pub fn int8_array() -> polars_arrow::array::PrimitiveArray<i8> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Int8).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i8>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn int16_array() -> polars_arrow::array::PrimitiveArray<i16> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Int16).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i16>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn int32_array() -> polars_arrow::array::PrimitiveArray<i32> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Int32).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i32>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn int64_array() -> polars_arrow::array::PrimitiveArray<i64> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Int64).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i64>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn uint8_array() -> polars_arrow::array::PrimitiveArray<u8> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::UInt8).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<u8>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn uint16_array() -> polars_arrow::array::PrimitiveArray<u16> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::UInt16).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<u16>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn uint32_array() -> polars_arrow::array::PrimitiveArray<u32> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::UInt32).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<u32>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn uint64_array() -> polars_arrow::array::PrimitiveArray<u64> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::UInt64).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<u64>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn float32_array() -> polars_arrow::array::PrimitiveArray<f32> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Float32).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<f32>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn float64_array() -> polars_arrow::array::PrimitiveArray<f64> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Float64).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<f64>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn large_string_array() -> polars_arrow::array::Utf8Array<i64> { p::Series::new("x".into(), [Some("a"), None, Some("ccc")]).to_arrow(0, p::CompatLevel::oldest()).as_any().downcast_ref::<polars_arrow::array::Utf8Array<i64>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn large_binary_array() -> polars_arrow::array::BinaryArray<i64> { p::Series::new("x".into(), [Some("a"), None, Some("ccc")]).cast(&p::DataType::Binary).unwrap().to_arrow(0, p::CompatLevel::oldest()).as_any().downcast_ref::<polars_arrow::array::BinaryArray<i64>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn large_list_array() -> polars_arrow::array::ListArray<i64> { p::IntoSeries::into_series(p::Series::new("x".into(), [Some(1i64), None, Some(3)]).implode().unwrap()).to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::ListArray<i64>>().expect("oracle: the probe's concrete array").clone() }
 }
 
+#[rune::function(path = int8_array)]
+fn fx_int8_array() -> W_polars_arrow__array__primitive__PrimitiveArray_i8_ { W_polars_arrow__array__primitive__PrimitiveArray_i8_(values::int8_array()) }
+#[rune::function(path = int16_array)]
+fn fx_int16_array() -> W_polars_arrow__array__primitive__PrimitiveArray_i16_ { W_polars_arrow__array__primitive__PrimitiveArray_i16_(values::int16_array()) }
+#[rune::function(path = int32_array)]
+fn fx_int32_array() -> W_polars_arrow__array__primitive__PrimitiveArray_i32_ { W_polars_arrow__array__primitive__PrimitiveArray_i32_(values::int32_array()) }
+#[rune::function(path = int64_array)]
+fn fx_int64_array() -> W_polars_arrow__array__primitive__PrimitiveArray_i64_ { W_polars_arrow__array__primitive__PrimitiveArray_i64_(values::int64_array()) }
+#[rune::function(path = uint8_array)]
+fn fx_uint8_array() -> W_polars_arrow__array__primitive__PrimitiveArray_u8_ { W_polars_arrow__array__primitive__PrimitiveArray_u8_(values::uint8_array()) }
+#[rune::function(path = uint16_array)]
+fn fx_uint16_array() -> W_polars_arrow__array__primitive__PrimitiveArray_u16_ { W_polars_arrow__array__primitive__PrimitiveArray_u16_(values::uint16_array()) }
+#[rune::function(path = uint32_array)]
+fn fx_uint32_array() -> W_polars_arrow__array__primitive__PrimitiveArray_u32_ { W_polars_arrow__array__primitive__PrimitiveArray_u32_(values::uint32_array()) }
+#[rune::function(path = uint64_array)]
+fn fx_uint64_array() -> W_polars_arrow__array__primitive__PrimitiveArray_u64_ { W_polars_arrow__array__primitive__PrimitiveArray_u64_(values::uint64_array()) }
+#[rune::function(path = float32_array)]
+fn fx_float32_array() -> W_polars_arrow__array__primitive__PrimitiveArray_f32_ { W_polars_arrow__array__primitive__PrimitiveArray_f32_(values::float32_array()) }
+#[rune::function(path = float64_array)]
+fn fx_float64_array() -> W_polars_arrow__array__primitive__PrimitiveArray_f64_ { W_polars_arrow__array__primitive__PrimitiveArray_f64_(values::float64_array()) }
+#[rune::function(path = large_string_array)]
+fn fx_large_string_array() -> W_polars_arrow__array__utf8__Utf8Array_i64_ { W_polars_arrow__array__utf8__Utf8Array_i64_(values::large_string_array()) }
+#[rune::function(path = large_binary_array)]
+fn fx_large_binary_array() -> W_polars_arrow__array__binary__BinaryArray_i64_ { W_polars_arrow__array__binary__BinaryArray_i64_(values::large_binary_array()) }
+#[rune::function(path = large_list_array)]
+fn fx_large_list_array() -> W_polars_arrow__array__list__ListArray_i64_ { W_polars_arrow__array__list__ListArray_i64_(values::large_list_array()) }
 #[rune::function(path = arrow_array)]
 fn fx_arrow_array() -> ArrayRef { ArrayRef(values::arrow_array()) }
 #[rune::function(path = df)]
@@ -159,6 +198,32 @@ fn fx_series_list_nulls() -> W_polars_core__series__Series { W_polars_core__seri
 fn fx_series_float_sum() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_float_sum()) }
 /// Show a `polars_arrow::array::ArrayRef` held in a Rune value, for the oracle tests.
 pub fn show_arrayref(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<ArrayRef>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.to_boxed()).expect("oracle: an Arrow chunk converts back")) }) }
+/// Show a `polars_arrow::array::binary::BinaryArray<i64>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__binary__binaryarray_i64_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__binary__BinaryArray_i64_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::list::ListArray<i64>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__list__listarray_i64_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__list__ListArray_i64_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<f32>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_f32_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_f32_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<f64>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_f64_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_f64_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<i16>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_i16_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_i16_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<i32>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_i32_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_i32_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<i64>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_i64_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_i64_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<i8>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_i8_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_i8_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<u16>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_u16_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_u16_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<u32>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_u32_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_u32_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<u64>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_u64_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_u64_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::primitive::PrimitiveArray<u8>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__primitive__primitivearray_u8_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_u8_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::utf8::Utf8Array<i64>` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__utf8__utf8array_i64_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__utf8__Utf8Array_i64_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
 /// Show a `polars_arrow::datatypes::ArrowDataType` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_arrow__datatypes__arrowdatatype(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__datatypes__ArrowDataType>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_arrow::datatypes::TimeUnit` held in a Rune value, for the oracle tests.
@@ -462,5 +527,18 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(fx_series_list_long)?;
     m.function_meta(fx_series_list_nulls)?;
     m.function_meta(fx_series_float_sum)?;
+    m.function_meta(fx_int8_array)?;
+    m.function_meta(fx_int16_array)?;
+    m.function_meta(fx_int32_array)?;
+    m.function_meta(fx_int64_array)?;
+    m.function_meta(fx_uint8_array)?;
+    m.function_meta(fx_uint16_array)?;
+    m.function_meta(fx_uint32_array)?;
+    m.function_meta(fx_uint64_array)?;
+    m.function_meta(fx_float32_array)?;
+    m.function_meta(fx_float64_array)?;
+    m.function_meta(fx_large_string_array)?;
+    m.function_meta(fx_large_binary_array)?;
+    m.function_meta(fx_large_list_array)?;
     Ok(())
 }

@@ -205,6 +205,7 @@ pub(crate) fn trait_receivers_self_test() {
 			entries: vec![],
 			taken: BTreeMap::new(),
 			fn_index: 0,
+			frozen_ids: Default::default(),
 		};
 		emit_callable(&w, &mut e, &m, &["mechanical"]);
 		(
@@ -335,6 +336,7 @@ pub(crate) fn move_semantics_self_test() {
 			entries: vec![],
 			taken: BTreeMap::new(),
 			fn_index: 0,
+			frozen_ids: Default::default(),
 		};
 		emit_callable(
 			&world,
@@ -463,6 +465,7 @@ pub(crate) fn method_arity_self_test() {
 			entries: vec![],
 			taken: BTreeMap::new(),
 			fn_index: 0,
+			frozen_ids: Default::default(),
 		};
 		emit_callable(
 			&world,
@@ -715,6 +718,7 @@ pub(crate) fn mut_return_self_test() {
 			entries: vec![],
 			taken: BTreeMap::new(),
 			fn_index: 0,
+			frozen_ids: Default::default(),
 		};
 		emit_callable(
 			&world,

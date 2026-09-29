@@ -526,6 +526,7 @@ pub(crate) fn dtype_owners_self_test() {
 			entries: vec![],
 			taken: Default::default(),
 			fn_index: 0,
+			frozen_ids: Default::default(),
 		};
 		crate::emit::callable::emit_method(&w4, &mut out, &m, identity, None, false);
 		assert_eq!(

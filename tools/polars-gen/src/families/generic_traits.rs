@@ -475,6 +475,7 @@ pub(crate) fn emit_trait_dispatch(
 			entries: vec![],
 			taken: out.taken.clone(),
 			fn_index,
+			frozen_ids: out.frozen_ids.clone(),
 		};
 		crate::emit::callable::emit_method(world, &mut s, &a.callable, owner, Some(tspell), false);
 		fn_index = s.fn_index;
@@ -793,6 +794,7 @@ pub(crate) fn generic_traits_self_test() {
 			entries: vec![],
 			taken: BTreeMap::new(),
 			fn_index: 0,
+			frozen_ids: Default::default(),
 		};
 		emit_callable(
 			&world,

@@ -294,6 +294,8 @@ pub(crate) struct World {
 	pub(crate) release: Release,
 	/// Record 0118: the admitted std facts, (canonical type, trait).
 	pub(crate) std_facts: BTreeSet<(String, String)>,
+	/// Record 0120: the listed concrete arrays' own parameter bounds.
+	pub(crate) array_facts: BTreeSet<(String, String)>,
 	pub(crate) callback_dispositions: BTreeMap<String, String>,
 	pub(crate) callback_unclassified_sinks: Vec<String>,
 	pub(crate) callback_sink_groups: BTreeSet<String>,
@@ -508,6 +510,7 @@ impl World {
 		let mut w = World {
 			release: release.clone(),
 			std_facts: BTreeSet::new(),
+			array_facts: BTreeSet::new(),
 			callback_dispositions: BTreeMap::new(),
 			callback_unclassified_sinks,
 			callback_sink_groups,
@@ -934,6 +937,30 @@ impl World {
 				eprintln!("refusing to generate: dtype instantiations: {why}");
 				std::process::exit(2);
 			}
+		}
+		// record 0120: the allowlisted concrete arrays, validated fail closed,
+		// each a wrapper of its own under `polars::arrow`
+		let rows = self.release.families.concrete_arrays.clone();
+		if let Err(why) = crate::families::concrete_arrays::validate(self, &rows) {
+			eprintln!("refusing to generate: concrete arrays: {why}");
+			std::process::exit(2);
+		}
+		for f in crate::families::concrete_arrays::facts(&rows) {
+			self.array_facts.insert(f);
+		}
+		for (key, w) in crate::families::concrete_arrays::wrappers(self, &rows) {
+			if let Some(base) = w.base.clone() {
+				let mut s = self.types[&base].clone();
+				s.key = key.clone();
+				s.canonical_path = key.clone();
+				s.generic = false;
+				s.alias_target = None;
+				self.types.insert(key.clone(), s);
+				if self.clonable.contains(&base) {
+					self.clonable.insert(key.clone());
+				}
+			}
+			self.wrappers.insert(key, w);
 		}
 		// record 0119: the owned Arrow array, a hand-written support wrapper
 		// (`polars::arrow::ArrayRef`) for `Box<dyn Array>` and its alias; the
