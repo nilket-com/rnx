@@ -1,0 +1,2579 @@
+{
+ "both_error_by_operation": {
+  "add_to (InvalidOperation)": 3,
+  "arg_sort_multiple (ComputeError)": 3,
+  "broadcast_owned_to (ShapeMismatch)": 3,
+  "cast_with_options (ComputeError)": 1,
+  "cast_with_options (InvalidOperation)": 1,
+  "cont_slice (ComputeError)": 3,
+  "divide (InvalidOperation)": 3,
+  "map_contains_key (ComputeError)": 1,
+  "map_get (ComputeError)": 1,
+  "multiply (InvalidOperation)": 3,
+  "prepare_cloud_plan (InvalidOperation)": 1,
+  "quantile (ComputeError)": 3,
+  "quantile_reduce (ComputeError)": 3,
+  "quantiles_reduce (ComputeError)": 3,
+  "remainder (InvalidOperation)": 3,
+  "subtract (InvalidOperation)": 3,
+  "unpack_series_matching_type (SchemaMismatch)": 3
+ },
+ "moved": [
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5)), Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__append__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3), Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__append__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3), UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__append__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5)), Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__append_owned__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3), Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__append_owned__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3), UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__append_owned__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "cb:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__apply_as_ints__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=ERR:ShapeMismatch",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_in_place_to__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=ERR:ShapeMismatch",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_in_place_to__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=ERR:ShapeMismatch",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_in_place_to__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "ShapeMismatch",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_owned_to__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ShapeMismatch",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_owned_to__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ShapeMismatch",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_owned_to__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "[1:3]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[1:3]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[1:3]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__clear__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__clear__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__clear__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__cont_slice__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__cont_slice__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__cont_slice__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "[39:[9:pf16(1.5), 9:pf16(0.0), 9:pf16(3.5)]]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__data_views__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[15:[1:1, 1:0, 1:3]]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__data_views__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[15:[1:1, 1:0, 1:3]]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__data_views__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": ":Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_as_array__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": ":Int128:[Int128(1), Null, Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_as_array__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": ":UInt128:[UInt128(1), Null, UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_as_array__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "None",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_get__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "None",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_get__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "None",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_get__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[55::Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))]]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_into_iter__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[36::Int128:[Int128(1), Null, Int128(3)]]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_into_iter__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[39::UInt128:[UInt128(1), Null, UInt128(3)]]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_into_iter__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[55::Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))]]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_iter__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[36::Int128:[Int128(1), Null, Int128(3)]]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_iter__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[39::UInt128:[UInt128(1), Null, UInt128(3)]]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_iter__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(1.5)), Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Float16",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__dtype__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Int128",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__dtype__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "UInt128",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__dtype__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5)), Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__extend__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3), Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__extend__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3), UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__extend__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(9:pf16(1.5))",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__first__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:1)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__first__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:1)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__first__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:0)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:0)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:0)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:1)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__first_null__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:1)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__first_null__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:1)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__first_null__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Null, Null]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Null, Null]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[Null, Null]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(9:pf16(3.5))",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__get__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:3)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__get__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:3)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__get__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "StatisticsFlags(0x0)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__get_flags__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "StatisticsFlags(0x0)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__get_flags__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "StatisticsFlags(0x0)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__get_flags__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "true",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "true",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "true",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Decimal(2, 2):[Decimal(1, 2, 2), Null, Decimal(3, 2, 2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__into_decimal__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Decimal(2, 2):[Decimal(1, 2, 2), Null, Decimal(3, 2, 2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__into_decimal_unchecked__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[9:pf16(1.5), 9:pf16(0.0), 9:pf16(3.5)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[1:1, 1:0, 1:3]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[1:1, 1:0, 1:3]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_empty__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_empty__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_empty__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Boolean:[Boolean(true), Boolean(false), Boolean(true)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Boolean:[Boolean(true), Boolean(false), Boolean(true)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Boolean:[Boolean(true), Boolean(false), Boolean(true)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Boolean:[Boolean(false), Boolean(true), Boolean(false)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_null__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Boolean:[Boolean(false), Boolean(true), Boolean(false)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_null__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Boolean:[Boolean(false), Boolean(true), Boolean(false)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_null__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Not",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Not",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Not",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[17:Some(9:pf16(1.5)), 4:None, 17:Some(9:pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__iter__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[9:Some(1:1), 4:None, 9:Some(1:3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__iter__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[9:Some(1:1), 4:None, 9:Some(1:3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__iter__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[34:Some(25:[4:true, 5:false, 4:true])]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__iter_validities__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[34:Some(25:[4:true, 5:false, 4:true])]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__iter_validities__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[34:Some(25:[4:true, 5:false, 4:true])]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__iter_validities__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(9:pf16(3.5))",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__last__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:3)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__last__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:3)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__last__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:2)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:2)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:2)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "3",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__len__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "3",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__len__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "3",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__len__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__name__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__name__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__name__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[9:pf16(1.5), 9:pf16(0.0), 9:pf16(3.5)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[1:1, 1:0, 1:3]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[1:1, 1:0, 1:3]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "1",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__null_count__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "1",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__null_count__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "1",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__null_count__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(25:[4:true, 5:false, 4:true])",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_validity__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(25:[4:true, 5:false, 4:true])",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_validity__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(25:[4:true, 5:false, 4:true])",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_validity__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Field { name: \"x\", dtype: Float16 }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__ref_field__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Field { name: \"x\", dtype: Int128 }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__ref_field__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Field { name: \"x\", dtype: UInt128 }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__ref_field__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__rename__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__rename__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__rename__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_flags__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_flags__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_flags__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_validity__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_validity__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__set_validity__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__slice__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__slice__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__slice__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[17:Some(9:pf16(1.5)), 4:None, 17:Some(9:pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__to_vec__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[9:Some(1:1), 4:None, 9:Some(1:3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__to_vec__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[9:Some(1:1), 4:None, 9:Some(1:3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__to_vec__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "SchemaMismatch",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "SchemaMismatch",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "SchemaMismatch",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Int128:[Int128(1), Null, Int128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:UInt128:[UInt128(1), Null, UInt128(3)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__with_name__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__with_name__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__with_name__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__with_validity__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__with_validity__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray__with_validity__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(3.0)), Null, Float16(pf16(5.0))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float16chunked_f64_polars_core_569_5130",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(3.0)), Null, Float16(pf16(7.0))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float16chunked_float16chunked_polars_core_569_5124",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(3.5)), Null, Float16(pf16(5.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float16chunked_i64_polars_core_569_5130",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(2), Null, Int128(4)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int128chunked_f64_polars_core_569_5130",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(3), Null, Int128(5)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int128chunked_i64_polars_core_569_5130",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(2), Null, Int128(6)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int128chunked_int128chunked_polars_core_569_5124",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(2), Null, UInt128(4)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint128chunked_f64_polars_core_569_5130",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(3), Null, UInt128(5)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint128chunked_i64_polars_core_569_5130",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(2), Null, UInt128(6)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint128chunked_uint128chunked_polars_core_569_5124",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(1.0)), Null, Float16(pf16(2.3320313))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float16chunked_f64_polars_core_569_5166",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(1.0)), Null, Float16(pf16(1.0))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float16chunked_float16chunked_polars_core_569_5160",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(0.75)), Null, Float16(pf16(1.75))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float16chunked_i64_polars_core_569_5166",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int128chunked_f64_polars_core_569_5166",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(0), Null, Int128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int128chunked_i64_polars_core_569_5166",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int128chunked_int128chunked_polars_core_569_5160",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint128chunked_f64_polars_core_569_5166",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(0), Null, UInt128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint128chunked_i64_polars_core_569_5166",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint128chunked_uint128chunked_polars_core_569_5160",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(2.25)), Null, Float16(pf16(5.25))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float16chunked_f64_polars_core_569_5154",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(2.25)), Null, Float16(pf16(12.25))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float16chunked_float16chunked_polars_core_569_5148",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(3.0)), Null, Float16(pf16(7.0))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float16chunked_i64_polars_core_569_5154",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int128chunked_f64_polars_core_569_5154",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(2), Null, Int128(6)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int128chunked_i64_polars_core_569_5154",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(9)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int128chunked_int128chunked_polars_core_569_5148",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint128chunked_f64_polars_core_569_5154",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(2), Null, UInt128(6)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint128chunked_i64_polars_core_569_5154",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(9)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint128chunked_uint128chunked_polars_core_569_5148",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(0.0)), Null, Float16(pf16(0.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float16chunked_f64_polars_core_569_5178",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(0.0)), Null, Float16(pf16(0.0))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float16chunked_float16chunked_polars_core_569_5172",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(1.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float16chunked_i64_polars_core_569_5178",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(0), Null, Int128(0)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int128chunked_f64_polars_core_569_5178",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int128chunked_i64_polars_core_569_5178",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(0), Null, Int128(0)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int128chunked_int128chunked_polars_core_569_5172",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(0), Null, UInt128(0)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint128chunked_f64_polars_core_569_5178",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint128chunked_i64_polars_core_569_5178",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(0), Null, UInt128(0)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint128chunked_uint128chunked_polars_core_569_5172",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(0.0)), Null, Float16(pf16(2.0))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float16chunked_f64_polars_core_569_5142",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(0.0)), Null, Float16(pf16(0.0))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float16chunked_float16chunked_polars_core_569_5136",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(-0.5)), Null, Float16(pf16(1.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float16chunked_i64_polars_core_569_5142",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(0), Null, Int128(2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int128chunked_f64_polars_core_569_5142",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(-1), Null, Int128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int128chunked_i64_polars_core_569_5142",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(0), Null, Int128(0)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int128chunked_int128chunked_polars_core_569_5136",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(0), Null, UInt128(2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint128chunked_f64_polars_core_569_5142",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(340282366920938463463374607431768211455), Null, UInt128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint128chunked_i64_polars_core_569_5142",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(0), Null, UInt128(0)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint128chunked_uint128chunked_polars_core_569_5136",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__int128chunked_int128chunked_polars_core_569_5183",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__uint128chunked_uint128chunked_polars_core_569_5183",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__int128chunked_int128chunked_polars_core_569_5186",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__uint128chunked_uint128chunked_polars_core_569_5186",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(0), Null, Int128(0)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__int128chunked_int128chunked_polars_core_569_5189",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(0), Null, UInt128(0)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__uint128chunked_uint128chunked_polars_core_569_5189",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__cast_with_options",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "Extension(ExtensionType(name='rnx.oracle'), Int64)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__dtype",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "ExtensionType(name='rnx.oracle')",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__extension_type",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Field { name: \"x\", dtype: Extension(ExtensionType(name='rnx.oracle'), Int64) }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__field",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__into_storage",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__is_empty",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "3",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__len",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__name",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__storage",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Field { name: \"x\", dtype: Decimal(10, 2) }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__field__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "true",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__has_nulls__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(125), Null, Int128(350)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__into_phys_with_prec_scale_or_sentinel__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(125), Null, Int128(350)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__into_physical__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__is_empty__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Boolean:[Boolean(true), Boolean(false), Boolean(true)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__is_not_null__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Boolean:[Boolean(false), Boolean(true), Boolean(false)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__is_null__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "3",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__len__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__name__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "1",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__null_count__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(125), Null, Int128(350)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__physical__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "10",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__precision__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Scalar { dtype: Decimal(38, 2), value: Decimal(438, 38, 2) }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__prod_reduce__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "recv=x:Decimal(10, 2):[Decimal(125, 10, 2), Null, Decimal(350, 10, 2)];ret=()",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__rename__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "2",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__scale__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Decimal(10, 2):[Decimal(350, 10, 2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logical__slice__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(4)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logicaltype__cast__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(4)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logicaltype__cast_with_options__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Decimal(10, 2)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__logicaltype__dtype__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__cast_with_options",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "Map(String, Int64)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__dtype",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Struct({'key': String, 'value': Int64}):len=3:rows=[valid, valid, valid]:{key:String:[String(\"a\"), String(\"b\"), String(\"c\")]; value:Int64:[Int64(1), Int64(2), Int64(3)]}",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__entries",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Field { name: \"x\", dtype: Map(String, Int64) }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__field",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__is_empty",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "String",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__key_dtype",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:List(String):[List(:String:[String(\"a\"), String(\"b\"), String(\"c\")])]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__key_lists",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "key:String:[String(\"a\"), String(\"b\"), String(\"c\")]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__keys",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "1",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__len",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[1:3]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__live_row_lengths",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__name",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:List(Struct({'key': String, 'value': Int64})):[List(:Struct({'key': String, 'value': Int64}):len=3:rows=[valid, valid, valid]:{key:String:[String(\"a\"), String(\"b\"), String(\"c\")]; value:Int64:[Int64(",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__storage",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Int64",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__value_dtype",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:List(Int64):[List(:Int64:[Int64(1), Int64(2), Int64(3)])]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__value_lists",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "value:Int64:[Int64(1), Int64(2), Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__values",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Scalar { dtype: Float64, value: Float64(2.0) }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__median_reduce",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Scalar { dtype: Float16, value: Float16(pf16(2.5)) }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__median_reduce__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Scalar { dtype: Float64, value: Float64(2.0) }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__median_reduce__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantile_reduce",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantile_reduce__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantile_reduce__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantiles_reduce",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantiles_reduce__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantiles_reduce__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "Scalar { dtype: Float16, value: Null }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__var__varaggseries__std_reduce",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Scalar { dtype: Float16, value: Null }",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__aggregate__var__varaggseries__var_reduce",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "true",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__binning__fractions_as_core__cmp__partialeq",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[0.25,0.75]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__binning__fractions_as_serde_core__de__deserialize",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[0.25,0.75]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__binning__fractions_as_serde_core__ser__serialize",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int64:[Int64(1), Null, Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(3.5)), Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkexpandatindex__new_from_index__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(3), Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkexpandatindex__new_from_index__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(3), UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkexpandatindex__new_from_index__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Int128(2), Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), UInt128(2), UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(1.5)), Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(9:pf16(2.5))",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkquantile__median__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:2)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkquantile__median__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Some(1:2)",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkquantile__median__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkquantile__quantile__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkquantile__quantile__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkquantile__quantile__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(3.5)), Null, Float16(pf16(1.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkreverse__reverse",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(3), Null, Int128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(3), Null, UInt128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(2), Null, Int128(2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkset__set__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(2), Null, UInt128(2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkset__set__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Null, Null, Float16(pf16(1.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkshift__shift__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Null, Null, Int128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkshift__shift__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[Null, Null, UInt128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunkshift__shift__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt32:[UInt32(1), UInt32(0), UInt32(2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt32:[UInt32(1), UInt32(0), UInt32(2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt32:[UInt32(1), UInt32(0), UInt32(2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort_multiple__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort_multiple__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort_multiple__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Null, Float16(pf16(3.5)), Float16(pf16(1.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__sort__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Null, Int128(3), Int128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__sort__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[Null, UInt128(3), UInt128(1)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__sort__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Null, Float16(pf16(1.5)), Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__sort_with__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Null, Int128(1), Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__sort_with__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[Null, UInt128(1), UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__chunksort__sort_with__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "None",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "None",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "None",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "None",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "None",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "None",
+   "from": "fixture_failed",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Float16",
+   "from": "fixture_failed",
+   "id": "polars_core__datatypes__dtype__asrefdatatype__as_ref_dtype__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "Int128",
+   "from": "fixture_failed",
+   "id": "polars_core__datatypes__dtype__asrefdatatype__as_ref_dtype__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "UInt128",
+   "from": "fixture_failed",
+   "id": "polars_core__datatypes__dtype__asrefdatatype__as_ref_dtype__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "true",
+   "from": "fixture_failed",
+   "id": "polars_core__datatypes__extension__extensiontypeinstance_as_core__cmp__partialeq",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "rnx.oracle",
+   "from": "fixture_failed",
+   "id": "polars_core__datatypes__extension__extensiontypeinstance_as_core__fmt__display",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "true true 1",
+   "from": "fixture_failed",
+   "id": "polars_core__datatypes__extension__extensiontypeinstance_as_core__hash__hash",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Decimal(10, 2):[Decimal(125, 10, 2), Null, Decimal(350, 10, 2)]",
+   "from": "fixture_failed",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__decimalchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Extension(ExtensionType(name='rnx.oracle'), Int64):[Int64(1), Null, Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__extensionchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))]",
+   "from": "fixture_failed",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Int128:[Int128(1), Null, Int128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:Map(String, Int64):[Map(shape: (3,)\nSeries: '' [struct[2]]\n[\n\t{\"a\",1}\n\t{\"b\",2}\n\t{\"c\",3}\n])]",
+   "from": "fixture_failed",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__mapchunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "x:UInt128:[UInt128(1), Null, UInt128(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract__on__float16chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract__on__int128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract__on__uint128chunked",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "x:Extension(ExtensionType(name='rnx.oracle'), Int64):[Int64(1), Int64(2), Int64(3)]",
+   "from": "fixture_failed",
+   "id": "polars_core__series__series__into_extension",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[56:x:Float16:[Float16(pf16(1.5)), Null, Float16(pf16(3.5))]]",
+   "from": "fixture_failed",
+   "id": "polars_core__utils__container__iter_chunks__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[37:x:Int128:[Int128(1), Null, Int128(3)]]",
+   "from": "fixture_failed",
+   "id": "polars_core__utils__container__iter_chunks__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[40:x:UInt128:[UInt128(1), Null, UInt128(3)]]",
+   "from": "fixture_failed",
+   "id": "polars_core__utils__container__iter_chunks__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "1",
+   "from": "fixture_failed",
+   "id": "polars_core__utils__container__n_chunks__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "1",
+   "from": "fixture_failed",
+   "id": "polars_core__utils__container__n_chunks__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "1",
+   "from": "fixture_failed",
+   "id": "polars_core__utils__container__n_chunks__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__utils__container__should_rechunk__on__float16chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__utils__container__should_rechunk__on__int128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "false",
+   "from": "fixture_failed",
+   "id": "polars_core__utils__container__should_rechunk__on__uint128chunked",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "[77:shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]]",
+   "from": "fixture_failed",
+   "id": "polars_lazy__frame__lazyframe__collect_all_with_engine",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "SINK_MULTIPLE\n  PLAN 0:\n    DF [\"x\"]; PROJECT */1 COLUMNS\nEND SINK_MULTIPLE",
+   "from": "fixture_failed",
+   "id": "polars_lazy__frame__lazyframe__explain_all",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "collected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))]",
+   "from": "fixture_failed",
+   "id": "polars_lazy__frame__lazyframe__from_logical_plan",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "collected shape=(3, 6); columns=[x:Int64,y:String,z:Float64,x_right:Int64,y_right:String,z_right:Float64,]; rows=[(Int64(1), String(\"a\"), Float64(1.5), Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2)",
+   "from": "match",
+   "id": "polars_lazy__frame__lazyframe__full_join",
+   "to": "row_order_differs",
+   "unordered": true
+  },
+  {
+   "detail": "ret=collected shape=(3, 1); columns=[x:Int64,]; rows=[(Int64(1)) | (Int64(2)) | (Int64(3))];src=DataFrameScan { df: shape: (3, 1)\n\u250c\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502 x   \u2502\n\u2502 --- \u2502\n\u2502 i64 \u2502\n\u255e\u2550\u2550\u2550\u2550\u2550\u2561\n\u2502 1   \u2502\n\u2502 2   \u2502\n\u2502 3   \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500",
+   "from": "fixture_failed",
+   "id": "polars_lazy__frame__lazyframe_as_core__convert__from_polars_plan__dsl__plan__dslplan_",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_ops__chunked_array__map__get__map_contains_key",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "ComputeError",
+   "from": "fixture_failed",
+   "id": "polars_ops__chunked_array__map__get__map_get",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "InvalidOperation",
+   "from": "fixture_failed",
+   "id": "polars_plan__client__prepare_cloud_plan",
+   "to": "both_error",
+   "unordered": false
+  },
+  {
+   "detail": "Schema { fields: {\"x\": Int64}, metadata: () }",
+   "from": "fixture_failed",
+   "id": "polars_plan__dsl__plan__dslplan__compute_schema",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "DF [\"x\"]; PROJECT */1 COLUMNS",
+   "from": "fixture_failed",
+   "id": "polars_plan__dsl__plan__dslplan__describe",
+   "to": "match",
+   "unordered": false
+  },
+  {
+   "detail": "                 0\n   \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   \u2502\n   \u2502  \u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n   \u2502  \u2502 DF [\"x\"]            \u2502\n 0 \u2502  \u2502 PROJECT */1 COLUMNS \u2502\n   \u2502  \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n",
+   "from": "fixture_failed",
+   "id": "polars_plan__dsl__plan__dslplan__describe_tree_format",
+   "to": "match",
+   "unordered": false
+  }
+ ],
+ "new_cases": 0,
+ "regressions": [],
+ "removed": [],
+ "transitions": {
+  "fixture_failed -> both_error": 41,
+  "fixture_failed -> match": 322,
+  "match -> row_order_differs": 1
+ }
+}

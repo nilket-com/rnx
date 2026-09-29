@@ -1,0 +1,25 @@
+{
+ "both_error_by_operation": {},
+ "moved": [
+  {
+   "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(2), String(\"b\"), Float64(2.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(3), String(\"c\"), Float64(3.5))]",
+   "from": "row_order_differs",
+   "id": "polars_lazy__frame__lazyframe__unique",
+   "to": "match",
+   "unordered": true
+  },
+  {
+   "detail": "collected shape=(3, 3); columns=[x:Int64,y:String,z:Float64,]; rows=[(Int64(3), String(\"c\"), Float64(3.5)) | (Int64(1), String(\"a\"), Float64(1.5)) | (Int64(2), String(\"b\"), Float64(2.5))]",
+   "from": "row_order_differs",
+   "id": "polars_lazy__frame__lazyframe__unique_generic",
+   "to": "match",
+   "unordered": true
+  }
+ ],
+ "new_cases": 8,
+ "regressions": [],
+ "removed": [],
+ "transitions": {
+  "row_order_differs -> match": 2
+ }
+}

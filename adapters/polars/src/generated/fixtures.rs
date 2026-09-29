@@ -25,6 +25,10 @@ pub mod values {
     pub fn series_u8() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::UInt8).unwrap() }
     pub fn series_u16() -> p::Series { p::Series::new("x".into(), [1i64, 2, 3]).cast(&p::DataType::UInt16).unwrap() }
     pub fn series_u32() -> p::Series { p::Series::new("x".into(), [1u32, 2, 3]) }
+    pub fn series_i128() -> p::Series { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Int128).unwrap() }
+    pub fn series_u128() -> p::Series { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::UInt128).unwrap() }
+    pub fn series_f16() -> p::Series { p::Series::new("x".into(), [Some(1.5f64), None, Some(3.5)]).cast(&p::DataType::Float16).unwrap() }
+    pub fn series_decimal() -> p::Series { p::Series::new("x".into(), [Some(1.25f64), None, Some(3.5)]).cast(&p::DataType::from_arrow_dtype(&polars_arrow::datatypes::ArrowDataType::Decimal(10, 2))).unwrap() }
     pub fn series_u64() -> p::Series { p::Series::new("x".into(), [1u64, 2, 3]) }
     pub fn series_u64_extremes() -> p::Series { p::Series::new("x".into(), [u64::MAX, 4_294_967_297u64, 1]) }
     pub fn series_str_mixed() -> p::Series { { let mut s = p::Series::new("x".into(), [Some("é日本"), Some("")]); s.append(&p::Series::new("x".into(), [None, Some("z")])).unwrap(); s } }
@@ -61,6 +65,7 @@ pub mod values {
     pub fn frozen_categories() -> polars_dtype::categorical::FrozenCategories { crate::generated::support::categorical_fixtures::frozen_categories() }
     pub fn categorical_mapping() -> polars_dtype::categorical::CategoricalMapping { crate::generated::support::categorical_fixtures::mapping() }
     pub fn group_by() -> p::LazyGroupBy { lf().group_by_stable([p::col("y")]) }
+    pub fn dsl_plan() -> polars_plan::dsl::DslPlan { p::IntoLazy::lazy(p::df!("x" => [1i64, 2, 3]).unwrap()).logical_plan }
     pub fn int8_array() -> polars_arrow::array::PrimitiveArray<i8> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Int8).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i8>>().expect("oracle: the probe's concrete array").clone() }
     pub fn int16_array() -> polars_arrow::array::PrimitiveArray<i16> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Int16).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i16>>().expect("oracle: the probe's concrete array").clone() }
     pub fn int32_array() -> polars_arrow::array::PrimitiveArray<i32> { p::Series::new("x".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Int32).unwrap().to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i32>>().expect("oracle: the probe's concrete array").clone() }
@@ -76,6 +81,8 @@ pub mod values {
     pub fn large_list_array() -> polars_arrow::array::ListArray<i64> { p::IntoSeries::into_series(p::Series::new("x".into(), [Some(1i64), None, Some(3)]).implode().unwrap()).to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::ListArray<i64>>().expect("oracle: the probe's concrete array").clone() }
 }
 
+#[rune::function(path = dsl_plan)]
+fn fx_dsl_plan() -> W_polars_plan__dsl__plan__DslPlan { W_polars_plan__dsl__plan__DslPlan(values::dsl_plan()) }
 #[rune::function(path = int8_array)]
 fn fx_int8_array() -> W_polars_arrow__array__primitive__PrimitiveArray_i8_ { W_polars_arrow__array__primitive__PrimitiveArray_i8_(values::int8_array()) }
 #[rune::function(path = int16_array)]
@@ -150,6 +157,14 @@ fn fx_series_u8() -> W_polars_core__series__Series { W_polars_core__series__Seri
 fn fx_series_u16() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u16()) }
 #[rune::function(path = series_u32)]
 fn fx_series_u32() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u32()) }
+#[rune::function(path = series_i128)]
+fn fx_series_i128() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_i128()) }
+#[rune::function(path = series_u128)]
+fn fx_series_u128() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u128()) }
+#[rune::function(path = series_f16)]
+fn fx_series_f16() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_f16()) }
+#[rune::function(path = series_decimal)]
+fn fx_series_decimal() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_decimal()) }
 #[rune::function(path = series_u64)]
 fn fx_series_u64() -> W_polars_core__series__Series { W_polars_core__series__Series(values::series_u64()) }
 #[rune::function(path = series_u64_extremes)]
@@ -504,6 +519,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(fx_series_u8)?;
     m.function_meta(fx_series_u16)?;
     m.function_meta(fx_series_u32)?;
+    m.function_meta(fx_series_i128)?;
+    m.function_meta(fx_series_u128)?;
+    m.function_meta(fx_series_f16)?;
+    m.function_meta(fx_series_decimal)?;
     m.function_meta(fx_series_u64)?;
     m.function_meta(fx_series_u64_extremes)?;
     m.function_meta(fx_series_str_mixed)?;
@@ -540,5 +559,6 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(fx_large_string_array)?;
     m.function_meta(fx_large_binary_array)?;
     m.function_meta(fx_large_list_array)?;
+    m.function_meta(fx_dsl_plan)?;
     Ok(())
 }

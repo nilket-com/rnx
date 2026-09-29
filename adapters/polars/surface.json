@@ -56521,7 +56521,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)",
+          "case_id": "polars_lazy__frame__lazyframe__collect_all_with_engine",
+          "disposition": "case",
           "id": "polars_lazy__frame__lazyframe__collect_all_with_engine",
           "receiver": "polars_lazy::frame::LazyFrame",
           "reentry": "error",
@@ -56532,7 +56533,7 @@
       ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::LazyFrame::collect_all_with_engine",
-      "execution": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_lazy:292",
       "kind": "inherent",
@@ -56802,7 +56803,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)",
+          "case_id": "polars_lazy__frame__lazyframe__explain_all",
+          "disposition": "case",
           "id": "polars_lazy__frame__lazyframe__explain_all",
           "receiver": "polars_lazy::frame::LazyFrame",
           "reentry": "error",
@@ -56813,7 +56815,7 @@
       ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::LazyFrame::explain_all",
-      "execution": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_lazy:290",
       "kind": "inherent",
@@ -56930,7 +56932,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+          "case_id": "polars_lazy__frame__lazyframe__from_logical_plan",
+          "disposition": "case",
           "id": "polars_lazy__frame__lazyframe__from_logical_plan",
           "receiver": "polars_lazy::frame::LazyFrame",
           "reentry": "unwind",
@@ -56941,7 +56944,7 @@
       ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::LazyFrame::from_logical_plan",
-      "execution": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+      "execution": "case",
       "fallible": false,
       "key": "polars_lazy:232",
       "kind": "inherent",
@@ -60359,7 +60362,7 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
           "id": "polars_plan__dsl__builder_dsl__dslbuilder__gather",
           "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
           "route": "inherent",
@@ -60368,7 +60371,7 @@
       ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::gather",
-      "execution": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
       "fallible": false,
       "key": "polars_plan:663",
       "kind": "inherent",
@@ -60570,7 +60573,7 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)",
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
           "id": "polars_plan__dsl__builder_dsl__dslbuilder__with_context",
           "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
           "route": "inherent",
@@ -60579,7 +60582,7 @@
       ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::with_context",
-      "execution": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
       "fallible": true,
       "key": "polars_plan:644",
       "kind": "inherent",
@@ -65538,7 +65541,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+          "case_id": "polars_plan__dsl__plan__dslplan__compute_schema",
+          "disposition": "case",
           "id": "polars_plan__dsl__plan__dslplan__compute_schema",
           "receiver": "polars_plan::dsl::plan::DslPlan",
           "reentry": "error",
@@ -65549,7 +65553,7 @@
       ],
       "bucket": "conversion",
       "canonical_path": "polars_plan::dsl::plan::DslPlan::compute_schema",
-      "execution": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_plan:7137",
       "kind": "inherent",
@@ -65561,7 +65565,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+          "case_id": "polars_plan__dsl__plan__dslplan__describe",
+          "disposition": "case",
           "id": "polars_plan__dsl__plan__dslplan__describe",
           "receiver": "polars_plan::dsl::plan::DslPlan",
           "reentry": "error",
@@ -65572,7 +65577,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_plan::dsl::plan::DslPlan::describe",
-      "execution": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_plan:7131",
       "kind": "inherent",
@@ -65584,7 +65589,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+          "case_id": "polars_plan__dsl__plan__dslplan__describe_tree_format",
+          "disposition": "case",
           "id": "polars_plan__dsl__plan__dslplan__describe_tree_format",
           "receiver": "polars_plan::dsl::plan::DslPlan",
           "reentry": "error",
@@ -65595,7 +65601,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_plan::dsl::plan::DslPlan::describe_tree_format",
-      "execution": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)",
+      "execution": "case",
       "fallible": true,
       "key": "polars_plan:7132",
       "kind": "inherent",
@@ -90114,7 +90120,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+          "case_id": "polars_lazy__frame__lazyframe_as_core__convert__from_polars_plan__dsl__plan__dslplan_",
+          "disposition": "case",
           "id": "polars_lazy__frame__lazyframe_as_core__convert__from_polars_plan__dsl__plan__dslplan_",
           "receiver": "polars_lazy::frame::LazyFrame",
           "reentry": "unwind",
@@ -90125,7 +90132,7 @@
       ],
       "bucket": "option_struct",
       "canonical_path": "polars_lazy::frame::LazyFrame as core::convert::From",
-      "execution": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+      "execution": "case",
       "fallible": false,
       "key": "polars_lazy:0:438",
       "kind": "foreign_trait_impl",
@@ -91995,7 +92002,7 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+          "disposition": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
           "id": "polars_plan__dsl__builder_dsl__dslbuilder_as_core__convert__from_polars_plan__dsl__plan__dslplan_",
           "receiver": "polars_plan::dsl::builder_dsl::DslBuilder",
           "route": "inherent",
@@ -92004,7 +92011,7 @@
       ],
       "bucket": "option_struct",
       "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder as core::convert::From",
-      "execution": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)",
+      "execution": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)",
       "fallible": false,
       "key": "polars_plan:617:725",
       "kind": "foreign_trait_impl",
@@ -100261,7 +100268,7 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type",
+          "disposition": "protocol Clone has no script-level trigger",
           "id": "polars_plan__dsl__plan__dslplan_as_core__clone__clone",
           "receiver": "polars_plan::dsl::plan::DslPlan",
           "route": "protocol",
@@ -100270,7 +100277,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_plan::dsl::plan::DslPlan as core::clone::Clone",
-      "execution": "no fixture for the receiver type",
+      "execution": "protocol Clone has no script-level trigger",
       "fallible": false,
       "key": "polars_plan:616:7207",
       "kind": "foreign_trait_impl",
@@ -100311,7 +100318,8 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type",
+          "case_id": "polars_plan__dsl__plan__dslplan_as_core__default__default",
+          "disposition": "case",
           "id": "polars_plan__dsl__plan__dslplan_as_core__default__default",
           "receiver": "polars_plan::dsl::plan::DslPlan",
           "route": "protocol",
@@ -100320,7 +100328,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_plan::dsl::plan::DslPlan as core::default::Default",
-      "execution": "no fixture for the receiver type",
+      "execution": "case",
       "fallible": false,
       "key": "polars_plan:616:7209",
       "kind": "foreign_trait_impl",
@@ -100332,7 +100340,7 @@
     {
       "bindings": [
         {
-          "disposition": "no fixture for the receiver type",
+          "disposition": "protocol Debug has no script-level trigger",
           "id": "polars_plan__dsl__plan__dslplan_as_core__fmt__debug",
           "receiver": "polars_plan::dsl::plan::DslPlan",
           "route": "protocol",
@@ -100341,7 +100349,7 @@
       ],
       "bucket": "mechanical",
       "canonical_path": "polars_plan::dsl::plan::DslPlan as core::fmt::Debug",
-      "execution": "no fixture for the receiver type",
+      "execution": "protocol Debug has no script-level trigger",
       "fallible": false,
       "key": "polars_plan:616:7201",
       "kind": "foreign_trait_impl",
@@ -177183,7 +177191,7 @@
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 3959,
+  "oracle_cases": 3967,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -178318,20 +178326,8 @@
       "reason": "return type has no comparison (W_polars_lazy__frame__JoinBuilder)"
     },
     {
-      "path": "polars_lazy::frame::LazyFrame::collect_all_with_engine",
-      "reason": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)"
-    },
-    {
-      "path": "polars_lazy::frame::LazyFrame::explain_all",
-      "reason": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)"
-    },
-    {
       "path": "polars_lazy::frame::LazyFrame::explode",
       "reason": "no fixture for a parameter (polars_core::chunked_array::ops::ExplodeOptions)"
-    },
-    {
-      "path": "polars_lazy::frame::LazyFrame::from_logical_plan",
-      "reason": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)"
     },
     {
       "path": "polars_lazy::frame::LazyFrame::join_builder",
@@ -178567,7 +178563,7 @@
     },
     {
       "path": "polars_plan::dsl::builder_dsl::DslBuilder::gather",
-      "reason": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)"
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
     },
     {
       "path": "polars_plan::dsl::builder_dsl::DslBuilder::remove",
@@ -178591,7 +178587,7 @@
     },
     {
       "path": "polars_plan::dsl::builder_dsl::DslBuilder::with_context",
-      "reason": "no fixture for a parameter (alloc::vec::Vec<polars_plan::dsl::plan::DslPlan>)"
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
     },
     {
       "path": "polars_plan::dsl::expr::Expr::binary",
@@ -178683,18 +178679,6 @@
     },
     {
       "path": "polars_plan::dsl::options::sink::SinkedPathsCallback::call",
-      "reason": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)"
-    },
-    {
-      "path": "polars_plan::dsl::plan::DslPlan::compute_schema",
-      "reason": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)"
-    },
-    {
-      "path": "polars_plan::dsl::plan::DslPlan::describe",
-      "reason": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)"
-    },
-    {
-      "path": "polars_plan::dsl::plan::DslPlan::describe_tree_format",
       "reason": "no fixture for the receiver type (no unit variant and no variant whose payload has fixtures)"
     },
     {
@@ -179746,10 +179730,6 @@
       "reason": "protocol Clone has no script-level trigger"
     },
     {
-      "path": "polars_lazy::frame::LazyFrame as core::convert::From",
-      "reason": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)"
-    },
-    {
       "path": "polars_lazy::frame::LazyGroupBy as core::clone::Clone",
       "reason": "protocol Clone has no script-level trigger"
     },
@@ -179891,7 +179871,7 @@
     },
     {
       "path": "polars_plan::dsl::builder_dsl::DslBuilder as core::convert::From",
-      "reason": "no fixture for a parameter (polars_plan::dsl::plan::DslPlan)"
+      "reason": "return type has no comparison (W_polars_plan__dsl__builder_dsl__DslBuilder)"
     },
     {
       "path": "polars_plan::dsl::datatype_expr::DataTypeExpr as core::clone::Clone",
@@ -180591,15 +180571,11 @@
     },
     {
       "path": "polars_plan::dsl::plan::DslPlan as core::clone::Clone",
-      "reason": "no fixture for the receiver type"
-    },
-    {
-      "path": "polars_plan::dsl::plan::DslPlan as core::default::Default",
-      "reason": "no fixture for the receiver type"
+      "reason": "protocol Clone has no script-level trigger"
     },
     {
       "path": "polars_plan::dsl::plan::DslPlan as core::fmt::Debug",
-      "reason": "no fixture for the receiver type"
+      "reason": "protocol Debug has no script-level trigger"
     },
     {
       "path": "polars_plan::dsl::plan::PlanSerializationContext as core::clone::Clone",
