@@ -55,14 +55,11 @@ pub(crate) fn instantiation_census(world: &World, inv: &Inventory) -> Vec<PairRe
 			.or_insert_with(|| w.aliases.first().cloned().unwrap_or_else(|| path.clone()));
 	}
 	let mut out = Vec::new();
-	// the record's scope: inherent methods of the two generic owners named
-	// in the plan; other generic owners with aliases stay in the generic bucket
-	const OWNERS: &[&str] = &[
-		"polars_core::chunked_array::ChunkedArray",
-		"polars_core::chunked_array::logical::Logical",
-	];
+	// record 0116 (rule 2): every generic owner with concrete alias wrappers,
+	// not only `ChunkedArray` and `Logical` (0076's scope); each alias is a
+	// pair decided by the same applicability proof
 	for c in &inv.callables {
-		if c.kind != "inherent" || c.impl_head.is_none() || !OWNERS.contains(&c.owner.as_str()) {
+		if c.kind != "inherent" || c.impl_head.is_none() {
 			continue;
 		}
 		let Some(ids) = by_base.get(&c.owner) else {

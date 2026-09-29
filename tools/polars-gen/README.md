@@ -6,7 +6,7 @@ inventory (`probes/0072/out/<release>-adapter/result/inventory.json`).
     cargo run --manifest-path tools/polars-gen/Cargo.toml -- \
         probes/0072/out/0.55.2-adapter-narrow/result/inventory.json adapters/polars \
         --release tools/polars-gen/releases/0.55.2-joins.toml \
-        --buckets mechanical,conversion,option_struct,callback,generic_fn
+        --buckets mechanical,conversion,option_struct,callback,generic_fn,generic
 
 `--release` is required and names a file in `releases/`: the release's
 API-crate list, its `[provenance]` (the crates.io `release` or Git `rev`
@@ -59,6 +59,13 @@ names are also the accepted release-file keys: an unknown top-level key
 is refused), and one line in each registry list it uses, at the
 position its plan argues. `POLARS_GEN_TRACE=<file>` writes every hook a
 family takes (`hook<TAB>family<TAB>outcome`).
+
+Record 0116 (generic methods):
+- **Bucket gate lifted.** The `generic` bucket token admits the 0072 `generic` bucket to the mapping rules, which decide and refuse by name. It is part of the production and v2 bucket sets.
+- **`&mut` returns.** A `&mut` return is a chain (unit, receiver mutated in place) only for a `&mut self` method returning `&mut Self` or `&mut` the owner, directly or inside a `Result`. Every other mutable borrow, including `&mut dyn Trait`, is refused as "inner mutable borrow".
+- **Alias census widened.** The instantiation census covers every generic owner with concrete alias wrappers, not only `ChunkedArray`/`Logical`.
+- **`dtype_instantiations`.** Each entry (owner, generic, types, Rune names, citation) makes one synthetic alias wrapper per listed type, for generic owners with no alias. Generation refuses a listed instantiation a script could not use: one with no generated constructor, or no generated method returning a result.
+- **Time zones.** `chrono_tz::Tz` crosses as its IANA name, and an unknown name is a `ConversionError`. The adapter needs a direct `chrono-tz` edge wherever time-zone callables are generated (the v2 build adds it).
 
 Record 0082 admits immutable borrowed slices: a `&[T]` return, an
 iterator item `&[T]`, or a callback argument (`&[u8]`, `Option<&[u8]>`)

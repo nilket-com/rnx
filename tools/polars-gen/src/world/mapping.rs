@@ -227,6 +227,18 @@ pub(crate) fn shaped(mut a: Arg, shape: String) -> Arg {
 	a
 }
 
+/// Record 0116 (rule 6): `chrono_tz::Tz`, carried as its IANA name.
+pub(crate) const TZ: &str = "chrono_tz::prebuilt::timezones::Tz";
+pub(crate) const TZ_DOC: &str = "string (an IANA time zone name)";
+
+/// The parse of the script string `var` into a time zone; `param` names the
+/// parameter in the ConversionError.
+pub(crate) fn tz_parse(var: &str, param: &str) -> String {
+	format!(
+		"{var}.parse::<chrono_tz::Tz>().map_err(|_| Error::conversion(&format!(\"{param}: unknown time zone {{:?}}\", {var})))?"
+	)
+}
+
 pub(crate) fn borrowed(mut a: Arg, borrow: u8, owned: Option<String>) -> Arg {
 	a.borrow = borrow;
 	a.owned = owned;
@@ -299,6 +311,52 @@ impl World {
 					"alloc::string::String" => ok_arg("String", name.into(), "string"),
 					"polars_utils::pl_str::PlSmallStr" => {
 						ok_arg("&str", format!("p::PlSmallStr::from({name})"), "string")
+					}
+					// record 0116 (rule 6): a time zone is its IANA name; an unknown
+					// name is a ConversionError before Polars sees a value
+					TZ => {
+						let mut a = ok_arg("&str", tz_parse(name, name), TZ_DOC)?;
+						a.shape = "tz".into();
+						Ok(a)
+					}
+					"core::option::Option"
+						if args.len() == 1
+							&& matches!(&args[0], Ty::Path { path, .. } if path == TZ) =>
+					{
+						// record 0116 (rule 6): an optional time zone by value, parsed
+						// in place (never through the generic Option rewrite, which
+						// renames the element variable textually)
+						let mut a = ok_arg(
+							"Option<String>",
+							format!(
+								"match {name} {{ Some(v) => Some({}), None => None }}",
+								tz_parse("v", name)
+							),
+							&format!("option of {TZ_DOC}"),
+						)?;
+						a.fallible = true;
+						a.shape = "opt(tz)".into();
+						Ok(a)
+					}
+					"core::option::Option"
+						if args.len() == 1
+							&& matches!(&args[0], Ty::Ref { mutable: false, inner } if matches!(&**inner, Ty::Path { path, .. } if path == TZ)) =>
+					{
+						// record 0116 (rule 6): an optional borrowed time zone, parsed
+						// into a hoisted `Option<Tz>` and lent for the call
+						let tmp = self.tmp();
+						let mut a = ok_arg(
+							"Option<String>",
+							format!("{tmp}.as_ref()"),
+							&format!("option of {TZ_DOC}"),
+						)?;
+						a.pre.push(format!(
+							"let {tmp} = match {name} {{ Some(v) => Some({}), None => None }};",
+							tz_parse("v", name)
+						));
+						a.fallible = true;
+						a.shape = "opt(tz)".into();
+						Ok(a)
 					}
 					"core::option::Option" if args.len() == 1 => {
 						let inner = self.arg(&args[0], "v", generics, owner, depth + 1)?;
@@ -489,6 +547,14 @@ impl World {
 						1,
 						Some(format!("p::PlSmallStr::from({name})")),
 					))
+				}
+				Ty::Path { path, .. } if path == TZ && !*mutable => {
+					let tmp = self.tmp();
+					let mut a = ok_arg("&str", format!("&{tmp}"), TZ_DOC)?;
+					a.pre.push(format!("let {tmp} = {};", tz_parse(name, name)));
+					a.fallible = true;
+					a.shape = "tz".into();
+					Ok(a)
 				}
 				Ty::Slice(elem) => {
 					if *mutable {
@@ -1056,6 +1122,8 @@ impl World {
 					"i64" => r("i64", "__r".into(), "int"),
 					"f64" => r("f64", "__r".into(), "float"),
 					"f32" => r("f64", "(__r as f64)".into(), "float"),
+					// record 0116 (rule 6): a time zone returns its IANA name
+					TZ => r("String", "__r.name().to_string()".into(), TZ_DOC),
 					// record 0093: a source scalar whose range can exceed a script
 					// integer converts with a range check (ConversionError, naming
 					// the operation) wherever it is read back, never with `as i64`
@@ -1262,10 +1330,105 @@ pub(crate) fn by_value(a: &Arg, name: &str) -> (String, String) {
 	(a.rust_ty.clone(), a.conv.clone())
 }
 
+/// Record 0116 (rule 6) controls: a time zone crosses as its IANA name. By
+/// value, borrowed and optionally borrowed parameters parse the script's
+/// string (an unknown name is a ConversionError naming the parameter) and
+/// never convert it any other way; a return is the zone's name.
+pub(crate) fn time_zone_self_test() {
+	use crate::model::Inventory;
+	use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
+	let release = Release {
+		name: "t".into(),
+		source: "t".into(),
+		provenance: ReleaseProvenance::default(),
+		instantiation: InstantiationScope::default(),
+		api_crates: vec![],
+		unordered: vec![],
+		excluded_oracle: vec![],
+		refused: vec![],
+		families: FamilyTables::default(),
+	};
+	let inv = Inventory {
+		callables: vec![],
+		supporting: vec![],
+		provenance: None,
+	};
+	let world = World::new(&inv, &release, &["mechanical"]);
+	let g = BTreeMap::new();
+	let parse = "tz.parse::<chrono_tz::Tz>().map_err(|_| Error::conversion(&format!(\"tz: unknown time zone {:?}\", tz)))?";
+	let by_value = world.arg(&ty::parse(TZ), "tz", &g, None, 0).unwrap();
+	assert_eq!(
+		(by_value.rust_ty.as_str(), by_value.conv.as_str()),
+		("&str", parse)
+	);
+	assert!(by_value.fallible && by_value.shape == "tz");
+	let borrowed = world
+		.arg(&ty::parse(&format!("&{TZ}")), "tz", &g, None, 0)
+		.unwrap();
+	assert_eq!(borrowed.rust_ty, "&str");
+	assert!(
+		borrowed.pre.len() == 1 && borrowed.pre[0].ends_with(&format!("= {parse};")),
+		"{:?}",
+		borrowed.pre
+	);
+	assert!(borrowed.conv.starts_with("&__t") && borrowed.fallible);
+	let optional = world
+		.arg(
+			&ty::parse(&format!("core::option::Option<&{TZ}>")),
+			"tz",
+			&g,
+			None,
+			0,
+		)
+		.unwrap();
+	assert_eq!(optional.rust_ty, "Option<String>");
+	assert!(
+		optional.pre[0].contains("Some(v) => Some(v.parse::<chrono_tz::Tz>()")
+			&& optional.pre[0].contains("\"tz: unknown time zone")
+	);
+	assert!(optional.conv.ends_with(".as_ref()") && optional.shape == "opt(tz)");
+	// an optional time zone by value parses in place, naming the parameter
+	let owned = world
+		.arg(
+			&ty::parse(&format!("core::option::Option<{TZ}>")),
+			"tz",
+			&g,
+			None,
+			0,
+		)
+		.unwrap();
+	assert_eq!(owned.rust_ty, "Option<String>");
+	assert!(owned.pre.is_empty() && owned.shape == "opt(tz)");
+	assert!(
+		owned
+			.conv
+			.contains("Error::conversion(&format!(\"tz: unknown time zone")
+			&& !owned.conv.contains(".as_str()"),
+		"{}",
+		owned.conv
+	);
+	// a mutable borrow is never a time zone: it falls to the general refusal
+	assert!(
+		world
+			.arg(&ty::parse(&format!("&mut {TZ}")), "tz", &g, None, 0)
+			.is_err()
+	);
+	let r = world.ret(&ty::parse(TZ), None, 0).unwrap();
+	assert_eq!(
+		(r.rust_ty.as_str(), r.conv.as_str(), r.fallible),
+		("String", "__r.name().to_string()", false)
+	);
+	println!("time-zone self-test: ok");
+}
+
 #[cfg(test)]
 mod tests {
 	#[test]
 	fn iterator() {
 		super::iterator_self_test();
+	}
+	#[test]
+	fn time_zone() {
+		super::time_zone_self_test();
 	}
 }

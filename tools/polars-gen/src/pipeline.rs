@@ -80,6 +80,11 @@ pub(crate) fn generate(
 		emit_callable(world, cx.out, c, buckets);
 	}
 	finish(cx);
+	// record 0116 (rule 3): every listed dtype instantiation is reachable
+	if let Err(why) = crate::families::dtype_owners::check_reachable(world, &out.entries) {
+		eprintln!("refusing to generate: dtype instantiations: {why}");
+		std::process::exit(2);
+	}
 	emit_struct_extras(&world, &mut out, &buckets);
 	resolve_duplicates(&mut out.entries);
 	let census = census_dispositions(census, &out.entries, &census_keys, inv);

@@ -8,6 +8,7 @@ use crate::oracle::fixtures::{FIXTURES, Recipe, TYPED_FIXTURES};
 use crate::text::sanitize;
 use crate::ty;
 use crate::ty::{Bound, Ty, last};
+use crate::world::mapping::TZ;
 use crate::world::mapping::{INT_NARROW, RISKY_INTS, iterator_return};
 use crate::world::{World, rune_name};
 use std::collections::{BTreeMap, BTreeSet};
@@ -47,6 +48,7 @@ impl<'a> Oracle<'a> {
 			"int" => Some("2".into()),
 			"float" => Some("1.5".into()),
 			"string" => Some("\"x\"".into()),
+			"tz" => Some("\"UTC\"".into()),
 			"unit" => Some("()".into()),
 			// record 0086: masks sized to the receiver fixtures (3 rows) or the one-element values fixture
 			"mask3" => Some("[true, false, true]".into()),
@@ -553,6 +555,8 @@ impl<'a> Oracle<'a> {
 				"char" => Some("'x'".into()),
 				"alloc::string::String" => Some("\"x\".to_string()".into()),
 				"polars_utils::pl_str::PlSmallStr" => Some("p::PlSmallStr::from(\"x\")".into()),
+				// record 0116 (rule 6): the time zone the script's "UTC" parses to
+				TZ => Some("chrono_tz::Tz::UTC".into()),
 				"polars_arrow::bitmap::immutable::Bitmap" => Some(match self.mask_len.get() {
 					1 => "polars_arrow::bitmap::Bitmap::from([false])".into(),
 					2 => "polars_arrow::bitmap::Bitmap::from([true, false])".into(),
@@ -791,6 +795,7 @@ impl<'a> Oracle<'a> {
                 "polars_arrow::bitmap::immutable::Bitmap" => Some("format!(\"[{}]\", __r.iter().map(|b| { let e = format!(\"{}\", b); format!(\"{}:{e}\", e.len()) }).collect::<Vec<_>>().join(\", \"))".into()),
                 "bool" | "i64" | "f64" => Some("format!(\"{}\", __r)".into()),
                 "f32" => Some("format!(\"{}\", __r as f64)".into()),
+                TZ => Some("format!(\"{}\", __r.name())".into()),
                 // record 0093: a risky integer that does not fit a script integer is
                 // the adapter's ConversionError, so a wrapping binding mismatches
                 p if RISKY_INTS.contains(&p) => Some("match i64::try_from(__r) { Ok(__v) => format!(\"{}\", __v), Err(_) => \"<<ERR:ConversionError>>\".to_string() }".into()),

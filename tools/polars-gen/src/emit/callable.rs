@@ -364,6 +364,43 @@ pub(crate) fn emit_method_with(
 		},
 		Some(rc) => {
 			let t = ty::parse(rc);
+			// record 0116 (Codex, stage 1): a `&mut` return is a chain (the
+			// receiver mutated in place, returned as unit) only for a `&mut self`
+			// method whose return, direct or the first value of a Result, is
+			// `&mut Self` or `&mut` the owner itself; every other mutable borrow
+			// (an inner value, a trait object) has no script contract
+			let self_chain = |t: &Ty| match t {
+				Ty::Ref {
+					mutable: true,
+					inner,
+				} => {
+					c.receiver == "&mut self"
+						&& match &**inner {
+							Ty::Generic(g) => g == "Self",
+							// record 0116 (review): the receiver itself, structurally
+							// (`Self`, or the instantiated owner with its arguments)
+							Ty::Path { path, .. } => {
+								path == "Self" || inner.render() == ty::parse(owner).render()
+							}
+							_ => false,
+						}
+				}
+				_ => false,
+			};
+			let inner_borrow =
+				|t: &Ty| matches!(t, Ty::Ref { mutable: true, .. }) && !self_chain(t);
+			if inner_borrow(&t)
+				|| matches!(&t, Ty::Path { path, args } if (path == "polars_error::PolarsResult" || path == "core::result::Result") && args.first().is_some_and(inner_borrow))
+			{
+				out.unsupported(
+					c,
+					"inner mutable borrow",
+					&format!(
+						"return ({rc}): no script contract for a mutable borrow that is not the receiver"
+					),
+				);
+				return;
+			}
 			// `&mut Self` chains return unit: the receiver was mutated in place
 			if matches!(&t, Ty::Ref { mutable: true, .. }) {
 				Ret {

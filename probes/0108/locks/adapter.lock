@@ -3223,6 +3223,7 @@ dependencies = [
 name = "rnx-polars"
 version = "0.0.0"
 dependencies = [
+ "chrono-tz",
  "libc",
  "polars",
  "polars-arrow",

@@ -241,6 +241,8 @@ pub fn show_w_polars_core__frame__group_by__position__groupsidx(v: &rune::Value)
 pub fn show_w_polars_core__frame__group_by__position__groupstype(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__frame__group_by__position__GroupsType>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::scalar::Scalar` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__scalar__scalar(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__scalar__Scalar>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_core::schema::Schema` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_core__schema__schema(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__schema__Schema>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::schema::SchemaRef` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_core__schema__schemaref(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_core__schema__SchemaRef>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_core::series::Series` held in a Rune value, for the oracle tests.
@@ -255,6 +257,8 @@ pub fn show_w_polars_core__series__series_trait__issorted(v: &rune::Value) -> Re
 pub fn show_w_polars_dtype__categorical__categoricalphysical(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_dtype__categorical__CategoricalPhysical>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_dtype::categorical::mapping::CategoricalMapping` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_dtype__categorical__mapping__categoricalmapping(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_dtype__categorical__mapping__CategoricalMapping>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_error::PolarsError` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_error__polarserror(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_error__PolarsError>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::cloud::concurrency::ControllerConfig` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_io__cloud__concurrency__controllerconfig(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__cloud__concurrency__ControllerConfig>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::cloud::concurrency::admission::InFlightBudget` held in a Rune value, for the oracle tests.
@@ -283,6 +287,8 @@ pub fn show_w_polars_io__csv__read__options__csvencoding(v: &rune::Value) -> Res
 pub fn show_w_polars_io__csv__read__options__csvparseoptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__csv__read__options__CsvParseOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::csv::read::options::CsvReadOptions` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_io__csv__read__options__csvreadoptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__csv__read__options__CsvReadOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_io::csv::read::options::NullValuesCompiled` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_io__csv__read__options__nullvaluescompiled(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__csv__read__options__NullValuesCompiled>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::csv::write::options::CsvWriterOptions` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_io__csv__write__options__csvwriteroptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__csv__write__options__CsvWriterOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::csv::write::options::QuoteStyle` held in a Rune value, for the oracle tests.
