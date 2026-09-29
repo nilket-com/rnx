@@ -1,10 +1,16 @@
 use crate::emit::Emitted;
 use crate::emit::callable::emit_callable;
 use crate::families::callbacks::callback_input;
+use crate::families::{Family, Listed, RetSite, State};
 use crate::model::{Callable, Inventory, Supporting};
-use crate::release::{InstantiationScope, Release, ReleaseProvenance};
+use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
 use crate::ty;
+use crate::ty::Ty;
 use crate::world::World;
+use crate::world::mapping::IterLen;
+use crate::world::mapping::IterWrap;
+use crate::world::mapping::Materialize;
+use crate::world::mapping::{Ret, Unsupported};
 use std::collections::BTreeMap;
 
 #[derive(serde::Deserialize, Clone)]
@@ -24,6 +30,189 @@ pub(crate) struct IteratorReturn {
 	pub(crate) path: String,
 	pub(crate) item: String,
 	pub(crate) cite: String,
+}
+
+// ---------------------------------------------------------------- record 0115: this module's families
+
+/// Record 0088: a listed `Cow<Wrapped>` return, made owned inside the call.
+pub(crate) struct CowReturnFamily;
+pub(crate) static COW_RETURN: CowReturnFamily = CowReturnFamily;
+
+impl Family for CowReturnFamily {
+	fn name(&self) -> &'static str {
+		"cow_return"
+	}
+	fn listed(&self, world: &World, c: &Callable) -> Listed {
+		// record 0088: callables whose `Cow<Wrapped>` return is made owned
+		if world
+			.release
+			.families
+			.cow_returns
+			.iter()
+			.any(|r| r.key == c.key && r.path == c.canonical_path)
+		{
+			Listed::Active(State::On)
+		} else {
+			Listed::Unlisted
+		}
+	}
+	fn ret(
+		&self,
+		world: &World,
+		_state: &State,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Cow {
+			return Ok(None);
+		}
+		// record 0088: a listed callable's `Cow<Wrapped>` becomes owned inside the call
+		let Ty::Path { path, args } = t else {
+			return Ok(None);
+		};
+		if !(path == "alloc::borrow::Cow" && args.len() == 1) {
+			return Ok(None);
+		}
+		(|| -> Result<Ret, Unsupported> {
+			let wrapped = match &args[0] {
+				Ty::Path { path: p, args: a } if a.is_empty() => {
+					let p = if p == "Self" {
+						owner.unwrap_or("")
+					} else {
+						p.as_str()
+					};
+					world.wrapper_for(p).is_some() && world.clonable.contains(p)
+				}
+				Ty::Generic(g) if g == "Self" => owner
+					.is_some_and(|o| world.wrapper_for(o).is_some() && world.clonable.contains(o)),
+				_ => false,
+			};
+			if !wrapped {
+				return Err(Unsupported("cow of an unwrapped type", t.render()));
+			}
+			let x = world.ret(&args[0], owner, depth + 1)?;
+			Ok(Ret {
+				materialize: None,
+				rust_ty: x.rust_ty,
+				fallible: x.fallible,
+				conv: format!("{{ let __r = __r.into_owned(); {} }}", x.conv),
+				doc: format!("{} (owned)", x.doc),
+			})
+		})()
+		.map(Some)
+	}
+}
+
+/// Record 0093: a listed `usize` proven to be a length or index.
+pub(crate) struct BoundedReadbackFamily;
+pub(crate) static BOUNDED_READBACK: BoundedReadbackFamily = BoundedReadbackFamily;
+
+impl Family for BoundedReadbackFamily {
+	fn name(&self) -> &'static str {
+		"bounded_readback"
+	}
+	fn listed(&self, world: &World, c: &Callable) -> Listed {
+		// record 0093: a proven length or index, with its citation
+		if world
+			.release
+			.families
+			.bounded_readbacks
+			.iter()
+			.any(|r| r.key == c.key && r.path == c.canonical_path && !r.cite.trim().is_empty())
+		{
+			Listed::Active(State::On)
+		} else {
+			Listed::Unlisted
+		}
+	}
+	fn ret(
+		&self,
+		_world: &World,
+		_state: &State,
+		site: RetSite,
+		t: &Ty,
+		_owner: Option<&str>,
+		_depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Scalar {
+			return Ok(None);
+		}
+		// record 0093: a proven length or index keeps a plain integer
+		let Ty::Path { path, .. } = t else {
+			return Ok(None);
+		};
+		if path == "usize" {
+			return Ok(Some(Ret {
+				materialize: None,
+				rust_ty: "i64".to_string(),
+				fallible: false,
+				conv: "support::bounded_usize(__r)".into(),
+				doc: "int (a proven length or index)".to_string(),
+			}));
+		}
+		Ok(None)
+	}
+}
+
+/// Record 0087: a listed concrete iterator of integers.
+pub(crate) struct IteratorReturnFamily;
+pub(crate) static ITERATOR_RETURN: IteratorReturnFamily = IteratorReturnFamily;
+
+impl Family for IteratorReturnFamily {
+	fn name(&self) -> &'static str {
+		"iterator_return"
+	}
+	fn listed(&self, world: &World, c: &Callable) -> Listed {
+		// record 0087: a listed path's concrete iterator item
+		match world
+			.release
+			.families
+			.iterator_returns
+			.iter()
+			.find(|r| r.path == c.canonical_path)
+		{
+			Some(r) => Listed::Active(State::One(r.item.clone())),
+			None => Listed::Unlisted,
+		}
+	}
+	fn ret(
+		&self,
+		_world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		_owner: Option<&str>,
+		_depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Top {
+			return Ok(None);
+		}
+		// record 0087: a listed callable's concrete `Map` iterator of integers
+		// (reached through the `ChunkLenIter` alias, one level down)
+		{
+			if let (Some(item), Ty::Path { path, .. }) = (state.one(), t) {
+				if path == "core::iter::adapters::map::Map" {
+					let limit = 1usize << 20;
+					return Ok(Some(Ret {
+						materialize: Some(Materialize {
+							elem_conv: format!("support::widen::<{item}>(__r, \"__OP__\")?"),
+							known: IterLen::Exact,
+							wrap: IterWrap::Plain,
+						}),
+						rust_ty: "Vec<i64>".into(),
+						conv: "__r".into(),
+						fallible: true,
+						doc: format!(
+							"vector of int (materialized, at most {limit} items, each checked into range)"
+						),
+					}));
+				}
+			}
+		}
+		Ok(None)
+	}
 }
 
 /// Record 0093 controls, from a synthetic inventory: a u64/usize read-back is
@@ -109,37 +298,15 @@ pub(crate) fn checked_readback_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
-	release.bounded_readbacks.push(BoundedReadback {
+	release.families.bounded_readbacks.push(BoundedReadback {
 		key: "width".into(),
 		path: format!("{frame}::width"),
 		cite: "t".into(),
 	});
 	// an entry without a citation proves nothing: `height` stays checked below
-	release.bounded_readbacks.push(BoundedReadback {
+	release.families.bounded_readbacks.push(BoundedReadback {
 		key: "len".into(),
 		path: format!("{frame}::height"),
 		cite: " ".into(),
@@ -238,7 +405,7 @@ pub(crate) fn checked_readback_self_test() {
 		);
 	}
 	assert!(
-		!world.bounded_ok.get(),
+		!world.active.is_set("bounded_readback"),
 		"the scope never outlives its callable"
 	);
 	println!("checked-readback self-test: ok");
@@ -335,29 +502,7 @@ pub(crate) fn cow_return_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	for (k, n) in [
 		("self", "rechunk_cow"),
@@ -365,7 +510,7 @@ pub(crate) fn cow_return_self_test() {
 		("unwrapped", "name_cow"),
 		("arrow", "chunk_cow"),
 	] {
-		release.cow_returns.push(CowReturn {
+		release.families.cow_returns.push(CowReturn {
 			key: k.into(),
 			path: format!("{series}::{n}"),
 			cite: "t".into(),
@@ -407,6 +552,10 @@ pub(crate) fn cow_return_self_test() {
 			"{key}: no Cow in the binding's signature: {f}"
 		);
 	}
+	// record 0115: a listed callable's state does not reach the next one:
+	// "unlisted" is emitted after the listed "self" and "other" on the same
+	// owner, and nothing is active between them
+	assert!(!world.active.is_set("cow_return"));
 	for key in ["same_path_other_key", "unlisted", "unwrapped", "arrow"] {
 		let (status, reason, _) = emit(key);
 		assert_eq!(
@@ -414,7 +563,10 @@ pub(crate) fn cow_return_self_test() {
 			"{key} must stay refused, got {reason}"
 		);
 	}
-	assert!(!world.cow_ok.get(), "the scope never outlives its callable");
+	assert!(
+		!world.active.is_set("cow_return"),
+		"the scope never outlives its callable"
+	);
 	println!("cow-return self-test: ok");
 }
 
@@ -507,31 +659,9 @@ pub(crate) fn iterator_return_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
-	release.iterator_returns.push(IteratorReturn {
+	release.families.iterator_returns.push(IteratorReturn {
 		path: format!("{series}::chunk_lengths"),
 		item: "usize".into(),
 		cite: "t".into(),
@@ -581,7 +711,7 @@ pub(crate) fn iterator_return_self_test() {
 		);
 	}
 	assert!(
-		world.iter_return.borrow().is_none(),
+		!world.active.is_set("iterator_return"),
 		"the scope never outlives its callable"
 	);
 	println!("iterator-return self-test: ok");

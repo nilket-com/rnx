@@ -1,7 +1,9 @@
 pub(crate) mod emit;
 pub(crate) mod fixtures;
 use crate::emit::{Entry, OracleInfo, rune_path};
-use crate::families::snapshots::SCALAR_CHUNKS;
+use crate::families::{
+	Active, ORACLE_REF, ORACLE_SCALAR, ORACLE_TOP, OracleSite, SCRIPT_TUPLE, first,
+};
 use crate::oracle::fixtures::{FIXTURES, Recipe, TYPED_FIXTURES};
 use crate::text::sanitize;
 use crate::ty;
@@ -26,24 +28,8 @@ pub(crate) struct Oracle<'a> {
 	/// Record 0086: the length of the Rust mask fixture for the argument
 	/// being paired (3 for a receiver-length mask, 1 for a values-length one).
 	pub(crate) mask_len: std::cell::Cell<usize>,
-	/// Record 0094: the case's return is a listed hash token, so the Rust
-	/// side formats its `u64` as exact hex.
-	pub(crate) hash_ret: std::cell::Cell<bool>,
-	/// Record 0099: the case's pair is a listed chunk snapshot with this
-	/// native, so the Rust side frames the chunk list as nested options.
-	pub(crate) chunk_native: std::cell::RefCell<Option<String>>,
-	/// Record 0101: the case's pair is a listed indexed chunk snapshot of this kind.
-	pub(crate) indexed_native: std::cell::RefCell<Option<String>>,
-	/// Record 0102: the case's pair is a listed array snapshot of this kind.
-	pub(crate) array_native: std::cell::RefCell<Option<String>>,
-	/// Record 0103: the case's pair is a listed iterator snapshot of this kind.
-	pub(crate) iter_native: std::cell::RefCell<Option<String>>,
-	/// Record 0104: the case's pair is a listed view snapshot of this kind.
-	pub(crate) view_native: std::cell::RefCell<Option<String>>,
-	/// Record 0105: the case's pair is a listed owned iterator snapshot of this kind.
-	pub(crate) owned_native: std::cell::RefCell<Option<String>>,
-	/// Record 0106: the case's pair is a listed layout snapshot of this kind.
-	pub(crate) layout_native: std::cell::RefCell<Option<String>>,
+	/// Record 0115: the listed families' oracle state for the current case.
+	pub(crate) active: Active,
 }
 
 impl<'a> Oracle<'a> {
@@ -735,145 +721,48 @@ impl<'a> Oracle<'a> {
 
 	/// Rust: format the Polars value `__r` of canonical type `t` as a `Side`.
 	/// A nested result that fails is `<<ERR:kind>>`, collapsed by the caller.
+	/// Record 0115: the first active listed family's oracle framing at `site`.
+	pub(crate) fn family_oracle(
+		&self,
+		site: OracleSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		let list = match site {
+			OracleSite::Top => ORACLE_TOP,
+			OracleSite::Ref => ORACLE_REF,
+			OracleSite::Scalar => ORACLE_SCALAR,
+		};
+		first(&self.active, list, "oracle", |f, s| {
+			f.oracle_fmt(self, s, site, t, owner, depth)
+		})
+	}
+
+	/// Record 0115: the first active listed family's script framing.
+	pub(crate) fn family_script(
+		&self,
+		r: &str,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		first(&self.active, SCRIPT_TUPLE, "script", |f, s| {
+			f.script_fmt(self, s, r, owner, depth)
+		})
+	}
+
 	pub(crate) fn oracle_fmt(&self, t: &Ty, owner: Option<&str>, depth: u8) -> Option<String> {
 		if depth > 6 {
 			return None;
 		}
-		// record 0106: a listed `layout` result frames as the variant's name and its owned chunks
-		if depth == 0 {
-			if let Some(kind) = self.layout_native.borrow().clone() {
-				let elem = SCALAR_CHUNKS
-					.iter()
-					.find(|(_, k, ..)| *k == kind)
-					.map(|(.., oe)| oe.to_string())
-					.unwrap_or_else(|| kind.clone());
-				let own = match kind.as_str() {
-					"bool" => "x",
-					"str" => "x.map(|v| v.to_string())",
-					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
-					_ => "x.copied()",
-				};
-				let tuple = ty::parse(&format!(
-					"(alloc::string::String, alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{elem}>>>)"
-				));
-				let one = format!("vec![a.iter().map(|x| {own}).collect()]");
-				let many = format!(
-					"ca.downcast_iter().map(|a| a.iter().map(|x| {own}).collect()).collect()"
-				);
-				return self.oracle_fmt(&tuple, owner, depth + 1).map(|f| format!("{{ use polars_core::chunked_array::ChunkedArrayLayout as __L; let __r: (String, Vec<Vec<Option<_>>>) = match __r {{ __L::SingleNoNull(a) => (\"SingleNoNull\".to_string(), {one}), __L::Single(a) => (\"Single\".to_string(), {one}), __L::MultiNoNull(ca) => (\"MultiNoNull\".to_string(), {many}), __L::Multi(ca) => (\"Multi\".to_string(), {many}) }}; {f} }}"));
-			}
+		// record 0115: the listed families' result framing (`ORACLE_TOP`), then
+		// the chunk list (`ORACLE_REF`): of the `match t` arms before it, the
+		// tuple arms and the `&str` reference arm cannot match a chunk list
+		if let Some(x) = self.family_oracle(OracleSite::Top, t, owner, depth) {
+			return x;
 		}
-		// record 0105: a listed `downcast_into_iter` drives the real owned iterator into the same nested options
-		if depth == 0 {
-			if let Some(kind) = self.owned_native.borrow().clone() {
-				let elem = SCALAR_CHUNKS
-					.iter()
-					.find(|(_, k, ..)| *k == kind)
-					.map(|(.., oe)| oe.to_string())
-					.unwrap_or_else(|| kind.clone());
-				let own = match kind.as_str() {
-					"bool" => "x",
-					"str" => "x.map(|v| v.to_string())",
-					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
-					_ => "x.copied()",
-				};
-				let nested = ty::parse(&format!(
-					"alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{elem}>>>"
-				));
-				return self.oracle_fmt(&nested, owner, depth + 1).map(|f| {
-					format!(
-						"{{ let __r: Vec<Vec<_>> = __r.map(|a| a.iter().map(|x| {own}).collect()).collect(); {f} }}"
-					)
-				});
-			}
-		}
-		// record 0104: a listed `downcast_chunks` view frames as the owned nested vectors the script receives
-		if depth == 0 {
-			if let Some(kind) = self.view_native.borrow().clone() {
-				let elem = SCALAR_CHUNKS
-					.iter()
-					.find(|(_, k, ..)| *k == kind)
-					.map(|(.., oe)| oe.to_string())
-					.unwrap_or_else(|| kind.clone());
-				let own = match kind.as_str() {
-					"bool" => "x",
-					"str" => "x.map(|v| v.to_string())",
-					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
-					_ => "x.copied()",
-				};
-				let nested = ty::parse(&format!(
-					"alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{elem}>>>"
-				));
-				return self.oracle_fmt(&nested, owner, depth + 1).map(|f| format!("{{ let __r: Vec<Vec<_>> = (0..__r.len()).map(|i| __r.get(i).expect(\"oracle: an in-range chunk\").iter().map(|x| {own}).collect()).collect(); {f} }}"));
-			}
-		}
-		// record 0103: a listed `downcast_iter` result frames as the owned nested vectors the script receives
-		if depth == 0 {
-			if let Some(kind) = self.iter_native.borrow().clone() {
-				let elem = SCALAR_CHUNKS
-					.iter()
-					.find(|(_, k, ..)| *k == kind)
-					.map(|(.., oe)| oe.to_string())
-					.unwrap_or_else(|| kind.clone());
-				let own = match kind.as_str() {
-					"bool" => "x",
-					"str" => "x.map(|v| v.to_string())",
-					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
-					_ => "x.copied()",
-				};
-				let nested = ty::parse(&format!(
-					"alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{elem}>>>"
-				));
-				return self.oracle_fmt(&nested, owner, depth + 1).map(|f| {
-					format!(
-						"{{ let __r: Vec<Vec<_>> = __r.map(|a| a.iter().map(|x| {own}).collect()).collect(); {f} }}"
-					)
-				});
-			}
-		}
-		// record 0102: a listed `downcast_as_array` result frames as the owned vector the script receives
-		if depth == 0 {
-			if let Some(kind) = self.array_native.borrow().clone() {
-				let elem = SCALAR_CHUNKS
-					.iter()
-					.find(|(_, k, ..)| *k == kind)
-					.map(|(.., oe)| oe.to_string())
-					.unwrap_or_else(|| kind.clone());
-				let own = match kind.as_str() {
-					"bool" => "x",
-					"str" => "x.map(|v| v.to_string())",
-					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
-					_ => "x.copied()",
-				};
-				let nested = ty::parse(&format!("alloc::vec::Vec<core::option::Option<{elem}>>"));
-				return self.oracle_fmt(&nested, owner, depth + 1).map(|f| {
-					format!("{{ let __r: Vec<_> = __r.iter().map(|x| {own}).collect(); {f} }}")
-				});
-			}
-		}
-		// record 0101: a listed `downcast_get` result frames as the owned optional chunk the script receives
-		if depth == 0 {
-			if let Some(kind) = self.indexed_native.borrow().clone() {
-				let elem = SCALAR_CHUNKS
-					.iter()
-					.find(|(_, k, ..)| *k == kind)
-					.map(|(.., oe)| oe.to_string())
-					.unwrap_or_else(|| kind.clone());
-				let own = match kind.as_str() {
-					"bool" => "x",
-					"str" => "x.map(|v| v.to_string())",
-					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
-					_ => "x.copied()",
-				};
-				let nested = ty::parse(&format!(
-					"core::option::Option<alloc::vec::Vec<core::option::Option<{elem}>>>"
-				));
-				return self.oracle_fmt(&nested, owner, depth + 1).map(|f| {
-					format!(
-						"{{ let __r = __r.map(|a| a.iter().map(|x| {own}).collect::<Vec<_>>()); {f} }}"
-					)
-				});
-			}
+		if let Some(x) = self.family_oracle(OracleSite::Ref, t, owner, depth) {
+			return x;
 		}
 		match t {
             Ty::Tuple(ts) if ts.is_empty() => Some("\"()\".to_string()".into()),
@@ -882,18 +771,6 @@ impl<'a> Oracle<'a> {
                 parts.map(|p| format!("{{ let __t = __r; format!(\"({{}})\", [{}].iter().map(|e: &String| format!(\"{{}}:{{e}}\", e.len())).collect::<Vec<_>>().join(\", \")) }}", p.join(", ")))
             }
             Ty::Ref { inner, .. } if matches!(&**inner, Ty::Path { path, .. } if path == "str") => self.oracle_fmt(inner, owner, depth + 1),
-            // record 0099: a listed chunk list frames as the nested options the script receives
-            Ty::Ref { inner, .. } if depth == 0 && self.chunk_native.borrow().is_some() && matches!(&**inner, Ty::Path { path, args } if path == "alloc::vec::Vec" && args.len() == 1 && ["polars_arrow::array::ArrayRef", "alloc::boxed::Box<dyn polars_arrow::array::Array>"].contains(&args[0].render().as_str())) => {
-                let n = self.chunk_native.borrow().clone().unwrap();
-                // record 0100: a scalar owner's chunks, as the owned nested options the script receives
-                if let Some((_, _, _, _, array, oracle_elem)) = SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == n) {
-                    let nested = ty::parse(&format!("alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{oracle_elem}>>>"));
-                    let own = match n.as_str() { "bool" => "x", "str" => "x.map(|v| v.to_string())", _ => "x.map(|v| v.to_vec())" };
-                    return self.oracle_fmt(&nested, owner, depth + 1).map(|f| format!("{{ let __r: Vec<Vec<Option<_>>> = __r.iter().map(|a| a.as_any().downcast_ref::<{array}>().expect(\"oracle: a {n} chunk\").iter().map(|x| {own}).collect()).collect(); {f} }}"));
-                }
-                let nested = ty::parse(&format!("alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{n}>>>"));
-                self.oracle_fmt(&nested, owner, depth + 1).map(|f| format!("{{ let __r: Vec<Vec<Option<{n}>>> = __r.iter().map(|a| a.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<{n}>>().expect(\"oracle: a numeric chunk\").iter().map(|x| x.copied()).collect()).collect(); {f} }}"))
-            }
             Ty::Ref { inner, .. } => self.oracle_fmt(inner, owner, depth + 1).map(|f| format!("{{ let __r = (__r).clone(); {f} }}")),
             // record 0082: a borrowed slice frames its elements like a vector
             Ty::Slice(elem) => self.oracle_fmt(elem, owner, depth + 1).map(|f| format!("format!(\"[{{}}]\", __r.iter().map(|__r| {{ let __r = __r.clone(); let e: String = {f}; format!(\"{{}}:{{e}}\", e.len()) }}).collect::<Vec<_>>().join(\", \"))")),
@@ -903,14 +780,19 @@ impl<'a> Oracle<'a> {
                 // record 0087: a listed concrete iterator frames its items like a vector
                 Some("format!(\"[{}]\", __r.map(|__r| { let e = format!(\"{}\", __r); format!(\"{}:{e}\", e.len()) }).collect::<Vec<_>>().join(\", \"))".into())
             }
-            Ty::Path { path, args } => match path.as_str() {
+            Ty::Path { path, args } => {
+                // record 0115: a listed hash return (`ORACLE_SCALAR`); the literal
+                // arms before it name other types
+                if let Some(x) = self.family_oracle(OracleSite::Scalar, t, owner, depth) {
+                    return x;
+                }
+                match path.as_str() {
                 // record 0085: a validity bitmap frames its bits like a vector of bool
                 "polars_arrow::bitmap::immutable::Bitmap" => Some("format!(\"[{}]\", __r.iter().map(|b| { let e = format!(\"{}\", b); format!(\"{}:{e}\", e.len()) }).collect::<Vec<_>>().join(\", \"))".into()),
                 "bool" | "i64" | "f64" => Some("format!(\"{}\", __r)".into()),
                 "f32" => Some("format!(\"{}\", __r as f64)".into()),
                 // record 0093: a risky integer that does not fit a script integer is
                 // the adapter's ConversionError, so a wrapping binding mismatches
-                "u64" if self.hash_ret.get() => Some("format!(\"{:016x}\", __r)".into()),
                 p if RISKY_INTS.contains(&p) => Some("match i64::try_from(__r) { Ok(__v) => format!(\"{}\", __v), Err(_) => \"<<ERR:ConversionError>>\".to_string() }".into()),
                 p if INT_NARROW.contains(&p) => Some("format!(\"{}\", __r as i64)".into()),
                 "polars_utils::index::IdxSize" => Some("format!(\"{}\", __r as i64)".into()),
@@ -926,7 +808,8 @@ impl<'a> Oracle<'a> {
                     let show = self.show(path)?;
                     Some(format!("{{ let v = &__r; ({show}).to_text() }}"))
                 }
-            },
+            }
+			},
             Ty::Generic(g) if g == "Self" => self.oracle_fmt(&Ty::Path { path: "Self".into(), args: vec![] }, owner, depth + 1),
             // an iterator return (record 0077): the oracle drives it to a
             // vector and frames the elements like any vector
@@ -972,14 +855,9 @@ impl<'a> Oracle<'a> {
                 }
                 // record 0106: a listed layout's (tag, chunks) pair, framed as the
                 // Rust side's tuple formatter frames it; other tuples stay uncompared
-                if r.starts_with('(') && depth == 0 && self.layout_native.borrow().is_some() {
-                    let parts = ty::split_top(r.trim_start_matches('(').trim_end_matches(')'));
-                    if parts.len() != 2 {
-                        return None;
-                    }
-                    let f0 = self.script_fmt(&parts[0], None, owner, depth + 1)?;
-                    let f1 = self.script_fmt(&parts[1], None, owner, depth + 1)?;
-                    return Some(format!("match rune::from_value::<(rune::Value, rune::Value)>(v) {{ Ok((a, b)) => {{ let fa: Result<String, String> = {{ let v = a; {f0} }}; let fb: Result<String, String> = {{ let v = b; {f1} }}; match (fa, fb) {{ (Ok(x), Ok(y)) => Ok(format!(\"({{}}:{{x}}, {{}}:{{y}})\", x.len(), y.len())), (Err(e), _) | (_, Err(e)) => Err(e) }} }}, Err(e) => Err(e.to_string()) }}"));
+                // record 0115: a listed layout's tuple (`SCRIPT_TUPLE`)
+                if let Some(x) = self.family_script(r, owner, depth) {
+                    return x;
                 }
                 if r.starts_with('(') {
                     return None; // tuples: not compared in this stage

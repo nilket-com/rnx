@@ -2,6 +2,7 @@ use crate::emit::{Entry, NOT_ROUTED_TYPES, generics_map, routed};
 use crate::families::bounds::sized_self_entry;
 use crate::families::callbacks::{ClosureSig, closure_signature, plan_holder_non_plan_method};
 use crate::families::protocols::ASSIGN_OPS;
+use crate::model::Callable;
 use crate::model::Inventory;
 use crate::text::mentions;
 use crate::ty;
@@ -76,6 +77,7 @@ pub(crate) fn instantiation_census(world: &World, inv: &Inventory) -> Vec<PairRe
 				.collect();
 			let scalar = world
 				.release
+				.families
 				.method_scalar_generics
 				.iter()
 				.find(|m| m.key == c.key && m.path == c.canonical_path && m.check(c).is_ok());
@@ -239,6 +241,7 @@ pub(crate) fn callback_census(
 			c.ret_canonical.as_deref(),
 		);
 		match release
+			.families
 			.callback_sink
 			.iter()
 			.find(|k| k.path == c.canonical_path)
@@ -323,6 +326,7 @@ pub(crate) fn callback_census(
 				} = &ty
 				{
 					match release
+						.families
 						.callback_mutable
 						.iter()
 						.find(|m| m.path == c.canonical_path && m.param == s.param)
@@ -467,6 +471,7 @@ pub(crate) fn callback_census(
 		let mut invocation: Vec<serde_json::Value> = Vec::new();
 		for s in &closures {
 			match release
+				.families
 				.callback_invocation
 				.iter()
 				.find(|a| a.path == c.canonical_path && a.param == s.param)
@@ -657,4 +662,76 @@ pub(crate) fn census_summary(pairs: &[PairRecord]) -> serde_json::Value {
 		*disp.entry(d).or_insert(0) += 1;
 	}
 	serde_json::json!({"pairs": pairs.len(), "by_family": per, "eligible": eligible, "proven_dispositions": disp, "exception_reasons": reasons})
+}
+
+/// Record 0115 (moved verbatim from `pipeline::generate`): every pair of
+/// the census gets exactly one disposition, emitted or not.
+pub(crate) fn census_dispositions(
+	census: Vec<PairRecord>,
+	entries: &[Entry],
+	census_keys: &BTreeSet<String>,
+	inv: &Inventory,
+) -> Vec<PairRecord> {
+	let mut census = census;
+	{
+		let mut per_key: BTreeMap<
+			&str,
+			(&str, Option<&str>, Vec<(&str, &str)>, Vec<(&str, &str)>),
+		> = BTreeMap::new();
+		for e in entries {
+			if !census_keys.contains(&e.key) {
+				continue;
+			}
+			let bs: Vec<(&str, &str)> = e
+				.bindings
+				.iter()
+				.filter(|b| b.route == "instantiation")
+				.filter_map(|b| b.receiver.as_deref().map(|r| (r, b.id.as_str())))
+				.collect();
+			let xs: Vec<(&str, &str)> = e
+				.exceptions
+				.iter()
+				.filter(|x| x.route == "instantiation")
+				.map(|x| (x.receiver.as_str(), x.reason.as_str()))
+				.collect();
+			per_key.insert(e.key.as_str(), (e.status, e.reason.as_deref(), bs, xs));
+		}
+		let by_key: BTreeMap<&str, &Callable> =
+			inv.callables.iter().map(|c| (c.key.as_str(), c)).collect();
+		for p in census.iter_mut() {
+			p.disposition = Some(match &p.result {
+				Applicability::Rejected(r) => format!("rejected: {r}"),
+				Applicability::Unresolved(r) => format!("unresolved: {r}"),
+				Applicability::Proven => {
+					if !p.eligible {
+						let c = by_key[p.key.as_str()];
+						format!(
+							"not eligible: the callable is in 0072's `{}` bucket ({})",
+							c.bucket,
+							c.rules.join(" ")
+						)
+					} else if let Some((status, reason, bs, xs)) = per_key.get(p.key.as_str()) {
+						if bs.iter().any(|(r, _)| *r == p.alias) {
+							"emitted".to_string()
+						} else if let Some((_, why)) = xs.iter().find(|(r, _)| *r == p.alias) {
+							if why.starts_with("excluded by the release file") {
+								format!("excluded: {why}")
+							} else if why.starts_with("not shipped") {
+								why.to_string()
+							} else {
+								format!("refused: {why}")
+							}
+						} else if *status == "unsupported" {
+							format!("refused: {}", reason.unwrap_or("entry unsupported"))
+						} else {
+							format!("no disposition: entry {status} ({})", reason.unwrap_or(""))
+						}
+					} else {
+						"no disposition: no entry for the callable".to_string()
+					}
+				}
+			});
+		}
+	}
+	census
 }

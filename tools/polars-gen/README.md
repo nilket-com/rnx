@@ -36,7 +36,7 @@ module's `#[test]` wrapper.
 | `release.rs` | the release file: schema, provenance, order policy |
 | `world/` | `World` and wrappers (`mod.rs`), argument/return mapping (`mapping.rs`), impl-head and bound proof (`proof.rs`) |
 | `emit/` | binding text: `Emitted`/`Entry` (`mod.rs`), callables and methods, free functions, instantiations, types, and `output.rs` (writing or `--check`) |
-| `families/` | one module per admission rule, with its gate, release schema, emitter and self-test |
+| `families/` | one module per admission rule, with its gate, release schema, emitter and self-test; `mod.rs` holds the `Family` trait and the per-hook registry lists |
 | `oracle/` | fixtures, the `Oracle` recipes, `emit.rs`; the fixed test-harness text is in `harness_*.rs.in` |
 | `census.rs` | the instantiation, iterator, conversion and callback censuses in `surface.json` |
 | `text.rs` | string helpers shared by the above |
@@ -45,6 +45,20 @@ A new family rule goes in its own module under `families/`, with one call
 site in `pipeline.rs` and, if it has one, one oracle arm in
 `oracle/emit.rs`. It changes `world/`, `emit/` or `oracle/` only for a
 shared capability its plan names.
+
+Since record 0115 a release-listed family (a rule the release file
+enables per callable or per instantiation pair) implements
+`families::Family` instead: `listed` (callable scope), `listed_pair_pre`
+/ `listed_pair_post` (pair scope), `ret` / `arg` at a named site of the
+mapping, `check` in `emit_method_with`, and `oracle_state` /
+`oracle_fmt` / `script_fmt` for its cases. Its state lives in
+`World::active` for exactly the callable or pair being emitted (set by
+one scope, cleared on drop), and it reads only its own state. Adding
+one means a module, its table in `release::FamilyTables` (whose field
+names are also the accepted release-file keys: an unknown top-level key
+is refused), and one line in each registry list it uses, at the
+position its plan argues. `POLARS_GEN_TRACE=<file>` writes every hook a
+family takes (`hook<TAB>family<TAB>outcome`).
 
 Record 0082 admits immutable borrowed slices: a `&[T]` return, an
 iterator item `&[T]`, or a callback argument (`&[u8]`, `Option<&[u8]>`)

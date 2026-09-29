@@ -3,9 +3,10 @@ pub(crate) mod proof;
 use crate::census::callback_census;
 use crate::emit::callable::{SCALAR_MAPPED, bucket_admitted};
 use crate::emit::rune_path;
+use crate::families::Active;
 use crate::families::callbacks::plan_holder_non_plan_method;
 use crate::model::{Callable, Inventory, Supporting};
-use crate::release::{InstantiationScope, Release, ReleaseProvenance};
+use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
 use crate::text::{sanitize, split_top};
 use crate::ty;
 use crate::ty::last;
@@ -82,29 +83,7 @@ pub(crate) fn wrapper_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	let w = World::new(&inv, &release, &["mechanical"]);
 	let idx = &w.wrappers["polars_core::datatypes::aliases::IdxCa"];
@@ -313,48 +292,9 @@ pub(crate) struct World {
 	pub(crate) callback_sink_groups: BTreeSet<String>,
 	/// Counter for per-binding temporaries.
 	pub(crate) tmp: std::cell::Cell<usize>,
-	/// Record 0085: set while emitting a callable the release file lists
-	/// under `bitmap_returns`; only then may a validity `Bitmap` return map.
-	pub(crate) bitmap_ok: std::cell::Cell<bool>,
-	/// Record 0086: (operation, length rule) while emitting a listed
-	/// bitmap-input callable.
-	pub(crate) bitmap_input: std::cell::RefCell<Option<(String, String)>>,
-	/// Record 0087: the listed iterator item while emitting its callable.
-	pub(crate) iter_return: std::cell::RefCell<Option<String>>,
-	/// Record 0088: set while emitting a listed `Cow`-return callable.
-	pub(crate) cow_ok: std::cell::Cell<bool>,
-	/// Record 0093: set while emitting a listed bounded read-back callable.
-	pub(crate) bounded_ok: std::cell::Cell<bool>,
-	/// Record 0094: set while emitting a listed hash-token callable:
-	/// (method name, return is a token, token parameter).
-	pub(crate) hash_token: std::cell::RefCell<Option<(String, bool, Option<String>)>>,
-	/// Record 0096: set while emitting one listed null-aware pair:
-	/// (method name, the pair's native).
-	pub(crate) null_aware: std::cell::RefCell<Option<(String, String)>>,
-	/// Record 0097: set (to the method name) while emitting one pair of a
-	/// listed `Self: Sized` method.
-	pub(crate) sized_self: std::cell::RefCell<Option<String>>,
-	/// Record 0099: set while emitting one listed chunk-snapshot pair:
-	/// (method name, the pair's native).
-	pub(crate) chunk_snapshot: std::cell::RefCell<Option<(String, String)>>,
-	/// Record 0101: set while emitting one listed `downcast_get` pair:
-	/// (method name, the pair's native or scalar kind).
-	pub(crate) indexed_chunk: std::cell::RefCell<Option<(String, String)>>,
-	/// Record 0102: set while emitting one listed `downcast_as_array` pair:
-	/// (method name, the pair's native or scalar kind).
-	pub(crate) array_snapshot: std::cell::RefCell<Option<(String, String)>>,
-	/// Record 0103: set while emitting one listed `downcast_iter` pair.
-	pub(crate) iter_snapshot: std::cell::RefCell<Option<(String, String)>>,
-	/// Record 0104: set while emitting one listed `downcast_chunks` pair.
-	pub(crate) view_snapshot: std::cell::RefCell<Option<(String, String)>>,
-	/// Record 0105: set while emitting one listed `downcast_into_iter` pair.
-	pub(crate) owned_iter: std::cell::RefCell<Option<(String, String)>>,
-	/// Record 0106: set while emitting one listed `layout` pair:
-	/// (method name, kind, the pair's owner type).
-	pub(crate) layout: std::cell::RefCell<Option<(String, String, String)>>,
-	/// Record 0091: (operation, parameter, check) while emitting a guarded
-	/// free instantiation.
-	pub(crate) arg_guard: std::cell::RefCell<Option<(String, String, String)>>,
+	/// Record 0115: the listed families' states for the callable or pair
+	/// being emitted (see `families::CALLABLE`, `PAIR`, `FREE`).
+	pub(crate) active: Active,
 	/// Record 0087: rendered return type of each listed iterator-return
 	/// callable, to its item, so the oracle can frame the Rust result.
 	pub(crate) iter_return_items: BTreeMap<String, String>,
@@ -540,6 +480,7 @@ impl World {
 				release.is_api(&c.krate)
 					&& plan_holder_non_plan_method(c)
 					&& !release
+						.families
 						.callback_sink
 						.iter()
 						.any(|s| s.path == c.canonical_path)
@@ -547,6 +488,7 @@ impl World {
 			.map(|c| c.canonical_path.clone())
 			.collect();
 		let callback_sink_groups = release
+			.families
 			.callback_sink
 			.iter()
 			.filter(|s| s.sink != "none")
@@ -558,27 +500,13 @@ impl World {
 			callback_unclassified_sinks,
 			callback_sink_groups,
 			tmp: std::cell::Cell::new(0),
-			bitmap_ok: std::cell::Cell::new(false),
-			bitmap_input: std::cell::RefCell::new(None),
-			iter_return: std::cell::RefCell::new(None),
-			cow_ok: std::cell::Cell::new(false),
-			bounded_ok: std::cell::Cell::new(false),
-			hash_token: std::cell::RefCell::new(None),
-			null_aware: std::cell::RefCell::new(None),
-			sized_self: std::cell::RefCell::new(None),
-			chunk_snapshot: std::cell::RefCell::new(None),
-			indexed_chunk: std::cell::RefCell::new(None),
-			array_snapshot: std::cell::RefCell::new(None),
-			iter_snapshot: std::cell::RefCell::new(None),
-			view_snapshot: std::cell::RefCell::new(None),
-			owned_iter: std::cell::RefCell::new(None),
-			layout: std::cell::RefCell::new(None),
-			arg_guard: std::cell::RefCell::new(None),
+			active: Active::default(),
 			iter_return_items: inv
 				.callables
 				.iter()
 				.filter_map(|c| {
 					release
+						.families
 						.iterator_returns
 						.iter()
 						.find(|r| r.path == c.canonical_path)

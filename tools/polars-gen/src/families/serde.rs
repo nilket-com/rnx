@@ -1,7 +1,7 @@
 use crate::emit::callable::emit_callable;
 use crate::emit::{Emitted, OracleInfo, rune_path, rust_ident};
 use crate::model::{Callable, Inventory, Param, Supporting};
-use crate::release::{InstantiationScope, Release, ReleaseProvenance};
+use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
 use crate::ty::last;
 use crate::world::World;
 use std::collections::{BTreeMap, BTreeSet};
@@ -254,29 +254,7 @@ pub(crate) fn serde_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	let world = World::new(&inv, &release, &["mechanical"]);
 	let mut out = Emitted {

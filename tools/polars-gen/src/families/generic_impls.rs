@@ -1,8 +1,11 @@
 use crate::emit::{
 	Binding, Emitted, Entry, OracleInfo, binding_id, rune_path, rust_ident, signature_of,
 };
+use crate::families::protocols::emit_foreign;
+use crate::families::serde::serde_trait;
+use crate::families::{Claims, Family};
 use crate::model::{Callable, Inventory, Param, Supporting};
-use crate::release::{InstantiationScope, Release, ReleaseProvenance};
+use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
 use crate::ty;
 use crate::ty::{Ty, last};
 use crate::world::mapping::Unsupported;
@@ -14,6 +17,172 @@ use std::fmt::Write as _;
 /// Record 0113: the generic-impl families. For operators, FromIterator and
 /// Index, one well-formed row binds and each row with one field changed is
 /// refused by name with no binding text and no registration.
+// ---------------------------------------------------------------- record 0115: this module's claims
+
+/// Record 0113: `Index`, grouped into one `INDEX_GET` per owner (decided in `finish`).
+pub(crate) struct IndexClaim;
+pub(crate) static INDEX: IndexClaim = IndexClaim;
+
+impl Family for IndexClaim {
+	fn name(&self) -> &'static str {
+		"index"
+	}
+	fn claim<'a>(&self, cx: &mut Claims<'a, '_>, c: &'a Callable) -> bool {
+		if !index_row(c) {
+			return false;
+		}
+		match index_arm(cx.world, c) {
+			Ok((o, k, x)) => {
+				cx.index_rows.push(c);
+				cx.index_pending.push((c.key.clone(), o, k, x));
+			}
+			Err(why) => cx.out.unsupported(c, "index", &why),
+		}
+		true
+	}
+}
+
+/// Record 0113: `FromIterator` constructors, by the admitted item grammar.
+pub(crate) struct FromIterClaim;
+pub(crate) static FROM_ITER: FromIterClaim = FromIterClaim;
+
+impl Family for FromIterClaim {
+	fn name(&self) -> &'static str {
+		"from_iter"
+	}
+	fn claim<'a>(&self, cx: &mut Claims<'a, '_>, c: &'a Callable) -> bool {
+		if !from_iter_row(c) {
+			return false;
+		}
+		emit_from_iter(cx.world, cx.out, c);
+		true
+	}
+}
+
+/// Record 0113: a unary `Neg`/`Not` in the generic bucket with the exact
+/// concrete shape goes to the existing unary protocol route.
+pub(crate) struct UnaryClaim;
+pub(crate) static UNARY: UnaryClaim = UnaryClaim;
+
+impl Family for UnaryClaim {
+	fn name(&self) -> &'static str {
+		"unary"
+	}
+	fn claim<'a>(&self, cx: &mut Claims<'a, '_>, c: &'a Callable) -> bool {
+		if !unary_generic_shape(c) {
+			return false;
+		}
+		emit_foreign(cx.world, cx.out, c);
+		true
+	}
+}
+
+/// Record 0113: generic-bucket operators are decided as a family (in `finish`).
+pub(crate) struct OperatorClaim;
+pub(crate) static OPERATOR: OperatorClaim = OperatorClaim;
+
+impl Family for OperatorClaim {
+	fn name(&self) -> &'static str {
+		"operator"
+	}
+	fn claim<'a>(&self, cx: &mut Claims<'a, '_>, c: &'a Callable) -> bool {
+		if generic_op(c).is_none() {
+			return false;
+		}
+		match op_arms(cx.world, c) {
+			Ok(arms) => {
+				cx.op_rows.push(c);
+				cx.op_pending.extend(arms);
+			}
+			Err(why) => cx.out.unsupported(c, "operator", &why),
+		}
+		true
+	}
+}
+
+/// Record 0113: every other generic-bucket trait impl gets its family's
+/// named contract (serde keeps its own lane inside `emit_callable`).
+pub(crate) struct FamilyRefusal;
+pub(crate) static FAMILY_REFUSAL: FamilyRefusal = FamilyRefusal;
+
+impl Family for FamilyRefusal {
+	fn name(&self) -> &'static str {
+		"generic_impl_refusal"
+	}
+	fn claim<'a>(&self, cx: &mut Claims<'a, '_>, c: &'a Callable) -> bool {
+		if serde_trait(c).is_some() {
+			return false;
+		}
+		match generic_impl_refusal(c) {
+			Some(why) => {
+				cx.out.unsupported(c, "0113 family", &why);
+				true
+			}
+			None => false,
+		}
+	}
+}
+
+/// Record 0113 (moved verbatim from the pipeline): the operator and
+/// `INDEX_GET` groups, decided after every callable has been claimed.
+pub(crate) fn finish(cx: Claims<'_, '_>) {
+	let Claims {
+		world,
+		mut out,
+		op_rows,
+		op_pending,
+		index_rows,
+		index_pending,
+		..
+	} = cx;
+	let op_used = emit_op_groups(&world, &mut out, op_pending);
+	let index_used = emit_index_groups(&world, &mut out, &index_pending);
+	for c in index_rows {
+		let (_, owner, key, output) = index_pending.iter().find(|a| a.0 == c.key).unwrap().clone();
+		match index_used.get(&c.key) {
+			Some(Ok(())) => {
+				let w = &world.wrappers[&owner];
+				let info = OracleInfo {
+					rune_owner: Some(rune_path(w)),
+					rune_name: "[]".into(),
+					receiver: "protocol".into(),
+					owner: Some((owner.clone(), w.rust.clone())),
+					callee: "IndexGen".into(),
+					params: vec![(key.to_string(), String::new())],
+					param_names: vec![],
+					ret_canonical: Some(output.clone()),
+					ret_rust: world.wrappers[&output].rust.clone(),
+					fallible: true,
+					generics: BTreeMap::new(),
+					implementors: vec![],
+					deref: false,
+				};
+				out.generated_with(
+					c,
+					&format!("{}[{key}]", rune_path(w)),
+					Some("record 0113: INDEX_GET, the Column cloned out".into()),
+					info,
+				);
+				let b = &mut out.entries.last_mut().unwrap().bindings[0];
+				b.id = binding_id(
+					&c.canonical_path,
+					Some(&format!("{owner}|{}", c.key)),
+					false,
+				);
+			}
+			Some(Err(why)) => out.unsupported(c, "index", why),
+			None => out.unsupported(c, "index", "no arm"),
+		}
+	}
+	for c in op_rows {
+		match op_used.get(&c.key) {
+			Some(Ok(arms)) if !arms.is_empty() => op_entry(&world, &mut out, c, arms),
+			Some(Err(why)) => out.unsupported(c, "operator", why),
+			_ => out.unsupported(c, "operator", "no arm chosen"),
+		}
+	}
+}
+
 pub(crate) fn generic_impls_self_test() {
 	let series = "polars_core::series::Series";
 	let frame = "polars_core::frame::dataframe::DataFrame";
@@ -316,29 +485,7 @@ pub(crate) fn generic_impls_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	let world = World::new(&inv, &release, &["mechanical"]);
 	let get = |k: &str| calls.iter().find(|c| c.key == k).unwrap();

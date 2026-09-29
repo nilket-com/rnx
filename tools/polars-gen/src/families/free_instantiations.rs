@@ -1,10 +1,16 @@
 use crate::emit::callable::{emit_callable, emit_method_with};
 use crate::emit::{Emitted, OracleInfo, RouteException, binding_id};
 use crate::families::bounds::check_natives;
+use crate::families::target;
+use crate::families::{ArgSite, Family, State};
+use crate::families::{FREE, trace};
 use crate::model::{Callable, Inventory, Param, Supporting};
-use crate::release::{InstantiationScope, Release, ReleaseProvenance};
+use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
 use crate::text::{mentions, replace_token, sanitize};
+use crate::ty::Ty;
 use crate::world::World;
+use crate::world::mapping::ok_arg;
+use crate::world::mapping::{Arg, Unsupported};
 use std::collections::BTreeMap;
 
 #[derive(serde::Deserialize, Clone)]
@@ -27,6 +33,53 @@ pub(crate) struct FreeInstantiation {
 	#[serde(default)]
 	pub(crate) guard: Option<String>,
 	pub(crate) cite: String,
+}
+
+// ---------------------------------------------------------------- record 0115: this module's families
+
+/// Record 0091: a guarded parameter of a free instantiation.
+pub(crate) struct ArgGuardFamily;
+pub(crate) static ARG_GUARD: ArgGuardFamily = ArgGuardFamily;
+
+impl Family for ArgGuardFamily {
+	fn name(&self) -> &'static str {
+		"arg_guard"
+	}
+	fn arg(
+		&self,
+		_world: &World,
+		state: &State,
+		site: ArgSite,
+		t: &Ty,
+		name: &str,
+		_owner: Option<&str>,
+	) -> Result<Option<Arg>, Unsupported> {
+		if site != ArgSite::Scalar {
+			return Ok(None);
+		}
+		// record 0091: a guarded parameter is converted and checked in `pre`,
+		// before the call and before any receiver borrow
+		let Ty::Path { path, .. } = t else {
+			return Ok(None);
+		};
+		if !(path == "usize" && state.three().is_some_and(|(_, param, _)| param == name)) {
+			return Ok(None);
+		}
+		(|| -> Result<Arg, Unsupported> {
+					let (op, _, check) = state.three().unwrap();
+					if check != "below_idx_max" {
+						return Err(Unsupported("unknown argument guard", check));
+					}
+					let mut a = ok_arg(
+						"i64",
+						format!("__guarded_{name}"),
+						"int (checked below the index maximum)",
+					)?;
+					a.pre.push(format!("let __guarded_{name} = support::below_idx_max(support::narrow::<usize>({name}, \"{name}\")?, \"{op}\", \"{name}\")?;"));
+					Ok(a)
+				})()
+		.map(Some)
+	}
 }
 
 /// Record 0089 gate 2 controls, from a synthetic inventory: a listed generic
@@ -152,45 +205,26 @@ pub(crate) fn free_instantiation_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
-	release.free_instantiations.push(FreeInstantiation {
-		key: "listed".into(),
-		path: "polars_core::m::arg_lo".into(),
-		callee: "polars::m::arg_lo".into(),
-		generic: "T".into(),
-		types: vec![
-			"polars_core::datatypes::Int64Type".into(),
-			"polars_core::datatypes::UInt32Type".into(),
-			"polars_core::datatypes::Float32Type".into(),
-		],
-		natives: vec![],
-		guard_param: None,
-		guard: None,
-		cite: "t".into(),
-	});
+	release
+		.families
+		.free_instantiations
+		.push(FreeInstantiation {
+			key: "listed".into(),
+			path: "polars_core::m::arg_lo".into(),
+			callee: "polars::m::arg_lo".into(),
+			generic: "T".into(),
+			types: vec![
+				"polars_core::datatypes::Int64Type".into(),
+				"polars_core::datatypes::UInt32Type".into(),
+				"polars_core::datatypes::Float32Type".into(),
+			],
+			natives: vec![],
+			guard_param: None,
+			guard: None,
+			cite: "t".into(),
+		});
 	let world = World::new(&inv, &release, &["mechanical", "generic_fn"]);
 	let empty = || Emitted {
 		from_names: BTreeMap::new(),
@@ -288,6 +322,7 @@ pub(crate) fn guard_shape(f: &FreeInstantiation, c: &Callable) -> Result<(), Str
 pub(crate) fn emit_free_instantiations(world: &World, out: &mut Emitted, c: &Callable) {
 	let f = world
 		.release
+		.families
 		.free_instantiations
 		.iter()
 		.find(|f| f.key == c.key && f.path == c.canonical_path)
@@ -298,12 +333,6 @@ pub(crate) fn emit_free_instantiations(world: &World, out: &mut Emitted, c: &Cal
 	if let Err(why) = guard_shape(&f, c) {
 		out.unsupported(c, "free instantiation guard", &why);
 		return;
-	}
-	struct Guard<'a>(&'a std::cell::RefCell<Option<(String, String, String)>>);
-	impl Drop for Guard<'_> {
-		fn drop(&mut self) {
-			*self.0.borrow_mut() = None;
-		}
 	}
 	let mut done: Vec<(String, String, &'static str, Option<String>)> = Vec::new();
 	let mut infos: Vec<OracleInfo> = Vec::new();
@@ -320,6 +349,7 @@ pub(crate) fn emit_free_instantiations(world: &World, out: &mut Emitted, c: &Cal
 			});
 			continue;
 		};
+		let _target = target(format!("{}|{alias}", c.key));
 		let mut syn = c.clone();
 		syn.owner = alias.clone();
 		syn.bucket = "mechanical".into();
@@ -346,10 +376,18 @@ pub(crate) fn emit_free_instantiations(world: &World, out: &mut Emitted, c: &Cal
 			});
 			continue;
 		}
-		if let (Some(param), Some(check)) = (&f.guard_param, &f.guard) {
-			*world.arg_guard.borrow_mut() = Some((c.name.clone(), param.clone(), check.clone()));
-		}
-		let _guard = Guard(&world.arg_guard);
+		// record 0115: the guarded parameter's state (`FREE`), cleared on drop
+		let guarded = match (&f.guard_param, &f.guard) {
+			(Some(param), Some(check)) => {
+				trace("free", "arg_guard", "active");
+				vec![(
+					ARG_GUARD.name(),
+					State::Three(c.name.clone(), param.clone(), check.clone()),
+				)]
+			}
+			_ => vec![],
+		};
+		let _guard = world.active.enter(FREE, guarded);
 		let before = out.entries.len();
 		emit_method_with(world, out, &syn, &alias, None, false, Some(&f.callee));
 		let e = out.entries.pop().unwrap();

@@ -16,6 +16,24 @@ use crate::model::Inventory;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
+/// Record 0115: declares a release-file schema struct together with the
+/// list of its field names, so the accepted top-level keys of a release
+/// file come from the same declaration as the fields (no second list).
+macro_rules! release_schema {
+	($(#[$outer:meta])* $vis:vis struct $name:ident { $($(#[$m:meta])* $fvis:vis $field:ident : $ty:ty,)* } $(flatten $flat:ident : $flat_ty:ty)?) => {
+		$(#[$outer])*
+		$vis struct $name {
+			$($(#[$m])* $fvis $field: $ty,)*
+			$(#[serde(flatten)] pub(crate) $flat: $flat_ty,)?
+		}
+		impl $name {
+			/// The top-level keys this struct reads from a release file.
+			pub(crate) const KEYS: &'static [&'static str] = &[$(stringify!($field)),*];
+		}
+	};
+}
+
+release_schema! {
 /// Record 0075: the release-specific inputs, read from
 /// `releases/<release>.toml` and recorded (name, source, digest) in
 /// `surface.json`. Nothing about a release is a constant in this file.
@@ -38,6 +56,21 @@ pub(crate) struct Release {
 	/// the binding would have to validate first.
 	#[serde(default)]
 	pub(crate) refused: Vec<RefusedOperation>,
+	/// Record 0076: which alias families get instantiated bindings; empty
+	/// means every family. The shipped set under the launch budget is
+	/// recorded here, as the recipe that selected it.
+	#[serde(default)]
+	pub(crate) instantiation: InstantiationScope,
+}
+	flatten families: FamilyTables
+}
+
+release_schema! {
+/// Record 0115: every family's release table, flattened into `Release`
+/// (the file format is unchanged); a self-test lists only the tables it
+/// uses and takes the rest from `Default`.
+#[derive(serde::Deserialize, Clone, Default)]
+pub(crate) struct FamilyTables {
 	/// Record 0085: canonical paths whose validity `Bitmap` return (direct,
 	/// optional or as iterator items) is copied into an owned `Vec<bool>`.
 	#[serde(default)]
@@ -130,11 +163,7 @@ pub(crate) struct Release {
 	pub(crate) callback_safe: Vec<CallbackSafe>,
 	#[serde(default)]
 	pub(crate) callback_recipe: Vec<CallbackRecipe>,
-	/// Record 0076: which alias families get instantiated bindings; empty
-	/// means every family. The shipped set under the launch budget is
-	/// recorded here, as the recipe that selected it.
-	#[serde(default)]
-	pub(crate) instantiation: InstantiationScope,
+}
 }
 #[derive(serde::Deserialize, Clone, Default)]
 pub(crate) struct InstantiationScope {
@@ -197,11 +226,34 @@ impl Release {
 	pub(crate) fn load(path: &Path) -> (Release, String) {
 		let text = std::fs::read_to_string(path)
 			.unwrap_or_else(|e| panic!("release file {}: {e}", path.display()));
+		// record 0115: an unknown top-level key (a misspelled table) is refused
+		// before generation instead of silently ignored
+		if let Err(key) = Release::unknown_key(&text) {
+			eprintln!(
+				"refusing to generate: release file {}: unknown top-level key `{key}`",
+				path.display()
+			);
+			std::process::exit(2);
+		}
 		let r: Release = toml::from_str(&text)
 			.unwrap_or_else(|e| panic!("release file {}: {e}", path.display()));
 		use sha2::Digest;
 		let digest = format!("{:x}", sha2::Sha256::digest(text.as_bytes()));
 		(r, digest)
+	}
+	/// Record 0115: the first top-level key neither `Release` nor
+	/// `FamilyTables` declares; `Ok` when every key is known. A file that
+	/// does not parse as TOML is left to the typed parse, which names the error.
+	pub(crate) fn unknown_key(text: &str) -> Result<(), String> {
+		let Ok(table) = toml::from_str::<toml::Table>(text) else {
+			return Ok(());
+		};
+		match table.keys().find(|k| {
+			!Release::KEYS.contains(&k.as_str()) && !FamilyTables::KEYS.contains(&k.as_str())
+		}) {
+			Some(k) => Err(k.clone()),
+			None => Ok(()),
+		}
 	}
 	pub(crate) fn is_api(&self, krate: &str) -> bool {
 		self.api_crates.iter().any(|c| c == krate)
@@ -473,5 +525,49 @@ mod tests {
 	#[test]
 	fn policy() {
 		super::policy_self_test();
+	}
+
+	/// Record 0115: a misspelled family table is refused by name; the same
+	/// file with the declared name loads; every shipped release file has
+	/// only declared keys; and the accepted keys are exactly the fields.
+	#[test]
+	fn unknown_release_keys() {
+		use super::{FamilyTables, Release};
+		let head = "name = \"t\"\nsource = \"t\"\napi_crates = []\n";
+		let entry = "key = \"k\"\npath = \"p\"\npairs = []\ncite = \"c\"\n";
+		let typo = format!("{head}[[array_snapshot]]\n{entry}");
+		assert_eq!(
+			Release::unknown_key(&typo),
+			Err("array_snapshot".to_string())
+		);
+		let valid = format!("{head}[[array_snapshots]]\n{entry}");
+		assert_eq!(Release::unknown_key(&valid), Ok(()));
+		let r: Release = toml::from_str(&valid).unwrap();
+		assert_eq!(
+			r.families.array_snapshots.len(),
+			1,
+			"the flattened table is read"
+		);
+		for f in std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/releases")).unwrap() {
+			let text = std::fs::read_to_string(f.unwrap().path()).unwrap();
+			assert_eq!(Release::unknown_key(&text), Ok(()));
+		}
+		assert!(
+			FamilyTables::KEYS.contains(&"layout_snapshots") && Release::KEYS.contains(&"refused")
+		);
+		assert!(
+			!Release::KEYS.contains(&"families"),
+			"the flattened field is not a file key"
+		);
+		let all: std::collections::BTreeSet<&str> = Release::KEYS
+			.iter()
+			.chain(FamilyTables::KEYS)
+			.copied()
+			.collect();
+		assert_eq!(
+			all.len(),
+			Release::KEYS.len() + FamilyTables::KEYS.len(),
+			"no key declared twice"
+		);
 	}
 }

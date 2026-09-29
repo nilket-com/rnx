@@ -1,5 +1,7 @@
 use crate::emit::{Entry, rune_path};
 use crate::families::protocols::{ASSIGN_OPS, OPS, owner_has_trait};
+use crate::families::target;
+use crate::families::{Active, ORACLE_SCRIPT_STATE, ORACLE_STATE, oracle_states};
 use crate::model::Inventory;
 use crate::oracle::fixtures::{FIXTURES, TYPED_FIXTURES};
 use crate::oracle::{Oracle, OracleCase, setup_fn, staged};
@@ -15,7 +17,7 @@ pub(crate) fn emit_oracle(
 	entries: &mut [Entry],
 	inv: &Inventory,
 ) -> (String, String, Vec<(String, String)>, serde_json::Value) {
-	for recipe in &world.release.callback_recipe {
+	for recipe in &world.release.families.callback_recipe {
 		for used in &recipe.uses {
 			let safe = entries.iter().any(|entry| {
 				entry.status == "generated"
@@ -83,14 +85,7 @@ pub(crate) fn emit_oracle(
 		recipes: BTreeMap::new(),
 		no_recipe: BTreeMap::new(),
 		mask_len: std::cell::Cell::new(3),
-		hash_ret: std::cell::Cell::new(false),
-		chunk_native: std::cell::RefCell::new(None),
-		indexed_native: std::cell::RefCell::new(None),
-		array_native: std::cell::RefCell::new(None),
-		iter_native: std::cell::RefCell::new(None),
-		view_native: std::cell::RefCell::new(None),
-		owned_native: std::cell::RefCell::new(None),
-		layout_native: std::cell::RefCell::new(None),
+		active: Active::default(),
 	};
 	o.derive_recipes(entries);
 	let mut cases = Vec::new();
@@ -106,6 +101,7 @@ pub(crate) fn emit_oracle(
 		.collect();
 	for (ei, bi) in plan {
 		let e = &mut entries[ei];
+		let _target = target(e.key.clone());
 		let single = e.bindings.len() <= 1;
 		let mut skip = |e: &mut Entry, why: String| {
 			if let Some(b) = e.bindings.get_mut(bi) {
@@ -711,6 +707,7 @@ pub(crate) fn emit_oracle(
 			if let Some(signature) = shape.strip_prefix("callback:") {
 				match world
 					.release
+					.families
 					.callback_recipe
 					.iter()
 					.find(|r| r.signature == signature)
@@ -790,119 +787,30 @@ pub(crate) fn emit_oracle(
 				o.show(canonical).unwrap(),
 			)
 		} else {
-			*o.layout_native.borrow_mut() = world
-				.release
-				.layout_snapshots
-				.iter()
-				.find(|m| m.key == e.key && m.path == e.canonical_path)
-				.and_then(|m| {
-					owner
-						.and_then(|a| world.wrappers.get(a))
-						.and_then(|w| m.pair_for(&w.identity))
-						.map(|(_, k)| k)
-				});
+			// record 0115: the listed families' oracle state; the layout's is
+			// visible to `script_fmt`, every listed state to `oracle_fmt`
+			let script_state = o.active.enter(
+				ORACLE_SCRIPT_STATE,
+				oracle_states(ORACLE_SCRIPT_STATE, world, &e.key, &e.canonical_path, owner),
+			);
 			let Some(sf) = o.script_fmt(&info.ret_rust, ret_ty.as_ref(), owner, 0) else {
-				*o.layout_native.borrow_mut() = None;
+				drop(script_state);
 				skip(
 					e,
 					format!("return type has no comparison ({})", info.ret_rust),
 				);
 				continue;
 			};
-			o.hash_ret.set(
-				world.release.hash_tokens.iter().any(|h| {
-					h.key == e.key && h.path == e.canonical_path && h.direction == "return"
-				}),
+			let rust_state = o.active.enter(
+				ORACLE_STATE,
+				oracle_states(ORACLE_STATE, world, &e.key, &e.canonical_path, owner),
 			);
-			*o.layout_native.borrow_mut() = world
-				.release
-				.layout_snapshots
-				.iter()
-				.find(|m| m.key == e.key && m.path == e.canonical_path)
-				.and_then(|m| {
-					owner
-						.and_then(|a| world.wrappers.get(a))
-						.and_then(|w| m.pair_for(&w.identity))
-						.map(|(_, k)| k)
-				});
-			*o.owned_native.borrow_mut() = world
-				.release
-				.owned_iter_snapshots
-				.iter()
-				.find(|m| m.key == e.key && m.path == e.canonical_path)
-				.and_then(|m| {
-					owner
-						.and_then(|a| world.wrappers.get(a))
-						.and_then(|w| m.native_for(&w.identity))
-						.map(String::from)
-				});
-			*o.view_native.borrow_mut() = world
-				.release
-				.view_snapshots
-				.iter()
-				.find(|m| m.key == e.key && m.path == e.canonical_path)
-				.and_then(|m| {
-					owner
-						.and_then(|a| world.wrappers.get(a))
-						.and_then(|w| m.native_for(&w.identity))
-						.map(String::from)
-				});
-			*o.iter_native.borrow_mut() = world
-				.release
-				.iter_snapshots
-				.iter()
-				.find(|m| m.key == e.key && m.path == e.canonical_path)
-				.and_then(|m| {
-					owner
-						.and_then(|a| world.wrappers.get(a))
-						.and_then(|w| m.native_for(&w.identity))
-						.map(String::from)
-				});
-			*o.array_native.borrow_mut() = world
-				.release
-				.array_snapshots
-				.iter()
-				.find(|m| m.key == e.key && m.path == e.canonical_path)
-				.and_then(|m| {
-					owner
-						.and_then(|a| world.wrappers.get(a))
-						.and_then(|w| m.native_for(&w.identity))
-						.map(String::from)
-				});
-			*o.indexed_native.borrow_mut() = world
-				.release
-				.indexed_chunk_snapshots
-				.iter()
-				.find(|m| m.key == e.key && m.path == e.canonical_path)
-				.and_then(|m| {
-					owner
-						.and_then(|a| world.wrappers.get(a))
-						.and_then(|w| m.native_for(&w.identity))
-						.map(String::from)
-				});
-			*o.chunk_native.borrow_mut() = world
-				.release
-				.chunk_snapshots
-				.iter()
-				.find(|m| m.key == e.key && m.path == e.canonical_path)
-				.and_then(|m| {
-					owner
-						.and_then(|a| world.wrappers.get(a))
-						.and_then(|w| m.native_for(&w.identity))
-						.map(String::from)
-				});
 			let of = match &ret_ty {
 				None => Some("\"()\".to_string()".to_string()),
 				Some(t) => o.oracle_fmt(t, owner, 0),
 			};
-			o.hash_ret.set(false);
-			*o.chunk_native.borrow_mut() = None;
-			*o.indexed_native.borrow_mut() = None;
-			*o.array_native.borrow_mut() = None;
-			*o.iter_native.borrow_mut() = None;
-			*o.view_native.borrow_mut() = None;
-			*o.owned_native.borrow_mut() = None;
-			*o.layout_native.borrow_mut() = None;
+			drop(rust_state);
+			drop(script_state);
 			let Some(of) = of else {
 				skip(e, "return type has no Rust comparison".into());
 				continue;

@@ -1,9 +1,16 @@
 use crate::emit::Emitted;
 use crate::emit::callable::emit_callable;
 use crate::families::callbacks::CallbackInvocation;
+use crate::families::{ArgSite, Family, Listed, RetSite, State};
 use crate::model::{Callable, Inventory, Param, Supporting};
-use crate::release::{InstantiationScope, RefusedOperation, Release, ReleaseProvenance};
+use crate::release::{
+	FamilyTables, InstantiationScope, RefusedOperation, Release, ReleaseProvenance,
+};
+use crate::ty::Ty;
+use crate::ty::last;
 use crate::world::World;
+use crate::world::mapping::ok_arg;
+use crate::world::mapping::{Arg, Ret, Unsupported};
 use std::collections::BTreeMap;
 
 #[derive(serde::Deserialize, Clone)]
@@ -13,6 +20,138 @@ pub(crate) struct BitmapInput {
 	/// the parameter named `values`) or `none`.
 	pub(crate) length: String,
 	pub(crate) cite: String,
+}
+
+// ---------------------------------------------------------------- record 0115: this module's families
+
+/// Record 0085: a listed validity bitmap return, copied into bools.
+pub(crate) struct BitmapReturnFamily;
+pub(crate) static BITMAP_RETURN: BitmapReturnFamily = BitmapReturnFamily;
+
+impl Family for BitmapReturnFamily {
+	fn name(&self) -> &'static str {
+		"bitmap_return"
+	}
+	fn listed(&self, world: &World, c: &Callable) -> Listed {
+		// record 0085: a listed path's validity bitmap return
+		if world
+			.release
+			.families
+			.bitmap_returns
+			.iter()
+			.any(|p| *p == c.canonical_path)
+		{
+			Listed::Active(State::On)
+		} else {
+			Listed::Unlisted
+		}
+	}
+	fn ret(
+		&self,
+		_world: &World,
+		_state: &State,
+		site: RetSite,
+		t: &Ty,
+		_owner: Option<&str>,
+		_depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Unwrapped {
+			return Ok(None);
+		}
+		// record 0085: a validity bitmap, only for the release's listed paths
+		let Ty::Path { path, args } = t else {
+			return Ok(None);
+		};
+		if path == "polars_arrow::bitmap::immutable::Bitmap" && args.is_empty() {
+			let limit = 1usize << 20;
+			return Ok(Some(Ret {
+				materialize: None,
+				rust_ty: "Vec<bool>".into(),
+				fallible: true,
+				conv: "support::copy_bits(&__r, \"__OP__\")?".into(),
+				doc: format!(
+					"vector of bool (validity bits copied from a bitmap, at most {limit} bits per call)"
+				),
+			}));
+		}
+		Ok(None)
+	}
+}
+
+/// Record 0086: a listed bitmap parameter, built from script bools.
+pub(crate) struct BitmapInputFamily;
+pub(crate) static BITMAP_INPUT: BitmapInputFamily = BitmapInputFamily;
+
+impl Family for BitmapInputFamily {
+	fn name(&self) -> &'static str {
+		"bitmap_input"
+	}
+	fn listed(&self, world: &World, c: &Callable) -> Listed {
+		// record 0086: a listed path's bitmap parameter and its length
+		match world
+			.release
+			.families
+			.bitmap_inputs
+			.iter()
+			.find(|b| b.path == c.canonical_path)
+		{
+			Some(b) => Listed::Active(State::Two(
+				format!("{}::{}", last(&c.owner), c.name),
+				b.length.clone(),
+			)),
+			None => Listed::Unlisted,
+		}
+	}
+	fn arg(
+		&self,
+		_world: &World,
+		state: &State,
+		site: ArgSite,
+		t: &Ty,
+		name: &str,
+		owner: Option<&str>,
+	) -> Result<Option<Arg>, Unsupported> {
+		if site != ArgSite::Top {
+			return Ok(None);
+		}
+		// record 0086: a listed callable's validity bitmap from a script Vec<bool>
+		if let Ty::Path { path, args } = t {
+			if path == "polars_arrow::bitmap::immutable::Bitmap" && args.is_empty() {
+				if let Some((op, length)) = state.two() {
+					let (pre, expect, shape) = match length.as_str() {
+						// the oracle's receiver fixtures have 3 rows, the List one 2
+						"receiver" => (
+							Some("let __mask_len = this.0.len();".to_string()),
+							"Some(__mask_len)",
+							if owner.is_some_and(|o| o.ends_with("::ListChunked")) {
+								"mask2"
+							} else {
+								"mask3"
+							},
+						),
+						"values" => (
+							Some(
+								"let __mask_len = support::vec_len(&values, \"values\")?;"
+									.to_string(),
+							),
+							"Some(__mask_len)",
+							"mask1",
+						),
+						_ => (None, "None", "mask3"),
+					};
+					let mut a = ok_arg(
+						"rune::Value",
+						format!("support::bitmap_from_bools(&{name}, \"{op}\", {expect})?"),
+						"vector of bool (a validity mask, copied)",
+					)?;
+					a.pre.extend(pre);
+					a.shape = shape.into();
+					return Ok(Some(a));
+				}
+			}
+		}
+		Ok(None)
+	}
 }
 
 /// Record 0086 gate 2 controls, from a synthetic inventory: a listed
@@ -142,36 +281,14 @@ pub(crate) fn bitmap_input_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	for (n, l) in [
 		("set_mask", "receiver"),
 		("from_values_mask", "values"),
 		("from_bits", "none"),
 	] {
-		release.bitmap_inputs.push(BitmapInput {
+		release.families.bitmap_inputs.push(BitmapInput {
 			path: format!("{series}::{n}"),
 			length: l.into(),
 			cite: "t".into(),
@@ -231,7 +348,7 @@ pub(crate) fn bitmap_input_self_test() {
 		);
 	}
 	assert!(
-		world.bitmap_input.borrow().is_none() && !world.bitmap_ok.get(),
+		!world.active.is_set("bitmap_input") && !world.active.is_set("bitmap_return"),
 		"the bitmap scope never outlives its callable"
 	);
 	println!("bitmap-input self-test: ok");
@@ -337,32 +454,13 @@ pub(crate) fn bitmap_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	for n in ["bits", "maybe_bits", "bits_per_chunk", "with_bits"] {
-		release.bitmap_returns.push(format!("{series}::{n}"));
+		release
+			.families
+			.bitmap_returns
+			.push(format!("{series}::{n}"));
 	}
 	let world = World::new(&inv, &release, &["mechanical"]);
 	let empty = || Emitted {
@@ -425,7 +523,7 @@ pub(crate) fn bitmap_self_test() {
 		);
 	}
 	assert!(
-		!world.bitmap_ok.get(),
+		!world.active.is_set("bitmap_return"),
 		"the listed-path flag never outlives its callable"
 	);
 	println!("bitmap self-test: ok");
@@ -663,29 +761,7 @@ pub(crate) fn generic_input_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	release.refused.push(RefusedOperation {
 		path: format!("{frame}::refused_by_release"),
@@ -988,37 +1064,18 @@ pub(crate) fn slice_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
-	release.callback_invocation.push(CallbackInvocation {
-		path: format!("{series}::each_bytes"),
-		param: "f".into(),
-		invocation: "immediate".into(),
-		sinks: vec![],
-		cite: "t".into(),
-	});
+	release
+		.families
+		.callback_invocation
+		.push(CallbackInvocation {
+			path: format!("{series}::each_bytes"),
+			param: "f".into(),
+			invocation: "immediate".into(),
+			sinks: vec![],
+			cite: "t".into(),
+		});
 	let world = World::new(&inv, &release, &["mechanical", "callback"]);
 	let empty = || Emitted {
 		from_names: BTreeMap::new(),

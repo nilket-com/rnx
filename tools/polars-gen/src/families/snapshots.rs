@@ -1,9 +1,16 @@
+use crate::census::PairRecord;
 use crate::emit::Emitted;
 use crate::emit::callable::emit_method;
 use crate::families::bounds::NUMERIC_NATIVES;
+use crate::families::callbacks::routed_binding;
+use crate::families::{Check, Family, Listed, OracleSite, RetSite, State};
 use crate::model::{Callable, Inventory, Param, Supporting};
-use crate::release::{InstantiationScope, Release, ReleaseProvenance};
+use crate::oracle::Oracle;
+use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
+use crate::ty;
+use crate::ty::Ty;
 use crate::world::World;
+use crate::world::mapping::{Ret, Unsupported};
 use std::collections::BTreeMap;
 
 #[derive(serde::Deserialize, Clone)]
@@ -511,6 +518,7 @@ pub(crate) fn layout_entry<'a>(
 	c: &Callable,
 ) -> Option<Result<&'a LayoutSnapshot, String>> {
 	let listed: Vec<&LayoutSnapshot> = release
+		.families
 		.layout_snapshots
 		.iter()
 		.filter(|m| m.key == c.key && m.path == c.canonical_path)
@@ -526,6 +534,7 @@ pub(crate) fn owned_iter_entry<'a>(
 	c: &Callable,
 ) -> Option<Result<&'a OwnedIterSnapshot, String>> {
 	let listed: Vec<&OwnedIterSnapshot> = release
+		.families
 		.owned_iter_snapshots
 		.iter()
 		.filter(|m| m.key == c.key && m.path == c.canonical_path)
@@ -541,6 +550,7 @@ pub(crate) fn view_snapshot_entry<'a>(
 	c: &Callable,
 ) -> Option<Result<&'a ViewSnapshot, String>> {
 	let listed: Vec<&ViewSnapshot> = release
+		.families
 		.view_snapshots
 		.iter()
 		.filter(|m| m.key == c.key && m.path == c.canonical_path)
@@ -556,6 +566,7 @@ pub(crate) fn iter_snapshot_entry<'a>(
 	c: &Callable,
 ) -> Option<Result<&'a IterSnapshot, String>> {
 	let listed: Vec<&IterSnapshot> = release
+		.families
 		.iter_snapshots
 		.iter()
 		.filter(|m| m.key == c.key && m.path == c.canonical_path)
@@ -571,6 +582,7 @@ pub(crate) fn array_snapshot_entry<'a>(
 	c: &Callable,
 ) -> Option<Result<&'a ArraySnapshot, String>> {
 	let listed: Vec<&ArraySnapshot> = release
+		.families
 		.array_snapshots
 		.iter()
 		.filter(|m| m.key == c.key && m.path == c.canonical_path)
@@ -586,6 +598,7 @@ pub(crate) fn indexed_chunk_entry<'a>(
 	c: &Callable,
 ) -> Option<Result<&'a IndexedChunkSnapshot, String>> {
 	let listed: Vec<&IndexedChunkSnapshot> = release
+		.families
 		.indexed_chunk_snapshots
 		.iter()
 		.filter(|m| m.key == c.key && m.path == c.canonical_path)
@@ -601,6 +614,7 @@ pub(crate) fn chunk_snapshot_entry<'a>(
 	c: &Callable,
 ) -> Option<Result<&'a ChunkSnapshot, String>> {
 	let listed: Vec<&ChunkSnapshot> = release
+		.families
 		.chunk_snapshots
 		.iter()
 		.filter(|m| m.key == c.key && m.path == c.canonical_path)
@@ -609,6 +623,1292 @@ pub(crate) fn chunk_snapshot_entry<'a>(
 		[] => None,
 		[m] => Some(m.check(c).map(|_| *m)),
 		_ => Some(Err("listed twice".into())),
+	}
+}
+
+// ---------------------------------------------------------------- record 0115: this module's families
+
+/// Records 0099/0100: a listed `chunks` snapshot.
+pub(crate) struct ChunkFamily;
+pub(crate) static CHUNK: ChunkFamily = ChunkFamily;
+
+impl Family for ChunkFamily {
+	fn name(&self) -> &'static str {
+		"chunk_snapshot"
+	}
+	fn listed_pair_post(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		_syn: &mut Callable,
+	) -> Listed {
+		match chunk_snapshot_entry(&world.release, c) {
+			None => Listed::Unlisted,
+			Some(Err(why)) => Listed::Refused("chunk snapshot", why),
+			Some(Ok(e)) => match e.native_for(&p.identity) {
+				Some(n) => Listed::Active(State::Two(c.name.clone(), n.to_string())),
+				None => Listed::Refused(
+					"chunk snapshot",
+					format!("`{}` is not a listed pair", p.identity),
+				),
+			},
+		}
+	}
+	fn ret(
+		&self,
+		world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Top {
+			return Ok(None);
+		}
+		// record 0099: the exact chunk list, copied per chunk, for the listed pair's native
+		if let Some((_, native)) = state.two() {
+			if depth == 0 {
+				let arrays = [
+					"polars_arrow::array::ArrayRef",
+					"alloc::boxed::Box<dyn polars_arrow::array::Array>",
+				];
+				let is_chunks = matches!(t, Ty::Ref { mutable: false, inner } if matches!(&**inner, Ty::Path { path, args } if path == "alloc::vec::Vec" && args.len() == 1 && arrays.contains(&args[0].render().as_str())));
+				if !is_chunks {
+					return Err(Unsupported(
+						"chunk snapshot",
+						format!("{} is not &Vec<ArrayRef>", t.render()),
+					));
+				}
+				// record 0100: a Boolean, string or binary owner has its own copier
+				if let Some((_, kind, copier, elem, _, _)) =
+					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == native)
+				{
+					return Ok(Some(Ret {
+						materialize: None,
+						rust_ty: format!("Vec<Vec<Option<{elem}>>>"),
+						conv: format!("{copier}(__r, \"__OP__\")?"),
+						fallible: true,
+						doc: format!(
+							"vector of chunks, each a vector of option of {kind} values (copied, chunk boundaries kept, bounded with payload bytes)"
+						),
+					}));
+				}
+				let e = world.ret(
+					&Ty::Path {
+						path: native.clone(),
+						args: vec![],
+					},
+					owner,
+					depth + 1,
+				)?;
+				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
+					return Err(Unsupported(
+						"chunk snapshot",
+						format!("element {native} is not a scalar"),
+					));
+				}
+				return Ok(Some(Ret {
+					materialize: None,
+					rust_ty: format!("Vec<Vec<Option<{}>>>", e.rust_ty),
+					conv: format!(
+						"support::chunk_snapshot::<{native}, _>(__r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
+						e.conv
+					),
+					fallible: true,
+					doc: format!(
+						"vector of chunks, each a vector of option of {} (copied, chunk boundaries kept, bounded)",
+						e.doc
+					),
+				}));
+			}
+		}
+		Ok(None)
+	}
+	fn check(&self, world: &World, _state: &State, c: &Callable, owner: &str, ret: &Ret) -> Check {
+		// record 0099: the chunk borrow ends with the call, so the copy must happen in it
+		if routed_binding(world, c, Some(owner))
+			|| !ret.conv.starts_with("support::chunk_snapshot")
+			|| c.receiver != "&self"
+		{
+			return Check::Refuse(
+				"chunk snapshot",
+				"needs an unrouted `&self` call and the chunk-snapshot conversion".into(),
+			);
+		}
+		Check::Pass
+	}
+	fn oracle_state(
+		&self,
+		world: &World,
+		key: &str,
+		path: &str,
+		owner: Option<&str>,
+	) -> Option<State> {
+		world
+			.release
+			.families
+			.chunk_snapshots
+			.iter()
+			.find(|m| m.key == key && m.path == path)
+			.and_then(|m| {
+				owner
+					.and_then(|a| world.wrappers.get(a))
+					.and_then(|w| m.native_for(&w.identity))
+					.map(String::from)
+			})
+			.map(State::One)
+	}
+	fn oracle_fmt(
+		&self,
+		o: &Oracle,
+		state: &State,
+		site: OracleSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		if site != OracleSite::Ref {
+			return None;
+		}
+		// record 0099: a listed chunk list frames as the nested options the script receives
+		let Ty::Ref { inner, .. } = t else {
+			return None;
+		};
+		if !(depth == 0
+			&& matches!(&**inner, Ty::Path { path, args } if path == "alloc::vec::Vec" && args.len() == 1 && ["polars_arrow::array::ArrayRef", "alloc::boxed::Box<dyn polars_arrow::array::Array>"].contains(&args[0].render().as_str())))
+		{
+			return None;
+		}
+		Some((|| -> Option<String> {
+			let n = state.one().unwrap();
+			// record 0100: a scalar owner's chunks, as the owned nested options the script receives
+			if let Some((_, _, _, _, array, oracle_elem)) =
+				SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == n)
+			{
+				let nested = ty::parse(&format!(
+					"alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{oracle_elem}>>>"
+				));
+				let own = match n.as_str() {
+					"bool" => "x",
+					"str" => "x.map(|v| v.to_string())",
+					_ => "x.map(|v| v.to_vec())",
+				};
+				return o.oracle_fmt(&nested, owner, depth + 1).map(|f| format!("{{ let __r: Vec<Vec<Option<_>>> = __r.iter().map(|a| a.as_any().downcast_ref::<{array}>().expect(\"oracle: a {n} chunk\").iter().map(|x| {own}).collect()).collect(); {f} }}"));
+			}
+			let nested = ty::parse(&format!(
+				"alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{n}>>>"
+			));
+			o.oracle_fmt(&nested, owner, depth + 1).map(|f| format!("{{ let __r: Vec<Vec<Option<{n}>>> = __r.iter().map(|a| a.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<{n}>>().expect(\"oracle: a numeric chunk\").iter().map(|x| x.copied()).collect()).collect(); {f} }}"))
+		})())
+	}
+}
+
+/// Record 0101: a listed `downcast_get` snapshot.
+pub(crate) struct IndexedChunkFamily;
+pub(crate) static INDEXED: IndexedChunkFamily = IndexedChunkFamily;
+
+impl Family for IndexedChunkFamily {
+	fn name(&self) -> &'static str {
+		"indexed_chunk"
+	}
+	fn listed_pair_post(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		_syn: &mut Callable,
+	) -> Listed {
+		match indexed_chunk_entry(&world.release, c) {
+			None => Listed::Unlisted,
+			Some(Err(why)) => Listed::Refused("indexed chunk snapshot", why),
+			Some(Ok(e)) => match e.native_for(&p.identity) {
+				Some(n) => Listed::Active(State::Two(c.name.clone(), n.to_string())),
+				None => Listed::Refused(
+					"indexed chunk snapshot",
+					format!("`{}` is not a listed pair", p.identity),
+				),
+			},
+		}
+	}
+	fn ret(
+		&self,
+		world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Top {
+			return Ok(None);
+		}
+		// record 0101: exactly `Option<&T::Array>` for the pair, the one selected chunk copied
+		if let Some((_, kind)) = state.two() {
+			if depth == 0 {
+				let want = indexed_array(&kind).ok_or_else(|| {
+					Unsupported("indexed chunk snapshot", format!("no array for {kind}"))
+				})?;
+				let exact = matches!(t, Ty::Path { path, args } if path == "core::option::Option" && args.len() == 1 && matches!(&args[0], Ty::Ref { mutable: false, inner } if inner.render() == ty::parse(&want).render()));
+				if !exact {
+					return Err(Unsupported(
+						"indexed chunk snapshot",
+						format!("{} is not Option<&{want}>", t.render()),
+					));
+				}
+				if let Some((_, k, _, elem, _, _)) =
+					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
+				{
+					let copier = match *k {
+						"bool" => "support::indexed_snapshot_bool",
+						"str" => "support::indexed_snapshot_str",
+						"binary" => "support::indexed_snapshot_binview",
+						_ => "support::indexed_snapshot_binary_offset",
+					};
+					return Ok(Some(Ret {
+						materialize: None,
+						rust_ty: format!("Option<Vec<Option<{elem}>>>"),
+						conv: format!("{copier}(__r, \"__OP__\")?"),
+						fallible: true,
+						doc: format!(
+							"option of the selected chunk as a vector of option of {k} values (copied, bounded with payload bytes)"
+						),
+					}));
+				}
+				let e = world.ret(
+					&Ty::Path {
+						path: kind.clone(),
+						args: vec![],
+					},
+					owner,
+					depth + 1,
+				)?;
+				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
+					return Err(Unsupported(
+						"indexed chunk snapshot",
+						format!("element {kind} is not a scalar"),
+					));
+				}
+				return Ok(Some(Ret {
+					materialize: None,
+					rust_ty: format!("Option<Vec<Option<{}>>>", e.rust_ty),
+					conv: format!(
+						"support::indexed_snapshot::<{kind}, _>(__r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
+						e.conv
+					),
+					fallible: true,
+					doc: format!(
+						"option of the selected chunk as a vector of option of {} (copied, bounded)",
+						e.doc
+					),
+				}));
+			}
+		}
+		Ok(None)
+	}
+	fn check(&self, world: &World, _state: &State, c: &Callable, owner: &str, ret: &Ret) -> Check {
+		// record 0101: likewise for the one borrowed chunk of `downcast_get`
+		if routed_binding(world, c, Some(owner))
+			|| !ret.conv.starts_with("support::indexed_snapshot")
+			|| c.receiver != "&self"
+		{
+			return Check::Refuse(
+				"indexed chunk snapshot",
+				"needs an unrouted `&self` call and the indexed-snapshot conversion".into(),
+			);
+		}
+		Check::Pass
+	}
+	fn oracle_state(
+		&self,
+		world: &World,
+		key: &str,
+		path: &str,
+		owner: Option<&str>,
+	) -> Option<State> {
+		world
+			.release
+			.families
+			.indexed_chunk_snapshots
+			.iter()
+			.find(|m| m.key == key && m.path == path)
+			.and_then(|m| {
+				owner
+					.and_then(|a| world.wrappers.get(a))
+					.and_then(|w| m.native_for(&w.identity))
+					.map(String::from)
+			})
+			.map(State::One)
+	}
+	fn oracle_fmt(
+		&self,
+		o: &Oracle,
+		state: &State,
+		site: OracleSite,
+		_t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		if site != OracleSite::Top {
+			return None;
+		}
+		// record 0101: a listed `downcast_get` result frames as the owned optional chunk the script receives
+		if depth == 0 {
+			if let Some(kind) = state.one() {
+				let elem = SCALAR_CHUNKS
+					.iter()
+					.find(|(_, k, ..)| *k == kind)
+					.map(|(.., oe)| oe.to_string())
+					.unwrap_or_else(|| kind.clone());
+				let own = match kind.as_str() {
+					"bool" => "x",
+					"str" => "x.map(|v| v.to_string())",
+					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
+					_ => "x.copied()",
+				};
+				let nested = ty::parse(&format!(
+					"core::option::Option<alloc::vec::Vec<core::option::Option<{elem}>>>"
+				));
+				return Some(o.oracle_fmt(&nested, owner, depth + 1).map(|f| {
+					format!(
+						"{{ let __r = __r.map(|a| a.iter().map(|x| {own}).collect::<Vec<_>>()); {f} }}"
+					)
+				}));
+			}
+		}
+		None
+	}
+}
+
+/// Record 0102: a listed `downcast_as_array` snapshot.
+pub(crate) struct ArraySnapshotFamily;
+pub(crate) static ARRAY: ArraySnapshotFamily = ArraySnapshotFamily;
+
+impl Family for ArraySnapshotFamily {
+	fn name(&self) -> &'static str {
+		"array_snapshot"
+	}
+	fn listed_pair_post(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		_syn: &mut Callable,
+	) -> Listed {
+		match array_snapshot_entry(&world.release, c) {
+			None => Listed::Unlisted,
+			Some(Err(why)) => Listed::Refused("array snapshot", why),
+			Some(Ok(e)) => match e.native_for(&p.identity) {
+				Some(n) => Listed::Active(State::Two(c.name.clone(), n.to_string())),
+				None => Listed::Refused(
+					"array snapshot",
+					format!("`{}` is not a listed pair", p.identity),
+				),
+			},
+		}
+	}
+	fn ret(
+		&self,
+		world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Top {
+			return Ok(None);
+		}
+		// record 0102: exactly `&T::Array` for the pair, the one array copied
+		if let Some((_, kind)) = state.two() {
+			if depth == 0 {
+				let want = indexed_array(&kind)
+					.ok_or_else(|| Unsupported("array snapshot", format!("no array for {kind}")))?;
+				let exact = matches!(t, Ty::Ref { mutable: false, inner } if inner.render() == ty::parse(&want).render());
+				if !exact {
+					return Err(Unsupported(
+						"array snapshot",
+						format!("{} is not &{want}", t.render()),
+					));
+				}
+				if let Some((_, k, _, elem, _, _)) =
+					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
+				{
+					let copier = match *k {
+						"bool" => "support::array_snapshot_bool",
+						"str" => "support::array_snapshot_str",
+						"binary" => "support::array_snapshot_binview",
+						_ => "support::array_snapshot_binary_offset",
+					};
+					return Ok(Some(Ret {
+						materialize: None,
+						rust_ty: format!("Vec<Option<{elem}>>"),
+						conv: format!("{copier}(__r, \"__OP__\")?"),
+						fallible: true,
+						doc: format!(
+							"the single array as a vector of option of {k} values (copied, bounded with payload bytes)"
+						),
+					}));
+				}
+				let e = world.ret(
+					&Ty::Path {
+						path: kind.clone(),
+						args: vec![],
+					},
+					owner,
+					depth + 1,
+				)?;
+				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
+					return Err(Unsupported(
+						"array snapshot",
+						format!("element {kind} is not a scalar"),
+					));
+				}
+				return Ok(Some(Ret {
+					materialize: None,
+					rust_ty: format!("Vec<Option<{}>>", e.rust_ty),
+					conv: format!(
+						"support::array_snapshot::<{kind}, _>(__r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
+						e.conv
+					),
+					fallible: true,
+					doc: format!(
+						"the single array as a vector of option of {} (copied, bounded)",
+						e.doc
+					),
+				}));
+			}
+		}
+		Ok(None)
+	}
+	fn check(&self, world: &World, _state: &State, c: &Callable, owner: &str, ret: &Ret) -> Check {
+		// record 0102: likewise for the one borrowed array of `downcast_as_array`
+		if routed_binding(world, c, Some(owner))
+			|| !ret.conv.starts_with("support::array_snapshot")
+			|| c.receiver != "&self"
+		{
+			return Check::Refuse(
+				"array snapshot",
+				"needs an unrouted `&self` call and the array-snapshot conversion".into(),
+			);
+		}
+		Check::Pass
+	}
+	fn oracle_state(
+		&self,
+		world: &World,
+		key: &str,
+		path: &str,
+		owner: Option<&str>,
+	) -> Option<State> {
+		world
+			.release
+			.families
+			.array_snapshots
+			.iter()
+			.find(|m| m.key == key && m.path == path)
+			.and_then(|m| {
+				owner
+					.and_then(|a| world.wrappers.get(a))
+					.and_then(|w| m.native_for(&w.identity))
+					.map(String::from)
+			})
+			.map(State::One)
+	}
+	fn oracle_fmt(
+		&self,
+		o: &Oracle,
+		state: &State,
+		site: OracleSite,
+		_t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		if site != OracleSite::Top {
+			return None;
+		}
+		// record 0102: a listed `downcast_as_array` result frames as the owned vector the script receives
+		if depth == 0 {
+			if let Some(kind) = state.one() {
+				let elem = SCALAR_CHUNKS
+					.iter()
+					.find(|(_, k, ..)| *k == kind)
+					.map(|(.., oe)| oe.to_string())
+					.unwrap_or_else(|| kind.clone());
+				let own = match kind.as_str() {
+					"bool" => "x",
+					"str" => "x.map(|v| v.to_string())",
+					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
+					_ => "x.copied()",
+				};
+				let nested = ty::parse(&format!("alloc::vec::Vec<core::option::Option<{elem}>>"));
+				return Some(o.oracle_fmt(&nested, owner, depth + 1).map(|f| {
+					format!("{{ let __r: Vec<_> = __r.iter().map(|x| {own}).collect(); {f} }}")
+				}));
+			}
+		}
+		None
+	}
+}
+
+/// Record 0103: a listed `downcast_iter` snapshot.
+pub(crate) struct IterSnapshotFamily;
+pub(crate) static ITER: IterSnapshotFamily = IterSnapshotFamily;
+
+impl Family for IterSnapshotFamily {
+	fn name(&self) -> &'static str {
+		"iter_snapshot"
+	}
+	fn listed_pair_post(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		_syn: &mut Callable,
+	) -> Listed {
+		match iter_snapshot_entry(&world.release, c) {
+			None => Listed::Unlisted,
+			Some(Err(why)) => Listed::Refused("iterator snapshot", why),
+			Some(Ok(e)) => match e.native_for(&p.identity) {
+				Some(n) => Listed::Active(State::Two(c.name.clone(), n.to_string())),
+				None => Listed::Refused(
+					"iterator snapshot",
+					format!("`{}` is not a listed pair", p.identity),
+				),
+			},
+		}
+	}
+	fn ret(
+		&self,
+		world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Top {
+			return Ok(None);
+		}
+		// record 0103: exactly the pair's borrowed typed-array iterator, driven into owned chunks
+		if let Some((_, kind)) = state.two() {
+			if depth == 0 {
+				let want = indexed_array(&kind).ok_or_else(|| {
+					Unsupported("iterator snapshot", format!("no array for {kind}"))
+				})?;
+				// the parsed structure, not `render` (which drops an impl's item):
+				// exactly one DoubleEndedIterator bound, no arguments, and an
+				// item that is a shared borrow of exactly the pair's array
+				let exact = matches!(t, Ty::Impl(bs) if bs.len() == 1
+                    && bs[0].path == "core::iter::traits::double_ended::DoubleEndedIterator"
+                    && bs[0].args.is_empty()
+                    && matches!(bs[0].item.as_deref(), Some(Ty::Ref { mutable: false, inner }) if inner.render() == ty::parse(&want).render()));
+				if !exact {
+					return Err(Unsupported(
+						"iterator snapshot",
+						format!("{t:?} is not impl DoubleEndedIterator<Item = &{want}>"),
+					));
+				}
+				if let Some((_, k, _, elem, _, _)) =
+					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
+				{
+					let copier = match *k {
+						"bool" => "support::iter_snapshot_bool",
+						"str" => "support::iter_snapshot_str",
+						"binary" => "support::iter_snapshot_binview",
+						_ => "support::iter_snapshot_binary_offset",
+					};
+					return Ok(Some(Ret {
+						materialize: None,
+						rust_ty: format!("Vec<Vec<Option<{elem}>>>"),
+						conv: format!("{copier}(this.0.chunks(), __r, \"__OP__\")?"),
+						fallible: true,
+						doc: format!(
+							"vector of chunks in iterator order, each a vector of option of {k} values (copied, bounded with payload bytes)"
+						),
+					}));
+				}
+				let e = world.ret(
+					&Ty::Path {
+						path: kind.clone(),
+						args: vec![],
+					},
+					owner,
+					depth + 1,
+				)?;
+				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
+					return Err(Unsupported(
+						"iterator snapshot",
+						format!("element {kind} is not a scalar"),
+					));
+				}
+				return Ok(Some(Ret {
+					materialize: None,
+					rust_ty: format!("Vec<Vec<Option<{}>>>", e.rust_ty),
+					conv: format!(
+						"support::iter_snapshot::<{kind}, _>(this.0.chunks(), __r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
+						e.conv
+					),
+					fallible: true,
+					doc: format!(
+						"vector of chunks in iterator order, each a vector of option of {} (copied, bounded)",
+						e.doc
+					),
+				}));
+			}
+		}
+		Ok(None)
+	}
+	fn check(&self, world: &World, _state: &State, c: &Callable, owner: &str, ret: &Ret) -> Check {
+		// record 0103: likewise for the borrowed typed-chunk iterator
+		if routed_binding(world, c, Some(owner))
+			|| !ret.conv.starts_with("support::iter_snapshot")
+			|| c.receiver != "&self"
+		{
+			return Check::Refuse(
+				"iterator snapshot",
+				"needs an unrouted `&self` call and the iterator-snapshot conversion".into(),
+			);
+		}
+		Check::Pass
+	}
+	fn oracle_state(
+		&self,
+		world: &World,
+		key: &str,
+		path: &str,
+		owner: Option<&str>,
+	) -> Option<State> {
+		world
+			.release
+			.families
+			.iter_snapshots
+			.iter()
+			.find(|m| m.key == key && m.path == path)
+			.and_then(|m| {
+				owner
+					.and_then(|a| world.wrappers.get(a))
+					.and_then(|w| m.native_for(&w.identity))
+					.map(String::from)
+			})
+			.map(State::One)
+	}
+	fn oracle_fmt(
+		&self,
+		o: &Oracle,
+		state: &State,
+		site: OracleSite,
+		_t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		if site != OracleSite::Top {
+			return None;
+		}
+		// record 0103: a listed `downcast_iter` result frames as the owned nested vectors the script receives
+		if depth == 0 {
+			if let Some(kind) = state.one() {
+				let elem = SCALAR_CHUNKS
+					.iter()
+					.find(|(_, k, ..)| *k == kind)
+					.map(|(.., oe)| oe.to_string())
+					.unwrap_or_else(|| kind.clone());
+				let own = match kind.as_str() {
+					"bool" => "x",
+					"str" => "x.map(|v| v.to_string())",
+					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
+					_ => "x.copied()",
+				};
+				let nested = ty::parse(&format!(
+					"alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{elem}>>>"
+				));
+				return Some(o.oracle_fmt(&nested, owner, depth + 1).map(|f| {
+					format!(
+						"{{ let __r: Vec<Vec<_>> = __r.map(|a| a.iter().map(|x| {own}).collect()).collect(); {f} }}"
+					)
+				}));
+			}
+		}
+		None
+	}
+}
+
+/// Record 0104: a listed `downcast_chunks` snapshot.
+pub(crate) struct ViewSnapshotFamily;
+pub(crate) static VIEW: ViewSnapshotFamily = ViewSnapshotFamily;
+
+impl Family for ViewSnapshotFamily {
+	fn name(&self) -> &'static str {
+		"view_snapshot"
+	}
+	fn listed_pair_post(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		_syn: &mut Callable,
+	) -> Listed {
+		match view_snapshot_entry(&world.release, c) {
+			None => Listed::Unlisted,
+			Some(Err(why)) => Listed::Refused("view snapshot", why),
+			Some(Ok(e)) => match e.native_for(&p.identity) {
+				Some(n) => Listed::Active(State::Two(c.name.clone(), n.to_string())),
+				None => Listed::Refused(
+					"view snapshot",
+					format!("`{}` is not a listed pair", p.identity),
+				),
+			},
+		}
+	}
+	fn ret(
+		&self,
+		world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Top {
+			return Ok(None);
+		}
+		// record 0104: exactly `Chunks<the pair's array>`, read by index into owned chunks
+		if let Some((_, kind)) = state.two() {
+			if depth == 0 {
+				let want = indexed_array(&kind)
+					.ok_or_else(|| Unsupported("view snapshot", format!("no array for {kind}")))?;
+				// the parsed type, compared structurally
+				let exact = matches!(t, Ty::Path { path, args } if path == CHUNKS_VIEW && args.len() == 1 && args[0] == ty::parse(&want));
+				if !exact {
+					return Err(Unsupported(
+						"view snapshot",
+						format!("{t:?} is not {CHUNKS_VIEW}<{want}>"),
+					));
+				}
+				if let Some((_, k, _, elem, _, _)) =
+					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
+				{
+					let copier = match *k {
+						"bool" => "support::view_snapshot_bool",
+						"str" => "support::view_snapshot_str",
+						"binary" => "support::view_snapshot_binview",
+						_ => "support::view_snapshot_binary_offset",
+					};
+					return Ok(Some(Ret {
+						materialize: None,
+						rust_ty: format!("Vec<Vec<Option<{elem}>>>"),
+						conv: format!(
+							"{copier}(this.0.chunks(), __r.len(), |__i| __r.get(__i), \"__OP__\")?"
+						),
+						fallible: true,
+						doc: format!(
+							"vector of chunks in index order, each a vector of option of {k} values (copied, bounded with payload bytes)"
+						),
+					}));
+				}
+				let e = world.ret(
+					&Ty::Path {
+						path: kind.clone(),
+						args: vec![],
+					},
+					owner,
+					depth + 1,
+				)?;
+				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
+					return Err(Unsupported(
+						"view snapshot",
+						format!("element {kind} is not a scalar"),
+					));
+				}
+				return Ok(Some(Ret {
+					materialize: None,
+					rust_ty: format!("Vec<Vec<Option<{}>>>", e.rust_ty),
+					conv: format!(
+						"support::view_snapshot::<{kind}, _>(this.0.chunks(), __r.len(), |__i| __r.get(__i), \"__OP__\", |__r| Ok::<_, Error>({}))?",
+						e.conv
+					),
+					fallible: true,
+					doc: format!(
+						"vector of chunks in index order, each a vector of option of {} (copied, bounded)",
+						e.doc
+					),
+				}));
+			}
+		}
+		Ok(None)
+	}
+	fn check(&self, world: &World, _state: &State, c: &Callable, owner: &str, ret: &Ret) -> Check {
+		// record 0104: likewise for the borrowed indexed chunk view
+		if routed_binding(world, c, Some(owner))
+			|| !ret.conv.starts_with("support::view_snapshot")
+			|| c.receiver != "&self"
+		{
+			return Check::Refuse(
+				"view snapshot",
+				"needs an unrouted `&self` call and the view-snapshot conversion".into(),
+			);
+		}
+		Check::Pass
+	}
+	fn oracle_state(
+		&self,
+		world: &World,
+		key: &str,
+		path: &str,
+		owner: Option<&str>,
+	) -> Option<State> {
+		world
+			.release
+			.families
+			.view_snapshots
+			.iter()
+			.find(|m| m.key == key && m.path == path)
+			.and_then(|m| {
+				owner
+					.and_then(|a| world.wrappers.get(a))
+					.and_then(|w| m.native_for(&w.identity))
+					.map(String::from)
+			})
+			.map(State::One)
+	}
+	fn oracle_fmt(
+		&self,
+		o: &Oracle,
+		state: &State,
+		site: OracleSite,
+		_t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		if site != OracleSite::Top {
+			return None;
+		}
+		// record 0104: a listed `downcast_chunks` view frames as the owned nested vectors the script receives
+		if depth == 0 {
+			if let Some(kind) = state.one() {
+				let elem = SCALAR_CHUNKS
+					.iter()
+					.find(|(_, k, ..)| *k == kind)
+					.map(|(.., oe)| oe.to_string())
+					.unwrap_or_else(|| kind.clone());
+				let own = match kind.as_str() {
+					"bool" => "x",
+					"str" => "x.map(|v| v.to_string())",
+					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
+					_ => "x.copied()",
+				};
+				let nested = ty::parse(&format!(
+					"alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{elem}>>>"
+				));
+				return Some(o.oracle_fmt(&nested, owner, depth + 1).map(|f| format!("{{ let __r: Vec<Vec<_>> = (0..__r.len()).map(|i| __r.get(i).expect(\"oracle: an in-range chunk\").iter().map(|x| {own}).collect()).collect(); {f} }}")));
+			}
+		}
+		None
+	}
+}
+
+/// Record 0105: a listed `downcast_into_iter` snapshot.
+pub(crate) struct OwnedIterFamily;
+pub(crate) static OWNED_ITER: OwnedIterFamily = OwnedIterFamily;
+
+impl Family for OwnedIterFamily {
+	fn name(&self) -> &'static str {
+		"owned_iter"
+	}
+	fn listed_pair_post(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		_syn: &mut Callable,
+	) -> Listed {
+		match owned_iter_entry(&world.release, c) {
+			None => Listed::Unlisted,
+			Some(Err(why)) => Listed::Refused("owned iterator snapshot", why),
+			Some(Ok(e)) => match e.native_for(&p.identity) {
+				Some(n) => Listed::Active(State::Two(c.name.clone(), n.to_string())),
+				None => Listed::Refused(
+					"owned iterator snapshot",
+					format!("`{}` is not a listed pair", p.identity),
+				),
+			},
+		}
+	}
+	fn ret(
+		&self,
+		world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Top {
+			return Ok(None);
+		}
+		// record 0105: exactly the owned-item iterator of the pair's array, streamed after the preflight
+		if let Some((_, kind)) = state.two() {
+			if depth == 0 {
+				let want = indexed_array(&kind).ok_or_else(|| {
+					Unsupported("owned iterator snapshot", format!("no array for {kind}"))
+				})?;
+				let exact = matches!(t, Ty::Impl(bs) if bs.len() == 1
+                    && bs[0].path == "core::iter::traits::double_ended::DoubleEndedIterator"
+                    && bs[0].args.is_empty()
+                    && bs[0].item.as_deref() == Some(&ty::parse(&want)));
+				if !exact {
+					return Err(Unsupported(
+						"owned iterator snapshot",
+						format!("{t:?} is not impl DoubleEndedIterator<Item = {want}>"),
+					));
+				}
+				if let Some((_, k, _, elem, _, _)) =
+					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
+				{
+					let copier = match *k {
+						"bool" => "support::owned_snapshot_bool",
+						"str" => "support::owned_snapshot_str",
+						"binary" => "support::owned_snapshot_binview",
+						_ => "support::owned_snapshot_binary_offset",
+					};
+					return Ok(Some(Ret {
+						materialize: None,
+						rust_ty: format!("Vec<Vec<Option<{elem}>>>"),
+						conv: format!("{copier}(this.0.chunks(), __total, __r, \"__OP__\")?"),
+						fallible: true,
+						doc: format!(
+							"vector of chunks in order, each a vector of option of {k} values (bounded before the receiver is cloned)"
+						),
+					}));
+				}
+				let e = world.ret(
+					&Ty::Path {
+						path: kind.clone(),
+						args: vec![],
+					},
+					owner,
+					depth + 1,
+				)?;
+				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
+					return Err(Unsupported(
+						"owned iterator snapshot",
+						format!("element {kind} is not a scalar"),
+					));
+				}
+				return Ok(Some(Ret {
+					materialize: None,
+					rust_ty: format!("Vec<Vec<Option<{}>>>", e.rust_ty),
+					conv: format!(
+						"support::owned_snapshot::<{kind}, _>(this.0.chunks(), __total, __r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
+						e.conv
+					),
+					fallible: true,
+					doc: format!(
+						"vector of chunks in order, each a vector of option of {} (bounded before the receiver is cloned)",
+						e.doc
+					),
+				}));
+			}
+		}
+		Ok(None)
+	}
+	fn check(&self, world: &World, state: &State, c: &Callable, owner: &str, ret: &Ret) -> Check {
+		// record 0105: the consuming iterator runs on a clone; its preflight goes
+		// first, before the clone in the call and before Polars
+		let Some((op, kind)) = state.two() else {
+			return Check::Pass;
+		};
+		if routed_binding(world, c, Some(owner))
+			|| !ret.conv.starts_with("support::owned_snapshot")
+			|| c.receiver != "self"
+		{
+			return Check::Refuse(
+				"owned iterator snapshot",
+				"needs an unrouted consuming call and the owned-snapshot conversion".into(),
+			);
+		}
+		let preflight = match kind.as_str() {
+			"bool" => "support::preflight_bool".to_string(),
+			"str" => "support::preflight_str".into(),
+			"binary" => "support::preflight_binview".into(),
+			"binary_offset" => "support::preflight_binary_offset".into(),
+			n => format!("support::preflight_numeric::<{n}>"),
+		};
+		Check::Pre(
+			format!("let __total = {preflight}(this.0.chunks(), \"{op}\")?; "),
+			false,
+		)
+	}
+	fn oracle_state(
+		&self,
+		world: &World,
+		key: &str,
+		path: &str,
+		owner: Option<&str>,
+	) -> Option<State> {
+		world
+			.release
+			.families
+			.owned_iter_snapshots
+			.iter()
+			.find(|m| m.key == key && m.path == path)
+			.and_then(|m| {
+				owner
+					.and_then(|a| world.wrappers.get(a))
+					.and_then(|w| m.native_for(&w.identity))
+					.map(String::from)
+			})
+			.map(State::One)
+	}
+	fn oracle_fmt(
+		&self,
+		o: &Oracle,
+		state: &State,
+		site: OracleSite,
+		_t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		if site != OracleSite::Top {
+			return None;
+		}
+		// record 0105: a listed `downcast_into_iter` drives the real owned iterator into the same nested options
+		if depth == 0 {
+			if let Some(kind) = state.one() {
+				let elem = SCALAR_CHUNKS
+					.iter()
+					.find(|(_, k, ..)| *k == kind)
+					.map(|(.., oe)| oe.to_string())
+					.unwrap_or_else(|| kind.clone());
+				let own = match kind.as_str() {
+					"bool" => "x",
+					"str" => "x.map(|v| v.to_string())",
+					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
+					_ => "x.copied()",
+				};
+				let nested = ty::parse(&format!(
+					"alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{elem}>>>"
+				));
+				return Some(o.oracle_fmt(&nested, owner, depth + 1).map(|f| {
+					format!(
+						"{{ let __r: Vec<Vec<_>> = __r.map(|a| a.iter().map(|x| {own}).collect()).collect(); {f} }}"
+					)
+				}));
+			}
+		}
+		None
+	}
+}
+
+/// Record 0106: a listed `layout` snapshot.
+pub(crate) struct LayoutFamily;
+pub(crate) static LAYOUT: LayoutFamily = LayoutFamily;
+
+impl Family for LayoutFamily {
+	fn name(&self) -> &'static str {
+		"layout"
+	}
+	fn listed_pair_post(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		_syn: &mut Callable,
+	) -> Listed {
+		match layout_entry(&world.release, c) {
+			None => Listed::Unlisted,
+			Some(Err(why)) => Listed::Refused("layout snapshot", why),
+			Some(Ok(e)) => match e.pair_for(&p.identity) {
+				Some((t, n)) => Listed::Active(State::Three(c.name.clone(), n, t)),
+				None => Listed::Refused(
+					"layout snapshot",
+					format!("`{}` is not a listed pair", p.identity),
+				),
+			},
+		}
+	}
+	fn ret(
+		&self,
+		world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Top {
+			return Ok(None);
+		}
+		// record 0106: exactly `ChunkedArrayLayout<the pair's owner type>`, tagged and copied after the preflight
+		if let Some((_, kind, owner_ty)) = state.three() {
+			if depth == 0 {
+				let exact = matches!(t, Ty::Path { path, args } if path == LAYOUT_ENUM && args.len() == 1 && args[0] == ty::parse(&owner_ty));
+				if !exact {
+					return Err(Unsupported(
+						"layout snapshot",
+						format!("{t:?} is not {LAYOUT_ENUM}<{owner_ty}>"),
+					));
+				}
+				if let Some((_, k, _, elem, _, _)) =
+					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
+				{
+					let copier = match *k {
+						"bool" => "support::layout_snapshot_bool",
+						"str" => "support::layout_snapshot_str",
+						"binary" => "support::layout_snapshot_binview",
+						_ => "support::layout_snapshot_binary_offset",
+					};
+					return Ok(Some(Ret {
+						materialize: None,
+						rust_ty: format!("(String, Vec<Vec<Option<{elem}>>>)"),
+						conv: format!("{copier}(this.0.chunks(), __total, __r, \"__OP__\")?"),
+						fallible: true,
+						doc: format!(
+							"tuple of the layout variant's name and its chunks, each a vector of option of {k} values (bounded before the call)"
+						),
+					}));
+				}
+				let e = world.ret(
+					&Ty::Path {
+						path: kind.clone(),
+						args: vec![],
+					},
+					owner,
+					depth + 1,
+				)?;
+				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
+					return Err(Unsupported(
+						"layout snapshot",
+						format!("element {kind} is not a scalar"),
+					));
+				}
+				return Ok(Some(Ret {
+					materialize: None,
+					rust_ty: format!("(String, Vec<Vec<Option<{}>>>)", e.rust_ty),
+					conv: format!(
+						"support::layout_snapshot::<{owner_ty}, {kind}, _>(this.0.chunks(), __total, __r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
+						e.conv
+					),
+					fallible: true,
+					doc: format!(
+						"tuple of the layout variant's name and its chunks, each a vector of option of {} (bounded before the call)",
+						e.doc
+					),
+				}));
+			}
+		}
+		Ok(None)
+	}
+	fn check(&self, world: &World, state: &State, c: &Callable, owner: &str, ret: &Ret) -> Check {
+		// record 0106: the layout's preflight goes before the Polars call too
+		let Some((op, kind, _)) = state.three() else {
+			return Check::Pass;
+		};
+		if routed_binding(world, c, Some(owner))
+			|| !ret.conv.starts_with("support::layout_snapshot")
+			|| c.receiver != "&self"
+		{
+			return Check::Refuse(
+				"layout snapshot",
+				"needs an unrouted `&self` call and the layout-snapshot conversion".into(),
+			);
+		}
+		let preflight = match kind.as_str() {
+			"bool" => "support::preflight_bool".to_string(),
+			"str" => "support::preflight_str".into(),
+			"binary" => "support::preflight_binview".into(),
+			"binary_offset" => "support::preflight_binary_offset".into(),
+			n => format!("support::preflight_numeric::<{n}>"),
+		};
+		Check::Pre(
+			format!("let __total = {preflight}(this.0.chunks(), \"{op}\")?; "),
+			false,
+		)
+	}
+	fn oracle_state(
+		&self,
+		world: &World,
+		key: &str,
+		path: &str,
+		owner: Option<&str>,
+	) -> Option<State> {
+		world
+			.release
+			.families
+			.layout_snapshots
+			.iter()
+			.find(|m| m.key == key && m.path == path)
+			.and_then(|m| {
+				owner
+					.and_then(|a| world.wrappers.get(a))
+					.and_then(|w| m.pair_for(&w.identity))
+					.map(|(_, k)| k)
+			})
+			.map(State::One)
+	}
+	fn oracle_fmt(
+		&self,
+		o: &Oracle,
+		state: &State,
+		site: OracleSite,
+		_t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		if site != OracleSite::Top {
+			return None;
+		}
+		// record 0106: a listed `layout` result frames as the variant's name and its owned chunks
+		if depth == 0 {
+			if let Some(kind) = state.one() {
+				let elem = SCALAR_CHUNKS
+					.iter()
+					.find(|(_, k, ..)| *k == kind)
+					.map(|(.., oe)| oe.to_string())
+					.unwrap_or_else(|| kind.clone());
+				let own = match kind.as_str() {
+					"bool" => "x",
+					"str" => "x.map(|v| v.to_string())",
+					"binary" | "binary_offset" => "x.map(|v| v.to_vec())",
+					_ => "x.copied()",
+				};
+				let tuple = ty::parse(&format!(
+					"(alloc::string::String, alloc::vec::Vec<alloc::vec::Vec<core::option::Option<{elem}>>>)"
+				));
+				let one = format!("vec![a.iter().map(|x| {own}).collect()]");
+				let many = format!(
+					"ca.downcast_iter().map(|a| a.iter().map(|x| {own}).collect()).collect()"
+				);
+				return Some(o.oracle_fmt(&tuple, owner, depth + 1).map(|f| format!("{{ use polars_core::chunked_array::ChunkedArrayLayout as __L; let __r: (String, Vec<Vec<Option<_>>>) = match __r {{ __L::SingleNoNull(a) => (\"SingleNoNull\".to_string(), {one}), __L::Single(a) => (\"Single\".to_string(), {one}), __L::MultiNoNull(ca) => (\"MultiNoNull\".to_string(), {many}), __L::Multi(ca) => (\"Multi\".to_string(), {many}) }}; {f} }}")));
+			}
+		}
+		None
+	}
+	fn script_fmt(
+		&self,
+		o: &Oracle,
+		_state: &State,
+		r: &str,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Option<Option<String>> {
+		// record 0106: a listed layout's (tag, chunks) pair, framed as the
+		// Rust side's tuple formatter frames it; other tuples stay uncompared
+		if !(r.starts_with('(') && depth == 0) {
+			return None;
+		}
+		Some((|| -> Option<String> {
+			let parts = ty::split_top(r.trim_start_matches('(').trim_end_matches(')'));
+			if parts.len() != 2 {
+				return None;
+			}
+			let f0 = o.script_fmt(&parts[0], None, owner, depth + 1)?;
+			let f1 = o.script_fmt(&parts[1], None, owner, depth + 1)?;
+			return Some(format!(
+				"match rune::from_value::<(rune::Value, rune::Value)>(v) {{ Ok((a, b)) => {{ let fa: Result<String, String> = {{ let v = a; {f0} }}; let fb: Result<String, String> = {{ let v = b; {f1} }}; match (fa, fb) {{ (Ok(x), Ok(y)) => Ok(format!(\"({{}}:{{x}}, {{}}:{{y}})\", x.len(), y.len())), (Err(e), _) | (_, Err(e)) => Err(e) }} }}, Err(e) => Err(e.to_string()) }}"
+			));
+		})())
 	}
 }
 
@@ -764,32 +2064,10 @@ pub(crate) fn layout_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	assert!(layout_entry(&release, &good_c).is_none());
-	release.layout_snapshots = vec![good.clone(), good];
+	release.families.layout_snapshots = vec![good.clone(), good];
 	assert!(matches!(layout_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice"));
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
@@ -854,13 +2132,17 @@ pub(crate) fn layout_self_test() {
 	};
 	let emit = |key: &str, scope: Option<(&str, &str)>| {
 		let mut e = empty();
-		*world.layout.borrow_mut() = scope.map(|(k, t)| {
-			(
-				"layout".to_string(),
-				k.to_string(),
-				format!("polars_core::datatypes::{t}"),
-			)
-		});
+		world.active.set(
+			"layout",
+			(scope.map(|(k, t)| {
+				(
+					"layout".to_string(),
+					k.to_string(),
+					format!("polars_core::datatypes::{t}"),
+				)
+			}))
+			.map(|(a, b, c)| State::Three(a, b, c)),
+		);
 		emit_method(
 			&world,
 			&mut e,
@@ -869,7 +2151,7 @@ pub(crate) fn layout_self_test() {
 			None,
 			false,
 		);
-		*world.layout.borrow_mut() = None;
+		world.active.set("layout", None);
 		(
 			e.entries[0].status.clone(),
 			e.entries[0].reason.clone().unwrap_or_default(),
@@ -917,7 +2199,7 @@ pub(crate) fn layout_self_test() {
 		assert_eq!(status, "unsupported", "{key} must be refused, got {reason}");
 		assert!(f.is_empty(), "{key}: no binding text: {f}");
 	}
-	assert!(world.layout.borrow().is_none());
+	assert!(!world.active.is_set("layout"));
 	println!("layout self-test: ok");
 }
 
@@ -1053,32 +2335,10 @@ pub(crate) fn owned_iter_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	assert!(owned_iter_entry(&release, &good_c).is_none());
-	release.owned_iter_snapshots = vec![good.clone(), good];
+	release.families.owned_iter_snapshots = vec![good.clone(), good];
 	assert!(matches!(owned_iter_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice"));
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
@@ -1161,8 +2421,11 @@ pub(crate) fn owned_iter_self_test() {
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
-		*world.owned_iter.borrow_mut() =
-			kind.map(|n| ("downcast_into_iter".to_string(), n.to_string()));
+		world.active.set(
+			"owned_iter",
+			(kind.map(|n| ("downcast_into_iter".to_string(), n.to_string())))
+				.map(|(a, b)| State::Two(a, b)),
+		);
 		emit_method(
 			&world,
 			&mut e,
@@ -1171,7 +2434,7 @@ pub(crate) fn owned_iter_self_test() {
 			None,
 			false,
 		);
-		*world.owned_iter.borrow_mut() = None;
+		world.active.set("owned_iter", None);
 		(
 			e.entries[0].status,
 			e.entries[0].reason.clone().unwrap_or_default(),
@@ -1225,7 +2488,7 @@ pub(crate) fn owned_iter_self_test() {
 		assert_eq!(status, "unsupported", "{key} must be refused, got {reason}");
 		assert!(f.is_empty(), "{key}: no binding text: {f}");
 	}
-	assert!(world.owned_iter.borrow().is_none());
+	assert!(!world.active.is_set("owned_iter"));
 	println!("owned-iter self-test: ok");
 }
 
@@ -1359,32 +2622,10 @@ pub(crate) fn view_snapshot_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	assert!(view_snapshot_entry(&release, &good_c).is_none());
-	release.view_snapshots = vec![good.clone(), good];
+	release.families.view_snapshots = vec![good.clone(), good];
 	assert!(
 		matches!(view_snapshot_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice")
 	);
@@ -1464,8 +2705,11 @@ pub(crate) fn view_snapshot_self_test() {
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
-		*world.view_snapshot.borrow_mut() =
-			kind.map(|n| ("downcast_chunks".to_string(), n.to_string()));
+		world.active.set(
+			"view_snapshot",
+			(kind.map(|n| ("downcast_chunks".to_string(), n.to_string())))
+				.map(|(a, b)| State::Two(a, b)),
+		);
 		emit_method(
 			&world,
 			&mut e,
@@ -1474,7 +2718,7 @@ pub(crate) fn view_snapshot_self_test() {
 			None,
 			false,
 		);
-		*world.view_snapshot.borrow_mut() = None;
+		world.active.set("view_snapshot", None);
 		(
 			e.entries[0].status,
 			e.entries[0].reason.clone().unwrap_or_default(),
@@ -1511,7 +2755,7 @@ pub(crate) fn view_snapshot_self_test() {
 		assert_eq!(status, "unsupported", "{key} must be refused, got {reason}");
 		assert!(f.is_empty(), "{key}: no binding text: {f}");
 	}
-	assert!(world.view_snapshot.borrow().is_none());
+	assert!(!world.active.is_set("view_snapshot"));
 	println!("view-snapshot self-test: ok");
 }
 
@@ -1662,32 +2906,10 @@ pub(crate) fn iter_snapshot_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	assert!(iter_snapshot_entry(&release, &good_c).is_none());
-	release.iter_snapshots = vec![good.clone(), good];
+	release.families.iter_snapshots = vec![good.clone(), good];
 	assert!(
 		matches!(iter_snapshot_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice")
 	);
@@ -1759,8 +2981,11 @@ pub(crate) fn iter_snapshot_self_test() {
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
-		*world.iter_snapshot.borrow_mut() =
-			kind.map(|n| ("downcast_iter".to_string(), n.to_string()));
+		world.active.set(
+			"iter_snapshot",
+			(kind.map(|n| ("downcast_iter".to_string(), n.to_string())))
+				.map(|(a, b)| State::Two(a, b)),
+		);
 		emit_method(
 			&world,
 			&mut e,
@@ -1769,7 +2994,7 @@ pub(crate) fn iter_snapshot_self_test() {
 			None,
 			false,
 		);
-		*world.iter_snapshot.borrow_mut() = None;
+		world.active.set("iter_snapshot", None);
 		(
 			e.entries[0].status,
 			e.entries[0].reason.clone().unwrap_or_default(),
@@ -1805,7 +3030,7 @@ pub(crate) fn iter_snapshot_self_test() {
 		assert_eq!(status, "unsupported", "{key} must be refused, got {reason}");
 		assert!(f.is_empty(), "{key}: no binding text: {f}");
 	}
-	assert!(world.iter_snapshot.borrow().is_none());
+	assert!(!world.active.is_set("iter_snapshot"));
 	println!("iter-snapshot self-test: ok");
 }
 
@@ -1956,32 +3181,10 @@ pub(crate) fn array_snapshot_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	assert!(array_snapshot_entry(&release, &good_c).is_none());
-	release.array_snapshots = vec![good.clone(), good];
+	release.families.array_snapshots = vec![good.clone(), good];
 	assert!(
 		matches!(array_snapshot_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice")
 	);
@@ -2047,8 +3250,11 @@ pub(crate) fn array_snapshot_self_test() {
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
-		*world.array_snapshot.borrow_mut() =
-			kind.map(|n| ("downcast_as_array".to_string(), n.to_string()));
+		world.active.set(
+			"array_snapshot",
+			(kind.map(|n| ("downcast_as_array".to_string(), n.to_string())))
+				.map(|(a, b)| State::Two(a, b)),
+		);
 		emit_method(
 			&world,
 			&mut e,
@@ -2057,7 +3263,7 @@ pub(crate) fn array_snapshot_self_test() {
 			None,
 			false,
 		);
-		*world.array_snapshot.borrow_mut() = None;
+		world.active.set("array_snapshot", None);
 		(
 			e.entries[0].status,
 			e.entries[0].reason.clone().unwrap_or_default(),
@@ -2099,7 +3305,7 @@ pub(crate) fn array_snapshot_self_test() {
 		assert_eq!(status, "unsupported", "{key} must be refused, got {reason}");
 		assert!(f.is_empty(), "{key}: no binding text: {f}");
 	}
-	assert!(world.array_snapshot.borrow().is_none());
+	assert!(!world.active.is_set("array_snapshot"));
 	println!("array-snapshot self-test: ok");
 }
 
@@ -2259,32 +3465,10 @@ pub(crate) fn indexed_chunk_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	assert!(indexed_chunk_entry(&release, &good_c).is_none());
-	release.indexed_chunk_snapshots = vec![good.clone(), good];
+	release.families.indexed_chunk_snapshots = vec![good.clone(), good];
 	assert!(
 		matches!(indexed_chunk_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice")
 	);
@@ -2350,8 +3534,11 @@ pub(crate) fn indexed_chunk_self_test() {
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
-		*world.indexed_chunk.borrow_mut() =
-			kind.map(|n| ("downcast_get".to_string(), n.to_string()));
+		world.active.set(
+			"indexed_chunk",
+			(kind.map(|n| ("downcast_get".to_string(), n.to_string())))
+				.map(|(a, b)| State::Two(a, b)),
+		);
 		emit_method(
 			&world,
 			&mut e,
@@ -2360,7 +3547,7 @@ pub(crate) fn indexed_chunk_self_test() {
 			None,
 			false,
 		);
-		*world.indexed_chunk.borrow_mut() = None;
+		world.active.set("indexed_chunk", None);
 		(
 			e.entries[0].status.clone(),
 			e.entries[0].reason.clone().unwrap_or_default(),
@@ -2402,7 +3589,7 @@ pub(crate) fn indexed_chunk_self_test() {
 		assert_eq!(status, "unsupported", "{key} must be refused, got {reason}");
 		assert!(f.is_empty(), "{key}: no binding text: {f}");
 	}
-	assert!(world.indexed_chunk.borrow().is_none());
+	assert!(!world.active.is_set("indexed_chunk"));
 	println!("indexed-chunk self-test: ok");
 }
 
@@ -2597,29 +3784,7 @@ pub(crate) fn chunk_snapshot_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	let scalars = entry(
 		pairs(vec![
@@ -2635,7 +3800,7 @@ pub(crate) fn chunk_snapshot_self_test() {
 		"the four scalar owners with their kinds pass"
 	);
 	assert!(chunk_snapshot_entry(&release, &good_c).is_none());
-	release.chunk_snapshots = vec![good.clone(), good];
+	release.families.chunk_snapshots = vec![good.clone(), good];
 	assert!(
 		matches!(chunk_snapshot_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice")
 	);
@@ -2698,7 +3863,10 @@ pub(crate) fn chunk_snapshot_self_test() {
 	};
 	let emit = |key: &str, native: Option<&str>| {
 		let mut e = empty();
-		*world.chunk_snapshot.borrow_mut() = native.map(|n| ("chunks".to_string(), n.to_string()));
+		world.active.set(
+			"chunk_snapshot",
+			(native.map(|n| ("chunks".to_string(), n.to_string()))).map(|(a, b)| State::Two(a, b)),
+		);
 		emit_method(
 			&world,
 			&mut e,
@@ -2707,7 +3875,7 @@ pub(crate) fn chunk_snapshot_self_test() {
 			None,
 			false,
 		);
-		*world.chunk_snapshot.borrow_mut() = None;
+		world.active.set("chunk_snapshot", None);
 		(
 			e.entries[0].status.clone(),
 			e.entries[0].reason.clone().unwrap_or_default(),
@@ -2757,7 +3925,7 @@ pub(crate) fn chunk_snapshot_self_test() {
 		assert_eq!(status, "unsupported", "{key} must be refused, got {reason}");
 		assert!(f.is_empty(), "{key}: no binding text: {f}");
 	}
-	assert!(world.chunk_snapshot.borrow().is_none());
+	assert!(!world.active.is_set("chunk_snapshot"));
 	println!("chunk-snapshot self-test: ok");
 }
 
