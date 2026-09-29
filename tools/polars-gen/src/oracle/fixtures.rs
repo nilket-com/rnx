@@ -85,6 +85,38 @@ pub(crate) const TYPED_FIXTURES: &[(&str, &str, &str, &str, &[&str])] = &[
 		"crate_oracle::series_repr(v)",
 		&["u32", "idx"],
 	),
+	// record 0121: the wide and half-width sources cast before they are
+	// unpacked (an i64 series unpacked as Int128 was the fixture failure);
+	// a null in the middle, as series_nulls. None of these producers exists
+	// at 0.55.2, so the values only need to compile there
+	(
+		"polars_core::series::Series",
+		"series_i128",
+		"p::Series::new(\"x\".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::Int128).unwrap()",
+		"crate_oracle::series_repr(v)",
+		&["i128"],
+	),
+	(
+		"polars_core::series::Series",
+		"series_u128",
+		"p::Series::new(\"x\".into(), [Some(1i64), None, Some(3)]).cast(&p::DataType::UInt128).unwrap()",
+		"crate_oracle::series_repr(v)",
+		&["u128"],
+	),
+	(
+		"polars_core::series::Series",
+		"series_f16",
+		"p::Series::new(\"x\".into(), [Some(1.5f64), None, Some(3.5)]).cast(&p::DataType::Float16).unwrap()",
+		"crate_oracle::series_repr(v)",
+		&["f16"],
+	),
+	(
+		"polars_core::series::Series",
+		"series_decimal",
+		"p::Series::new(\"x\".into(), [Some(1.25f64), None, Some(3.5)]).cast(&p::DataType::from_arrow_dtype(&polars_arrow::datatypes::ArrowDataType::Decimal(10, 2))).unwrap()",
+		"crate_oracle::series_repr(v)",
+		&["decimal"],
+	),
 	(
 		"polars_core::series::Series",
 		"series_u64",
@@ -349,3 +381,47 @@ pub(crate) struct Recipe {
 	/// What the recipe is, for `surface.json`.
 	pub(crate) kind: String,
 }
+
+/// Record 0121: fixtures of types that exist only at some pins, emitted only
+/// where the type is wrapped: (canonical type, fixture name, Rust value with
+/// `{T}` standing for the wrapper's spelling). Each is built from public
+/// constructors with valid inputs, where the derived recipe fed placeholder
+/// arguments the constructor rejects.
+pub(crate) const PIN_FIXTURES: &[(&str, &str, &str)] = &[
+	// MapChunked::try_from_storage checks the storage dtype against
+	// map_storage_dtype(): List(Struct{key, value}), field names from
+	// map_entries_dtype() (polars-core da47b74 chunked_array/logical/map.rs:64-76)
+	(
+		"polars_core::chunked_array::logical::map::MapChunked",
+		"map_chunked",
+		"{ let dt = p::DataType::Map(Box::new(p::DataType::String), Box::new(p::DataType::Int64)); let p::DataType::Struct(f) = dt.map_entries_dtype().unwrap() else { unreachable!() }; let entries = p::StructChunked::from_columns(\"entries\".into(), 3, &[p::Column::new(f[0].name().clone(), [\"a\", \"b\", \"c\"]), p::Column::new(f[1].name().clone(), [1i64, 2, 3])]).unwrap(); let storage = p::IntoSeries::into_series(p::IntoSeries::into_series(entries).implode().unwrap()).with_name(\"x\".into()); <{T}>::try_from_storage(dt, storage).unwrap() }",
+	),
+	// the generic extension type Polars returns for an unregistered name
+	// (datatypes/extension/registry.rs:58-69), over an Int64 storage
+	(
+		"polars_core::chunked_array::logical::extension::ExtensionChunked",
+		"extension_chunked",
+		"<{T}>::from_storage(polars_core::datatypes::extension::get_extension_type_or_generic(\"rnx.oracle\", &p::DataType::Int64, None), p::Series::new(\"x\".into(), [Some(1i64), None, Some(3)]))",
+	),
+	// the same generic extension type, on its own (Series::into_extension's
+	// argument, and the type's protocols)
+	(
+		"polars_core::datatypes::extension::ExtensionTypeInstance",
+		"extension_type",
+		"polars_core::datatypes::extension::get_extension_type_or_generic(\"rnx.oracle\", &p::DataType::Int64, None)",
+	),
+	// a plan over the df fixture's shape (serde JSON of this plan round-trips,
+	// probed at da47b74); the generic string literal was not JSON
+	(
+		"polars_plan::dsl::plan::DslPlan",
+		"dsl_plan",
+		"p::IntoLazy::lazy(p::df!(\"x\" => [1i64, 2, 3]).unwrap()).logical_plan",
+	),
+	// fractions must lie in [0, 1] (chunked_array/ops/binning.rs:50-56); the
+	// generic float literal was 1.5
+	(
+		"polars_core::chunked_array::ops::binning::Fractions",
+		"fractions",
+		"<{T}>::new(vec![0.25, 0.75]).unwrap()",
+	),
+];

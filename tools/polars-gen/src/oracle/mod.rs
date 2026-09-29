@@ -4,7 +4,7 @@ use crate::emit::{Entry, OracleInfo, rune_path};
 use crate::families::{
 	Active, ORACLE_REF, ORACLE_SCALAR, ORACLE_TOP, OracleSite, SCRIPT_TUPLE, first,
 };
-use crate::oracle::fixtures::{FIXTURES, Recipe, TYPED_FIXTURES};
+use crate::oracle::fixtures::{FIXTURES, PIN_FIXTURES, Recipe, TYPED_FIXTURES};
 use crate::text::sanitize;
 use crate::ty;
 use crate::ty::{Bound, Ty, last};
@@ -29,6 +29,9 @@ pub(crate) struct Oracle<'a> {
 	/// Record 0086: the length of the Rust mask fixture for the argument
 	/// being paired (3 for a receiver-length mask, 1 for a values-length one).
 	pub(crate) mask_len: std::cell::Cell<usize>,
+	/// Record 0121: set while recipes are derived; a pin fixture serves a
+	/// case's own receiver or argument only, never another type's recipe.
+	pub(crate) deriving: std::cell::Cell<bool>,
 	/// Record 0115: the listed families' oracle state for the current case.
 	pub(crate) active: Active,
 }
@@ -39,6 +42,17 @@ impl<'a> Oracle<'a> {
 		canonical: &str,
 	) -> Option<&'static (&'static str, &'static str, &'static str, &'static str)> {
 		FIXTURES.iter().find(|f| f.0 == canonical)
+	}
+
+	/// Record 0121: the pin fixture of a type wrapped at this pin, if any.
+	pub(crate) fn pin_fixture(&self, canonical: &str) -> Option<&'static str> {
+		if self.deriving.get() {
+			return None;
+		}
+		PIN_FIXTURES
+			.iter()
+			.find(|f| f.0 == canonical && self.world.wrappers.contains_key(canonical))
+			.map(|f| f.1)
 	}
 
 	/// Record 0120: a listed concrete array's fixture, if this is one.
@@ -129,6 +143,10 @@ impl<'a> Oracle<'a> {
 		if let Some((_, name, _, _)) = self.concrete_fixture(canonical) {
 			return Some(format!("fx::{name}()"));
 		}
+		// record 0121: a fixture of a type wrapped at this pin only
+		if let Some(name) = self.pin_fixture(canonical) {
+			return Some(format!("fx::{name}()"));
+		}
 		let w = self.world.wrappers.get(canonical)?;
 		let s = self.world.types.get(canonical)?;
 		if s.kind == "enum" {
@@ -150,6 +168,9 @@ impl<'a> Oracle<'a> {
 			return Some(format!("{}()", f.1));
 		}
 		if let Some((_, name, _, _)) = self.concrete_fixture(canonical) {
+			return Some(format!("{name}()"));
+		}
+		if let Some(name) = self.pin_fixture(canonical) {
 			return Some(format!("{name}()"));
 		}
 		let w = self.world.wrappers.get(canonical)?;

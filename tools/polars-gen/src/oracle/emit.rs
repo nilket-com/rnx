@@ -3,7 +3,7 @@ use crate::families::protocols::{ASSIGN_OPS, OPS, owner_has_trait};
 use crate::families::target;
 use crate::families::{Active, ORACLE_SCRIPT_STATE, ORACLE_STATE, oracle_states};
 use crate::model::Inventory;
-use crate::oracle::fixtures::{FIXTURES, TYPED_FIXTURES};
+use crate::oracle::fixtures::{FIXTURES, PIN_FIXTURES, TYPED_FIXTURES};
 use crate::oracle::{Oracle, OracleCase, setup_fn, staged};
 use crate::text::sanitize;
 use crate::ty;
@@ -85,9 +85,12 @@ pub(crate) fn emit_oracle(
 		recipes: BTreeMap::new(),
 		no_recipe: BTreeMap::new(),
 		mask_len: std::cell::Cell::new(3),
+		deriving: std::cell::Cell::new(false),
 		active: Active::default(),
 	};
+	o.deriving.set(true);
 	o.derive_recipes(entries);
+	o.deriving.set(false);
 	let mut cases = Vec::new();
 	let mut skipped: Vec<(String, String)> = Vec::new();
 	// Every binding of every generated entry gets exactly one disposition:
@@ -1083,12 +1086,32 @@ pub(crate) fn emit_oracle(
 		};
 		writeln!(fixtures, "    pub fn {name}() -> {ret} {{ {expr} }}").unwrap();
 	}
+	// record 0121: fixtures of types wrapped at this pin only
+	let pinned: Vec<(&str, &str, String, String)> = PIN_FIXTURES
+		.iter()
+		.filter_map(|(c, name, expr)| {
+			let w = world.wrappers.get(*c)?;
+			Some((*c, *name, expr.replace("{T}", &w.spell), w.spell.clone()))
+		})
+		.collect();
+	for (_, name, expr, ty) in &pinned {
+		writeln!(fixtures, "    pub fn {name}() -> {ty} {{ {expr} }}").unwrap();
+	}
 	// record 0120: the listed concrete arrays' fixtures
 	let concrete = crate::families::concrete_arrays::fixtures(world);
 	for (_, name, expr, ty) in &concrete {
 		writeln!(fixtures, "    pub fn {name}() -> {ty} {{ {expr} }}").unwrap();
 	}
 	fixtures.push_str("}\n\n");
+	for (c, name, _, _) in &pinned {
+		let w = &world.wrappers[*c];
+		writeln!(
+			fixtures,
+			"#[rune::function(path = {name})]\nfn fx_{name}() -> {} {{ {}(values::{name}()) }}",
+			w.rust, w.rust
+		)
+		.unwrap();
+	}
 	for (id, name, _, _) in &concrete {
 		let w = &world.wrappers[id];
 		writeln!(
@@ -1140,6 +1163,9 @@ pub(crate) fn emit_oracle(
 		writeln!(fixtures, "    m.function_meta(fx_{name})?;").unwrap();
 	}
 	for (_, name, _, _) in &concrete {
+		writeln!(fixtures, "    m.function_meta(fx_{name})?;").unwrap();
+	}
+	for (_, name, _, _) in &pinned {
 		writeln!(fixtures, "    m.function_meta(fx_{name})?;").unwrap();
 	}
 	fixtures.push_str("    Ok(())\n}\n");
