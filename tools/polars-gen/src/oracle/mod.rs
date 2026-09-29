@@ -672,6 +672,8 @@ impl<'a> Oracle<'a> {
 
 	/// How to show a wrapped value of this type, as an expression over `v: &T`.
 	pub(crate) fn show(&self, canonical: &str) -> Option<String> {
+		// record 0119: the owned Arrow array's alias identities share its show
+		let canonical = array_ref_key(canonical);
 		if let Some(f) = self.fixture(canonical) {
 			return Some(f.3.to_string());
 		}
@@ -793,6 +795,12 @@ impl<'a> Oracle<'a> {
                 match path.as_str() {
                 // record 0085: a validity bitmap frames its bits like a vector of bool
                 "polars_arrow::bitmap::immutable::Bitmap" => Some("format!(\"[{}]\", __r.iter().map(|b| { let e = format!(\"{}\", b); format!(\"{}:{e}\", e.len()) }).collect::<Vec<_>>().join(\", \"))".into()),
+                // record 0119: an owned Arrow array (`Box<dyn Array>` or its
+                // `ArrayRef` alias) compares as the Series it converts back to
+                "polars_arrow::array::ArrayRef" | "alloc::boxed::Box" if path != "alloc::boxed::Box" || t.render() == crate::world::ARRAY_REF_IDENTITY => {
+                    let show = self.show(crate::world::ARRAY_REF_KEY)?;
+                    Some(format!("{{ let v = &__r; ({show}).to_text() }}"))
+                }
                 "bool" | "i64" | "f64" => Some("format!(\"{}\", __r)".into()),
                 "f32" => Some("format!(\"{}\", __r as f64)".into()),
                 TZ => Some("format!(\"{}\", __r.name())".into()),
@@ -868,8 +876,9 @@ impl<'a> Oracle<'a> {
                     return None; // tuples: not compared in this stage
                 }
                 let (canonical, w) = self.world.wrappers.iter().find(|(_, x)| x.rust == r)?;
+                let canonical = array_ref_key(canonical);
                 self.show(canonical)?;
-                self.shown.borrow_mut().insert(canonical.clone());
+                self.shown.borrow_mut().insert(canonical.to_string());
                 Some(format!("rnx_polars::generated::fixtures::show_{}(&v).map(|r| r.to_text())", w.rust.to_lowercase()))
             }
         }
@@ -917,4 +926,15 @@ pub(crate) fn staged(fixtures: &[(String, String)], body: &str) -> String {
 	format!(
 		"{{ let {pat} = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {{ {tup} }})) {{ Ok(v) => v, Err(e) => return crate_oracle::Staged::SetupFailed(crate_oracle::panic_text(e)) }}; crate_oracle::Staged::Ran({body}) }}"
 	)
+}
+
+/// Record 0119: the owned Arrow array's identities (`Box<dyn Array>`, the
+/// `ArrayRef` alias) all name the one support wrapper's fixture and show.
+pub(crate) fn array_ref_key(canonical: &str) -> &str {
+	if canonical == crate::world::ARRAY_REF_IDENTITY || canonical == "polars_arrow::array::ArrayRef"
+	{
+		crate::world::ARRAY_REF_KEY
+	} else {
+		canonical
+	}
 }

@@ -255,6 +255,14 @@ pub(crate) const TYPED_FIXTURES: &[(&str, &str, &str, &str, &[&str])] = &[
 ];
 
 pub(crate) const FIXTURES: &[(&str, &str, &str, &str)] = &[
+	// record 0119: an owned Arrow array, taken from a Series chunk through the
+	// bridge (`Series::to_arrow`) and shown as the Series it converts back to
+	(
+		"support::ArrayRef",
+		"arrow_array",
+		"p::Series::new(\"x\".into(), [Some(1i64), None, Some(3)]).to_arrow(0, p::CompatLevel::newest())",
+		"crate_oracle::series_repr(&p::Series::from_arrow(\"\".into(), v.to_boxed()).expect(\"oracle: an Arrow chunk converts back\"))",
+	),
 	(
 		"polars_core::frame::dataframe::DataFrame",
 		"df",

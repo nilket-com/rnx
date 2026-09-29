@@ -10,7 +10,9 @@
 
 name = "0.55.2"
 source = "crates.io =0.55.2"
-api_crates = ["polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error"]
+api_crates = ["polars_arrow", "polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error"]
+namespaced_crates = ["polars_arrow"]
+frozen_bindings = "probes/0119/frozen-0.55.2.json"
 # Record 0085: validity bitmap returns copied into an owned Vec<bool>;
 # only these paths, every other Bitmap stays refused.
 bitmap_returns = [
@@ -685,6 +687,18 @@ rust = '|_: p::DataType| p::DataType::Float64'
 # Record 0084: operations the mapping rules would admit but the release
 # refuses until a binding validates the source contract at runtime.
 [[refused]]
+path = "polars_arrow::array::values::ValueSize::get_values_size"
+reason = "the trait is recorded only under polars_arrow::array::values, a private module; the binding's trait path does not resolve (E0603), so no script path exists"
+cite = "polars-arrow 0.55.2 src/array/mod.rs: mod values is private; found by record 0119's first adapter build"
+[[refused]]
+path = "polars_core::chunked_array::builder::list::ListBuilderTrait::inner_array"
+reason = "inner_array takes the builder's values (MutableArray::as_box is std::mem::take) and leaves its offsets pointing past them; a later finish is inconsistent"
+cite = "0.55.2 polars-core chunked_array/builder/list/binary.rs, primitive.rs, boolean.rs inner_array -> self.builder.as_box(); polars-arrow array/binview/mutable.rs:681-685 as_box = std::mem::take(self)"
+[[refused]]
+path = "polars_core::series::series_trait::SeriesTrait::chunks"
+reason = "the borrowed chunk list is cloned element by element with no bound on the chunk count; the owned path is Series::into_chunks or to_arrow per chunk, and the 0099-0106 snapshots read chunks"
+cite = "record 0119 cross-crate review (Codex gate: every clone audited before exposure)"
+[[refused]]
 path = "polars_lazy::frame::LazyFrame::collect_concurrently"
 reason = "the query runs on a detached rayon job that ends with tx.send(result).unwrap(); dropping the returned InProcessQuery before the result arrives makes that send fail, and rayon aborts the whole process on the panic (found by record 0109's fixture for InProcessQuery::fetch); a script must not be able to abort rnx"
 cite = "polars-lazy 0.55.2 src/frame/exitable.rs:19-35 (send().unwrap() in RAYON.spawn_fifo / spawn_blocking); rayon aborts on a panic in spawn"
@@ -1164,3 +1178,42 @@ generic = "W"
 types = ["support::Sink"]
 names = ["ParquetBatchedWriter"]
 cite = "record 0118 stage 4: the in-memory writer into a polars::Sink; census path in probes/0118/census.py"
+
+[[receiver_guards]]
+path = "polars_core::series::Series::to_arrow"
+check = "below_n_chunks"
+param = "chunk_idx"
+cite = "0.55.2 polars-core series/arrow_export/mod.rs:59/95: self.chunks().get(chunk_idx).unwrap() panics for chunk_idx >= n_chunks"
+
+[[receiver_guards]]
+path = "polars_arrow::array::Array::is_null"
+check = "below_len"
+param = "i"
+cite = "0.55.2 polars-arrow array/mod.rs:128: assert!(i < self.len())"
+
+[[receiver_guards]]
+path = "polars_arrow::array::Array::is_valid"
+check = "below_len"
+param = "i"
+cite = "0.55.2 polars-arrow array/mod.rs:148: !self.is_null(i), which asserts i < len"
+
+[[receiver_guards]]
+path = "polars_arrow::array::Array::sliced"
+check = "range_len"
+param = "offset"
+param2 = "length"
+cite = "0.55.2 polars-arrow array/mod.rs:185: panics iff offset + length > len; length 0 returns an empty array unchecked"
+
+[[receiver_guards]]
+path = "polars_arrow::array::Array::split_at_boxed"
+check = "at_most_len"
+param = "offset"
+cite = "0.55.2 polars-arrow array/mod.rs:153: offset must be <= len"
+
+[[deferred_type_prefixes]]
+prefix = "polars_arrow::array::"
+cite = "record 0119 plan stage 2: no concrete array wrapper in this record; the concrete arrays and array builders move to record 0120 with their readers"
+
+[[deferred_type_prefixes]]
+prefix = "polars_arrow::legacy::array::"
+cite = "record 0119 plan stage 2: no concrete array wrapper in this record; the concrete arrays and array builders move to record 0120 with their readers"

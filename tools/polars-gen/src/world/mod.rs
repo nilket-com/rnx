@@ -210,6 +210,10 @@ pub(crate) fn wrapper_self_test() {
 	println!("deref self-test: ok");
 }
 
+/// Record 0119: the owned Arrow array's identities.
+pub(crate) const ARRAY_REF_IDENTITY: &str = "alloc::boxed::Box<dyn polars_arrow::array::Array>";
+pub(crate) const ARRAY_REF_KEY: &str = "support::ArrayRef";
+
 /// Hand-written wrappers in the adapter, by canonical type path, with the
 /// Rust path of the wrapper and the Rune method names they already bind.
 pub(crate) const HAND_WRAPPERS: &[(&str, &str)] = &[
@@ -544,6 +548,23 @@ impl World {
 			}
 		}
 		w.assign_wrappers(&mentioned);
+		// record 0119 (review): the receiver guards are a closed, required set
+		{
+			let required = w
+				.release
+				.families
+				.namespaced_crates
+				.iter()
+				.any(|k| k == "polars_arrow");
+			if let Err(why) = crate::families::receiver_guards::validate(
+				&w.release.families.receiver_guards,
+				&inv.callables,
+				required,
+			) {
+				eprintln!("refusing to generate: receiver guards: {why}");
+				std::process::exit(2);
+			}
+		}
 		for (path, wr) in &w.wrappers {
 			if wr.rule == "alias"
 				&& wr.identity.contains('<')
@@ -715,11 +736,14 @@ impl World {
 		let mut by_name: BTreeMap<String, Vec<Cand>> = BTreeMap::new();
 		let mut alias_groups: BTreeMap<String, Vec<String>> = BTreeMap::new();
 		for (path, s) in &self.types {
+			// record 0119: a deferred type keeps exactly its 0118 treatment (an
+			// internal type, wrapped only where an API signature mentions it)
 			let api = self
 				.release
 				.api_crates
 				.iter()
-				.any(|c| path.starts_with(&format!("{c}::")));
+				.any(|c| path.starts_with(&format!("{c}::")))
+				&& !self.release.deferred_type(path);
 			if s.generic || s.lifetime || s.hidden {
 				continue;
 			}
@@ -765,7 +789,19 @@ impl World {
 							internal: true,
 						});
 				}
-				"type_alias" if api => {
+				// record 0119: a namespaced crate's aliases (`IdxArr` for
+				// `PrimitiveArray<IdxSize>`) form no alias wrappers here; its
+				// concrete arrays are a later stage, and an alias would rename
+				// types other families match exactly
+				"type_alias"
+					if api
+						&& !self
+							.release
+							.families
+							.namespaced_crates
+							.iter()
+							.any(|k| path.split("::").next() == Some(k.as_str())) =>
+				{
 					let Some(target) = &s.alias_target else {
 						continue;
 					};
@@ -807,8 +843,20 @@ impl World {
 					internal: false,
 				});
 		}
+		// record 0119: a namespaced crate's types sit in their own Rune module
+		// and never count in a short-name collision
+		let namespaced = |p: &str| {
+			self.release
+				.families
+				.namespaced_crates
+				.iter()
+				.any(|k| p.split("::").next() == Some(k.as_str()))
+		};
 		for (name, cands) in by_name {
-			let collision = cands.iter().filter(|c| !c.internal).count() > 1;
+			let collision = cands
+				.iter()
+				.filter(|c| !c.internal && !namespaced(&c.paths[0]))
+				.count() > 1;
 			for cand in cands {
 				let rep = &cand.paths[0];
 				let s = &self.types[rep];
@@ -830,7 +878,8 @@ impl World {
 					.unwrap()
 					.trim_start_matches("polars_")
 					.to_string();
-				let rune_item = if (collision || cand.internal) && hand.is_none() {
+				let rune_item = if (collision || cand.internal || namespaced(rep)) && hand.is_none()
+				{
 					format!("::polars::{krate_short}")
 				} else {
 					"::polars".to_string()
@@ -885,6 +934,51 @@ impl World {
 				eprintln!("refusing to generate: dtype instantiations: {why}");
 				std::process::exit(2);
 			}
+		}
+		// record 0119: the owned Arrow array, a hand-written support wrapper
+		// (`polars::arrow::ArrayRef`) for `Box<dyn Array>` and its alias; the
+		// `Array` trait's methods reach it through the deref route
+		if self
+			.release
+			.families
+			.namespaced_crates
+			.iter()
+			.any(|k| k == "polars_arrow")
+		{
+			let boxed = ARRAY_REF_IDENTITY;
+			let w = Wrapper {
+				rust: "ArrayRef".into(),
+				spell: "Box<dyn polars_arrow::array::Array>".into(),
+				rune_item: "::polars::arrow".into(),
+				rune_name: "ArrayRef".into(),
+				hand: true,
+				identity: boxed.into(),
+				rule: "support",
+				aliases: vec![boxed.into(), "polars_arrow::array::ArrayRef".into()],
+				base: None,
+			};
+			// a type record of its own: an opaque, owned, non-clonable struct
+			if let Some(alias) = self.types.get("polars_arrow::array::ArrayRef").cloned() {
+				let mut s = alias;
+				s.key = ARRAY_REF_KEY.into();
+				s.canonical_path = ARRAY_REF_KEY.into();
+				s.kind = "struct".into();
+				s.alias_target = None;
+				s.generic = false;
+				s.public_fields = 0;
+				s.fields_canonical = vec![];
+				s.derived = vec![];
+				s.impls = vec![];
+				self.types.insert(ARRAY_REF_KEY.into(), s);
+			}
+			self.wrappers.insert(ARRAY_REF_KEY.into(), w.clone());
+			self.wrappers
+				.insert("polars_arrow::array::ArrayRef".into(), w.clone());
+			self.by_identity.insert(boxed.into(), ARRAY_REF_KEY.into());
+			self.deref_targets
+				.entry("polars_arrow::array::Array".into())
+				.or_default()
+				.push(ARRAY_REF_KEY.into());
 		}
 		// two wrappers must never share a Rune path
 		let mut seen: BTreeMap<String, String> = BTreeMap::new();

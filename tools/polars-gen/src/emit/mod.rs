@@ -95,6 +95,47 @@ pub(crate) fn binding_id(canonical_path: &str, receiver: Option<&str>, first: bo
 	}
 }
 
+impl Entry {
+	/// A bare entry for self-tests.
+	pub(crate) fn for_test(key: &str) -> Entry {
+		Entry {
+			key: key.into(),
+			canonical_path: key.into(),
+			kind: "inherent".into(),
+			bucket: "mechanical".into(),
+			status: "unsupported",
+			fallible: None,
+			signature: String::new(),
+			execution: None,
+			oracle: None,
+			reason: None,
+			rune: None,
+			note: None,
+			bindings: vec![],
+			exceptions: vec![],
+			counterpart: None,
+		}
+	}
+}
+
+impl Binding {
+	/// A bare binding for self-tests.
+	pub(crate) fn for_test(id: &str, rune: &str) -> Binding {
+		Binding {
+			id: id.into(),
+			rune: rune.into(),
+			receiver: None,
+			route: "implementor",
+			route_reason: None,
+			reentry: None,
+			disposition: None,
+			case_id: None,
+			callee: None,
+			info: None,
+		}
+	}
+}
+
 /// Everything the oracle test generator needs about one generated binding.
 #[derive(Clone)]
 pub(crate) struct OracleInfo {

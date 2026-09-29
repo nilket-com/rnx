@@ -100,6 +100,22 @@ pub(crate) struct FamilyTables {
 	/// Record 0118: the closed std-facts table (allowlisted keys, cited).
 	#[serde(default)]
 	pub(crate) std_facts: Vec<crate::families::std_facts::StdFact>,
+	/// Record 0119: API crates whose types are always registered under
+	/// their own Rune module (`polars_arrow` -> `polars::arrow`) and never
+	/// take part in short-name collisions, so no existing path can move.
+	#[serde(default)]
+	pub(crate) namespaced_crates: Vec<String>,
+	/// Record 0119: the bindings a previous record generated, which this
+	/// generation must keep unchanged (a JSON file, relative to the release file).
+	#[serde(default)]
+	pub(crate) frozen_bindings: Option<String>,
+	/// Record 0119: type-path prefixes of a namespaced crate whose types form
+	/// no wrapper in this record (the concrete arrays, deferred to 0120).
+	#[serde(default)]
+	pub(crate) deferred_type_prefixes: Vec<DeferredPrefix>,
+	/// Record 0119: index arguments checked against the receiver before the call.
+	#[serde(default)]
+	pub(crate) receiver_guards: Vec<crate::families::receiver_guards::ReceiverGuard>,
 	/// Record 0092: family-census methods whose one scalar function generic
 	/// is bound, per proven pair, to that pair's native type.
 	#[serde(default)]
@@ -261,6 +277,13 @@ impl Release {
 			Some(k) => Err(k.clone()),
 			None => Ok(()),
 		}
+	}
+	/// Record 0119: a type (struct or enum path) under a listed deferred prefix.
+	pub(crate) fn deferred_type(&self, path: &str) -> bool {
+		self.families
+			.deferred_type_prefixes
+			.iter()
+			.any(|d| path.starts_with(d.prefix.as_str()))
 	}
 	pub(crate) fn is_api(&self, krate: &str) -> bool {
 		self.api_crates.iter().any(|c| c == krate)
@@ -577,4 +600,12 @@ mod tests {
 			"no key declared twice"
 		);
 	}
+}
+
+/// Record 0119: a deferred type prefix, with why and where it goes.
+#[derive(serde::Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct DeferredPrefix {
+	pub(crate) prefix: String,
+	pub(crate) cite: String,
 }

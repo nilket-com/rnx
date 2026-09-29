@@ -142,8 +142,20 @@ pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buck
 			} else {
 				tspell
 			};
-			let impls: Vec<&String> = proven.iter().collect();
-			if impls.is_empty() {
+			// record 0119: a deferred type is never a receiver in this record
+			let impls: Vec<&String> = proven
+				.iter()
+				.filter(|o| !world.release.deferred_type(o))
+				.collect();
+			// record 0119: a trait reached only through a deref route (the
+			// `Array` trait on `polars::arrow::ArrayRef`) is not refused here
+			let deref_only = !generic_trait
+				&& impls.is_empty()
+				&& world
+					.deref_targets
+					.get(trait_)
+					.is_some_and(|v| !v.is_empty());
+			if impls.is_empty() && !deref_only {
 				let why = if refusals.is_empty() {
 					c.implementors.join(", ")
 				} else {
@@ -652,7 +664,57 @@ pub(crate) fn emit_method_with(
 			return;
 		}
 	};
-	let fallible = fallible || listed_fallible;
+	// record 0119: listed receiver guards; the guarded arguments are
+	// converted first, checked against the receiver, then passed on
+	let guards: Vec<&crate::families::receiver_guards::ReceiverGuard> = world
+		.release
+		.families
+		.receiver_guards
+		.iter()
+		.filter(|g| g.path == c.canonical_path)
+		.collect();
+	let recv_offset = usize::from(recv_expr.is_some());
+	let mut guarded = false;
+	// the oracle calls a guarded binding with in-range arguments (index 0,
+	// length 1); the out-of-range refusals are tested directly
+	let mut guarded_shapes: std::collections::BTreeMap<String, &'static str> = Default::default();
+	for g in &guards {
+		guarded_shapes.insert(sanitize(&g.param), "int0");
+		if let Some(p2) = &g.param2 {
+			guarded_shapes.insert(sanitize(p2), "int1");
+		}
+	}
+	for g in &guards {
+		let mut hoisted: Vec<(String, String)> = Vec::new();
+		for p in std::iter::once(&g.param).chain(g.param2.iter()) {
+			let Some(k) = params.iter().position(|(n, _)| n == &sanitize(p)) else {
+				continue;
+			};
+			let local = format!("__guard_{}", sanitize(p));
+			if !args[recv_offset + k].starts_with("__guard_") {
+				pre.push_str(&format!("let {local} = {}; ", args[recv_offset + k]));
+				args[recv_offset + k] = local.clone();
+			}
+			hoisted.push((p.clone(), local));
+		}
+		let local = |p: &str| hoisted.iter().find(|(n, _)| n == p).map(|(_, l)| l.clone());
+		match crate::families::receiver_guards::guard_code(
+			g,
+			c,
+			&format!("{}::{name}", rune_path(w)),
+			local,
+		) {
+			Ok(code) => {
+				pre.push_str(&code);
+				guarded = true;
+			}
+			Err(why) => {
+				out.unsupported(c, "receiver guard", &why);
+				return;
+			}
+		}
+	}
+	let fallible = fallible || listed_fallible || guarded;
 	let ret_ty = if fallible {
 		format!("Result<{}, Error>", ret.rust_ty)
 	} else {
@@ -843,7 +905,13 @@ pub(crate) fn emit_method_with(
 			.params
 			.iter()
 			.zip(params.iter())
-			.map(|(p, (_, a))| (a.shape.clone(), p.ty_canonical.clone()))
+			.map(|(p, (n, a))| {
+				let shape = match guarded_shapes.get(n) {
+					Some(s) if a.shape == "int" => s.to_string(),
+					_ => a.shape.clone(),
+				};
+				(shape, p.ty_canonical.clone())
+			})
 			.collect(),
 		param_names: c.params.iter().map(|p| sanitize(&p.name)).collect(),
 		ret_canonical: c.ret_canonical.clone(),

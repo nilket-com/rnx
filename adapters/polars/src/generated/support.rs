@@ -2207,8 +2207,66 @@ pub(crate) fn sink_limit(e: &p::PolarsError) -> Option<String> {
 	}
 }
 
+/// Record 0119: an owned Arrow array, `polars::arrow::ArrayRef`: the
+/// `Box<dyn polars_arrow::array::Array>` Polars hands out per chunk
+/// (`Series::to_arrow`) and takes back (`Series::from_arrow`). It is moved,
+/// never implicitly cloned: `to_boxed` makes a new owned trait object whose
+/// concrete array may share its reference-counted buffers with this one.
+#[derive(Any)]
+#[rune(item = ::polars::arrow)]
+pub struct ArrayRef(pub(crate) Box<dyn polars_arrow::array::Array>);
+
+impl ArrayRef {
+	fn downcast<'a, T: 'static>(&'a self, op: &str, want: &str) -> Result<&'a T, Error> {
+		self.0.as_any().downcast_ref::<T>().ok_or_else(|| {
+			Error::conversion(&format!(
+				"{op}: the array is {:?}, not {want}",
+				self.0.dtype()
+			))
+		})
+	}
+
+	/// An `Int64` array's values, nulls as `None`.
+	#[rune::function(instance, path = values_i64)]
+	pub(crate) fn values_i64(&self) -> Result<Vec<Option<i64>>, Error> {
+		let a = self
+			.downcast::<polars_arrow::array::PrimitiveArray<i64>>("values_i64", "an Int64 array")?;
+		// 0102's one-array snapshot: one chunk slot + cells, bounded before copying
+		array_snapshot(a, "values_i64", Ok)
+	}
+
+	/// A string array's values (the view array Polars uses), nulls as `None`.
+	#[rune::function(instance, path = values_str)]
+	pub(crate) fn values_str(&self) -> Result<Vec<Option<String>>, Error> {
+		let a = self
+			.downcast::<polars_arrow::array::Utf8ViewArray>("values_str", "a string view array")?;
+		// 0102's one-array snapshot: one chunk slot + cells + UTF-8 bytes, bounded
+		// before any copy (review of 0119: a count-only bound let one long string through)
+		array_snapshot_str(a, "values_str")
+	}
+
+	/// A boolean array's values, nulls as `None`.
+	#[rune::function(instance, path = values_bool)]
+	pub(crate) fn values_bool(&self) -> Result<Vec<Option<bool>>, Error> {
+		let a =
+			self.downcast::<polars_arrow::array::BooleanArray>("values_bool", "a boolean array")?;
+		array_snapshot_bool(a, "values_bool")
+	}
+
+	/// The Arrow data type, as Polars names it.
+	#[rune::function(instance, path = dtype_name)]
+	pub(crate) fn dtype_name(&self) -> String {
+		format!("{:?}", self.0.dtype())
+	}
+}
+
 pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
 	m.ty::<Error>()?;
+	m.ty::<ArrayRef>()?;
+	m.function_meta(ArrayRef::values_i64)?;
+	m.function_meta(ArrayRef::values_str)?;
+	m.function_meta(ArrayRef::values_bool)?;
+	m.function_meta(ArrayRef::dtype_name)?;
 	m.ty::<Sink>()?;
 	m.function_meta(Sink::new)?;
 	m.function_meta(Sink::bytes)?;
@@ -3716,7 +3774,10 @@ mod sink_tests {
 			e.to_string().contains("another operation is writing"),
 			"{e}"
 		);
-		assert!(s.clear().is_err(), "clear waits for the operation");
+		assert!(
+			s.clear().is_err(),
+			"clear is refused while the operation holds the gate"
+		);
 		go_tx.send(()).unwrap();
 		t.join().unwrap().unwrap();
 		assert_eq!(s.committed().len(), 4, "only the first operation's bytes");
