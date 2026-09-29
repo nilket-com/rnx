@@ -163,6 +163,7 @@ pub(crate) fn bitmap_input_self_test() {
 	let series = "polars_core::series::Series";
 	let bitmap = "polars_arrow::bitmap::immutable::Bitmap";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -363,6 +364,7 @@ pub(crate) fn bitmap_self_test() {
 	let series = "polars_core::series::Series";
 	let bitmap = "polars_arrow::bitmap::immutable::Bitmap";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -538,6 +540,7 @@ pub(crate) fn bitmap_self_test() {
 pub(crate) fn generic_input_self_test() {
 	fn sup(path: &str) -> Supporting {
 		Supporting {
+			trait_params: vec![],
 			key: path.to_string(),
 			kind: "struct".into(),
 			canonical_path: path.to_string(),
@@ -906,6 +909,7 @@ pub(crate) fn generic_input_self_test() {
 pub(crate) fn slice_self_test() {
 	fn sup(path: &str) -> Supporting {
 		Supporting {
+			trait_params: vec![],
 			key: path.to_string(),
 			kind: "struct".into(),
 			canonical_path: path.to_string(),

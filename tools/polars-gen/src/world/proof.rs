@@ -53,6 +53,44 @@ pub(crate) fn is_param(s: &str) -> bool {
 		&& s.chars().next().is_some_and(|c| c.is_ascii_uppercase())
 }
 
+/// The generic parameters a type leaves open: identifier tokens of
+/// parameter form that start a path (`T`, `T::Native`), never a trailing
+/// path segment (`datatypes::Int64Type`).
+pub(crate) fn open_params(s: &str) -> Vec<String> {
+	let mut out = Vec::new();
+	let b = s.as_bytes();
+	let mut i = 0;
+	while i < b.len() {
+		let c = b[i] as char;
+		if c.is_alphanumeric() || c == '_' {
+			let start = i;
+			while i < b.len() && ((b[i] as char).is_alphanumeric() || b[i] == b'_') {
+				i += 1;
+			}
+			let tok = &s[start..i];
+			let after_path = start >= 2 && &s[start - 2..start] == "::";
+			if !after_path && is_param(tok) {
+				out.push(tok.to_string());
+			}
+		} else {
+			i += 1;
+		}
+	}
+	out
+}
+
+/// Record 0117 (stage D): whether a bare-parameter impl head `impl<T: B>
+/// Trait for T` constrains `T` at all: a bound other than `?Sized`, or a
+/// where-predicate on `T`. An unbounded one would claim every type.
+pub(crate) fn blanket_is_bounded(p: &str, bounds: &[(String, String)], wh: &[String]) -> bool {
+	bounds.iter().any(|(n, b)| {
+		n == p
+			&& split_top_plus(b)
+				.iter()
+				.any(|x| !x.is_empty() && x != "?core::marker::Sized" && x != "?Sized")
+	}) || wh.iter().any(|w| w.starts_with(&format!("{p}: ")))
+}
+
 /// Replace whole-identifier generic parameters by their bindings.
 pub(crate) fn subst_params(s: &str, subst: &BTreeMap<String, String>) -> String {
 	let mut out = String::new();
@@ -85,24 +123,32 @@ pub(crate) fn subst_params(s: &str, subst: &BTreeMap<String, String>) -> String 
 	out
 }
 
-/// A trait bound `path<Assoc = X, …>` split into the trait path and its
-/// associated-type constraints. `Err` for any other argument form (a
-/// generic trait argument, a lifetime, a parenthesized signature): the
-/// grammar this evaluation supports is bare traits and associated-type
-/// equalities, and anything else is unresolved, never weakened.
-pub(crate) fn split_bound(bound: &str) -> Result<(String, Vec<(String, String)>), String> {
+/// A trait bound `path<A, B, Assoc = X, …>` split into the trait path, its
+/// positional trait arguments (record 0117) and its associated-type
+/// constraints. `Err` for any other form (a lifetime, a parenthesized
+/// signature): anything the grammar does not model is unresolved, never
+/// weakened.
+pub(crate) fn split_bound(
+	bound: &str,
+) -> Result<(String, Vec<String>, Vec<(String, String)>), String> {
 	if bound.contains('(') || bound.starts_with('\'') {
 		return Err(format!("bound syntax `{bound}` is not modelled"));
 	}
 	let (path, args) = split_head(bound);
+	let mut positional = Vec::new();
 	let mut cons = Vec::new();
 	for a in &args {
 		match a.split_once(" = ") {
 			Some((k, v)) => cons.push((k.trim().to_string(), v.trim().to_string())),
-			None => return Err(format!("trait argument `{a}` in `{bound}` is not modelled")),
+			None if a.starts_with('\'') => {
+				return Err(format!(
+					"lifetime argument `{a}` in `{bound}` is not modelled"
+				));
+			}
+			None => positional.push(a.trim().to_string()),
 		}
 	}
-	Ok((path, cons))
+	Ok((path, positional, cons))
 }
 
 /// The core derivable traits a builtin type implements, by type: floats
@@ -182,7 +228,11 @@ impl World {
 				continue;
 			}
 			if let Some(h) = trait_hint {
-				if tp != h {
+				// rustdoc spells some qualified projections with the trait's bare
+				// name (`<T as PolarsNumericType>::Native`); a bare hint matches by
+				// last segment, and the value must still be unique
+				let bare = !h.contains("::") && tp.rsplit("::").next() == Some(h);
+				if tp != h && !bare {
 					continue;
 				}
 			}
@@ -207,13 +257,17 @@ impl World {
 		let mut cur = s.to_string();
 		for _ in 0..8 {
 			let mut changed = false;
-			// qualified projection: <X as Trait>::Assoc
-			while let Some(i) = cur.find("<") {
+			// qualified projection: <X as Trait>::Assoc, at any depth (record 0117:
+			// inside generic arguments too, `Option<<T as Tr>::Native>`); an
+			// inner projection is resolved before the one that contains it
+			let mut search = 0;
+			while let Some(off) = cur[search..].find('<') {
+				let i = search + off;
 				let rest = &cur[i..];
-				let Some(as_i) = rest.find(" as ") else { break };
-				// the matching '>' for this '<'
+				// the matching '>' for this '<', and ` as ` at its own depth
 				let mut depth = 0;
 				let mut close = None;
+				let mut as_i = None;
 				for (k, ch) in rest.char_indices() {
 					match ch {
 						'<' => depth += 1,
@@ -224,25 +278,31 @@ impl World {
 								break;
 							}
 						}
+						' ' if depth == 1 && as_i.is_none() && rest[k..].starts_with(" as ") => {
+							as_i = Some(k)
+						}
 						_ => {}
 					}
 				}
 				let Some(close) = close else { break };
-				if as_i > close {
-					break;
-				}
-				if !rest[close + 1..].starts_with("::") {
-					break;
-				}
+				let (Some(as_i), true) = (as_i, rest[close + 1..].starts_with("::")) else {
+					search = i + 1;
+					continue;
+				};
 				let inner_ty = rest[1..as_i].trim().to_string();
 				let trait_path = rest[as_i + 4..close].trim().to_string();
+				if inner_ty.contains(" as ") {
+					search = i + 1; // the inner projection first
+					continue;
+				}
 				let after = &rest[close + 3..];
 				let assoc: String = after
 					.chars()
 					.take_while(|c| c.is_alphanumeric() || *c == '_')
 					.collect();
 				if assoc.is_empty() {
-					break;
+					search = i + 1;
+					continue;
 				}
 				if is_param(&inner_ty) {
 					return Err(format!(
@@ -257,6 +317,7 @@ impl World {
 				let end = i + close + 3 + assoc.len();
 				cur = format!("{}{}{}", &cur[..i], v, &cur[end..]);
 				changed = true;
+				search = i;
 			}
 			// short projection: X::Assoc where X is a concrete path known to some impl
 			let mut from = 0;
@@ -310,13 +371,18 @@ impl World {
 		if depth > 4 {
 			return Applicability::Unresolved(format!("nesting limit at `{ty}: {bound}`"));
 		}
-		let (tpath, cons) = match split_bound(bound) {
+		let (tpath, targs, cons) = match split_bound(bound) {
 			Ok(x) => x,
 			Err(e) => return Applicability::Unresolved(e),
 		};
 		let short = last(&tpath);
 		if tpath.starts_with("core::") || tpath.starts_with("alloc::") || tpath.starts_with("std::")
 		{
+			if let Some(a) = targs.first() {
+				return Applicability::Unresolved(format!(
+					"trait argument `{a}` in `{bound}` is not modelled"
+				));
+			}
 			if !cons.is_empty() {
 				return Applicability::Unresolved(format!(
 					"core trait `{tpath}` with associated-type constraints is not modelled"
@@ -367,60 +433,204 @@ impl World {
 		let Some(t) = self.types.get(&tpath).filter(|t| t.kind == "trait") else {
 			return Applicability::Unresolved(format!("trait `{tpath}` is outside the inventory"));
 		};
-		// an exact impl head
-		if let Some(i) = t.impls.iter().find(|i| !i.blanket && i.for_type == ty) {
+		// record 0117 (stage C): every recorded impl whose head matches `ty`
+		// and whose trait arguments match the bound's is a candidate; the
+		// bound holds only when exactly one candidate is proven (the order of
+		// the records never decides), and several proven are ambiguous
+		// the bound's arguments, with any projection resolved; one that does
+		// not resolve (or names a parameter no caller bound) is unresolved
+		let mut targs = targs;
+		for a in targs.iter_mut() {
+			match self.resolve_projections(a) {
+				Ok(x) => *a = x,
+				Err(e) => {
+					return Applicability::Unresolved(format!(
+						"trait argument `{a}` in `{bound}`: {e}"
+					));
+				}
+			}
+			if !open_params(a).is_empty() {
+				return Applicability::Unresolved(format!(
+					"trait argument `{a}` in `{bound}` names an unbound parameter"
+				));
+			}
+		}
+		// the bound's associated-type constraints, resolved the same way; a
+		// comparison with an unresolved projection would reject falsely
+		let mut cons = cons;
+		for (a, x) in cons.iter_mut() {
+			match self.resolve_projections(x) {
+				Ok(v) if open_params(&v).is_empty() => *x = v,
+				Ok(v) => {
+					return Applicability::Unresolved(format!(
+						"constraint `{a} = {v}` in `{bound}` names an unbound parameter"
+					));
+				}
+				Err(e) => {
+					return Applicability::Unresolved(format!(
+						"constraint `{a} = {x}` in `{bound}`: {e}"
+					));
+				}
+			}
+		}
+		if t.trait_params.len() != targs.len() {
+			// the bound's arguments cannot be bound by position (an inventory
+			// that predates record 0117 records no trait parameters)
+			return Applicability::Unresolved(match targs.first() {
+				Some(a) => format!(
+					"trait argument `{a}` in `{bound}` is not modelled: `{tpath}` records {} parameters",
+					t.trait_params.len()
+				),
+				None => format!("`{tpath}` has trait parameters; the bound `{bound}` names none"),
+			});
+		}
+		let mut seen: BTreeSet<String> = BTreeSet::new();
+		let mut proven: Vec<String> = Vec::new();
+		let mut unresolved: Vec<String> = Vec::new();
+		let mut rejected: Vec<String> = Vec::new();
+		let mut matched_head = false;
+		for i in t.impls.iter().filter(|i| !i.blanket) {
+			let identity = format!(
+				"{}|{}|{:?}|{:?}",
+				i.for_type,
+				i.trait_args.join(","),
+				i.bounds,
+				i.where_predicates
+			);
+			if !seen.insert(identity) {
+				continue; // the same impl recorded twice
+			}
+			let params: BTreeSet<String> = i.bounds.iter().map(|(n, _)| n.clone()).collect();
+			let mut subst = if i.for_type == ty {
+				BTreeMap::new()
+			} else if i.for_type.contains('<') {
+				match unify(&i.for_type, ty, &params) {
+					Ok(s) => s,
+					Err(_) => continue,
+				}
+			} else if is_param(&i.for_type) && params.contains(&i.for_type) {
+				// record 0117 (stage D): `impl<T: B> Trait for T` is a candidate
+				// for every type, decided by its bounds; an unbounded one is open
+				if !blanket_is_bounded(&i.for_type, &i.bounds, &i.where_predicates) {
+					matched_head = true;
+					unresolved.push(format!(
+						"unbounded blanket impl of `{tpath}` would claim `{ty}`"
+					));
+					continue;
+				}
+				[(i.for_type.clone(), ty.to_string())].into()
+			} else {
+				continue;
+			};
+			matched_head = true;
+			// the bound's trait arguments against this impl's
+			if i.trait_args.len() != targs.len() {
+				unresolved.push(format!(
+					"`{ty}: {tpath}` impl records {} trait arguments, the bound {}",
+					i.trait_args.len(),
+					targs.len()
+				));
+				continue;
+			}
+			let mut args_ok = true;
+			let mut args_open = false;
+			for (pat, want) in i.trait_args.iter().zip(&targs) {
+				let pat_s = subst_params(pat, &subst);
+				let pat_s = match self.resolve_projections(&pat_s) {
+					Ok(x) => x,
+					Err(e) => {
+						unresolved.push(format!("`{ty}: {tpath}` impl argument `{pat}`: {e}"));
+						args_ok = false;
+						args_open = true;
+						break;
+					}
+				};
+				if params.contains(&pat_s) {
+					subst.insert(pat_s.clone(), want.clone());
+				} else if pat_s == *want {
+				} else if pat_s.contains('<') && want.contains('<') {
+					match unify(&pat_s, want, &params) {
+						Ok(more) => {
+							for (k, v) in more {
+								match subst.get(&k) {
+									Some(prev) if *prev != v => args_ok = false,
+									_ => {
+										subst.insert(k, v);
+									}
+								}
+							}
+						}
+						Err(_) => args_ok = false,
+					}
+				} else {
+					args_ok = false;
+				}
+			}
+			if args_open {
+				continue;
+			}
+			if !args_ok {
+				rejected.push(format!(
+					"`{ty}: {tpath}<{}>` is not this impl's `<{}>`",
+					targs.join(", "),
+					i.trait_args.join(", ")
+				));
+				continue;
+			}
+			let mut r = Applicability::Proven;
+			for (p, b) in &i.bounds {
+				let Some(pt) = subst.get(p) else { continue };
+				let b = subst_params(b, &subst);
+				r = r.and(self.holds_all(pt, &b, depth + 1));
+			}
+			for w in &i.where_predicates {
+				r = r.and(self.predicate(w, &subst, ty, depth + 1));
+			}
 			for (a, x) in &cons {
 				match i.assoc_types.iter().find(|(n, _)| n == a) {
-					Some((_, v)) if v == x => {}
 					Some((_, v)) => {
-						return Applicability::Rejected(format!(
-							"`{ty}: {tpath}` binds `{a} = {v}`, not `{x}`"
-						));
+						let v = subst_params(v, &subst);
+						let v = self.resolve_projections(&v).unwrap_or(v);
+						if &v != x {
+							r = r.and(Applicability::Rejected(format!(
+								"`{ty}: {tpath}` binds `{a} = {v}`, not `{x}`"
+							)));
+						}
 					}
 					None => {
-						return Applicability::Unresolved(format!(
+						r = r.and(Applicability::Unresolved(format!(
 							"`{ty}: {tpath}` does not record `{a}`"
-						));
+						)))
 					}
 				}
 			}
-			return Applicability::Proven;
+			match r {
+				Applicability::Proven => proven.push(format!(
+					"{} as {tpath}<{}>",
+					i.for_type,
+					i.trait_args.join(", ")
+				)),
+				Applicability::Unresolved(e) => unresolved.push(e),
+				Applicability::Rejected(e) => rejected.push(e),
+			}
 		}
-		// a generic impl head that unifies with `ty`
-		for i in t
-			.impls
-			.iter()
-			.filter(|i| !i.blanket && i.for_type.contains('<'))
-		{
-			let params: BTreeSet<String> = i.bounds.iter().map(|(n, _)| n.clone()).collect();
-			if let Ok(subst) = unify(&i.for_type, ty, &params) {
-				let mut r = Applicability::Proven;
-				for (p, b) in &i.bounds {
-					let Some(pt) = subst.get(p) else { continue };
-					r = r.and(self.holds_all(pt, b, depth + 1));
-				}
-				for w in &i.where_predicates {
-					r = r.and(self.predicate(w, &subst, ty, depth + 1));
-				}
-				for (a, x) in &cons {
-					match i.assoc_types.iter().find(|(n, _)| n == a) {
-						Some((_, v)) => {
-							let v = subst_params(v, &subst);
-							let v = self.resolve_projections(&v).unwrap_or(v);
-							if &v != x {
-								r = r.and(Applicability::Rejected(format!(
-									"`{ty}: {tpath}` binds `{a} = {v}`, not `{x}`"
-								)));
-							}
-						}
-						None => {
-							r = r.and(Applicability::Unresolved(format!(
-								"`{ty}: {tpath}` does not record `{a}`"
-							)))
-						}
-					}
-				}
-				return r;
+		match proven.len() {
+			1 => return Applicability::Proven,
+			0 => {}
+			_ => {
+				return Applicability::Unresolved(format!(
+					"`{ty}: {bound}` is ambiguous: {} impls are proven ({})",
+					proven.len(),
+					proven.join("; ")
+				));
+			}
+		}
+		if let Some(e) = unresolved.into_iter().next() {
+			return Applicability::Unresolved(e);
+		}
+		if matched_head {
+			if let Some(e) = rejected.into_iter().next() {
+				return Applicability::Rejected(e);
 			}
 		}
 		if t.impls.iter().any(|i| i.blanket) {
@@ -519,7 +729,24 @@ impl World {
 				params.insert(a.clone());
 			}
 		}
-		let subst = match unify_with(self, head, identity, &params) {
+		// record 0117 (stage D): a bare-parameter head binds the whole type; its
+		// bounds and where-predicates below decide, and an unbounded one is refused
+		if is_param(head) && params.contains(head) {
+			if !blanket_is_bounded(head, &c.impl_bounds, &c.impl_where) {
+				return (
+					Applicability::Unresolved(format!(
+						"unbounded blanket impl `impl<{head}> for {head}` would claim every type"
+					)),
+					BTreeMap::new(),
+				);
+			}
+		}
+		let subst = if is_param(head) && params.contains(head) {
+			Ok([(head.clone(), identity.to_string())].into())
+		} else {
+			unify_with(self, head, identity, &params)
+		};
+		let subst = match subst {
 			Ok(s) => s,
 			Err(e) if e.starts_with("unresolved: ") => {
 				return (Applicability::Unresolved(e), BTreeMap::new());
@@ -765,6 +992,7 @@ pub(crate) fn family(world: &World, identity: &str) -> &'static str {
 pub(crate) fn applicability_self_test() {
 	fn sup(path: &str, kind: &str, target: Option<&str>) -> Supporting {
 		Supporting {
+			trait_params: vec![],
 			key: path.to_string(),
 			kind: kind.to_string(),
 			canonical_path: path.to_string(),
@@ -844,6 +1072,7 @@ pub(crate) fn applicability_self_test() {
 	let mut numeric = sup("polars_core::datatypes::PolarsNumericType", "trait", None);
 	numeric.implementors = vec!["polars_core::datatypes::Int64Type".into()];
 	numeric.impls = vec![model::TraitImpl {
+		trait_args: vec![],
 		for_type: "polars_core::datatypes::Int64Type".into(),
 		blanket: false,
 		bounds: vec![],
@@ -857,6 +1086,7 @@ pub(crate) fn applicability_self_test() {
 	];
 	data.impls = vec![
 		model::TraitImpl {
+			trait_args: vec![],
 			for_type: "polars_core::datatypes::Int64Type".into(),
 			blanket: false,
 			bounds: vec![],
@@ -864,6 +1094,7 @@ pub(crate) fn applicability_self_test() {
 			assoc_types: vec![("Physical".into(), "i64".into())],
 		},
 		model::TraitImpl {
+			trait_args: vec![],
 			for_type: "polars_core::datatypes::BooleanType".into(),
 			blanket: false,
 			bounds: vec![],
@@ -877,16 +1108,62 @@ pub(crate) fn applicability_self_test() {
 		None,
 	);
 	logical.impls = vec![model::TraitImpl {
+		trait_args: vec![],
 		for_type: format!("{ca}<polars_core::datatypes::Int64Type>"),
 		blanket: false,
 		bounds: vec![],
 		where_predicates: vec![],
 		assoc_types: vec![],
 	}];
+	// record 0117 (stage C): generic traits whose impls differ in trait
+	// arguments. `Take`'s first recorded impl has the wrong argument and the
+	// second (recorded twice) is right; `Dup` has two indistinguishable impls.
+	let imp = |args: &[&str], head: &str, bounds: &[(&str, &str)]| model::TraitImpl {
+		trait_args: args.iter().map(|a| a.to_string()).collect(),
+		for_type: head.to_string(),
+		blanket: false,
+		bounds: bounds
+			.iter()
+			.map(|(a, b)| (a.to_string(), b.to_string()))
+			.collect(),
+		where_predicates: vec![],
+		assoc_types: vec![],
+	};
+	let num_bound = [("T", "polars_core::datatypes::PolarsNumericType")];
+	let mut take = sup("polars_core::chunked_array::ops::Take", "trait", None);
+	take.trait_params = vec!["Idx".into()];
+	take.impls = vec![
+		imp(
+			&["alloc::string::String"],
+			&format!("{ca}<polars_core::datatypes::Int64Type>"),
+			&[],
+		),
+		imp(&["i64"], &format!("{ca}<T>"), &num_bound),
+		imp(&["i64"], &format!("{ca}<T>"), &num_bound),
+	];
+	let mut dup = sup("polars_core::chunked_array::ops::Dup", "trait", None);
+	dup.trait_params = vec!["A".into()];
+	dup.impls = vec![
+		imp(
+			&["i64"],
+			&format!("{ca}<polars_core::datatypes::Int64Type>"),
+			&[],
+		),
+		imp(&["A"], &format!("{ca}<T>"), &[("T", ""), ("A", "")]),
+	];
+	// record 0117 (stage D): bare-parameter impl heads
+	let mut blank = sup("polars_core::chunked_array::ops::Blank", "trait", None);
+	blank.impls = vec![imp(&[], "T", &num_bound)];
+	let mut unbounded = sup("polars_core::chunked_array::ops::Unbounded", "trait", None);
+	unbounded.impls = vec![imp(&[], "T", &[("T", "?core::marker::Sized")])];
 	let inv = Inventory {
 		callables: vec![],
 		provenance: None,
 		supporting: vec![
+			take,
+			dup,
+			blank,
+			unbounded,
 			base,
 			numeric,
 			data,
@@ -1187,6 +1464,152 @@ pub(crate) fn applicability_self_test() {
 		),
 		"an unknown type's sizedness is unresolved"
 	);
+	// record 0117: a qualified projection resolves inside generic arguments,
+	// and a bare trait name is the recorded trait of that name
+	assert_eq!(
+		w.resolve_projections(
+			"core::option::Option<<polars_core::datatypes::Int64Type as polars_core::datatypes::PolarsNumericType>::Native>"
+		)
+		.as_deref(),
+		Ok("core::option::Option<i64>")
+	);
+	assert_eq!(
+		w.resolve_projections("<polars_core::datatypes::Int64Type as PolarsNumericType>::Native")
+			.as_deref(),
+		Ok("i64")
+	);
+	assert!(
+		w.resolve_projections(
+			"core::option::Option<<polars_core::datatypes::BooleanType as PolarsNumericType>::Native>"
+		)
+		.is_err(),
+		"a nested projection with no recorded binding is an error, never left in place"
+	);
+	// record 0117: an associated-type constraint is compared resolved
+	// (`Native = <Int64Type as PolarsNumericType>::Native` is `Native = i64`)
+	assert!(ok(&w.holds(
+		"polars_core::datatypes::Int64Type",
+		"polars_core::datatypes::PolarsNumericType<Native = <polars_core::datatypes::Int64Type as polars_core::datatypes::PolarsNumericType>::Native>",
+		0
+	)));
+	assert!(matches!(
+		w.holds(
+			"polars_core::datatypes::Int64Type",
+			"polars_core::datatypes::PolarsNumericType<Native = T::Native>",
+			0
+		),
+		Applicability::Unresolved(_)
+	));
+	// record 0117 (stage C): every candidate is enumerated and exactly one
+	// must be proven; the record order never decides
+	let take = "polars_core::chunked_array::ops::Take";
+	assert!(
+		ok(&w.holds(&i64c, &format!("{take}<i64>"), 0)),
+		"the second candidate is the right one; the first must not decide"
+	);
+	assert!(
+		matches!(
+			w.holds(&i64c, &format!("{take}<alloc::string::String>"), 0),
+			Applicability::Proven
+		),
+		"the first candidate proves its own argument"
+	);
+	assert!(
+		matches!(
+			w.holds(&i64c, &format!("{take}<bool>"), 0),
+			Applicability::Rejected(_)
+		),
+		"a trait argument no impl records is rejected"
+	);
+	assert!(
+		matches!(
+			w.holds(&boolc, &format!("{take}<i64>"), 0),
+			Applicability::Rejected(_)
+		),
+		"a candidate whose bound fails is not proven"
+	);
+	assert!(
+		ok(&w.holds(
+			&i64c,
+			&format!(
+				"{take}<<polars_core::datatypes::Int64Type as polars_core::datatypes::PolarsNumericType>::Native>"
+			),
+			0
+		)),
+		"a projection argument that resolves is matched as its resolution"
+	);
+	assert!(
+		matches!(
+			w.holds(
+				&i64c,
+				&format!(
+					"{take}<<polars_core::datatypes::BooleanType as polars_core::datatypes::PolarsNumericType>::Native>"
+				),
+				0
+			),
+			Applicability::Unresolved(_)
+		),
+		"a projection argument that does not resolve is unresolved"
+	);
+	assert!(
+		matches!(
+			w.holds(&i64c, &format!("{take}<T::Native>"), 0),
+			Applicability::Unresolved(_)
+		),
+		"an argument naming an unbound parameter is unresolved"
+	);
+	match w.holds(&i64c, "polars_core::chunked_array::ops::Dup<i64>", 0) {
+		Applicability::Unresolved(e) => assert!(e.contains("ambiguous: 2 impls"), "{e}"),
+		other => panic!("two proven candidates must be ambiguous, got {other:?}"),
+	}
+	assert!(
+		matches!(w.holds(&i64c, take, 0), Applicability::Unresolved(_)),
+		"a generic trait bound with no arguments is unresolved"
+	);
+	// record 0117 (stage D): `impl<T: B> Trait for T` holds exactly where `B`
+	// does; an unbounded one claims nothing
+	let blank = "polars_core::chunked_array::ops::Blank";
+	assert!(
+		ok(&w.holds("polars_core::datatypes::Int64Type", blank, 0)),
+		"a bounded blanket impl holds where its bound does"
+	);
+	assert!(
+		matches!(
+			w.holds("polars_core::datatypes::BooleanType", blank, 0),
+			Applicability::Rejected(_)
+		),
+		"a bounded blanket impl whose bound fails does not hold"
+	);
+	match w.holds(
+		"polars_core::datatypes::Int64Type",
+		"polars_core::chunked_array::ops::Unbounded",
+		0,
+	) {
+		Applicability::Unresolved(e) => assert!(e.contains("unbounded blanket impl"), "{e}"),
+		other => panic!("an unbounded blanket impl must stay open, got {other:?}"),
+	}
+	// and as a method's impl head
+	let int64 = "polars_core::datatypes::Int64Type";
+	let m = method(
+		"blank",
+		"T",
+		&[("T", "polars_core::datatypes::PolarsNumericType")],
+		&[],
+		&[],
+		"bool",
+	);
+	assert!(ok(&w.applicability(&m, int64).0));
+	assert!(matches!(
+		w.applicability(&m, "polars_core::datatypes::BooleanType").0,
+		Applicability::Rejected(_)
+	));
+	for bounds in [vec![("T", "")], vec![("T", "?core::marker::Sized")]] {
+		let m = method("blank", "T", &bounds, &[], &[], "bool");
+		match w.applicability(&m, int64).0 {
+			Applicability::Unresolved(e) => assert!(e.contains("unbounded blanket impl"), "{e}"),
+			other => panic!("{bounds:?}: an unbounded head must be refused, got {other:?}"),
+		}
+	}
 	println!("applicability self-test: ok");
 }
 

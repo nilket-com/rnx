@@ -193,6 +193,7 @@ pub(crate) fn plan_holder_non_plan_method(c: &Callable) -> bool {
 pub(crate) fn callback_self_test() {
 	fn sup(path: &str, derived: &[&str]) -> Supporting {
 		Supporting {
+			trait_params: vec![],
 			key: path.to_string(),
 			kind: "struct".into(),
 			canonical_path: path.to_string(),

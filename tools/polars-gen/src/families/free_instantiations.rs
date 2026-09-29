@@ -93,6 +93,7 @@ pub(crate) fn free_instantiation_self_test() {
 	let i64c = "polars_core::datatypes::Int64Chunked";
 	let idx = "polars_core::datatypes::aliases::IdxCa";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),

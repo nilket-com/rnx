@@ -388,6 +388,9 @@ pub struct Callable {
 	/// `Deserialize<'static>`); omitted when empty.
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub trait_lifetimes: Vec<String>,
+	/// Record 0117: for a foreign trait impl, the trait's type arguments,
+	/// canonical with aliases expanded.
+	pub trait_args: Vec<String>,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -426,11 +429,17 @@ pub struct Supporting {
 	/// `Logical<DateType, Int32Type>` is kept as such), its parameter
 	/// bounds, `where` predicates and bound associated types.
 	pub impls: Vec<TraitImpl>,
+	/// Record 0117: a generic trait's own type (and const) parameters, in
+	/// order, so an impl's `trait_args` bind them by position.
+	pub trait_params: Vec<String>,
 }
 
 #[derive(Serialize, Clone, Debug)]
 pub struct TraitImpl {
 	pub for_type: String,
+	/// Record 0117: the trait's own type arguments in this impl, canonical
+	/// with aliases expanded (`Rhs` of `ChunkCompareEq<Rhs>` as bound here).
+	pub trait_args: Vec<String>,
 	pub blanket: bool,
 	pub bounds: Vec<(String, String)>,
 	pub where_predicates: Vec<String>,
@@ -570,9 +579,24 @@ pub fn extract(docs: &Docs, root: &str) -> Inventory {
 				}
 				let blanket = imp.blanket_impl.is_some();
 				let for_type = w.docs.canon_expanded(krate, &imp.for_);
+				let ti = TraitImpl {
+					for_type: for_type.clone(),
+					trait_args: w.impl_trait_args(krate, tr),
+					blanket,
+					bounds: w.impl_bounds(krate, &imp.generics),
+					where_predicates: w.impl_where(krate, &imp.generics),
+					assoc_types: w.impl_assoc(krate, imp),
+				};
+				// record 0117: an impl is known only by its full identity; two
+				// impls for one type that differ in trait arguments are distinct
 				let known = w.trait_impls.get(&(home.clone(), tid)).is_some_and(|v| {
-					v.iter()
-						.any(|x| x.for_type == for_type && x.blanket == blanket)
+					v.iter().any(|x| {
+						x.for_type == ti.for_type
+							&& x.blanket == ti.blanket
+							&& x.trait_args == ti.trait_args
+							&& x.bounds == ti.bounds
+							&& x.where_predicates == ti.where_predicates
+					})
 				});
 				if known {
 					continue;
@@ -581,13 +605,6 @@ pub fn extract(docs: &Docs, root: &str) -> Inventory {
 					"blanket".to_string()
 				} else {
 					for_type.split('<').next().unwrap_or(&for_type).to_string()
-				};
-				let ti = TraitImpl {
-					for_type,
-					blanket,
-					bounds: w.impl_bounds(krate, &imp.generics),
-					where_predicates: w.impl_where(krate, &imp.generics),
-					assoc_types: w.impl_assoc(krate, imp),
 				};
 				w.implementors
 					.entry((home.clone(), tid))
@@ -951,6 +968,23 @@ impl<'a> Walker<'a> {
 			.collect()
 	}
 
+	/// Record 0117: the trait's own type (and const) arguments in an impl's
+	/// trait path, canonical with aliases expanded; lifetimes are left out.
+	fn impl_trait_args(&self, krate: &str, tr: &rustdoc_types::Path) -> Vec<String> {
+		match tr.args.as_deref() {
+			Some(rustdoc_types::GenericArgs::AngleBracketed { args, .. }) => args
+				.iter()
+				.filter_map(|a| match a {
+					rustdoc_types::GenericArg::Type(t) => Some(self.docs.canon_expanded(krate, t)),
+					rustdoc_types::GenericArg::Const(c) => Some(c.expr.clone()),
+					rustdoc_types::GenericArg::Infer => Some("_".into()),
+					rustdoc_types::GenericArg::Lifetime(_) => None,
+				})
+				.collect(),
+			_ => vec![],
+		}
+	}
+
 	/// The associated types an impl binds, canonical with aliases expanded.
 	fn impl_assoc(&self, krate: &str, imp: &rustdoc_types::Impl) -> Vec<(String, String)> {
 		let c = &self.docs.crates[krate];
@@ -1004,6 +1038,7 @@ impl<'a> Walker<'a> {
 			alias_target: None,
 			implementors: vec![],
 			impls: vec![],
+			trait_params: vec![],
 		};
 		self.inv.supporting.push(s);
 		let i = self.inv.supporting.len() - 1;
@@ -1205,6 +1240,7 @@ impl<'a> Walker<'a> {
 								.push(label);
 							let ti = TraitImpl {
 								for_type: self.docs.canon_expanded(krate, &imp.for_),
+								trait_args: self.impl_trait_args(krate, tr),
 								blanket,
 								bounds: self.impl_bounds(krate, &imp.generics),
 								where_predicates: self.impl_where(krate, &imp.generics),
@@ -1273,6 +1309,7 @@ impl<'a> Walker<'a> {
 								trait_reachable: false,
 								derived,
 								inputs_raw,
+								trait_args: self.impl_trait_args(krate, tr),
 								trait_lifetimes: match tr.args.as_deref() {
 									Some(rustdoc_types::GenericArgs::AngleBracketed {
 										args,
@@ -1311,6 +1348,24 @@ impl<'a> Walker<'a> {
 			.iter()
 			.any(|p| !matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. }));
 		let idx = self.support(krate, id, "trait", found, 0, 0, generic, hidden);
+		if self.inv.supporting[idx].trait_params.is_empty() {
+			self.inv.supporting[idx].trait_params = t
+				.generics
+				.params
+				.iter()
+				.filter(|p| !matches!(p.kind, rustdoc_types::GenericParamDefKind::Lifetime { .. }))
+				.filter(|p| {
+					!matches!(
+						p.kind,
+						rustdoc_types::GenericParamDefKind::Type {
+							is_synthetic: true,
+							..
+						}
+					)
+				})
+				.map(|p| p.name.clone())
+				.collect();
+		}
 		let owner_key = self.inv.supporting[idx].key.clone();
 		let owner_path = self.inv.supporting[idx].canonical_path.clone();
 		if by_path {
@@ -1475,6 +1530,7 @@ impl<'a> Walker<'a> {
 			derived: false,
 			inputs_raw: f.sig.inputs.clone(),
 			trait_lifetimes: vec![],
+			trait_args: vec![],
 		};
 		self.inv.callables.push(call);
 		let i = self.inv.callables.len() - 1;

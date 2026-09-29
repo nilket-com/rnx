@@ -126,7 +126,22 @@ pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buck
 			// impl records (exact alias identity, or a generic head with every
 			// bound discharged); an implementor label alone never admits one
 			// (review of 0110: the label list bypassed the proof)
-			let (proven, refusals) = proven_trait_receivers(world, c);
+			// record 0117 (stage B): a generic trait's receivers and their
+			// resolved signatures come from its impls' trait arguments
+			let generic_trait = world.types.get(trait_).is_some_and(|s| s.generic);
+			let (proven, refusals, arms) = if generic_trait {
+				let (arms, why) = crate::families::generic_traits::generic_trait_arms(world, c);
+				(arms.keys().cloned().collect::<Vec<_>>(), why, arms)
+			} else {
+				let (p, w) = proven_trait_receivers(world, c);
+				(p, w, std::collections::BTreeMap::new())
+			};
+			let tspell = if generic_trait {
+				let n = world.types.get(trait_).map_or(0, |s| s.trait_params.len());
+				format!("{tspell}<{}>", vec!["_"; n].join(", "))
+			} else {
+				tspell
+			};
 			let impls: Vec<&String> = proven.iter().collect();
 			if impls.is_empty() {
 				let why = if refusals.is_empty() {
@@ -141,12 +156,19 @@ pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buck
 			let mut first_err: Option<(String, String)> = None;
 			let mut first_info: Option<OracleInfo> = None;
 			let mut infos: Vec<OracleInfo> = Vec::new();
+			// record 0117: each binding's own call information, for a generic
+			// trait whose arms differ per receiver
+			let mut done_infos: Vec<Option<OracleInfo>> = Vec::new();
 			let mut exceptions: Vec<RouteException> = Vec::new();
-			let derefs: Vec<&String> = world
-				.deref_targets
-				.get(trait_)
-				.map(|v| v.iter().collect())
-				.unwrap_or_default();
+			let derefs: Vec<&String> = if generic_trait {
+				vec![] // a generic trait's arms are per impl, never through Deref
+			} else {
+				world
+					.deref_targets
+					.get(trait_)
+					.map(|v| v.iter().collect())
+					.unwrap_or_default()
+			};
 			let candidates: Vec<(&String, bool)> = impls
 				.iter()
 				.map(|o| (*o, false))
@@ -155,7 +177,19 @@ pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buck
 			for (owner, deref) in candidates {
 				let route: &'static str = if deref { "deref" } else { "implementor" };
 				let before = out.entries.len();
-				emit_method(world, out, c, owner, Some(&tspell), deref);
+				match arms.get(owner).map(Vec::as_slice) {
+					// record 0117 (stage B): several proven impls on one receiver
+					// are one Rune function when their kinds are disjoint
+					Some(many @ [_, _, ..]) => {
+						crate::families::generic_traits::emit_trait_dispatch(
+							world, out, c, many, owner, &tspell,
+						)
+					}
+					Some([one]) => {
+						emit_method(world, out, &one.callable, owner, Some(&tspell), deref)
+					}
+					_ => emit_method(world, out, c, owner, Some(&tspell), deref),
+				}
 				let e = out.entries.pop().unwrap();
 				debug_assert_eq!(before, out.entries.len());
 				if e.status == "generated" {
@@ -165,6 +199,7 @@ pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buck
 						None
 					};
 					done.push((e.rune.clone().unwrap(), owner.clone(), route, callee));
+					done_infos.push(e.oracle.clone());
 					if let Some(i) = e.oracle.clone() {
 						infos.push(i);
 					}
@@ -188,6 +223,27 @@ pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buck
 					}
 				}
 			}
+			// record 0117 (stage B): a generic trait's refused impls and receivers
+			// stay named on the entry, beside the receivers that were proven
+			if generic_trait {
+				for r in &refusals {
+					let (receiver, reason) = match r.split_once(" on ") {
+						Some((_, rest)) if rest.contains(": ") => {
+							let (id, why) = rest.split_once(": ").unwrap();
+							(id.to_string(), why.to_string())
+						}
+						_ => match r.split_once(": ") {
+							Some((head, why)) => (head.to_string(), why.to_string()),
+							None => (String::new(), r.clone()),
+						},
+					};
+					exceptions.push(RouteException {
+						route: "implementor",
+						receiver,
+						reason,
+					});
+				}
+			}
 			if done.is_empty() {
 				let (st, why) = first_err.unwrap();
 				if st == "adapted" {
@@ -201,6 +257,14 @@ pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buck
 				info.implementors = infos.iter().filter_map(|i| i.owner.clone()).collect();
 				out.generated_on(c, &done, info);
 				let entry = out.entries.last_mut().unwrap();
+				if generic_trait {
+					// a generic trait's arms have per-receiver signatures and
+					// fallibility: each binding keeps its own
+					entry.fallible = Some(done_infos.iter().flatten().any(|i| i.fallible));
+					for (binding, own) in entry.bindings.iter_mut().zip(&done_infos) {
+						binding.info = own.clone();
+					}
+				}
 				for binding in &mut entry.bindings {
 					let route = routed_binding(world, c, binding.receiver.as_deref());
 					binding.route_reason = binding_route_reason(world, c, route);

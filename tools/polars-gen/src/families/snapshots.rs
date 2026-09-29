@@ -2071,6 +2071,7 @@ pub(crate) fn layout_self_test() {
 	assert!(matches!(layout_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice"));
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -2342,6 +2343,7 @@ pub(crate) fn owned_iter_self_test() {
 	assert!(matches!(owned_iter_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice"));
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -2631,6 +2633,7 @@ pub(crate) fn view_snapshot_self_test() {
 	);
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -2915,6 +2918,7 @@ pub(crate) fn iter_snapshot_self_test() {
 	);
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -3190,6 +3194,7 @@ pub(crate) fn array_snapshot_self_test() {
 	);
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -3474,6 +3479,7 @@ pub(crate) fn indexed_chunk_self_test() {
 	);
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -3807,6 +3813,7 @@ pub(crate) fn chunk_snapshot_self_test() {
 	// the emitter, with the pair scope set
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),

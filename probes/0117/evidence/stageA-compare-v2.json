@@ -1,0 +1,506 @@
+{
+ "problems": [],
+ "recovered": [
+  {
+   "callable": "polars_arrow:3348",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::arr_from_iter",
+   "added_implementors": [
+    "polars_arrow::array::boolean::BooleanArray",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric"
+   ]
+  },
+  {
+   "callable": "polars_arrow:3349",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::arr_from_iter_trusted",
+   "added_implementors": [
+    "polars_arrow::array::boolean::BooleanArray",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric"
+   ]
+  },
+  {
+   "callable": "polars_arrow:3350",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::try_arr_from_iter",
+   "added_implementors": [
+    "polars_arrow::array::boolean::BooleanArray",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric"
+   ]
+  },
+  {
+   "callable": "polars_arrow:3351",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::try_arr_from_iter_trusted",
+   "added_implementors": [
+    "polars_arrow::array::boolean::BooleanArray",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric"
+   ]
+  },
+  {
+   "trait_labels": "polars_arrow::array::static_array_collect::ArrayFromIter",
+   "added_implementors": [
+    "polars_arrow::array::boolean::BooleanArray",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric",
+    "polars_arrow::array::binview::BinaryViewArrayGeneric"
+   ]
+  },
+  {
+   "callable": "polars_arrow:13316",
+   "path": "polars_arrow::legacy::trusted_len::rev::FromIteratorReversed::from_trusted_len_iter_rev",
+   "added_implementors": [
+    "polars_arrow::array::boolean::BooleanArray"
+   ]
+  },
+  {
+   "callable": "polars_arrow:13326",
+   "path": "polars_arrow::legacy::utils::FromTrustedLenIterator::from_iter_trusted_length",
+   "added_implementors": [
+    "polars_arrow::array::boolean::BooleanArray"
+   ]
+  },
+  {
+   "trait_labels": "polars_arrow::legacy::trusted_len::rev::FromIteratorReversed",
+   "added_implementors": [
+    "polars_arrow::array::boolean::BooleanArray"
+   ]
+  },
+  {
+   "trait_labels": "polars_arrow::legacy::utils::FromTrustedLenIterator",
+   "added_implementors": [
+    "polars_arrow::array::boolean::BooleanArray"
+   ]
+  },
+  {
+   "callable": "polars_arrow:3337",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIterDtype::arr_from_iter_with_dtype",
+   "added_implementors": [
+    "polars_arrow::array::fixed_size_list::FixedSizeListArray"
+   ]
+  },
+  {
+   "callable": "polars_arrow:3338",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIterDtype::arr_from_iter_trusted_with_dtype",
+   "added_implementors": [
+    "polars_arrow::array::fixed_size_list::FixedSizeListArray"
+   ]
+  },
+  {
+   "callable": "polars_arrow:3339",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIterDtype::try_arr_from_iter_with_dtype",
+   "added_implementors": [
+    "polars_arrow::array::fixed_size_list::FixedSizeListArray"
+   ]
+  },
+  {
+   "callable": "polars_arrow:3340",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIterDtype::try_arr_from_iter_trusted_with_dtype",
+   "added_implementors": [
+    "polars_arrow::array::fixed_size_list::FixedSizeListArray"
+   ]
+  },
+  {
+   "trait_labels": "polars_arrow::array::static_array_collect::ArrayFromIterDtype",
+   "added_implementors": [
+    "polars_arrow::array::fixed_size_list::FixedSizeListArray"
+   ]
+  },
+  {
+   "callable": "polars_core:11477",
+   "path": "polars_core::named_from::NamedFrom::new",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::Logical",
+    "polars_core::chunked_array::logical::Logical",
+    "polars_core::chunked_array::logical::Logical",
+    "polars_core::chunked_array::logical::Logical",
+    "polars_core::datatypes::ObjectChunked"
+   ]
+  },
+  {
+   "trait_labels": "polars_core::named_from::NamedFrom",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::Logical",
+    "polars_core::chunked_array::logical::Logical",
+    "polars_core::chunked_array::logical::Logical",
+    "polars_core::chunked_array::logical::Logical",
+    "polars_core::datatypes::ObjectChunked"
+   ]
+  },
+  {
+   "callable": "polars_core:1712",
+   "path": "polars_core::chunked_array::ops::ChunkTakeUnchecked::take_unchecked",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray"
+   ]
+  },
+  {
+   "trait_labels": "polars_core::chunked_array::ops::ChunkTakeUnchecked",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray"
+   ]
+  },
+  {
+   "callable": "polars_core:1885",
+   "path": "polars_core::chunked_array::ops::ChunkCompareEq::equal",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "callable": "polars_core:1887",
+   "path": "polars_core::chunked_array::ops::ChunkCompareEq::equal_missing",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "callable": "polars_core:1888",
+   "path": "polars_core::chunked_array::ops::ChunkCompareEq::not_equal",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "callable": "polars_core:1889",
+   "path": "polars_core::chunked_array::ops::ChunkCompareEq::not_equal_missing",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "callable": "polars_core:2022",
+   "path": "polars_core::chunked_array::ops::ChunkCompareIneq::gt",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "callable": "polars_core:2024",
+   "path": "polars_core::chunked_array::ops::ChunkCompareIneq::gt_eq",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "callable": "polars_core:2025",
+   "path": "polars_core::chunked_array::ops::ChunkCompareIneq::lt",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "callable": "polars_core:2026",
+   "path": "polars_core::chunked_array::ops::ChunkCompareIneq::lt_eq",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "trait_labels": "polars_core::chunked_array::ops::ChunkCompareEq",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "trait_labels": "polars_core::chunked_array::ops::ChunkCompareIneq",
+   "added_implementors": [
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::ChunkedArray",
+    "polars_core::chunked_array::logical::categorical::CategoricalChunked"
+   ]
+  },
+  {
+   "trait": "polars_arrow::array::static_array_collect::ArrayFromIter",
+   "for_type": "polars_arrow::array::binview::BinaryViewArrayGeneric<[u8]>",
+   "trait_args": [
+    "T"
+   ]
+  },
+  {
+   "trait": "polars_arrow::array::static_array_collect::ArrayFromIter",
+   "for_type": "polars_arrow::array::binview::BinaryViewArrayGeneric<str>",
+   "trait_args": [
+    "T"
+   ]
+  },
+  {
+   "trait": "polars_arrow::array::static_array_collect::ArrayFromIter",
+   "for_type": "polars_arrow::array::boolean::BooleanArray",
+   "trait_args": [
+    "bool"
+   ]
+  },
+  {
+   "trait": "polars_arrow::legacy::trusted_len::rev::FromIteratorReversed",
+   "for_type": "polars_arrow::array::boolean::BooleanArray",
+   "trait_args": [
+    "bool"
+   ]
+  },
+  {
+   "trait": "polars_arrow::legacy::utils::FromTrustedLenIterator",
+   "for_type": "polars_arrow::array::boolean::BooleanArray",
+   "trait_args": [
+    "core::option::Option<bool>"
+   ]
+  },
+  {
+   "trait": "polars_arrow::array::static_array_collect::ArrayFromIterDtype",
+   "for_type": "polars_arrow::array::fixed_size_list::FixedSizeListArray",
+   "trait_args": [
+    "alloc::boxed::Box<dyn polars_arrow::array::Array>"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkCompareEq",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "trait_args": [
+    "&polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkCompareIneq",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>",
+   "trait_args": [
+    "&polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryOffsetType>"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkCompareEq",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "trait_args": [
+    "&polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkCompareIneq",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "trait_args": [
+    "&polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkTakeUnchecked",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "trait_args": [
+    "I"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "trait_args": [
+    "T",
+    "[&[u8]]"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "trait_args": [
+    "T",
+    "[alloc::borrow::Cow<[u8]>]"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "trait_args": [
+    "T",
+    "[core::option::Option<&[u8]>]"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::BinaryType>",
+   "trait_args": [
+    "T",
+    "[core::option::Option<alloc::borrow::Cow<[u8]>>]"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkTakeUnchecked",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::FixedSizeListType>",
+   "trait_args": [
+    "I"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkTakeUnchecked",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::ListType>",
+   "trait_args": [
+    "I"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkCompareEq",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "trait_args": [
+    "&polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkCompareIneq",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "trait_args": [
+    "&polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkTakeUnchecked",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "trait_args": [
+    "I"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "trait_args": [
+    "T",
+    "[&str]"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "trait_args": [
+    "T",
+    "[alloc::borrow::Cow<str>]"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "trait_args": [
+    "T",
+    "[core::option::Option<&str>]"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>",
+   "trait_args": [
+    "T",
+    "[core::option::Option<alloc::borrow::Cow<str>>]"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkTakeUnchecked",
+   "for_type": "polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StructType>",
+   "trait_args": [
+    "I"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::logical::Logical<polars_core::datatypes::DateType, polars_core::datatypes::Int32Type>",
+   "trait_args": [
+    "T",
+    "[core::option::Option<chrono::naive::date::NaiveDate>]"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::logical::Logical<polars_core::datatypes::DatetimeType, polars_core::datatypes::Int64Type>",
+   "trait_args": [
+    "T",
+    "[core::option::Option<chrono::naive::datetime::NaiveDateTime>]"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::logical::Logical<polars_core::datatypes::DurationType, polars_core::datatypes::Int64Type>",
+   "trait_args": [
+    "T",
+    "[core::option::Option<chrono::time_delta::TimeDelta>]"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::chunked_array::logical::Logical<polars_core::datatypes::TimeType, polars_core::datatypes::Int64Type>",
+   "trait_args": [
+    "T",
+    "[core::option::Option<chrono::naive::time::NaiveTime>]"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkCompareEq",
+   "for_type": "polars_core::chunked_array::logical::categorical::CategoricalChunked<T>",
+   "trait_args": [
+    "&polars_core::chunked_array::ChunkedArray<polars_core::datatypes::StringType>"
+   ]
+  },
+  {
+   "trait": "polars_core::chunked_array::ops::ChunkCompareIneq",
+   "for_type": "polars_core::chunked_array::logical::categorical::CategoricalChunked<T>",
+   "trait_args": [
+    "&str"
+   ]
+  },
+  {
+   "trait": "polars_core::named_from::NamedFrom",
+   "for_type": "polars_core::datatypes::ObjectChunked<T>",
+   "trait_args": [
+    "S",
+    "[core::option::Option<T>]"
+   ]
+  }
+ ],
+ "recovered_impls": 32,
+ "callables_with_added_implementors": 20,
+ "trait_params_set": 56,
+ "impls_with_trait_args": 475
+}
