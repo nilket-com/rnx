@@ -3,14 +3,16 @@ use crate::emit::{
 	Emitted, OracleInfo, RouteException, doc_line, generics_map, rune_path, rust_ident,
 	unused_generic,
 };
-use crate::families::bounds::{hash_token_scope, null_aware_return_matches};
 use crate::families::callbacks::{
 	binding_route_reason, callback_arg, callback_gate, closure_signature, routed_binding,
 };
 use crate::families::free_instantiations::emit_free_instantiations;
 use crate::families::protocols::emit_foreign;
 use crate::families::receivers::proven_trait_receivers;
+use crate::families::run_checks;
 use crate::families::serde::{emit_serde, serde_trait};
+use crate::families::target;
+use crate::families::{CALLABLE, collect};
 use crate::model::Callable;
 use crate::text::sanitize;
 use crate::ty;
@@ -78,75 +80,16 @@ pub(crate) fn bucket_admitted(buckets: &[&str], c: &Callable) -> bool {
 /// Generate one method/function binding. `owner` is the canonical owner
 /// type (for methods) and `trait_spell` the trait for UFCS calls.
 pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buckets: &[&str]) {
-	#[allow(clippy::type_complexity)]
-	struct BitmapScope<'a>(
-		&'a std::cell::Cell<bool>,
-		&'a std::cell::RefCell<Option<(String, String)>>,
-		&'a std::cell::RefCell<Option<String>>,
-		&'a std::cell::Cell<bool>,
-		&'a std::cell::Cell<bool>,
-		&'a std::cell::RefCell<Option<(String, bool, Option<String>)>>,
-	);
-	impl Drop for BitmapScope<'_> {
-		fn drop(&mut self) {
-			self.0.set(false);
-			*self.1.borrow_mut() = None;
-			*self.2.borrow_mut() = None;
-			self.3.set(false);
-			self.4.set(false);
-			*self.5.borrow_mut() = None;
-		}
-	}
-	world.cow_ok.set(
-		world
-			.release
-			.cow_returns
-			.iter()
-			.any(|r| r.key == c.key && r.path == c.canonical_path),
-	);
-	world.bounded_ok.set(
-		world
-			.release
-			.bounded_readbacks
-			.iter()
-			.any(|r| r.key == c.key && r.path == c.canonical_path && !r.cite.trim().is_empty()),
-	);
-	world.bitmap_ok.set(
-		world
-			.release
-			.bitmap_returns
-			.iter()
-			.any(|p| *p == c.canonical_path),
-	);
-	*world.bitmap_input.borrow_mut() = world
-		.release
-		.bitmap_inputs
-		.iter()
-		.find(|b| b.path == c.canonical_path)
-		.map(|b| (format!("{}::{}", last(&c.owner), c.name), b.length.clone()));
-	*world.iter_return.borrow_mut() = world
-		.release
-		.iterator_returns
-		.iter()
-		.find(|r| r.path == c.canonical_path)
-		.map(|r| r.item.clone());
-	let _bitmap_scope = BitmapScope(
-		&world.bitmap_ok,
-		&world.bitmap_input,
-		&world.iter_return,
-		&world.cow_ok,
-		&world.bounded_ok,
-		&world.hash_token,
-	);
-	match hash_token_scope(&world.release, c) {
-		Ok(scope) => {
-			*world.hash_token.borrow_mut() = scope.map(|(ret, param)| (c.name.clone(), ret, param))
-		}
-		Err(reason) => {
-			out.unsupported(c, "release policy", &reason);
+	// record 0115: the callable scope (`CALLABLE`): every listed family's
+	// state, in order, until a refusal; cleared when the scope drops
+	let states = match collect(CALLABLE, "listed", |f| f.listed(world, c)) {
+		Ok(s) => s,
+		Err((label, reason)) => {
+			out.unsupported(c, label, &reason);
 			return;
 		}
-	}
+	};
+	let _scope = world.active.enter(CALLABLE, states);
 	if let Err(reason) = callback_gate(world, c) {
 		out.unsupported(c, "callback audit", &reason);
 		return;
@@ -288,6 +231,7 @@ pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buck
 		"free_fn"
 			if world
 				.release
+				.families
 				.free_instantiations
 				.iter()
 				.any(|f| f.key == c.key && f.path == c.canonical_path) =>
@@ -331,76 +275,20 @@ pub(crate) fn emit_method_with(
 	callee_override: Option<&str>,
 ) {
 	world.tmp.set(0);
-	// record 0085: instantiated pairs reach here without `emit_callable`
-	#[allow(clippy::type_complexity)]
-	struct BitmapScope<'a>(
-		&'a std::cell::Cell<bool>,
-		&'a std::cell::RefCell<Option<(String, String)>>,
-		&'a std::cell::RefCell<Option<String>>,
-		&'a std::cell::Cell<bool>,
-		&'a std::cell::Cell<bool>,
-		&'a std::cell::RefCell<Option<(String, bool, Option<String>)>>,
-	);
-	impl Drop for BitmapScope<'_> {
-		fn drop(&mut self) {
-			self.0.set(false);
-			*self.1.borrow_mut() = None;
-			*self.2.borrow_mut() = None;
-			self.3.set(false);
-			self.4.set(false);
-			*self.5.borrow_mut() = None;
-		}
-	}
-	world.cow_ok.set(
-		world
-			.release
-			.cow_returns
-			.iter()
-			.any(|r| r.key == c.key && r.path == c.canonical_path),
-	);
-	world.bounded_ok.set(
-		world
-			.release
-			.bounded_readbacks
-			.iter()
-			.any(|r| r.key == c.key && r.path == c.canonical_path && !r.cite.trim().is_empty()),
-	);
-	world.bitmap_ok.set(
-		world
-			.release
-			.bitmap_returns
-			.iter()
-			.any(|p| *p == c.canonical_path),
-	);
-	*world.bitmap_input.borrow_mut() = world
-		.release
-		.bitmap_inputs
-		.iter()
-		.find(|b| b.path == c.canonical_path)
-		.map(|b| (format!("{}::{}", last(&c.owner), c.name), b.length.clone()));
-	*world.iter_return.borrow_mut() = world
-		.release
-		.iterator_returns
-		.iter()
-		.find(|r| r.path == c.canonical_path)
-		.map(|r| r.item.clone());
-	let _bitmap_scope = BitmapScope(
-		&world.bitmap_ok,
-		&world.bitmap_input,
-		&world.iter_return,
-		&world.cow_ok,
-		&world.bounded_ok,
-		&world.hash_token,
-	);
-	match hash_token_scope(&world.release, c) {
-		Ok(scope) => {
-			*world.hash_token.borrow_mut() = scope.map(|(ret, param)| (c.name.clone(), ret, param))
-		}
-		Err(reason) => {
-			out.unsupported(c, "release policy", &reason);
+	// record 0115: the trace target for this binding
+	let _target = target(format!("{}|{owner}", c.key));
+	// record 0085: instantiated pairs reach here without `emit_callable`,
+	// so the callable scope is entered here too
+	// record 0115: the callable scope (`CALLABLE`): every listed family's
+	// state, in order, until a refusal; cleared when the scope drops
+	let states = match collect(CALLABLE, "listed", |f| f.listed(world, c)) {
+		Ok(s) => s,
+		Err((label, reason)) => {
+			out.unsupported(c, label, &reason);
 			return;
 		}
-	}
+	};
+	let _scope = world.active.enter(CALLABLE, states);
 	if c.is_async {
 		out.unsupported(c, "async", &c.name);
 		return;
@@ -651,167 +539,19 @@ pub(crate) fn emit_method_with(
 	if commit_receiver {
 		pre.push_str("let mut __work = this.0.clone(); ");
 	}
-	// record 0106: the layout's preflight goes before the Polars call too
-	if let Some((op, kind, _)) = world.layout.borrow().clone() {
-		if routed_binding(world, c, Some(owner))
-			|| !ret.conv.starts_with("support::layout_snapshot")
-			|| c.receiver != "&self"
-		{
-			out.unsupported(
-				c,
-				"layout snapshot",
-				"needs an unrouted `&self` call and the layout-snapshot conversion",
-			);
+	// record 0115: the listed families' checks (`CHECK`), all run in order;
+	// the first refusal ends emission, and each preflight goes first
+	let listed_fallible = match run_checks(world, c, owner, &ret) {
+		Ok((preflight, fallible)) => {
+			pre.insert_str(0, &preflight);
+			fallible
+		}
+		Err((category, why)) => {
+			out.unsupported(c, category, &why);
 			return;
 		}
-		let preflight = match kind.as_str() {
-			"bool" => "support::preflight_bool".to_string(),
-			"str" => "support::preflight_str".into(),
-			"binary" => "support::preflight_binview".into(),
-			"binary_offset" => "support::preflight_binary_offset".into(),
-			n => format!("support::preflight_numeric::<{n}>"),
-		};
-		pre.insert_str(
-			0,
-			&format!("let __total = {preflight}(this.0.chunks(), \"{op}\")?; "),
-		);
-	}
-	// record 0105: the consuming iterator runs on a clone; its preflight goes
-	// first, before the clone in the call and before Polars
-	if let Some((op, kind)) = world.owned_iter.borrow().clone() {
-		if routed_binding(world, c, Some(owner))
-			|| !ret.conv.starts_with("support::owned_snapshot")
-			|| c.receiver != "self"
-		{
-			out.unsupported(
-				c,
-				"owned iterator snapshot",
-				"needs an unrouted consuming call and the owned-snapshot conversion",
-			);
-			return;
-		}
-		let preflight = match kind.as_str() {
-			"bool" => "support::preflight_bool".to_string(),
-			"str" => "support::preflight_str".into(),
-			"binary" => "support::preflight_binview".into(),
-			"binary_offset" => "support::preflight_binary_offset".into(),
-			n => format!("support::preflight_numeric::<{n}>"),
-		};
-		pre.insert_str(
-			0,
-			&format!("let __total = {preflight}(this.0.chunks(), \"{op}\")?; "),
-		);
-	}
-	// record 0104: likewise for the borrowed indexed chunk view
-	if world.view_snapshot.borrow().is_some()
-		&& (routed_binding(world, c, Some(owner))
-			|| !ret.conv.starts_with("support::view_snapshot")
-			|| c.receiver != "&self")
-	{
-		out.unsupported(
-			c,
-			"view snapshot",
-			"needs an unrouted `&self` call and the view-snapshot conversion",
-		);
-		return;
-	}
-	// record 0103: likewise for the borrowed typed-chunk iterator
-	if world.iter_snapshot.borrow().is_some()
-		&& (routed_binding(world, c, Some(owner))
-			|| !ret.conv.starts_with("support::iter_snapshot")
-			|| c.receiver != "&self")
-	{
-		out.unsupported(
-			c,
-			"iterator snapshot",
-			"needs an unrouted `&self` call and the iterator-snapshot conversion",
-		);
-		return;
-	}
-	// record 0102: likewise for the one borrowed array of `downcast_as_array`
-	if world.array_snapshot.borrow().is_some()
-		&& (routed_binding(world, c, Some(owner))
-			|| !ret.conv.starts_with("support::array_snapshot")
-			|| c.receiver != "&self")
-	{
-		out.unsupported(
-			c,
-			"array snapshot",
-			"needs an unrouted `&self` call and the array-snapshot conversion",
-		);
-		return;
-	}
-	// record 0101: likewise for the one borrowed chunk of `downcast_get`
-	if world.indexed_chunk.borrow().is_some()
-		&& (routed_binding(world, c, Some(owner))
-			|| !ret.conv.starts_with("support::indexed_snapshot")
-			|| c.receiver != "&self")
-	{
-		out.unsupported(
-			c,
-			"indexed chunk snapshot",
-			"needs an unrouted `&self` call and the indexed-snapshot conversion",
-		);
-		return;
-	}
-	// record 0099: the chunk borrow ends with the call, so the copy must happen in it
-	if world.chunk_snapshot.borrow().is_some()
-		&& (routed_binding(world, c, Some(owner))
-			|| !ret.conv.starts_with("support::chunk_snapshot")
-			|| c.receiver != "&self")
-	{
-		out.unsupported(
-			c,
-			"chunk snapshot",
-			"needs an unrouted `&self` call and the chunk-snapshot conversion",
-		);
-		return;
-	}
-	// record 0097: Polars's signed slice offsets need the receiver length within i64
-	let sized_self_op = world.sized_self.borrow().clone();
-	if let Some(op) = &sized_self_op {
-		if c.receiver != "&self"
-			|| c.ret_canonical.as_deref().map(|r| ty::parse(r).render())
-				!= Some(ty::parse(owner).render())
-		{
-			out.unsupported(
-				c,
-				"sized-self method",
-				&format!(
-					"needs a `&self` receiver returning the owner, got {}",
-					c.ret_canonical.as_deref().unwrap_or("()")
-				),
-			);
-			return;
-		}
-		pre.insert_str(
-			0,
-			&format!("support::signed_len(this.0.len(), \"{op}\")?; "),
-		);
-	}
-	// record 0096: the whole null-aware result is bounded before Polars allocates it
-	let null_aware_op = world.null_aware.borrow().as_ref().map(|(op, _)| op.clone());
-	if let Some(op) = &null_aware_op {
-		if c.receiver != "&self"
-			|| !ret.fallible
-			|| !ret.conv.starts_with("__r.either(")
-			|| !null_aware_return_matches(
-				c.ret_canonical.as_deref(),
-				&world.null_aware.borrow().as_ref().unwrap().1,
-			) {
-			out.unsupported(
-				c,
-				"null-aware return",
-				"needs a `&self` receiver and the null-aware conversion",
-			);
-			return;
-		}
-		pre.insert_str(
-			0,
-			&format!("support::null_aware_bound(this.0.len(), \"{op}\")?; "),
-		);
-	}
-	let fallible = fallible || sized_self_op.is_some();
+	};
+	let fallible = fallible || listed_fallible;
 	let ret_ty = if fallible {
 		format!("Result<{}, Error>", ret.rust_ty)
 	} else {

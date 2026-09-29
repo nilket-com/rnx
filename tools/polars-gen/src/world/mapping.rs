@@ -1,4 +1,6 @@
-use crate::families::snapshots::{CHUNKS_VIEW, LAYOUT_ENUM, SCALAR_CHUNKS, indexed_array};
+use crate::families::{
+	ARG_SCALAR, ARG_TOP, ArgSite, RET_COW, RET_SCALAR, RET_TOP, RET_UNWRAPPED, RetSite, trace,
+};
 use crate::text::sanitize;
 use crate::ty;
 use crate::ty::{Bound, Ty, last};
@@ -263,258 +265,150 @@ impl World {
 		if depth > 6 {
 			return Err(Unsupported("nesting", t.render()));
 		}
-		// record 0086: a listed callable's validity bitmap from a script Vec<bool>
-		if let Ty::Path { path, args } = t {
-			if path == "polars_arrow::bitmap::immutable::Bitmap" && args.is_empty() {
-				if let Some((op, length)) = self.bitmap_input.borrow().clone() {
-					let (pre, expect, shape) = match length.as_str() {
-						// the oracle's receiver fixtures have 3 rows, the List one 2
-						"receiver" => (
-							Some("let __mask_len = this.0.len();".to_string()),
-							"Some(__mask_len)",
-							if owner.is_some_and(|o| o.ends_with("::ListChunked")) {
-								"mask2"
-							} else {
-								"mask3"
-							},
-						),
-						"values" => (
-							Some(
-								"let __mask_len = support::vec_len(&values, \"values\")?;"
-									.to_string(),
-							),
-							"Some(__mask_len)",
-							"mask1",
-						),
-						_ => (None, "None", "mask3"),
-					};
-					let mut a = ok_arg(
-						"rune::Value",
-						format!("support::bitmap_from_bools(&{name}, \"{op}\", {expect})?"),
-						"vector of bool (a validity mask, copied)",
-					)?;
-					a.pre.extend(pre);
-					a.shape = shape.into();
-					return Ok(a);
-				}
-			}
+		// record 0115: a listed bitmap input (`ARG_TOP`)
+		if let Some(a) = self.family_arg(ArgSite::Top, t, name, owner)? {
+			return Ok(a);
 		}
 		match t {
-			Ty::Path { path, args } => match path.as_str() {
-				"bool" => ok_arg("bool", name.into(), "bool"),
-				"i64" => ok_arg("i64", name.into(), "int"),
-				"f64" => ok_arg("f64", name.into(), "float"),
-				"f32" => ok_arg("f64", format!("({name} as f32)"), "float"),
-				// record 0091: a guarded parameter is converted and checked in `pre`,
-				// before the call and before any receiver borrow
-				"usize"
-					if self
-						.arg_guard
-						.borrow()
-						.as_ref()
-						.is_some_and(|(_, param, _)| param == name) =>
-				{
-					let (op, _, check) = self.arg_guard.borrow().clone().unwrap();
-					if check != "below_idx_max" {
-						return Err(Unsupported("unknown argument guard", check));
-					}
-					let mut a = ok_arg(
+			Ty::Path { path, args } => {
+				// record 0115: listed scalar parameters (`ARG_SCALAR`); the
+				// literal arms before them name other scalars
+				if let Some(a) = self.family_arg(ArgSite::Scalar, t, name, owner)? {
+					return Ok(a);
+				}
+				match path.as_str() {
+					"bool" => ok_arg("bool", name.into(), "bool"),
+					"i64" => ok_arg("i64", name.into(), "int"),
+					"f64" => ok_arg("f64", name.into(), "float"),
+					"f32" => ok_arg("f64", format!("({name} as f32)"), "float"),
+					p if INT_NARROW.contains(&p) => ok_arg(
 						"i64",
-						format!("__guarded_{name}"),
-						"int (checked below the index maximum)",
-					)?;
-					a.pre.push(format!("let __guarded_{name} = support::below_idx_max(support::narrow::<usize>({name}, \"{name}\")?, \"{op}\", \"{name}\")?;"));
-					Ok(a)
-				}
-				// record 0094: a listed hash parameter is a token, parsed before the call
-				"u64"
-					if self
-						.hash_token
-						.borrow()
-						.as_ref()
-						.is_some_and(|h| h.2.as_deref() == Some(name)) =>
-				{
-					let op = self.hash_token.borrow().as_ref().unwrap().0.clone();
-					let mut a = ok_arg(
-						"&str",
-						format!("__hash_{name}"),
-						"string (a hash token: 16 lowercase hex digits)",
-					)?;
-					a.pre.push(format!(
-						"let __hash_{name} = support::hash_from_token({name}, \"{op}\")?;"
-					));
-					a.fallible = true;
-					a.shape = "hash".into();
-					Ok(a)
-				}
-				p if INT_NARROW.contains(&p) => ok_arg(
-					"i64",
-					format!("support::narrow::<{p}>({name}, \"{name}\")?"),
-					"int",
-				),
-				"polars_utils::index::IdxSize" => ok_arg(
-					"i64",
-					format!("support::narrow::<p::IdxSize>({name}, \"{name}\")?"),
-					"int",
-				),
-				"char" => ok_arg(
-					"&str",
-					format!("support::one_char({name}, \"{name}\")?"),
-					"one-character string",
-				),
-				"alloc::string::String" => ok_arg("String", name.into(), "string"),
-				"polars_utils::pl_str::PlSmallStr" => {
-					ok_arg("&str", format!("p::PlSmallStr::from({name})"), "string")
-				}
-				"core::option::Option" if args.len() == 1 => {
-					let inner = self.arg(&args[0], "v", generics, owner, depth + 1)?;
-					let (ity, conv) = by_value(&inner, "v");
-					let doc = format!("option of {}", inner.doc);
-					if inner.borrow == 0 {
-						let mut a = ok_arg(
-							&format!("Option<{ity}>"),
-							format!("match {name} {{ Some(v) => Some({conv}), None => None }}"),
-							&doc,
-						)?;
-						a.pre = inner.pre.clone();
-						a.shape = format!("opt({})", inner.shape);
-						return Ok(a);
-					}
-					// A borrow inside an Option needs an owned temporary that
-					// outlives the call, so it is hoisted into a statement.
-					let t = self.tmp();
-					let (pre, expr) = if inner.borrow == 2 {
-						let owned = inner.owned.clone().unwrap();
-						(
-							format!(
-								"let {t} = match {name} {{ Some(v) => Some({owned}), None => None }};"
-							),
-							format!("{t}.as_deref()"),
-						)
-					} else if inner.rust_ty == "&str" {
-						(
-							format!("let {t}: Option<String> = {name};"),
-							format!("{t}.as_deref()"),
-						)
-					} else if let Some(w) = inner
-						.rust_ty
-						.strip_prefix('&')
-						.filter(|w| self.wrappers.values().any(|x| x.rust == *w))
-					{
-						(
-							format!(
-								"let {t} = match {name} {{ Some(v) => Some(support::take::<{w}>(&v, \"{name}\")?), None => None }};"
-							),
-							format!("{t}.as_ref().map(|w| &w.0)"),
-						)
-					} else if let Some(owned) = &inner.owned {
-						(
-							format!(
-								"let {t} = match {name} {{ Some(v) => Some({owned}), None => None }};"
-							),
-							format!("{t}.as_ref()"),
-						)
-					} else {
-						return Err(Unsupported("option of borrow", t));
-					};
-					let mut a = ok_arg(&format!("Option<{ity}>"), expr, &doc)?;
-					a.fallible = pre.contains('?');
-					a.pre = vec![pre];
-					a.shape = format!("opt({})", inner.shape);
-					Ok(a)
-				}
-				"alloc::vec::Vec" if args.len() == 1 => {
-					let inner = self.arg(&args[0], "v", generics, owner, depth + 1)?;
-					// record 0084: an element that maps to `&str` (`S: AsRef<str>`,
-					// `Into<PlSmallStr>`) is carried as an owned `String`
-					let (ity, conv) = if inner.rust_ty == "&str" && inner.borrow == 1 {
-						("String".to_string(), "v".to_string())
-					} else {
-						if inner.borrow != 0 {
-							return Err(Unsupported("vector of borrows", t.render()));
-						}
-						by_value(&inner, "v")
-					};
-					let typed = if ity == "rune::Value" {
-						String::new()
-					} else {
-						format!("let v: {ity} = support::borrow_element(&v, \"{name}\")?; ")
-					};
-					Ok(shaped(
-						ok_arg(
-							"rune::Value",
-							format!(
-								"support::borrow_vec(&{name}, \"{name}\")?.into_iter().map(|v| {{ {typed}Ok::<_, Error>({conv}) }}).collect::<Result<Vec<_>, Error>>()?"
-							),
-							&format!("vector of {}", inner.doc),
-						)?,
-						format!("vec({})", inner.shape),
-					))
-				}
-				"core::result::Result" => Err(Unsupported("result argument", t.render())),
-				"polars_error::PolarsResult" => Err(Unsupported("result argument", t.render())),
-				"Self" => match owner {
-					Some(o) => self.arg(
-						&Ty::Path {
-							path: o.to_string(),
-							args: vec![],
-						},
-						name,
-						generics,
-						owner,
-						depth + 1,
+						format!("support::narrow::<{p}>({name}, \"{name}\")?"),
+						"int",
 					),
-					None => Err(Unsupported("Self without owner", t.render())),
-				},
-				_ => {
-					// an instantiation an alias wrapper holds exactly (record 0076)
-					if !args.is_empty() {
-						if let Some(c) = self.by_identity.get(&t.render()) {
-							return self.arg(
-								&Ty::Path {
-									path: c.clone(),
-									args: vec![],
-								},
-								name,
-								generics,
-								owner,
-								depth + 1,
-							);
-						}
+					"polars_utils::index::IdxSize" => ok_arg(
+						"i64",
+						format!("support::narrow::<p::IdxSize>({name}, \"{name}\")?"),
+						"int",
+					),
+					"char" => ok_arg(
+						"&str",
+						format!("support::one_char({name}, \"{name}\")?"),
+						"one-character string",
+					),
+					"alloc::string::String" => ok_arg("String", name.into(), "string"),
+					"polars_utils::pl_str::PlSmallStr" => {
+						ok_arg("&str", format!("p::PlSmallStr::from({name})"), "string")
 					}
-					if let Some(w) = self.wrapper_for(path) {
-						if !args.is_empty() {
-							return Err(Unsupported("generic instantiation", t.render()));
+					"core::option::Option" if args.len() == 1 => {
+						let inner = self.arg(&args[0], "v", generics, owner, depth + 1)?;
+						let (ity, conv) = by_value(&inner, "v");
+						let doc = format!("option of {}", inner.doc);
+						if inner.borrow == 0 {
+							let mut a = ok_arg(
+								&format!("Option<{ity}>"),
+								format!("match {name} {{ Some(v) => Some({conv}), None => None }}"),
+								&doc,
+							)?;
+							a.pre = inner.pre.clone();
+							a.shape = format!("opt({})", inner.shape);
+							return Ok(a);
 						}
-						if !self.clonable.contains(path) {
-							// record 0109: moved out of the Rune value at the top
-							// level; inside a container it would move out of a
-							// shared element, which stays refused
-							if depth > 0 {
-								return Err(Unsupported(
-									"by-value argument of a non-Clone type",
-									t.render(),
-								));
+						// A borrow inside an Option needs an owned temporary that
+						// outlives the call, so it is hoisted into a statement.
+						let t = self.tmp();
+						let (pre, expr) = if inner.borrow == 2 {
+							let owned = inner.owned.clone().unwrap();
+							(
+								format!(
+									"let {t} = match {name} {{ Some(v) => Some({owned}), None => None }};"
+								),
+								format!("{t}.as_deref()"),
+							)
+						} else if inner.rust_ty == "&str" {
+							(
+								format!("let {t}: Option<String> = {name};"),
+								format!("{t}.as_deref()"),
+							)
+						} else if let Some(w) = inner
+							.rust_ty
+							.strip_prefix('&')
+							.filter(|w| self.wrappers.values().any(|x| x.rust == *w))
+						{
+							(
+								format!(
+									"let {t} = match {name} {{ Some(v) => Some(support::take::<{w}>(&v, \"{name}\")?), None => None }};"
+								),
+								format!("{t}.as_ref().map(|w| &w.0)"),
+							)
+						} else if let Some(owned) = &inner.owned {
+							(
+								format!(
+									"let {t} = match {name} {{ Some(v) => Some({owned}), None => None }};"
+								),
+								format!("{t}.as_ref()"),
+							)
+						} else {
+							return Err(Unsupported("option of borrow", t));
+						};
+						let mut a = ok_arg(&format!("Option<{ity}>"), expr, &doc)?;
+						a.fallible = pre.contains('?');
+						a.pre = vec![pre];
+						a.shape = format!("opt({})", inner.shape);
+						Ok(a)
+					}
+					"alloc::vec::Vec" if args.len() == 1 => {
+						let inner = self.arg(&args[0], "v", generics, owner, depth + 1)?;
+						// record 0084: an element that maps to `&str` (`S: AsRef<str>`,
+						// `Into<PlSmallStr>`) is carried as an owned `String`
+						let (ity, conv) = if inner.rust_ty == "&str" && inner.borrow == 1 {
+							("String".to_string(), "v".to_string())
+						} else {
+							if inner.borrow != 0 {
+								return Err(Unsupported("vector of borrows", t.render()));
 							}
-							let doc =
-								format!("{} (moved: the Rune value is consumed)", w.rune_name);
-							return Ok(shaped(
-								ok_arg(&w.rust, format!("{name}.0"), &doc)?,
-								format!("W-move:{path}"),
-							));
-						}
-						let doc = w.rune_name.clone();
-						return Ok(shaped(
-							ok_arg(&format!("&{}", w.rust), format!("{name}.0.clone()"), &doc)?,
-							format!("W:{path}"),
-						));
+							by_value(&inner, "v")
+						};
+						let typed = if ity == "rune::Value" {
+							String::new()
+						} else {
+							format!("let v: {ity} = support::borrow_element(&v, \"{name}\")?; ")
+						};
+						Ok(shaped(
+							ok_arg(
+								"rune::Value",
+								format!(
+									"support::borrow_vec(&{name}, \"{name}\")?.into_iter().map(|v| {{ {typed}Ok::<_, Error>({conv}) }}).collect::<Result<Vec<_>, Error>>()?"
+								),
+								&format!("vector of {}", inner.doc),
+							)?,
+							format!("vec({})", inner.shape),
+						))
 					}
-					if let Some(s) = self.types.get(path) {
-						// an unwrapped concrete alias stands for its target
-						if s.kind == "type_alias" && args.is_empty() {
-							if let Some(target) = &s.alias_target {
+					"core::result::Result" => Err(Unsupported("result argument", t.render())),
+					"polars_error::PolarsResult" => Err(Unsupported("result argument", t.render())),
+					"Self" => match owner {
+						Some(o) => self.arg(
+							&Ty::Path {
+								path: o.to_string(),
+								args: vec![],
+							},
+							name,
+							generics,
+							owner,
+							depth + 1,
+						),
+						None => Err(Unsupported("Self without owner", t.render())),
+					},
+					_ => {
+						// an instantiation an alias wrapper holds exactly (record 0076)
+						if !args.is_empty() {
+							if let Some(c) = self.by_identity.get(&t.render()) {
 								return self.arg(
-									&ty::parse(target),
+									&Ty::Path {
+										path: c.clone(),
+										args: vec![],
+									},
 									name,
 									generics,
 									owner,
@@ -522,25 +416,66 @@ impl World {
 								);
 							}
 						}
-						let why = if s.generic {
-							"generic type"
-						} else if s.lifetime {
-							"lifetime type"
-						} else if s.hidden {
-							"hidden type"
-						} else if s.kind == "trait" {
-							"trait object"
-						} else {
-							"unwrapped type"
-						};
-						return Err(Unsupported(why, t.render()));
+						if let Some(w) = self.wrapper_for(path) {
+							if !args.is_empty() {
+								return Err(Unsupported("generic instantiation", t.render()));
+							}
+							if !self.clonable.contains(path) {
+								// record 0109: moved out of the Rune value at the top
+								// level; inside a container it would move out of a
+								// shared element, which stays refused
+								if depth > 0 {
+									return Err(Unsupported(
+										"by-value argument of a non-Clone type",
+										t.render(),
+									));
+								}
+								let doc =
+									format!("{} (moved: the Rune value is consumed)", w.rune_name);
+								return Ok(shaped(
+									ok_arg(&w.rust, format!("{name}.0"), &doc)?,
+									format!("W-move:{path}"),
+								));
+							}
+							let doc = w.rune_name.clone();
+							return Ok(shaped(
+								ok_arg(&format!("&{}", w.rust), format!("{name}.0.clone()"), &doc)?,
+								format!("W:{path}"),
+							));
+						}
+						if let Some(s) = self.types.get(path) {
+							// an unwrapped concrete alias stands for its target
+							if s.kind == "type_alias" && args.is_empty() {
+								if let Some(target) = &s.alias_target {
+									return self.arg(
+										&ty::parse(target),
+										name,
+										generics,
+										owner,
+										depth + 1,
+									);
+								}
+							}
+							let why = if s.generic {
+								"generic type"
+							} else if s.lifetime {
+								"lifetime type"
+							} else if s.hidden {
+								"hidden type"
+							} else if s.kind == "trait" {
+								"trait object"
+							} else {
+								"unwrapped type"
+							};
+							return Err(Unsupported(why, t.render()));
+						}
+						if path.starts_with("polars") {
+							return Err(Unsupported("unreachable polars type", t.render()));
+						}
+						Err(Unsupported("foreign type", t.render()))
 					}
-					if path.starts_with("polars") {
-						return Err(Unsupported("unreachable polars type", t.render()));
-					}
-					Err(Unsupported("foreign type", t.render()))
 				}
-			},
+			}
 			Ty::Ref { mutable, inner } => match &**inner {
 				Ty::Path { path, args } if path == "str" => {
 					Ok(borrowed(ok_arg("&str", name.into(), "string")?, 1, None))
@@ -970,519 +905,72 @@ impl World {
 		})
 	}
 
+	/// Record 0115: the first active listed family's `ret` arm at `site`.
+	pub(crate) fn family_ret(
+		&self,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		let list = match site {
+			RetSite::Top => RET_TOP,
+			RetSite::Cow => RET_COW,
+			RetSite::Scalar => RET_SCALAR,
+			RetSite::Unwrapped => RET_UNWRAPPED,
+		};
+		for f in list {
+			if let Some(s) = self.active.get(f.name()) {
+				match f.ret(self, &s, site, t, owner, depth) {
+					Ok(None) => {}
+					Ok(Some(r)) => {
+						trace("ret", f.name(), "taken");
+						return Ok(Some(r));
+					}
+					Err(e) => {
+						trace("ret", f.name(), "refused");
+						return Err(e);
+					}
+				}
+			}
+		}
+		Ok(None)
+	}
+
+	/// Record 0115: the first active listed family's `arg` arm at `site`.
+	pub(crate) fn family_arg(
+		&self,
+		site: ArgSite,
+		t: &Ty,
+		name: &str,
+		owner: Option<&str>,
+	) -> Result<Option<Arg>, Unsupported> {
+		let list = match site {
+			ArgSite::Top => ARG_TOP,
+			ArgSite::Scalar => ARG_SCALAR,
+		};
+		for f in list {
+			if let Some(s) = self.active.get(f.name()) {
+				match f.arg(self, &s, site, t, name, owner) {
+					Ok(None) => {}
+					Ok(Some(a)) => {
+						trace("arg", f.name(), "taken");
+						return Ok(Some(a));
+					}
+					Err(e) => {
+						trace("arg", f.name(), "refused");
+						return Err(e);
+					}
+				}
+			}
+		}
+		Ok(None)
+	}
+
 	pub(crate) fn ret(&self, t: &Ty, owner: Option<&str>, depth: u8) -> Result<Ret, Unsupported> {
-		// record 0106: exactly `ChunkedArrayLayout<the pair's owner type>`, tagged and copied after the preflight
-		if let Some((_, kind, owner_ty)) = self.layout.borrow().clone() {
-			if depth == 0 {
-				let exact = matches!(t, Ty::Path { path, args } if path == LAYOUT_ENUM && args.len() == 1 && args[0] == ty::parse(&owner_ty));
-				if !exact {
-					return Err(Unsupported(
-						"layout snapshot",
-						format!("{t:?} is not {LAYOUT_ENUM}<{owner_ty}>"),
-					));
-				}
-				if let Some((_, k, _, elem, _, _)) =
-					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
-				{
-					let copier = match *k {
-						"bool" => "support::layout_snapshot_bool",
-						"str" => "support::layout_snapshot_str",
-						"binary" => "support::layout_snapshot_binview",
-						_ => "support::layout_snapshot_binary_offset",
-					};
-					return Ok(Ret {
-						materialize: None,
-						rust_ty: format!("(String, Vec<Vec<Option<{elem}>>>)"),
-						conv: format!("{copier}(this.0.chunks(), __total, __r, \"__OP__\")?"),
-						fallible: true,
-						doc: format!(
-							"tuple of the layout variant's name and its chunks, each a vector of option of {k} values (bounded before the call)"
-						),
-					});
-				}
-				let e = self.ret(
-					&Ty::Path {
-						path: kind.clone(),
-						args: vec![],
-					},
-					owner,
-					depth + 1,
-				)?;
-				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
-					return Err(Unsupported(
-						"layout snapshot",
-						format!("element {kind} is not a scalar"),
-					));
-				}
-				return Ok(Ret {
-					materialize: None,
-					rust_ty: format!("(String, Vec<Vec<Option<{}>>>)", e.rust_ty),
-					conv: format!(
-						"support::layout_snapshot::<{owner_ty}, {kind}, _>(this.0.chunks(), __total, __r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
-						e.conv
-					),
-					fallible: true,
-					doc: format!(
-						"tuple of the layout variant's name and its chunks, each a vector of option of {} (bounded before the call)",
-						e.doc
-					),
-				});
-			}
-		}
-		// record 0105: exactly the owned-item iterator of the pair's array, streamed after the preflight
-		if let Some((_, kind)) = self.owned_iter.borrow().clone() {
-			if depth == 0 {
-				let want = indexed_array(&kind).ok_or_else(|| {
-					Unsupported("owned iterator snapshot", format!("no array for {kind}"))
-				})?;
-				let exact = matches!(t, Ty::Impl(bs) if bs.len() == 1
-                    && bs[0].path == "core::iter::traits::double_ended::DoubleEndedIterator"
-                    && bs[0].args.is_empty()
-                    && bs[0].item.as_deref() == Some(&ty::parse(&want)));
-				if !exact {
-					return Err(Unsupported(
-						"owned iterator snapshot",
-						format!("{t:?} is not impl DoubleEndedIterator<Item = {want}>"),
-					));
-				}
-				if let Some((_, k, _, elem, _, _)) =
-					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
-				{
-					let copier = match *k {
-						"bool" => "support::owned_snapshot_bool",
-						"str" => "support::owned_snapshot_str",
-						"binary" => "support::owned_snapshot_binview",
-						_ => "support::owned_snapshot_binary_offset",
-					};
-					return Ok(Ret {
-						materialize: None,
-						rust_ty: format!("Vec<Vec<Option<{elem}>>>"),
-						conv: format!("{copier}(this.0.chunks(), __total, __r, \"__OP__\")?"),
-						fallible: true,
-						doc: format!(
-							"vector of chunks in order, each a vector of option of {k} values (bounded before the receiver is cloned)"
-						),
-					});
-				}
-				let e = self.ret(
-					&Ty::Path {
-						path: kind.clone(),
-						args: vec![],
-					},
-					owner,
-					depth + 1,
-				)?;
-				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
-					return Err(Unsupported(
-						"owned iterator snapshot",
-						format!("element {kind} is not a scalar"),
-					));
-				}
-				return Ok(Ret {
-					materialize: None,
-					rust_ty: format!("Vec<Vec<Option<{}>>>", e.rust_ty),
-					conv: format!(
-						"support::owned_snapshot::<{kind}, _>(this.0.chunks(), __total, __r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
-						e.conv
-					),
-					fallible: true,
-					doc: format!(
-						"vector of chunks in order, each a vector of option of {} (bounded before the receiver is cloned)",
-						e.doc
-					),
-				});
-			}
-		}
-		// record 0104: exactly `Chunks<the pair's array>`, read by index into owned chunks
-		if let Some((_, kind)) = self.view_snapshot.borrow().clone() {
-			if depth == 0 {
-				let want = indexed_array(&kind)
-					.ok_or_else(|| Unsupported("view snapshot", format!("no array for {kind}")))?;
-				// the parsed type, compared structurally
-				let exact = matches!(t, Ty::Path { path, args } if path == CHUNKS_VIEW && args.len() == 1 && args[0] == ty::parse(&want));
-				if !exact {
-					return Err(Unsupported(
-						"view snapshot",
-						format!("{t:?} is not {CHUNKS_VIEW}<{want}>"),
-					));
-				}
-				if let Some((_, k, _, elem, _, _)) =
-					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
-				{
-					let copier = match *k {
-						"bool" => "support::view_snapshot_bool",
-						"str" => "support::view_snapshot_str",
-						"binary" => "support::view_snapshot_binview",
-						_ => "support::view_snapshot_binary_offset",
-					};
-					return Ok(Ret {
-						materialize: None,
-						rust_ty: format!("Vec<Vec<Option<{elem}>>>"),
-						conv: format!(
-							"{copier}(this.0.chunks(), __r.len(), |__i| __r.get(__i), \"__OP__\")?"
-						),
-						fallible: true,
-						doc: format!(
-							"vector of chunks in index order, each a vector of option of {k} values (copied, bounded with payload bytes)"
-						),
-					});
-				}
-				let e = self.ret(
-					&Ty::Path {
-						path: kind.clone(),
-						args: vec![],
-					},
-					owner,
-					depth + 1,
-				)?;
-				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
-					return Err(Unsupported(
-						"view snapshot",
-						format!("element {kind} is not a scalar"),
-					));
-				}
-				return Ok(Ret {
-					materialize: None,
-					rust_ty: format!("Vec<Vec<Option<{}>>>", e.rust_ty),
-					conv: format!(
-						"support::view_snapshot::<{kind}, _>(this.0.chunks(), __r.len(), |__i| __r.get(__i), \"__OP__\", |__r| Ok::<_, Error>({}))?",
-						e.conv
-					),
-					fallible: true,
-					doc: format!(
-						"vector of chunks in index order, each a vector of option of {} (copied, bounded)",
-						e.doc
-					),
-				});
-			}
-		}
-		// record 0103: exactly the pair's borrowed typed-array iterator, driven into owned chunks
-		if let Some((_, kind)) = self.iter_snapshot.borrow().clone() {
-			if depth == 0 {
-				let want = indexed_array(&kind).ok_or_else(|| {
-					Unsupported("iterator snapshot", format!("no array for {kind}"))
-				})?;
-				// the parsed structure, not `render` (which drops an impl's item):
-				// exactly one DoubleEndedIterator bound, no arguments, and an
-				// item that is a shared borrow of exactly the pair's array
-				let exact = matches!(t, Ty::Impl(bs) if bs.len() == 1
-                    && bs[0].path == "core::iter::traits::double_ended::DoubleEndedIterator"
-                    && bs[0].args.is_empty()
-                    && matches!(bs[0].item.as_deref(), Some(Ty::Ref { mutable: false, inner }) if inner.render() == ty::parse(&want).render()));
-				if !exact {
-					return Err(Unsupported(
-						"iterator snapshot",
-						format!("{t:?} is not impl DoubleEndedIterator<Item = &{want}>"),
-					));
-				}
-				if let Some((_, k, _, elem, _, _)) =
-					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
-				{
-					let copier = match *k {
-						"bool" => "support::iter_snapshot_bool",
-						"str" => "support::iter_snapshot_str",
-						"binary" => "support::iter_snapshot_binview",
-						_ => "support::iter_snapshot_binary_offset",
-					};
-					return Ok(Ret {
-						materialize: None,
-						rust_ty: format!("Vec<Vec<Option<{elem}>>>"),
-						conv: format!("{copier}(this.0.chunks(), __r, \"__OP__\")?"),
-						fallible: true,
-						doc: format!(
-							"vector of chunks in iterator order, each a vector of option of {k} values (copied, bounded with payload bytes)"
-						),
-					});
-				}
-				let e = self.ret(
-					&Ty::Path {
-						path: kind.clone(),
-						args: vec![],
-					},
-					owner,
-					depth + 1,
-				)?;
-				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
-					return Err(Unsupported(
-						"iterator snapshot",
-						format!("element {kind} is not a scalar"),
-					));
-				}
-				return Ok(Ret {
-					materialize: None,
-					rust_ty: format!("Vec<Vec<Option<{}>>>", e.rust_ty),
-					conv: format!(
-						"support::iter_snapshot::<{kind}, _>(this.0.chunks(), __r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
-						e.conv
-					),
-					fallible: true,
-					doc: format!(
-						"vector of chunks in iterator order, each a vector of option of {} (copied, bounded)",
-						e.doc
-					),
-				});
-			}
-		}
-		// record 0102: exactly `&T::Array` for the pair, the one array copied
-		if let Some((_, kind)) = self.array_snapshot.borrow().clone() {
-			if depth == 0 {
-				let want = indexed_array(&kind)
-					.ok_or_else(|| Unsupported("array snapshot", format!("no array for {kind}")))?;
-				let exact = matches!(t, Ty::Ref { mutable: false, inner } if inner.render() == ty::parse(&want).render());
-				if !exact {
-					return Err(Unsupported(
-						"array snapshot",
-						format!("{} is not &{want}", t.render()),
-					));
-				}
-				if let Some((_, k, _, elem, _, _)) =
-					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
-				{
-					let copier = match *k {
-						"bool" => "support::array_snapshot_bool",
-						"str" => "support::array_snapshot_str",
-						"binary" => "support::array_snapshot_binview",
-						_ => "support::array_snapshot_binary_offset",
-					};
-					return Ok(Ret {
-						materialize: None,
-						rust_ty: format!("Vec<Option<{elem}>>"),
-						conv: format!("{copier}(__r, \"__OP__\")?"),
-						fallible: true,
-						doc: format!(
-							"the single array as a vector of option of {k} values (copied, bounded with payload bytes)"
-						),
-					});
-				}
-				let e = self.ret(
-					&Ty::Path {
-						path: kind.clone(),
-						args: vec![],
-					},
-					owner,
-					depth + 1,
-				)?;
-				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
-					return Err(Unsupported(
-						"array snapshot",
-						format!("element {kind} is not a scalar"),
-					));
-				}
-				return Ok(Ret {
-					materialize: None,
-					rust_ty: format!("Vec<Option<{}>>", e.rust_ty),
-					conv: format!(
-						"support::array_snapshot::<{kind}, _>(__r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
-						e.conv
-					),
-					fallible: true,
-					doc: format!(
-						"the single array as a vector of option of {} (copied, bounded)",
-						e.doc
-					),
-				});
-			}
-		}
-		// record 0101: exactly `Option<&T::Array>` for the pair, the one selected chunk copied
-		if let Some((_, kind)) = self.indexed_chunk.borrow().clone() {
-			if depth == 0 {
-				let want = indexed_array(&kind).ok_or_else(|| {
-					Unsupported("indexed chunk snapshot", format!("no array for {kind}"))
-				})?;
-				let exact = matches!(t, Ty::Path { path, args } if path == "core::option::Option" && args.len() == 1 && matches!(&args[0], Ty::Ref { mutable: false, inner } if inner.render() == ty::parse(&want).render()));
-				if !exact {
-					return Err(Unsupported(
-						"indexed chunk snapshot",
-						format!("{} is not Option<&{want}>", t.render()),
-					));
-				}
-				if let Some((_, k, _, elem, _, _)) =
-					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == kind)
-				{
-					let copier = match *k {
-						"bool" => "support::indexed_snapshot_bool",
-						"str" => "support::indexed_snapshot_str",
-						"binary" => "support::indexed_snapshot_binview",
-						_ => "support::indexed_snapshot_binary_offset",
-					};
-					return Ok(Ret {
-						materialize: None,
-						rust_ty: format!("Option<Vec<Option<{elem}>>>"),
-						conv: format!("{copier}(__r, \"__OP__\")?"),
-						fallible: true,
-						doc: format!(
-							"option of the selected chunk as a vector of option of {k} values (copied, bounded with payload bytes)"
-						),
-					});
-				}
-				let e = self.ret(
-					&Ty::Path {
-						path: kind.clone(),
-						args: vec![],
-					},
-					owner,
-					depth + 1,
-				)?;
-				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
-					return Err(Unsupported(
-						"indexed chunk snapshot",
-						format!("element {kind} is not a scalar"),
-					));
-				}
-				return Ok(Ret {
-					materialize: None,
-					rust_ty: format!("Option<Vec<Option<{}>>>", e.rust_ty),
-					conv: format!(
-						"support::indexed_snapshot::<{kind}, _>(__r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
-						e.conv
-					),
-					fallible: true,
-					doc: format!(
-						"option of the selected chunk as a vector of option of {} (copied, bounded)",
-						e.doc
-					),
-				});
-			}
-		}
-		// record 0099: the exact chunk list, copied per chunk, for the listed pair's native
-		if let Some((_, native)) = self.chunk_snapshot.borrow().clone() {
-			if depth == 0 {
-				let arrays = [
-					"polars_arrow::array::ArrayRef",
-					"alloc::boxed::Box<dyn polars_arrow::array::Array>",
-				];
-				let is_chunks = matches!(t, Ty::Ref { mutable: false, inner } if matches!(&**inner, Ty::Path { path, args } if path == "alloc::vec::Vec" && args.len() == 1 && arrays.contains(&args[0].render().as_str())));
-				if !is_chunks {
-					return Err(Unsupported(
-						"chunk snapshot",
-						format!("{} is not &Vec<ArrayRef>", t.render()),
-					));
-				}
-				// record 0100: a Boolean, string or binary owner has its own copier
-				if let Some((_, kind, copier, elem, _, _)) =
-					SCALAR_CHUNKS.iter().find(|(_, k, ..)| *k == native)
-				{
-					return Ok(Ret {
-						materialize: None,
-						rust_ty: format!("Vec<Vec<Option<{elem}>>>"),
-						conv: format!("{copier}(__r, \"__OP__\")?"),
-						fallible: true,
-						doc: format!(
-							"vector of chunks, each a vector of option of {kind} values (copied, chunk boundaries kept, bounded with payload bytes)"
-						),
-					});
-				}
-				let e = self.ret(
-					&Ty::Path {
-						path: native.clone(),
-						args: vec![],
-					},
-					owner,
-					depth + 1,
-				)?;
-				if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
-					return Err(Unsupported(
-						"chunk snapshot",
-						format!("element {native} is not a scalar"),
-					));
-				}
-				return Ok(Ret {
-					materialize: None,
-					rust_ty: format!("Vec<Vec<Option<{}>>>", e.rust_ty),
-					conv: format!(
-						"support::chunk_snapshot::<{native}, _>(__r, \"__OP__\", |__r| Ok::<_, Error>({}))?",
-						e.conv
-					),
-					fallible: true,
-					doc: format!(
-						"vector of chunks, each a vector of option of {} (copied, chunk boundaries kept, bounded)",
-						e.doc
-					),
-				});
-			}
-		}
-		// record 0096: the exact null-aware shape, for the listed pair's native
-		if let Ty::Path { path, args } = t {
-			if path == "either::Either" {
-				if let Some((_, native)) = self.null_aware.borrow().clone() {
-					if depth > 0 {
-						return Err(Unsupported(
-							"null-aware return",
-							format!("{} is nested in the return", t.render()),
-						));
-					}
-					let elem = Ty::Path {
-						path: native.clone(),
-						args: vec![],
-					};
-					let vec_of = |inner: Ty| Ty::Path {
-						path: "alloc::vec::Vec".into(),
-						args: vec![inner],
-					};
-					let want = [
-						vec_of(elem.clone()),
-						vec_of(Ty::Path {
-							path: "core::option::Option".into(),
-							args: vec![elem.clone()],
-						}),
-					];
-					if args.len() != 2
-						|| args[0].render() != want[0].render()
-						|| args[1].render() != want[1].render()
-					{
-						return Err(Unsupported(
-							"null-aware return",
-							format!(
-								"{} is not Either<Vec<{native}>, Vec<Option<{native}>>>",
-								t.render()
-							),
-						));
-					}
-					let e = self.ret(&elem, owner, depth + 1)?;
-					if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
-						return Err(Unsupported(
-							"null-aware return",
-							format!("element {native} is not a scalar"),
-						));
-					}
-					let conv = format!(
-						"__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some({c}))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r {{ Some(__r) => Some({c}), None => None }})).collect::<Result<Vec<_>, Error>>())?",
-						c = e.conv
-					);
-					return Ok(Ret {
-						materialize: None,
-						rust_ty: format!("Vec<Option<{}>>", e.rust_ty),
-						conv,
-						fallible: true,
-						doc: format!(
-							"vector of option of {} (both Polars branches; bounded before the call)",
-							e.doc
-						),
-					});
-				}
-			}
-		}
-		// record 0087: a listed callable's concrete `Map` iterator of integers
-		// (reached through the `ChunkLenIter` alias, one level down)
-		{
-			if let (Some(item), Ty::Path { path, .. }) = (self.iter_return.borrow().clone(), t) {
-				if path == "core::iter::adapters::map::Map" {
-					let limit = 1usize << 20;
-					return Ok(Ret {
-						materialize: Some(Materialize {
-							elem_conv: format!("support::widen::<{item}>(__r, \"__OP__\")?"),
-							known: IterLen::Exact,
-							wrap: IterWrap::Plain,
-						}),
-						rust_ty: "Vec<i64>".into(),
-						conv: "__r".into(),
-						fallible: true,
-						doc: format!(
-							"vector of int (materialized, at most {limit} items, each checked into range)"
-						),
-					});
-				}
-			}
+		// record 0115: the listed families' arms, in `RET_TOP` order
+		if let Some(r) = self.family_ret(RetSite::Top, t, owner, depth)? {
+			return Ok(r);
 		}
 		if depth > 6 {
 			return Err(Unsupported("nesting", t.render()));
@@ -1496,6 +984,11 @@ impl World {
 				doc: doc.to_string(),
 			})
 		};
+		// record 0115: a listed `Cow` return (`RET_COW`); no arm of `match t`
+		// before the path arms matches a path
+		if let Some(x) = self.family_ret(RetSite::Cow, t, owner, depth)? {
+			return Ok(x);
+		}
 		match t {
 			Ty::Tuple(ts) if ts.is_empty() => r("()", "__r".into(), "unit"),
 			Ty::Tuple(ts) => {
@@ -1552,199 +1045,156 @@ impl World {
 					doc: x.doc,
 				})
 			}
-			// record 0088: a listed callable's `Cow<Wrapped>` becomes owned inside the call
-			Ty::Path { path, args }
-				if path == "alloc::borrow::Cow" && args.len() == 1 && self.cow_ok.get() =>
-			{
-				let wrapped = match &args[0] {
-					Ty::Path { path: p, args: a } if a.is_empty() => {
-						let p = if p == "Self" {
-							owner.unwrap_or("")
-						} else {
-							p.as_str()
-						};
-						self.wrapper_for(p).is_some() && self.clonable.contains(p)
-					}
-					Ty::Generic(g) if g == "Self" => owner.is_some_and(|o| {
-						self.wrapper_for(o).is_some() && self.clonable.contains(o)
+			Ty::Path { path, args } => {
+				// record 0115: listed scalar re-mappings (`RET_SCALAR`); the
+				// literal arms before them name other scalars
+				if let Some(x) = self.family_ret(RetSite::Scalar, t, owner, depth)? {
+					return Ok(x);
+				}
+				match path.as_str() {
+					"bool" => r("bool", "__r".into(), "bool"),
+					"i64" => r("i64", "__r".into(), "int"),
+					"f64" => r("f64", "__r".into(), "float"),
+					"f32" => r("f64", "(__r as f64)".into(), "float"),
+					// record 0093: a source scalar whose range can exceed a script
+					// integer converts with a range check (ConversionError, naming
+					// the operation) wherever it is read back, never with `as i64`
+					p if RISKY_INTS.contains(&p) => Ok(Ret {
+						materialize: None,
+						rust_ty: "i64".into(),
+						fallible: true,
+						conv: format!("support::widen::<{p}>(__r, \"__OP__\")?"),
+						doc: "int (checked into range)".into(),
 					}),
-					_ => false,
-				};
-				if !wrapped {
-					return Err(Unsupported("cow of an unwrapped type", t.render()));
-				}
-				let x = self.ret(&args[0], owner, depth + 1)?;
-				Ok(Ret {
-					materialize: None,
-					rust_ty: x.rust_ty,
-					fallible: x.fallible,
-					conv: format!("{{ let __r = __r.into_owned(); {} }}", x.conv),
-					doc: format!("{} (owned)", x.doc),
-				})
-			}
-			Ty::Path { path, args } => match path.as_str() {
-				"bool" => r("bool", "__r".into(), "bool"),
-				"i64" => r("i64", "__r".into(), "int"),
-				"f64" => r("f64", "__r".into(), "float"),
-				"f32" => r("f64", "(__r as f64)".into(), "float"),
-				// record 0093: a source scalar whose range can exceed a script
-				// integer converts with a range check (ConversionError, naming
-				// the operation) wherever it is read back, never with `as i64`
-				// record 0094: a listed categorical hash is an exact hex token
-				"u64" if self.hash_token.borrow().as_ref().is_some_and(|h| h.1) => r(
-					"String",
-					"support::hash_token(__r)".into(),
-					"string (a hash token: 16 lowercase hex digits)",
-				),
-				"usize" if self.bounded_ok.get() => r(
-					"i64",
-					"support::bounded_usize(__r)".into(),
-					"int (a proven length or index)",
-				),
-				p if RISKY_INTS.contains(&p) => Ok(Ret {
-					materialize: None,
-					rust_ty: "i64".into(),
-					fallible: true,
-					conv: format!("support::widen::<{p}>(__r, \"__OP__\")?"),
-					doc: "int (checked into range)".into(),
-				}),
-				p if INT_NARROW.contains(&p) => r("i64", "(__r as i64)".into(), "int"),
-				"polars_utils::index::IdxSize" => r("i64", "(__r as i64)".into(), "int"),
-				"char" => r("String", "__r.to_string()".into(), "string"),
-				"str" | "alloc::string::String" | "polars_utils::pl_str::PlSmallStr" => {
-					r("String", "__r.to_string()".into(), "string")
-				}
-				"Self" => self.ret(
-					&Ty::Path {
-						path: owner
-							.ok_or_else(|| Unsupported("Self without owner", t.render()))?
-							.to_string(),
-						args: vec![],
-					},
-					owner,
-					depth + 1,
-				),
-				"core::option::Option" if args.len() == 1 && matches!(args[0], Ty::Impl(_)) => {
-					self.ret_iterator(t, owner, depth)
-				}
-				"core::option::Option" if args.len() == 1 => {
-					let x = self.ret(&args[0], owner, depth + 1)?;
-					Ok(Ret {
-						materialize: None,
-						rust_ty: format!("Option<{}>", x.rust_ty),
-						fallible: x.fallible,
-						conv: format!(
-							"match __r {{ Some(__r) => Some({}), None => None }}",
-							x.conv
-						),
-						doc: format!("option of {}", x.doc),
-					})
-				}
-				"alloc::vec::Vec" if args.len() == 1 => {
-					let x = self.ret(&args[0], owner, depth + 1)?;
-					Ok(Ret {
-						materialize: None,
-						rust_ty: format!("Vec<{}>", x.rust_ty),
-						fallible: x.fallible,
-						conv: format!(
-							"{{ let mut __v = Vec::new(); for __r in __r {{ __v.push({}); }} __v }}",
-							x.conv
-						),
-						doc: format!("vector of {}", x.doc),
-					})
-				}
-				"polars_error::PolarsResult"
-					if args.len() == 1 && matches!(args[0], Ty::Impl(_)) =>
-				{
-					self.ret_iterator(t, owner, depth)
-				}
-				"polars_error::PolarsResult" if args.len() == 1 => {
-					let x = self.ret(&args[0], owner, depth + 1)?;
-					Ok(Ret {
-						materialize: None,
-						rust_ty: x.rust_ty,
-						fallible: true,
-						conv: format!("{{ let __r = __r.map_err(Error::from)?; {} }}", x.conv),
-						doc: format!("result of {}", x.doc),
-					})
-				}
-				"core::result::Result"
-					if args.len() == 2
-						&& args[1]
-							== Ty::Path {
-								path: "polars_error::PolarsError".into(),
-								args: vec![],
-							} =>
-				{
-					let x = self.ret(&args[0], owner, depth + 1)?;
-					Ok(Ret {
-						materialize: None,
-						rust_ty: x.rust_ty,
-						fallible: true,
-						conv: format!("{{ let __r = __r.map_err(Error::from)?; {} }}", x.conv),
-						doc: format!("result of {}", x.doc),
-					})
-				}
-				"core::result::Result" => Err(Unsupported("result with foreign error", t.render())),
-				_ => {
-					if !args.is_empty() {
-						if let Some(c) = self.by_identity.get(&t.render()) {
-							return self.ret(
-								&Ty::Path {
-									path: c.clone(),
+					p if INT_NARROW.contains(&p) => r("i64", "(__r as i64)".into(), "int"),
+					"polars_utils::index::IdxSize" => r("i64", "(__r as i64)".into(), "int"),
+					"char" => r("String", "__r.to_string()".into(), "string"),
+					"str" | "alloc::string::String" | "polars_utils::pl_str::PlSmallStr" => {
+						r("String", "__r.to_string()".into(), "string")
+					}
+					"Self" => self.ret(
+						&Ty::Path {
+							path: owner
+								.ok_or_else(|| Unsupported("Self without owner", t.render()))?
+								.to_string(),
+							args: vec![],
+						},
+						owner,
+						depth + 1,
+					),
+					"core::option::Option" if args.len() == 1 && matches!(args[0], Ty::Impl(_)) => {
+						self.ret_iterator(t, owner, depth)
+					}
+					"core::option::Option" if args.len() == 1 => {
+						let x = self.ret(&args[0], owner, depth + 1)?;
+						Ok(Ret {
+							materialize: None,
+							rust_ty: format!("Option<{}>", x.rust_ty),
+							fallible: x.fallible,
+							conv: format!(
+								"match __r {{ Some(__r) => Some({}), None => None }}",
+								x.conv
+							),
+							doc: format!("option of {}", x.doc),
+						})
+					}
+					"alloc::vec::Vec" if args.len() == 1 => {
+						let x = self.ret(&args[0], owner, depth + 1)?;
+						Ok(Ret {
+							materialize: None,
+							rust_ty: format!("Vec<{}>", x.rust_ty),
+							fallible: x.fallible,
+							conv: format!(
+								"{{ let mut __v = Vec::new(); for __r in __r {{ __v.push({}); }} __v }}",
+								x.conv
+							),
+							doc: format!("vector of {}", x.doc),
+						})
+					}
+					"polars_error::PolarsResult"
+						if args.len() == 1 && matches!(args[0], Ty::Impl(_)) =>
+					{
+						self.ret_iterator(t, owner, depth)
+					}
+					"polars_error::PolarsResult" if args.len() == 1 => {
+						let x = self.ret(&args[0], owner, depth + 1)?;
+						Ok(Ret {
+							materialize: None,
+							rust_ty: x.rust_ty,
+							fallible: true,
+							conv: format!("{{ let __r = __r.map_err(Error::from)?; {} }}", x.conv),
+							doc: format!("result of {}", x.doc),
+						})
+					}
+					"core::result::Result"
+						if args.len() == 2
+							&& args[1]
+								== Ty::Path {
+									path: "polars_error::PolarsError".into(),
 									args: vec![],
-								},
-								owner,
-								depth + 1,
-							);
-						}
+								} =>
+					{
+						let x = self.ret(&args[0], owner, depth + 1)?;
+						Ok(Ret {
+							materialize: None,
+							rust_ty: x.rust_ty,
+							fallible: true,
+							conv: format!("{{ let __r = __r.map_err(Error::from)?; {} }}", x.conv),
+							doc: format!("result of {}", x.doc),
+						})
 					}
-					if let Some(w) = self.wrapper_for(path) {
+					"core::result::Result" => {
+						Err(Unsupported("result with foreign error", t.render()))
+					}
+					_ => {
 						if !args.is_empty() {
-							return Err(Unsupported("generic instantiation", t.render()));
-						}
-						return r(&w.rust, format!("{}(__r)", w.rust), &w.rune_name);
-					}
-					if let Some(s) = self.types.get(path) {
-						if s.kind == "type_alias" && args.is_empty() {
-							if let Some(target) = &s.alias_target {
-								return self.ret(&ty::parse(target), owner, depth + 1);
+							if let Some(c) = self.by_identity.get(&t.render()) {
+								return self.ret(
+									&Ty::Path {
+										path: c.clone(),
+										args: vec![],
+									},
+									owner,
+									depth + 1,
+								);
 							}
 						}
-						let why = if s.generic {
-							"generic type"
-						} else if s.lifetime {
-							"lifetime type"
-						} else if s.hidden {
-							"hidden type"
-						} else if s.kind == "trait" {
-							"trait object"
-						} else {
-							"unwrapped type"
-						};
-						return Err(Unsupported(why, t.render()));
+						if let Some(w) = self.wrapper_for(path) {
+							if !args.is_empty() {
+								return Err(Unsupported("generic instantiation", t.render()));
+							}
+							return r(&w.rust, format!("{}(__r)", w.rust), &w.rune_name);
+						}
+						if let Some(s) = self.types.get(path) {
+							if s.kind == "type_alias" && args.is_empty() {
+								if let Some(target) = &s.alias_target {
+									return self.ret(&ty::parse(target), owner, depth + 1);
+								}
+							}
+							let why = if s.generic {
+								"generic type"
+							} else if s.lifetime {
+								"lifetime type"
+							} else if s.hidden {
+								"hidden type"
+							} else if s.kind == "trait" {
+								"trait object"
+							} else {
+								"unwrapped type"
+							};
+							return Err(Unsupported(why, t.render()));
+						}
+						// record 0115: a listed bitmap return (`RET_UNWRAPPED`)
+						if let Some(x) = self.family_ret(RetSite::Unwrapped, t, owner, depth)? {
+							return Ok(x);
+						}
+						if path.starts_with("polars") {
+							return Err(Unsupported("unreachable polars type", t.render()));
+						}
+						Err(Unsupported("foreign type", t.render()))
 					}
-					// record 0085: a validity bitmap, only for the release's listed paths
-					if path == "polars_arrow::bitmap::immutable::Bitmap"
-						&& args.is_empty() && self.bitmap_ok.get()
-					{
-						let limit = 1usize << 20;
-						return Ok(Ret {
-							materialize: None,
-							rust_ty: "Vec<bool>".into(),
-							fallible: true,
-							conv: "support::copy_bits(&__r, \"__OP__\")?".into(),
-							doc: format!(
-								"vector of bool (validity bits copied from a bitmap, at most {limit} bits per call)"
-							),
-						});
-					}
-					if path.starts_with("polars") {
-						return Err(Unsupported("unreachable polars type", t.render()));
-					}
-					Err(Unsupported("foreign type", t.render()))
 				}
-			},
+			}
 			Ty::Generic(g) if g == "Self" => self.ret(
 				&Ty::Path {
 					path: "Self".into(),

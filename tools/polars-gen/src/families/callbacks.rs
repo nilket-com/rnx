@@ -2,7 +2,7 @@ use crate::census::callback_census;
 use crate::emit::callable::emit_callable;
 use crate::emit::{Emitted, generics_map, routed};
 use crate::model::{Callable, Inventory, Param, Supporting};
-use crate::release::{InstantiationScope, Release, ReleaseProvenance};
+use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
 use crate::text::{mentions, sanitize, split_top_on};
 use crate::ty;
 use crate::ty::{Ty, last};
@@ -485,37 +485,15 @@ pub(crate) fn callback_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
-	release.callback_mutable.push(CallbackMutable {
+	release.families.callback_mutable.push(CallbackMutable {
 		path: format!("{expr}::map_many"),
 		param: "function".into(),
 		contract: "vector".into(),
 		cite: "t".into(),
 	});
-	release.callback_mutable.push(CallbackMutable {
+	release.families.callback_mutable.push(CallbackMutable {
 		path: format!("{ca}::apply_into_string_amortized"),
 		param: "f".into(),
 		contract: "result buffer".into(),
@@ -564,15 +542,16 @@ pub(crate) fn callback_self_test() {
 		(format!("{ca}::apply_mut"), "f", "immediate", vec![]),
 	] {
 		release
+			.families
 			.callback_invocation
 			.push(audit(path, param, inv_, &sinks));
 	}
-	release.callback_sink.push(CallbackSink {
+	release.families.callback_sink.push(CallbackSink {
 		path: "polars_lazy::frame::LazyFrame::collect".into(),
 		sink: "plan execution".into(),
 		cite: "t".into(),
 	});
-	release.callback_sink.push(CallbackSink {
+	release.families.callback_sink.push(CallbackSink {
 		path: "polars_lazy::frame::LazyFrame::collect_schema".into(),
 		sink: "schema resolution".into(),
 		cite: "t".into(),
@@ -771,6 +750,7 @@ pub(crate) fn callback_self_test() {
 	);
 	let mut no_invocation = release.clone();
 	no_invocation
+		.families
 		.callback_invocation
 		.retain(|a| a.path != format!("{column}::apply_unary_elementwise"));
 	let world_no_invocation = World::new(&inv, &no_invocation, &["callback"]);
@@ -788,6 +768,7 @@ pub(crate) fn callback_self_test() {
 	// removing the classification of one execution path makes every stored operation unresolved, immediate ones stay feasible
 	let mut fewer = release.clone();
 	fewer
+		.families
 		.callback_sink
 		.retain(|k| !k.path.ends_with("::collect_schema"));
 	let world2 = World::new(&inv, &fewer, &["mechanical", "conversion", "callback"]);
@@ -889,6 +870,7 @@ pub(crate) fn routed_for_callbacks(c: &Callable) -> bool {
 pub(crate) fn routed_binding(world: &World, c: &Callable, owner: Option<&str>) -> bool {
 	if world
 		.release
+		.families
 		.callback_safe
 		.iter()
 		.any(|safe| safe.path == c.canonical_path)
@@ -897,6 +879,7 @@ pub(crate) fn routed_binding(world: &World, c: &Callable, owner: Option<&str>) -
 	}
 	if world
 		.release
+		.families
 		.callback_sink
 		.iter()
 		.any(|sink| sink.path == c.canonical_path && sink.sink != "none")
@@ -910,6 +893,7 @@ pub(crate) fn routed_binding(world: &World, c: &Callable, owner: Option<&str>) -
 pub(crate) fn binding_route_reason(world: &World, c: &Callable, routed: bool) -> Option<String> {
 	if world
 		.release
+		.families
 		.callback_safe
 		.iter()
 		.any(|safe| safe.path == c.canonical_path)
@@ -921,6 +905,7 @@ pub(crate) fn binding_route_reason(world: &World, c: &Callable, routed: bool) ->
 	}
 	if world
 		.release
+		.families
 		.callback_sink
 		.iter()
 		.any(|sink| sink.path == c.canonical_path && sink.sink != "none")
@@ -950,6 +935,7 @@ pub(crate) fn callback_gate(world: &World, c: &Callable) -> Result<(), String> {
 		};
 		let Some(audit) = world
 			.release
+			.families
 			.callback_invocation
 			.iter()
 			.find(|a| a.path == c.canonical_path && a.param == p.name)
@@ -977,6 +963,7 @@ pub(crate) fn callback_gate(world: &World, c: &Callable) -> Result<(), String> {
 			if arg.trim().starts_with("&mut ")
 				&& !world
 					.release
+					.families
 					.callback_mutable
 					.iter()
 					.any(|m| m.path == c.canonical_path && m.param == p.name)
@@ -1087,6 +1074,7 @@ pub(crate) fn callback_arg(
 	};
 	let audit = world
 		.release
+		.families
 		.callback_mutable
 		.iter()
 		.find(|m| m.path == c.canonical_path && m.param == sig.param);

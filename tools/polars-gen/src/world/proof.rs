@@ -2,7 +2,7 @@ use crate::emit::generics_map;
 use crate::families::bounds::external_bound_entry;
 use crate::model;
 use crate::model::{Callable, Inventory, Param, Supporting};
-use crate::release::{InstantiationScope, Release, ReleaseProvenance};
+use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
 use crate::text::{split_top, split_top_plus};
 use crate::ty::last;
 use crate::world::World;
@@ -920,29 +920,7 @@ pub(crate) fn applicability_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	let w = World::new(&inv, &release, &["mechanical"]);
 	let i64c = format!("{ca}<polars_core::datatypes::Int64Type>");

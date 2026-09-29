@@ -1,14 +1,10 @@
 use crate::census::PairRecord;
 use crate::emit::callable::emit_method;
 use crate::emit::{Emitted, OracleInfo, RouteException, binding_id};
-use crate::families::bounds::{null_aware_return_matches, sized_self_entry};
 use crate::families::callbacks::{binding_route_reason, callback_gate};
-use crate::families::snapshots::{
-	array_snapshot_entry, chunk_snapshot_entry, indexed_chunk_entry, iter_snapshot_entry,
-	layout_entry, owned_iter_entry, view_snapshot_entry,
-};
+use crate::families::target;
+use crate::families::{PAIR, PAIR_POST, PAIR_PRE, collect};
 use crate::model::Callable;
-use crate::text::mentions;
 use crate::ty::last;
 use crate::world::World;
 use crate::world::proof::Applicability;
@@ -34,6 +30,7 @@ pub(crate) fn emit_instantiations(
 	let mut exceptions: Vec<RouteException> = Vec::new();
 	let mut first_info: Option<OracleInfo> = None;
 	for p in pairs {
+		let _target = target(format!("{}|{}", c.key, p.alias));
 		match &p.result {
 			Applicability::Proven => {}
 			Applicability::Rejected(r) => {
@@ -101,93 +98,19 @@ pub(crate) fn emit_instantiations(
 		for (q, t) in syn.params.iter_mut().zip(params) {
 			q.ty_canonical = t;
 		}
-		// record 0092: a listed scalar function generic becomes this pair's native
-		if let Some(m) = world
-			.release
-			.method_scalar_generics
-			.iter()
-			.find(|m| m.key == c.key && m.path == c.canonical_path)
-		{
-			if let Err(why) = m.check(c) {
+		// record 0115: the pair gates before the return is substituted
+		// (`PAIR_PRE`): every listed state, in order, until a refusal
+		let mut states = match collect(PAIR_PRE, "pair", |f| {
+			f.listed_pair_pre(world, c, p, &mut syn, ret.as_deref())
+		}) {
+			Ok(s) => s,
+			Err((label, why)) => {
 				exceptions.push(RouteException {
 					route: "instantiation",
 					receiver: p.alias.clone(),
-					reason: format!("refused: method scalar generic: {why}"),
+					reason: format!("refused: {label}: {why}"),
 				});
 				continue;
-			}
-			let Some(native) = m.native_for(&p.identity) else {
-				exceptions.push(RouteException {
-					route: "instantiation",
-					receiver: p.alias.clone(),
-					reason: format!(
-						"refused: method scalar generic: `{}` is not a listed type",
-						p.identity
-					),
-				});
-				continue;
-			};
-			// the family substitution has already spelled `N` as its bound, so the
-			// parameters that are exactly `N` in the original signature are
-			// bound by position (`check` guarantees `N` appears nowhere else)
-			for (q, orig) in syn.params.iter_mut().zip(&c.params) {
-				if orig.ty_canonical.trim() == m.generic {
-					q.ty_canonical = native.to_string();
-				}
-			}
-			if syn.params.iter().any(|q| {
-				mentions(&q.ty_canonical, &m.generic) || q.ty_canonical.contains("NumCast")
-			}) {
-				exceptions.push(RouteException {
-					route: "instantiation",
-					receiver: p.alias.clone(),
-					reason: format!("refused: method scalar generic: `{}` remains", m.generic),
-				});
-				continue;
-			}
-		}
-		// record 0096: a listed null-aware return, for this pair's native only
-		let null_aware = match world
-			.release
-			.null_aware_returns
-			.iter()
-			.find(|n| n.key == c.key && n.path == c.canonical_path)
-		{
-			None => None,
-			Some(n) => {
-				if let Err(why) = n.check() {
-					exceptions.push(RouteException {
-						route: "instantiation",
-						receiver: p.alias.clone(),
-						reason: format!("refused: null-aware return: {why}"),
-					});
-					continue;
-				}
-				match n.native_for(&p.identity) {
-					Some(native) if !null_aware_return_matches(ret.as_deref(), native) => {
-						exceptions.push(RouteException {
-							route: "instantiation",
-							receiver: p.alias.clone(),
-							reason: format!(
-								"refused: null-aware return: `{}` is not Either<Vec<{native}>, Vec<Option<{native}>>>",
-								ret.as_deref().unwrap_or("()")
-							),
-						});
-						continue;
-					}
-					Some(native) => Some((c.name.clone(), native.to_string())),
-					None => {
-						exceptions.push(RouteException {
-							route: "instantiation",
-							receiver: p.alias.clone(),
-							reason: format!(
-								"refused: null-aware return: `{}` is not a listed type",
-								p.identity
-							),
-						});
-						continue;
-					}
-				}
 			}
 		};
 		syn.ret_canonical = ret;
@@ -195,235 +118,25 @@ pub(crate) fn emit_instantiations(
 		syn.impl_bounds.clear();
 		syn.impl_where.clear();
 		syn.generics_canonical.clear(); // closure bounds are now in the substituted parameter types
-		// record 0099: a listed chunk snapshot, for this pair's native only
-		let chunk_snapshot = match chunk_snapshot_entry(&world.release, c) {
-			None => None,
-			Some(Err(why)) => {
+		// record 0115: the pair gates after it (`PAIR_POST`)
+		match collect(PAIR_POST, "pair", |f| {
+			f.listed_pair_post(world, c, p, &mut syn)
+		}) {
+			Ok(s) => states.extend(s),
+			Err((label, why)) => {
 				exceptions.push(RouteException {
 					route: "instantiation",
 					receiver: p.alias.clone(),
-					reason: format!("refused: chunk snapshot: {why}"),
+					reason: format!("refused: {label}: {why}"),
 				});
 				continue;
 			}
-			Some(Ok(e)) => match e.native_for(&p.identity) {
-				Some(n) => Some((c.name.clone(), n.to_string())),
-				None => {
-					exceptions.push(RouteException {
-						route: "instantiation",
-						receiver: p.alias.clone(),
-						reason: format!(
-							"refused: chunk snapshot: `{}` is not a listed pair",
-							p.identity
-						),
-					});
-					continue;
-				}
-			},
-		};
-		// record 0101: a listed indexed chunk snapshot, for this pair's kind only
-		let indexed_chunk = match indexed_chunk_entry(&world.release, c) {
-			None => None,
-			Some(Err(why)) => {
-				exceptions.push(RouteException {
-					route: "instantiation",
-					receiver: p.alias.clone(),
-					reason: format!("refused: indexed chunk snapshot: {why}"),
-				});
-				continue;
-			}
-			Some(Ok(e)) => match e.native_for(&p.identity) {
-				Some(n) => Some((c.name.clone(), n.to_string())),
-				None => {
-					exceptions.push(RouteException {
-						route: "instantiation",
-						receiver: p.alias.clone(),
-						reason: format!(
-							"refused: indexed chunk snapshot: `{}` is not a listed pair",
-							p.identity
-						),
-					});
-					continue;
-				}
-			},
-		};
-		// record 0106: a listed layout snapshot, for this pair only
-		let layout = match layout_entry(&world.release, c) {
-			None => None,
-			Some(Err(why)) => {
-				exceptions.push(RouteException {
-					route: "instantiation",
-					receiver: p.alias.clone(),
-					reason: format!("refused: layout snapshot: {why}"),
-				});
-				continue;
-			}
-			Some(Ok(e)) => match e.pair_for(&p.identity) {
-				Some((t, n)) => Some((c.name.clone(), n, t)),
-				None => {
-					exceptions.push(RouteException {
-						route: "instantiation",
-						receiver: p.alias.clone(),
-						reason: format!(
-							"refused: layout snapshot: `{}` is not a listed pair",
-							p.identity
-						),
-					});
-					continue;
-				}
-			},
-		};
-		// record 0105: a listed owned iterator snapshot, for this pair's kind only
-		let owned_iter = match owned_iter_entry(&world.release, c) {
-			None => None,
-			Some(Err(why)) => {
-				exceptions.push(RouteException {
-					route: "instantiation",
-					receiver: p.alias.clone(),
-					reason: format!("refused: owned iterator snapshot: {why}"),
-				});
-				continue;
-			}
-			Some(Ok(e)) => match e.native_for(&p.identity) {
-				Some(n) => Some((c.name.clone(), n.to_string())),
-				None => {
-					exceptions.push(RouteException {
-						route: "instantiation",
-						receiver: p.alias.clone(),
-						reason: format!(
-							"refused: owned iterator snapshot: `{}` is not a listed pair",
-							p.identity
-						),
-					});
-					continue;
-				}
-			},
-		};
-		// record 0104: a listed view snapshot, for this pair's kind only
-		let view_snapshot = match view_snapshot_entry(&world.release, c) {
-			None => None,
-			Some(Err(why)) => {
-				exceptions.push(RouteException {
-					route: "instantiation",
-					receiver: p.alias.clone(),
-					reason: format!("refused: view snapshot: {why}"),
-				});
-				continue;
-			}
-			Some(Ok(e)) => match e.native_for(&p.identity) {
-				Some(n) => Some((c.name.clone(), n.to_string())),
-				None => {
-					exceptions.push(RouteException {
-						route: "instantiation",
-						receiver: p.alias.clone(),
-						reason: format!(
-							"refused: view snapshot: `{}` is not a listed pair",
-							p.identity
-						),
-					});
-					continue;
-				}
-			},
-		};
-		// record 0103: a listed iterator snapshot, for this pair's kind only
-		let iter_snapshot = match iter_snapshot_entry(&world.release, c) {
-			None => None,
-			Some(Err(why)) => {
-				exceptions.push(RouteException {
-					route: "instantiation",
-					receiver: p.alias.clone(),
-					reason: format!("refused: iterator snapshot: {why}"),
-				});
-				continue;
-			}
-			Some(Ok(e)) => match e.native_for(&p.identity) {
-				Some(n) => Some((c.name.clone(), n.to_string())),
-				None => {
-					exceptions.push(RouteException {
-						route: "instantiation",
-						receiver: p.alias.clone(),
-						reason: format!(
-							"refused: iterator snapshot: `{}` is not a listed pair",
-							p.identity
-						),
-					});
-					continue;
-				}
-			},
-		};
-		// record 0102: a listed array snapshot, for this pair's kind only
-		let array_snapshot = match array_snapshot_entry(&world.release, c) {
-			None => None,
-			Some(Err(why)) => {
-				exceptions.push(RouteException {
-					route: "instantiation",
-					receiver: p.alias.clone(),
-					reason: format!("refused: array snapshot: {why}"),
-				});
-				continue;
-			}
-			Some(Ok(e)) => match e.native_for(&p.identity) {
-				Some(n) => Some((c.name.clone(), n.to_string())),
-				None => {
-					exceptions.push(RouteException {
-						route: "instantiation",
-						receiver: p.alias.clone(),
-						reason: format!(
-							"refused: array snapshot: `{}` is not a listed pair",
-							p.identity
-						),
-					});
-					continue;
-				}
-			},
-		};
-		// record 0097: a listed `Self: Sized` method (re-checked on the original signature)
-		let sized_self = match sized_self_entry(&world.release, c) {
-			None => None,
-			Some(Err(why)) => {
-				exceptions.push(RouteException {
-					route: "instantiation",
-					receiver: p.alias.clone(),
-					reason: format!("refused: sized-self method: {why}"),
-				});
-				continue;
-			}
-			Some(Ok(_)) => {
-				// `Self` is the method's generic (bound `Sized`), and the family
-				// substitution spelled it as that bound: on a concrete pair it is
-				// the receiver itself, and nothing else may mention it
-				if syn.params.iter().any(|q| q.ty_canonical.contains("Sized")) {
-					exceptions.push(RouteException {
-						route: "instantiation",
-						receiver: p.alias.clone(),
-						reason: "refused: sized-self method: `Sized` remains in a parameter".into(),
-					});
-					continue;
-				}
-				syn.ret_canonical = Some(p.alias.clone());
-				Some(c.name.clone())
-			}
-		};
+		}
 		let before = out.entries.len();
-		*world.null_aware.borrow_mut() = null_aware;
-		*world.sized_self.borrow_mut() = sized_self;
-		*world.chunk_snapshot.borrow_mut() = chunk_snapshot;
-		*world.indexed_chunk.borrow_mut() = indexed_chunk;
-		*world.array_snapshot.borrow_mut() = array_snapshot;
-		*world.iter_snapshot.borrow_mut() = iter_snapshot;
-		*world.view_snapshot.borrow_mut() = view_snapshot;
-		*world.owned_iter.borrow_mut() = owned_iter;
-		*world.layout.borrow_mut() = layout;
-		emit_method(world, out, &syn, &p.alias, None, false);
-		*world.layout.borrow_mut() = None;
-		*world.owned_iter.borrow_mut() = None;
-		*world.view_snapshot.borrow_mut() = None;
-		*world.iter_snapshot.borrow_mut() = None;
-		*world.indexed_chunk.borrow_mut() = None;
-		*world.array_snapshot.borrow_mut() = None;
-		*world.null_aware.borrow_mut() = None;
-		*world.sized_self.borrow_mut() = None;
-		*world.chunk_snapshot.borrow_mut() = None;
+		{
+			let _scope = world.active.enter(PAIR, states);
+			emit_method(world, out, &syn, &p.alias, None, false);
+		}
 		let e = out.entries.pop().unwrap();
 		debug_assert_eq!(before, out.entries.len());
 		if e.status == "generated" {

@@ -1,11 +1,17 @@
+use crate::census::PairRecord;
 use crate::emit::Emitted;
 use crate::emit::callable::{emit_callable, emit_method};
 use crate::families::free_instantiations::FreeInstantiation;
+use crate::families::{ArgSite, Check, Family, Listed, OracleSite, RetSite, State};
 use crate::model::{Callable, Inventory, Param, Supporting};
-use crate::release::{InstantiationScope, Release, ReleaseProvenance};
+use crate::oracle::Oracle;
+use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
 use crate::text::{mentions, replace_token};
 use crate::ty;
+use crate::ty::Ty;
 use crate::world::World;
+use crate::world::mapping::ok_arg;
+use crate::world::mapping::{Arg, Ret, Unsupported};
 use std::collections::BTreeMap;
 
 #[derive(serde::Deserialize, Clone)]
@@ -105,6 +111,7 @@ pub(crate) fn external_bound_entry<'a>(
 	c: &Callable,
 ) -> Option<Result<&'a ExternalBound, String>> {
 	let listed: Vec<&ExternalBound> = release
+		.families
 		.external_bounds
 		.iter()
 		.filter(|m| m.key == c.key && m.path == c.canonical_path)
@@ -167,6 +174,7 @@ pub(crate) fn sized_self_entry<'a>(
 	c: &Callable,
 ) -> Option<Result<&'a SizedSelfMethod, String>> {
 	let listed: Vec<&SizedSelfMethod> = release
+		.families
 		.sized_self_methods
 		.iter()
 		.filter(|m| m.key == c.key && m.path == c.canonical_path)
@@ -250,6 +258,7 @@ pub(crate) fn hash_token_scope(
 	c: &Callable,
 ) -> Result<Option<(bool, Option<String>)>, String> {
 	let listed: Vec<&HashToken> = release
+		.families
 		.hash_tokens
 		.iter()
 		.filter(|h| h.key == c.key && h.path == c.canonical_path)
@@ -423,6 +432,376 @@ impl MethodScalarGeneric {
 			.iter()
 			.position(|t| identity == format!("polars_core::chunked_array::ChunkedArray<{t}>"))
 			.map(|i| self.natives[i].as_str())
+	}
+}
+
+// ---------------------------------------------------------------- record 0115: this module's families
+
+/// Record 0094: a listed categorical hash, as an exact hex token.
+pub(crate) struct HashTokenFamily;
+pub(crate) static HASH_TOKEN: HashTokenFamily = HashTokenFamily;
+
+impl Family for HashTokenFamily {
+	fn name(&self) -> &'static str {
+		"hash_token"
+	}
+	fn listed(&self, world: &World, c: &Callable) -> Listed {
+		// record 0094: a listed hash, as a token return or parameter
+		match hash_token_scope(&world.release, c) {
+			Ok(Some((ret, param))) => Listed::Active(State::Hash(c.name.clone(), ret, param)),
+			Ok(None) => Listed::Unlisted,
+			Err(reason) => Listed::Refused("release policy", reason),
+		}
+	}
+	fn ret(
+		&self,
+		_world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		_owner: Option<&str>,
+		_depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Scalar {
+			return Ok(None);
+		}
+		// record 0094: a listed categorical hash is an exact hex token
+		let Ty::Path { path, .. } = t else {
+			return Ok(None);
+		};
+		if path == "u64" && state.hash().is_some_and(|h| h.1) {
+			return Ok(Some(Ret {
+				materialize: None,
+				rust_ty: "String".to_string(),
+				fallible: false,
+				conv: "support::hash_token(__r)".into(),
+				doc: "string (a hash token: 16 lowercase hex digits)".to_string(),
+			}));
+		}
+		Ok(None)
+	}
+	fn arg(
+		&self,
+		_world: &World,
+		state: &State,
+		site: ArgSite,
+		t: &Ty,
+		name: &str,
+		_owner: Option<&str>,
+	) -> Result<Option<Arg>, Unsupported> {
+		if site != ArgSite::Scalar {
+			return Ok(None);
+		}
+		// record 0094: a listed hash parameter is a token, parsed before the call
+		let Ty::Path { path, .. } = t else {
+			return Ok(None);
+		};
+		if !(path == "u64" && state.hash().is_some_and(|h| h.2.as_deref() == Some(name))) {
+			return Ok(None);
+		}
+		(|| -> Result<Arg, Unsupported> {
+			let op = state.hash().unwrap().0;
+			let mut a = ok_arg(
+				"&str",
+				format!("__hash_{name}"),
+				"string (a hash token: 16 lowercase hex digits)",
+			)?;
+			a.pre.push(format!(
+				"let __hash_{name} = support::hash_from_token({name}, \"{op}\")?;"
+			));
+			a.fallible = true;
+			a.shape = "hash".into();
+			Ok(a)
+		})()
+		.map(Some)
+	}
+	fn oracle_state(
+		&self,
+		world: &World,
+		key: &str,
+		path: &str,
+		_owner: Option<&str>,
+	) -> Option<State> {
+		world
+			.release
+			.families
+			.hash_tokens
+			.iter()
+			.any(|h| h.key == key && h.path == path && h.direction == "return")
+			.then_some(State::On)
+	}
+	fn oracle_fmt(
+		&self,
+		_o: &Oracle,
+		_state: &State,
+		site: OracleSite,
+		t: &Ty,
+		_owner: Option<&str>,
+		_depth: u8,
+	) -> Option<Option<String>> {
+		if site != OracleSite::Scalar {
+			return None;
+		}
+		// record 0094: a listed hash return is compared as its token
+		match t {
+			Ty::Path { path, .. } if path == "u64" => {
+				Some(Some("format!(\"{:016x}\", __r)".into()))
+			}
+			_ => None,
+		}
+	}
+}
+
+/// Record 0092: a listed scalar function generic, bound to the pair's native.
+pub(crate) struct ScalarGenericFamily;
+pub(crate) static SCALAR_GENERIC: ScalarGenericFamily = ScalarGenericFamily;
+
+impl Family for ScalarGenericFamily {
+	fn name(&self) -> &'static str {
+		"scalar_generic"
+	}
+	fn listed_pair_pre(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		syn: &mut Callable,
+		_ret: Option<&str>,
+	) -> Listed {
+		// record 0092: a listed scalar function generic becomes this pair's native
+		let Some(m) = world
+			.release
+			.families
+			.method_scalar_generics
+			.iter()
+			.find(|m| m.key == c.key && m.path == c.canonical_path)
+		else {
+			return Listed::Unlisted;
+		};
+		if let Err(why) = m.check(c) {
+			return Listed::Refused("method scalar generic", why);
+		}
+		let Some(native) = m.native_for(&p.identity) else {
+			return Listed::Refused(
+				"method scalar generic",
+				format!("`{}` is not a listed type", p.identity),
+			);
+		};
+		// the family substitution has already spelled `N` as its bound, so the
+		// parameters that are exactly `N` in the original signature are
+		// bound by position (`check` guarantees `N` appears nowhere else)
+		for (q, orig) in syn.params.iter_mut().zip(&c.params) {
+			if orig.ty_canonical.trim() == m.generic {
+				q.ty_canonical = native.to_string();
+			}
+		}
+		if syn
+			.params
+			.iter()
+			.any(|q| mentions(&q.ty_canonical, &m.generic) || q.ty_canonical.contains("NumCast"))
+		{
+			return Listed::Refused("method scalar generic", format!("`{}` remains", m.generic));
+		}
+		Listed::Active(State::On)
+	}
+}
+
+/// Record 0096: a listed null-aware return, bounded before the call.
+pub(crate) struct NullAwareFamily;
+pub(crate) static NULL_AWARE: NullAwareFamily = NullAwareFamily;
+
+impl Family for NullAwareFamily {
+	fn name(&self) -> &'static str {
+		"null_aware"
+	}
+	fn listed_pair_pre(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		_syn: &mut Callable,
+		ret: Option<&str>,
+	) -> Listed {
+		// record 0096: a listed null-aware return, for this pair's native only
+		let Some(n) = world
+			.release
+			.families
+			.null_aware_returns
+			.iter()
+			.find(|n| n.key == c.key && n.path == c.canonical_path)
+		else {
+			return Listed::Unlisted;
+		};
+		if let Err(why) = n.check() {
+			return Listed::Refused("null-aware return", why);
+		}
+		match n.native_for(&p.identity) {
+			Some(native) if !null_aware_return_matches(ret, native) => Listed::Refused(
+				"null-aware return",
+				format!(
+					"`{}` is not Either<Vec<{native}>, Vec<Option<{native}>>>",
+					ret.unwrap_or("()")
+				),
+			),
+			Some(native) => Listed::Active(State::Two(c.name.clone(), native.to_string())),
+			None => Listed::Refused(
+				"null-aware return",
+				format!("`{}` is not a listed type", p.identity),
+			),
+		}
+	}
+	fn ret(
+		&self,
+		world: &World,
+		state: &State,
+		site: RetSite,
+		t: &Ty,
+		owner: Option<&str>,
+		depth: u8,
+	) -> Result<Option<Ret>, Unsupported> {
+		if site != RetSite::Top {
+			return Ok(None);
+		}
+		// record 0096: the exact null-aware shape, for the listed pair's native
+		if let Ty::Path { path, args } = t {
+			if path == "either::Either" {
+				if let Some((_, native)) = state.two() {
+					if depth > 0 {
+						return Err(Unsupported(
+							"null-aware return",
+							format!("{} is nested in the return", t.render()),
+						));
+					}
+					let elem = Ty::Path {
+						path: native.clone(),
+						args: vec![],
+					};
+					let vec_of = |inner: Ty| Ty::Path {
+						path: "alloc::vec::Vec".into(),
+						args: vec![inner],
+					};
+					let want = [
+						vec_of(elem.clone()),
+						vec_of(Ty::Path {
+							path: "core::option::Option".into(),
+							args: vec![elem.clone()],
+						}),
+					];
+					if args.len() != 2
+						|| args[0].render() != want[0].render()
+						|| args[1].render() != want[1].render()
+					{
+						return Err(Unsupported(
+							"null-aware return",
+							format!(
+								"{} is not Either<Vec<{native}>, Vec<Option<{native}>>>",
+								t.render()
+							),
+						));
+					}
+					let e = world.ret(&elem, owner, depth + 1)?;
+					if e.materialize.is_some() || e.rust_ty.starts_with("Vec") {
+						return Err(Unsupported(
+							"null-aware return",
+							format!("element {native} is not a scalar"),
+						));
+					}
+					let conv = format!(
+						"__r.either(|__v| __v.into_iter().map(|__r| Ok::<_, Error>(Some({c}))).collect::<Result<Vec<_>, Error>>(), |__v| __v.into_iter().map(|__r| Ok::<_, Error>(match __r {{ Some(__r) => Some({c}), None => None }})).collect::<Result<Vec<_>, Error>>())?",
+						c = e.conv
+					);
+					return Ok(Some(Ret {
+						materialize: None,
+						rust_ty: format!("Vec<Option<{}>>", e.rust_ty),
+						conv,
+						fallible: true,
+						doc: format!(
+							"vector of option of {} (both Polars branches; bounded before the call)",
+							e.doc
+						),
+					}));
+				}
+			}
+		}
+		Ok(None)
+	}
+	fn check(&self, _world: &World, state: &State, c: &Callable, _owner: &str, ret: &Ret) -> Check {
+		// record 0096: the whole null-aware result is bounded before Polars allocates it
+		let Some((op, native)) = state.two() else {
+			return Check::Pass;
+		};
+		if c.receiver != "&self"
+			|| !ret.fallible
+			|| !ret.conv.starts_with("__r.either(")
+			|| !null_aware_return_matches(c.ret_canonical.as_deref(), &native)
+		{
+			return Check::Refuse(
+				"null-aware return",
+				"needs a `&self` receiver and the null-aware conversion".into(),
+			);
+		}
+		Check::Pre(
+			format!("support::null_aware_bound(this.0.len(), \"{op}\")?; "),
+			false,
+		)
+	}
+}
+
+/// Record 0097: a listed `Self: Sized` method, guarded by the receiver length.
+pub(crate) struct SizedSelfFamily;
+pub(crate) static SIZED_SELF: SizedSelfFamily = SizedSelfFamily;
+
+impl Family for SizedSelfFamily {
+	fn name(&self) -> &'static str {
+		"sized_self"
+	}
+	fn listed_pair_post(
+		&self,
+		world: &World,
+		c: &Callable,
+		p: &PairRecord,
+		syn: &mut Callable,
+	) -> Listed {
+		// record 0097: a listed `Self: Sized` method (re-checked on the original signature)
+		match sized_self_entry(&world.release, c) {
+			None => Listed::Unlisted,
+			Some(Err(why)) => Listed::Refused("sized-self method", why),
+			Some(Ok(_)) => {
+				// `Self` is the method's generic (bound `Sized`), and the family
+				// substitution spelled it as that bound: on a concrete pair it is
+				// the receiver itself, and nothing else may mention it
+				if syn.params.iter().any(|q| q.ty_canonical.contains("Sized")) {
+					return Listed::Refused(
+						"sized-self method",
+						"`Sized` remains in a parameter".into(),
+					);
+				}
+				syn.ret_canonical = Some(p.alias.clone());
+				Listed::Active(State::One(c.name.clone()))
+			}
+		}
+	}
+	fn check(&self, _world: &World, state: &State, c: &Callable, owner: &str, _ret: &Ret) -> Check {
+		// record 0097: Polars's signed slice offsets need the receiver length within i64
+		let Some(op) = state.one() else {
+			return Check::Pass;
+		};
+		if c.receiver != "&self"
+			|| c.ret_canonical.as_deref().map(|r| ty::parse(r).render())
+				!= Some(ty::parse(owner).render())
+		{
+			return Check::Refuse(
+				"sized-self method",
+				format!(
+					"needs a `&self` receiver returning the owner, got {}",
+					c.ret_canonical.as_deref().unwrap_or("()")
+				),
+			);
+		}
+		Check::Pre(
+			format!("support::signed_len(this.0.len(), \"{op}\")?; "),
+			true,
+		)
 	}
 }
 
@@ -795,29 +1174,7 @@ pub(crate) fn native_substitution_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	let types = vec![
 		"polars_core::datatypes::Int8Type".to_string(),
@@ -826,17 +1183,20 @@ pub(crate) fn native_substitution_self_test() {
 	];
 	let natives = vec!["i8".to_string(), "u32".into(), "f32".into()];
 	for (k, n) in [("peaks", "peak"), ("residual", "other")] {
-		release.free_instantiations.push(FreeInstantiation {
-			key: k.into(),
-			path: format!("polars_ops::m::{n}"),
-			callee: format!("polars::m::{n}"),
-			generic: "T".into(),
-			types: types.clone(),
-			natives: natives.clone(),
-			guard_param: None,
-			guard: None,
-			cite: "t".into(),
-		});
+		release
+			.families
+			.free_instantiations
+			.push(FreeInstantiation {
+				key: k.into(),
+				path: format!("polars_ops::m::{n}"),
+				callee: format!("polars::m::{n}"),
+				generic: "T".into(),
+				types: types.clone(),
+				natives: natives.clone(),
+				guard_param: None,
+				guard: None,
+				cite: "t".into(),
+			});
 	}
 	let world = World::new(&inv, &release, &["mechanical", "generic_fn"]);
 	let empty = || Emitted {
@@ -898,7 +1258,7 @@ pub(crate) fn native_substitution_self_test() {
 	);
 	// record 0091: a guarded usize parameter is checked in `pre`, only for its listed function
 	let mut g = release.clone();
-	g.free_instantiations.clear();
+	g.families.free_instantiations.clear();
 	let guard_inv = Inventory {
 		callables: vec![
 			mk(
@@ -915,7 +1275,7 @@ pub(crate) fn native_substitution_self_test() {
 		supporting: inv.supporting.clone(),
 		provenance: None,
 	};
-	g.free_instantiations.push(FreeInstantiation {
+	g.families.free_instantiations.push(FreeInstantiation {
 		key: "guarded".into(),
 		path: "polars_ops::m::bound".into(),
 		callee: "polars::m::bound".into(),
@@ -926,7 +1286,7 @@ pub(crate) fn native_substitution_self_test() {
 		guard: Some("below_idx_max".into()),
 		cite: "t".into(),
 	});
-	g.free_instantiations.push(FreeInstantiation {
+	g.families.free_instantiations.push(FreeInstantiation {
 		key: "plain".into(),
 		path: "polars_ops::m::unguarded".into(),
 		callee: "polars::m::unguarded".into(),
@@ -958,7 +1318,7 @@ pub(crate) fn native_substitution_self_test() {
 		"no guard on an unlisted parameter: {f}"
 	);
 	assert!(
-		gw.arg_guard.borrow().is_none(),
+		!gw.active.is_set("arg_guard"),
 		"the guard scope never outlives its instantiation"
 	);
 	// fail closed: every malformed guard refuses the whole function, nothing unguarded is emitted
@@ -978,8 +1338,8 @@ pub(crate) fn native_substitution_self_test() {
 		("unknown guard", Some("target_len"), Some("below_something")),
 	] {
 		let mut bad = g.clone();
-		bad.free_instantiations[0].guard_param = param.map(String::from);
-		bad.free_instantiations[0].guard = check.map(String::from);
+		bad.families.free_instantiations[0].guard_param = param.map(String::from);
+		bad.families.free_instantiations[0].guard = check.map(String::from);
 		let bw = World::new(&guard_inv, &bad, &["mechanical", "generic_fn"]);
 		let mut e = empty();
 		emit_callable(
@@ -1235,35 +1595,13 @@ pub(crate) fn external_bound_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	assert!(
 		external_bound_entry(&release, &good_c).is_none(),
 		"an unlisted method keeps the ordinary proof"
 	);
-	release.external_bounds = vec![good.clone()];
+	release.families.external_bounds = vec![good.clone()];
 	assert!(matches!(
 		external_bound_entry(&release, &good_c),
 		Some(Ok(_))
@@ -1274,7 +1612,7 @@ pub(crate) fn external_bound_self_test() {
 		external_bound_entry(&release, &other_key).is_none(),
 		"the same path under another key is not listed"
 	);
-	release.external_bounds.push(good);
+	release.families.external_bounds.push(good);
 	assert!(
 		matches!(external_bound_entry(&release, &good_c), Some(Err(ref m)) if m == "listed twice")
 	);
@@ -1454,35 +1792,13 @@ pub(crate) fn sized_self_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	assert!(
 		sized_self_entry(&release, &good).is_none(),
 		"an unlisted Self: Sized method has no entry and stays with the generic census"
 	);
-	release.sized_self_methods = vec![entry(vec![opt], "t")];
+	release.families.sized_self_methods = vec![entry(vec![opt], "t")];
 	assert!(matches!(sized_self_entry(&release, &good), Some(Ok(_))));
 	let mut other_key = good.clone();
 	other_key.key = "other".into();
@@ -1490,7 +1806,10 @@ pub(crate) fn sized_self_self_test() {
 		sized_self_entry(&release, &other_key).is_none(),
 		"the same path under another key is not listed"
 	);
-	release.sized_self_methods.push(entry(vec![opt], "t"));
+	release
+		.families
+		.sized_self_methods
+		.push(entry(vec![opt], "t"));
 	assert!(matches!(sized_self_entry(&release, &good), Some(Err(ref m)) if m == "listed twice"));
 	// the emitter: guard before the call, and only on a receiver-typed return
 	let owner = "polars_core::datatypes::Int8Chunked";
@@ -1529,10 +1848,7 @@ pub(crate) fn sized_self_self_test() {
 		supporting: vec![sup(owner), sup("polars_core::datatypes::Int16Chunked")],
 		provenance: None,
 	};
-	let release = Release {
-		sized_self_methods: vec![],
-		..release
-	};
+	let release = Release { ..release };
 	let world = World::new(&inv, &release, &["mechanical"]);
 	let empty = || Emitted {
 		from_names: BTreeMap::new(),
@@ -1545,7 +1861,9 @@ pub(crate) fn sized_self_self_test() {
 	};
 	let emit = |key: &str| {
 		let mut e = empty();
-		*world.sized_self.borrow_mut() = Some("head".into());
+		world
+			.active
+			.set("sized_self", (Some("head".into())).map(State::One));
 		emit_method(
 			&world,
 			&mut e,
@@ -1554,7 +1872,7 @@ pub(crate) fn sized_self_self_test() {
 			None,
 			false,
 		);
-		*world.sized_self.borrow_mut() = None;
+		world.active.set("sized_self", None);
 		(
 			e.entries[0].status.clone(),
 			e.entries[0].reason.clone().unwrap_or_default(),
@@ -1580,7 +1898,7 @@ pub(crate) fn sized_self_self_test() {
 		"a return that is not the receiver is refused: {reason}"
 	);
 	assert!(f.is_empty(), "no binding text: {f}");
-	assert!(world.sized_self.borrow().is_none());
+	assert!(!world.active.is_set("sized_self"));
 	println!("sized-self self-test: ok");
 }
 
@@ -1729,29 +2047,7 @@ pub(crate) fn null_aware_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	let world = World::new(&inv, &release, &["mechanical"]);
 	let empty = || Emitted {
@@ -1765,8 +2061,11 @@ pub(crate) fn null_aware_self_test() {
 	};
 	let emit = |key: &str, native: Option<&str>| {
 		let mut e = empty();
-		*world.null_aware.borrow_mut() =
-			native.map(|n| ("to_vec_null_aware".to_string(), n.to_string()));
+		world.active.set(
+			"null_aware",
+			(native.map(|n| ("to_vec_null_aware".to_string(), n.to_string())))
+				.map(|(a, b)| State::Two(a, b)),
+		);
 		emit_method(
 			&world,
 			&mut e,
@@ -1775,7 +2074,7 @@ pub(crate) fn null_aware_self_test() {
 			None,
 			false,
 		);
-		*world.null_aware.borrow_mut() = None;
+		world.active.set("null_aware", None);
 		(
 			e.entries[0].status.clone(),
 			e.entries[0].reason.clone().unwrap_or_default(),
@@ -1860,7 +2159,7 @@ pub(crate) fn null_aware_self_test() {
 			"{label} must not match"
 		);
 	}
-	assert!(world.null_aware.borrow().is_none());
+	assert!(!world.active.is_set("null_aware"));
 	println!("null-aware self-test: ok");
 }
 
@@ -1988,29 +2287,7 @@ pub(crate) fn hash_token_self_test() {
 		unordered: vec![],
 		excluded_oracle: vec![],
 		refused: vec![],
-		bitmap_returns: vec![],
-		bitmap_inputs: vec![],
-		iterator_returns: vec![],
-		cow_returns: vec![],
-		free_instantiations: vec![],
-		method_scalar_generics: vec![],
-		bounded_readbacks: vec![],
-		hash_tokens: vec![],
-		null_aware_returns: vec![],
-		sized_self_methods: vec![],
-		external_bounds: vec![],
-		chunk_snapshots: vec![],
-		indexed_chunk_snapshots: vec![],
-		array_snapshots: vec![],
-		iter_snapshots: vec![],
-		view_snapshots: vec![],
-		owned_iter_snapshots: vec![],
-		layout_snapshots: vec![],
-		callback_mutable: vec![],
-		callback_invocation: vec![],
-		callback_sink: vec![],
-		callback_safe: vec![],
-		callback_recipe: vec![],
+		families: FamilyTables::default(),
 	};
 	let entry = |key: &str,
 	             owner: &str,
@@ -2026,7 +2303,7 @@ pub(crate) fn hash_token_self_test() {
 		source: source.into(),
 		cite: cite.into(),
 	};
-	release.hash_tokens = vec![
+	release.families.hash_tokens = vec![
 		entry("ret", cats, "hash", "return", "", "u64", "t"),
 		entry("opt", map, "cat_to_hash", "return", "", "Option<u64>", "t"),
 		entry(
@@ -2189,7 +2466,7 @@ pub(crate) fn hash_token_self_test() {
 		);
 	}
 	assert!(
-		world.hash_token.borrow().is_none(),
+		!world.active.is_set("hash_token"),
 		"the scope never outlives its callable"
 	);
 	println!("hash-token self-test: ok");
