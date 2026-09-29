@@ -1,0 +1,1830 @@
+{
+ "by_fixture": {
+  "decimal": 20,
+  "deserialize_json_from_str": 8,
+  "ext": 14,
+  "f16": 98,
+  "i128": 102,
+  "new": 3,
+  "try_from_storage": 18,
+  "u128": 100
+ },
+ "cases": [
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__field__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__has_nulls__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__into_phys_with_prec_scale_or_sentinel__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__into_physical__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__is_empty__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__is_not_null__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__is_null__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__len__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__name__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__null_count__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__physical__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__precision__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__prod_reduce__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__rename__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__scale__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logical__slice__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logicaltype__cast__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logicaltype__cast_with_options__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__chunked_array__logical__logicaltype__dtype__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "decimal",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__decimalchunked",
+   "obstacle": "invalid series dtype: expected `Decimal`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "deserialize_json_from_str",
+   "id": "polars_lazy__frame__lazyframe__collect_all_with_engine",
+   "obstacle": "expected value at line 1 column 1"
+  },
+  {
+   "fixture": "deserialize_json_from_str",
+   "id": "polars_lazy__frame__lazyframe__explain_all",
+   "obstacle": "expected value at line 1 column 1"
+  },
+  {
+   "fixture": "deserialize_json_from_str",
+   "id": "polars_lazy__frame__lazyframe__from_logical_plan",
+   "obstacle": "expected value at line 1 column 1"
+  },
+  {
+   "fixture": "deserialize_json_from_str",
+   "id": "polars_lazy__frame__lazyframe_as_core__convert__from_polars_plan__dsl__plan__dslplan_",
+   "obstacle": "expected value at line 1 column 1"
+  },
+  {
+   "fixture": "deserialize_json_from_str",
+   "id": "polars_plan__client__prepare_cloud_plan",
+   "obstacle": "expected value at line 1 column 1"
+  },
+  {
+   "fixture": "deserialize_json_from_str",
+   "id": "polars_plan__dsl__plan__dslplan__compute_schema",
+   "obstacle": "expected value at line 1 column 1"
+  },
+  {
+   "fixture": "deserialize_json_from_str",
+   "id": "polars_plan__dsl__plan__dslplan__describe",
+   "obstacle": "expected value at line 1 column 1"
+  },
+  {
+   "fixture": "deserialize_json_from_str",
+   "id": "polars_plan__dsl__plan__dslplan__describe_tree_format",
+   "obstacle": "expected value at line 1 column 1"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__cast_with_options",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__dtype",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__extension_type",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__field",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__into_storage",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__is_empty",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__len",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__name",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__chunked_array__logical__extension__extensionchunked__storage",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__datatypes__extension__extensiontypeinstance_as_core__cmp__partialeq",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__datatypes__extension__extensiontypeinstance_as_core__fmt__display",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__datatypes__extension__extensiontypeinstance_as_core__hash__hash",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__extensionchunked",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "ext",
+   "id": "polars_core__series__series__into_extension",
+   "obstacle": "invalid series dtype: expected `Extension`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__append__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__append_owned__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__apply_as_ints__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_in_place_to__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_owned_to__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__clear__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__cont_slice__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__data_views__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_as_array__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_get__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_into_iter__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_iter__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__dtype__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__extend__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__first__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__first_null__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__get__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__get_flags__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__is_empty__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__is_null__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__iter__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__iter_validities__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__last__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__len__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__name__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__null_count__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_validity__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__ref_field__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__rename__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__set_flags__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__set_validity__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__slice__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__to_vec__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__with_name__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray__with_validity__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float16chunked_f64_polars_core_569_5130",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float16chunked_float16chunked_polars_core_569_5124",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__float16chunked_i64_polars_core_569_5130",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float16chunked_f64_polars_core_569_5166",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float16chunked_float16chunked_polars_core_569_5160",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__float16chunked_i64_polars_core_569_5166",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float16chunked_f64_polars_core_569_5154",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float16chunked_float16chunked_polars_core_569_5148",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__float16chunked_i64_polars_core_569_5154",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float16chunked_f64_polars_core_569_5178",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float16chunked_float16chunked_polars_core_569_5172",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__float16chunked_i64_polars_core_569_5178",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float16chunked_f64_polars_core_569_5142",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float16chunked_float16chunked_polars_core_569_5136",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__float16chunked_i64_polars_core_569_5142",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__median_reduce__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantile_reduce__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantiles_reduce__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__aggregate__var__varaggseries__std_reduce",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__aggregate__var__varaggseries__var_reduce",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunkexpandatindex__new_from_index__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunkquantile__median__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunkquantile__quantile__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunkreverse__reverse",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunkshift__shift__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort_multiple__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunksort__sort__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__chunksort__sort_with__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__datatypes__dtype__asrefdatatype__as_ref_dtype__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__utils__container__iter_chunks__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__utils__container__n_chunks__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "f16",
+   "id": "polars_core__utils__container__should_rechunk__on__float16chunked",
+   "obstacle": "invalid series dtype: expected `Float16`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__append__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__append_owned__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_in_place_to__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_owned_to__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__clear__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__cont_slice__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__data_views__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_as_array__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_get__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_into_iter__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_iter__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__dtype__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__extend__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__first__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__first_null__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__get__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__get_flags__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__into_decimal__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__into_decimal_unchecked__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__is_empty__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__is_null__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__iter__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__iter_validities__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__last__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__len__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__name__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__null_count__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_validity__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__ref_field__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__rename__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__set_flags__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__set_validity__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__slice__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__to_vec__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__with_name__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray__with_validity__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int128chunked_f64_polars_core_569_5130",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int128chunked_i64_polars_core_569_5130",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__int128chunked_int128chunked_polars_core_569_5124",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int128chunked_f64_polars_core_569_5166",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int128chunked_i64_polars_core_569_5166",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__int128chunked_int128chunked_polars_core_569_5160",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int128chunked_f64_polars_core_569_5154",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int128chunked_i64_polars_core_569_5154",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__int128chunked_int128chunked_polars_core_569_5148",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int128chunked_f64_polars_core_569_5178",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int128chunked_i64_polars_core_569_5178",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__int128chunked_int128chunked_polars_core_569_5172",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int128chunked_f64_polars_core_569_5142",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int128chunked_i64_polars_core_569_5142",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__int128chunked_int128chunked_polars_core_569_5136",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__int128chunked_int128chunked_polars_core_569_5183",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__int128chunked_int128chunked_polars_core_569_5186",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__int128chunked_int128chunked_polars_core_569_5189",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__median_reduce",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantile_reduce",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantiles_reduce",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkexpandatindex__new_from_index__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkquantile__median__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkquantile__quantile__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkset__set__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunkshift__shift__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort_multiple__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunksort__sort__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__chunksort__sort_with__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__datatypes__dtype__asrefdatatype__as_ref_dtype__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__utils__container__iter_chunks__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__utils__container__n_chunks__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "i128",
+   "id": "polars_core__utils__container__should_rechunk__on__int128chunked",
+   "obstacle": "invalid series dtype: expected `Int128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "new",
+   "id": "polars_core__chunked_array__ops__binning__fractions_as_core__cmp__partialeq",
+   "obstacle": "fractions must be between 0.0 and 1.0, got 1.5"
+  },
+  {
+   "fixture": "new",
+   "id": "polars_core__chunked_array__ops__binning__fractions_as_serde_core__de__deserialize",
+   "obstacle": "fractions must be between 0.0 and 1.0, got 1.5"
+  },
+  {
+   "fixture": "new",
+   "id": "polars_core__chunked_array__ops__binning__fractions_as_serde_core__ser__serialize",
+   "obstacle": "fractions must be between 0.0 and 1.0, got 1.5"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__cast_with_options",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__dtype",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__entries",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__field",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__is_empty",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__key_dtype",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__key_lists",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__keys",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__len",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__live_row_lengths",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__name",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__storage",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__value_dtype",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__value_lists",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__chunked_array__logical__map__mapchunked__values",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__mapchunked",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_ops__chunked_array__map__get__map_contains_key",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "try_from_storage",
+   "id": "polars_ops__chunked_array__map__get__map_get",
+   "obstacle": "`i64` is not a Map dtype"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__append__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__append_owned__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_in_place_to__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__broadcast_owned_to__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__chunk_lengths__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__clear__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__cont_slice__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__data_views__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_as_array__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_get__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_into_iter__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__downcast_iter__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__drop_nulls__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__dtype__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__extend__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__first__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__first_non_null__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__first_null__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__full_null_like__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__get__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__get_fast_explode_list__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__get_flags__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__has_nulls__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__into_no_null_iter__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__is_empty__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__is_not_null__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__is_null__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__is_sorted_flag__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__iter__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__iter_validities__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__last__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__last_non_null__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__len__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__name__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__no_null_iter__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__null_count__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__prune_empty_chunks__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_mut__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__rechunk_validity__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__ref_field__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__rename__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__set_fast_explode_list__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__set_flags__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__set_sorted_flag__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__set_validity__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__shrink_to_fit__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__slice__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__to_vec__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__unpack_series_matching_type__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__unset_fast_explode_list__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__with_name__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__with_sorted_flag__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray__with_validity__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint128chunked_f64_polars_core_569_5130",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint128chunked_i64_polars_core_569_5130",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__add__on__uint128chunked_uint128chunked_polars_core_569_5124",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint128chunked_f64_polars_core_569_5166",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint128chunked_i64_polars_core_569_5166",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__div__on__uint128chunked_uint128chunked_polars_core_569_5160",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint128chunked_f64_polars_core_569_5154",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint128chunked_i64_polars_core_569_5154",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__mul__on__uint128chunked_uint128chunked_polars_core_569_5148",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint128chunked_f64_polars_core_569_5178",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint128chunked_i64_polars_core_569_5178",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__rem__on__uint128chunked_uint128chunked_polars_core_569_5172",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint128chunked_f64_polars_core_569_5142",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint128chunked_i64_polars_core_569_5142",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__arith__sub__on__uint128chunked_uint128chunked_polars_core_569_5136",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitand__on__uint128chunked_uint128chunked_polars_core_569_5183",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitor__on__uint128chunked_uint128chunked_polars_core_569_5186",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__chunkedarray_as_core__ops__bit__bitxor__on__uint128chunked_uint128chunked_polars_core_569_5189",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__median_reduce__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantile_reduce__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__aggregate__quantile__quantileaggseries__quantiles_reduce__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkcast__cast_with_options__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkexpandatindex__new_from_index__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkquantile__median__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkquantile__quantile__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkreverse__reverse__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkset__set__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunkshift__shift__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunksort__arg_sort_multiple__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunksort__sort__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__chunksort__sort_with__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__propagate_nulls__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__chunked_array__ops__nesting_utils__chunknestingutils__trim_lists_to_normalized_offsets__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__datatypes__dtype__asrefdatatype__as_ref_dtype__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__frame__column__intocolumn__into_column__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__add_to__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__divide__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__multiply__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__remainder__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__series__arithmetic__borrowed__numopsdispatch__subtract__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__utils__container__iter_chunks__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__utils__container__n_chunks__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  },
+  {
+   "fixture": "u128",
+   "id": "polars_core__utils__container__should_rechunk__on__uint128chunked",
+   "obstacle": "invalid series dtype: expected `UInt128`, got `i64` for series with name `x`"
+  }
+ ],
+ "total": 363
+}
