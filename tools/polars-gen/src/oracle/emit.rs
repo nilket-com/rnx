@@ -1083,7 +1083,21 @@ pub(crate) fn emit_oracle(
 		};
 		writeln!(fixtures, "    pub fn {name}() -> {ret} {{ {expr} }}").unwrap();
 	}
+	// record 0120: the listed concrete arrays' fixtures
+	let concrete = crate::families::concrete_arrays::fixtures(world);
+	for (_, name, expr, ty) in &concrete {
+		writeln!(fixtures, "    pub fn {name}() -> {ty} {{ {expr} }}").unwrap();
+	}
 	fixtures.push_str("}\n\n");
+	for (id, name, _, _) in &concrete {
+		let w = &world.wrappers[id];
+		writeln!(
+			fixtures,
+			"#[rune::function(path = {name})]\nfn fx_{name}() -> {} {{ {}(values::{name}()) }}",
+			w.rust, w.rust
+		)
+		.unwrap();
+	}
 	// a synthetic inventory (self-test) may lack the fixture types; the
 	// drift test and the oracle build catch a real inventory missing one
 	for (canonical, name, _, _) in FIXTURES {
@@ -1123,6 +1137,9 @@ pub(crate) fn emit_oracle(
 		writeln!(fixtures, "    m.function_meta(fx_{name})?;").unwrap();
 	}
 	for (_, name, _, _, _) in TYPED_FIXTURES {
+		writeln!(fixtures, "    m.function_meta(fx_{name})?;").unwrap();
+	}
+	for (_, name, _, _) in &concrete {
 		writeln!(fixtures, "    m.function_meta(fx_{name})?;").unwrap();
 	}
 	fixtures.push_str("    Ok(())\n}\n");

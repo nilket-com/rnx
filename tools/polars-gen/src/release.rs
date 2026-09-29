@@ -116,6 +116,10 @@ pub(crate) struct FamilyTables {
 	/// Record 0119: index arguments checked against the receiver before the call.
 	#[serde(default)]
 	pub(crate) receiver_guards: Vec<crate::families::receiver_guards::ReceiverGuard>,
+	/// Record 0120: the concrete Arrow arrays scripts reach, a closed,
+	/// cited allowlist of exact owners and instantiations.
+	#[serde(default)]
+	pub(crate) concrete_arrays: Vec<crate::families::concrete_arrays::ConcreteArray>,
 	/// Record 0092: family-census methods whose one scalar function generic
 	/// is bound, per proven pair, to that pair's native type.
 	#[serde(default)]
@@ -279,11 +283,13 @@ impl Release {
 		}
 	}
 	/// Record 0119: a type (struct or enum path) under a listed deferred prefix.
+	/// Record 0120: an allowlisted concrete array owner is not deferred.
 	pub(crate) fn deferred_type(&self, path: &str) -> bool {
 		self.families
 			.deferred_type_prefixes
 			.iter()
 			.any(|d| path.starts_with(d.prefix.as_str()))
+			&& !crate::families::concrete_arrays::listed_owner(&self.families.concrete_arrays, path)
 	}
 	pub(crate) fn is_api(&self, krate: &str) -> bool {
 		self.api_crates.iter().any(|c| c == krate)

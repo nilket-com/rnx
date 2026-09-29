@@ -12,12 +12,16 @@ name = "0.55.2"
 source = "crates.io =0.55.2"
 api_crates = ["polars_arrow", "polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error"]
 namespaced_crates = ["polars_arrow"]
-frozen_bindings = "probes/0119/frozen-0.55.2.json"
+frozen_bindings = "probes/0120/frozen-0.55.2.json"
 # Record 0085: validity bitmap returns copied into an owned Vec<bool>;
 # only these paths, every other Bitmap stays refused.
 bitmap_returns = [
     "polars_core::chunked_array::ChunkedArray::rechunk_validity",  # polars-core 0.55.2 chunked_array/ops/chunkops.rs:199-216
     "polars_core::chunked_array::ChunkedArray::iter_validities",   # polars-core 0.55.2 chunked_array/mod.rs:411-418
+    "polars_arrow::array::primitive::PrimitiveArray::validity",    # record 0120: Option<&Bitmap>, the array's own validity
+    "polars_arrow::array::utf8::Utf8Array::validity",              # record 0120
+    "polars_arrow::array::binary::BinaryArray::validity",          # record 0120
+    "polars_arrow::array::list::ListArray::validity",              # record 0120
 ]
 
 # The inventory this policy belongs to; the generator refuses any other.
@@ -1217,3 +1221,174 @@ cite = "record 0119 plan stage 2: no concrete array wrapper in this record; the 
 [[deferred_type_prefixes]]
 prefix = "polars_arrow::legacy::array::"
 cite = "record 0119 plan stage 2: no concrete array wrapper in this record; the concrete arrays and array builders move to record 0120 with their readers"
+
+# Record 0120: the concrete Arrow arrays a script reaches (probes/0120/reach.sh), and their guards.
+# StructArray is reachable here too, but has no inventory row at this pin (no facade path), so it is outside the census and not listed.
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "i8"
+name = "Int8Array"
+downcast = "as_int8_array"
+route = "probes/0120/reach-0.55.2.json: i8"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "i16"
+name = "Int16Array"
+downcast = "as_int16_array"
+route = "probes/0120/reach-0.55.2.json: i16"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "i32"
+name = "Int32Array"
+downcast = "as_int32_array"
+route = "probes/0120/reach-0.55.2.json: i32 and date"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "i64"
+name = "Int64Array"
+downcast = "as_int64_array"
+route = "probes/0120/reach-0.55.2.json: i64, datetime, duration and time"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "u8"
+name = "UInt8Array"
+downcast = "as_uint8_array"
+route = "probes/0120/reach-0.55.2.json: u8"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "u16"
+name = "UInt16Array"
+downcast = "as_uint16_array"
+route = "probes/0120/reach-0.55.2.json: u16"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "u32"
+name = "UInt32Array"
+downcast = "as_uint32_array"
+route = "probes/0120/reach-0.55.2.json: u32"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "u64"
+name = "UInt64Array"
+downcast = "as_uint64_array"
+route = "probes/0120/reach-0.55.2.json: u64"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "f32"
+name = "Float32Array"
+downcast = "as_float32_array"
+route = "probes/0120/reach-0.55.2.json: f32"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::primitive::PrimitiveArray"
+native = "f64"
+name = "Float64Array"
+downcast = "as_float64_array"
+route = "probes/0120/reach-0.55.2.json: f64"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::utf8::Utf8Array"
+native = "i64"
+name = "LargeStringArray"
+downcast = "as_large_string_array"
+route = "probes/0120/reach-0.55.2.json: str at CompatLevel::oldest"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::binary::BinaryArray"
+native = "i64"
+name = "LargeBinaryArray"
+downcast = "as_large_binary_array"
+route = "probes/0120/reach-0.55.2.json: binary and binary_offset at CompatLevel::oldest"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[concrete_arrays]]
+owner = "polars_arrow::array::list::ListArray"
+native = "i64"
+name = "LargeListArray"
+downcast = "as_large_list_array"
+route = "probes/0120/reach-0.55.2.json: list_i64 and list_str"
+cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
+
+[[receiver_guards]]
+path = "polars_arrow::array::primitive::PrimitiveArray::value"
+check = "below_len"
+param = "i"
+cite = "polars-arrow 0.55.2 array/primitive/mod.rs:213: self.values[i] indexes the buffer"
+
+[[receiver_guards]]
+path = "polars_arrow::array::utf8::Utf8Array::value"
+check = "below_len"
+param = "i"
+cite = "polars-arrow 0.55.2 array/utf8/mod.rs:152: assert!(i < self.len())"
+
+[[receiver_guards]]
+path = "polars_arrow::array::binary::BinaryArray::value"
+check = "below_len"
+param = "i"
+cite = "polars-arrow 0.55.2 array/binary/mod.rs:160: assert!(i < self.len())"
+
+[[receiver_guards]]
+path = "polars_arrow::array::list::ListArray::value"
+check = "below_len"
+param = "i"
+cite = "polars-arrow 0.55.2 array/list/mod.rs:164: assert!(i < self.len())"
+
+[[receiver_guards]]
+path = "polars_arrow::array::utf8::Utf8Array::get"
+check = "below_len"
+param = "i"
+cite = "polars-arrow 0.55.2 array/utf8/mod.rs:177: self.is_null(i) panics when i >= len"
+
+[[receiver_guards]]
+path = "polars_arrow::array::binary::BinaryArray::get"
+check = "below_len"
+param = "i"
+cite = "polars-arrow 0.55.2 array/binary/mod.rs:182: self.is_null(i) panics when i >= len"
+
+[[receiver_guards]]
+path = "polars_arrow::array::primitive::PrimitiveArray::sliced"
+check = "range_len_all"
+param = "offset"
+param2 = "length"
+cite = "polars-arrow 0.55.2 array/mod.rs:464-470 (impl_sliced!): checked_add(...).expect and assert!(offset + length <= len), for every length"
+
+[[receiver_guards]]
+path = "polars_arrow::array::utf8::Utf8Array::sliced"
+check = "range_len_all"
+param = "offset"
+param2 = "length"
+cite = "polars-arrow 0.55.2 array/mod.rs:464-470 (impl_sliced!): checked_add(...).expect and assert!(offset + length <= len), for every length"
+
+[[receiver_guards]]
+path = "polars_arrow::array::binary::BinaryArray::sliced"
+check = "range_len_all"
+param = "offset"
+param2 = "length"
+cite = "polars-arrow 0.55.2 array/mod.rs:464-470 (impl_sliced!): checked_add(...).expect and assert!(offset + length <= len), for every length"
+
+[[receiver_guards]]
+path = "polars_arrow::array::list::ListArray::sliced"
+check = "range_len_all"
+param = "offset"
+param2 = "length"
+cite = "polars-arrow 0.55.2 array/mod.rs:464-470 (impl_sliced!): checked_add(...).expect and assert!(offset + length <= len), for every length"

@@ -8,6 +8,473 @@ use polars::prelude as p;
 use polars::prelude::*;
 use rnx::rune;
 
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::binary::BinaryArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_e344cc17_ed_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> ArrayRef { let __r = <polars_arrow::array::BinaryArray<i64>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Returns the default [`ArrowDataType`], `DataType::Binary` or `DataType::LargeBinary`
+/// Polars: `polars_arrow::array::binary::BinaryArray::default_dtype`. default_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__binary__BinaryArray_i64_::default_dtype)]
+fn f_a8ee2d97_pe_polars_arrow__array__binary__binaryarray_i64_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::BinaryArray<i64>>::default_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Returns the [`ArrowDataType`] of this array.
+/// Polars: `polars_arrow::array::binary::BinaryArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_1572d0a5_pe_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::BinaryArray<i64>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the element at index `i` or `None` if it is null # Panics iff `i >= self.len()`
+/// Polars: `polars_arrow::array::binary::BinaryArray::get`. get(i: int) -> option of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = get)]
+fn f_6de337dd_et_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_, i: i64) -> Result<Option<Vec<i64>>, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeBinaryArray::get: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::BinaryArray<i64>>::get(&this.0, __guard_i); Ok(match __r { Some(__r) => Some(support::copy_slice(__r, "get", |__r| Ok::<_, Error>((__r as i64)))?), None => None }) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::binary::BinaryArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_90cfa0cf_en_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> Result<i64, Error> { let __r = <polars_arrow::array::BinaryArray<i64>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the offsets of this [`BinaryArray`].
+/// Polars: `polars_arrow::array::binary::BinaryArray::offsets`. offsets() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = offsets)]
+fn f_373cfa67_ts_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::BinaryArray<i64>>::offsets(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(__r.as_slice(), "offsets", |__r| Ok::<_, Error>(__r))? }) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::binary::BinaryArray::sliced`. sliced(offset: int, length: int) -> LargeBinaryArray (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_a5d841b8_ed_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_, offset: i64, length: i64) -> Result<W_polars_arrow__array__binary__BinaryArray_i64_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeBinaryArray::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::BinaryArray<i64>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__binary__BinaryArray_i64_(__r)) }
+/// The optional validity.
+/// Polars: `polars_arrow::array::binary::BinaryArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_eff582b9_ty_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::BinaryArray<i64>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the element at index `i` # Panics iff `i >= self.len()`
+/// Polars: `polars_arrow::array::binary::BinaryArray::value`. value(i: int) -> vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = value)]
+fn f_c406c0c3_ue_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_, i: i64) -> Result<Vec<i64>, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeBinaryArray::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::BinaryArray<i64>>::value(&this.0, __guard_i); Ok(support::copy_slice(__r, "value", |__r| Ok::<_, Error>((__r as i64)))?) }
+/// Returns the values of this [`BinaryArray`].
+/// Polars: `polars_arrow::array::binary::BinaryArray::values`. values() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_1784a5bd_es_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::BinaryArray<i64>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as i64)))? }) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::list::ListArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_c5174491__boxed_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> ArrayRef { let __r = <polars_arrow::array::ListArray<i64>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::list::ListArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_5d025a8a_y__len_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> Result<i64, Error> { let __r = <polars_arrow::array::ListArray<i64>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// The offsets [`Buffer`].
+/// Polars: `polars_arrow::array::list::ListArray::offsets`. offsets() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = offsets)]
+fn f_ce77db8f_ffsets_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::ListArray<i64>>::offsets(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(__r.as_slice(), "offsets", |__r| Ok::<_, Error>(__r))? }) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::list::ListArray::sliced`. sliced(offset: int, length: int) -> LargeListArray (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_dea75af5_sliced_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_, offset: i64, length: i64) -> Result<W_polars_arrow__array__list__ListArray_i64_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeListArray::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::ListArray<i64>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__list__ListArray_i64_(__r)) }
+/// The optional validity.
+/// Polars: `polars_arrow::array::list::ListArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_2940b8c1_lidity_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::ListArray<i64>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the element at index `i` # Panic Panics iff `i >= self.len()`
+/// Polars: `polars_arrow::array::list::ListArray::value`. value(i: int) -> ArrayRef (fallible)
+#[rune::function(instance, path = value)]
+fn f_c0404865__value_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_, i: i64) -> Result<ArrayRef, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeListArray::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::ListArray<i64>>::value(&this.0, __guard_i); Ok(ArrayRef(__r)) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_1a8939f1_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<f32>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_18b6a8cc_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<f64>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_8ed0e667_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i16>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_8213084c_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i32>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_8aee6011_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i64>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_0ee290b5_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i8>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_5c03ed81_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u16>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_65dd8853_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u32>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_31680956_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u64>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_34705876_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u8>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_9896809f_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<f32>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_85478e0a_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<f64>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_ece75322_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<i16>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_eb41eb50_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<i32>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_283aac55_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<i64>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_2bcbff6b_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<i8>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_2b9268b7_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<u16>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_36f620dd_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<u32>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_0fdb48a0_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<u64>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the arrays' [`ArrowDataType`].
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_a369b10f_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<u8>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: float) -> Float32Array
+#[rune::function(instance, path = fill_with)]
+fn f_2fb0216a_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_, value: f64) -> W_polars_arrow__array__primitive__PrimitiveArray_f32_ { let __r = <polars_arrow::array::PrimitiveArray<f32>>::fill_with(this.0.clone(), (value as f32)); W_polars_arrow__array__primitive__PrimitiveArray_f32_(__r) }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: float) -> Float64Array
+#[rune::function(instance, path = fill_with)]
+fn f_738ee343_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_, value: f64) -> W_polars_arrow__array__primitive__PrimitiveArray_f64_ { let __r = <polars_arrow::array::PrimitiveArray<f64>>::fill_with(this.0.clone(), value); W_polars_arrow__array__primitive__PrimitiveArray_f64_(__r) }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: int) -> Int16Array (fallible)
+#[rune::function(instance, path = fill_with)]
+fn f_d171ac43_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_, value: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i16_, Error> { let __r = <polars_arrow::array::PrimitiveArray<i16>>::fill_with(this.0.clone(), support::narrow::<i16>(value, "value")?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i16_(__r)) }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: int) -> Int32Array (fallible)
+#[rune::function(instance, path = fill_with)]
+fn f_e8d0d011_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_, value: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i32_, Error> { let __r = <polars_arrow::array::PrimitiveArray<i32>>::fill_with(this.0.clone(), support::narrow::<i32>(value, "value")?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i32_(__r)) }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: int) -> Int64Array
+#[rune::function(instance, path = fill_with)]
+fn f_351a14b0_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_, value: i64) -> W_polars_arrow__array__primitive__PrimitiveArray_i64_ { let __r = <polars_arrow::array::PrimitiveArray<i64>>::fill_with(this.0.clone(), value); W_polars_arrow__array__primitive__PrimitiveArray_i64_(__r) }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: int) -> Int8Array (fallible)
+#[rune::function(instance, path = fill_with)]
+fn f_e84e0ec2_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_, value: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i8_, Error> { let __r = <polars_arrow::array::PrimitiveArray<i8>>::fill_with(this.0.clone(), support::narrow::<i8>(value, "value")?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i8_(__r)) }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: int) -> UInt16Array (fallible)
+#[rune::function(instance, path = fill_with)]
+fn f_df66db22_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_, value: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u16_, Error> { let __r = <polars_arrow::array::PrimitiveArray<u16>>::fill_with(this.0.clone(), support::narrow::<u16>(value, "value")?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u16_(__r)) }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: int) -> UInt32Array (fallible)
+#[rune::function(instance, path = fill_with)]
+fn f_f3bbbfd8_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_, value: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u32_, Error> { let __r = <polars_arrow::array::PrimitiveArray<u32>>::fill_with(this.0.clone(), support::narrow::<u32>(value, "value")?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u32_(__r)) }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: int) -> UInt64Array (fallible)
+#[rune::function(instance, path = fill_with)]
+fn f_cb68d1e9_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_, value: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u64_, Error> { let __r = <polars_arrow::array::PrimitiveArray<u64>>::fill_with(this.0.clone(), support::narrow::<u64>(value, "value")?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u64_(__r)) }
+/// Fills this entire array with the given value, leaving the validity mask intact.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::fill_with`. fill_with(value: int) -> UInt8Array (fallible)
+#[rune::function(instance, path = fill_with)]
+fn f_81248f55_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_, value: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u8_, Error> { let __r = <polars_arrow::array::PrimitiveArray<u8>>::fill_with(this.0.clone(), support::narrow::<u8>(value, "value")?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u8_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of float) -> Float32Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_f32_::from_vec)]
+fn f_faeda458_ars_arrow__array__primitive__primitivearray_f32_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_f32_, Error> { let __r = <polars_arrow::array::PrimitiveArray<f32>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "values")?; Ok::<_, Error>((v as f32)) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_f32_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of float) -> Float64Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_f64_::from_vec)]
+fn f_1a0d6069_ars_arrow__array__primitive__primitivearray_f64_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_f64_, Error> { let __r = <polars_arrow::array::PrimitiveArray<f64>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_f64_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of int) -> Int16Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_i16_::from_vec)]
+fn f_4b767900_ars_arrow__array__primitive__primitivearray_i16_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i16_, Error> { let __r = <polars_arrow::array::PrimitiveArray<i16>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<i16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i16_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of int) -> Int32Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_i32_::from_vec)]
+fn f_c76a80be_ars_arrow__array__primitive__primitivearray_i32_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i32_, Error> { let __r = <polars_arrow::array::PrimitiveArray<i32>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<i32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i32_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of int) -> Int64Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_i64_::from_vec)]
+fn f_ce65a317_ars_arrow__array__primitive__primitivearray_i64_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i64_, Error> { let __r = <polars_arrow::array::PrimitiveArray<i64>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i64_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of int) -> Int8Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_i8_::from_vec)]
+fn f_28935185_lars_arrow__array__primitive__primitivearray_i8_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i8_, Error> { let __r = <polars_arrow::array::PrimitiveArray<i8>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<i8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i8_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of int) -> UInt16Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_u16_::from_vec)]
+fn f_cdfa61c9_ars_arrow__array__primitive__primitivearray_u16_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u16_, Error> { let __r = <polars_arrow::array::PrimitiveArray<u16>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<u16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u16_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of int) -> UInt32Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_u32_::from_vec)]
+fn f_c3a11da7_ars_arrow__array__primitive__primitivearray_u32_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u32_, Error> { let __r = <polars_arrow::array::PrimitiveArray<u32>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<u32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u32_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of int) -> UInt64Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_u64_::from_vec)]
+fn f_57b67fbe_ars_arrow__array__primitive__primitivearray_u64_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u64_, Error> { let __r = <polars_arrow::array::PrimitiveArray<u64>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<u64>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u64_(__r)) }
+/// Creates a (non-null) [`PrimitiveArray`] from a vector of values. This function is `O(1)`. # Examples ``` use polars_arrow::array::PrimitiveArray;
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::from_vec`. from_vec(values: vector of int) -> UInt8Array (fallible)
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_u8_::from_vec)]
+fn f_c7a3b3c9_lars_arrow__array__primitive__primitivearray_u8_(values: rune::Value) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u8_, Error> { let __r = <polars_arrow::array::PrimitiveArray<u8>>::from_vec(support::borrow_vec(&values, "values")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "values")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u8_(__r)) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_ab9a133a_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<f32>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_f65629bf_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<f64>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_3aa31ceb_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<i16>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_1e05a885_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<i32>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_3737d890_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<i64>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_dcd3cdb1_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<i8>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_780c44a0_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<u16>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_11e17e8e_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<u32>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_1e645b93_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<u64>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_390a6ce5_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<u8>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> Float32Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_c8541397_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_f32_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float32Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f32>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_f32_(__r)) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> Float64Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_dd71040e_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_f64_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float64Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f64>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_f64_(__r)) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> Int16Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_9f821300_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i16_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int16Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i16>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i16_(__r)) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> Int32Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_f560749a_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i32_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int32Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i32>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i32_(__r)) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> Int64Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_81b7094b_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i64_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int64Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i64>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i64_(__r)) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> Int8Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_1ae75d30_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i8_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int8Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i8>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_i8_(__r)) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> UInt16Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_f6ba1cd4_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u16_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt16Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u16>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u16_(__r)) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> UInt32Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_dfdc58a6_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u32_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt32Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u32>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u32_(__r)) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> UInt64Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_53955dc6_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u64_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt64Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u64>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u64_(__r)) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::sliced`. sliced(offset: int, length: int) -> UInt8Array (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_04732124_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_, offset: i64, length: i64) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u8_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt8Array::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u8>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__primitive__PrimitiveArray_u8_(__r)) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_56c8dbd4_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<f32>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_aa8225fd_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<f64>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_8a672456_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<i16>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_8609b3e5_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<i32>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_abd55944_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<i64>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_c67e9f28_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<i8>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_7bc04d0f_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<u16>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_16a40595_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<u32>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_690e51c4_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<u64>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the optional validity.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_ccd3f53c_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::PrimitiveArray<u8>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> float (fallible)
+#[rune::function(instance, path = value)]
+fn f_cc64fb5e_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_, i: i64) -> Result<f64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float32Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f32>>::value(&this.0, __guard_i); Ok((__r as f64)) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> float (fallible)
+#[rune::function(instance, path = value)]
+fn f_c96148ff_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_, i: i64) -> Result<f64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float64Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f64>>::value(&this.0, __guard_i); Ok(__r) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> int (fallible)
+#[rune::function(instance, path = value)]
+fn f_4dc508a2_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_, i: i64) -> Result<i64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int16Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i16>>::value(&this.0, __guard_i); Ok((__r as i64)) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> int (fallible)
+#[rune::function(instance, path = value)]
+fn f_44eb1ddc_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_, i: i64) -> Result<i64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int32Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i32>>::value(&this.0, __guard_i); Ok((__r as i64)) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> int (fallible)
+#[rune::function(instance, path = value)]
+fn f_5ad0bff5_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_, i: i64) -> Result<i64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int64Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i64>>::value(&this.0, __guard_i); Ok(__r) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> int (fallible)
+#[rune::function(instance, path = value)]
+fn f_e0e37982_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_, i: i64) -> Result<i64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int8Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i8>>::value(&this.0, __guard_i); Ok((__r as i64)) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> int (fallible)
+#[rune::function(instance, path = value)]
+fn f_a3e5044d_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_, i: i64) -> Result<i64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt16Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u16>>::value(&this.0, __guard_i); Ok((__r as i64)) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> int (fallible)
+#[rune::function(instance, path = value)]
+fn f_ad0169a3_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_, i: i64) -> Result<i64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt32Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u32>>::value(&this.0, __guard_i); Ok((__r as i64)) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> int (checked into range) (fallible)
+#[rune::function(instance, path = value)]
+fn f_f7e561da_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_, i: i64) -> Result<i64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt64Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u64>>::value(&this.0, __guard_i); Ok(support::widen::<u64>(__r, "value")?) }
+/// Returns the value at slot `i`.
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::value`. value(i: int) -> int (fallible)
+#[rune::function(instance, path = value)]
+fn f_d369258e_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_, i: i64) -> Result<i64, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt8Array::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u8>>::value(&this.0, __guard_i); Ok((__r as i64)) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of float (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_30b07d40_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> Result<Vec<f64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<f32>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as f64)))? }) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of float (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_c28b9bb9_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> Result<Vec<f64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<f64>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>(__r))? }) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_7de6fbd0_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<i16>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as i64)))? }) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_5a85c682_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<i32>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as i64)))? }) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_d8440ae3_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<i64>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>(__r))? }) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_2939ea76_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<i8>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as i64)))? }) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_4529e2b6_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<u16>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as i64)))? }) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_3de9b23c_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<u32>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as i64)))? }) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of int (checked into range) (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_4717d16d_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<u64>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>(support::widen::<u64>(__r, "values")?))? }) }
+/// The values [`Buffer`]. Values on null slots are undetermined (they can be anything).
+/// Polars: `polars_arrow::array::primitive::PrimitiveArray::values`. values() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_acf9d832_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<u8>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as i64)))? }) }
+/// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::utf8::Utf8Array::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_b0cce9e5__boxed_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> ArrayRef { let __r = <polars_arrow::array::Utf8Array<i64>>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Returns a default [`ArrowDataType`] of this array, which depends on the generic parameter `O`: `DataType::Utf8` or `DataType::LargeUtf8`
+/// Polars: `polars_arrow::array::utf8::Utf8Array::default_dtype`. default_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__utf8__Utf8Array_i64_::default_dtype)]
+fn f_94829bfc__dtype_polars_arrow__array__utf8__utf8array_i64_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::Utf8Array<i64>>::default_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Returns the [`ArrowDataType`] of this array.
+/// Polars: `polars_arrow::array::utf8::Utf8Array::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
+fn f_bb39e043__dtype_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::Utf8Array<i64>>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// Returns the element at index `i` or `None` if it is null # Panics iff `i >= self.len()`
+/// Polars: `polars_arrow::array::utf8::Utf8Array::get`. get(i: int) -> option of string (fallible)
+#[rune::function(instance, path = get)]
+fn f_7806cdd9_y__get_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_, i: i64) -> Result<Option<String>, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeStringArray::get: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::Utf8Array<i64>>::get(&this.0, __guard_i); Ok(match __r { Some(__r) => Some(__r.to_string()), None => None }) }
+/// Returns the length of this array
+/// Polars: `polars_arrow::array::utf8::Utf8Array::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_2562c20d_y__len_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> Result<i64, Error> { let __r = <polars_arrow::array::Utf8Array<i64>>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns the offsets of this [`Utf8Array`].
+/// Polars: `polars_arrow::array::utf8::Utf8Array::offsets`. offsets() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = offsets)]
+fn f_9726ddb8_ffsets_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::Utf8Array<i64>>::offsets(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(__r.as_slice(), "offsets", |__r| Ok::<_, Error>(__r))? }) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::utf8::Utf8Array::sliced`. sliced(offset: int, length: int) -> LargeStringArray (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_0a4a9f26_sliced_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_, offset: i64, length: i64) -> Result<W_polars_arrow__array__utf8__Utf8Array_i64_, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeStringArray::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::Utf8Array<i64>>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__utf8__Utf8Array_i64_(__r)) }
+/// Polars: `polars_arrow::array::utf8::Utf8Array::to_binary`. to_binary() -> LargeBinaryArray
+#[rune::function(instance, path = to_binary)]
+fn f_f5c7d851_binary_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> W_polars_arrow__array__binary__BinaryArray_i64_ { let __r = <polars_arrow::array::Utf8Array<i64>>::to_binary(&this.0); W_polars_arrow__array__binary__BinaryArray_i64_(__r) }
+/// The optional validity.
+/// Polars: `polars_arrow::array::utf8::Utf8Array::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_9edb6985_lidity_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::Utf8Array<i64>>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the value of the element at index `i`, ignoring the array's validity. # Panic This function panics iff `i >= self.len`.
+/// Polars: `polars_arrow::array::utf8::Utf8Array::value`. value(i: int) -> string (fallible)
+#[rune::function(instance, path = value)]
+fn f_b5f1da8e__value_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_, i: i64) -> Result<String, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeStringArray::value: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::Utf8Array<i64>>::value(&this.0, __guard_i); Ok(__r.to_string()) }
+/// Returns the values of this [`Utf8Array`].
+/// Polars: `polars_arrow::array::utf8::Utf8Array::values`. values() -> vector of int (copied, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_08e29be7_values_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::Utf8Array<i64>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Check (recursively) whether datatype contains an [`ArrowDataType::Dictionary`] type.
 /// Polars: `polars_arrow::datatypes::ArrowDataType::contains_dictionary`. contains_dictionary() -> bool
 #[rune::function(instance, path = contains_dictionary)]
@@ -1581,6 +2048,9 @@ fn f_1205e8af_y__get_inner_polars_core__datatypes__listchunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ChunkedArray::get_row_encoded`. get_row_encoded(options: SortOptions) -> result of BinaryOffsetChunked (fallible)
 #[rune::function(instance, path = get_row_encoded)]
 fn f_ce768482_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, options: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { let __r = <polars::chunked_array::StructChunked>::get_row_encoded(&this.0, options.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BinaryOffsetChunked(__r) }) }
+/// Polars: `polars_core::chunked_array::ChunkedArray::get_row_encoded_array`. get_row_encoded_array(options: SortOptions) -> result of LargeBinaryArray (fallible)
+#[rune::function(instance, path = get_row_encoded_array)]
+fn f_5b607f98_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, options: &W_polars_core__chunked_array__ops__sort__options__SortOptions) -> Result<W_polars_arrow__array__binary__BinaryArray_i64_, Error> { let __r = <polars::chunked_array::StructChunked>::get_row_encoded_array(&this.0, options.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; W_polars_arrow__array__binary__BinaryArray_i64_(__r) }) }
 /// Polars: `polars_core::chunked_array::ChunkedArray::has_empty_lists`. has_empty_lists() -> bool
 #[rune::function(instance, path = has_empty_lists)]
 fn f_ac9852db__empty_lists_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> bool { let __r = <polars_core::datatypes::ListChunked>::has_empty_lists(&this.0); __r }
@@ -12721,10 +13191,105 @@ fn p_11de42d8_an__plans__lit__literalvalue_as_core__fmt__debug(this: &W_polars_p
 /// The [`ArrowDataType`] of the [`Array`]. In combination with [`Array::as_any`], this can be used to downcast trait objects (`dyn Array`) to concrete arrays.
 /// Polars: `polars_arrow::array::Array::dtype`. dtype() -> ArrowDataType
 #[rune::function(instance, path = dtype)]
+fn f_27f2168e__dtype_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// The [`ArrowDataType`] of the [`Array`]. In combination with [`Array::as_any`], this can be used to downcast trait objects (`dyn Array`) to concrete arrays.
+/// Polars: `polars_arrow::array::Array::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
 fn f_e8b0a6b5_row__array__array__dtype_support__arrayref_deref(this: &ArrayRef) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <dyn polars_arrow::array::Array>::dtype(&*this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
 /// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
 #[rune::function(instance, path = has_nulls)]
+fn f_f35ddfd3_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<f32> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_a0132ef6_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<f64> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_fd34cf06_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<i16> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_e486dad8_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<i32> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_ef628aed_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<i64> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_330e308e_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<i8> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_96174acd_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<u16> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_8ba28ed3_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<u32> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_8852493e_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<u64> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_e00f8daa_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_0c10d0bf__nulls_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> bool { let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_272567da_ls_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> bool { let __r = <polars_arrow::array::BinaryArray<i64> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_e7c79b5a__nulls_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> bool { let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
 fn f_abb3a880__array__array__has_nulls_support__arrayref_deref(this: &ArrayRef) -> bool { let __r = <dyn polars_arrow::array::Array>::has_nulls(&*this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_edd5ae26_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<f32> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_b2ff46f3_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<f64> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_3d31b237_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<i16> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_1dbe2185_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<i32> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_583992e0_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<i64> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_4cd6945e_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<i8> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_9611663a_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<u16> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_fb82e220_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<u32> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_ab574e2d_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<u64> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_c443304a_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> bool { let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_652e89c4__empty_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> bool { let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_936ab09b_ty_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> bool { let __r = <polars_arrow::array::BinaryArray<i64> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_86b449a9__empty_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> bool { let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::is_empty(&this.0); __r }
 /// whether the array is empty
 /// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
 #[rune::function(instance, path = is_empty)]
@@ -12732,7 +13297,111 @@ fn f_3c94a8bf___array__array__is_empty_support__arrayref_deref(this: &ArrayRef) 
 /// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
 /// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
 #[rune::function(instance, path = is_null)]
+fn f_eb368716_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float32Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f32> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_36a4057f_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float64Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f64> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_1e7313d1_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int16Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i16> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_03f4a483_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int32Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i32> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_3fbf4662_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int64Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i64> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_86aa9354_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int8Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i8> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_93cff51e_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt16Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u16> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_a97fb924_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt32Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u32> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_8c35c1d5_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt64Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u64> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_eb82fdc0_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt8Array::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_bc293e17_s_null_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeStringArray::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_ea74fb9c_ll_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeBinaryArray::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::BinaryArray<i64> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
+fn f_19d281fe_s_null_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeListArray::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
 fn f_62bb8445_w__array__array__is_null_support__arrayref_deref(this: &ArrayRef, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::ArrayRef::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <dyn polars_arrow::array::Array>::is_null(&*this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_faaad3ac_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float32Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f32> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_a5b989d1_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float64Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f64> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_fd97bfdf_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int16Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i16> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_e617c7b1_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int32Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i32> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_5b56c2af_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int64Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i64> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_a91e7995_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int8Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i8> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_3f2ad42f_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt16Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u16> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_dbb2d581_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt32Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u32> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_2ba1b414_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt64Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u64> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_741ce341_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt8Array::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_47bd6156__valid_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeStringArray::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_e30de4b8_id_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeBinaryArray::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::BinaryArray<i64> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_6fd9113e__valid_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeListArray::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
 /// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
 /// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
 #[rune::function(instance, path = is_valid)]
@@ -12744,6 +13413,58 @@ fn f_8ea7b8d6_arrow__array__array__len_support__arrayref_deref(this: &ArrayRef) 
 /// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
 /// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
 #[rune::function(instance, path = null_count)]
+fn f_38feb29a_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<f32> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_744143bf_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<f64> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_3743d9df_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<i16> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_2b741f61_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<i32> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_55b017b4_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<i64> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_6730e3e9_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<i8> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_eabc52f0_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<u16> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_8df2028e_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<u32> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_8d7fd363_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<u64> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_ca62feec_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> Result<i64, Error> { let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_fa1c1a25__count_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> Result<i64, Error> { let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_3e10e761_nt_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> Result<i64, Error> { let __r = <polars_arrow::array::BinaryArray<i64> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
+fn f_d399b0c5__count_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> Result<i64, Error> { let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
 fn f_087cd523_array__array__null_count_support__arrayref_deref(this: &ArrayRef) -> Result<i64, Error> { let __r = <dyn polars_arrow::array::Array>::null_count(&*this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
 /// Returns a slice of this [`Array`]. # Implementation This operation is `O(1)` over `len`. # Panic This function panics iff `offset + length > self.len()`.
 /// Polars: `polars_arrow::array::Array::sliced`. sliced(offset: int, length: int) -> ArrayRef (fallible)
@@ -12752,14 +13473,193 @@ fn f_112f218d_ow__array__array__sliced_support__arrayref_deref(this: &ArrayRef, 
 /// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
 /// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
 #[rune::function(instance, path = split_at_boxed)]
+fn f_80442573_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float32Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f32> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_8defe342_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Float64Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<f64> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_d534c910_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int16Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i16> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_cf969afe_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int32Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i32> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_582ca487_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int64Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i64> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_c1dbf29b_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::Int8Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<i8> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_0ecc447d_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt16Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u16> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_f5b6af03_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt32Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u32> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_05c1ed2a_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt64Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u64> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_f2670e97_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::UInt8Array::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_0dabf5f3__boxed_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeStringArray::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_ad8832b2_ed_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeBinaryArray::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::BinaryArray<i64> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
+fn f_c8137570__boxed_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeListArray::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
 fn f_4b6634be_y__array__split_at_boxed_support__arrayref_deref(this: &ArrayRef, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::ArrayRef::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <dyn polars_arrow::array::Array>::split_at_boxed(&*this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_62c6188c_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<f32> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_a92e22d9_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<f64> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_abeeef5d_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i16> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_508f8f2f_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i32> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_9ef35e0a_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i64> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_f6c91a20_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i8> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_38cdb592_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u16> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_43f59808_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u32> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_7cf66605_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u64> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_b9aee834_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_852f4b2b__boxed_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> ArrayRef { let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_f1819f33_ed_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> ArrayRef { let __r = <polars_arrow::array::BinaryArray<i64> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
+fn f_877a4c9e__boxed_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> ArrayRef { let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
 /// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
 /// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
 #[rune::function(instance, path = to_boxed)]
 fn f_6d10e6eb___array__array__to_boxed_support__arrayref_deref(this: &ArrayRef) -> ArrayRef { let __r = <dyn polars_arrow::array::Array>::to_boxed(&*this.0); ArrayRef(__r) }
 /// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
 #[rune::function(instance, path = into_boxed)]
+fn f_7b4cc080_ed_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_arrow__array__binary__BinaryArray_i64_) -> ArrayRef { let __r = <polars_arrow::array::BinaryArray<i64> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_f5a4cf10__boxed_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> ArrayRef { let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_4383987c_ars_arrow__array__primitive__primitivearray_f32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f32_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<f32> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_d0c650f9_ars_arrow__array__primitive__primitivearray_f64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_f64_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<f64> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_9989852d_ars_arrow__array__primitive__primitivearray_i16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i16_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i16> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_677011c3_ars_arrow__array__primitive__primitivearray_i32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i32_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i32> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_ae45d3d6_ars_arrow__array__primitive__primitivearray_i64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i64_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i64> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_bc74a561_lars_arrow__array__primitive__primitivearray_i8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_i8_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<i8> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_99683fe2_ars_arrow__array__primitive__primitivearray_u16_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u16_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u16> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_b1b475cc_ars_arrow__array__primitive__primitivearray_u32_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u32_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u32> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_e1f06cd1_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u64_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u64> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_e16b17b4_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_aa1f42d6__boxed_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> ArrayRef { let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
 fn f_ec221f7c_ay__intoboxedarray__into_boxed_support__arrayref(this: ArrayRef) -> ArrayRef { let __r = <Box<dyn polars_arrow::array::Array> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_f32_::get_dtype)]
+fn f_d82eea81_ars_arrow__array__primitive__primitivearray_f32_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<f32> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_f64_::get_dtype)]
+fn f_5a9b53fc_ars_arrow__array__primitive__primitivearray_f64_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<f64> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_i16_::get_dtype)]
+fn f_e96545f6_ars_arrow__array__primitive__primitivearray_i16_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<i16> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_i32_::get_dtype)]
+fn f_f3c1f99c_ars_arrow__array__primitive__primitivearray_i32_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<i32> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_i64_::get_dtype)]
+fn f_c5ad0141_ars_arrow__array__primitive__primitivearray_i64_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<i64> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_i8_::get_dtype)]
+fn f_1047fb4b_lars_arrow__array__primitive__primitivearray_i8_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<i8> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_u16_::get_dtype)]
+fn f_d59c21d7_ars_arrow__array__primitive__primitivearray_u16_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<u16> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_u32_::get_dtype)]
+fn f_cd55b285_ars_arrow__array__primitive__primitivearray_u32_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<u32> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_u64_::get_dtype)]
+fn f_eeebbb00_ars_arrow__array__primitive__primitivearray_u64_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<u64> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__primitive__PrimitiveArray_u8_::get_dtype)]
+fn f_c6d7d90f_lars_arrow__array__primitive__primitivearray_u8_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__utf8__Utf8Array_i64_::get_dtype)]
+fn f_d6af646b__dtype_polars_arrow__array__utf8__utf8array_i64_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
+/// Polars: `polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype`. get_dtype() -> ArrowDataType
+#[rune::function(free, path = W_polars_arrow__array__binary__BinaryArray_i64_::get_dtype)]
+fn f_b6f4ec2d_pe_polars_arrow__array__binary__binaryarray_i64_() -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::BinaryArray<i64> as polars_arrow::array::ParameterFreeDtypeStaticArray>::get_dtype(); W_polars_arrow__datatypes__ArrowDataType(__r) }
 /// Polars: `polars_core::chunked_array::builder::ChunkedBuilder::append_null`. append_null() -> unit
 #[rune::function(instance, path = append_null)]
 fn f_6b4bb3d9_d_array__builder__boolean__booleanchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__boolean__BooleanChunkedBuilder) -> () { let __r = <polars::chunked_array::builder::BooleanChunkedBuilder as polars::chunked_array::builder::ChunkedBuilder<_, _>>::append_null(&mut this.0); __r }
@@ -19318,6 +20218,58 @@ fn v_99e6a99f_polars_utils__pl_path__cloudscheme__s3() -> W_polars_utils__pl_pat
 /// Variant `S3a` of `polars_utils::pl_path::CloudScheme`.
 #[rune::function(free, path = W_polars_utils__pl_path__CloudScheme::S3a)]
 fn v_2c190394_polars_utils__pl_path__cloudscheme__s3a() -> W_polars_utils__pl_path__CloudScheme { W_polars_utils__pl_path__CloudScheme(<polars::polars_utils::pl_path::CloudScheme>::S3a) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<i8>` (probe route: probes/0120/reach-0.55.2.json: i8).
+#[rune::function(instance, path = as_int8_array)]
+fn ca_as_int8_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i8_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i8>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_i8_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_int8_array: the array is {:?}, not Int8Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<i16>` (probe route: probes/0120/reach-0.55.2.json: i16).
+#[rune::function(instance, path = as_int16_array)]
+fn ca_as_int16_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i16_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i16>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_i16_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_int16_array: the array is {:?}, not Int16Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<i32>` (probe route: probes/0120/reach-0.55.2.json: i32 and date).
+#[rune::function(instance, path = as_int32_array)]
+fn ca_as_int32_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i32_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i32>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_i32_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_int32_array: the array is {:?}, not Int32Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<i64>` (probe route: probes/0120/reach-0.55.2.json: i64, datetime, duration and time).
+#[rune::function(instance, path = as_int64_array)]
+fn ca_as_int64_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_i64_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<i64>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_i64_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_int64_array: the array is {:?}, not Int64Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<u8>` (probe route: probes/0120/reach-0.55.2.json: u8).
+#[rune::function(instance, path = as_uint8_array)]
+fn ca_as_uint8_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u8_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<u8>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_u8_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_uint8_array: the array is {:?}, not UInt8Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<u16>` (probe route: probes/0120/reach-0.55.2.json: u16).
+#[rune::function(instance, path = as_uint16_array)]
+fn ca_as_uint16_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u16_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<u16>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_u16_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_uint16_array: the array is {:?}, not UInt16Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<u32>` (probe route: probes/0120/reach-0.55.2.json: u32).
+#[rune::function(instance, path = as_uint32_array)]
+fn ca_as_uint32_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u32_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<u32>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_u32_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_uint32_array: the array is {:?}, not UInt32Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<u64>` (probe route: probes/0120/reach-0.55.2.json: u64).
+#[rune::function(instance, path = as_uint64_array)]
+fn ca_as_uint64_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_u64_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<u64>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_u64_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_uint64_array: the array is {:?}, not UInt64Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<f32>` (probe route: probes/0120/reach-0.55.2.json: f32).
+#[rune::function(instance, path = as_float32_array)]
+fn ca_as_float32_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_f32_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<f32>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_f32_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_float32_array: the array is {:?}, not Float32Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::PrimitiveArray<f64>` (probe route: probes/0120/reach-0.55.2.json: f64).
+#[rune::function(instance, path = as_float64_array)]
+fn ca_as_float64_array(this: &ArrayRef) -> Result<W_polars_arrow__array__primitive__PrimitiveArray_f64_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::PrimitiveArray<f64>>().map(|a| W_polars_arrow__array__primitive__PrimitiveArray_f64_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_float64_array: the array is {:?}, not Float64Array", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::Utf8Array<i64>` (probe route: probes/0120/reach-0.55.2.json: str at CompatLevel::oldest).
+#[rune::function(instance, path = as_large_string_array)]
+fn ca_as_large_string_array(this: &ArrayRef) -> Result<W_polars_arrow__array__utf8__Utf8Array_i64_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::Utf8Array<i64>>().map(|a| W_polars_arrow__array__utf8__Utf8Array_i64_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_large_string_array: the array is {:?}, not LargeStringArray", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::BinaryArray<i64>` (probe route: probes/0120/reach-0.55.2.json: binary and binary_offset at CompatLevel::oldest).
+#[rune::function(instance, path = as_large_binary_array)]
+fn ca_as_large_binary_array(this: &ArrayRef) -> Result<W_polars_arrow__array__binary__BinaryArray_i64_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::BinaryArray<i64>>().map(|a| W_polars_arrow__array__binary__BinaryArray_i64_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_large_binary_array: the array is {:?}, not LargeBinaryArray", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::ListArray<i64>` (probe route: probes/0120/reach-0.55.2.json: list_i64 and list_str).
+#[rune::function(instance, path = as_large_list_array)]
+fn ca_as_large_list_array(this: &ArrayRef) -> Result<W_polars_arrow__array__list__ListArray_i64_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::ListArray<i64>>().map(|a| W_polars_arrow__array__list__ListArray_i64_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_large_list_array: the array is {:?}, not LargeListArray", this.0.dtype()))) }
+
+// record 0120: every listed concrete array's parameter bound, asserted at compile time
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<f32>; };
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<f64>; };
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<i16>; };
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<i32>; };
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<i64>; };
+const _: () = { fn holds<T: polars_arrow::types::Offset>() {} let _ = holds::<i64>; };
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<i8>; };
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<u16>; };
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<u32>; };
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<u64>; };
+const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<u8>; };
 
 // record 0118: every shipped std fact, asserted at compile time at this pin
 const _: () = { fn holds<T: ?Sized + AsRef<[u8]>>() {} let _ = holds::<Vec<u8>>; };
@@ -19350,6 +20302,123 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
 
 #[inline(never)]
 fn install_0(m: &mut rune::Module) -> Result<(), rune::ContextError> {
+    m.function_meta(f_e344cc17_ed_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_a8ee2d97_pe_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_1572d0a5_pe_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_6de337dd_et_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_90cfa0cf_en_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_373cfa67_ts_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_a5d841b8_ed_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_eff582b9_ty_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_c406c0c3_ue_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_1784a5bd_es_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_c5174491__boxed_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_5d025a8a_y__len_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_ce77db8f_ffsets_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_dea75af5_sliced_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_2940b8c1_lidity_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_c0404865__value_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_1a8939f1_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_18b6a8cc_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_8ed0e667_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_8213084c_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_8aee6011_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_0ee290b5_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_5c03ed81_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_65dd8853_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_31680956_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_34705876_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_9896809f_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_85478e0a_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_ece75322_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_eb41eb50_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_283aac55_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_2bcbff6b_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_2b9268b7_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_36f620dd_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_0fdb48a0_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_a369b10f_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_2fb0216a_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_738ee343_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_d171ac43_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_e8d0d011_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_351a14b0_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_e84e0ec2_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_df66db22_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_f3bbbfd8_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_cb68d1e9_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_81248f55_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_faeda458_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_1a0d6069_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_4b767900_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_c76a80be_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_ce65a317_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_28935185_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_cdfa61c9_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_c3a11da7_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_57b67fbe_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_c7a3b3c9_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_ab9a133a_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_f65629bf_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_3aa31ceb_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_1e05a885_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_3737d890_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_dcd3cdb1_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_780c44a0_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_11e17e8e_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_1e645b93_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_390a6ce5_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_c8541397_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_dd71040e_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_9f821300_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_f560749a_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_81b7094b_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_1ae75d30_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_f6ba1cd4_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_dfdc58a6_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_53955dc6_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_04732124_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_56c8dbd4_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_aa8225fd_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_8a672456_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_8609b3e5_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_abd55944_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_c67e9f28_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_7bc04d0f_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_16a40595_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_690e51c4_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_ccd3f53c_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_cc64fb5e_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_c96148ff_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_4dc508a2_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_44eb1ddc_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_5ad0bff5_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_e0e37982_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_a3e5044d_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_ad0169a3_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_f7e561da_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_d369258e_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_30b07d40_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_c28b9bb9_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_7de6fbd0_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_5a85c682_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_d8440ae3_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_2939ea76_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_4529e2b6_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_3de9b23c_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_4717d16d_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_acf9d832_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_b0cce9e5__boxed_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_94829bfc__dtype_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_bb39e043__dtype_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_7806cdd9_y__get_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_2562c20d_y__len_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_9726ddb8_ffsets_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_0a4a9f26_sliced_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_f5c7d851_binary_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_9edb6985_lidity_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_b5f1da8e__value_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_08e29be7_values_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_ca28dca6_ictionary_polars_arrow__datatypes__arrowdatatype)?;
     m.function_meta(f_537097ce_ner_dtype_polars_arrow__datatypes__arrowdatatype)?;
     m.function_meta(f_f858d911_is_nested_polars_arrow__datatypes__arrowdatatype)?;
@@ -19745,6 +20814,11 @@ fn install_0(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_c6d3cbcb_null_like_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_e41b523c_null_like_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_4ec68fae_l_null_like_polars_core__datatypes__int16chunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_1(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_1d5f7171_l_null_like_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_1561af0a_l_null_like_polars_core__datatypes__int64chunked)?;
     m.function_meta(f_2ded2757_ll_null_like_polars_core__datatypes__int8chunked)?;
@@ -19806,6 +20880,7 @@ fn install_0(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_db27657d___get_flags_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_1205e8af_y__get_inner_polars_core__datatypes__listchunked)?;
     m.function_meta(f_ce768482_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_5b607f98_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_ac9852db__empty_lists_polars_core__datatypes__listchunked)?;
     m.function_meta(f_fa7dd8ca_d_out_values_polars_core__datatypes__listchunked)?;
     m.function_meta(f_c44fc58e_ulls_polars_core__datatypes__binaryoffsetchunked)?;
@@ -19862,11 +20937,6 @@ fn install_0(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_db374ce8__is_empty_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_3a9b87c0__is_empty_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_40db4b55_y__is_empty_polars_core__datatypes__int16chunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_1(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_60620562_y__is_empty_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_a955f1a6_y__is_empty_polars_core__datatypes__int64chunked)?;
     m.function_meta(f_1d991c51_ay__is_empty_polars_core__datatypes__int8chunked)?;
@@ -20261,6 +21331,11 @@ fn install_1(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_3e42fe3d_lode_list_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_999b89e4_xplode_list_polars_core__datatypes__int16chunked)?;
     m.function_meta(f_b9d24ff1_xplode_list_polars_core__datatypes__int32chunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_2(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_b53e525e_xplode_list_polars_core__datatypes__int64chunked)?;
     m.function_meta(f_1b1a9fa5_explode_list_polars_core__datatypes__int8chunked)?;
     m.function_meta(f_f75aec34_explode_list_polars_core__datatypes__listchunked)?;
@@ -20379,11 +21454,6 @@ fn install_1(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_6bbad785_darray__tail_polars_core__datatypes__int8chunked)?;
     m.function_meta(f_eeec1606_darray__tail_polars_core__datatypes__listchunked)?;
     m.function_meta(f_698a3c4f_rray__tail_polars_core__datatypes__stringchunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_2(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_05febaa2_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_352f2fa6_rray__tail_polars_core__datatypes__uint16chunked)?;
     m.function_meta(f_d2eb67e4_ray__tail_polars_core__datatypes__aliases__idxca)?;
@@ -20778,6 +21848,11 @@ fn install_2(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_88929844_n__arg_unique_polars_core__frame__column__column)?;
     m.function_meta(f_74951687_alized_series_polars_core__frame__column__column)?;
     m.function_meta(f_d21f8373_intain_scalar_polars_core__frame__column__column)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_2857dca8_scalar_column_polars_core__frame__column__column)?;
     m.function_meta(f_e7e14124_ar_column_mut_polars_core__frame__column__column)?;
     m.function_meta(f_e198d886_mn__as_series_polars_core__frame__column__column)?;
@@ -20896,11 +21971,6 @@ fn install_2(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_c5731169_umn__try_list_polars_core__frame__column__column)?;
     m.function_meta(f_8c422a0d_twise_to_bool_polars_core__frame__column__column)?;
     m.function_meta(f_aa967241_try_mul_owned_polars_core__frame__column__column)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_eab38fef_lumn__try_str_polars_core__frame__column__column)?;
     m.function_meta(f_76c0a7ce_n__try_struct_polars_core__frame__column__column)?;
     m.function_meta(f_751c40fd_try_sub_owned_polars_core__frame__column__column)?;
@@ -21295,6 +22365,11 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_63a50c1b_te_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_f15229f6_es_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_7a8a0f5f_ws_polars_io__csv__read__options__csvreadoptions)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_1cfdb308_er_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_d865bd1a_ompile_polars_io__csv__read__options__nullvalues)?;
     m.function_meta(f_015f8452___count_polars_io__csv__read__parser__countlines)?;
@@ -21413,11 +22488,6 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_98af68ce_azyframe__fill_nan_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_4c6902a1_zyframe__fill_null_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_cc7ea4b6___lazyframe__first_polars_lazy__frame__lazyframe)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_8c50c1b2__from_logical_plan_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_3d6af112_zyframe__full_join_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_176fe297__lazyframe__gather_polars_lazy__frame__lazyframe)?;
@@ -21812,6 +22882,11 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_f49444a3_rsection_polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(f_ec72f725_tersects_polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(f_588f717d___is_all_polars_plan__dsl__selector__timeunitset)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_29500beb_is_empty_polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(f_64eb9208___remove_polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(f_c6c6168a_set__set_polars_plan__dsl__selector__timeunitset)?;
@@ -21930,11 +23005,6 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_da83bc9d_n_numeric_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_ffb0a807_in_numeric_polars_core__datatypes__uint64chunked)?;
     m.function_meta(g_2ad96fc3_rs_core__chunked_array__arg_min_max__arg_min_str)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_0a80a9ff__chunked_array__ops__aggregate__sum_output_dtype)?;
     m.function_meta(g_98a5600d__core__chunked_array__ops__bit_repr__reinterpret)?;
     m.function_meta(g_0507e77b_ore__chunked_array__ops__gather__check_bounds_ca)?;
@@ -22329,6 +23399,11 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6e2f06bb_olars_core__series__series_as_core__clone__clone)?;
     m.function_meta(p_8b4f648d_ars_core__series__series_as_core__cmp__partialeq)?;
     m.function_meta(f_36f6b8e5___date__datechunked__polars_core__series__series)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5e9e47be_me__datetimechunked__polars_core__series__series)?;
     m.function_meta(f_0c440bdc_on__durationchunked__polars_core__series__series)?;
     m.function_meta(f_d04b837a___time__timechunked__polars_core__series__series)?;
@@ -22447,11 +23522,6 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_c9c54f70_io__cloud__options__cloudconfig_as_core__cmp__eq)?;
     m.function_meta(p_86b1fc82_ud__options__cloudconfig_as_core__cmp__partialeq)?;
     m.function_meta(p_e18edaaa__cloud__options__cloudconfig_as_core__fmt__debug)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_d908f51f__cloud__options__cloudconfig_as_core__hash__hash)?;
     m.function_meta(s_70b5c7e3_ions__cloudconfig_as_serde_core__de__deserialize)?;
     m.function_meta(s_992830aa_tions__cloudconfig_as_serde_core__ser__serialize)?;
@@ -22846,6 +23916,11 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_ca164dbb_n__polars_plan__dsl__function_expr__functionexpr)?;
     m.function_meta(f_15df9d3a_n__polars_plan__dsl__function_expr__functionexpr)?;
     m.function_meta(f_5968e4dc_n__polars_plan__dsl__function_expr__functionexpr)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_04edafd8__function_expr__functionexpr_as_core__fmt__debug)?;
     m.function_meta(p_866e4150_unction_expr__functionexpr_as_core__fmt__display)?;
     m.function_meta(p_5ed25721_pr__binary__binaryfunction_as_core__clone__clone)?;
@@ -22964,11 +24039,6 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_1f4fb1f5_l__options__unionoptions_as_core__cmp__partialeq)?;
     m.function_meta(f_7dbe83ab_ionargs__polars_plan__dsl__options__unionoptions)?;
     m.function_meta(p_a0fa611d__options__unionoptions_as_core__default__default)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_d9afe383___dsl__options__unionoptions_as_core__fmt__debug)?;
     m.function_meta(p_bbb20e3e___dsl__options__unionoptions_as_core__hash__hash)?;
     m.function_meta(p_75df6b5f_l__options__unpivotargsdsl_as_core__clone__clone)?;
@@ -23123,17 +24193,134 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_f26c06a8_plans__lit__literalvalue_as_core__cmp__partialeq)?;
     m.function_meta(f_74158adf_r__scalar__polars_plan__plans__lit__literalvalue)?;
     m.function_meta(p_11de42d8_an__plans__lit__literalvalue_as_core__fmt__debug)?;
+    m.function_meta(f_27f2168e__dtype_polars_arrow__array__list__listarray_i64_)?;
     m.function_meta(f_e8b0a6b5_row__array__array__dtype_support__arrayref_deref)?;
+    m.function_meta(f_f35ddfd3_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_a0132ef6_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_fd34cf06_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_e486dad8_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_ef628aed_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_330e308e_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_96174acd_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_8ba28ed3_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_8852493e_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_e00f8daa_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_0c10d0bf__nulls_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_272567da_ls_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_e7c79b5a__nulls_polars_arrow__array__list__listarray_i64_)?;
     m.function_meta(f_abb3a880__array__array__has_nulls_support__arrayref_deref)?;
+    m.function_meta(f_edd5ae26_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_b2ff46f3_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_3d31b237_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_1dbe2185_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_583992e0_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_4cd6945e_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_9611663a_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_fb82e220_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_ab574e2d_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_c443304a_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_652e89c4__empty_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_936ab09b_ty_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_86b449a9__empty_polars_arrow__array__list__listarray_i64_)?;
     m.function_meta(f_3c94a8bf___array__array__is_empty_support__arrayref_deref)?;
+    m.function_meta(f_eb368716_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_36a4057f_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_1e7313d1_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_03f4a483_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_3fbf4662_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_86aa9354_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_93cff51e_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_a97fb924_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_8c35c1d5_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_eb82fdc0_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_bc293e17_s_null_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_ea74fb9c_ll_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_19d281fe_s_null_polars_arrow__array__list__listarray_i64_)?;
     m.function_meta(f_62bb8445_w__array__array__is_null_support__arrayref_deref)?;
+    m.function_meta(f_faaad3ac_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_a5b989d1_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_fd97bfdf_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_e617c7b1_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_5b56c2af_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_a91e7995_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_3f2ad42f_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_dbb2d581_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_2ba1b414_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_741ce341_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_47bd6156__valid_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_e30de4b8_id_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_6fd9113e__valid_polars_arrow__array__list__listarray_i64_)?;
     m.function_meta(f_d790edc4___array__array__is_valid_support__arrayref_deref)?;
     m.function_meta(f_8ea7b8d6_arrow__array__array__len_support__arrayref_deref)?;
+    m.function_meta(f_38feb29a_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_744143bf_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_3743d9df_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_2b741f61_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_55b017b4_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_6730e3e9_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_eabc52f0_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_8df2028e_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_8d7fd363_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_ca62feec_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_fa1c1a25__count_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_3e10e761_nt_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_d399b0c5__count_polars_arrow__array__list__listarray_i64_)?;
     m.function_meta(f_087cd523_array__array__null_count_support__arrayref_deref)?;
     m.function_meta(f_112f218d_ow__array__array__sliced_support__arrayref_deref)?;
+    m.function_meta(f_80442573_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_8defe342_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_d534c910_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_cf969afe_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_582ca487_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_c1dbf29b_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_0ecc447d_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_f5b6af03_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_05c1ed2a_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_f2670e97_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_0dabf5f3__boxed_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_ad8832b2_ed_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_c8137570__boxed_polars_arrow__array__list__listarray_i64_)?;
     m.function_meta(f_4b6634be_y__array__split_at_boxed_support__arrayref_deref)?;
+    m.function_meta(f_62c6188c_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_a92e22d9_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_abeeef5d_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_508f8f2f_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_9ef35e0a_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_f6c91a20_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_38cdb592_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_43f59808_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_7cf66605_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_b9aee834_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_852f4b2b__boxed_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_f1819f33_ed_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_877a4c9e__boxed_polars_arrow__array__list__listarray_i64_)?;
     m.function_meta(f_6d10e6eb___array__array__to_boxed_support__arrayref_deref)?;
+    m.function_meta(f_7b4cc080_ed_polars_arrow__array__binary__binaryarray_i64_)?;
+    m.function_meta(f_f5a4cf10__boxed_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_4383987c_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_d0c650f9_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_9989852d_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_677011c3_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_ae45d3d6_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_bc74a561_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_99683fe2_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_b1b475cc_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_e1f06cd1_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_e16b17b4_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_aa1f42d6__boxed_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_ec221f7c_ay__intoboxedarray__into_boxed_support__arrayref)?;
+    m.function_meta(f_d82eea81_ars_arrow__array__primitive__primitivearray_f32_)?;
+    m.function_meta(f_5a9b53fc_ars_arrow__array__primitive__primitivearray_f64_)?;
+    m.function_meta(f_e96545f6_ars_arrow__array__primitive__primitivearray_i16_)?;
+    m.function_meta(f_f3c1f99c_ars_arrow__array__primitive__primitivearray_i32_)?;
+    m.function_meta(f_c5ad0141_ars_arrow__array__primitive__primitivearray_i64_)?;
+    m.function_meta(f_1047fb4b_lars_arrow__array__primitive__primitivearray_i8_)?;
+    m.function_meta(f_d59c21d7_ars_arrow__array__primitive__primitivearray_u16_)?;
+    m.function_meta(f_cd55b285_ars_arrow__array__primitive__primitivearray_u32_)?;
+    m.function_meta(f_eeebbb00_ars_arrow__array__primitive__primitivearray_u64_)?;
+    m.function_meta(f_c6d7d90f_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_d6af646b__dtype_polars_arrow__array__utf8__utf8array_i64_)?;
+    m.function_meta(f_b6f4ec2d_pe_polars_arrow__array__binary__binaryarray_i64_)?;
     m.function_meta(f_6b4bb3d9_d_array__builder__boolean__booleanchunkedbuilder)?;
     m.function_meta(f_6eb842ef_nkedbuilder_polars_core__datatypes__float32type_)?;
     m.function_meta(f_28559dc6_nkedbuilder_polars_core__datatypes__float64type_)?;
@@ -23246,6 +24433,11 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_e84af6dd_unkedbuilder_polars_core__datatypes__uint64type_)?;
     m.function_meta(f_0bee918c_hunkedbuilder_polars_core__datatypes__uint8type_)?;
     m.function_meta(f_d019adcd__builder__list__binary__liststringchunkedbuilder)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_d7730aef_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_83cfc3d5_ray__builder__list__null__listnullchunkedbuilder)?;
     m.function_meta(f_15852b0b__builder__list__binary__listbinarychunkedbuilder)?;
@@ -23481,11 +24673,6 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_87ec297d_r__filter_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_a8839c5d_r__filter_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_225e1a56_r__filter_polars_core__datatypes__float64chunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_6b5160b5_ter__filter_polars_core__datatypes__int16chunked)?;
     m.function_meta(f_52f4bd76_ter__filter_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_074e84bc_ter__filter_polars_core__datatypes__int64chunked)?;
@@ -23763,6 +24950,11 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_84d9b0ac_into_column_polars_core__datatypes__int64chunked)?;
     m.function_meta(f_59b1ac6a__into_column_polars_core__datatypes__int8chunked)?;
     m.function_meta(f_d09b928c__into_column_polars_core__datatypes__listchunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_c9f61163_nto_column_polars_core__datatypes__stringchunked)?;
     m.function_meta(f_6cf14762_nto_column_polars_core__datatypes__uint16chunked)?;
     m.function_meta(f_3b1397d1_nto_column_polars_core__datatypes__uint32chunked)?;
@@ -23998,11 +25190,6 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_6962d103__n_chunks_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_66ec8ef8__n_chunks_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_601f01d0__n_chunks_polars_core__datatypes__float64chunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_4a19ff08_r__n_chunks_polars_core__datatypes__int16chunked)?;
     m.function_meta(f_8f87c5c1_r__n_chunks_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_5b3d8061_r__n_chunks_polars_core__datatypes__int64chunked)?;
@@ -24280,6 +25467,11 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_fc0957e3_e__chunked_array__cast__castoptions__overflowing)?;
     m.function_meta(s_a308de19_hunked_array__ops__explodeoptions__empty_as_null)?;
     m.function_meta(w_a308de19_hunked_array__ops__explodeoptions__empty_as_null)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_4a72f7c4___chunked_array__ops__explodeoptions__keep_nulls)?;
     m.function_meta(w_4a72f7c4___chunked_array__ops__explodeoptions__keep_nulls)?;
     m.function_meta(v_a8cbd086___chunked_array__ops__fillnullstrategy__backward)?;
@@ -24515,11 +25707,6 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_01cec4be_ite__options__serializeoptions__float_scientific)?;
     m.function_meta(w_01cec4be_ite__options__serializeoptions__float_scientific)?;
     m.function_meta(s_a5dd2ccf_rite__options__serializeoptions__float_precision)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(w_a5dd2ccf_rite__options__serializeoptions__float_precision)?;
     m.function_meta(s_6af4dfd3__write__options__serializeoptions__decimal_comma)?;
     m.function_meta(w_6af4dfd3__write__options__serializeoptions__decimal_comma)?;
@@ -24797,6 +25984,11 @@ fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_50618d26_sl__file_scan__unifiedscanargs__table_statistics)?;
     m.function_meta(w_50618d26_sl__file_scan__unifiedscanargs__table_statistics)?;
     m.function_meta(s_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(w_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count)?;
     m.function_meta(v_557730eb_an__dsl__function_expr__functionexpr__binaryexpr)?;
     m.function_meta(v_5eade1b3_n__dsl__function_expr__functionexpr__categorical)?;
@@ -25032,11 +26224,6 @@ fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_63e6dcc0__sink__partitionedsinkoptions__max_rows_per_file)?;
     m.function_meta(w_63e6dcc0__sink__partitionedsinkoptions__max_rows_per_file)?;
     m.function_meta(s_4f55cc21_rtitionedsinkoptions__approximate_bytes_per_file)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(w_4f55cc21_rtitionedsinkoptions__approximate_bytes_per_file)?;
     m.function_meta(s_71605528_tions__sink__partitionedsinkoptionsir__base_path)?;
     m.function_meta(w_71605528_tions__sink__partitionedsinkoptionsir__base_path)?;
@@ -25118,5 +26305,18 @@ fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_3cbfd9d5_polars_utils__pl_path__cloudscheme__https)?;
     m.function_meta(v_99e6a99f_polars_utils__pl_path__cloudscheme__s3)?;
     m.function_meta(v_2c190394_polars_utils__pl_path__cloudscheme__s3a)?;
+    m.function_meta(ca_as_int8_array)?;
+    m.function_meta(ca_as_int16_array)?;
+    m.function_meta(ca_as_int32_array)?;
+    m.function_meta(ca_as_int64_array)?;
+    m.function_meta(ca_as_uint8_array)?;
+    m.function_meta(ca_as_uint16_array)?;
+    m.function_meta(ca_as_uint32_array)?;
+    m.function_meta(ca_as_uint64_array)?;
+    m.function_meta(ca_as_float32_array)?;
+    m.function_meta(ca_as_float64_array)?;
+    m.function_meta(ca_as_large_string_array)?;
+    m.function_meta(ca_as_large_binary_array)?;
+    m.function_meta(ca_as_large_list_array)?;
     Ok(())
 }

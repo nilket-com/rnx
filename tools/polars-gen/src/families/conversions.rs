@@ -223,6 +223,7 @@ pub(crate) fn from_emission_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let buckets = ["mechanical", "conversion"];
 	for c in &inv.callables {
@@ -398,6 +399,7 @@ pub(crate) fn from_emission_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	for c in &inv.callables {
 		emit_callable(&world, &mut out, c, &buckets);

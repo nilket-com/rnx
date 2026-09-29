@@ -136,6 +136,10 @@ pub(crate) fn emit_callable(world: &World, out: &mut Emitted, c: &Callable, buck
 				let (p, w) = proven_trait_receivers(world, c);
 				(p, w, std::collections::BTreeMap::new())
 			};
+			// record 0120: a trait recorded under a private module, spelled by its re-export
+			let tspell = crate::families::concrete_arrays::trait_spelling(&tspell)
+				.map(String::from)
+				.unwrap_or(tspell);
 			let tspell = if generic_trait {
 				let n = world.types.get(trait_).map_or(0, |s| s.trait_params.len());
 				format!("{tspell}<{}>", vec!["_"; n].join(", "))
@@ -368,6 +372,13 @@ pub(crate) fn emit_method_with(
 	if c.is_async {
 		out.unsupported(c, "async", &c.name);
 		return;
+	}
+	// record 0120: the concrete arrays are read-side only, fail closed
+	if world.concrete_owner(Some(owner)) {
+		if let Err(why) = crate::families::concrete_arrays::admit(world, c) {
+			out.unsupported(c, "concrete array rule", &why);
+			return;
+		}
 	}
 	let Some(w) = world.wrapper_for(owner) else {
 		let s = world.types.get(owner);

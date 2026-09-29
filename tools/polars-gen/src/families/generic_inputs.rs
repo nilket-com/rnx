@@ -304,6 +304,7 @@ pub(crate) fn bitmap_input_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();
@@ -473,6 +474,7 @@ pub(crate) fn bitmap_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();
@@ -780,6 +782,7 @@ pub(crate) fn generic_input_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();
@@ -1089,6 +1092,7 @@ pub(crate) fn slice_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str| {
 		let mut e = empty();

@@ -377,10 +377,9 @@ impl World {
 		};
 		let short = last(&tpath);
 		// record 0118: the closed std-facts table decides its own keys first
-		if self
-			.std_facts
-			.contains(&(ty.to_string(), bound.to_string()))
-		{
+		let key = (ty.to_string(), bound.to_string());
+		// record 0120: a listed concrete array's own parameter bound
+		if self.std_facts.contains(&key) || self.array_facts.contains(&key) {
 			return Applicability::Proven;
 		}
 		if tpath.starts_with("core::") || tpath.starts_with("alloc::") || tpath.starts_with("std::")

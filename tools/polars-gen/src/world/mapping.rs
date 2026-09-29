@@ -255,6 +255,17 @@ pub(crate) const INT_NARROW: &[&str] = &[
 pub(crate) const RISKY_INTS: &[&str] = &["u64", "usize", "isize", "i128", "u128"];
 
 impl World {
+	/// Record 0120: whether an owner is a listed concrete array identity.
+	pub(crate) fn concrete_owner(&self, owner: Option<&str>) -> bool {
+		owner.is_some_and(|o| {
+			self.release
+				.families
+				.concrete_arrays
+				.iter()
+				.any(|r| crate::families::concrete_arrays::identity(r) == o)
+		})
+	}
+
 	pub(crate) fn wrapper_for(&self, canonical: &str) -> Option<&Wrapper> {
 		self.wrappers.get(canonical)
 	}
@@ -346,6 +357,14 @@ impl World {
 					"i64" => ok_arg("i64", name.into(), "int"),
 					"f64" => ok_arg("f64", name.into(), "float"),
 					"f32" => ok_arg("f64", format!("({name} as f32)"), "float"),
+					// record 0120: a script float narrowed to binary16 would round;
+					// refused by name on the concrete arrays (read-side only)
+					"polars_utils::float16::pf16" if self.concrete_owner(owner) => {
+						Err(Unsupported(
+							"a binary16 argument narrows a script float lossily",
+							t.render(),
+						))
+					}
 					p if INT_NARROW.contains(&p) => ok_arg(
 						"i64",
 						format!("support::narrow::<{p}>({name}, \"{name}\")?"),
@@ -1175,6 +1194,49 @@ impl World {
 					"i64" => r("i64", "__r".into(), "int"),
 					"f64" => r("f64", "__r".into(), "float"),
 					"f32" => r("f64", "(__r as f64)".into(), "float"),
+					// record 0120: a listed concrete array's binary16 value is a script
+					// float, exactly (binary16 is a subset of f64: signed zero,
+					// infinities and NaN survive)
+					"polars_utils::float16::pf16" if self.concrete_owner(owner) => {
+						r("f64", "f64::from(__r)".into(), "float")
+					}
+					// record 0120: a listed concrete array's values or offsets buffer
+					// is copied like a borrowed slice (0082's `copy_slice`: bounded
+					// before the copy, each element converted by its scalar rule, the
+					// first failing element failing the whole call)
+					"polars_buffer::buffer::Buffer"
+					| "polars_arrow::buffer::immutable::Buffer"
+					| "polars_arrow::offset::OffsetsBuffer"
+						if self.concrete_owner(owner) && args.len() == 1 =>
+					{
+						let x = self.ret(&args[0], owner, depth + 1).map_err(
+							|Unsupported(why, what)| {
+								Unsupported("buffer element", format!("{why}: {what}"))
+							},
+						)?;
+						if x.materialize.is_some() {
+							return Err(Unsupported("buffer element", "iterator".into()));
+						}
+						let slice = if path.ends_with("OffsetsBuffer") {
+							"__r.as_slice()"
+						} else {
+							"&__r[..]"
+						};
+						Ok(Ret {
+							materialize: None,
+							rust_ty: format!("Vec<{}>", x.rust_ty),
+							fallible: true,
+							conv: format!(
+								"support::copy_slice({slice}, \"__OP__\", |__r| Ok::<_, Error>({}))?",
+								x.conv
+							),
+							doc: format!(
+								"vector of {} (copied, at most {} elements)",
+								x.doc,
+								1usize << 20
+							),
+						})
+					}
 					// record 0116 (rule 6): a time zone returns its IANA name
 					TZ => r("String", "__r.name().to_string()".into(), TZ_DOC),
 					// record 0093: a source scalar whose range can exceed a script

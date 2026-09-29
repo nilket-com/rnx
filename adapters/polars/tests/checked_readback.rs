@@ -77,7 +77,8 @@ fn boundary_values_are_checked_on_every_route() {
 		"None".into(),
 		fit("iter", over),
 		fit("to_vec", over),
-		fit("cont_slice", top),
+		// record 0120 review: a copied slice names the failing element
+		fit("cont_slice", top) + " (element 0)",
 		"ok 3".into(),
 		"ok 3".into(),
 		cb("for_each"),

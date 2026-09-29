@@ -41,6 +41,16 @@ impl<'a> Oracle<'a> {
 		FIXTURES.iter().find(|f| f.0 == canonical)
 	}
 
+	/// Record 0120: a listed concrete array's fixture, if this is one.
+	pub(crate) fn concrete_fixture(
+		&self,
+		canonical: &str,
+	) -> Option<(String, String, String, String)> {
+		crate::families::concrete_arrays::fixtures(self.world)
+			.into_iter()
+			.find(|f| f.0 == canonical)
+	}
+
 	/// Rune expression producing a value of this shape, if fixtures allow.
 	pub(crate) fn rune_value(&self, shape: &str) -> Option<String> {
 		match shape {
@@ -115,6 +125,10 @@ impl<'a> Oracle<'a> {
 		if let Some(f) = self.fixture(canonical) {
 			return Some(format!("fx::{}()", f.1));
 		}
+		// record 0120: a listed concrete array's fixture
+		if let Some((_, name, _, _)) = self.concrete_fixture(canonical) {
+			return Some(format!("fx::{name}()"));
+		}
 		let w = self.world.wrappers.get(canonical)?;
 		let s = self.world.types.get(canonical)?;
 		if s.kind == "enum" {
@@ -134,6 +148,9 @@ impl<'a> Oracle<'a> {
 	pub(crate) fn base_rust(&self, canonical: &str) -> Option<String> {
 		if let Some(f) = self.fixture(canonical) {
 			return Some(format!("{}()", f.1));
+		}
+		if let Some((_, name, _, _)) = self.concrete_fixture(canonical) {
+			return Some(format!("{name}()"));
 		}
 		let w = self.world.wrappers.get(canonical)?;
 		let s = self.world.types.get(canonical)?;
@@ -677,6 +694,9 @@ impl<'a> Oracle<'a> {
 		if let Some(f) = self.fixture(canonical) {
 			return Some(f.3.to_string());
 		}
+		if self.world.concrete_owner(Some(canonical)) {
+			return Some(crate::families::concrete_arrays::SHOW.to_string());
+		}
 		// record 0076: an array alias is compared structurally, as the series
 		// it converts to (name, dtype, every element, nulls), never by Debug,
 		// whose formatting truncates and rounds
@@ -718,6 +738,11 @@ impl<'a> Oracle<'a> {
 			Ty::Generic(g) if g == "Self" => owner?.to_string(),
 			_ => return None,
 		};
+		// record 0120: a listed concrete array's binary16 value is a script float,
+		// not the wrapped `pf16`
+		if path == "polars_utils::float16::pf16" && self.world.concrete_owner(owner) {
+			return None;
+		}
 		if self.world.wrappers.contains_key(&path) && self.show(&path).is_some() {
 			Some((path, fallible))
 		} else {
@@ -801,6 +826,15 @@ impl<'a> Oracle<'a> {
                     let show = self.show(crate::world::ARRAY_REF_KEY)?;
                     Some(format!("{{ let v = &__r; ({show}).to_text() }}"))
                 }
+                // record 0120: a listed concrete array's values or offsets buffer
+                // compares as the vector the binding copies it into
+                "polars_buffer::buffer::Buffer" | "polars_arrow::buffer::immutable::Buffer" | "polars_arrow::offset::OffsetsBuffer" if args.len() == 1 && self.world.concrete_owner(owner) => {
+                    let slice = if path.ends_with("OffsetsBuffer") { "__r.as_slice()" } else { "__r[..]" };
+                    self.oracle_fmt(&args[0], owner, depth + 1).map(|f| format!("format!(\"[{{}}]\", {slice}.iter().map(|__r| {{ let __r = __r.clone(); let e: String = {f}; format!(\"{{}}:{{e}}\", e.len()) }}).collect::<Vec<_>>().join(\", \"))"))
+                }
+                // record 0120: a listed concrete array's binary16 value, as the
+                // exact float the binding returns
+                "polars_utils::float16::pf16" if self.world.concrete_owner(owner) => Some("format!(\"{}\", f64::from(__r))".into()),
                 "bool" | "i64" | "f64" => Some("format!(\"{}\", __r)".into()),
                 "f32" => Some("format!(\"{}\", __r as f64)".into()),
                 TZ => Some("format!(\"{}\", __r.name())".into()),
@@ -817,6 +851,12 @@ impl<'a> Oracle<'a> {
                 "either::Either" if args.len() == 2 && args[1].render() == format!("alloc::vec::Vec<core::option::Option<{}>>", match &args[0] { Ty::Path { path, args: a } if path == "alloc::vec::Vec" && a.len() == 1 => a[0].render(), _ => String::new() }) => self.oracle_fmt(&args[1], owner, depth + 1).map(|f| format!("{{ let __r: Vec<Option<_>> = __r.either(|__v| __v.into_iter().map(Some).collect(), |__v| __v); {f} }}")),
                 "alloc::vec::Vec" if args.len() == 1 => self.oracle_fmt(&args[0], owner, depth + 1).map(|f| format!("format!(\"[{{}}]\", __r.into_iter().map(|__r| {{ let e: String = {f}; format!(\"{{}}:{{e}}\", e.len()) }}).collect::<Vec<_>>().join(\", \"))")),
                 "polars_error::PolarsResult" | "core::result::Result" if !args.is_empty() => self.oracle_fmt(&args[0], owner, depth + 1).map(|f| format!("match __r {{ Ok(__r) => {f}, Err(e) => format!(\"<<ERR:{{}}>>\", crate_oracle::error_kind(&e)) }}")),
+                // record 0120: a listed concrete array (its identity carries the
+                // native, which the bare path drops) shows as its Series
+                _ if self.world.concrete_owner(Some(&t.render())) => {
+                    let show = self.show(&t.render())?;
+                    Some(format!("{{ let v = &__r; ({show}).to_text() }}"))
+                }
                 _ => {
                     let show = self.show(path)?;
                     Some(format!("{{ let v = &__r; ({show}).to_text() }}"))

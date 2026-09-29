@@ -520,6 +520,7 @@ pub(crate) fn generic_impls_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let used = emit_op_groups(&world, &mut out, arms);
 	assert!(

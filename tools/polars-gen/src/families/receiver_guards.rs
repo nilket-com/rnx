@@ -10,9 +10,11 @@ use crate::model::Callable;
 #[serde(deny_unknown_fields)]
 pub(crate) struct ReceiverGuard {
 	pub(crate) path: String,
-	/// `below_len`, `below_n_chunks`, `at_most_len`, or `range_len`
+	/// `below_len`, `below_n_chunks`, `at_most_len`, `range_len`
 	/// (`param` is the offset, `param2` the length; a zero length is not
-	/// checked, as Arrow's `sliced` returns an empty array for it).
+	/// checked, as Arrow's `sliced` returns an empty array for it), or
+	/// `range_len_all` (record 0120: the concrete arrays' inherent `sliced`
+	/// asserts `offset + length <= len` for every length, zero included).
 	pub(crate) check: String,
 	pub(crate) param: String,
 	#[serde(default)]
@@ -54,6 +56,72 @@ pub(crate) const REQUIRED: &[(&str, &str, &str, Option<&str>)] = &[
 		"at_most_len",
 		"offset",
 		None,
+	), // record 0120: the concrete arrays' index and range methods
+	(
+		"polars_arrow::array::primitive::PrimitiveArray::value",
+		"below_len",
+		"i",
+		None,
+	),
+	(
+		"polars_arrow::array::utf8::Utf8Array::value",
+		"below_len",
+		"i",
+		None,
+	),
+	(
+		"polars_arrow::array::binary::BinaryArray::value",
+		"below_len",
+		"i",
+		None,
+	),
+	(
+		"polars_arrow::array::list::ListArray::value",
+		"below_len",
+		"i",
+		None,
+	),
+	(
+		"polars_arrow::array::utf8::Utf8Array::get",
+		"below_len",
+		"i",
+		None,
+	),
+	(
+		"polars_arrow::array::binary::BinaryArray::get",
+		"below_len",
+		"i",
+		None,
+	),
+	(
+		"polars_arrow::array::primitive::PrimitiveArray::sliced",
+		"range_len_all",
+		"offset",
+		Some("length"),
+	),
+	(
+		"polars_arrow::array::utf8::Utf8Array::sliced",
+		"range_len_all",
+		"offset",
+		Some("length"),
+	),
+	(
+		"polars_arrow::array::binary::BinaryArray::sliced",
+		"range_len_all",
+		"offset",
+		Some("length"),
+	),
+	(
+		"polars_arrow::array::list::ListArray::sliced",
+		"range_len_all",
+		"offset",
+		Some("length"),
+	),
+	(
+		"polars_arrow::array::struct_::StructArray::sliced",
+		"range_len_all",
+		"offset",
+		Some("length"),
 	),
 ];
 
@@ -169,6 +237,18 @@ pub(crate) fn guard_code(
 				format!("{a}, {b}, this.0.len()"),
 			)
 		}
+		"range_len_all" => {
+			let p2 = g
+				.param2
+				.as_deref()
+				.ok_or_else(|| format!("{}: range_len_all needs param2", g.path))?;
+			let b = local(p2).ok_or_else(|| format!("{}: no parameter `{p2}`", g.path))?;
+			oob(
+				format!("{a}.checked_add({b}).is_none_or(|e| e > this.0.len())"),
+				"offset {} + length {} is past length {}",
+				format!("{a}, {b}, this.0.len()"),
+			)
+		}
 		other => return Err(format!("{}: unknown check `{other}`", g.path)),
 	})
 }
@@ -214,6 +294,14 @@ pub(crate) fn receiver_guards_self_test() {
 			.contains("__guard_i >= this.0.n_chunks()")
 	);
 	let range = code(&g("range_len", "offset", Some("length"), "c")).unwrap();
+	// record 0120: the strict range checks a zero length too
+	let strict = code(&g("range_len_all", "offset", Some("length"), "c")).unwrap();
+	assert!(
+		strict.starts_with(
+			"if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len())"
+		) && !strict.contains("!= 0"),
+		"{strict}"
+	);
 	assert!(
 		range.starts_with("if __guard_length != 0 && __guard_offset.checked_add(__guard_length)"),
 		"a zero length is not checked, as Arrow's sliced: {range}"

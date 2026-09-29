@@ -87,6 +87,29 @@ pub(crate) struct RouteException {
 	pub(crate) reason: String,
 }
 
+/// Record 0120: a binding the freeze names keeps its frozen id; a new
+/// binding that would take a frozen id gets the receiver-qualified form.
+pub(crate) fn pin_frozen_ids(
+	frozen: &BTreeMap<(String, String), String>,
+	key: &str,
+	canonical_path: &str,
+	receivers: &[String],
+	bindings: &mut [Binding],
+) {
+	let frozen_of = |rune: &str| frozen.get(&(key.to_string(), rune.to_string()));
+	let pinned: std::collections::BTreeSet<String> = bindings
+		.iter()
+		.filter_map(|b| frozen_of(&b.rune).cloned())
+		.collect();
+	for (i, b) in bindings.iter_mut().enumerate() {
+		if let Some(id) = frozen_of(&b.rune) {
+			b.id = id.clone();
+		} else if pinned.contains(&b.id) {
+			b.id = binding_id(canonical_path, Some(&receivers[i]), false);
+		}
+	}
+}
+
 pub(crate) fn binding_id(canonical_path: &str, receiver: Option<&str>, first: bool) -> String {
 	let base = sanitize(canonical_path).to_lowercase();
 	match receiver {
@@ -172,6 +195,9 @@ pub(crate) struct Emitted {
 	/// per (wrapper rust path, rune method name) -> canonical path that took it
 	pub(crate) taken: BTreeMap<(String, String), String>,
 	pub(crate) fn_index: usize,
+	/// Record 0120: the frozen binding ids by (entry key, Rune path); a
+	/// binding the freeze names keeps its id whatever receivers join it.
+	pub(crate) frozen_ids: BTreeMap<(String, String), String>,
 }
 
 /// A stable Rust identifier for a binding: a short hash of the canonical
@@ -338,6 +364,15 @@ impl Emitted {
 				info: None,
 			})
 			.collect();
+		// record 0120: frozen ids are kept whatever receivers join the entry
+		let receivers: Vec<String> = per.iter().map(|p| p.1.clone()).collect();
+		pin_frozen_ids(
+			&self.frozen_ids,
+			&c.key,
+			&c.canonical_path,
+			&receivers,
+			&mut bindings,
+		);
 		// record 0118: receivers whose last path segment is a shared generic
 		// argument (`CsvReader<…Cursor<…Vec<u8>>>`, `IpcReader<…>`) would share
 		// an id; only those are extended with the receiver's own type name

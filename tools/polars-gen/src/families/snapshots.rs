@@ -2130,6 +2130,7 @@ pub(crate) fn layout_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str, scope: Option<(&str, &str)>| {
 		let mut e = empty();
@@ -2420,6 +2421,7 @@ pub(crate) fn owned_iter_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
@@ -2705,6 +2707,7 @@ pub(crate) fn view_snapshot_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
@@ -2982,6 +2985,7 @@ pub(crate) fn iter_snapshot_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
@@ -3252,6 +3256,7 @@ pub(crate) fn array_snapshot_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
@@ -3537,6 +3542,7 @@ pub(crate) fn indexed_chunk_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str, kind: Option<&str>| {
 		let mut e = empty();
@@ -3867,6 +3873,7 @@ pub(crate) fn chunk_snapshot_self_test() {
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,
+		frozen_ids: Default::default(),
 	};
 	let emit = |key: &str, native: Option<&str>| {
 		let mut e = empty();

@@ -50,6 +50,7 @@ const SELF_TESTS: &[fn()] = &[
 	crate::families::std_facts::std_facts_self_test,
 	crate::freeze::freeze_self_test,
 	crate::families::receiver_guards::receiver_guards_self_test,
+	crate::families::concrete_arrays::concrete_arrays_self_test,
 	crate::families::protocols::protocols_self_test,
 	crate::families::serde::serde_self_test,
 	crate::families::generic_impls::generic_impls_self_test,
@@ -118,10 +119,16 @@ fn main() {
 		}
 	}
 	let world = World::new(&inv, &release, &buckets);
-	let (out, census) = pipeline::generate(&world, &inv, &release, &buckets);
+	// record 0120: the freeze is loaded first, so frozen ids are kept at assignment
+	let frozen = release
+		.families
+		.frozen_bindings
+		.as_ref()
+		.map(|rel| freeze::load(&release_path, rel))
+		.unwrap_or_default();
+	let (out, census) = pipeline::generate(&world, &inv, &release, &buckets, &frozen);
 	// record 0119: every previously generated binding survives unchanged
-	if let Some(rel) = &release.families.frozen_bindings {
-		let frozen = freeze::load(&release_path, rel);
+	if release.families.frozen_bindings.is_some() {
 		let problems = freeze::check(&frozen, &out.entries, &out.catalogue);
 		if !problems.is_empty() {
 			for p in &problems {
