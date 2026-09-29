@@ -4054,6 +4054,126 @@ fn f_4b282770_uilder__list__boolean__listbooleanchunkedbuilder(name: &str, capac
 /// Polars: `polars_core::chunked_array::builder::list::null::ListNullChunkedBuilder::new`. new(name: string, capacity: int) -> ListNullChunkedBuilder (fallible)
 #[rune::function(free, path = W_polars_core__chunked_array__builder__list__null__ListNullChunkedBuilder::new)]
 fn f_6555f4d5_ray__builder__list__null__listnullchunkedbuilder(name: &str, capacity: i64) -> Result<W_polars_core__chunked_array__builder__list__null__ListNullChunkedBuilder, Error> { let __r = <polars::chunked_array::builder::list::ListNullChunkedBuilder>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?); Ok(W_polars_core__chunked_array__builder__list__null__ListNullChunkedBuilder(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of float) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_8734ea41_nkedbuilder_polars_core__datatypes__float32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "v")?; Ok::<_, Error>((v as f32)) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of float) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_2c72d109_nkedbuilder_polars_core__datatypes__float64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_6ceba89a_hunkedbuilder_polars_core__datatypes__int16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<i16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_afc520e5_hunkedbuilder_polars_core__datatypes__int32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<i32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_365fbec0_hunkedbuilder_polars_core__datatypes__int64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_8ba82e97_chunkedbuilder_polars_core__datatypes__int8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<i8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_3d3cdb46_unkedbuilder_polars_core__datatypes__uint16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_352ab2fa_unkedbuilder_polars_core__datatypes__uint32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_74c2a0e8_unkedbuilder_polars_core__datatypes__uint64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u64>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_opt_slice`. append_opt_slice(opt_v: option of vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_opt_slice)]
+fn f_fcdf9501_hunkedbuilder_polars_core__datatypes__uint8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type, opt_v: Option<rune::Value>) -> Result<(), Error> { let __t1 = match opt_v { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type>>::append_opt_slice(&mut this.0, __t1.as_deref()); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of float) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_8e5de4b6_nkedbuilder_polars_core__datatypes__float32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "items")?; Ok::<_, Error>((v as f32)) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of float) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_3aacf14c_nkedbuilder_polars_core__datatypes__float64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: f64 = support::borrow_element(&v, "items")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_e8755859_hunkedbuilder_polars_core__datatypes__int16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "items")?; Ok::<_, Error>(support::narrow::<i16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_e802728f_hunkedbuilder_polars_core__datatypes__int32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "items")?; Ok::<_, Error>(support::narrow::<i32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_db477ac5_hunkedbuilder_polars_core__datatypes__int64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "items")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_53d7bdc2_chunkedbuilder_polars_core__datatypes__int8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "items")?; Ok::<_, Error>(support::narrow::<i8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_9f687c2b_unkedbuilder_polars_core__datatypes__uint16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "items")?; Ok::<_, Error>(support::narrow::<u16>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_f64efd7a_unkedbuilder_polars_core__datatypes__uint32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "items")?; Ok::<_, Error>(support::narrow::<u32>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_0ac4bd98_unkedbuilder_polars_core__datatypes__uint64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "items")?; Ok::<_, Error>(support::narrow::<u64>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::append_slice`. append_slice(items: vector of int) -> unit (fallible)
+#[rune::function(instance, path = append_slice)]
+fn f_2ff8088a_hunkedbuilder_polars_core__datatypes__uint8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type, items: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&items, "items")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "items")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type>>::append_slice(&mut this.0, &__t0[..]); Ok(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListFloat32ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type::new)]
+fn f_ff08db9c_nkedbuilder_polars_core__datatypes__float32type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListFloat64ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type::new)]
+fn f_2d464714_nkedbuilder_polars_core__datatypes__float64type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListInt16ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type::new)]
+fn f_9d875751_hunkedbuilder_polars_core__datatypes__int16type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListInt32ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type::new)]
+fn f_f00eb1fa_hunkedbuilder_polars_core__datatypes__int32type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListInt64ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type::new)]
+fn f_90882f99_hunkedbuilder_polars_core__datatypes__int64type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListInt8ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type::new)]
+fn f_5ee7aef0_chunkedbuilder_polars_core__datatypes__int8type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListUInt16ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type::new)]
+fn f_39548321_unkedbuilder_polars_core__datatypes__uint16type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListUInt32ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type::new)]
+fn f_cc8de471_unkedbuilder_polars_core__datatypes__uint32type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListUInt64ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type::new)]
+fn f_764989fa_unkedbuilder_polars_core__datatypes__uint64type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new`. new(name: string, capacity: int, values_capacity: int, inner_type: DataType) -> ListUInt8ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type::new)]
+fn f_f5fb554d_hunkedbuilder_polars_core__datatypes__uint8type_(name: &str, capacity: i64, values_capacity: i64, inner_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type>>::new(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, inner_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListFloat32ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type::new_with_values_type)]
+fn f_4e453929_nkedbuilder_polars_core__datatypes__float32type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListFloat64ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type::new_with_values_type)]
+fn f_59c44112_nkedbuilder_polars_core__datatypes__float64type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListInt16ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type::new_with_values_type)]
+fn f_77c9439a_hunkedbuilder_polars_core__datatypes__int16type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListInt32ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type::new_with_values_type)]
+fn f_d6279b26_hunkedbuilder_polars_core__datatypes__int32type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListInt64ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type::new_with_values_type)]
+fn f_61d21479_hunkedbuilder_polars_core__datatypes__int64type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListInt8ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type::new_with_values_type)]
+fn f_c8d6b2fe_chunkedbuilder_polars_core__datatypes__int8type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListUInt16ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type::new_with_values_type)]
+fn f_6d2dce0a_unkedbuilder_polars_core__datatypes__uint16type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListUInt32ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type::new_with_values_type)]
+fn f_3cf37167_unkedbuilder_polars_core__datatypes__uint32type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListUInt64ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type::new_with_values_type)]
+fn f_d04858ed_unkedbuilder_polars_core__datatypes__uint64type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type(__r)) }
+/// Polars: `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder::new_with_values_type`. new_with_values_type(name: string, capacity: int, values_capacity: int, values_type: DataType, logical_type: DataType) -> ListUInt8ChunkedBuilder (fallible)
+#[rune::function(free, path = W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type::new_with_values_type)]
+fn f_7b1624eb_hunkedbuilder_polars_core__datatypes__uint8type_(name: &str, capacity: i64, values_capacity: i64, values_type: &W_polars_core__datatypes__dtype__DataType, logical_type: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type, Error> { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type>>::new_with_values_type(p::PlSmallStr::from(name), support::narrow::<usize>(capacity, "capacity")?, support::narrow::<usize>(values_capacity, "values_capacity")?, values_type.0.clone(), logical_type.0.clone()); Ok(W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type(__r)) }
 /// Appends a null slot into the builder
 /// Polars: `polars_core::chunked_array::builder::null::NullChunkedBuilder::append_null`. append_null() -> unit
 #[rune::function(instance, path = append_null)]
@@ -4067,6 +4187,12 @@ fn f_9dcb694b_chunked_array__builder__null__nullchunkedbuilder(name: &str, len: 
 /// Polars: `polars_core::chunked_array::builder::null::NullChunkedBuilder::shrink_to_fit`. shrink_to_fit() -> unit
 #[rune::function(instance, path = shrink_to_fit)]
 fn f_426ec3c6_chunked_array__builder__null__nullchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__null__NullChunkedBuilder) -> () { let __r = <polars::chunked_array::builder::NullChunkedBuilder>::shrink_to_fit(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::string::BinViewChunkedBuilder::finish`. finish() -> StringChunked
+#[rune::function(instance, path = finish)]
+fn f_f2c86eb2_ked_array__builder__string__stringchunkedbuilder(this: W_polars_core__chunked_array__builder__string__StringChunkedBuilder) -> W_polars_core__datatypes__StringChunked { let __r = <polars::chunked_array::builder::StringChunkedBuilder>::finish(this.0); W_polars_core__datatypes__StringChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::string::BinViewChunkedBuilder::finish`. finish() -> BinaryChunked
+#[rune::function(instance, path = finish)]
+fn f_5c313065_ked_array__builder__string__binarychunkedbuilder(this: W_polars_core__chunked_array__builder__string__BinaryChunkedBuilder) -> W_polars_core__datatypes__BinaryChunked { let __r = <polars::chunked_array::builder::BinaryChunkedBuilder>::finish(this.0); W_polars_core__datatypes__BinaryChunked(__r) }
 /// Polars: `polars_core::chunked_array::cast::CastOptions::is_strict`. is_strict() -> bool
 #[rune::function(instance, path = is_strict)]
 fn f_3bf9600b_ct_polars_core__chunked_array__cast__castoptions(this: &W_polars_core__chunked_array__cast__CastOptions) -> bool { let __r = <polars::chunked_array::cast::CastOptions>::is_strict(&this.0); __r }
@@ -4320,18 +4446,6 @@ fn f_527333f8_hunked_array__logical__duration__durationchunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::logical::Logical::physical`. physical() -> Int64Chunked
 #[rune::function(instance, path = physical)]
 fn f_6c9be2e0__core__chunked_array__logical__time__timechunked(this: &W_polars_core__chunked_array__logical__time__TimeChunked) -> W_polars_core__datatypes__Int64Chunked { let __r = <polars_core::datatypes::TimeChunked>::physical(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__Int64Chunked(__r) } }
-/// Polars: `polars_core::chunked_array::logical::Logical::physical_mut`. physical_mut() -> unit (receiver mutated in place)
-#[rune::function(instance, path = physical_mut)]
-fn f_277b8187__core__chunked_array__logical__date__datechunked(this: &mut W_polars_core__chunked_array__logical__date__DateChunked) -> () { let __r = <polars_core::datatypes::DateChunked>::physical_mut(&mut this.0); { let _ = __r; } }
-/// Polars: `polars_core::chunked_array::logical::Logical::physical_mut`. physical_mut() -> unit (receiver mutated in place)
-#[rune::function(instance, path = physical_mut)]
-fn f_abfbbb61_hunked_array__logical__datetime__datetimechunked(this: &mut W_polars_core__chunked_array__logical__datetime__DatetimeChunked) -> () { let __r = <polars_core::datatypes::DatetimeChunked>::physical_mut(&mut this.0); { let _ = __r; } }
-/// Polars: `polars_core::chunked_array::logical::Logical::physical_mut`. physical_mut() -> unit (receiver mutated in place)
-#[rune::function(instance, path = physical_mut)]
-fn f_4c3bcb41_hunked_array__logical__duration__durationchunked(this: &mut W_polars_core__chunked_array__logical__duration__DurationChunked) -> () { let __r = <polars_core::datatypes::DurationChunked>::physical_mut(&mut this.0); { let _ = __r; } }
-/// Polars: `polars_core::chunked_array::logical::Logical::physical_mut`. physical_mut() -> unit (receiver mutated in place)
-#[rune::function(instance, path = physical_mut)]
-fn f_2224a6ad__core__chunked_array__logical__time__timechunked(this: &mut W_polars_core__chunked_array__logical__time__TimeChunked) -> () { let __r = <polars_core::datatypes::TimeChunked>::physical_mut(&mut this.0); { let _ = __r; } }
 /// Polars: `polars_core::chunked_array::logical::Logical::rename`. rename(name: string) -> unit
 #[rune::function(instance, path = rename)]
 fn f_c5e9ed6f__core__chunked_array__logical__date__datechunked(this: &mut W_polars_core__chunked_array__logical__date__DateChunked, name: &str) -> () { let __r = <polars_core::datatypes::DateChunked>::rename(&mut this.0, p::PlSmallStr::from(name)); __r }
@@ -4641,6 +4755,10 @@ fn f_0202a90a__unknown_polars_core__datatypes__dtype__datatype(this: &W_polars_c
 /// Polars: `polars_core::datatypes::dtype::DataType::is_unsigned_integer`. is_unsigned_integer() -> bool
 #[rune::function(instance, path = is_unsigned_integer)]
 fn f_6296fc11__integer_polars_core__datatypes__dtype__datatype(this: &W_polars_core__datatypes__dtype__DataType) -> bool { let __r = <polars_core::datatypes::DataType>::is_unsigned_integer(&this.0); __r }
+/// Get the absolute inner data type of a nested type.
+/// Polars: `polars_core::datatypes::dtype::DataType::leaf_dtype`. leaf_dtype() -> DataType
+#[rune::function(instance, path = leaf_dtype)]
+fn f_e2a39b76_af_dtype_polars_core__datatypes__dtype__datatype(this: &W_polars_core__datatypes__dtype__DataType) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::DataType>::leaf_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Map all leaf types of nested dtypes (list, array, struct) using the supplied function.
 /// Polars: `polars_core::datatypes::dtype::DataType::map_leaves`. map_leaves(f: callback) -> DataType (fallible)
 #[rune::function(instance, path = map_leaves)]
@@ -4701,6 +4819,10 @@ fn f_4b3becc3_alize_polars_core__datatypes__dtype__unknownkind(this: &W_polars_c
 /// Polars: `polars_core::datatypes::field::Field::coerce`. coerce(dtype: DataType) -> unit
 #[rune::function(instance, path = coerce)]
 fn f_d353943c_eld__coerce_polars_core__datatypes__field__field(this: &mut W_polars_core__datatypes__field__Field, dtype: &W_polars_core__datatypes__dtype__DataType) -> () { let __r = <polars_core::datatypes::Field>::coerce(&mut this.0, dtype.0.clone()); __r }
+/// Returns a reference to the `Field` datatype.
+/// Polars: `polars_core::datatypes::field::Field::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_1d904ec9_ield__dtype_polars_core__datatypes__field__field(this: &W_polars_core__datatypes__field__Field) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Field>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Returns a reference to the `Field` name.
 /// Polars: `polars_core::datatypes::field::Field::name`. name() -> string
 #[rune::function(instance, path = name)]
@@ -4780,6 +4902,10 @@ fn f_38530e3e_sort_multiple_polars_core__frame__column__column(this: &W_polars_c
 /// Polars: `polars_core::frame::column::Column::arg_unique`. arg_unique() -> result of IdxCa (fallible)
 #[rune::function(instance, path = arg_unique)]
 fn f_88929844_n__arg_unique_polars_core__frame__column__column(this: &W_polars_core__frame__column__Column) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Column::arg_unique", move || <polars::frame::column::Column>::arg_unique(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// Get a reference to a [`Series`] for this [`Column`]
+/// Polars: `polars_core::frame::column::Column::as_materialized_series`. as_materialized_series() -> Series
+#[rune::function(instance, path = as_materialized_series)]
+fn f_74951687_alized_series_polars_core__frame__column__column(this: &W_polars_core__frame__column__Column) -> W_polars_core__series__Series { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Column::as_materialized_series", move || <polars::frame::column::Column>::as_materialized_series(__arg0)), "polars::Column::as_materialized_series"); { let __r = (__r).clone(); W_polars_core__series__Series(__r) } }
 /// If the memory repr of this Column is a scalar, a unit-length Series will be returned.
 /// Polars: `polars_core::frame::column::Column::as_materialized_series_maintain_scalar`. as_materialized_series_maintain_scalar() -> Series
 #[rune::function(instance, path = as_materialized_series_maintain_scalar)]
@@ -4835,6 +4961,9 @@ fn f_776d6cec_olumn__divide_polars_core__frame__column__column(this: &W_polars_c
 /// Polars: `polars_core::frame::column::Column::drop_nulls`. drop_nulls() -> Column
 #[rune::function(instance, path = drop_nulls)]
 fn f_18388840_n__drop_nulls_polars_core__frame__column__column(this: &W_polars_core__frame__column__Column) -> W_polars_core__frame__column__Column { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Column::drop_nulls", move || <polars::frame::column::Column>::drop_nulls(__arg0)), "polars::Column::drop_nulls"); W_polars_core__frame__column__Column(__r) }
+/// Polars: `polars_core::frame::column::Column::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_7f073827_column__dtype_polars_core__frame__column__column(this: &W_polars_core__frame__column__Column) -> W_polars_core__datatypes__dtype__DataType { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Column::dtype", move || <polars::frame::column::Column>::dtype(__arg0)), "polars::Column::dtype"); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Polars: `polars_core::frame::column::Column::duration`. duration() -> result of DurationChunked (fallible)
 #[rune::function(instance, path = duration)]
 fn f_dd5aa069_umn__duration_polars_core__frame__column__column(this: &W_polars_core__frame__column__Column) -> Result<W_polars_core__chunked_array__logical__duration__DurationChunked, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Column::duration", move || <polars::frame::column::Column>::duration(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__chunked_array__logical__duration__DurationChunked(__r) } }) }
@@ -5192,6 +5321,10 @@ fn f_08047910_umn__zip_with_polars_core__frame__column__column(this: &W_polars_c
 /// Polars: `polars_core::frame::column::Column::zip_with_same_type`. zip_with_same_type(mask: BooleanChunked, other: Column) -> result of Column (fallible)
 #[rune::function(instance, path = zip_with_same_type)]
 fn f_112bdf52_ith_same_type_polars_core__frame__column__column(this: &W_polars_core__frame__column__Column, mask: &W_polars_core__datatypes__BooleanChunked, other: &W_polars_core__frame__column__Column) -> Result<W_polars_core__frame__column__Column, Error> { let __arg0 = &this.0; let __arg1 = &mask.0.clone(); let __arg2 = &other.0; let __r = crate::engine::run("polars::Column::zip_with_same_type", move || <polars::frame::column::Column>::zip_with_same_type(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__frame__column__Column(__r) }) }
+/// Get the [`ScalarColumn`] as [`Series`]
+/// Polars: `polars_core::frame::column::scalar::ScalarColumn::as_materialized_series`. as_materialized_series() -> Series
+#[rune::function(instance, path = as_materialized_series)]
+fn f_65f16a12_polars_core__frame__column__scalar__scalarcolumn(this: &W_polars_core__frame__column__scalar__ScalarColumn) -> W_polars_core__series__Series { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::ScalarColumn::as_materialized_series", move || <polars::frame::column::ScalarColumn>::as_materialized_series(__arg0)), "polars::ScalarColumn::as_materialized_series"); { let __r = (__r).clone(); W_polars_core__series__Series(__r) } }
 /// Take the [`ScalarColumn`] as a series with a `n` values.
 /// Polars: `polars_core::frame::column::scalar::ScalarColumn::as_n_values_series`. as_n_values_series(n: int) -> Series (fallible)
 #[rune::function(instance, path = as_n_values_series)]
@@ -5209,6 +5342,9 @@ fn f_6789ff5d_polars_core__frame__column__scalar__scalarcolumn(this: &W_polars_c
 /// Polars: `polars_core::frame::column::scalar::ScalarColumn::drop_nulls`. drop_nulls() -> ScalarColumn
 #[rune::function(instance, path = drop_nulls)]
 fn f_a9add8b1_polars_core__frame__column__scalar__scalarcolumn(this: &W_polars_core__frame__column__scalar__ScalarColumn) -> W_polars_core__frame__column__scalar__ScalarColumn { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::ScalarColumn::drop_nulls", move || <polars::frame::column::ScalarColumn>::drop_nulls(__arg0)), "polars::ScalarColumn::drop_nulls"); W_polars_core__frame__column__scalar__ScalarColumn(__r) }
+/// Polars: `polars_core::frame::column::scalar::ScalarColumn::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_1b57f94f_polars_core__frame__column__scalar__scalarcolumn(this: &W_polars_core__frame__column__scalar__ScalarColumn) -> W_polars_core__datatypes__dtype__DataType { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::ScalarColumn::dtype", move || <polars::frame::column::ScalarColumn>::dtype(__arg0)), "polars::ScalarColumn::dtype"); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Create a new [`ScalarColumn`] from a `length<=1` Series and expand it `length`.
 /// Polars: `polars_core::frame::column::scalar::ScalarColumn::from_single_value_series`. from_single_value_series(series: Series, length: int) -> ScalarColumn (fallible)
 #[rune::function(free, path = W_polars_core__frame__column__scalar__ScalarColumn::from_single_value_series)]
@@ -5300,6 +5436,9 @@ fn f_b3eb9532___clear_polars_core__frame__dataframe__dataframe(this: &DataFrame)
 /// Polars: `polars_core::frame::dataframe::DataFrame::column`. column(name: string) -> result of Column (fallible)
 #[rune::function(instance, path = column)]
 fn f_12bb6bc5__column_polars_core__frame__dataframe__dataframe(this: &DataFrame, name: &str) -> Result<W_polars_core__frame__column__Column, Error> { let __arg0 = &this.0; let __arg1 = name; let __r = crate::engine::run("polars::DataFrame::column", move || <polars::frame::DataFrame>::column(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__frame__column__Column(__r) } }) }
+/// Polars: `polars_core::frame::dataframe::DataFrame::columns`. columns() -> vector of Column (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = columns)]
+fn f_59433f43_columns_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Result<Vec<W_polars_core__frame__column__Column>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::DataFrame::columns", move || <polars::frame::DataFrame>::columns(__arg0)).map_err(Error::engine)?; Ok(support::copy_slice(__r, "columns", |__r| Ok::<_, Error>(W_polars_core__frame__column__Column(__r)))?) }
 /// Drop a column by name. This is a pure method and will return a new [`DataFrame`] instead of modifying the current one in place.
 /// Polars: `polars_core::frame::dataframe::DataFrame::drop`. drop(name: string) -> result of DataFrame (fallible)
 #[rune::function(instance, path = drop)]
@@ -5656,9 +5795,6 @@ fn f_ca12876c__core__frame__group_by__position__grouppositions(this: &W_polars_c
 /// Polars: `polars_core::frame::group_by::position::GroupsIdx::first`. first() -> vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
 #[rune::function(instance, path = first)]
 fn f_b9226f63_olars_core__frame__group_by__position__groupsidx(this: &W_polars_core__frame__group_by__position__GroupsIdx) -> Result<Vec<i64>, Error> { let __r = <polars_core::frame::group_by::GroupsIdx>::first(&this.0); Ok(support::copy_slice(__r, "first", |__r| Ok::<_, Error>((__r as i64)))?) }
-/// Polars: `polars_core::frame::group_by::position::GroupsIdx::first_mut`. first_mut() -> unit (receiver mutated in place)
-#[rune::function(instance, path = first_mut)]
-fn f_9deda0de_olars_core__frame__group_by__position__groupsidx(this: &mut W_polars_core__frame__group_by__position__GroupsIdx) -> () { let __r = <polars_core::frame::group_by::GroupsIdx>::first_mut(&mut this.0); { let _ = __r; } }
 /// Polars: `polars_core::frame::group_by::position::GroupsIdx::is_sorted_by_first_idx`. is_sorted_by_first_idx() -> bool
 #[rune::function(instance, path = is_sorted_by_first_idx)]
 fn f_a6b580d3_olars_core__frame__group_by__position__groupsidx(this: &W_polars_core__frame__group_by__position__GroupsIdx) -> bool { let __r = <polars_core::frame::group_by::GroupsIdx>::is_sorted_by_first_idx(&this.0); __r }
@@ -5674,10 +5810,6 @@ fn f_6ae4f2b8_lars_core__frame__group_by__position__groupstype(this: &W_polars_c
 /// Polars: `polars_core::frame::group_by::position::GroupsType::group_count`. group_count() -> IdxCa
 #[rune::function(instance, path = group_count)]
 fn f_f97648eb_lars_core__frame__group_by__position__groupstype(this: &W_polars_core__frame__group_by__position__GroupsType) -> W_polars_core__datatypes__aliases__IdxCa { let __r = <polars_core::frame::group_by::GroupsType>::group_count(&this.0); W_polars_core__datatypes__aliases__IdxCa(__r) }
-/// Get a mutable reference to the `GroupsIdx`.
-/// Polars: `polars_core::frame::group_by::position::GroupsType::idx_mut`. idx_mut() -> unit (receiver mutated in place)
-#[rune::function(instance, path = idx_mut)]
-fn f_203d8c6b_lars_core__frame__group_by__position__groupstype(this: &mut W_polars_core__frame__group_by__position__GroupsType) -> () { let __r = <polars_core::frame::group_by::GroupsType>::idx_mut(&mut this.0); { let _ = __r; } }
 /// Polars: `polars_core::frame::group_by::position::GroupsType::into_idx`. into_idx() -> GroupsIdx
 #[rune::function(instance, path = into_idx)]
 fn f_1f5f4ef2_lars_core__frame__group_by__position__groupstype(this: &W_polars_core__frame__group_by__position__GroupsType) -> W_polars_core__frame__group_by__position__GroupsIdx { let __r = <polars_core::frame::group_by::GroupsType>::into_idx(this.0.clone()); W_polars_core__frame__group_by__position__GroupsIdx(__r) }
@@ -5712,6 +5844,9 @@ fn f_50c9d7e5_lars_core__frame__group_by__position__groupstype(this: &W_polars_c
 /// Polars: `polars_core::scalar::Scalar::cast_with_options`. cast_with_options(dtype: DataType, options: CastOptions) -> result of Scalar (fallible)
 #[rune::function(instance, path = cast_with_options)]
 fn f_b4cd32ad_r__cast_with_options_polars_core__scalar__scalar(this: &W_polars_core__scalar__Scalar, dtype: &W_polars_core__datatypes__dtype__DataType, options: &W_polars_core__chunked_array__cast__CastOptions) -> Result<W_polars_core__scalar__Scalar, Error> { let __r = <polars_core::scalar::Scalar>::cast_with_options(this.0.clone(), &dtype.0, options.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Polars: `polars_core::scalar::Scalar::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_4d43e55d_calar__scalar__dtype_polars_core__scalar__scalar(this: &W_polars_core__scalar__Scalar) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::scalar::Scalar>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Turn a scalar into a column with `length=1`.
 /// Polars: `polars_core::scalar::Scalar::into_column`. into_column(name: string) -> Column
 #[rune::function(instance, path = into_column)]
@@ -5938,6 +6073,10 @@ fn f_2557c720_series__series__null_polars_core__series__series(this: &W_polars_c
 /// Polars: `polars_core::series::Series::product`. product() -> result of Scalar (fallible)
 #[rune::function(instance, path = product)]
 fn f_835a1718_ies__series__product_polars_core__series__series(this: &W_polars_core__series__Series) -> Result<W_polars_core__scalar__Scalar, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Series::product", move || <polars::series::Series>::product(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__scalar__Scalar(__r) }) }
+/// Rename series.
+/// Polars: `polars_core::series::Series::rename`. rename(name: string) -> unit (receiver mutated in place)
+#[rune::function(instance, path = rename)]
+fn f_37a03c81_ries__series__rename_polars_core__series__series(this: &mut W_polars_core__series__Series, name: &str) -> () { let __arg0 = &mut this.0; let __arg1 = p::PlSmallStr::from(name); let __r = crate::engine::infallible(crate::engine::run("polars::Series::rename", move || <polars::series::Series>::rename(__arg0, __arg1)), "polars::Series::rename"); { let _ = __r; } }
 /// Polars: `polars_core::series::Series::reshape_list`. reshape_list(dimensions: vector of ReshapeDimension) -> result of Series (fallible)
 #[rune::function(instance, path = reshape_list)]
 fn f_681bb103_series__reshape_list_polars_core__series__series(this: &W_polars_core__series__Series, dimensions: rune::Value) -> Result<W_polars_core__series__Series, Error> { let __t0 = support::borrow_vec(&dimensions, "dimensions")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_arrow__datatypes__reshape__ReshapeDimension>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &this.0; let __arg1 = &__t0[..]; let __r = crate::engine::run("polars::Series::reshape_list", move || <polars::series::Series>::reshape_list(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
@@ -6002,6 +6141,10 @@ fn f_b95b9cd3_series__series__time_polars_core__series__series(this: &W_polars_c
 /// Polars: `polars_core::series::Series::to_float`. to_float() -> result of Series (fallible)
 #[rune::function(instance, path = to_float)]
 fn f_911df51c_es__series__to_float_polars_core__series__series(this: &W_polars_core__series__Series) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Series::to_float", move || <polars::series::Series>::to_float(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// If the Series is an Extension type, return its storage Series. Otherwise, return itself.
+/// Polars: `polars_core::series::Series::to_storage`. to_storage() -> Series
+#[rune::function(instance, path = to_storage)]
+fn f_b82bcd11___series__to_storage_polars_core__series__series(this: &W_polars_core__series__Series) -> W_polars_core__series__Series { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Series::to_storage", move || <polars::series::Series>::to_storage(__arg0)), "polars::Series::to_storage"); { let __r = (__r).clone(); W_polars_core__series__Series(__r) } }
 /// Wrap each element of this Series in a single-element list. A Series `[1, 2, 3]` becomes `[[1], [2], [3]]`.
 /// Polars: `polars_core::series::Series::to_unit_list`. to_unit_list() -> ListChunked
 #[rune::function(instance, path = to_unit_list)]
@@ -6161,6 +6304,9 @@ fn f_715e961b_rs_core__series__arithmetic__list__numericlistop(this: &W_polars_c
 /// Polars: `polars_core::series::arrow_export::categorical::CategoricalToArrowConverter::initialize`. initialize(dtype: DataType) -> unit
 #[rune::function(instance, path = initialize)]
 fn f_1e2a54f6_export__categorical__categoricaltoarrowconverter(this: &mut W_polars_core__series__arrow_export__categorical__CategoricalToArrowConverter, dtype: &W_polars_core__datatypes__dtype__DataType) -> () { let __r = <polars::series::arrow_export::categorical::CategoricalToArrowConverter>::initialize(&mut this.0, &dtype.0); __r }
+/// Polars: `polars_core::series::builder::SeriesBuilder::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_19e36ead_type_polars_core__series__builder__seriesbuilder(this: &W_polars_core__series__builder__SeriesBuilder) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars::series::builder::SeriesBuilder>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Extend this builder with the given number of null elements.
 /// Polars: `polars_core::series::builder::SeriesBuilder::extend_nulls`. extend_nulls(length: int) -> unit (fallible)
 #[rune::function(instance, path = extend_nulls)]
@@ -6313,6 +6459,9 @@ fn f_3140eba6_cord_polars_io__cloud__concurrency__model__model(this: &mut W_pola
 /// Polars: `polars_io::cloud::concurrency::model::Model::sample_count`. sample_count() -> int (checked into range) (fallible)
 #[rune::function(instance, path = sample_count)]
 fn f_d296edd5_ount_polars_io__cloud__concurrency__model__model(this: &W_polars_io__cloud__concurrency__model__Model) -> Result<i64, Error> { let __r = <polars_io::cloud::concurrency::Model>::sample_count(&this.0); Ok(support::widen::<usize>(__r, "sample_count")?) }
+/// Polars: `polars_io::cloud::concurrency::regime::Regime::state`. state() -> RegimeState
+#[rune::function(instance, path = state)]
+fn f_c9223bad_te_polars_io__cloud__concurrency__regime__regime(this: &W_polars_io__cloud__concurrency__regime__Regime) -> W_polars_io__cloud__concurrency__regime__RegimeState { let __r = <polars_io::cloud::concurrency::Regime>::state(&this.0); { let __r = (__r).clone(); W_polars_io__cloud__concurrency__regime__RegimeState(__r) } }
 /// Used for legacy fetch. @TODO: Deprecate over time.
 /// Polars: `polars_io::cloud::concurrency_config::FetchConfig::legacy`. legacy() -> FetchConfig
 #[rune::function(free, path = W_polars_io__cloud__concurrency_config__FetchConfig::legacy)]
@@ -6352,6 +6501,9 @@ fn f_38b5a8e5_ud__polars_object_store__objectstoreerrorcontext(path: &W_polars_u
 /// Polars: `polars_io::cloud::polars_object_store::inner::PolarsObjectStore::error_context`. error_context() -> ObjectStoreErrorContext
 #[rune::function(instance, path = error_context)]
 fn f_da5b9ad7_d__polars_object_store__inner__polarsobjectstore(this: &W_polars_io__cloud__polars_object_store__inner__PolarsObjectStore) -> W_polars_io__cloud__polars_object_store__ObjectStoreErrorContext { let __r = <polars_io::cloud::PolarsObjectStore>::error_context(&this.0); W_polars_io__cloud__polars_object_store__ObjectStoreErrorContext(__r) }
+/// Polars: `polars_io::cloud::polars_object_store::inner::PolarsObjectStore::io_metrics`. io_metrics() -> OptIOMetrics
+#[rune::function(instance, path = io_metrics)]
+fn f_de35ed9c_d__polars_object_store__inner__polarsobjectstore(this: &W_polars_io__cloud__polars_object_store__inner__PolarsObjectStore) -> W_polars_io__metrics__OptIOMetrics { let __r = <polars_io::cloud::PolarsObjectStore>::io_metrics(&this.0); { let __r = (__r).clone(); W_polars_io__metrics__OptIOMetrics(__r) } }
 /// Polars: `polars_io::csv::read::builder::Builder::add`. add(bytes: vector of int, ignore_errors: bool, needs_escaping: bool, missing_is_null: bool) -> result of unit (fallible)
 #[rune::function(instance, path = add)]
 fn f_9dada550_lder__add_polars_io__csv__read__builder__builder(this: &mut W_polars_io__csv__read__builder__Builder, bytes: rune::Value, ignore_errors: bool, needs_escaping: bool, missing_is_null: bool) -> Result<(), Error> { let __t0 = support::borrow_vec(&bytes, "bytes")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "bytes")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars_io::csv::read::builder::Builder>::add(&mut this.0, &__t0[..], ignore_errors, needs_escaping, missing_is_null); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
@@ -6539,6 +6691,10 @@ fn f_4dee524e_uet__write__key_value_metadata__keyvaluemetadata(kv: rune::Value) 
 /// Polars: `polars_io::parquet::write::options::ParquetWriteOptions::compat_level`. compat_level() -> CompatLevel
 #[rune::function(instance, path = compat_level)]
 fn f_b5e654fb_io__parquet__write__options__parquetwriteoptions(this: &W_polars_io__parquet__write__options__ParquetWriteOptions) -> W_polars_core__datatypes__dtype__CompatLevel { let __r = <polars_io::parquet::write::ParquetWriteOptions>::compat_level(&this.0); W_polars_core__datatypes__dtype__CompatLevel(__r) }
+/// Returns the [`DataType`] of the column.
+/// Polars: `polars_io::predicates::ColumnStats::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_a1b56602_nstats__dtype_polars_io__predicates__columnstats(this: &W_polars_io__predicates__ColumnStats) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars::io::predicates::ColumnStats>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Polars: `polars_io::predicates::ColumnStats::field_name`. field_name() -> string
 #[rune::function(instance, path = field_name)]
 fn f_19b59964_s__field_name_polars_io__predicates__columnstats(this: &W_polars_io__predicates__ColumnStats) -> String { let __r = <polars::io::predicates::ColumnStats>::field_name(&this.0); { let __r = (__r).clone(); __r.to_string() } }
@@ -7144,6 +7300,9 @@ fn f_a69b85a0_in_polars_ops__frame__join__args__joinvalidation(this: &W_polars_o
 /// Polars: `polars_ops::frame::join::args::JoinValidation::needs_checks`. needs_checks() -> bool
 #[rune::function(instance, path = needs_checks)]
 fn f_2a6488e4_ks_polars_ops__frame__join__args__joinvalidation(this: &W_polars_ops__frame__join__args__JoinValidation) -> bool { let __r = <polars_ops::frame::join::JoinValidation>::needs_checks(&this.0); __r }
+/// Polars: `polars_plan::callback::PlanCallback::get_path_or_file`. get_path_or_file(args: FileProviderArgs (moved: the Rune value is consumed)) -> result of FileProviderReturn (fallible)
+#[rune::function(instance, path = get_path_or_file)]
+fn f_aed8c975_sl__options__file_provider__fileproviderfunction(this: &W_polars_plan__dsl__options__file_provider__FileProviderFunction, args: W_polars_plan__dsl__options__file_provider__FileProviderArgs) -> Result<W_polars_plan__dsl__options__file_provider__FileProviderReturn, Error> { let __r = <polars_plan::dsl::file_provider::FileProviderFunction>::get_path_or_file(&this.0, args.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_plan__dsl__options__file_provider__FileProviderReturn(__r) }) }
 /// Define a default for the `when-then-otherwise` expression.
 /// Polars: `polars_plan::dsl::arity::ChainedThen::otherwise`. otherwise(expr: Expr) -> Expr
 #[rune::function(instance, path = otherwise)]
@@ -8015,9 +8174,6 @@ fn f_c6750b8c_n__dsl__options__file_provider__fileprovidertype(this: &W_polars_p
 /// Polars: `polars_plan::dsl::options::file_provider::HivePathProvider::get_path`. get_path(args: FileProviderArgs (moved: the Rune value is consumed)) -> result of string (fallible)
 #[rune::function(instance, path = get_path)]
 fn f_ae51ca43_n__dsl__options__file_provider__hivepathprovider(this: &W_polars_plan__dsl__options__file_provider__HivePathProvider, args: W_polars_plan__dsl__options__file_provider__FileProviderArgs) -> Result<String, Error> { let __r = <polars_plan::dsl::file_provider::HivePathProvider>::get_path(&this.0, args.0); Ok({ let __r = __r.map_err(Error::from)?; __r.to_string() }) }
-/// Polars: `polars_plan::dsl::options::file_provider::IcebergPathProvider::file_part_prefix_mut`. file_part_prefix_mut() -> unit (receiver mutated in place)
-#[rune::function(instance, path = file_part_prefix_mut)]
-fn f_bea89a62_dsl__options__file_provider__icebergpathprovider(this: &mut W_polars_plan__dsl__options__file_provider__IcebergPathProvider) -> () { let __r = <polars_plan::dsl::file_provider::IcebergPathProvider>::file_part_prefix_mut(&mut this.0); { let _ = __r; } }
 /// # Panics Panics if `self.file_part_prefix` is `None`.
 /// Polars: `polars_plan::dsl::options::file_provider::IcebergPathProvider::get_path`. get_path(args: FileProviderArgs (moved: the Rune value is consumed)) -> result of string (fallible)
 #[rune::function(instance, path = get_path)]
@@ -8376,6 +8532,140 @@ fn f_54092496_ew_idxsize_polars_plan__plans__lit__literalvalue(value: i64) -> Re
 /// Polars: `polars_plan::plans::lit::LiteralValue::untyped_null`. untyped_null() -> LiteralValue
 #[rune::function(free, path = W_polars_plan__plans__lit__LiteralValue::untyped_null)]
 fn f_03f4561b_typed_null_polars_plan__plans__lit__literalvalue() -> W_polars_plan__plans__lit__LiteralValue { let __r = <polars_plan::plans::LiteralValue>::untyped_null(); W_polars_plan__plans__lit__LiteralValue(__r) }
+/// Build a [`PolarsError::ColumnNotFound`] for `name`, listing available columns and a "did you mean" suggestion when one is close enough.
+/// Polars: `polars_schema::schema::Schema::column_not_found_err`. column_not_found_err(name: string) -> PolarsError
+#[rune::function(instance, path = column_not_found_err)]
+fn f_cf250194_column_not_found_err_polars_core__schema__schema(this: &W_polars_core__schema__Schema, name: &str) -> W_polars_error__PolarsError { let __r = <polars_core::prelude::Schema>::column_not_found_err(&this.0, name); W_polars_error__PolarsError(__r) }
+/// Whether the schema contains a field named `name`.
+/// Polars: `polars_schema::schema::Schema::contains`. contains(name: string) -> bool
+#[rune::function(instance, path = contains)]
+fn f_7a8d96d1_ma__schema__contains_polars_core__schema__schema(this: &W_polars_core__schema__Schema, name: &str) -> bool { let __r = <polars_core::prelude::Schema>::contains(&this.0, name); __r }
+/// Get a reference to the dtype of the field named `name`, or `None` if the field doesn't exist.
+/// Polars: `polars_schema::schema::Schema::get`. get(name: string) -> option of DataType
+#[rune::function(instance, path = get)]
+fn f_50fa3b1f__schema__schema__get_polars_core__schema__schema(this: &W_polars_core__schema__Schema, name: &str) -> Option<W_polars_core__datatypes__dtype__DataType> { let __r = <polars_core::prelude::Schema>::get(&this.0, name); match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) }), None => None } }
+/// Get references to the name and dtype of the field at `index`.
+/// Polars: `polars_schema::schema::Schema::get_at_index`. get_at_index(index: int) -> option of tuple of string, DataType (fallible)
+#[rune::function(instance, path = get_at_index)]
+fn f_9d69f953_schema__get_at_index_polars_core__schema__schema(this: &W_polars_core__schema__Schema, index: i64) -> Result<Option<(String, W_polars_core__datatypes__dtype__DataType)>, Error> { let __r = <polars_core::prelude::Schema>::get_at_index(&this.0, support::narrow::<usize>(index, "index")?); Ok(match __r { Some(__r) => Some({ let __t = __r; ({ let __r = __t.0; { let __r = (__r).clone(); __r.to_string() } }, { let __r = __t.1; { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }) }), None => None }) }
+/// Get mutable references to the name and dtype of the field at `index`.
+/// Polars: `polars_schema::schema::Schema::get_at_index_mut`. get_at_index_mut(index: int) -> option of tuple of string, DataType (fallible)
+#[rune::function(instance, path = get_at_index_mut)]
+fn f_d2507848_ma__get_at_index_mut_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, index: i64) -> Result<Option<(String, W_polars_core__datatypes__dtype__DataType)>, Error> { let __r = <polars_core::prelude::Schema>::get_at_index_mut(&mut this.0, support::narrow::<usize>(index, "index")?); Ok(match __r { Some(__r) => Some({ let __t = __r; ({ let __r = __t.0; { let __r = (__r).clone(); __r.to_string() } }, { let __r = __t.1; { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }) }), None => None }) }
+/// Return all data about the field named `name`: its index in the schema, its name, and its dtype.
+/// Polars: `polars_schema::schema::Schema::get_full`. get_full(name: string) -> option of tuple of int (checked into range), string, DataType (fallible)
+#[rune::function(instance, path = get_full)]
+fn f_199e1164_ma__schema__get_full_polars_core__schema__schema(this: &W_polars_core__schema__Schema, name: &str) -> Result<Option<(i64, String, W_polars_core__datatypes__dtype__DataType)>, Error> { let __r = <polars_core::prelude::Schema>::get_full(&this.0, name); Ok(match __r { Some(__r) => Some({ let __t = __r; ({ let __r = __t.0; support::widen::<usize>(__r, "get_full")? }, { let __r = __t.1; { let __r = (__r).clone(); __r.to_string() } }, { let __r = __t.2; { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }) }), None => None }) }
+/// Get a mutable reference to the dtype of the field named `name`, or `None` if the field doesn't exist.
+/// Polars: `polars_schema::schema::Schema::get_mut`. get_mut(name: string) -> option of DataType
+#[rune::function(instance, path = get_mut)]
+fn f_ab197028_ema__schema__get_mut_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, name: &str) -> Option<W_polars_core__datatypes__dtype__DataType> { let __r = <polars_core::prelude::Schema>::get_mut(&mut this.0, name); match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) }), None => None } }
+/// Polars: `polars_schema::schema::Schema::index_of`. index_of(name: string) -> option of int (checked into range) (fallible)
+#[rune::function(instance, path = index_of)]
+fn f_320b81f8_ma__schema__index_of_polars_core__schema__schema(this: &W_polars_core__schema__Schema, name: &str) -> Result<Option<i64>, Error> { let __r = <polars_core::prelude::Schema>::index_of(&this.0, name); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "index_of")?), None => None }) }
+/// Polars: `polars_schema::schema::Schema::insert`. insert(key: string, value: DataType) -> option of DataType
+#[rune::function(instance, path = insert)]
+fn f_eaa1a8d4_hema__schema__insert_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, key: &str, value: &W_polars_core__datatypes__dtype__DataType) -> Option<W_polars_core__datatypes__dtype__DataType> { let __r = <polars_core::prelude::Schema>::insert(&mut this.0, p::PlSmallStr::from(key), value.0.clone()); match __r { Some(__r) => Some(W_polars_core__datatypes__dtype__DataType(__r)), None => None } }
+/// Insert a field with `name` and `dtype` at the given `index` into this schema.
+/// Polars: `polars_schema::schema::Schema::insert_at_index`. insert_at_index(index: int, name: string, dtype: DataType) -> result of option of DataType (fallible)
+#[rune::function(instance, path = insert_at_index)]
+fn f_23b179dc_ema__insert_at_index_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, index: i64, name: &str, dtype: &W_polars_core__datatypes__dtype__DataType) -> Result<Option<W_polars_core__datatypes__dtype__DataType>, Error> { let __r = <polars_core::prelude::Schema>::insert_at_index(&mut this.0, support::narrow::<usize>(index, "index")?, p::PlSmallStr::from(name), dtype.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; match __r { Some(__r) => Some(W_polars_core__datatypes__dtype__DataType(__r)), None => None } }) }
+/// Polars: `polars_schema::schema::Schema::into_iter_values`. into_iter_values() -> vector of DataType (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = into_iter_values)]
+fn f_e0087129_ma__into_iter_values_polars_core__schema__schema(this: &W_polars_core__schema__Schema) -> Result<Vec<W_polars_core__datatypes__dtype__DataType>, Error> { let __arg0 = this.0.clone(); let __r = ({ let __it = <polars_core::prelude::Schema>::into_iter_values(__arg0); support::materialize_exact(__it, "into_iter_values", |__r| Ok::<_, Error>(W_polars_core__datatypes__dtype__DataType(__r))) })?; Ok(__r) }
+/// Polars: `polars_schema::schema::Schema::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_c37b586d_ma__schema__is_empty_polars_core__schema__schema(this: &W_polars_core__schema__Schema) -> bool { let __r = <polars_core::prelude::Schema>::is_empty(&this.0); __r }
+/// Iterates over the `(&name, &dtype)` pairs in this schema.
+/// Polars: `polars_schema::schema::Schema::iter`. iter() -> vector of tuple of string, DataType (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter)]
+fn f_6aea1d40_schema__schema__iter_polars_core__schema__schema(this: &W_polars_core__schema__Schema) -> Result<Vec<(String, W_polars_core__datatypes__dtype__DataType)>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::prelude::Schema>::iter(__arg0); support::materialize_exact(__it, "iter", |__r| Ok::<_, Error>({ let __t = __r; ({ let __r = __t.0; { let __r = (__r).clone(); __r.to_string() } }, { let __r = __t.1; { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }) })) })?; Ok(__r) }
+/// Iterates over references to the names in this schema.
+/// Polars: `polars_schema::schema::Schema::iter_names`. iter_names() -> vector of string (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_names)]
+fn f_e4870c36___schema__iter_names_polars_core__schema__schema(this: &W_polars_core__schema__Schema) -> Result<Vec<String>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::prelude::Schema>::iter_names(__arg0); support::materialize_exact(__it, "iter_names", |__r| Ok::<_, Error>({ let __r = (__r).clone(); __r.to_string() })) })?; Ok(__r) }
+/// Polars: `polars_schema::schema::Schema::iter_names_cloned`. iter_names_cloned() -> vector of string (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_names_cloned)]
+fn f_8527f8bd_a__iter_names_cloned_polars_core__schema__schema(this: &W_polars_core__schema__Schema) -> Result<Vec<String>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::prelude::Schema>::iter_names_cloned(__arg0); support::materialize_exact(__it, "iter_names_cloned", |__r| Ok::<_, Error>(__r.to_string())) })?; Ok(__r) }
+/// Iterates over references to the dtypes in this schema.
+/// Polars: `polars_schema::schema::Schema::iter_values`. iter_values() -> vector of DataType (materialized, at most 1048576 items) (fallible)
+#[rune::function(instance, path = iter_values)]
+fn f_5136f23c__schema__iter_values_polars_core__schema__schema(this: &W_polars_core__schema__Schema) -> Result<Vec<W_polars_core__datatypes__dtype__DataType>, Error> { let __arg0 = &this.0; let __r = ({ let __it = <polars_core::prelude::Schema>::iter_values(__arg0); support::materialize_exact(__it, "iter_values", |__r| Ok::<_, Error>({ let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) })) })?; Ok(__r) }
+/// The number of fields in the schema.
+/// Polars: `polars_schema::schema::Schema::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_522e256c__schema__schema__len_polars_core__schema__schema(this: &W_polars_core__schema__Schema) -> Result<i64, Error> { let __r = <polars_core::prelude::Schema>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Merge `other` into `self`.
+/// Polars: `polars_schema::schema::Schema::merge`. merge(other: Schema) -> unit
+#[rune::function(instance, path = merge)]
+fn f_6d63371e_chema__schema__merge_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, other: &W_polars_core__schema__Schema) -> () { let __r = <polars_core::prelude::Schema>::merge(&mut this.0, other.0.clone()); __r }
+/// Merge borrowed `other` into `self`.
+/// Polars: `polars_schema::schema::Schema::merge_from_ref`. merge_from_ref(other: Schema) -> unit
+#[rune::function(instance, path = merge_from_ref)]
+fn f_cbbd7257_hema__merge_from_ref_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, other: &W_polars_core__schema__Schema) -> () { let __r = <polars_core::prelude::Schema>::merge_from_ref(&mut this.0, &other.0); __r }
+/// Polars: `polars_schema::schema::Schema::metadata`. metadata() -> unit
+#[rune::function(instance, path = metadata)]
+fn f_e939e7be_ma__schema__metadata_polars_core__schema__schema(this: &W_polars_core__schema__Schema) -> () { let __r = <polars_core::prelude::Schema>::metadata(&this.0); { let __r = (__r).clone(); __r } }
+/// Create a new schema from this one, inserting a field with `name` and `dtype` at the given `index`.
+/// Polars: `polars_schema::schema::Schema::new_inserting_at_index`. new_inserting_at_index(index: int, name: string, field: DataType) -> result of Schema (fallible)
+#[rune::function(instance, path = new_inserting_at_index)]
+fn f_1c104a81_w_inserting_at_index_polars_core__schema__schema(this: &W_polars_core__schema__Schema, index: i64, name: &str, field: &W_polars_core__datatypes__dtype__DataType) -> Result<W_polars_core__schema__Schema, Error> { let __r = <polars_core::prelude::Schema>::new_inserting_at_index(&this.0, support::narrow::<usize>(index, "index")?, p::PlSmallStr::from(name), field.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__schema__Schema(__r) }) }
+/// Swap-remove a field by name and, if the field existed, return its dtype.
+/// Polars: `polars_schema::schema::Schema::remove`. remove(name: string) -> option of DataType
+#[rune::function(instance, path = remove)]
+fn f_0ea21a45_hema__schema__remove_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, name: &str) -> Option<W_polars_core__datatypes__dtype__DataType> { let __r = <polars_core::prelude::Schema>::remove(&mut this.0, name); match __r { Some(__r) => Some(W_polars_core__datatypes__dtype__DataType(__r)), None => None } }
+/// Rename field `old` to `new`, and return the (owned) old name.
+/// Polars: `polars_schema::schema::Schema::rename`. rename(old: string, new: string) -> option of string
+#[rune::function(instance, path = rename)]
+fn f_cf62869a_hema__schema__rename_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, old: &str, new: &str) -> Option<String> { let __r = <polars_core::prelude::Schema>::rename(&mut this.0, old, p::PlSmallStr::from(new)); match __r { Some(__r) => Some(__r.to_string()), None => None } }
+/// Reserve `additional` memory spaces in the schema.
+/// Polars: `polars_schema::schema::Schema::reserve`. reserve(additional: int) -> unit (fallible)
+#[rune::function(instance, path = reserve)]
+fn f_139d9a8c_ema__schema__reserve_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, additional: i64) -> Result<(), Error> { let __r = <polars_core::prelude::Schema>::reserve(&mut this.0, support::narrow::<usize>(additional, "additional")?); Ok(__r) }
+/// Change the field named `name` to the given `dtype` and return the previous dtype.
+/// Polars: `polars_schema::schema::Schema::set_dtype`. set_dtype(name: string, dtype: DataType) -> option of DataType
+#[rune::function(instance, path = set_dtype)]
+fn f_07cf3738_a__schema__set_dtype_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, name: &str, dtype: &W_polars_core__datatypes__dtype__DataType) -> Option<W_polars_core__datatypes__dtype__DataType> { let __r = <polars_core::prelude::Schema>::set_dtype(&mut this.0, name, dtype.0.clone()); match __r { Some(__r) => Some(W_polars_core__datatypes__dtype__DataType(__r)), None => None } }
+/// Change the field at the given index to the given `dtype` and return the previous dtype.
+/// Polars: `polars_schema::schema::Schema::set_dtype_at_index`. set_dtype_at_index(index: int, dtype: DataType) -> option of DataType (fallible)
+#[rune::function(instance, path = set_dtype_at_index)]
+fn f_6794cd35___set_dtype_at_index_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, index: i64, dtype: &W_polars_core__datatypes__dtype__DataType) -> Result<Option<W_polars_core__datatypes__dtype__DataType>, Error> { let __r = <polars_core::prelude::Schema>::set_dtype_at_index(&mut this.0, support::narrow::<usize>(index, "index")?, dtype.0.clone()); Ok(match __r { Some(__r) => Some(W_polars_core__datatypes__dtype__DataType(__r)), None => None }) }
+/// Remove a field by name, preserving order, and, if the field existed, return its dtype.
+/// Polars: `polars_schema::schema::Schema::shift_remove`. shift_remove(name: string) -> option of DataType
+#[rune::function(instance, path = shift_remove)]
+fn f_e1a26041_schema__shift_remove_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, name: &str) -> Option<W_polars_core__datatypes__dtype__DataType> { let __r = <polars_core::prelude::Schema>::shift_remove(&mut this.0, name); match __r { Some(__r) => Some(W_polars_core__datatypes__dtype__DataType(__r)), None => None } }
+/// Remove a field by name, preserving order, and, if the field existed, return its dtype.
+/// Polars: `polars_schema::schema::Schema::shift_remove_index`. shift_remove_index(index: int) -> option of tuple of string, DataType (fallible)
+#[rune::function(instance, path = shift_remove_index)]
+fn f_a1868eec___shift_remove_index_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, index: i64) -> Result<Option<(String, W_polars_core__datatypes__dtype__DataType)>, Error> { let __r = <polars_core::prelude::Schema>::shift_remove_index(&mut this.0, support::narrow::<usize>(index, "index")?); Ok(match __r { Some(__r) => Some({ let __t = __r; ({ let __r = __t.0; __r.to_string() }, { let __r = __t.1; W_polars_core__datatypes__dtype__DataType(__r) }) }), None => None }) }
+/// Get a reference to the dtype of the field named `name`, or `Err(PolarsErr)` if the field doesn't exist.
+/// Polars: `polars_schema::schema::Schema::try_get`. try_get(name: string) -> result of DataType (fallible)
+#[rune::function(instance, path = try_get)]
+fn f_25fac20d_ema__schema__try_get_polars_core__schema__schema(this: &W_polars_core__schema__Schema, name: &str) -> Result<W_polars_core__datatypes__dtype__DataType, Error> { let __r = <polars_core::prelude::Schema>::try_get(&this.0, name); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }) }
+/// Polars: `polars_schema::schema::Schema::try_get_at_index`. try_get_at_index(index: int) -> result of tuple of string, DataType (fallible)
+#[rune::function(instance, path = try_get_at_index)]
+fn f_9a5df2ae_ma__try_get_at_index_polars_core__schema__schema(this: &W_polars_core__schema__Schema, index: i64) -> Result<(String, W_polars_core__datatypes__dtype__DataType), Error> { let __r = <polars_core::prelude::Schema>::try_get_at_index(&this.0, support::narrow::<usize>(index, "index")?); Ok({ let __r = __r.map_err(Error::from)?; { let __t = __r; ({ let __r = __t.0; { let __r = (__r).clone(); __r.to_string() } }, { let __r = __t.1; { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }) } }) }
+/// Return all data about the field named `name`: its index in the schema, its name, and its dtype.
+/// Polars: `polars_schema::schema::Schema::try_get_full`. try_get_full(name: string) -> result of tuple of int (checked into range), string, DataType (fallible)
+#[rune::function(instance, path = try_get_full)]
+fn f_d42a1795_schema__try_get_full_polars_core__schema__schema(this: &W_polars_core__schema__Schema, name: &str) -> Result<(i64, String, W_polars_core__datatypes__dtype__DataType), Error> { let __r = <polars_core::prelude::Schema>::try_get_full(&this.0, name); Ok({ let __r = __r.map_err(Error::from)?; { let __t = __r; ({ let __r = __t.0; support::widen::<usize>(__r, "try_get_full")? }, { let __r = __t.1; { let __r = (__r).clone(); __r.to_string() } }, { let __r = __t.2; { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }) } }) }
+/// Polars: `polars_schema::schema::Schema::try_index_of`. try_index_of(name: string) -> result of int (checked into range) (fallible)
+#[rune::function(instance, path = try_index_of)]
+fn f_0c70f3f2_schema__try_index_of_polars_core__schema__schema(this: &W_polars_core__schema__Schema, name: &str) -> Result<i64, Error> { let __r = <polars_core::prelude::Schema>::try_index_of(&this.0, name); Ok({ let __r = __r.map_err(Error::from)?; support::widen::<usize>(__r, "try_index_of")? }) }
+/// Raises DuplicateError if this column already exists in the schema.
+/// Polars: `polars_schema::schema::Schema::try_insert`. try_insert(name: string, value: DataType) -> result of unit (fallible)
+#[rune::function(instance, path = try_insert)]
+fn f_5bb21f73___schema__try_insert_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, name: &str, value: &W_polars_core__datatypes__dtype__DataType) -> Result<(), Error> { let __r = <polars_core::prelude::Schema>::try_insert(&mut this.0, p::PlSmallStr::from(name), value.0.clone()); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_schema::schema::Schema::try_project_indices`. try_project_indices(indices: vector of int) -> result of Schema (fallible)
+#[rune::function(instance, path = try_project_indices)]
+fn f_6d64e626__try_project_indices_polars_core__schema__schema(this: &W_polars_core__schema__Schema, indices: rune::Value) -> Result<W_polars_core__schema__Schema, Error> { let __t0 = support::borrow_vec(&indices, "indices")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "indices")?; Ok::<_, Error>(support::narrow::<usize>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars_core::prelude::Schema>::try_project_indices(&this.0, &__t0[..]); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__schema__Schema(__r) }) }
+/// Polars: `polars_schema::schema::Schema::with_capacity`. with_capacity(capacity: int) -> Schema (fallible)
+#[rune::function(free, path = W_polars_core__schema__Schema::with_capacity)]
+fn f_5f7e6444_chema__with_capacity_polars_core__schema__schema(capacity: i64) -> Result<W_polars_core__schema__Schema, Error> { let __r = <polars_core::prelude::Schema>::with_capacity(support::narrow::<usize>(capacity, "capacity")?); Ok(W_polars_core__schema__Schema(__r)) }
+/// Insert a column into the [`Schema`].
+/// Polars: `polars_schema::schema::Schema::with_column`. with_column(name: string, dtype: DataType) -> option of DataType
+#[rune::function(instance, path = with_column)]
+fn f_86738224__schema__with_column_polars_core__schema__schema(this: &mut W_polars_core__schema__Schema, name: &str, dtype: &W_polars_core__datatypes__dtype__DataType) -> Option<W_polars_core__datatypes__dtype__DataType> { let __r = <polars_core::prelude::Schema>::with_column(&mut this.0, p::PlSmallStr::from(name), dtype.0.clone()); match __r { Some(__r) => Some(W_polars_core__datatypes__dtype__DataType(__r)), None => None } }
 /// Polars: `polars_core::chunked_array::arg_min_max::arg_max_binary`. arg_max_binary(ca: BinaryChunked) -> option of int (checked into range) (fallible)
 #[rune::function(path = arg_max_binary)]
 fn g_bfdaf8a8_core__chunked_array__arg_min_max__arg_max_binary(ca: &W_polars_core__datatypes__BinaryChunked) -> Result<Option<i64>, Error> { let __r = polars::chunked_array::arg_min_max::arg_max_binary(&ca.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "arg_max_binary")?), None => None }) }
@@ -11953,6 +12243,36 @@ fn f_68b1dcf4__builder__list__binary__listbinarychunkedbuilder(this: &mut W_pola
 fn f_1b76067b_uilder__list__boolean__listbooleanchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder) -> () { let __r = <polars::chunked_array::builder::list::ListBooleanChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
 #[rune::function(instance, path = append_null)]
+fn f_ce3d415a_nkedbuilder_polars_core__datatypes__float32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
+fn f_07fc2aa2_nkedbuilder_polars_core__datatypes__float64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
+fn f_c7f664b9_hunkedbuilder_polars_core__datatypes__int16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
+fn f_974a190e_hunkedbuilder_polars_core__datatypes__int32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
+fn f_d5c2a7cc_hunkedbuilder_polars_core__datatypes__int64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
+fn f_cfa6935d_chunkedbuilder_polars_core__datatypes__int8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
+fn f_0cb3d1dc_unkedbuilder_polars_core__datatypes__uint16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
+fn f_b3c5f5a4_unkedbuilder_polars_core__datatypes__uint32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
+fn f_e84af6dd_unkedbuilder_polars_core__datatypes__uint64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
+fn f_0bee918c_hunkedbuilder_polars_core__datatypes__uint8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type) -> () { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
+#[rune::function(instance, path = append_null)]
 fn f_d019adcd__builder__list__binary__liststringchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder) -> () { let __r = <polars::chunked_array::builder::list::ListStringChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::append_null(&mut this.0); __r }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_null`. append_null() -> unit
 #[rune::function(instance, path = append_null)]
@@ -11966,6 +12286,36 @@ fn f_15852b0b__builder__list__binary__listbinarychunkedbuilder(this: &mut W_pola
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
 #[rune::function(instance, path = append_opt_series)]
 fn f_1d541b78_uilder__list__boolean__listbooleanchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListBooleanChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListBooleanChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_015e4699_nkedbuilder_polars_core__datatypes__float32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListFloat32ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_92757c3c_nkedbuilder_polars_core__datatypes__float64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListFloat64ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_bc4e5c55_hunkedbuilder_polars_core__datatypes__int16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListInt16ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_64e77dc9_hunkedbuilder_polars_core__datatypes__int32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListInt32ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_9550452b_hunkedbuilder_polars_core__datatypes__int64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListInt64ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_9aae36c3_chunkedbuilder_polars_core__datatypes__int8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListInt8ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_1899b5db_unkedbuilder_polars_core__datatypes__uint16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListUInt16ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_886b0643_unkedbuilder_polars_core__datatypes__uint32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListUInt32ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_899dfa73_unkedbuilder_polars_core__datatypes__uint64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListUInt64ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_opt_series)]
+fn f_2d994a75_hunkedbuilder_polars_core__datatypes__uint8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListUInt8ChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_opt_series`. append_opt_series(opt_s: option of Series) -> result of unit (fallible)
 #[rune::function(instance, path = append_opt_series)]
 fn f_de7dbd92__builder__list__binary__liststringchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder, opt_s: Option<rune::Value>) -> Result<(), Error> { let __t0 = match opt_s { Some(v) => Some(support::take::<W_polars_core__series__Series>(&v, "opt_s")?), None => None }; let __arg0 = &mut this.0; let __arg1 = __t0.as_ref().map(|w| &w.0); let __r = crate::engine::run("polars::ListStringChunkedBuilder::append_opt_series", move || <polars::chunked_array::builder::list::ListStringChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::append_opt_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
@@ -11983,6 +12333,36 @@ fn f_8cb33832__builder__list__binary__listbinarychunkedbuilder(this: &mut W_pola
 fn f_8942a0d3_uilder__list__boolean__listbooleanchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListBooleanChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListBooleanChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
 #[rune::function(instance, path = append_owned_series)]
+fn f_5408ced8_nkedbuilder_polars_core__datatypes__float32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListFloat32ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
+fn f_6150e975_nkedbuilder_polars_core__datatypes__float64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListFloat64ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
+fn f_159be437_hunkedbuilder_polars_core__datatypes__int16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListInt16ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
+fn f_ca1d9329_hunkedbuilder_polars_core__datatypes__int32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListInt32ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
+fn f_01d51242_hunkedbuilder_polars_core__datatypes__int64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListInt64ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
+fn f_890f2d6e_chunkedbuilder_polars_core__datatypes__int8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListInt8ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
+fn f_8b6395fc_unkedbuilder_polars_core__datatypes__uint16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListUInt16ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
+fn f_a13b7a8c_unkedbuilder_polars_core__datatypes__uint32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListUInt32ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
+fn f_f476e19f_unkedbuilder_polars_core__datatypes__uint64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListUInt64ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
+fn f_e77798fe_hunkedbuilder_polars_core__datatypes__uint8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListUInt8ChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_owned_series)]
 fn f_e48598e5__builder__list__binary__liststringchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = s.0.clone(); let __r = crate::engine::run("polars::ListStringChunkedBuilder::append_owned_series", move || <polars::chunked_array::builder::list::ListStringChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::append_owned_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_owned_series`. append_owned_series(s: Series) -> result of unit (fallible)
 #[rune::function(instance, path = append_owned_series)]
@@ -11996,6 +12376,36 @@ fn f_b5012fa2__builder__list__binary__listbinarychunkedbuilder(this: &mut W_pola
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
 #[rune::function(instance, path = append_series)]
 fn f_20292605_uilder__list__boolean__listbooleanchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListBooleanChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListBooleanChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_d43c3404_nkedbuilder_polars_core__datatypes__float32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListFloat32ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_e5c9f8e8_nkedbuilder_polars_core__datatypes__float64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListFloat64ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_ffd0e771_hunkedbuilder_polars_core__datatypes__int16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListInt16ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_5c7b1eed_hunkedbuilder_polars_core__datatypes__int32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListInt32ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_cfd63e72_hunkedbuilder_polars_core__datatypes__int64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListInt64ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_00e5292e_chunkedbuilder_polars_core__datatypes__int8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListInt8ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_5b3d44dd_unkedbuilder_polars_core__datatypes__uint16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListUInt16ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_c2cb7d69_unkedbuilder_polars_core__datatypes__uint32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListUInt32ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_307e78a0_unkedbuilder_polars_core__datatypes__uint64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListUInt64ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
+#[rune::function(instance, path = append_series)]
+fn f_e454726b_hunkedbuilder_polars_core__datatypes__uint8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListUInt8ChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::append_series`. append_series(s: Series) -> result of unit (fallible)
 #[rune::function(instance, path = append_series)]
 fn f_8cb9a5ab__builder__list__binary__liststringchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder, s: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &s.0; let __r = crate::engine::run("polars::ListStringChunkedBuilder::append_series", move || <polars::chunked_array::builder::list::ListStringChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::append_series(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
@@ -12013,6 +12423,36 @@ fn f_4c5bf712__builder__list__binary__listbinarychunkedbuilder(this: &W_polars_c
 fn f_f064bf6d_uilder__list__boolean__listbooleanchunkedbuilder(this: &W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder) -> bool { let __r = <polars::chunked_array::builder::list::ListBooleanChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
 #[rune::function(instance, path = fast_explode)]
+fn f_77ce949a_nkedbuilder_polars_core__datatypes__float32type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
+fn f_3e4cd3ed_nkedbuilder_polars_core__datatypes__float64type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
+fn f_2a04dac0_hunkedbuilder_polars_core__datatypes__int16type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
+fn f_82165e1e_hunkedbuilder_polars_core__datatypes__int32type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
+fn f_2e065e89_hunkedbuilder_polars_core__datatypes__int64type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
+fn f_8e257a6a_chunkedbuilder_polars_core__datatypes__int8type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
+fn f_75be2549_unkedbuilder_polars_core__datatypes__uint16type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
+fn f_f74a3cf7_unkedbuilder_polars_core__datatypes__uint32type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
+fn f_d41637e3_unkedbuilder_polars_core__datatypes__uint64type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
+fn f_f453131d_hunkedbuilder_polars_core__datatypes__uint8type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type) -> bool { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
+#[rune::function(instance, path = fast_explode)]
 fn f_9afd26b9__builder__list__binary__liststringchunkedbuilder(this: &W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder) -> bool { let __r = <polars::chunked_array::builder::list::ListStringChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
 #[rune::function(instance, path = fast_explode)]
@@ -12020,12 +12460,87 @@ fn f_f8fcd2ba_lder__list__anonymous__anonymousownedlistbuilder(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::fast_explode`. fast_explode() -> bool
 #[rune::function(instance, path = fast_explode)]
 fn f_a9bda077_ray__builder__list__null__listnullchunkedbuilder(this: &W_polars_core__chunked_array__builder__list__null__ListNullChunkedBuilder) -> bool { let __r = <polars::chunked_array::builder::list::ListNullChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::fast_explode(&this.0); __r }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_612dc6e0__builder__list__binary__listbinarychunkedbuilder(this: &W_polars_core__chunked_array__builder__list__binary__ListBinaryChunkedBuilder) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListBinaryChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_fbb05f9d_uilder__list__boolean__listbooleanchunkedbuilder(this: &W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListBooleanChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_ff00a741_nkedbuilder_polars_core__datatypes__float32type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_b495f0d2_nkedbuilder_polars_core__datatypes__float64type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_3ffd3e2b_hunkedbuilder_polars_core__datatypes__int16type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_5c5753d8_hunkedbuilder_polars_core__datatypes__int32type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_4eb7aa43_hunkedbuilder_polars_core__datatypes__int64type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_eaad71aa_chunkedbuilder_polars_core__datatypes__int8type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_eecbd1c4_unkedbuilder_polars_core__datatypes__uint16type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_a2ca7c2a_unkedbuilder_polars_core__datatypes__uint32type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_c1f7b1ac_unkedbuilder_polars_core__datatypes__uint64type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_e0f3c489_hunkedbuilder_polars_core__datatypes__uint8type_(this: &W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_8107d10d__builder__list__binary__liststringchunkedbuilder(this: &W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListStringChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_85974406_lder__list__anonymous__anonymousownedlistbuilder(this: &W_polars_core__chunked_array__builder__list__anonymous__AnonymousOwnedListBuilder) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::AnonymousOwnedListBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::field`. field() -> Field
+#[rune::function(instance, path = field)]
+fn f_6460a029_ray__builder__list__null__listnullchunkedbuilder(this: &W_polars_core__chunked_array__builder__list__null__ListNullChunkedBuilder) -> W_polars_core__datatypes__field__Field { let __r = <polars::chunked_array::builder::list::ListNullChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::field(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__field__Field(__r) } }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
 #[rune::function(instance, path = finish)]
 fn f_4cc39fe0__builder__list__binary__listbinarychunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListBinaryChunkedBuilder) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListBinaryChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
 #[rune::function(instance, path = finish)]
 fn f_4414550c_uilder__list__boolean__listbooleanchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListBooleanChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_8a9e6182_nkedbuilder_polars_core__datatypes__float32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_ff942cc6_nkedbuilder_polars_core__datatypes__float64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_c466ea28_hunkedbuilder_polars_core__datatypes__int16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_3a006508_hunkedbuilder_polars_core__datatypes__int32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_ed8c9bbb_hunkedbuilder_polars_core__datatypes__int64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_079d3846_chunkedbuilder_polars_core__datatypes__int8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_514b7e7e_unkedbuilder_polars_core__datatypes__uint16type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_7c833c53_unkedbuilder_polars_core__datatypes__uint32type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_36996d13_unkedbuilder_polars_core__datatypes__uint64type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
+/// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
+#[rune::function(instance, path = finish)]
+fn f_9fdccdc5_hunkedbuilder_polars_core__datatypes__uint8type_(this: &mut W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type> as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
 /// Polars: `polars_core::chunked_array::builder::list::ListBuilderTrait::finish`. finish() -> ListChunked
 #[rune::function(instance, path = finish)]
 fn f_ef14d4f1__builder__list__binary__liststringchunkedbuilder(this: &mut W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder) -> W_polars_core__datatypes__ListChunked { let __r = <polars::chunked_array::builder::list::ListStringChunkedBuilder as polars::chunked_array::builder::list::ListBuilderTrait>::finish(&mut this.0); W_polars_core__datatypes__ListChunked(__r) }
@@ -12062,6 +12577,22 @@ fn f_6b3bb4b6_hunked_array__logical__duration__durationchunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::logical::LogicalType::cast_with_options`. cast_with_options(dtype: DataType, options: CastOptions) -> result of Series (fallible)
 #[rune::function(instance, path = cast_with_options)]
 fn f_4f3e1473__core__chunked_array__logical__time__timechunked(this: &W_polars_core__chunked_array__logical__time__TimeChunked, dtype: &W_polars_core__datatypes__dtype__DataType, options: &W_polars_core__chunked_array__cast__CastOptions) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = &dtype.0; let __arg2 = options.0.clone(); let __r = crate::engine::run("polars::TimeChunked::cast_with_options", move || <polars_core::datatypes::TimeChunked as polars_core::datatypes::LogicalType>::cast_with_options(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::logical::LogicalType::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_899929f9__core__chunked_array__logical__date__datechunked(this: &W_polars_core__chunked_array__logical__date__DateChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::DateChunked as polars_core::datatypes::LogicalType>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::logical::LogicalType::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_aa6cd5d9_hunked_array__logical__datetime__datetimechunked(this: &W_polars_core__chunked_array__logical__datetime__DatetimeChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::DatetimeChunked as polars_core::datatypes::LogicalType>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::logical::LogicalType::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_cc409e74_hunked_array__logical__duration__durationchunked(this: &W_polars_core__chunked_array__logical__duration__DurationChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::DurationChunked as polars_core::datatypes::LogicalType>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get data type of [`ChunkedArray`].
+/// Polars: `polars_core::chunked_array::logical::LogicalType::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_042419f2__core__chunked_array__logical__time__timechunked(this: &W_polars_core__chunked_array__logical__time__TimeChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::TimeChunked as polars_core::datatypes::LogicalType>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Polars: `polars_core::chunked_array::logical::categorical::CategoricalPhysicalDtypeExt::dtype`. dtype() -> DataType
 #[rune::function(instance, path = dtype)]
 fn f_cb2c1ebf_e_polars_dtype__categorical__categoricalphysical(this: &W_polars_dtype__categorical__CategoricalPhysical) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_dtype::categorical::CategoricalPhysical as polars_core::datatypes::categorical::CategoricalPhysicalDtypeExt>::dtype(&this.0); W_polars_core__datatypes__dtype__DataType(__r) }
@@ -12553,6 +13084,54 @@ fn f_304c3c41_ysical_polars_core__datatypes__categorical16type() -> W_polars_dty
 /// Polars: `polars_core::datatypes::PolarsCategoricalType::physical`. physical() -> CategoricalPhysical
 #[rune::function(free, path = W_polars_core__datatypes__Categorical32Type::physical)]
 fn f_b03266fa_ysical_polars_core__datatypes__categorical32type() -> W_polars_dtype__categorical__CategoricalPhysical { let __r = <polars_core::datatypes::Categorical32Type as polars_core::datatypes::PolarsCategoricalType>::physical(); W_polars_dtype__categorical__CategoricalPhysical(__r) }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_963a4ccd_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars::chunked_array::StructChunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_45d8a79e__ref_dtype_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::BinaryChunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_ae43dddf_type_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::BinaryOffsetChunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_be5e7df6_ref_dtype_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::BooleanChunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_9b29558f_ref_dtype_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Float32Chunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_3a4e8d21_ref_dtype_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Float64Chunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_43534bcb_s_ref_dtype_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Int16Chunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_61a411fc_s_ref_dtype_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Int32Chunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_a6d8d828_s_ref_dtype_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Int64Chunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_64eedcd7_as_ref_dtype_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::Int8Chunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_2cab9d0a_as_ref_dtype_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::ListChunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_c01d1ffd__ref_dtype_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::StringChunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_de593440__ref_dtype_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::UInt16Chunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_f67767bd__ref_dtype_polars_core__datatypes__uint32chunked(this: &W_polars_core__datatypes__aliases__IdxCa) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::IdxCa as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_ba6b3fbb__ref_dtype_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::UInt64Chunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Polars: `polars_core::datatypes::dtype::AsRefDataType::as_ref_dtype`. as_ref_dtype() -> DataType
+#[rune::function(instance, path = as_ref_dtype)]
+fn f_1cba8847_s_ref_dtype_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::datatypes::UInt8Chunked as polars_core::datatypes::AsRefDataType>::as_ref_dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Polars: `polars_core::datatypes::schema::SchemaExtPl::ensure_is_exact_match`. ensure_is_exact_match(other: Schema) -> result of unit (fallible)
 #[rune::function(instance, path = ensure_is_exact_match)]
 fn f_54655428_nsure_is_exact_match_polars_core__schema__schema(this: &W_polars_core__schema__Schema, other: &W_polars_core__schema__Schema) -> Result<(), Error> { let __r = <polars_core::prelude::Schema as polars_core::SchemaExtPl>::ensure_is_exact_match(&this.0, &other.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
@@ -12771,6 +13350,14 @@ fn f_3939ccb5_core__series__implementations__null__nullchunked(this: &W_polars_c
 /// Polars: `polars_core::series::series_trait::SeriesTrait::drop_nulls`. drop_nulls() -> Series
 #[rune::function(instance, path = drop_nulls)]
 fn f_07eaba68_it__drop_nulls_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__series__Series { let __arg0 = &*this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Series::drop_nulls", move || <dyn polars::series::SeriesTrait>::drop_nulls(__arg0)), "polars::Series::drop_nulls"); W_polars_core__series__Series(__r) }
+/// Get datatype of series.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_592a56c1_core__series__implementations__null__nullchunked(this: &W_polars_core__series__implementations__null__NullChunked) -> W_polars_core__datatypes__dtype__DataType { let __r = <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::dtype(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
+/// Get datatype of series.
+/// Polars: `polars_core::series::series_trait::SeriesTrait::dtype`. dtype() -> DataType
+#[rune::function(instance, path = dtype)]
+fn f_570acfe3_estrait__dtype_polars_core__series__series_deref(this: &W_polars_core__series__Series) -> W_polars_core__datatypes__dtype__DataType { let __r = <dyn polars::series::SeriesTrait>::dtype(&*this.0); { let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) } }
 /// Polars: `polars_core::series::series_trait::SeriesTrait::extend`. extend(_other: Series) -> result of unit (fallible)
 #[rune::function(instance, path = extend)]
 fn f_4085410c_core__series__implementations__null__nullchunked(this: &mut W_polars_core__series__implementations__null__NullChunked, _other: &W_polars_core__series__Series) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &_other.0; let __r = crate::engine::run("polars::NullChunked::extend", move || <polars_core::prelude::NullChunked as polars::series::SeriesTrait>::extend(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
@@ -13168,6 +13755,111 @@ fn f_29f5aca8__chunks_polars_core__frame__dataframe__dataframe(this: &DataFrame)
 /// Polars: `polars_core::utils::Container::iter_chunks`. iter_chunks() -> vector of Series (materialized, at most 1048576 items) (fallible)
 #[rune::function(instance, path = iter_chunks)]
 fn f_e120fe2a_ntainer__iter_chunks_polars_core__series__series(this: &W_polars_core__series__Series) -> Result<Vec<W_polars_core__series__Series>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("iter_chunks", move || { let __it = <polars::series::Series as polars_core::utils::Container>::iter_chunks(__arg0); support::materialize_unknown(__it, "iter_chunks", |__r| Ok::<_, Error>(W_polars_core__series__Series(__r))) }).map_err(Error::engine)??; Ok(__r) }
+/// Polars: `polars_core::utils::Container::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_ac25eb3f_er__len_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Result<i64, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::DataFrame::len", move || <polars::frame::DataFrame as polars_core::utils::Container>::len(__arg0)).map_err(Error::engine)?; Ok(support::widen::<usize>(__r, "len")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_11504db1_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> Result<i64, Error> { let __r = <polars::chunked_array::StructChunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_f6b3a100___n_chunks_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::BinaryChunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_bb98e470_unks_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_6962d103__n_chunks_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::BooleanChunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_66ec8ef8__n_chunks_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::Float32Chunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_601f01d0__n_chunks_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::Float64Chunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_4a19ff08_r__n_chunks_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::Int16Chunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_8f87c5c1_r__n_chunks_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::Int32Chunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_5b3d8061_r__n_chunks_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::Int64Chunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_3002819a_er__n_chunks_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::Int8Chunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_d49ca01b_er__n_chunks_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::ListChunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_0c25c9a8___n_chunks_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::StringChunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_fba4a0ce___n_chunks_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::UInt16Chunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_631016df___n_chunks_polars_core__datatypes__uint32chunked(this: &W_polars_core__datatypes__aliases__IdxCa) -> Result<i64, Error> { let __r = <polars_core::datatypes::IdxCa as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_2d7d764a___n_chunks_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::UInt64Chunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_f0f43900_r__n_chunks_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> Result<i64, Error> { let __r = <polars_core::datatypes::UInt8Chunked as polars_core::utils::Container>::n_chunks(&this.0); Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::n_chunks`. n_chunks() -> int (checked into range) (fallible)
+#[rune::function(instance, path = n_chunks)]
+fn f_59bd6101__chunks_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Result<i64, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::DataFrame::n_chunks", move || <polars::frame::DataFrame as polars_core::utils::Container>::n_chunks(__arg0)).map_err(Error::engine)?; Ok(support::widen::<usize>(__r, "n_chunks")?) }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_d6397bf6_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked) -> bool { let __r = <polars::chunked_array::StructChunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_34ed2976_ld_rechunk_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> bool { let __r = <polars_core::datatypes::BinaryChunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_2f43bf82_hunk_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked) -> bool { let __r = <polars_core::datatypes::BinaryOffsetChunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_08141ab9_d_rechunk_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked) -> bool { let __r = <polars_core::datatypes::BooleanChunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_5fade3af_d_rechunk_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked) -> bool { let __r = <polars_core::datatypes::Float32Chunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_9d4d5e86_d_rechunk_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked) -> bool { let __r = <polars_core::datatypes::Float64Chunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_1b4a0379_uld_rechunk_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked) -> bool { let __r = <polars_core::datatypes::Int16Chunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_13fe9664_uld_rechunk_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked) -> bool { let __r = <polars_core::datatypes::Int32Chunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_c3970482_uld_rechunk_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked) -> bool { let __r = <polars_core::datatypes::Int64Chunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_068c5403_ould_rechunk_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked) -> bool { let __r = <polars_core::datatypes::Int8Chunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_dd292b23_ould_rechunk_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked) -> bool { let __r = <polars_core::datatypes::ListChunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_bb774628_ld_rechunk_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> bool { let __r = <polars_core::datatypes::StringChunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_5f26e882_ld_rechunk_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked) -> bool { let __r = <polars_core::datatypes::UInt16Chunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_ce05c9a2_ld_rechunk_polars_core__datatypes__uint32chunked(this: &W_polars_core__datatypes__aliases__IdxCa) -> bool { let __r = <polars_core::datatypes::IdxCa as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_be71ab61_ld_rechunk_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked) -> bool { let __r = <polars_core::datatypes::UInt64Chunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_6c03a4ad_uld_rechunk_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked) -> bool { let __r = <polars_core::datatypes::UInt8Chunked as polars_core::utils::Container>::should_rechunk(&this.0); __r }
+/// Polars: `polars_core::utils::Container::should_rechunk`. should_rechunk() -> bool
+#[rune::function(instance, path = should_rechunk)]
+fn f_8441615f_iner__should_rechunk_polars_core__series__series(this: &W_polars_core__series__Series) -> bool { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Series::should_rechunk", move || <polars::series::Series as polars_core::utils::Container>::should_rechunk(__arg0)), "polars::Series::should_rechunk"); __r }
 /// Note, technically shouldn't be under the `IntoCredentialProvider` trait, but it's here for convenience.
 /// Polars: `polars_io::cloud::credential_provider::IntoCredentialProvider::storage_update_options`. storage_update_options() -> result of vector of tuple of string, string (fallible)
 #[rune::function(instance, path = storage_update_options)]
@@ -13210,6 +13902,10 @@ fn f_b448a6e9_r__rechunk_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_l
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::row_index`. row_index() -> option of RowIndex
 #[rune::function(instance, path = row_index)]
 fn f_0dbe9e80__row_index_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> Option<W_polars_io__options__RowIndex> { let __r = <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::row_index(&this.0); match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_io__options__RowIndex(__r) }), None => None } }
+/// Get the sources for this reader.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::sources`. sources() -> ScanSources
+#[rune::function(instance, path = sources)]
+fn f_f3b2ec0f_r__sources_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> W_polars_plan__dsl__scan_sources__ScanSources { let __r = <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::sources(&this.0); { let __r = (__r).clone(); W_polars_plan__dsl__scan_sources__ScanSources(__r) } }
 /// Rechunk the memory to contiguous chunks when parsing is done.
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::with_rechunk`. with_rechunk(toggle: bool) -> LazyCsvReader
 #[rune::function(instance, path = with_rechunk)]
@@ -13345,6 +14041,9 @@ fn f_d3aa7241_ss_join_polars_core__frame__dataframe__dataframe(this: &DataFrame,
 /// Polars: `polars_ops::frame::join::hash_join::single_keys_dispatch::SeriesJoin::hash_join_inner`. hash_join_inner(other: Series, validate: JoinValidation, nulls_equal: bool) -> result of tuple of tuple of vector of int, vector of int, bool (fallible)
 #[rune::function(instance, path = hash_join_inner)]
 fn f_6ad5962c_oin__hash_join_inner_polars_core__series__series(this: &W_polars_core__series__Series, other: &W_polars_core__series__Series, validate: &W_polars_ops__frame__join__args__JoinValidation, nulls_equal: bool) -> Result<((Vec<i64>, Vec<i64>), bool), Error> { let __arg0 = &this.0; let __arg1 = &other.0; let __arg2 = validate.0.clone(); let __arg3 = nulls_equal; let __r = crate::engine::run("polars::Series::hash_join_inner", move || <polars::series::Series as polars_ops::frame::join::SeriesJoin>::hash_join_inner(__arg0, __arg1, __arg2, __arg3)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let __t = __r; ({ let __r = __t.0; { let __t = __r; ({ let __r = __t.0; { let mut __v = Vec::new(); for __r in __r { __v.push((__r as i64)); } __v } }, { let __r = __t.1; { let mut __v = Vec::new(); for __r in __r { __v.push((__r as i64)); } __v } }) } }, { let __r = __t.1; __r }) } }) }
+/// Polars: `polars_ops::series::ops::SeriesSealed::as_series`. as_series() -> Series
+#[rune::function(instance, path = as_series)]
+fn f_6830d3a7_iessealed__as_series_polars_core__series__series(this: &W_polars_core__series__Series) -> W_polars_core__series__Series { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::Series::as_series", move || <polars::series::Series as polars_ops::prelude::SeriesSealed>::as_series(__arg0)), "polars::Series::as_series"); { let __r = (__r).clone(); W_polars_core__series__Series(__r) } }
 /// Get the index of the maximal value
 /// Polars: `polars_ops::series::ops::arg_min_max::ArgAgg::arg_max`. arg_max() -> option of int (checked into range) (fallible)
 #[rune::function(instance, path = arg_max)]
@@ -14036,9 +14735,6 @@ fn v_991228a6_polars_core__datatypes__dtype__unknownkind__str() -> W_polars_core
 /// Variant `Any` of `polars_core::datatypes::dtype::UnknownKind`.
 #[rune::function(free, path = W_polars_core__datatypes__dtype__UnknownKind::Any)]
 fn v_edddcaaf_polars_core__datatypes__dtype__unknownkind__any() -> W_polars_core__datatypes__dtype__UnknownKind { W_polars_core__datatypes__dtype__UnknownKind(<polars_core::datatypes::UnknownKind>::Any) }
-/// Field `dtype` of `polars_core::datatypes::field::Field`.
-#[rune::function(instance, path = dtype)]
-fn s_da851888_polars_core__datatypes__field__field__dtype(this: &W_polars_core__datatypes__field__Field) -> W_polars_core__datatypes__dtype__DataType { let __r = this.0.dtype.clone(); W_polars_core__datatypes__dtype__DataType(__r) }
 /// Variant `Nanoseconds` of `polars_core::datatypes::temporal::time_unit::TimeUnit`.
 #[rune::function(free, path = W_polars_core__datatypes__temporal__time_unit__TimeUnit::Nanoseconds)]
 fn v_61d9dd65_ypes__temporal__time_unit__timeunit__nanoseconds() -> W_polars_core__datatypes__temporal__time_unit__TimeUnit { W_polars_core__datatypes__temporal__time_unit__TimeUnit(<polars_core::datatypes::TimeUnit>::Nanoseconds) }
@@ -14726,6 +15422,12 @@ fn s_047e2d34_write__options__parquetwriteoptions__compression(this: &W_polars_i
 /// Set field `compression` of `polars_io::parquet::write::options::ParquetWriteOptions`, returning the updated value.
 #[rune::function(instance, path = with_compression)]
 fn w_047e2d34_write__options__parquetwriteoptions__compression(this: &W_polars_io__parquet__write__options__ParquetWriteOptions, v: &W_polars_io__parquet__write__options__ParquetCompression) -> W_polars_io__parquet__write__options__ParquetWriteOptions { let mut __o = this.0.clone(); __o.compression = v.0.clone(); W_polars_io__parquet__write__options__ParquetWriteOptions(__o) }
+/// Field `statistics` of `polars_io::parquet::write::options::ParquetWriteOptions`.
+#[rune::function(instance, path = statistics)]
+fn s_08541576__write__options__parquetwriteoptions__statistics(this: &W_polars_io__parquet__write__options__ParquetWriteOptions) -> W_polars_parquet__arrow__write__StatisticsOptions { let __r = this.0.statistics.clone(); W_polars_parquet__arrow__write__StatisticsOptions(__r) }
+/// Set field `statistics` of `polars_io::parquet::write::options::ParquetWriteOptions`, returning the updated value.
+#[rune::function(instance, path = with_statistics)]
+fn w_08541576__write__options__parquetwriteoptions__statistics(this: &W_polars_io__parquet__write__options__ParquetWriteOptions, v: &W_polars_parquet__arrow__write__StatisticsOptions) -> W_polars_io__parquet__write__options__ParquetWriteOptions { let mut __o = this.0.clone(); __o.statistics = v.0.clone(); W_polars_io__parquet__write__options__ParquetWriteOptions(__o) }
 /// Field `row_group_size` of `polars_io::parquet::write::options::ParquetWriteOptions`.
 #[rune::function(instance, path = row_group_size)]
 fn s_f639c1c0_te__options__parquetwriteoptions__row_group_size(this: &W_polars_io__parquet__write__options__ParquetWriteOptions) -> Result<Option<i64>, Error> { let __r = this.0.row_group_size.clone(); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "row_group_size")?), None => None }) }
@@ -15005,6 +15707,36 @@ fn v_7ae023c6_series__ops__linear_space__closedinterval__right() -> W_polars_ops
 /// Variant `None` of `polars_ops::series::ops::linear_space::ClosedInterval`.
 #[rune::function(free, path = W_polars_ops__series__ops__linear_space__ClosedInterval::None)]
 fn v_9da4b085__series__ops__linear_space__closedinterval__none() -> W_polars_ops__series__ops__linear_space__ClosedInterval { W_polars_ops__series__ops__linear_space__ClosedInterval(<polars_ops::prelude::ClosedInterval>::None) }
+/// Field `min_value` of `polars_parquet::arrow::write::StatisticsOptions`.
+#[rune::function(instance, path = min_value)]
+fn s_45021535_quet__arrow__write__statisticsoptions__min_value(this: &W_polars_parquet__arrow__write__StatisticsOptions) -> bool { let __r = this.0.min_value.clone(); __r }
+/// Set field `min_value` of `polars_parquet::arrow::write::StatisticsOptions`, returning the updated value.
+#[rune::function(instance, path = with_min_value)]
+fn w_45021535_quet__arrow__write__statisticsoptions__min_value(this: &W_polars_parquet__arrow__write__StatisticsOptions, v: bool) -> W_polars_parquet__arrow__write__StatisticsOptions { let mut __o = this.0.clone(); __o.min_value = v; W_polars_parquet__arrow__write__StatisticsOptions(__o) }
+/// Field `max_value` of `polars_parquet::arrow::write::StatisticsOptions`.
+#[rune::function(instance, path = max_value)]
+fn s_bc906415_quet__arrow__write__statisticsoptions__max_value(this: &W_polars_parquet__arrow__write__StatisticsOptions) -> bool { let __r = this.0.max_value.clone(); __r }
+/// Set field `max_value` of `polars_parquet::arrow::write::StatisticsOptions`, returning the updated value.
+#[rune::function(instance, path = with_max_value)]
+fn w_bc906415_quet__arrow__write__statisticsoptions__max_value(this: &W_polars_parquet__arrow__write__StatisticsOptions, v: bool) -> W_polars_parquet__arrow__write__StatisticsOptions { let mut __o = this.0.clone(); __o.max_value = v; W_polars_parquet__arrow__write__StatisticsOptions(__o) }
+/// Field `distinct_count` of `polars_parquet::arrow::write::StatisticsOptions`.
+#[rune::function(instance, path = distinct_count)]
+fn s_b8f76d56__arrow__write__statisticsoptions__distinct_count(this: &W_polars_parquet__arrow__write__StatisticsOptions) -> bool { let __r = this.0.distinct_count.clone(); __r }
+/// Set field `distinct_count` of `polars_parquet::arrow::write::StatisticsOptions`, returning the updated value.
+#[rune::function(instance, path = with_distinct_count)]
+fn w_b8f76d56__arrow__write__statisticsoptions__distinct_count(this: &W_polars_parquet__arrow__write__StatisticsOptions, v: bool) -> W_polars_parquet__arrow__write__StatisticsOptions { let mut __o = this.0.clone(); __o.distinct_count = v; W_polars_parquet__arrow__write__StatisticsOptions(__o) }
+/// Field `null_count` of `polars_parquet::arrow::write::StatisticsOptions`.
+#[rune::function(instance, path = null_count)]
+fn s_371522dc_uet__arrow__write__statisticsoptions__null_count(this: &W_polars_parquet__arrow__write__StatisticsOptions) -> bool { let __r = this.0.null_count.clone(); __r }
+/// Set field `null_count` of `polars_parquet::arrow::write::StatisticsOptions`, returning the updated value.
+#[rune::function(instance, path = with_null_count)]
+fn w_371522dc_uet__arrow__write__statisticsoptions__null_count(this: &W_polars_parquet__arrow__write__StatisticsOptions, v: bool) -> W_polars_parquet__arrow__write__StatisticsOptions { let mut __o = this.0.clone(); __o.null_count = v; W_polars_parquet__arrow__write__StatisticsOptions(__o) }
+/// Field `binary_statistics_truncate_length` of `polars_parquet::arrow::write::StatisticsOptions`.
+#[rune::function(instance, path = binary_statistics_truncate_length)]
+fn s_f1847e59_isticsoptions__binary_statistics_truncate_length(this: &W_polars_parquet__arrow__write__StatisticsOptions) -> Result<Option<i64>, Error> { let __r = this.0.binary_statistics_truncate_length.clone(); Ok(match __r { Some(__r) => Some(support::widen::<u64>(__r, "binary_statistics_truncate_length")?), None => None }) }
+/// Set field `binary_statistics_truncate_length` of `polars_parquet::arrow::write::StatisticsOptions`, returning the updated value.
+#[rune::function(instance, path = with_binary_statistics_truncate_length)]
+fn w_f1847e59_isticsoptions__binary_statistics_truncate_length(this: &W_polars_parquet__arrow__write__StatisticsOptions, v: Option<i64>) -> Result<W_polars_parquet__arrow__write__StatisticsOptions, Error> { let mut __o = this.0.clone(); __o.binary_statistics_truncate_length = match v { Some(v) => Some(support::narrow::<u64>(v, "v")?), None => None }; Ok(W_polars_parquet__arrow__write__StatisticsOptions(__o)) }
 /// Variant `Literal` of `polars_plan::dsl::datatype_expr::DataTypeExpr`.
 #[rune::function(free, path = W_polars_plan__dsl__datatype_expr__DataTypeExpr::Literal)]
 fn v_bd691b85__plan__dsl__datatype_expr__datatypeexpr__literal(a0: &W_polars_core__datatypes__dtype__DataType) -> W_polars_plan__dsl__datatype_expr__DataTypeExpr { W_polars_plan__dsl__datatype_expr__DataTypeExpr(<polars_plan::dsl::DataTypeExpr>::Literal(a0.0.clone())) }
@@ -17408,10 +18140,52 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_acf7537a_uilder__list__boolean__listbooleanchunkedbuilder)?;
     m.function_meta(f_4b282770_uilder__list__boolean__listbooleanchunkedbuilder)?;
     m.function_meta(f_6555f4d5_ray__builder__list__null__listnullchunkedbuilder)?;
+    m.function_meta(f_8734ea41_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_2c72d109_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_6ceba89a_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_afc520e5_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_365fbec0_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_8ba82e97_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_3d3cdb46_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_352ab2fa_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_74c2a0e8_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_fcdf9501_hunkedbuilder_polars_core__datatypes__uint8type_)?;
+    m.function_meta(f_8e5de4b6_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_3aacf14c_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_e8755859_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_e802728f_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_db477ac5_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_53d7bdc2_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_9f687c2b_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_f64efd7a_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_0ac4bd98_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_2ff8088a_hunkedbuilder_polars_core__datatypes__uint8type_)?;
+    m.function_meta(f_ff08db9c_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_2d464714_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_9d875751_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_f00eb1fa_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_90882f99_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_5ee7aef0_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_39548321_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_cc8de471_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_764989fa_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_f5fb554d_hunkedbuilder_polars_core__datatypes__uint8type_)?;
+    m.function_meta(f_4e453929_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_59c44112_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_77c9439a_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_d6279b26_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_61d21479_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_c8d6b2fe_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_6d2dce0a_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_3cf37167_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_d04858ed_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_7b1624eb_hunkedbuilder_polars_core__datatypes__uint8type_)?;
     m.function_meta(f_5d35af8b_chunked_array__builder__null__nullchunkedbuilder)?;
     m.function_meta(f_fa5fa648_chunked_array__builder__null__nullchunkedbuilder)?;
     m.function_meta(f_9dcb694b_chunked_array__builder__null__nullchunkedbuilder)?;
     m.function_meta(f_426ec3c6_chunked_array__builder__null__nullchunkedbuilder)?;
+    m.function_meta(f_f2c86eb2_ked_array__builder__string__stringchunkedbuilder)?;
+    m.function_meta(f_5c313065_ked_array__builder__string__binarychunkedbuilder)?;
     m.function_meta(f_3bf9600b_ct_polars_core__chunked_array__cast__castoptions)?;
     m.function_meta(f_ccfa7b6b_lars_core__chunked_array__flags__statisticsflags)?;
     m.function_meta(f_e660aa99_lars_core__chunked_array__flags__statisticsflags)?;
@@ -17489,10 +18263,6 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_60d92180_hunked_array__logical__datetime__datetimechunked)?;
     m.function_meta(f_527333f8_hunked_array__logical__duration__durationchunked)?;
     m.function_meta(f_6c9be2e0__core__chunked_array__logical__time__timechunked)?;
-    m.function_meta(f_277b8187__core__chunked_array__logical__date__datechunked)?;
-    m.function_meta(f_abfbbb61_hunked_array__logical__datetime__datetimechunked)?;
-    m.function_meta(f_4c3bcb41_hunked_array__logical__duration__durationchunked)?;
-    m.function_meta(f_2224a6ad__core__chunked_array__logical__time__timechunked)?;
     m.function_meta(f_c5e9ed6f__core__chunked_array__logical__date__datechunked)?;
     m.function_meta(f_0232fbea_hunked_array__logical__datetime__datetimechunked)?;
     m.function_meta(f_bfa00c8b_hunked_array__logical__duration__durationchunked)?;
@@ -17582,6 +18352,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_c8fe75ca_temporal_polars_core__datatypes__dtype__datatype)?;
     m.function_meta(f_0202a90a__unknown_polars_core__datatypes__dtype__datatype)?;
     m.function_meta(f_6296fc11__integer_polars_core__datatypes__dtype__datatype)?;
+    m.function_meta(f_e2a39b76_af_dtype_polars_core__datatypes__dtype__datatype)?;
     m.function_meta(f_3e9feea7_p_leaves_polars_core__datatypes__dtype__datatype)?;
     m.function_meta(f_1fefdedd_ema_type_polars_core__datatypes__dtype__datatype)?;
     m.function_meta(f_978f3ad1__unknown_polars_core__datatypes__dtype__datatype)?;
@@ -17599,6 +18370,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_da2eb7bc_sit_with_polars_core__datatypes__dtype__datatype)?;
     m.function_meta(f_4b3becc3_alize_polars_core__datatypes__dtype__unknownkind)?;
     m.function_meta(f_d353943c_eld__coerce_polars_core__datatypes__field__field)?;
+    m.function_meta(f_1d904ec9_ield__dtype_polars_core__datatypes__field__field)?;
     m.function_meta(f_55f10344_field__name_polars_core__datatypes__field__field)?;
     m.function_meta(f_ed7d4d2c__field__new_polars_core__datatypes__field__field)?;
     m.function_meta(f_6b4df864_d__set_name_polars_core__datatypes__field__field)?;
@@ -17623,6 +18395,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_c4efed35_umn__arg_sort_polars_core__frame__column__column)?;
     m.function_meta(f_38530e3e_sort_multiple_polars_core__frame__column__column)?;
     m.function_meta(f_88929844_n__arg_unique_polars_core__frame__column__column)?;
+    m.function_meta(f_74951687_alized_series_polars_core__frame__column__column)?;
     m.function_meta(f_d21f8373_intain_scalar_polars_core__frame__column__column)?;
     m.function_meta(f_2857dca8_scalar_column_polars_core__frame__column__column)?;
     m.function_meta(f_e7e14124_ar_column_mut_polars_core__frame__column__column)?;
@@ -17641,6 +18414,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5b0bc90f_umn__datetime_polars_core__frame__column__column)?;
     m.function_meta(f_776d6cec_olumn__divide_polars_core__frame__column__column)?;
     m.function_meta(f_18388840_n__drop_nulls_polars_core__frame__column__column)?;
+    m.function_meta(f_7f073827_column__dtype_polars_core__frame__column__column)?;
     m.function_meta(f_dd5aa069_umn__duration_polars_core__frame__column__column)?;
     m.function_meta(f_cb1cd97e_olumn__equals_polars_core__frame__column__column)?;
     m.function_meta(f_647dd81d_quals_missing_polars_core__frame__column__column)?;
@@ -17759,11 +18533,13 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_b46646d8_n__xor_reduce_polars_core__frame__column__column)?;
     m.function_meta(f_08047910_umn__zip_with_polars_core__frame__column__column)?;
     m.function_meta(f_112bdf52_ith_same_type_polars_core__frame__column__column)?;
+    m.function_meta(f_65f16a12_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_88f2142e_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_efbe3f35_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_24b3abe5_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_6789ff5d_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_a9add8b1_polars_core__frame__column__scalar__scalarcolumn)?;
+    m.function_meta(f_1b57f94f_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_d6041f70_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_7bf82e97_polars_core__frame__column__scalar__scalarcolumn)?;
     m.function_meta(f_c5ba7c01_polars_core__frame__column__scalar__scalarcolumn)?;
@@ -17791,6 +18567,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_66a1aff5__schema_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_b3eb9532___clear_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_12bb6bc5__column_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_59433f43_columns_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_d2fc899b_e__drop_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_fac5c3d8_n_place_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_3981939c_op_many_polars_core__frame__dataframe__dataframe)?;
@@ -17885,13 +18662,11 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_882f58a4__core__frame__group_by__position__grouppositions)?;
     m.function_meta(f_ca12876c__core__frame__group_by__position__grouppositions)?;
     m.function_meta(f_b9226f63_olars_core__frame__group_by__position__groupsidx)?;
-    m.function_meta(f_9deda0de_olars_core__frame__group_by__position__groupsidx)?;
     m.function_meta(f_a6b580d3_olars_core__frame__group_by__position__groupsidx)?;
     m.function_meta(f_db6994d3_olars_core__frame__group_by__position__groupsidx)?;
     m.function_meta(f_61ca55e9_olars_core__frame__group_by__position__groupsidx)?;
     m.function_meta(f_6ae4f2b8_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(f_f97648eb_lars_core__frame__group_by__position__groupstype)?;
-    m.function_meta(f_203d8c6b_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(f_1f5f4ef2_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(f_76fdb94c_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(f_5a0dd170_lars_core__frame__group_by__position__groupstype)?;
@@ -17903,6 +18678,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_483a6d5c_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(f_50c9d7e5_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(f_b4cd32ad_r__cast_with_options_polars_core__scalar__scalar)?;
+    m.function_meta(f_4d43e55d_calar__scalar__dtype_polars_core__scalar__scalar)?;
     m.function_meta(f_f0252709__scalar__into_column_polars_core__scalar__scalar)?;
     m.function_meta(f_427b0846__scalar__into_series_polars_core__scalar__scalar)?;
     m.function_meta(f_2a98bf73_alar__scalar__is_nan_polars_core__scalar__scalar)?;
@@ -17966,6 +18742,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_402cec1b_es__series__new_null_polars_core__series__series)?;
     m.function_meta(f_2557c720_series__series__null_polars_core__series__series)?;
     m.function_meta(f_835a1718_ies__series__product_polars_core__series__series)?;
+    m.function_meta(f_37a03c81_ries__series__rename_polars_core__series__series)?;
     m.function_meta(f_681bb103_series__reshape_list_polars_core__series__series)?;
     m.function_meta(f_8b1011bb___row_encode_ordered_polars_core__series__series)?;
     m.function_meta(f_31785de2_row_encode_unordered_polars_core__series__series)?;
@@ -17984,6 +18761,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_0366719c_series__series__tail_polars_core__series__series)?;
     m.function_meta(f_b95b9cd3_series__series__time_polars_core__series__series)?;
     m.function_meta(f_911df51c_es__series__to_float_polars_core__series__series)?;
+    m.function_meta(f_b82bcd11___series__to_storage_polars_core__series__series)?;
     m.function_meta(f_9e06a24a_series__to_unit_list_polars_core__series__series)?;
     m.function_meta(f_9d044ad9_eries__try_add_owned_polars_core__series__series)?;
     m.function_meta(f_b2252767___series__try_binary_polars_core__series__series)?;
@@ -18027,6 +18805,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_8f0b7cb3_rs_core__series__arithmetic__list__numericlistop)?;
     m.function_meta(f_715e961b_rs_core__series__arithmetic__list__numericlistop)?;
     m.function_meta(f_1e2a54f6_export__categorical__categoricaltoarrowconverter)?;
+    m.function_meta(f_19e36ead_type_polars_core__series__builder__seriesbuilder)?;
     m.function_meta(f_f0e624e8_ulls_polars_core__series__builder__seriesbuilder)?;
     m.function_meta(f_507d5edf_eeze_polars_core__series__builder__seriesbuilder)?;
     m.function_meta(f_040790ba_eset_polars_core__series__builder__seriesbuilder)?;
@@ -18072,6 +18851,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_1b8226a2__bps_polars_io__cloud__concurrency__model__model)?;
     m.function_meta(f_3140eba6_cord_polars_io__cloud__concurrency__model__model)?;
     m.function_meta(f_d296edd5_ount_polars_io__cloud__concurrency__model__model)?;
+    m.function_meta(f_c9223bad_te_polars_io__cloud__concurrency__regime__regime)?;
     m.function_meta(f_1f515175_olars_io__cloud__concurrency_config__fetchconfig)?;
     m.function_meta(f_e622adfc_olars_io__cloud__concurrency_config__fetchconfig)?;
     m.function_meta(f_2a20942f_olars_io__cloud__concurrency_config__fetchconfig)?;
@@ -18084,6 +18864,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_affbc045_loud_scheme_polars_io__cloud__options__cloudtype)?;
     m.function_meta(f_38b5a8e5_ud__polars_object_store__objectstoreerrorcontext)?;
     m.function_meta(f_da5b9ad7_d__polars_object_store__inner__polarsobjectstore)?;
+    m.function_meta(f_de35ed9c_d__polars_object_store__inner__polarsobjectstore)?;
     m.function_meta(f_9dada550_lder__add_polars_io__csv__read__builder__builder)?;
     m.function_meta(f_66ed50be__add_null_polars_io__csv__read__builder__builder)?;
     m.function_meta(f_6be43b08_er__dtype_polars_io__csv__read__builder__builder)?;
@@ -18136,6 +18917,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_08274e58___parquet__read__read_impl__prefiltermasksetting)?;
     m.function_meta(f_4dee524e_uet__write__key_value_metadata__keyvaluemetadata)?;
     m.function_meta(f_b5e654fb_io__parquet__write__options__parquetwriteoptions)?;
+    m.function_meta(f_a1b56602_nstats__dtype_polars_io__predicates__columnstats)?;
     m.function_meta(f_19b59964_s__field_name_polars_io__predicates__columnstats)?;
     m.function_meta(f_bb5dbf44_olumn_literal_polars_io__predicates__columnstats)?;
     m.function_meta(f_57a8c535_s__from_field_polars_io__predicates__columnstats)?;
@@ -18297,6 +19079,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_22c15a3d_emi_anti_polars_ops__frame__join__args__jointype)?;
     m.function_meta(f_a69b85a0_in_polars_ops__frame__join__args__joinvalidation)?;
     m.function_meta(f_2a6488e4_ks_polars_ops__frame__join__args__joinvalidation)?;
+    m.function_meta(f_aed8c975_sl__options__file_provider__fileproviderfunction)?;
     m.function_meta(f_98243168___otherwise_polars_plan__dsl__arity__chainedthen)?;
     m.function_meta(f_efabe949_dthen__when_polars_plan__dsl__arity__chainedthen)?;
     m.function_meta(f_2634de87_dwhen__then_polars_plan__dsl__arity__chainedwhen)?;
@@ -18535,7 +19318,6 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_e27f7b58_n__dsl__options__file_provider__fileprovidertype)?;
     m.function_meta(f_c6750b8c_n__dsl__options__file_provider__fileprovidertype)?;
     m.function_meta(f_ae51ca43_n__dsl__options__file_provider__hivepathprovider)?;
-    m.function_meta(f_bea89a62_dsl__options__file_provider__icebergpathprovider)?;
     m.function_meta(f_86293080_dsl__options__file_provider__icebergpathprovider)?;
     m.function_meta(f_12289f66_plan__dsl__options__sink__partitionedsinkoptions)?;
     m.function_meta(f_5960b3c1_an__dsl__options__sink__partitionedsinkoptionsir)?;
@@ -18637,6 +19419,42 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_c222c518_aterialize_polars_plan__plans__lit__literalvalue)?;
     m.function_meta(f_54092496_ew_idxsize_polars_plan__plans__lit__literalvalue)?;
     m.function_meta(f_03f4561b_typed_null_polars_plan__plans__lit__literalvalue)?;
+    m.function_meta(f_cf250194_column_not_found_err_polars_core__schema__schema)?;
+    m.function_meta(f_7a8d96d1_ma__schema__contains_polars_core__schema__schema)?;
+    m.function_meta(f_50fa3b1f__schema__schema__get_polars_core__schema__schema)?;
+    m.function_meta(f_9d69f953_schema__get_at_index_polars_core__schema__schema)?;
+    m.function_meta(f_d2507848_ma__get_at_index_mut_polars_core__schema__schema)?;
+    m.function_meta(f_199e1164_ma__schema__get_full_polars_core__schema__schema)?;
+    m.function_meta(f_ab197028_ema__schema__get_mut_polars_core__schema__schema)?;
+    m.function_meta(f_320b81f8_ma__schema__index_of_polars_core__schema__schema)?;
+    m.function_meta(f_eaa1a8d4_hema__schema__insert_polars_core__schema__schema)?;
+    m.function_meta(f_23b179dc_ema__insert_at_index_polars_core__schema__schema)?;
+    m.function_meta(f_e0087129_ma__into_iter_values_polars_core__schema__schema)?;
+    m.function_meta(f_c37b586d_ma__schema__is_empty_polars_core__schema__schema)?;
+    m.function_meta(f_6aea1d40_schema__schema__iter_polars_core__schema__schema)?;
+    m.function_meta(f_e4870c36___schema__iter_names_polars_core__schema__schema)?;
+    m.function_meta(f_8527f8bd_a__iter_names_cloned_polars_core__schema__schema)?;
+    m.function_meta(f_5136f23c__schema__iter_values_polars_core__schema__schema)?;
+    m.function_meta(f_522e256c__schema__schema__len_polars_core__schema__schema)?;
+    m.function_meta(f_6d63371e_chema__schema__merge_polars_core__schema__schema)?;
+    m.function_meta(f_cbbd7257_hema__merge_from_ref_polars_core__schema__schema)?;
+    m.function_meta(f_e939e7be_ma__schema__metadata_polars_core__schema__schema)?;
+    m.function_meta(f_1c104a81_w_inserting_at_index_polars_core__schema__schema)?;
+    m.function_meta(f_0ea21a45_hema__schema__remove_polars_core__schema__schema)?;
+    m.function_meta(f_cf62869a_hema__schema__rename_polars_core__schema__schema)?;
+    m.function_meta(f_139d9a8c_ema__schema__reserve_polars_core__schema__schema)?;
+    m.function_meta(f_07cf3738_a__schema__set_dtype_polars_core__schema__schema)?;
+    m.function_meta(f_6794cd35___set_dtype_at_index_polars_core__schema__schema)?;
+    m.function_meta(f_e1a26041_schema__shift_remove_polars_core__schema__schema)?;
+    m.function_meta(f_a1868eec___shift_remove_index_polars_core__schema__schema)?;
+    m.function_meta(f_25fac20d_ema__schema__try_get_polars_core__schema__schema)?;
+    m.function_meta(f_9a5df2ae_ma__try_get_at_index_polars_core__schema__schema)?;
+    m.function_meta(f_d42a1795_schema__try_get_full_polars_core__schema__schema)?;
+    m.function_meta(f_0c70f3f2_schema__try_index_of_polars_core__schema__schema)?;
+    m.function_meta(f_5bb21f73___schema__try_insert_polars_core__schema__schema)?;
+    m.function_meta(f_6d64e626__try_project_indices_polars_core__schema__schema)?;
+    m.function_meta(f_5f7e6444_chema__with_capacity_polars_core__schema__schema)?;
+    m.function_meta(f_86738224__schema__with_column_polars_core__schema__schema)?;
     m.function_meta(g_bfdaf8a8_core__chunked_array__arg_min_max__arg_max_binary)?;
     m.function_meta(g_99d96092_hunked_array__arg_min_max__arg_max_binary_offset)?;
     m.function_meta(g_50adcf23_s_core__chunked_array__arg_min_max__arg_max_bool)?;
@@ -19801,31 +20619,106 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_11de42d8_an__plans__lit__literalvalue_as_core__fmt__debug)?;
     m.function_meta(f_68b1dcf4__builder__list__binary__listbinarychunkedbuilder)?;
     m.function_meta(f_1b76067b_uilder__list__boolean__listbooleanchunkedbuilder)?;
+    m.function_meta(f_ce3d415a_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_07fc2aa2_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_c7f664b9_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_974a190e_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_d5c2a7cc_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_cfa6935d_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_0cb3d1dc_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_b3c5f5a4_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_e84af6dd_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_0bee918c_hunkedbuilder_polars_core__datatypes__uint8type_)?;
     m.function_meta(f_d019adcd__builder__list__binary__liststringchunkedbuilder)?;
     m.function_meta(f_d7730aef_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_83cfc3d5_ray__builder__list__null__listnullchunkedbuilder)?;
     m.function_meta(f_15852b0b__builder__list__binary__listbinarychunkedbuilder)?;
     m.function_meta(f_1d541b78_uilder__list__boolean__listbooleanchunkedbuilder)?;
+    m.function_meta(f_015e4699_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_92757c3c_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_bc4e5c55_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_64e77dc9_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_9550452b_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_9aae36c3_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_1899b5db_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_886b0643_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_899dfa73_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_2d994a75_hunkedbuilder_polars_core__datatypes__uint8type_)?;
     m.function_meta(f_de7dbd92__builder__list__binary__liststringchunkedbuilder)?;
     m.function_meta(f_bd752640_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_5084d541_ray__builder__list__null__listnullchunkedbuilder)?;
     m.function_meta(f_8cb33832__builder__list__binary__listbinarychunkedbuilder)?;
     m.function_meta(f_8942a0d3_uilder__list__boolean__listbooleanchunkedbuilder)?;
+    m.function_meta(f_5408ced8_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_6150e975_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_159be437_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_ca1d9329_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_01d51242_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_890f2d6e_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_8b6395fc_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_a13b7a8c_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_f476e19f_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_e77798fe_hunkedbuilder_polars_core__datatypes__uint8type_)?;
     m.function_meta(f_e48598e5__builder__list__binary__liststringchunkedbuilder)?;
     m.function_meta(f_9776bf22_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_511057b8_ray__builder__list__null__listnullchunkedbuilder)?;
     m.function_meta(f_b5012fa2__builder__list__binary__listbinarychunkedbuilder)?;
     m.function_meta(f_20292605_uilder__list__boolean__listbooleanchunkedbuilder)?;
+    m.function_meta(f_d43c3404_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_e5c9f8e8_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_ffd0e771_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_5c7b1eed_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_cfd63e72_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_00e5292e_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_5b3d44dd_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_c2cb7d69_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_307e78a0_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_e454726b_hunkedbuilder_polars_core__datatypes__uint8type_)?;
     m.function_meta(f_8cb9a5ab__builder__list__binary__liststringchunkedbuilder)?;
     m.function_meta(f_58386ea7_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_975db0a6_ray__builder__list__null__listnullchunkedbuilder)?;
     m.function_meta(f_4c5bf712__builder__list__binary__listbinarychunkedbuilder)?;
     m.function_meta(f_f064bf6d_uilder__list__boolean__listbooleanchunkedbuilder)?;
+    m.function_meta(f_77ce949a_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_3e4cd3ed_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_2a04dac0_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_82165e1e_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_2e065e89_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_8e257a6a_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_75be2549_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_f74a3cf7_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_d41637e3_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_f453131d_hunkedbuilder_polars_core__datatypes__uint8type_)?;
     m.function_meta(f_9afd26b9__builder__list__binary__liststringchunkedbuilder)?;
     m.function_meta(f_f8fcd2ba_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_a9bda077_ray__builder__list__null__listnullchunkedbuilder)?;
+    m.function_meta(f_612dc6e0__builder__list__binary__listbinarychunkedbuilder)?;
+    m.function_meta(f_fbb05f9d_uilder__list__boolean__listbooleanchunkedbuilder)?;
+    m.function_meta(f_ff00a741_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_b495f0d2_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_3ffd3e2b_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_5c5753d8_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_4eb7aa43_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_eaad71aa_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_eecbd1c4_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_a2ca7c2a_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_c1f7b1ac_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_e0f3c489_hunkedbuilder_polars_core__datatypes__uint8type_)?;
+    m.function_meta(f_8107d10d__builder__list__binary__liststringchunkedbuilder)?;
+    m.function_meta(f_85974406_lder__list__anonymous__anonymousownedlistbuilder)?;
+    m.function_meta(f_6460a029_ray__builder__list__null__listnullchunkedbuilder)?;
     m.function_meta(f_4cc39fe0__builder__list__binary__listbinarychunkedbuilder)?;
     m.function_meta(f_4414550c_uilder__list__boolean__listbooleanchunkedbuilder)?;
+    m.function_meta(f_8a9e6182_nkedbuilder_polars_core__datatypes__float32type_)?;
+    m.function_meta(f_ff942cc6_nkedbuilder_polars_core__datatypes__float64type_)?;
+    m.function_meta(f_c466ea28_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    m.function_meta(f_3a006508_hunkedbuilder_polars_core__datatypes__int32type_)?;
+    m.function_meta(f_ed8c9bbb_hunkedbuilder_polars_core__datatypes__int64type_)?;
+    m.function_meta(f_079d3846_chunkedbuilder_polars_core__datatypes__int8type_)?;
+    m.function_meta(f_514b7e7e_unkedbuilder_polars_core__datatypes__uint16type_)?;
+    m.function_meta(f_7c833c53_unkedbuilder_polars_core__datatypes__uint32type_)?;
+    m.function_meta(f_36996d13_unkedbuilder_polars_core__datatypes__uint64type_)?;
+    m.function_meta(f_9fdccdc5_hunkedbuilder_polars_core__datatypes__uint8type_)?;
     m.function_meta(f_ef14d4f1__builder__list__binary__liststringchunkedbuilder)?;
     m.function_meta(f_1d566075_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_350bddd9_ray__builder__list__null__listnullchunkedbuilder)?;
@@ -19838,6 +20731,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_40ff231a_hunked_array__logical__datetime__datetimechunked)?;
     m.function_meta(f_6b3bb4b6_hunked_array__logical__duration__durationchunked)?;
     m.function_meta(f_4f3e1473__core__chunked_array__logical__time__timechunked)?;
+    m.function_meta(f_899929f9__core__chunked_array__logical__date__datechunked)?;
+    m.function_meta(f_aa6cd5d9_hunked_array__logical__datetime__datetimechunked)?;
+    m.function_meta(f_cc409e74_hunked_array__logical__duration__durationchunked)?;
+    m.function_meta(f_042419f2__core__chunked_array__logical__time__timechunked)?;
     m.function_meta(f_cb2c1ebf_e_polars_dtype__categorical__categoricalphysical)?;
     m.function_meta(f_dd709afd_ast__cast_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_9b750df5_ast__cast_polars_core__datatypes__float64chunked)?;
@@ -19962,6 +20859,22 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_6fc17fdc_hysical_polars_core__datatypes__categorical8type)?;
     m.function_meta(f_304c3c41_ysical_polars_core__datatypes__categorical16type)?;
     m.function_meta(f_b03266fa_ysical_polars_core__datatypes__categorical32type)?;
+    m.function_meta(f_963a4ccd_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_45d8a79e__ref_dtype_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_ae43dddf_type_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_be5e7df6_ref_dtype_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_9b29558f_ref_dtype_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_3a4e8d21_ref_dtype_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_43534bcb_s_ref_dtype_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_61a411fc_s_ref_dtype_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_a6d8d828_s_ref_dtype_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_64eedcd7_as_ref_dtype_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_2cab9d0a_as_ref_dtype_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_c01d1ffd__ref_dtype_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_de593440__ref_dtype_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_f67767bd__ref_dtype_polars_core__datatypes__uint32chunked)?;
+    m.function_meta(f_ba6b3fbb__ref_dtype_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_1cba8847_s_ref_dtype_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_54655428_nsure_is_exact_match_polars_core__schema__schema)?;
     m.function_meta(f_e886b240_xtpl__matches_schema_polars_core__schema__schema)?;
     m.function_meta(f_b1927e97___into_column_polars_core__frame__column__column)?;
@@ -20030,6 +20943,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_a8c81064_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_3939ccb5_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_07eaba68_it__drop_nulls_polars_core__series__series_deref)?;
+    m.function_meta(f_592a56c1_core__series__implementations__null__nullchunked)?;
+    m.function_meta(f_570acfe3_estrait__dtype_polars_core__series__series_deref)?;
     m.function_meta(f_4085410c_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_f2ce3b92_core__series__implementations__null__nullchunked)?;
     m.function_meta(f_143ffbed_strait__filter_polars_core__series__series_deref)?;
@@ -20135,6 +21050,41 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_be11761a_iter_chunks_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_29f5aca8__chunks_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_e120fe2a_ntainer__iter_chunks_polars_core__series__series)?;
+    m.function_meta(f_ac25eb3f_er__len_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_11504db1_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_f6b3a100___n_chunks_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_bb98e470_unks_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_6962d103__n_chunks_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_66ec8ef8__n_chunks_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_601f01d0__n_chunks_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_4a19ff08_r__n_chunks_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_8f87c5c1_r__n_chunks_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_5b3d8061_r__n_chunks_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_3002819a_er__n_chunks_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_d49ca01b_er__n_chunks_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_0c25c9a8___n_chunks_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_fba4a0ce___n_chunks_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_631016df___n_chunks_polars_core__datatypes__uint32chunked)?;
+    m.function_meta(f_2d7d764a___n_chunks_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_f0f43900_r__n_chunks_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_59bd6101__chunks_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_d6397bf6_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_34ed2976_ld_rechunk_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_2f43bf82_hunk_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_08141ab9_d_rechunk_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_5fade3af_d_rechunk_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_9d4d5e86_d_rechunk_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_1b4a0379_uld_rechunk_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_13fe9664_uld_rechunk_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_c3970482_uld_rechunk_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_068c5403_ould_rechunk_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_dd292b23_ould_rechunk_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_bb774628_ld_rechunk_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_5f26e882_ld_rechunk_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_ce05c9a2_ld_rechunk_polars_core__datatypes__uint32chunked)?;
+    m.function_meta(f_be71ab61_ld_rechunk_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_6c03a4ad_uld_rechunk_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_8441615f_iner__should_rechunk_polars_core__series__series)?;
     m.function_meta(f_c4e341b0_cloud__credential_provider__plcredentialprovider)?;
     m.function_meta(f_67da5d37__credential_provider__credentialproviderfunction)?;
     m.function_meta(f_87471c27_me__intolazy__lazy_polars_lazy__frame__lazyframe)?;
@@ -20146,6 +21096,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_b8a4cf31_er__n_rows_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_b448a6e9_r__rechunk_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_0dbe9e80__row_index_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_f3b2ec0f_r__sources_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_0b80ab04_th_rechunk_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_a9a69c2c_th_sources_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_eb22748f__as_binary_polars_core__datatypes__binarychunked)?;
@@ -20186,6 +21137,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_0d219e6c_ft_join_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_d3aa7241_ss_join_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_6ad5962c_oin__hash_join_inner_polars_core__series__series)?;
+    m.function_meta(f_6830d3a7_iessealed__as_series_polars_core__series__series)?;
     m.function_meta(f_88fadc71_max__argagg__arg_max_polars_core__series__series)?;
     m.function_meta(f_571b5c2b_max__argagg__arg_min_polars_core__series__series)?;
     m.function_meta(f_a5527433_inktype__shrink_type_polars_core__series__series)?;
@@ -20412,7 +21364,6 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_c7ca7eda_olars_core__datatypes__dtype__unknownkind__float)?;
     m.function_meta(v_991228a6_polars_core__datatypes__dtype__unknownkind__str)?;
     m.function_meta(v_edddcaaf_polars_core__datatypes__dtype__unknownkind__any)?;
-    m.function_meta(s_da851888_polars_core__datatypes__field__field__dtype)?;
     m.function_meta(v_61d9dd65_ypes__temporal__time_unit__timeunit__nanoseconds)?;
     m.function_meta(v_b1d11f86_pes__temporal__time_unit__timeunit__microseconds)?;
     m.function_meta(v_190c3f3b_pes__temporal__time_unit__timeunit__milliseconds)?;
@@ -20642,6 +21593,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_e55561a2_quet__write__options__parquetcompression__lz4raw)?;
     m.function_meta(s_047e2d34_write__options__parquetwriteoptions__compression)?;
     m.function_meta(w_047e2d34_write__options__parquetwriteoptions__compression)?;
+    m.function_meta(s_08541576__write__options__parquetwriteoptions__statistics)?;
+    m.function_meta(w_08541576__write__options__parquetwriteoptions__statistics)?;
     m.function_meta(s_f639c1c0_te__options__parquetwriteoptions__row_group_size)?;
     m.function_meta(w_f639c1c0_te__options__parquetwriteoptions__row_group_size)?;
     m.function_meta(s_96a3e170_te__options__parquetwriteoptions__data_page_size)?;
@@ -20735,6 +21688,16 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_d4e53a87__series__ops__linear_space__closedinterval__left)?;
     m.function_meta(v_7ae023c6_series__ops__linear_space__closedinterval__right)?;
     m.function_meta(v_9da4b085__series__ops__linear_space__closedinterval__none)?;
+    m.function_meta(s_45021535_quet__arrow__write__statisticsoptions__min_value)?;
+    m.function_meta(w_45021535_quet__arrow__write__statisticsoptions__min_value)?;
+    m.function_meta(s_bc906415_quet__arrow__write__statisticsoptions__max_value)?;
+    m.function_meta(w_bc906415_quet__arrow__write__statisticsoptions__max_value)?;
+    m.function_meta(s_b8f76d56__arrow__write__statisticsoptions__distinct_count)?;
+    m.function_meta(w_b8f76d56__arrow__write__statisticsoptions__distinct_count)?;
+    m.function_meta(s_371522dc_uet__arrow__write__statisticsoptions__null_count)?;
+    m.function_meta(w_371522dc_uet__arrow__write__statisticsoptions__null_count)?;
+    m.function_meta(s_f1847e59_isticsoptions__binary_statistics_truncate_length)?;
+    m.function_meta(w_f1847e59_isticsoptions__binary_statistics_truncate_length)?;
     m.function_meta(v_bd691b85__plan__dsl__datatype_expr__datatypeexpr__literal)?;
     m.function_meta(v_1a427840_l__datatype_expr__datatypeexpr__structwithfields)?;
     m.function_meta(v_8cd557c8_lan__dsl__datatype_expr__datatypeexpr__selfdtype)?;

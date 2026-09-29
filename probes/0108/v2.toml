@@ -1047,3 +1047,10 @@ direction = "parameter"
 param = "hash"
 source = "u64"
 cite = "polars-dtype 0.55.2 categorical/mapping.rs:73-92: str_to_cat insert under the caller's hash; insert_cat passes self.hasher.hash_one(s) (mapping.rs:66-69)"
+
+[[dtype_instantiations]]
+owner = "polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+names = ["ListInt8ChunkedBuilder", "ListInt16ChunkedBuilder", "ListInt32ChunkedBuilder", "ListInt64ChunkedBuilder", "ListUInt8ChunkedBuilder", "ListUInt16ChunkedBuilder", "ListUInt32ChunkedBuilder", "ListUInt64ChunkedBuilder", "ListFloat32ChunkedBuilder", "ListFloat64ChunkedBuilder"]
+cite = "record 0116 rule 3: impl<T: PolarsNumericType> ListPrimitiveChunkedBuilder<T> (polars-core chunked_array/builder/list/primitive.rs)"

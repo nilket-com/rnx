@@ -8,6 +8,18 @@
 #  3. cargo test: the 34 self-test wrappers.
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"; root="$(cd "$here/../.." && pwd)"
+# record 0116: this replay proves record 0114's generator, so it runs as
+# that commit's own copy in a worktree (later records change the generator,
+# the release files and the probes it reads); the copy restores the
+# inventories it needs from their committed bundles
+if [ -z "${REPLAY_PINNED:-}" ]; then
+  pinned="$root/target/0114/pinned"; rm -rf "$pinned"
+  git -C "$root" worktree prune
+  git -C "$root" worktree add -q --detach "$pinned" 32d1b40
+  trap 'git -C "$root" worktree remove --force "$pinned"' EXIT
+  REPLAY_PINNED=1 bash "$pinned/probes/0114/verify.sh"
+  exit $?
+fi
 d="$root/target/0114/replay"; rm -rf "$d"; mkdir -p "$d"
 base=eee390c
 # the inputs golden reads: the five 0072 inventories (bundled here) and the

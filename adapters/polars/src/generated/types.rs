@@ -48,10 +48,58 @@ pub struct W_polars_core__chunked_array__builder__list__boolean__ListBooleanChun
 #[derive(rune::Any)]
 #[rune(item = ::polars, name = ListNullChunkedBuilder)]
 pub struct W_polars_core__chunked_array__builder__list__null__ListNullChunkedBuilder(pub(crate) polars::chunked_array::builder::list::ListNullChunkedBuilder);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListFloat32ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float32Type>);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListFloat64ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Float64Type>);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListInt16ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int16Type>);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListInt32ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int32Type>);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListInt64ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int64Type>);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListInt8ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::Int8Type>);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListUInt16ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt16Type>);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt32Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt32Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListUInt32ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::IdxType>);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListUInt64ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt64Type>);
+/// polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type> = `polars_core::chunked_array::builder::list::primitive::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ListUInt8ChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type(pub(crate) polars::chunked_array::builder::list::ListPrimitiveChunkedBuilder<polars_core::datatypes::UInt8Type>);
 /// `polars_core::chunked_array::builder::null::NullChunkedBuilder`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = NullChunkedBuilder)]
 pub struct W_polars_core__chunked_array__builder__null__NullChunkedBuilder(pub(crate) polars::chunked_array::builder::NullChunkedBuilder);
+/// polars_core::chunked_array::builder::string::BinaryChunkedBuilder = `polars_core::chunked_array::builder::string::BinViewChunkedBuilder<[u8]>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = BinaryChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__string__BinaryChunkedBuilder(pub(crate) polars::chunked_array::builder::BinaryChunkedBuilder);
+/// polars_core::chunked_array::builder::string::StringChunkedBuilder = `polars_core::chunked_array::builder::string::BinViewChunkedBuilder<str>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = StringChunkedBuilder)]
+pub struct W_polars_core__chunked_array__builder__string__StringChunkedBuilder(pub(crate) polars::chunked_array::builder::StringChunkedBuilder);
 /// `polars_core::chunked_array::cast::CastOptions`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = CastOptions)]
@@ -704,6 +752,10 @@ pub struct W_polars_ops__series__ops__horizontal__NullStrategy(pub(crate) polars
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = ClosedInterval)]
 pub struct W_polars_ops__series__ops__linear_space__ClosedInterval(pub(crate) polars_ops::prelude::ClosedInterval);
+/// `polars_parquet::arrow::write::StatisticsOptions`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::parquet, name = StatisticsOptions)]
+pub struct W_polars_parquet__arrow__write__StatisticsOptions(pub(crate) polars::prelude::StatisticsOptions);
 /// `polars_plan::dsl::arity::ChainedThen`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = ChainedThen)]
@@ -1101,7 +1153,19 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_core__chunked_array__builder__list__binary__ListStringChunkedBuilder>()?;
     m.ty::<W_polars_core__chunked_array__builder__list__boolean__ListBooleanChunkedBuilder>()?;
     m.ty::<W_polars_core__chunked_array__builder__list__null__ListNullChunkedBuilder>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float32Type>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Float64Type>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int16Type>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int32Type>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int64Type>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__Int8Type>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt16Type>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt32Type>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt64Type>()?;
+    m.ty::<W_polars_core__chunked_array__builder__list__primitive__ListPrimitiveChunkedBuilder_polars_core__datatypes__UInt8Type>()?;
     m.ty::<W_polars_core__chunked_array__builder__null__NullChunkedBuilder>()?;
+    m.ty::<W_polars_core__chunked_array__builder__string__BinaryChunkedBuilder>()?;
+    m.ty::<W_polars_core__chunked_array__builder__string__StringChunkedBuilder>()?;
     m.ty::<W_polars_core__chunked_array__cast__CastOptions>()?;
     m.ty::<W_polars_core__chunked_array__flags__StatisticsFlags>()?;
     m.ty::<W_polars_core__chunked_array__flags__StatisticsFlagsIM>()?;
@@ -1265,6 +1329,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_ops__frame__join__args__MaintainOrderJoin>()?;
     m.ty::<W_polars_ops__series__ops__horizontal__NullStrategy>()?;
     m.ty::<W_polars_ops__series__ops__linear_space__ClosedInterval>()?;
+    m.ty::<W_polars_parquet__arrow__write__StatisticsOptions>()?;
     m.ty::<W_polars_plan__dsl__arity__ChainedThen>()?;
     m.ty::<W_polars_plan__dsl__arity__ChainedWhen>()?;
     m.ty::<W_polars_plan__dsl__arity__Then>()?;

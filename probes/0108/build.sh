@@ -90,9 +90,13 @@ for crate in tomllib.load(open(release, "rb"))["api_crates"]:
     dep = crate.replace("_", "-")
     if f"\n{dep} = " not in t:
         t = t.replace("[dependencies]", f'[dependencies]\n{dep} = {{ git = "{url}", rev = "{rev}", default-features = false }}', 1)
+# record 0116 (rule 6): generated time-zone conversions name chrono_tz::Tz,
+# which Polars does not re-export; pinned to the version its lock resolves
+if "\nchrono-tz = " not in t:
+    t = t.replace("[dependencies]", '[dependencies]\nchrono-tz = "=0.10.4"', 1)
 open(p, "w").write(t)
 PY
-"$gen" "$inv" "$scratch/polars" --release "$release" --buckets mechanical,conversion,option_struct,callback,generic_fn > "$out/gen.log" 2>&1 || fail generate "generator failed: $(tail -1 "$out/gen.log")"
+"$gen" "$inv" "$scratch/polars" --release "$release" --buckets mechanical,conversion,option_struct,callback,generic_fn,generic > "$out/gen.log" 2>&1 || fail generate "generator failed: $(tail -1 "$out/gen.log")"
 [ -f "$scratch/polars/src/generated/functions.rs" ] && [ -f "$scratch/polars/tests/generated_oracle.rs" ] || fail generate "generator produced no module"
 cp "$scratch/polars/surface.json" "$out/surface-v2.json"
 tail -3 "$out/gen.log"; stage[generate]=ok; write_status

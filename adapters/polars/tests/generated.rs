@@ -1278,6 +1278,18 @@ fn deref_route_controls() {
 		.collect();
 	let mut deref_bindings = 0;
 	let mut mut_exceptions = 0;
+	// record 0116: the receivers, from the inventory, so a `&mut self`
+	// SeriesTrait method is judged by its receiver whichever exception it gets
+	let inventory: serde_json::Value =
+		serde_json::from_str(&std::fs::read_to_string(inventory()).unwrap()).unwrap();
+	let mut_self: std::collections::BTreeSet<String> = inventory["callables"]
+		.as_array()
+		.unwrap()
+		.iter()
+		.filter(|c| c["receiver"] == "&mut self")
+		.map(|c| c["key"].as_str().unwrap().to_string())
+		.collect();
+	let mut mut_on_deref = 0;
 	let mut retained = 0;
 	let mut two_outcomes = 0;
 	// the names Series binds inherently: every SeriesTrait method with one
@@ -1333,6 +1345,17 @@ fn deref_route_controls() {
 				continue;
 			}
 			let reason = x["reason"].as_str().unwrap();
+			if mut_self.contains(e["key"].as_str().unwrap()) {
+				// a `&mut self` method never reaches Series through Deref: it is
+				// refused with a named reason (no DerefMut, or an earlier rule)
+				// or its name keeps the inherent binding
+				mut_on_deref += 1;
+				assert!(!reason.is_empty(), "{path}: an unnamed deref exception");
+				assert!(
+					bindings.iter().all(|b| b["route"] != "deref"),
+					"{path}: a &mut self method must not have a deref binding"
+				);
+			}
 			if reason.contains("needs DerefMut") {
 				mut_exceptions += 1;
 				assert!(
@@ -1368,9 +1391,10 @@ fn deref_route_controls() {
 		"no SeriesTrait method reached Series through Deref"
 	);
 	assert!(
-		mut_exceptions > 0,
-		"no &mut self SeriesTrait method was refused on the deref route (Series has no DerefMut)"
+		mut_on_deref > 0,
+		"no &mut self SeriesTrait method met the deref route (Series has no DerefMut)"
 	);
+	let _ = mut_exceptions; // since record 0116 the inventory's witness (`rename`) is retained, not refused
 	assert_eq!(
 		retained, colliding,
 		"every SeriesTrait name that Series binds inherently must be retained with the trait route not separately exposed"
@@ -1390,7 +1414,7 @@ fn deref_route_controls() {
 
 /// The buckets this stage generates and the release input the committed
 /// module was generated from; kept in one place with the drift test.
-const BUCKETS: &str = "mechanical,conversion,option_struct,callback,generic_fn";
+const BUCKETS: &str = "mechanical,conversion,option_struct,callback,generic_fn,generic";
 const RELEASE_FILE: &str = "0.55.2-joins.toml";
 
 /// Every eligible callable of the API crates has exactly one status.

@@ -305,6 +305,10 @@ pub(crate) struct World {
 	pub(crate) clonable: BTreeSet<String>,
 	/// Foreign trait impls by owner: (trait short name, `for` type, bounds).
 	pub(crate) impls: BTreeMap<String, Vec<(String, String, Vec<(String, String)>)>>,
+	/// Record 0116 (rule 3, review): each owner's recorded inherent impl
+	/// heads (`Owner<T>`), from the inventory, so a dtype listing's generic
+	/// is checked against the owner's actual parameter.
+	pub(crate) owner_heads: BTreeMap<String, BTreeSet<String>>,
 	/// Record 0076: trait canonical path -> wrapped types whose `Deref`
 	/// target is `dyn` that trait (`Series` -> `dyn SeriesTrait`).
 	pub(crate) deref_targets: BTreeMap<String, Vec<String>>,
@@ -525,7 +529,16 @@ impl World {
 			deref_targets: BTreeMap::new(),
 			deref_mut: BTreeSet::new(),
 			by_identity: BTreeMap::new(),
+			owner_heads: BTreeMap::new(),
 		};
+		for c in &inv.callables {
+			if let (true, Some(h)) = (c.kind == "inherent", &c.impl_head) {
+				w.owner_heads
+					.entry(c.owner.clone())
+					.or_default()
+					.insert(h.clone());
+			}
+		}
 		w.assign_wrappers(&mentioned);
 		for (path, wr) in &w.wrappers {
 			if wr.rule == "alias"
@@ -834,6 +847,31 @@ impl World {
 				for p in &cand.paths {
 					self.wrappers.insert(p.clone(), w.clone());
 				}
+			}
+		}
+		// record 0116 (rule 3): the listed dtype instantiations of generic
+		// owners with no alias, as synthetic alias wrappers
+		match crate::families::dtype_owners::synthetic_wrappers(self) {
+			Ok(ws) => {
+				for (key, w) in ws {
+					// the instantiation is a type of its own: the owner's record,
+					// no longer generic, under the instantiated identity
+					let base = w.base.clone().unwrap();
+					let mut s = self.types[&base].clone();
+					s.key = key.clone();
+					s.canonical_path = key.clone();
+					s.generic = false;
+					s.alias_target = None;
+					self.types.insert(key.clone(), s);
+					if self.clonable.contains(&base) {
+						self.clonable.insert(key.clone());
+					}
+					self.wrappers.insert(key, w);
+				}
+			}
+			Err(why) => {
+				eprintln!("refusing to generate: dtype instantiations: {why}");
+				std::process::exit(2);
 			}
 		}
 		// two wrappers must never share a Rune path

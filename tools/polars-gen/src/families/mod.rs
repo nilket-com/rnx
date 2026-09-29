@@ -7,6 +7,7 @@
 pub(crate) mod bounds;
 pub(crate) mod callbacks;
 pub(crate) mod conversions;
+pub(crate) mod dtype_owners;
 pub(crate) mod free_instantiations;
 pub(crate) mod generic_impls;
 pub(crate) mod generic_inputs;

@@ -1132,13 +1132,14 @@ pub(crate) fn slice_self_test() {
 			&& functions.contains("CallbackFailure { op: \"Series::each_bytes\""),
 		"a callback's slice is a bounded snapshot whose refusal is the typed failure:\n{functions}"
 	);
-	// a mutable slice return falls under the pre-existing rule for `&mut`
-	// returns (the receiver is mutated in place, the binding returns unit):
-	// no slice is exposed and nothing is copied
-	let (status, _, functions) = emit("mutable");
-	assert_eq!(status, "generated");
+	// a mutable slice return is a mutable borrow of an inner value (record
+	// 0116, stage 1: only `&mut Self`/`&mut` owner returns are chains), so it
+	// is refused by name: no slice is exposed and nothing is copied
+	let (status, reason, functions) = emit("mutable");
+	assert_eq!(status, "unsupported");
+	assert!(reason.starts_with("inner mutable borrow"), "{reason}");
 	assert!(
-		!functions.contains("support::copy_slice(") && functions.contains("mutated in place"),
+		!functions.contains("support::copy_slice("),
 		"a mutable slice is never copied or exposed:\n{functions}"
 	);
 	for (key, why) in [("arrow", "foreign type"), ("iters", "iterator")] {

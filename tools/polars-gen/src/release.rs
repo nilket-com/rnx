@@ -93,6 +93,10 @@ pub(crate) struct FamilyTables {
 	/// type's wrapper and the binding placed on that wrapper.
 	#[serde(default)]
 	pub(crate) free_instantiations: Vec<FreeInstantiation>,
+	/// Record 0116 (rule 3): generic owners with no alias, instantiated per
+	/// listed dtype as synthetic wrappers.
+	#[serde(default)]
+	pub(crate) dtype_instantiations: Vec<crate::families::dtype_owners::DtypeInstantiation>,
 	/// Record 0092: family-census methods whose one scalar function generic
 	/// is bound, per proven pair, to that pair's native type.
 	#[serde(default)]

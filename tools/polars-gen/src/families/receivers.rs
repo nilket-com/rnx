@@ -568,11 +568,183 @@ pub(crate) fn proven_trait_receivers(world: &World, c: &Callable) -> (Vec<String
 	(out, why)
 }
 
+/// Record 0116 (stage 1, Codex's rule): a `&mut` return is a chain (unit,
+/// the receiver mutated in place) only for a `&mut self` method returning
+/// `&mut Self` or `&mut` the owner, directly or as the first value of a
+/// Result; every other mutable borrow is refused before any binding text.
+pub(crate) fn mut_return_self_test() {
+	let series = "polars_core::series::Series";
+	let mk = |key: &str, receiver: &str, ret: &str| Callable {
+		key: key.into(),
+		kind: "inherent".into(),
+		krate: "polars_core".into(),
+		owner: series.into(),
+		name: key.into(),
+		canonical_path: format!("{series}::{key}"),
+		found_paths: vec![],
+		crate_paths: vec![],
+		receiver: receiver.into(),
+		params: vec![],
+		ret: None,
+		ret_canonical: Some(ret.into()),
+		generics_canonical: vec![],
+		impl_for: None,
+		impl_bounds: vec![],
+		impl_head: None,
+		impl_where: vec![],
+		impl_assoc: vec![],
+		docs_first: None,
+		owner_generic: false,
+		is_unsafe: false,
+		is_async: false,
+		deprecated: false,
+		hidden: false,
+		implementors: vec![],
+		trait_reachable: false,
+		derived: false,
+		bucket: "mechanical".into(),
+		rules: vec![],
+		trait_lifetimes: vec![],
+	};
+	let sup = |path: &str| Supporting {
+		key: path.to_string(),
+		kind: "struct".into(),
+		canonical_path: path.to_string(),
+		found_paths: vec![format!("polars::{}", path.rsplit("::").next().unwrap())],
+		crate_paths: vec![path.to_string()],
+		public_fields: 0,
+		fields_canonical: vec![],
+		variant_shapes: vec![],
+		variant_payloads: vec![],
+		generic: false,
+		lifetime: false,
+		hidden: false,
+		derived: vec!["Clone".into(), "Debug".into()],
+		alias_target: None,
+		implementors: vec![],
+		impls: vec![],
+	};
+	let frame = "polars_core::frame::dataframe::DataFrame";
+	let cases = [
+		("self_direct", "&mut self", "&mut Self", true),
+		(
+			"self_result",
+			"&mut self",
+			"polars_error::PolarsResult<&mut Self>",
+			true,
+		),
+		(
+			"owner_direct",
+			"&mut self",
+			"&mut polars_core::series::Series",
+			true,
+		),
+		(
+			"inner_wrapped",
+			"&mut self",
+			"&mut polars_core::frame::dataframe::DataFrame",
+			false,
+		),
+		("inner_vec", "&mut self", "&mut alloc::vec::Vec<u32>", false),
+		(
+			"inner_result",
+			"&mut self",
+			"polars_error::PolarsResult<&mut alloc::string::String>",
+			false,
+		),
+		(
+			"trait_object",
+			"&mut self",
+			"&mut dyn core::any::Any",
+			false,
+		),
+		// review of 0116: the owner's path with other arguments is not the receiver
+		(
+			"other_args",
+			"&mut self",
+			"&mut polars_core::series::Series<i64>",
+			false,
+		),
+		(
+			"other_args_result",
+			"&mut self",
+			"polars_error::PolarsResult<&mut polars_core::series::Series<i64>>",
+			false,
+		),
+		("shared_receiver", "&self", "&mut Self", false),
+	];
+	let inv = Inventory {
+		callables: cases.iter().map(|(k, r, ret, _)| mk(k, r, ret)).collect(),
+		supporting: vec![sup(series), sup(frame)],
+		provenance: None,
+	};
+	let release = Release {
+		name: "t".into(),
+		source: "t".into(),
+		provenance: ReleaseProvenance::default(),
+		instantiation: InstantiationScope::default(),
+		api_crates: vec!["polars_core".into()],
+		unordered: vec![],
+		excluded_oracle: vec![],
+		refused: vec![],
+		families: FamilyTables::default(),
+	};
+	let world = World::new(&inv, &release, &["mechanical"]);
+	for (key, _, ret, chain) in cases {
+		let mut e = Emitted {
+			from_names: BTreeMap::new(),
+			functions: String::new(),
+			registrations: vec![],
+			catalogue: vec![],
+			entries: vec![],
+			taken: BTreeMap::new(),
+			fn_index: 0,
+		};
+		emit_callable(
+			&world,
+			&mut e,
+			inv.callables.iter().find(|c| c.key == key).unwrap(),
+			&["mechanical"],
+		);
+		let entry = &e.entries[0];
+		if chain {
+			assert_eq!(
+				entry.status, "generated",
+				"{key} ({ret}): {:?}",
+				entry.reason
+			);
+			assert!(
+				e.functions.contains("receiver mutated in place"),
+				"{key}: a chain returns unit"
+			);
+		} else {
+			assert_eq!(entry.status, "unsupported", "{key} ({ret}) must be refused");
+			assert!(
+				entry
+					.reason
+					.as_deref()
+					.is_some_and(|r| r.starts_with("inner mutable borrow")),
+				"{key}: {:?}",
+				entry.reason
+			);
+			assert!(
+				e.functions.is_empty() && e.registrations.is_empty(),
+				"{key}: no binding text or registration"
+			);
+		}
+	}
+	println!("mut-return self-test: ok");
+}
+
 #[cfg(test)]
 mod tests {
 	#[test]
 	fn method_arity() {
 		super::method_arity_self_test();
+	}
+	#[test]
+	fn mut_return() {
+		super::mut_return_self_test();
 	}
 	#[test]
 	fn move_semantics() {

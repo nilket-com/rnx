@@ -14,6 +14,18 @@
 set -euo pipefail
 export LC_ALL=C
 here="$(cd "$(dirname "$0")" && pwd)"; root="$(cd "$here/../.." && pwd)"
+# record 0116: this replay proves record 0115's generator, so it runs as
+# that commit's own copy in a worktree (later records change the generator,
+# the release files and the probes it reads); the copy restores the
+# inventories it needs from their committed bundles
+if [ -z "${REPLAY_PINNED:-}" ]; then
+  pinned="$root/target/0115/pinned"; rm -rf "$pinned"
+  git -C "$root" worktree prune
+  git -C "$root" worktree add -q --detach "$pinned" 6cea3a9
+  trap 'git -C "$root" worktree remove --force "$pinned"' EXIT
+  REPLAY_PINNED=1 bash "$pinned/probes/0115/verify.sh"
+  exit $?
+fi
 d="$root/target/0115/replay"; rm -rf "$d"; mkdir -p "$d"
 base=32d1b40
 for n in 0.54.4-adapter 0.54.4-full 0.55.2-adapter-narrow 0.55.2-adapter 0.55.2-full; do
