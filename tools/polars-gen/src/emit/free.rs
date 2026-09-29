@@ -14,6 +14,27 @@ pub(crate) fn emit_free(world: &World, out: &mut Emitted, c: &Callable) {
 	world.tmp.set(0);
 	let rust_name = c.name.clone();
 	let name = rune_name(&rust_name);
+	// record 0119: a namespaced crate's items live only under its own module
+	// (`polars::arrow`); a free function cannot be placed there within the
+	// one generated module (a Rune `path` names a type, not a module), so it
+	// is refused rather than registered at the `polars` root
+	if let Some(k) = world
+		.release
+		.families
+		.namespaced_crates
+		.iter()
+		.find(|k| **k == c.krate)
+	{
+		out.unsupported(
+			c,
+			"namespaced free function",
+			&format!(
+				"`{k}` items live under polars::{}; a free function has no module path there yet",
+				k.trim_start_matches("polars_")
+			),
+		);
+		return;
+	}
 	if c.is_async {
 		out.unsupported(c, "async", &name);
 		return;

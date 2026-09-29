@@ -13,6 +13,7 @@ pub(crate) mod generic_impls;
 pub(crate) mod generic_inputs;
 pub(crate) mod generic_traits;
 pub(crate) mod protocols;
+pub(crate) mod receiver_guards;
 pub(crate) mod receivers;
 pub(crate) mod returns;
 pub(crate) mod routes;

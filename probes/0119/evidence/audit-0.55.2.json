@@ -1,0 +1,2199 @@
+{
+ "arrow": [
+  {
+   "detail": "on every implementor: shape: return (dyn core::any::Any)",
+   "disposition": "refused",
+   "key": "polars_arrow:4924",
+   "path": "polars_arrow::array::Array::as_any"
+  },
+  {
+   "detail": "on every implementor: inner mutable borrow: return (&mut dyn core::any::Any): no script contract for a mutable borrow that is not the receiver",
+   "disposition": "refused",
+   "key": "polars_arrow:4925",
+   "path": "polars_arrow::array::Array::as_any_mut"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4928",
+   "path": "polars_arrow::array::Array::dtype"
+  },
+  {
+   "detail": "on every implementor: inner mutable borrow: return (&mut polars_arrow::datatypes::ArrowDataType): no script contract for a mutable borrow that is not the receiver",
+   "disposition": "refused",
+   "key": "polars_arrow:4929",
+   "path": "polars_arrow::array::Array::dtype_mut"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4933",
+   "path": "polars_arrow::array::Array::has_nulls"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4927",
+   "path": "polars_arrow::array::Array::is_empty"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4934",
+   "path": "polars_arrow::array::Array::is_null"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4936",
+   "path": "polars_arrow::array::Array::is_valid"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4926",
+   "path": "polars_arrow::array::Array::len"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4932",
+   "path": "polars_arrow::array::Array::null_count"
+  },
+  {
+   "detail": "on every implementor: deref route needs DerefMut: support::ArrayRef",
+   "disposition": "refused",
+   "key": "polars_arrow:4939",
+   "path": "polars_arrow::array::Array::slice"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4941",
+   "path": "polars_arrow::array::Array::sliced"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4937",
+   "path": "polars_arrow::array::Array::split_at_boxed"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4944",
+   "path": "polars_arrow::array::Array::to_boxed"
+  },
+  {
+   "detail": "on every implementor: unreachable polars type: return (polars_arrow::bitmap::immutable::Bitmap)",
+   "disposition": "refused",
+   "key": "polars_arrow:4931",
+   "path": "polars_arrow::array::Array::validity"
+  },
+  {
+   "detail": "on every implementor: unreachable polars type: validity (polars_arrow::bitmap::immutable::Bitmap)",
+   "disposition": "refused",
+   "key": "polars_arrow:4943",
+   "path": "polars_arrow::array::Array::with_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray",
+   "disposition": "deferred",
+   "key": "polars_arrow:5048",
+   "path": "polars_arrow::array::GenericBinaryArray::offsets"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray",
+   "disposition": "deferred",
+   "key": "polars_arrow:5047",
+   "path": "polars_arrow::array::GenericBinaryArray::values"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:4945",
+   "path": "polars_arrow::array::IntoBoxedArray::into_boxed"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4955",
+   "path": "polars_arrow::array::MutableArray::as_any"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4954",
+   "path": "polars_arrow::array::MutableArray::as_arc"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4953",
+   "path": "polars_arrow::array::MutableArray::as_box"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4956",
+   "path": "polars_arrow::array::MutableArray::as_mut_any"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4949",
+   "path": "polars_arrow::array::MutableArray::dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4951",
+   "path": "polars_arrow::array::MutableArray::is_empty"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4958",
+   "path": "polars_arrow::array::MutableArray::is_valid"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4950",
+   "path": "polars_arrow::array::MutableArray::len"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4957",
+   "path": "polars_arrow::array::MutableArray::push_null"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4959",
+   "path": "polars_arrow::array::MutableArray::reserve"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4960",
+   "path": "polars_arrow::array::MutableArray::shrink_to_fit"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::legacy::array::null::MutableNullArray, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::binary::mutable::MutableBinaryA",
+   "disposition": "deferred",
+   "key": "polars_arrow:4952",
+   "path": "polars_arrow::array::MutableArray::validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:4908",
+   "path": "polars_arrow::array::Splitable::check_bound"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:4909",
+   "path": "polars_arrow::array::Splitable::split_at"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_core::frame::dataframe::DataFrame, polars_core::frame::dataframe::DataFrame, polars_arrow::array::binary::mutable_values::MutableBinaryValuesArray, polars_arrow::array::",
+   "disposition": "deferred",
+   "key": "polars_arrow:5043",
+   "path": "polars_arrow::array::TryExtend::try_extend"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:162:613",
+   "path": "polars_arrow::array::binary::BinaryArray as core::clone::Clone"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:162:658",
+   "path": "polars_arrow::array::binary::BinaryArray as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:162:660",
+   "path": "polars_arrow::array::binary::BinaryArray as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:162:662",
+   "path": "polars_arrow::array::binary::BinaryArray as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:162:304",
+   "path": "polars_arrow::array::binary::BinaryArray as core::convert::From"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:162:449",
+   "path": "polars_arrow::array::binary::BinaryArray as core::convert::From"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:162:601",
+   "path": "polars_arrow::array::binary::BinaryArray as core::fmt::Debug"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:162:611",
+   "path": "polars_arrow::array::binary::BinaryArray as core::iter::traits::collect::FromIterator"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:162:609",
+   "path": "polars_arrow::array::binary::BinaryArray as core::iter::traits::collect::IntoIterator"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:514",
+   "path": "polars_arrow::array::binary::BinaryArray::arced"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:513",
+   "path": "polars_arrow::array::binary::BinaryArray::boxed"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:520",
+   "path": "polars_arrow::array::binary::BinaryArray::default_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:502",
+   "path": "polars_arrow::array::binary::BinaryArray::dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:493",
+   "path": "polars_arrow::array::binary::BinaryArray::from"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:523",
+   "path": "polars_arrow::array::binary::BinaryArray::from_iter_values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:492",
+   "path": "polars_arrow::array::binary::BinaryArray::from_slice"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:525",
+   "path": "polars_arrow::array::binary::BinaryArray::from_trusted_len_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:522",
+   "path": "polars_arrow::array::binary::BinaryArray::from_trusted_len_values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:501",
+   "path": "polars_arrow::array::binary::BinaryArray::get"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:515",
+   "path": "polars_arrow::array::binary::BinaryArray::into_inner"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:516",
+   "path": "polars_arrow::array::binary::BinaryArray::into_mut"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:494",
+   "path": "polars_arrow::array::binary::BinaryArray::iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:498",
+   "path": "polars_arrow::array::binary::BinaryArray::len"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:521",
+   "path": "polars_arrow::array::binary::BinaryArray::new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:518",
+   "path": "polars_arrow::array::binary::BinaryArray::new_empty"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:519",
+   "path": "polars_arrow::array::binary::BinaryArray::new_null"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:496",
+   "path": "polars_arrow::array::binary::BinaryArray::non_null_values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:504",
+   "path": "polars_arrow::array::binary::BinaryArray::offsets"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:511",
+   "path": "polars_arrow::array::binary::BinaryArray::set_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:506",
+   "path": "polars_arrow::array::binary::BinaryArray::slice"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:508",
+   "path": "polars_arrow::array::binary::BinaryArray::sliced"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:512",
+   "path": "polars_arrow::array::binary::BinaryArray::take_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:527",
+   "path": "polars_arrow::array::binary::BinaryArray::try_from_trusted_len_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:488",
+   "path": "polars_arrow::array::binary::BinaryArray::try_new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:505",
+   "path": "polars_arrow::array::binary::BinaryArray::validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:499",
+   "path": "polars_arrow::array::binary::BinaryArray::value"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:503",
+   "path": "polars_arrow::array::binary::BinaryArray::values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:495",
+   "path": "polars_arrow::array::binary::BinaryArray::values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:510",
+   "path": "polars_arrow::array::binary::BinaryArray::with_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arrow::array::binary::mutable_values::MutableBinary",
+   "disposition": "deferred",
+   "key": "polars_arrow:4179",
+   "path": "polars_arrow::array::iterator::ArrayAccessor::len"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1188:2437",
+   "path": "polars_arrow::array::list::ListArray as core::clone::Clone"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1188:2471",
+   "path": "polars_arrow::array::list::ListArray as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1188:2473",
+   "path": "polars_arrow::array::list::ListArray as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1188:2312",
+   "path": "polars_arrow::array::list::ListArray as core::convert::From"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1188:2427",
+   "path": "polars_arrow::array::list::ListArray as core::fmt::Debug"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1188:2435",
+   "path": "polars_arrow::array::list::ListArray as core::iter::traits::collect::IntoIterator"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2356",
+   "path": "polars_arrow::array::list::ListArray::arced"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2355",
+   "path": "polars_arrow::array::list::ListArray::boxed"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2365",
+   "path": "polars_arrow::array::list::ListArray::default_datatype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2367",
+   "path": "polars_arrow::array::list::ListArray::get_child_field"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2369",
+   "path": "polars_arrow::array::list::ListArray::get_child_type"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2346",
+   "path": "polars_arrow::array::list::ListArray::into_inner"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2336",
+   "path": "polars_arrow::array::list::ListArray::iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2358",
+   "path": "polars_arrow::array::list::ListArray::len"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2343",
+   "path": "polars_arrow::array::list::ListArray::new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2344",
+   "path": "polars_arrow::array::list::ListArray::new_empty"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2345",
+   "path": "polars_arrow::array::list::ListArray::new_null"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2338",
+   "path": "polars_arrow::array::list::ListArray::non_null_values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2362",
+   "path": "polars_arrow::array::list::ListArray::offsets"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2353",
+   "path": "polars_arrow::array::list::ListArray::set_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2348",
+   "path": "polars_arrow::array::list::ListArray::slice"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2350",
+   "path": "polars_arrow::array::list::ListArray::sliced"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2354",
+   "path": "polars_arrow::array::list::ListArray::take_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2368",
+   "path": "polars_arrow::array::list::ListArray::try_get_child"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2342",
+   "path": "polars_arrow::array::list::ListArray::try_new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2361",
+   "path": "polars_arrow::array::list::ListArray::validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2359",
+   "path": "polars_arrow::array::list::ListArray::value"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2363",
+   "path": "polars_arrow::array::list::ListArray::values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2337",
+   "path": "polars_arrow::array::list::ListArray::values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:2352",
+   "path": "polars_arrow::array::list::ListArray::with_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3157",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::clone::Clone"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3219",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3221",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3223",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:2933",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::convert::From"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3144",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::convert::From"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3185",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::default::Default"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3142",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::fmt::Debug"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3146",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::iter::traits::collect::FromIterator"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3151",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::iter::traits::collect::IntoIterator"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:1217:3155",
+   "path": "polars_arrow::array::primitive::PrimitiveArray as core::iter::traits::collect::IntoIterator"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3062",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::apply_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3059",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::arced"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3058",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::boxed"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3048",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3082",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::fill_with"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3066",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_inner"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3073",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_slice"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3077",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_trusted_len_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3075",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_trusted_len_values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3072",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3041",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::from_vec"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3064",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::get_mut_values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3065",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::into_inner"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3069",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::into_mut"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3042",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3045",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::len"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3080",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3070",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::new_empty"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3071",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::new_null"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3044",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::non_null_values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3056",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::set_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3061",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::set_values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3051",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::slice"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3053",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::sliced"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3057",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::take_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3040",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::to"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3081",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::transmute"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3038",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::try_new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3047",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3049",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::value"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3046",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3043",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3074",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::with_slice"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3055",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::with_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3060",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::with_values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3063",
+   "path": "polars_arrow::array::primitive::PrimitiveArray::with_values_mut"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::boolean::BooleanArray, pola",
+   "disposition": "deferred",
+   "key": "polars_arrow:3343",
+   "path": "polars_arrow::array::static_array::ParameterFreeDtypeStaticArray::get_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3296",
+   "path": "polars_arrow::array::static_array::StaticArray::as_slice"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3300",
+   "path": "polars_arrow::array::static_array::StaticArray::from_vec"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3301",
+   "path": "polars_arrow::array::static_array::StaticArray::from_zeroable_vec"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3303",
+   "path": "polars_arrow::array::static_array::StaticArray::full"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3302",
+   "path": "polars_arrow::array::static_array::StaticArray::full_null"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3291",
+   "path": "polars_arrow::array::static_array::StaticArray::get"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3297",
+   "path": "polars_arrow::array::static_array::StaticArray::iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3293",
+   "path": "polars_arrow::array::static_array::StaticArray::last"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3294",
+   "path": "polars_arrow::array::static_array::StaticArray::value"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3298",
+   "path": "polars_arrow::array::static_array::StaticArray::values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::binary::BinaryArray, polars_arrow::array::list::ListArray, polars_arr",
+   "disposition": "deferred",
+   "key": "polars_arrow:3299",
+   "path": "polars_arrow::array::static_array::StaticArray::with_validity_typed"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, I, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, bl",
+   "disposition": "deferred",
+   "key": "polars_arrow:3399",
+   "path": "polars_arrow::array::static_array_collect::ArrayCollectIterExt::collect_arr"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, I, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, bl",
+   "disposition": "deferred",
+   "key": "polars_arrow:3400",
+   "path": "polars_arrow::array::static_array_collect::ArrayCollectIterExt::collect_arr_trusted"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, I, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, bl",
+   "disposition": "deferred",
+   "key": "polars_arrow:3404",
+   "path": "polars_arrow::array::static_array_collect::ArrayCollectIterExt::collect_arr_trusted_with_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, I, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, bl",
+   "disposition": "deferred",
+   "key": "polars_arrow:3403",
+   "path": "polars_arrow::array::static_array_collect::ArrayCollectIterExt::collect_arr_with_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, I, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, bl",
+   "disposition": "deferred",
+   "key": "polars_arrow:3401",
+   "path": "polars_arrow::array::static_array_collect::ArrayCollectIterExt::try_collect_arr"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, I, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, bl",
+   "disposition": "deferred",
+   "key": "polars_arrow:3402",
+   "path": "polars_arrow::array::static_array_collect::ArrayCollectIterExt::try_collect_arr_trusted"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, I, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, bl",
+   "disposition": "deferred",
+   "key": "polars_arrow:3406",
+   "path": "polars_arrow::array::static_array_collect::ArrayCollectIterExt::try_collect_arr_trusted_with_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, I, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, bl",
+   "disposition": "deferred",
+   "key": "polars_arrow:3405",
+   "path": "polars_arrow::array::static_array_collect::ArrayCollectIterExt::try_collect_arr_with_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, pola",
+   "disposition": "deferred",
+   "key": "polars_arrow:3362",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::arr_from_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, pola",
+   "disposition": "deferred",
+   "key": "polars_arrow:3363",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::arr_from_iter_trusted"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, pola",
+   "disposition": "deferred",
+   "key": "polars_arrow:3364",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::try_arr_from_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::utf8::Utf8Array, polars_arrow::array::utf8::Utf8Array, pola",
+   "disposition": "deferred",
+   "key": "polars_arrow:3365",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIter::try_arr_from_iter_trusted"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, polars_arrow::array::list::ListArray, polars_arrow::array::list::ListArray, blanket, polars_arrow::array::fixed_size_list::FixedSizeListArray, polars",
+   "disposition": "deferred",
+   "key": "polars_arrow:3352",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIterDtype::arr_from_iter_trusted_with_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, polars_arrow::array::list::ListArray, polars_arrow::array::list::ListArray, blanket, polars_arrow::array::fixed_size_list::FixedSizeListArray, polars",
+   "disposition": "deferred",
+   "key": "polars_arrow:3351",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIterDtype::arr_from_iter_with_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, polars_arrow::array::list::ListArray, polars_arrow::array::list::ListArray, blanket, polars_arrow::array::fixed_size_list::FixedSizeListArray, polars",
+   "disposition": "deferred",
+   "key": "polars_arrow:3354",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIterDtype::try_arr_from_iter_trusted_with_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, polars_arrow::array::list::ListArray, polars_arrow::array::list::ListArray, blanket, polars_arrow::array::fixed_size_list::FixedSizeListArray, polars",
+   "disposition": "deferred",
+   "key": "polars_arrow:3353",
+   "path": "polars_arrow::array::static_array_collect::ArrayFromIterDtype::try_arr_from_iter_with_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:4102",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::clone::Clone"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:4125",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:4127",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:4129",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::cmp::PartialEq"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:3827",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::convert::From"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:3957",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::convert::From"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:4123",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::default::Default"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:4090",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::fmt::Debug"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:4092",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::iter::traits::collect::FromIterator"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3307:4100",
+   "path": "polars_arrow::array::utf8::Utf8Array as core::iter::traits::collect::IntoIterator"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4030",
+   "path": "polars_arrow::array::utf8::Utf8Array::apply_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4018",
+   "path": "polars_arrow::array::utf8::Utf8Array::arced"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4017",
+   "path": "polars_arrow::array::utf8::Utf8Array::boxed"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4023",
+   "path": "polars_arrow::array::utf8::Utf8Array::default_dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4006",
+   "path": "polars_arrow::array::utf8::Utf8Array::dtype"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3998",
+   "path": "polars_arrow::array::utf8::Utf8Array::from"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4026",
+   "path": "polars_arrow::array::utf8::Utf8Array::from_iter_values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3996",
+   "path": "polars_arrow::array::utf8::Utf8Array::from_slice"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3997",
+   "path": "polars_arrow::array::utf8::Utf8Array::from_trusted_len_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3995",
+   "path": "polars_arrow::array::utf8::Utf8Array::from_trusted_len_values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4005",
+   "path": "polars_arrow::array::utf8::Utf8Array::get"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4019",
+   "path": "polars_arrow::array::utf8::Utf8Array::into_inner"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4020",
+   "path": "polars_arrow::array::utf8::Utf8Array::into_mut"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3999",
+   "path": "polars_arrow::array::utf8::Utf8Array::iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4002",
+   "path": "polars_arrow::array::utf8::Utf8Array::len"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4025",
+   "path": "polars_arrow::array::utf8::Utf8Array::new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4021",
+   "path": "polars_arrow::array::utf8::Utf8Array::new_empty"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4022",
+   "path": "polars_arrow::array::utf8::Utf8Array::new_null"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4001",
+   "path": "polars_arrow::array::utf8::Utf8Array::non_null_values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4008",
+   "path": "polars_arrow::array::utf8::Utf8Array::offsets"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4015",
+   "path": "polars_arrow::array::utf8::Utf8Array::set_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4010",
+   "path": "polars_arrow::array::utf8::Utf8Array::slice"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4012",
+   "path": "polars_arrow::array::utf8::Utf8Array::sliced"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4016",
+   "path": "polars_arrow::array::utf8::Utf8Array::take_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4031",
+   "path": "polars_arrow::array::utf8::Utf8Array::to_binary"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4029",
+   "path": "polars_arrow::array::utf8::Utf8Array::try_from_trusted_len_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:3994",
+   "path": "polars_arrow::array::utf8::Utf8Array::try_new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4009",
+   "path": "polars_arrow::array::utf8::Utf8Array::validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4003",
+   "path": "polars_arrow::array::utf8::Utf8Array::value"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4007",
+   "path": "polars_arrow::array::utf8::Utf8Array::values"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4000",
+   "path": "polars_arrow::array::utf8::Utf8Array::values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4014",
+   "path": "polars_arrow::array::utf8::Utf8Array::with_validity"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): on every implementor: release policy: the trait is recorded only under polars_arrow::array::values, a private module; the binding's trait path does not resolve (E0603), so no script path exists (polar",
+   "disposition": "deferred",
+   "key": "polars_arrow:4904",
+   "path": "polars_arrow::array::values::ValueSize::get_values_size"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:8:12209",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::clone::Clone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:8:12214",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::cmp::Eq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:8:12212",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::cmp::PartialEq"
+  },
+  {
+   "detail": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping",
+   "disposition": "refused",
+   "key": "polars_arrow:8:11872",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::convert::From"
+  },
+  {
+   "detail": "outward conversion, no retained listing on its target: From<ArrowDataType> for polars_arrow::array::primitive::mutable::MutablePrimitiveArray<T>",
+   "disposition": "refused",
+   "key": "polars_arrow:8:2939",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::convert::From"
+  },
+  {
+   "detail": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping",
+   "disposition": "refused",
+   "key": "polars_arrow:8:9923",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::convert::From"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:8:12218",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::default::Default"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:8:12207",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::fmt::Debug"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:8:12216",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::hash::Hash"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:8:12210",
+   "path": "polars_arrow::datatypes::ArrowDataType as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ArrowDataType -> IntervalUnit reaches polars_arrow::datatypes::IntervalUnit, which has no supporting record",
+   "disposition": "refused",
+   "key": "polars_arrow:8:12205",
+   "path": "polars_arrow::datatypes::ArrowDataType as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ArrowDataType -> IntervalUnit reaches polars_arrow::datatypes::IntervalUnit, which has no supporting record",
+   "disposition": "refused",
+   "key": "polars_arrow:8:12203",
+   "path": "polars_arrow::datatypes::ArrowDataType as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12146",
+   "path": "polars_arrow::datatypes::ArrowDataType::contains_dictionary"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12140",
+   "path": "polars_arrow::datatypes::ArrowDataType::inner_dtype"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12141",
+   "path": "polars_arrow::datatypes::ArrowDataType::is_nested"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12143",
+   "path": "polars_arrow::datatypes::ArrowDataType::is_numeric"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12142",
+   "path": "polars_arrow::datatypes::ArrowDataType::is_view"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12145",
+   "path": "polars_arrow::datatypes::ArrowDataType::to_fixed_size_list"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12144",
+   "path": "polars_arrow::datatypes::ArrowDataType::to_large_list"
+  },
+  {
+   "detail": "unreachable polars type: return (polars_arrow::datatypes::physical_type::PhysicalType)",
+   "disposition": "refused",
+   "key": "polars_arrow:12135",
+   "path": "polars_arrow::datatypes::ArrowDataType::to_physical_type"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12138",
+   "path": "polars_arrow::datatypes::ArrowDataType::to_storage"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12139",
+   "path": "polars_arrow::datatypes::ArrowDataType::to_storage_recursive"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:12137",
+   "path": "polars_arrow::datatypes::ArrowDataType::underlying_physical_type"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11602:12499",
+   "path": "polars_arrow::datatypes::TimeUnit as core::clone::Clone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:11602:12497",
+   "path": "polars_arrow::datatypes::TimeUnit as core::clone::TrivialClone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:11602:12504",
+   "path": "polars_arrow::datatypes::TimeUnit as core::cmp::Eq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11602:12503",
+   "path": "polars_arrow::datatypes::TimeUnit as core::cmp::PartialEq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11602:12496",
+   "path": "polars_arrow::datatypes::TimeUnit as core::fmt::Debug"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11602:12506",
+   "path": "polars_arrow::datatypes::TimeUnit as core::hash::Hash"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:11602:12500",
+   "path": "polars_arrow::datatypes::TimeUnit as core::marker::Copy"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:11602:12501",
+   "path": "polars_arrow::datatypes::TimeUnit as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11602:12494",
+   "path": "polars_arrow::datatypes::TimeUnit as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11602:12492",
+   "path": "polars_arrow::datatypes::TimeUnit as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2366:11692",
+   "path": "polars_arrow::datatypes::field::Field as core::clone::Clone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2366:11694",
+   "path": "polars_arrow::datatypes::field::Field as core::cmp::Eq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2366:11697",
+   "path": "polars_arrow::datatypes::field::Field as core::cmp::PartialEq"
+  },
+  {
+   "detail": "outward conversion, no retained listing on its target: From<Field> for (polars_utils::pl_str::PlSmallStr, polars_arrow::datatypes::field::Field)",
+   "disposition": "refused",
+   "key": "polars_arrow:2366:11703",
+   "path": "polars_arrow::datatypes::field::Field as core::convert::From"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2366:11701",
+   "path": "polars_arrow::datatypes::field::Field as core::default::Default"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2366:11690",
+   "path": "polars_arrow::datatypes::field::Field as core::fmt::Debug"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2366:11699",
+   "path": "polars_arrow::datatypes::field::Field as core::hash::Hash"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2366:11695",
+   "path": "polars_arrow::datatypes::field::Field as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: Field -> ArrowDataType -> IntervalUnit reaches polars_arrow::datatypes::IntervalUnit, which has no supporting record",
+   "disposition": "refused",
+   "key": "polars_arrow:2366:11688",
+   "path": "polars_arrow::datatypes::field::Field as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: Field -> ArrowDataType -> IntervalUnit reaches polars_arrow::datatypes::IntervalUnit, which has no supporting record",
+   "disposition": "refused",
+   "key": "polars_arrow:2366:11686",
+   "path": "polars_arrow::datatypes::field::Field as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11625",
+   "path": "polars_arrow::datatypes::field::Field::dtype"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11627",
+   "path": "polars_arrow::datatypes::field::Field::is_categorical"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11626",
+   "path": "polars_arrow::datatypes::field::Field::is_enum"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11628",
+   "path": "polars_arrow::datatypes::field::Field::is_pl_pq_empty_struct"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11624",
+   "path": "polars_arrow::datatypes::field::Field::name"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11622",
+   "path": "polars_arrow::datatypes::field::Field::new"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11629",
+   "path": "polars_arrow::datatypes::field::Field::with_dtype"
+  },
+  {
+   "detail": "unreachable polars type: metadata (polars_arrow::datatypes::Metadata)",
+   "disposition": "refused",
+   "key": "polars_arrow:11623",
+   "path": "polars_arrow::datatypes::field::Field::with_metadata"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2040:11941",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::clone::Clone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2040:11939",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::clone::TrivialClone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2040:11947",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::cmp::Eq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2040:11951",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::cmp::Ord"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2040:11945",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::cmp::PartialEq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2040:11949",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::cmp::PartialOrd"
+  },
+  {
+   "detail": "conversion source without a script value: TryFrom",
+   "disposition": "refused",
+   "key": "polars_arrow:2040:11956",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::convert::TryFrom"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2040:11953",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::fmt::Debug"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2040:11942",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::marker::Copy"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2040:11943",
+   "path": "polars_arrow::datatypes::reshape::Dimension as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: Dimension reaches polars_arrow::datatypes::reshape::Dimension: no public field, its content cannot be shown to be frame-free",
+   "disposition": "refused",
+   "key": "polars_arrow:2040:11938",
+   "path": "polars_arrow::datatypes::reshape::Dimension as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: Dimension reaches polars_arrow::datatypes::reshape::Dimension: no public field, its content cannot be shown to be frame-free",
+   "disposition": "refused",
+   "key": "polars_arrow:2040:11936",
+   "path": "polars_arrow::datatypes::reshape::Dimension as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11877",
+   "path": "polars_arrow::datatypes::reshape::Dimension::get"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11876",
+   "path": "polars_arrow::datatypes::reshape::Dimension::new"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2038:12031",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as core::clone::Clone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2038:12029",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as core::clone::TrivialClone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2038:12037",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as core::cmp::Eq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2038:12035",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as core::cmp::PartialEq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2038:12028",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as core::fmt::Debug"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2038:12039",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as core::fmt::Display"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:2038:12041",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as core::hash::Hash"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2038:12032",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as core::marker::Copy"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:2038:12033",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ReshapeDimension -> Dimension reaches polars_arrow::datatypes::reshape::Dimension: no public field, its content cannot be shown to be frame-free",
+   "disposition": "refused",
+   "key": "polars_arrow:2038:12026",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ReshapeDimension -> Dimension reaches polars_arrow::datatypes::reshape::Dimension: no public field, its content cannot be shown to be frame-free",
+   "disposition": "refused",
+   "key": "polars_arrow:2038:12024",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11961",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension::get"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11962",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension::get_or_infer"
+  },
+  {
+   "detail": "callback audit: unresolved",
+   "disposition": "refused",
+   "key": "polars_arrow:11963",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension::get_or_infer_with"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11960",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension::new"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:11964",
+   "path": "polars_arrow::datatypes::reshape::ReshapeDimension::new_dimension"
+  },
+  {
+   "detail": "no wrapped implementor: polars_io::utils::bytes_bufferer::BytesBufferer [polars_io::utils::bytes_bufferer::BytesBufferer: not wrapped]",
+   "disposition": "refused",
+   "key": "polars_arrow:11522",
+   "path": "polars_arrow::io::write_owned::WriteBytesOwned::len"
+  },
+  {
+   "detail": "no wrapped implementor: polars_io::utils::bytes_bufferer::BytesBufferer [polars_io::utils::bytes_bufferer::BytesBufferer: not wrapped]",
+   "disposition": "refused",
+   "key": "polars_arrow:11521",
+   "path": "polars_arrow::io::write_owned::WriteBytesOwned::write_all"
+  },
+  {
+   "detail": "no wrapped implementor: polars_io::utils::bytes_bufferer::BytesBufferer [polars_io::utils::bytes_bufferer::BytesBufferer: not wrapped]",
+   "disposition": "refused",
+   "key": "polars_arrow:11519",
+   "path": "polars_arrow::io::write_owned::WriteBytesOwned::write_all_owned"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): namespaced free function: `polars_arrow` items live under polars::arrow; a free function has no module path there yet",
+   "disposition": "deferred",
+   "key": "polars_arrow:12998",
+   "path": "polars_arrow::legacy::array::convert_inner_type"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::boolean::BooleanArray",
+   "disposition": "deferred",
+   "key": "polars_arrow:12854",
+   "path": "polars_arrow::legacy::array::default_arrays::FromData::from_data_default"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12872",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::finish"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12864",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::is_empty"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12863",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12865",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::offsets"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12867",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::push"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12871",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::push_empty"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12868",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::push_multiple"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12869",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::push_null"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12870",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::push_opt"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12866",
+   "path": "polars_arrow::legacy::array::list::AnonymousBuilder::take_offsets"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4982:12984",
+   "path": "polars_arrow::legacy::array::null::MutableNullArray as core::clone::Clone"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4982:12982",
+   "path": "polars_arrow::legacy::array::null::MutableNullArray as core::default::Default"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:4982:12980",
+   "path": "polars_arrow::legacy::array::null::MutableNullArray as core::fmt::Debug"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12925",
+   "path": "polars_arrow::legacy::array::null::MutableNullArray::extend_nulls"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): internal crate reachable through the prelude",
+   "disposition": "deferred",
+   "key": "polars_arrow:12924",
+   "path": "polars_arrow::legacy::array::null::MutableNullArray::new"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, T",
+   "disposition": "deferred",
+   "key": "polars_arrow:12986",
+   "path": "polars_arrow::legacy::array::slice::SlicedArray::slice_typed"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::binary::BinaryArray [polars_arrow::array::binary::BinaryArray<i64>: not wrapped]",
+   "disposition": "deferred",
+   "key": "polars_arrow:12991",
+   "path": "polars_arrow::legacy::array::utf8::BinaryFromIter::from_values_iter"
+  },
+  {
+   "detail": "record 0120 (concrete arrays, deferred by the release's deferred_type_prefixes): no wrapped implementor: polars_arrow::array::utf8::Utf8Array [polars_arrow::array::utf8::Utf8Array<i64>: not wrapped]",
+   "disposition": "deferred",
+   "key": "polars_arrow:12990",
+   "path": "polars_arrow::legacy::array::utf8::Utf8FromIter::from_values_iter"
+  },
+  {
+   "detail": "no wrapped implementor: I [I on 320 wrapped types: no recorded impl of `PartialOrd` for `I`; I on 5 wrapped types: trait `num_traits::cast::NumCast` is outside the inventory]",
+   "disposition": "refused",
+   "key": "polars_arrow:13010",
+   "path": "polars_arrow::legacy::index::IndexToUsize::negative_to_usize"
+  },
+  {
+   "detail": "no wrapped implementor: I [I on 320 wrapped types: no recorded impl of `PartialOrd` for `I`; I on 5 wrapped types: trait `num_traits::cast::NumCast` is outside the inventory]",
+   "disposition": "refused",
+   "key": "polars_arrow:13011",
+   "path": "polars_arrow::legacy::index::IndexToUsize::try_negative_to_usize"
+  },
+  {
+   "detail": "namespaced free function: `polars_arrow` items live under polars::arrow; a free function has no module path there yet",
+   "disposition": "refused",
+   "key": "polars_arrow:13018",
+   "path": "polars_arrow::legacy::index::indexes_to_usizes"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:13057:13109",
+   "path": "polars_arrow::legacy::kernels::time::Ambiguous as core::str::traits::FromStr"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:13112:13175",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::clone::Clone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:13112:13173",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::clone::TrivialClone"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:13112:13178",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::cmp::Eq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:13112:13183",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::cmp::PartialEq"
+  },
+  {
+   "detail": "outward conversion, no retained listing on its target: From<NonExistent> for &'static str",
+   "disposition": "refused",
+   "key": "polars_arrow:13112:13185",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::convert::From"
+  },
+  {
+   "detail": "outward conversion, no retained listing on its target: From<NonExistent> for &'static str",
+   "disposition": "refused",
+   "key": "polars_arrow:13112:13187",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::convert::From"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:13112:13177",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::fmt::Debug"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:13112:13180",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::hash::Hash"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:13112:13172",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::marker::Copy"
+  },
+  {
+   "detail": "0 bindings; script-reachable",
+   "disposition": "adapted",
+   "key": "polars_arrow:13112:13181",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:13112:13171",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "1 bindings; script-reachable",
+   "disposition": "generated",
+   "key": "polars_arrow:13112:13169",
+   "path": "polars_arrow::legacy::kernels::time::NonExistent as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "record 0120 (stage 3, concrete generic arrays): no wrapped implementor: polars_core::utils::NoNull, polars_core::utils::NoNull, polars_core::chunked_array::ChunkedArray, polars_arrow::array::primitive::PrimitiveArray, polars_arrow::array::primitive",
+   "disposition": "deferred",
+   "key": "polars_arrow:13277",
+   "path": "polars_arrow::legacy::trusted_len::rev::FromIteratorReversed::from_trusted_len_iter_rev"
+  },
+  {
+   "detail": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, T, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 325 wrapped types: core trait `core::iter::traits::iterator::Iterator` is not modelled]",
+   "disposition": "refused",
+   "key": "polars_arrow:13285",
+   "path": "polars_arrow::legacy::utils::CustomIterTools::collect_reversed"
+  },
+  {
+   "detail": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, T, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 325 wrapped types: core trait `core::iter::traits::iterator::Iterator` is not modelled]",
+   "disposition": "refused",
+   "key": "polars_arrow:13284",
+   "path": "polars_arrow::legacy::utils::CustomIterTools::collect_trusted"
+  },
+  {
+   "detail": "record 0120 (stage 3, concrete generic arrays): no wrapped implementor: polars_core::utils::NoNull, polars_core::utils::NoNull, polars_core::chunked_array::ChunkedArray, polars_core::chunked_array::ChunkedArray, polars_arrow::array::primitive::Prim",
+   "disposition": "deferred",
+   "key": "polars_arrow:13288",
+   "path": "polars_arrow::legacy::utils::FromTrustedLenIterator::from_iter_trusted_length"
+  }
+ ],
+ "counts": {
+  "arrow": {
+   "adapted": 20,
+   "deferred": 227,
+   "generated": 67,
+   "refused": 32
+  },
+  "arrow_available_not_reachable": 0,
+  "arrow_available_reachable": 87,
+  "cross_crate": 13,
+  "unreviewed": 0
+ },
+ "cross_crate": [
+  {
+   "from": "unsupported",
+   "key": "polars_core:4503",
+   "path": "polars_core::datatypes::dtype::DataType::from_arrow_field",
+   "review": "pass: borrows a wrapped Arrow Field, returns an owned DataType",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:4480",
+   "path": "polars_core::datatypes::dtype::DataType::to_arrow_field",
+   "review": "pass: returns an owned Arrow Field",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:884:4753",
+   "path": "polars_core::datatypes::field::Field as core::convert::From",
+   "review": "pass: an owned Field from a borrowed Arrow Field",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:4678",
+   "path": "polars_core::datatypes::field::Field::to_arrow",
+   "review": "pass: returns an owned Arrow Field",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:7349",
+   "path": "polars_core::frame::column::Column::rechunk_to_arrow",
+   "review": "pass: consumes a Column clone (Arc-shared), returns an owned ArrayRef",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:7521",
+   "path": "polars_core::frame::dataframe::DataFrame::rechunk_into_arrow",
+   "review": "pass: consumes a DataFrame clone (Arc-shared), returns owned ArrayRefs, one per column",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:7520",
+   "path": "polars_core::frame::dataframe::DataFrame::rechunk_to_arrow",
+   "review": "pass: borrows the frame, returns owned ArrayRefs, one per column",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:11319",
+   "path": "polars_core::series::Series::from_arrow",
+   "review": "pass: moves the ArrayRef in; a dtype mismatch is a PolarsError",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:11230",
+   "path": "polars_core::series::Series::from_chunk_and_dtype",
+   "review": "pass: moves the ArrayRef in; the dtype is checked first (series/from.rs: InvalidOperation on mismatch)",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:11310",
+   "path": "polars_core::series::Series::into_chunks",
+   "review": "pass: consumes a Series clone (Arc-shared), returns owned ArrayRefs",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:11225",
+   "path": "polars_core::series::Series::to_arrow",
+   "review": "pass: the chunk index is guarded (receiver_guards below_n_chunks) before the call",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_core:10424",
+   "path": "polars_core::series::arrow_export::categorical::CategoricalArrayToArrowConverter::build_values_array",
+   "review": "pass: returns an owned ArrayRef",
+   "to": "generated"
+  },
+  {
+   "from": "unsupported",
+   "key": "polars_dtype:38",
+   "path": "polars_dtype::categorical::mapping::CategoricalMapping::to_arrow",
+   "review": "pass: returns an owned ArrayRef",
+   "to": "generated"
+  }
+ ],
+ "reachable_arrow_types": [
+  "polars_arrow::bitmap::immutable::Bitmap",
+  "polars_arrow::datatypes::ArrowDataType",
+  "polars_arrow::datatypes::TimeUnit",
+  "polars_arrow::datatypes::field::Field",
+  "polars_arrow::datatypes::reshape::Dimension",
+  "polars_arrow::datatypes::reshape::ReshapeDimension",
+  "polars_arrow::legacy::kernels::time::Ambiguous",
+  "polars_arrow::legacy::kernels::time::Ambiguous::Err",
+  "polars_arrow::legacy::kernels::time::NonExistent",
+  "polars_arrow::trusted_len::TrustedLen",
+  "support::ArrayRef"
+ ],
+ "unreviewed": []
+}

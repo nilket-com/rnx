@@ -7,15 +7,31 @@ use rnx::rune;
 /// `polars_arrow::datatypes::ArrowDataType`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::arrow, name = ArrowDataType)]
-pub struct W_polars_arrow__datatypes__ArrowDataType(pub(crate) polars::prelude::datatypes::ArrowDataType);
+pub struct W_polars_arrow__datatypes__ArrowDataType(pub(crate) polars_arrow::datatypes::ArrowDataType);
 /// `polars_arrow::datatypes::TimeUnit`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::arrow, name = TimeUnit)]
-pub struct W_polars_arrow__datatypes__TimeUnit(pub(crate) polars::prelude::datatypes::ArrowTimeUnit);
+pub struct W_polars_arrow__datatypes__TimeUnit(pub(crate) polars_arrow::datatypes::TimeUnit);
+/// `polars_arrow::datatypes::field::Field`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = Field)]
+pub struct W_polars_arrow__datatypes__field__Field(pub(crate) polars_arrow::datatypes::Field);
+/// `polars_arrow::datatypes::reshape::Dimension`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = Dimension)]
+pub struct W_polars_arrow__datatypes__reshape__Dimension(pub(crate) polars_arrow::datatypes::reshape::Dimension);
 /// `polars_arrow::datatypes::reshape::ReshapeDimension`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::arrow, name = ReshapeDimension)]
-pub struct W_polars_arrow__datatypes__reshape__ReshapeDimension(pub(crate) polars::prelude::datatypes::ReshapeDimension);
+pub struct W_polars_arrow__datatypes__reshape__ReshapeDimension(pub(crate) polars_arrow::datatypes::reshape::ReshapeDimension);
+/// `polars_arrow::legacy::kernels::time::Ambiguous`
+#[derive(rune::Any)]
+#[rune(item = ::polars::arrow, name = Ambiguous)]
+pub struct W_polars_arrow__legacy__kernels__time__Ambiguous(pub(crate) polars_arrow::legacy::kernels::Ambiguous);
+/// `polars_arrow::legacy::kernels::time::NonExistent`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = NonExistent)]
+pub struct W_polars_arrow__legacy__kernels__time__NonExistent(pub(crate) polars_arrow::legacy::kernels::NonExistent);
 /// `polars_compute::rolling::QuantileMethod`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::compute, name = QuantileMethod)]
@@ -432,6 +448,10 @@ pub struct W_polars_core__series__amortized_iter__AmortSeries(pub(crate) polars:
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = NumericListOp)]
 pub struct W_polars_core__series__arithmetic__list__NumericListOp(pub(crate) polars::series::arithmetic::NumericListOp);
+/// `polars_core::series::arrow_export::categorical::CategoricalArrayToArrowConverter`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = CategoricalArrayToArrowConverter)]
+pub struct W_polars_core__series__arrow_export__categorical__CategoricalArrayToArrowConverter(pub(crate) polars::series::arrow_export::categorical::CategoricalArrayToArrowConverter);
 /// `polars_core::series::arrow_export::categorical::CategoricalToArrowConverter`
 #[derive(rune::Any)]
 #[rune(item = ::polars, name = CategoricalToArrowConverter)]
@@ -1220,7 +1240,11 @@ pub struct W_polars_utils__pl_path__PlRefPath(pub(crate) polars::polars_utils::p
 pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_arrow__datatypes__ArrowDataType>()?;
     m.ty::<W_polars_arrow__datatypes__TimeUnit>()?;
+    m.ty::<W_polars_arrow__datatypes__field__Field>()?;
+    m.ty::<W_polars_arrow__datatypes__reshape__Dimension>()?;
     m.ty::<W_polars_arrow__datatypes__reshape__ReshapeDimension>()?;
+    m.ty::<W_polars_arrow__legacy__kernels__time__Ambiguous>()?;
+    m.ty::<W_polars_arrow__legacy__kernels__time__NonExistent>()?;
     m.ty::<W_polars_compute__rolling__QuantileMethod>()?;
     m.ty::<W_polars_config__engine__Engine>()?;
     m.ty::<W_polars_core__chunked_array__builder__boolean__BooleanChunkedBuilder>()?;
@@ -1325,6 +1349,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_core__series__Series>()?;
     m.ty::<W_polars_core__series__amortized_iter__AmortSeries>()?;
     m.ty::<W_polars_core__series__arithmetic__list__NumericListOp>()?;
+    m.ty::<W_polars_core__series__arrow_export__categorical__CategoricalArrayToArrowConverter>()?;
     m.ty::<W_polars_core__series__arrow_export__categorical__CategoricalToArrowConverter>()?;
     m.ty::<W_polars_core__series__builder__SeriesBuilder>()?;
     m.ty::<W_polars_core__series__implementations__null__NullChunked>()?;

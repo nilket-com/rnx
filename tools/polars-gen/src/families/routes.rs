@@ -71,7 +71,11 @@ impl Family for OutOfScope {
 		"out_of_scope"
 	}
 	fn claim<'a>(&self, cx: &mut Claims<'a, '_>, c: &'a Callable) -> bool {
-		if cx.release.is_api(&c.krate) {
+		// record 0119: a deferred type's own callables stay out of scope, as in
+		// 0118 (a trait's methods are decided by their receivers instead)
+		let deferred_owner =
+			cx.release.deferred_type(&c.owner) && !matches!(c.kind.as_str(), "trait_method");
+		if cx.release.is_api(&c.krate) && !deferred_owner {
 			return false;
 		}
 		cx.out.entries.push(Entry {

@@ -9,6 +9,7 @@
 mod census;
 mod emit;
 mod families;
+mod freeze;
 mod model;
 mod oracle;
 mod pipeline;
@@ -47,6 +48,8 @@ const SELF_TESTS: &[fn()] = &[
 	crate::families::receivers::trait_receivers_self_test,
 	crate::families::generic_traits::generic_traits_self_test,
 	crate::families::std_facts::std_facts_self_test,
+	crate::freeze::freeze_self_test,
+	crate::families::receiver_guards::receiver_guards_self_test,
 	crate::families::protocols::protocols_self_test,
 	crate::families::serde::serde_self_test,
 	crate::families::generic_impls::generic_impls_self_test,
@@ -116,6 +119,21 @@ fn main() {
 	}
 	let world = World::new(&inv, &release, &buckets);
 	let (out, census) = pipeline::generate(&world, &inv, &release, &buckets);
+	// record 0119: every previously generated binding survives unchanged
+	if let Some(rel) = &release.families.frozen_bindings {
+		let frozen = freeze::load(&release_path, rel);
+		let problems = freeze::check(&frozen, &out.entries, &out.catalogue);
+		if !problems.is_empty() {
+			for p in &problems {
+				eprintln!("refusing to generate: {p}");
+			}
+			std::process::exit(2);
+		}
+		println!(
+			"frozen bindings: {} checked, none moved, no contract changed",
+			frozen.len()
+		);
+	}
 	emit::output::write(
 		out,
 		world,

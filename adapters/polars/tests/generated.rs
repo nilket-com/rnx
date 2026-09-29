@@ -1228,6 +1228,14 @@ fn generate_with(
 	let dir = root().join("target/0073").join(name);
 	let _ = std::fs::remove_dir_all(&dir);
 	std::fs::create_dir_all(&dir).unwrap();
+	// record 0119: a drift control mutates the release on purpose; the frozen
+	// bindings gate guards real releases (tools/polars-gen freeze self-test),
+	// so the mutated copy runs without it
+	let release: String = release
+		.lines()
+		.filter(|l| !l.starts_with("frozen_bindings = "))
+		.map(|l| format!("{l}\n"))
+		.collect();
 	std::fs::write(dir.join("release.toml"), release).unwrap();
 	let inv = match inventory_json {
 		Some(text) => {
