@@ -624,6 +624,10 @@ pub struct W_polars_io__csv__read__options__NullValuesCompiled(pub(crate) polars
 #[derive(rune::Any)]
 #[rune(item = ::polars, name = CountLines)]
 pub struct W_polars_io__csv__read__parser__CountLines(pub(crate) polars_io::csv::read::_csv_read_internal::CountLines);
+/// polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>> = `polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = CsvReader)]
+pub struct W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(pub(crate) polars_io::csv::read::CsvReader<std::io::Cursor<Vec<u8>>>);
 /// `polars_io::csv::write::options::CsvWriterOptions`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = CsvWriterOptions)]
@@ -640,10 +644,22 @@ pub struct W_polars_io__csv__write__options__SerializeOptions(pub(crate) polars_
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = CsvSerializer)]
 pub struct W_polars_io__csv__write__write_impl__CsvSerializer(pub(crate) polars_io::csv::write::CsvSerializer);
+/// polars_io::csv::write::writer::BatchedWriter<support::Sink> = `polars_io::csv::write::writer::BatchedWriter<support::Sink>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = CsvBatchedWriter)]
+pub struct W_polars_io__csv__write__writer__BatchedWriter_support__Sink(pub(crate) polars_io::csv::write::BatchedWriter<super::support::Sink>);
+/// polars_io::csv::write::writer::CsvWriter<support::Sink> = `polars_io::csv::write::writer::CsvWriter<support::Sink>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = CsvWriter)]
+pub struct W_polars_io__csv__write__writer__CsvWriter_support__Sink(pub(crate) polars_io::csv::write::CsvWriter<super::support::Sink>);
 /// `polars_io::file_cache::entry::FileCacheEntry`
 #[derive(rune::Any)]
 #[rune(item = ::polars, name = FileCacheEntry)]
 pub struct W_polars_io__file_cache__entry__FileCacheEntry(pub(crate) polars::io::file_cache::FileCacheEntry);
+/// polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>> = `polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = IpcReader)]
+pub struct W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(pub(crate) polars_io::ipc::IpcReader<std::io::Cursor<Vec<u8>>>);
 /// `polars_io::ipc::ipc_file::IpcScanOptions`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = IpcScanOptions)]
@@ -660,6 +676,10 @@ pub struct W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata(pub(crate) polars_io
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = IpcCompression)]
 pub struct W_polars_io__ipc__write__IpcCompression(pub(crate) polars_io::ipc::IpcCompression);
+/// polars_io::ipc::write::IpcWriter<support::Sink> = `polars_io::ipc::write::IpcWriter<support::Sink>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = IpcWriter)]
+pub struct W_polars_io__ipc__write__IpcWriter_support__Sink(pub(crate) polars_io::ipc::IpcWriter<super::support::Sink>);
 /// `polars_io::ipc::write::IpcWriterOptions`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = IpcWriterOptions)]
@@ -684,6 +704,10 @@ pub struct W_polars_io__options__HiveOptions(pub(crate) polars_io::prelude::Hive
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = RowIndex)]
 pub struct W_polars_io__options__RowIndex(pub(crate) polars_io::prelude::RowIndex);
+/// polars_io::parquet::metadata::FileMetadataRef = `alloc::sync::Arc<polars_parquet::parquet::metadata::file_metadata::FileMetadata>`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = FileMetadataRef)]
+pub struct W_polars_io__parquet__metadata__FileMetadataRef(pub(crate) polars_io::parquet::metadata::FileMetadataRef);
 /// `polars_io::parquet::read::options::ParallelStrategy`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = ParallelStrategy)]
@@ -696,6 +720,14 @@ pub struct W_polars_io__parquet__read__options__ParquetOptions(pub(crate) polars
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = PrefilterMaskSetting)]
 pub struct W_polars_io__parquet__read__read_impl__PrefilterMaskSetting(pub(crate) polars_io::parquet::read::_internal::PrefilterMaskSetting);
+/// polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>> = `polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ParquetReader)]
+pub struct W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(pub(crate) polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>);
+/// polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink> = `polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ParquetBatchedWriter)]
+pub struct W_polars_io__parquet__write__batched_writer__BatchedWriter_support__Sink(pub(crate) polars_io::parquet::write::BatchedWriter<super::support::Sink>);
 /// `polars_io::parquet::write::key_value_metadata::KeyValueMetadata`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = KeyValueMetadata)]
@@ -708,6 +740,10 @@ pub struct W_polars_io__parquet__write__options__ParquetCompression(pub(crate) p
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = ParquetWriteOptions)]
 pub struct W_polars_io__parquet__write__options__ParquetWriteOptions(pub(crate) polars_io::parquet::write::ParquetWriteOptions);
+/// polars_io::parquet::write::writer::ParquetWriter<support::Sink> = `polars_io::parquet::write::writer::ParquetWriter<support::Sink>`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = ParquetWriter)]
+pub struct W_polars_io__parquet__write__writer__ParquetWriter_support__Sink(pub(crate) polars_io::parquet::write::ParquetWriter<super::support::Sink>);
 /// `polars_io::predicates::ColumnPredicateExpr`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = ColumnPredicateExpr)]
@@ -1337,27 +1373,36 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_io__csv__read__options__NullValues>()?;
     m.ty::<W_polars_io__csv__read__options__NullValuesCompiled>()?;
     m.ty::<W_polars_io__csv__read__parser__CountLines>()?;
+    m.ty::<W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__>()?;
     m.ty::<W_polars_io__csv__write__options__CsvWriterOptions>()?;
     m.ty::<W_polars_io__csv__write__options__QuoteStyle>()?;
     m.ty::<W_polars_io__csv__write__options__SerializeOptions>()?;
     m.ty::<W_polars_io__csv__write__write_impl__CsvSerializer>()?;
+    m.ty::<W_polars_io__csv__write__writer__BatchedWriter_support__Sink>()?;
+    m.ty::<W_polars_io__csv__write__writer__CsvWriter_support__Sink>()?;
     m.ty::<W_polars_io__file_cache__entry__FileCacheEntry>()?;
+    m.ty::<W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__>()?;
     m.ty::<W_polars_io__ipc__ipc_file__IpcScanOptions>()?;
     m.ty::<W_polars_io__ipc__ipc_reader_async__IpcReadOptions>()?;
     m.ty::<W_polars_io__ipc__pl_ipc_metadata__PlIpcMetadata>()?;
     m.ty::<W_polars_io__ipc__write__IpcCompression>()?;
+    m.ty::<W_polars_io__ipc__write__IpcWriter_support__Sink>()?;
     m.ty::<W_polars_io__ipc__write__IpcWriterOptions>()?;
     m.ty::<W_polars_io__metrics__IOMetrics>()?;
     m.ty::<W_polars_io__metrics__OptIOMetrics>()?;
     m.ty::<W_polars_io__options__ExternalCompression>()?;
     m.ty::<W_polars_io__options__HiveOptions>()?;
     m.ty::<W_polars_io__options__RowIndex>()?;
+    m.ty::<W_polars_io__parquet__metadata__FileMetadataRef>()?;
     m.ty::<W_polars_io__parquet__read__options__ParallelStrategy>()?;
     m.ty::<W_polars_io__parquet__read__options__ParquetOptions>()?;
     m.ty::<W_polars_io__parquet__read__read_impl__PrefilterMaskSetting>()?;
+    m.ty::<W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__>()?;
+    m.ty::<W_polars_io__parquet__write__batched_writer__BatchedWriter_support__Sink>()?;
     m.ty::<W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata>()?;
     m.ty::<W_polars_io__parquet__write__options__ParquetCompression>()?;
     m.ty::<W_polars_io__parquet__write__options__ParquetWriteOptions>()?;
+    m.ty::<W_polars_io__parquet__write__writer__ParquetWriter_support__Sink>()?;
     m.ty::<W_polars_io__predicates__ColumnPredicateExpr>()?;
     m.ty::<W_polars_io__predicates__ColumnPredicates>()?;
     m.ty::<W_polars_io__predicates__ColumnStats>()?;

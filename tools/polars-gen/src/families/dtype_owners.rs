@@ -38,6 +38,14 @@ pub(crate) fn synthetic_wrappers(world: &World) -> Result<Vec<(String, Wrapper)>
 		if !o.generic || !matches!(o.kind.as_str(), "struct" | "enum") {
 			return Err(format!("{}: not a generic struct or enum", d.owner));
 		}
+		// record 0118: a lifetime-bearing owner (`JsonReader<'a, R>`) cannot be
+		// a wrapper's owned value
+		if o.lifetime {
+			return Err(format!(
+				"{}: carries a lifetime parameter, which a wrapper cannot own",
+				d.owner
+			));
+		}
 		// the listed generic is the owner's one type parameter, as its
 		// recorded generic impl heads name it (a specialized head, all of
 		// whose arguments are concrete, instantiates nothing and is skipped)
@@ -74,11 +82,16 @@ pub(crate) fn synthetic_wrappers(world: &World) -> Result<Vec<(String, Wrapper)>
 		let owner_spell =
 			spell_type(world, &d.owner).ok_or_else(|| format!("{}: no public path", d.owner))?;
 		for (t, name) in d.types.iter().zip(&d.names) {
-			if !world.types.contains_key(t) {
+			// record 0118: the in-memory source and sink, spelled by the adapter
+			let io_spell = crate::families::std_facts::io_type_spelling(t);
+			if io_spell.is_none() && !world.types.contains_key(t) {
 				return Err(format!("{}: type {t} not in the inventory", d.owner));
 			}
-			let t_spell = spell_type(world, t)
-				.ok_or_else(|| format!("{}: type {t} has no public path", d.owner))?;
+			let t_spell = match io_spell {
+				Some(s) => s.to_string(),
+				None => spell_type(world, t)
+					.ok_or_else(|| format!("{}: type {t} has no public path", d.owner))?,
+			};
 			let identity = format!("{}<{t}>", d.owner);
 			out.push((
 				identity.clone(),
@@ -116,32 +129,97 @@ fn spell_type(world: &World, path: &str) -> Option<String> {
 /// wrapper) and one generated method returning something other than the
 /// wrapper or unit; otherwise the listing is refused by name.
 pub(crate) fn check_reachable(world: &World, entries: &[crate::emit::Entry]) -> Result<(), String> {
-	for d in &world.release.families.dtype_instantiations {
-		for t in &d.types {
-			let identity = format!("{}<{t}>", d.owner);
-			let mut calls: Vec<(String, String)> = Vec::new();
-			for e in entries.iter().filter(|e| e.status == "generated") {
-				for b in &e.bindings {
-					if b.receiver.as_deref() != Some(identity.as_str()) {
-						continue;
-					}
-					if let Some(info) = b.info.as_ref().or(e.oracle.as_ref()) {
-						calls.push((
-							info.receiver.clone(),
-							info.ret_canonical.clone().unwrap_or_else(|| "()".into()),
-						));
-					}
+	// every listed identity, with the type its listing binds the generic to
+	let listed: Vec<(String, String, String)> = world
+		.release
+		.families
+		.dtype_instantiations
+		.iter()
+		.flat_map(|d| {
+			d.types
+				.iter()
+				.map(|t| (format!("{}<{t}>", d.owner), d.generic.clone(), t.clone()))
+				.collect::<Vec<_>>()
+		})
+		.collect();
+	let mut calls: std::collections::BTreeMap<&str, Vec<(String, String)>> = Default::default();
+	for (identity, generic, t) in &listed {
+		let subst: std::collections::BTreeMap<String, String> =
+			[(generic.clone(), t.clone())].into();
+		for e in entries.iter().filter(|e| e.status == "generated") {
+			for b in &e.bindings {
+				if b.receiver.as_deref() != Some(identity.as_str()) {
+					continue;
 				}
-			}
-			let (construct, result) = reachable(&identity, &calls);
-			if !(construct && result) {
-				return Err(format!(
-					"{identity}: no script path from construction to a result (constructor {construct}, result {result})"
-				));
+				if let Some(info) = b.info.as_ref().or(e.oracle.as_ref()) {
+					let ret = info.ret_canonical.clone().unwrap_or_else(|| "()".into());
+					calls.entry(identity).or_default().push((
+						info.receiver.clone(),
+						crate::world::proof::subst_params(&ret, &subst),
+					));
+				}
 			}
 		}
 	}
-	Ok(())
+	let ids: Vec<&str> = listed.iter().map(|(id, _, _)| id.as_str()).collect();
+	let constructed = constructed(&ids, &calls);
+	let mut refused = Vec::new();
+	for (identity, _, _) in &listed {
+		let (_, result) = reachable(
+			identity,
+			calls.get(identity.as_str()).map_or(&[][..], |v| v),
+		);
+		let construct = constructed.contains(identity.as_str());
+		if !(construct && result) {
+			refused.push(format!(
+				"{identity}: no script path from construction to a result (constructor {construct}, result {result})"
+			));
+		}
+	}
+	if refused.is_empty() {
+		Ok(())
+	} else {
+		Err(refused.join("; "))
+	}
+}
+
+/// Record 0118: the listed wrappers a script can construct: by a
+/// constructor of their own, or by a method of a constructed listed wrapper
+/// that returns them (`CsvWriter<Sink>::batched` gives `BatchedWriter<Sink>`),
+/// to a fixpoint. `calls` are each wrapper's (receiver, substituted return).
+pub(crate) fn constructed<'a>(
+	ids: &[&'a str],
+	calls: &std::collections::BTreeMap<&str, Vec<(String, String)>>,
+) -> std::collections::BTreeSet<&'a str> {
+	let own = |id: &str| calls.get(id).map_or(&[][..], |v| v);
+	let mut done: std::collections::BTreeSet<&str> = ids
+		.iter()
+		.copied()
+		.filter(|id| reachable(id, own(id)).0)
+		.collect();
+	loop {
+		let more: Vec<&str> = ids
+			.iter()
+			.copied()
+			.filter(|id| !done.contains(id))
+			.filter(|id| {
+				done.iter().any(|from| {
+					own(from).iter().any(|(recv, ret)| {
+						recv != "none"
+							&& (ret == id
+								|| ret
+									.strip_prefix("polars_error::PolarsResult<")
+									.and_then(|r| r.strip_suffix('>'))
+									== Some(*id))
+					})
+				})
+			})
+			.collect();
+		if more.is_empty() {
+			return done;
+		}
+		done.extend(more);
+	}
 }
 
 /// Whether the generated calls on `identity` (receiver, return) include a
@@ -347,6 +425,124 @@ pub(crate) fn dtype_owners_self_test() {
 		),
 		(true, true)
 	);
+	// record 0118: construction through a constructed wrapper's method, to a
+	// fixpoint; never through an unconstructed one
+	let (w, bw, orphan) = ("W<Sink>", "BW<Sink>", "O<Sink>");
+	let calls: std::collections::BTreeMap<&str, Vec<(String, String)>> = [
+		(
+			w,
+			vec![
+				c("none", "Self"),
+				c("self", "polars_error::PolarsResult<BW<Sink>>"),
+			],
+		),
+		(bw, vec![c("&mut self", "polars_error::PolarsResult<()>")]),
+		(orphan, vec![c("&self", "bool")]),
+	]
+	.into();
+	let got = constructed(&[w, bw, orphan], &calls);
+	assert!(got.contains(w) && got.contains(bw), "{got:?}");
+	assert!(
+		!got.contains(orphan),
+		"no constructor and no constructed parent"
+	);
+	let calls2: std::collections::BTreeMap<&str, Vec<(String, String)>> = [
+		(w, vec![c("self", "polars_error::PolarsResult<BW<Sink>>")]),
+		(bw, vec![c("&mut self", "polars_error::PolarsResult<()>")]),
+	]
+	.into();
+	assert!(
+		constructed(&[w, bw], &calls2).is_empty(),
+		"a parent that is not constructed constructs nothing"
+	);
+	// record 0118: an in-memory I/O type instantiates without an inventory
+	// record, spelled by the adapter; a lifetime-bearing owner is refused
+	let cursor = crate::families::std_facts::CURSOR;
+	let mut w3 = World::new(
+		&inv,
+		&Release {
+			families: FamilyTables::default(),
+			..r.clone()
+		},
+		&["mechanical"],
+	);
+	w3.release.families.dtype_instantiations.push(listing(
+		owner,
+		vec![cursor],
+		vec!["CBuilder"],
+		"c",
+	));
+	let ws = synthetic_wrappers(&w3).unwrap();
+	assert!(
+		ws[0].1.spell.ends_with("Builder<std::io::Cursor<Vec<u8>>>"),
+		"{}",
+		ws[0].1.spell
+	);
+	w3.types.get_mut(owner).unwrap().lifetime = true;
+	assert!(
+		synthetic_wrappers(&w3)
+			.err()
+			.unwrap()
+			.contains("carries a lifetime parameter")
+	);
+	// record 0118: a head parameter re-stated in a method where-clause is the
+	// head's, moved to the proof; a true function generic is untouched
+	let mut m = method("m", &format!("{owner}<T>"));
+	m.generics_canonical = vec![
+		("T".into(), "core::io::write::Write".into()),
+		("F".into(), "core::marker::Send".into()),
+	];
+	let moved = crate::census::head_bound_generics(&m);
+	assert_eq!(
+		moved.impl_where,
+		vec!["T: core::io::write::Write".to_string()]
+	);
+	assert_eq!(
+		moved.generics_canonical,
+		vec![("F".to_string(), "core::marker::Send".to_string())]
+	);
+	// record 0118: a call on a `Sink` instantiation is one sink operation, its
+	// fallible conversions hoisted before it; any other call is not wrapped
+	let sink = crate::families::std_facts::SINK;
+	let r4 = world_with(listing(
+		owner,
+		vec![sink, a],
+		vec!["SBuilder", "ABuilder"],
+		"c",
+	));
+	let w4 = World::new(&inv, &r4, &["mechanical"]);
+	let mut m = method("m", &format!("{owner}<T>"));
+	m.params = vec![crate::model::Param {
+		name: "sep".into(),
+		ty: "u8".into(),
+		ty_canonical: "u8".into(),
+	}];
+	let emit = |identity: &str| {
+		let mut out = crate::emit::Emitted {
+			from_names: Default::default(),
+			functions: String::new(),
+			registrations: vec![],
+			catalogue: vec![],
+			entries: vec![],
+			taken: Default::default(),
+			fn_index: 0,
+		};
+		crate::emit::callable::emit_method(&w4, &mut out, &m, identity, None, false);
+		assert_eq!(
+			out.entries[0].status, "generated",
+			"{:?}",
+			out.entries[0].reason
+		);
+		out.functions
+	};
+	let f = emit(&format!("{owner}<{sink}>"));
+	let (hoist, op) = (
+		f.find("let __arg1 = support::narrow::<u8>(sep").expect(&f),
+		f.find("support::sink_op_infallible(").expect(&f),
+	);
+	assert!(hoist < op, "the conversion runs before the operation: {f}");
+	let g = emit(&format!("{owner}<{a}>"));
+	assert!(!g.contains("sink_op"), "not a sink call: {g}");
 	println!("dtype-owners self-test: ok");
 }
 

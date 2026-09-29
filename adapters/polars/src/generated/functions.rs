@@ -5693,6 +5693,9 @@ fn f_cd592380__at_idx_polars_core__frame__dataframe__dataframe(this: &DataFrame,
 /// Polars: `polars_core::frame::dataframe::DataFrame::select_to_vec`. select_to_vec(selection: vector of string) -> result of vector of Column (fallible)
 #[rune::function(instance, path = select_to_vec)]
 fn f_d34cc6ee__to_vec_polars_core__frame__dataframe__dataframe(this: &DataFrame, selection: rune::Value) -> Result<Vec<W_polars_core__frame__column__Column>, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&selection, "selection")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "selection")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::DataFrame::select_to_vec", move || <polars::frame::DataFrame>::select_to_vec(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let mut __v = Vec::new(); for __r in __r { __v.push(W_polars_core__frame__column__Column(__r)); } __v } }) }
+/// Polars: `polars_core::frame::dataframe::DataFrame::serialize_into_writer`. serialize_into_writer(writer: polars::Sink) -> result of unit (fallible)
+#[rune::function(instance, path = serialize_into_writer)]
+fn f_997dc7ce__writer_polars_core__frame__dataframe__dataframe(this: &mut DataFrame, writer: &support::Sink) -> Result<(), Error> { let mut __t0 = writer.clone(); let __arg0 = &mut this.0; let __arg1 = &mut __t0; let __r = crate::engine::run("polars::DataFrame::serialize_into_writer", move || support::sink_op("polars::DataFrame::serialize_into_writer", || <polars::frame::DataFrame>::serialize_into_writer(__arg0, __arg1))).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
 /// Polars: `polars_core::frame::dataframe::DataFrame::serialize_to_bytes`. serialize_to_bytes() -> result of vector of int (fallible)
 #[rune::function(instance, path = serialize_to_bytes)]
 fn f_177133a5_o_bytes_polars_core__frame__dataframe__dataframe(this: &mut DataFrame) -> Result<Vec<i64>, Error> { let __arg0 = &mut this.0; let __r = crate::engine::run("polars::DataFrame::serialize_to_bytes", move || <polars::frame::DataFrame>::serialize_to_bytes(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let mut __v = Vec::new(); for __r in __r { __v.push((__r as i64)); } __v } }) }
@@ -6126,6 +6129,9 @@ fn f_4e34f57c_es__series__sample_n_polars_core__series__series(this: &W_polars_c
 /// Polars: `polars_core::series::Series::select_chunk`. select_chunk(i: int) -> Series (fallible)
 #[rune::function(instance, path = select_chunk)]
 fn f_593c6edd_series__select_chunk_polars_core__series__series(this: &W_polars_core__series__Series, i: i64) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = support::narrow::<usize>(i, "i")?; let __r = crate::engine::run("polars::Series::select_chunk", move || <polars::series::Series>::select_chunk(__arg0, __arg1)).map_err(Error::engine)?; Ok(W_polars_core__series__Series(__r)) }
+/// Polars: `polars_core::series::Series::serialize_into_writer`. serialize_into_writer(writer: polars::Sink) -> result of unit (fallible)
+#[rune::function(instance, path = serialize_into_writer)]
+fn f_23009123_erialize_into_writer_polars_core__series__series(this: &W_polars_core__series__Series, writer: &support::Sink) -> Result<(), Error> { let mut __t0 = writer.clone(); let __arg0 = &this.0; let __arg1 = &mut __t0; let __r = crate::engine::run("polars::Series::serialize_into_writer", move || support::sink_op("polars::Series::serialize_into_writer", || <polars::series::Series>::serialize_into_writer(__arg0, __arg1))).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
 /// Polars: `polars_core::series::Series::serialize_to_bytes`. serialize_to_bytes() -> result of vector of int (fallible)
 #[rune::function(instance, path = serialize_to_bytes)]
 fn f_8b34a5f2___serialize_to_bytes_polars_core__series__series(this: &W_polars_core__series__Series) -> Result<Vec<i64>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::Series::serialize_to_bytes", move || <polars::series::Series>::serialize_to_bytes(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; { let mut __v = Vec::new(); for __r in __r { __v.push((__r as i64)); } __v } }) }
@@ -6678,18 +6684,123 @@ fn f_870338a8_nt_rows_polars_io__csv__read__parser__countlines(this: &W_polars_i
 /// Polars: `polars_io::csv::read::parser::CountLines::new`. new(quote_char: option of int, eol_char: int, comment_prefix: option of CommentPrefix) -> CountLines (fallible)
 #[rune::function(free, path = W_polars_io__csv__read__parser__CountLines::new)]
 fn f_41f05be3_es__new_polars_io__csv__read__parser__countlines(quote_char: Option<i64>, eol_char: i64, comment_prefix: Option<rune::Value>) -> Result<W_polars_io__csv__read__parser__CountLines, Error> { let __r = <polars_io::csv::read::_csv_read_internal::CountLines>::new(match quote_char { Some(v) => Some(support::narrow::<u8>(v, "v")?), None => None }, support::narrow::<u8>(eol_char, "eol_char")?, match comment_prefix { Some(v) => Some(support::take::<W_polars_io__csv__read__options__CommentPrefix>(&v, "v")?.0), None => None }); Ok(W_polars_io__csv__read__parser__CountLines(__r)) }
+/// Sets custom CSV read options.
+/// Polars: `polars_io::csv::read::reader::CsvReader::with_options`. with_options(options: CsvReadOptions) -> CsvReader
+#[rune::function(instance, path = with_options)]
+fn f_b9d2ddbb_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, options: &W_polars_io__csv__read__options__CsvReadOptions) -> W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__ { let __r = <polars_io::csv::read::CsvReader<std::io::Cursor<Vec<u8>>>>::with_options(this.0, options.0.clone()); W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r) }
+/// Writes the header of the csv file if not done already. Returns the total size of the file.
+/// Polars: `polars_io::csv::write::writer::BatchedWriter::finish`. finish() -> result of unit (fallible)
+#[rune::function(instance, path = finish)]
+fn f_757537b3_csv__write__writer__batchedwriter_support__sink_(this: &mut W_polars_io__csv__write__writer__BatchedWriter_support__Sink) -> Result<(), Error> { let __arg0 = &mut this.0; let __r = support::sink_op("polars::CsvBatchedWriter::finish", || <polars_io::csv::write::BatchedWriter<super::support::Sink>>::finish(__arg0)); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Write a batch to the csv writer.
+/// Polars: `polars_io::csv::write::writer::BatchedWriter::write_batch`. write_batch(df: DataFrame) -> result of unit (fallible)
+#[rune::function(instance, path = write_batch)]
+fn f_9c75fd83_csv__write__writer__batchedwriter_support__sink_(this: &mut W_polars_io__csv__write__writer__BatchedWriter_support__Sink, df: &DataFrame) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &df.0; let __r = crate::engine::run("polars::CsvBatchedWriter::write_batch", move || support::sink_op("polars::CsvBatchedWriter::write_batch", || <polars_io::csv::write::BatchedWriter<super::support::Sink>>::write_batch(__arg0, __arg1))).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_io::csv::write::writer::CsvWriter::batched`. batched(schema: Schema) -> result of CsvBatchedWriter (fallible)
+#[rune::function(instance, path = batched)]
+fn f_4ecb4b1d_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, schema: &W_polars_core__schema__Schema) -> Result<W_polars_io__csv__write__writer__BatchedWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = &schema.0; let __r = support::sink_op("polars::CsvWriter::batched", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::batched(__arg0, __arg1)); Ok({ let __r = __r.map_err(Error::from)?; W_polars_io__csv__write__writer__BatchedWriter_support__Sink(__r) }) }
+/// Set whether to write UTF-8 UTF8_BOM.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::include_bom`. include_bom(include_bom: bool) -> CsvWriter
+#[rune::function(instance, path = include_bom)]
+fn f_1a4590ec_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, include_bom: bool) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = include_bom; let __r = support::sink_op_infallible("polars::CsvWriter::include_bom", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::include_bom(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Set whether to write headers.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::include_header`. include_header(include_header: bool) -> CsvWriter
+#[rune::function(instance, path = include_header)]
+fn f_635d9659_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, include_header: bool) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = include_header; let __r = support::sink_op_infallible("polars::CsvWriter::include_header", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::include_header(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Polars: `polars_io::csv::write::writer::CsvWriter::n_threads`. n_threads(n_threads: int) -> CsvWriter (fallible)
+#[rune::function(instance, path = n_threads)]
+fn f_55763263_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, n_threads: i64) -> Result<W_polars_io__csv__write__writer__CsvWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = support::narrow::<usize>(n_threads, "n_threads")?; let __r = support::sink_op_infallible("polars::CsvWriter::n_threads", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::n_threads(__arg0, __arg1)); Ok(W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r)) }
+/// Set the CSV file's date format.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_date_format`. with_date_format(format: option of string) -> CsvWriter
+#[rune::function(instance, path = with_date_format)]
+fn f_1c78dba9_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, format: Option<String>) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = match format { Some(v) => Some(p::PlSmallStr::from(v.as_str())), None => None }; let __r = support::sink_op_infallible("polars::CsvWriter::with_date_format", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_date_format(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Set the CSV file's datetime format.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_datetime_format`. with_datetime_format(format: option of string) -> CsvWriter
+#[rune::function(instance, path = with_datetime_format)]
+fn f_49b06704_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, format: Option<String>) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = match format { Some(v) => Some(p::PlSmallStr::from(v.as_str())), None => None }; let __r = support::sink_op_infallible("polars::CsvWriter::with_datetime_format", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_datetime_format(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Set the CSV decimal separator.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_decimal_comma`. with_decimal_comma(decimal_comma: bool) -> CsvWriter
+#[rune::function(instance, path = with_decimal_comma)]
+fn f_7621ff9f_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, decimal_comma: bool) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = decimal_comma; let __r = support::sink_op_infallible("polars::CsvWriter::with_decimal_comma", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_decimal_comma(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Set the CSV file's float precision.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_float_precision`. with_float_precision(precision: option of int) -> CsvWriter (fallible)
+#[rune::function(instance, path = with_float_precision)]
+fn f_b6390397_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, precision: Option<i64>) -> Result<W_polars_io__csv__write__writer__CsvWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = match precision { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }; let __r = support::sink_op_infallible("polars::CsvWriter::with_float_precision", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_float_precision(__arg0, __arg1)); Ok(W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r)) }
+/// Set the CSV file's forced scientific notation for floats.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_float_scientific`. with_float_scientific(scientific: option of bool) -> CsvWriter
+#[rune::function(instance, path = with_float_scientific)]
+fn f_a1f8cf34_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, scientific: Option<bool>) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = match scientific { Some(v) => Some(v), None => None }; let __r = support::sink_op_infallible("polars::CsvWriter::with_float_scientific", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_float_scientific(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Set the CSV file's line terminator.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_line_terminator`. with_line_terminator(line_terminator: string) -> CsvWriter
+#[rune::function(instance, path = with_line_terminator)]
+fn f_0ca11654_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, line_terminator: &str) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = p::PlSmallStr::from(line_terminator); let __r = support::sink_op_infallible("polars::CsvWriter::with_line_terminator", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_line_terminator(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Set the CSV file's null value representation.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_null_value`. with_null_value(null_value: string) -> CsvWriter
+#[rune::function(instance, path = with_null_value)]
+fn f_e2ef2a2d_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, null_value: &str) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = p::PlSmallStr::from(null_value); let __r = support::sink_op_infallible("polars::CsvWriter::with_null_value", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_null_value(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Set the single byte character used for quoting.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_quote_char`. with_quote_char(char: int) -> CsvWriter (fallible)
+#[rune::function(instance, path = with_quote_char)]
+fn f_d17e7c43_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, char: i64) -> Result<W_polars_io__csv__write__writer__CsvWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = support::narrow::<u8>(char, "char")?; let __r = support::sink_op_infallible("polars::CsvWriter::with_quote_char", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_quote_char(__arg0, __arg1)); Ok(W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r)) }
+/// Set the CSV file's quoting behavior. See more on [`QuoteStyle`].
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_quote_style`. with_quote_style(quote_style: QuoteStyle) -> CsvWriter
+#[rune::function(instance, path = with_quote_style)]
+fn f_4d863aa8_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, quote_style: &W_polars_io__csv__write__options__QuoteStyle) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = quote_style.0.clone(); let __r = support::sink_op_infallible("polars::CsvWriter::with_quote_style", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_quote_style(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Set the CSV file's column separator as a byte character.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_separator`. with_separator(separator: int) -> CsvWriter (fallible)
+#[rune::function(instance, path = with_separator)]
+fn f_9294b355_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, separator: i64) -> Result<W_polars_io__csv__write__writer__CsvWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = support::narrow::<u8>(separator, "separator")?; let __r = support::sink_op_infallible("polars::CsvWriter::with_separator", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_separator(__arg0, __arg1)); Ok(W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r)) }
+/// Set the CSV file's time format.
+/// Polars: `polars_io::csv::write::writer::CsvWriter::with_time_format`. with_time_format(format: option of string) -> CsvWriter
+#[rune::function(instance, path = with_time_format)]
+fn f_8e0065da_io__csv__write__writer__csvwriter_support__sink_(this: W_polars_io__csv__write__writer__CsvWriter_support__Sink, format: Option<String>) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = this.0; let __arg1 = match format { Some(v) => Some(p::PlSmallStr::from(v.as_str())), None => None }; let __r = support::sink_op_infallible("polars::CsvWriter::with_time_format", || <polars_io::csv::write::CsvWriter<super::support::Sink>>::with_time_format(__arg0, __arg1)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
 /// Polars: `polars_io::file_cache::entry::FileCacheEntry::update_ttl`. update_ttl(ttl: int) -> unit (fallible)
 #[rune::function(instance, path = update_ttl)]
 fn f_adc3db55_ttl_polars_io__file_cache__entry__filecacheentry(this: &W_polars_io__file_cache__entry__FileCacheEntry, ttl: i64) -> Result<(), Error> { let __r = <polars::io::file_cache::FileCacheEntry>::update_ttl(&this.0, support::narrow::<u64>(ttl, "ttl")?); Ok(__r) }
 /// Polars: `polars_io::file_cache::entry::FileCacheEntry::uri`. uri() -> PlRefPath
 #[rune::function(instance, path = uri)]
 fn f_4ec56503_uri_polars_io__file_cache__entry__filecacheentry(this: &W_polars_io__file_cache__entry__FileCacheEntry) -> W_polars_utils__pl_path__PlRefPath { let __r = <polars::io::file_cache::FileCacheEntry>::uri(&this.0); { let __r = (__r).clone(); W_polars_utils__pl_path__PlRefPath(__r) } }
+/// Columns to select/ project
+/// Polars: `polars_io::ipc::ipc_file::IpcReader::with_columns`. with_columns(columns: option of vector of string) -> IpcReader (fallible)
+#[rune::function(instance, path = with_columns)]
+fn f_6003823c_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, columns: Option<rune::Value>) -> Result<W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::ipc::IpcReader<std::io::Cursor<Vec<u8>>>>::with_columns(this.0, match columns { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?), None => None }); Ok(W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Polars: `polars_io::ipc::ipc_file::IpcReader::with_hive_partition_columns`. with_hive_partition_columns(columns: option of vector of Series) -> IpcReader (fallible)
+#[rune::function(instance, path = with_hive_partition_columns)]
+fn f_50b27060_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, columns: Option<rune::Value>) -> Result<W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __arg0 = this.0; let __arg1 = match columns { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__series__Series>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = crate::engine::run("polars::IpcReader::with_hive_partition_columns", move || <polars_io::ipc::IpcReader<std::io::Cursor<Vec<u8>>>>::with_hive_partition_columns(__arg0, __arg1)).map_err(Error::engine)?; Ok(W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Stop reading when `n` rows are read.
+/// Polars: `polars_io::ipc::ipc_file::IpcReader::with_n_rows`. with_n_rows(num_rows: option of int) -> IpcReader (fallible)
+#[rune::function(instance, path = with_n_rows)]
+fn f_59ea58aa_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, num_rows: Option<i64>) -> Result<W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::ipc::IpcReader<std::io::Cursor<Vec<u8>>>>::with_n_rows(this.0, match num_rows { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Set the reader's column projection. This counts from 0, meaning that `vec![0, 4]` would select the 1st and 5th column.
+/// Polars: `polars_io::ipc::ipc_file::IpcReader::with_projection`. with_projection(projection: option of vector of int) -> IpcReader (fallible)
+#[rune::function(instance, path = with_projection)]
+fn f_9f325852_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, projection: Option<rune::Value>) -> Result<W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::ipc::IpcReader<std::io::Cursor<Vec<u8>>>>::with_projection(this.0, match projection { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<usize>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }); Ok(W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Add a row index column.
+/// Polars: `polars_io::ipc::ipc_file::IpcReader::with_row_index`. with_row_index(row_index: option of RowIndex) -> IpcReader (fallible)
+#[rune::function(instance, path = with_row_index)]
+fn f_2fd91572_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, row_index: Option<rune::Value>) -> Result<W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::ipc::IpcReader<std::io::Cursor<Vec<u8>>>>::with_row_index(this.0, match row_index { Some(v) => Some(support::take::<W_polars_io__options__RowIndex>(&v, "v")?.0), None => None }); Ok(W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
 /// Polars: `polars_io::ipc::ipc_reader_async::IpcReadOptions::with_row_index`. with_row_index(row_index: option of RowIndex) -> IpcReadOptions (fallible)
 #[rune::function(instance, path = with_row_index)]
 fn f_703f050f_polars_io__ipc__ipc_reader_async__ipcreadoptions(this: &W_polars_io__ipc__ipc_reader_async__IpcReadOptions, row_index: Option<rune::Value>) -> Result<W_polars_io__ipc__ipc_reader_async__IpcReadOptions, Error> { let __r = <polars_io::ipc::IpcReadOptions>::with_row_index(this.0.clone(), match row_index { Some(v) => Some(support::take::<W_polars_io__options__RowIndex>(&v, "v")?.0), None => None }); Ok(W_polars_io__ipc__ipc_reader_async__IpcReadOptions(__r)) }
 /// Polars: `polars_io::ipc::ipc_reader_async::IpcReadOptions::with_row_limit`. with_row_limit(row_limit: option of int) -> IpcReadOptions (fallible)
 #[rune::function(instance, path = with_row_limit)]
 fn f_65e18fa9_polars_io__ipc__ipc_reader_async__ipcreadoptions(this: &W_polars_io__ipc__ipc_reader_async__IpcReadOptions, row_limit: Option<i64>) -> Result<W_polars_io__ipc__ipc_reader_async__IpcReadOptions, Error> { let __r = <polars_io::ipc::IpcReadOptions>::with_row_limit(this.0.clone(), match row_limit { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_io__ipc__ipc_reader_async__IpcReadOptions(__r)) }
+/// Polars: `polars_io::ipc::write::IpcWriter::with_compat_level`. with_compat_level(compat_level: CompatLevel) -> IpcWriter
+#[rune::function(instance, path = with_compat_level)]
+fn f_132a6528__polars_io__ipc__write__ipcwriter_support__sink_(this: W_polars_io__ipc__write__IpcWriter_support__Sink, compat_level: &W_polars_core__datatypes__dtype__CompatLevel) -> W_polars_io__ipc__write__IpcWriter_support__Sink { let __arg0 = this.0; let __arg1 = compat_level.0.clone(); let __r = support::sink_op_infallible("polars::IpcWriter::with_compat_level", || <polars_io::ipc::IpcWriter<super::support::Sink>>::with_compat_level(__arg0, __arg1)); W_polars_io__ipc__write__IpcWriter_support__Sink(__r) }
+/// Set the compression used. Defaults to None.
+/// Polars: `polars_io::ipc::write::IpcWriter::with_compression`. with_compression(compression: option of IpcCompression) -> IpcWriter (fallible)
+#[rune::function(instance, path = with_compression)]
+fn f_51c745d6__polars_io__ipc__write__ipcwriter_support__sink_(this: W_polars_io__ipc__write__IpcWriter_support__Sink, compression: Option<rune::Value>) -> Result<W_polars_io__ipc__write__IpcWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = match compression { Some(v) => Some(support::take::<W_polars_io__ipc__write__IpcCompression>(&v, "v")?.0), None => None }; let __r = support::sink_op_infallible("polars::IpcWriter::with_compression", || <polars_io::ipc::IpcWriter<super::support::Sink>>::with_compression(__arg0, __arg1)); Ok(W_polars_io__ipc__write__IpcWriter_support__Sink(__r)) }
+/// Polars: `polars_io::ipc::write::IpcWriter::with_parallel`. with_parallel(parallel: bool) -> IpcWriter
+#[rune::function(instance, path = with_parallel)]
+fn f_138b2113__polars_io__ipc__write__ipcwriter_support__sink_(this: W_polars_io__ipc__write__IpcWriter_support__Sink, parallel: bool) -> W_polars_io__ipc__write__IpcWriter_support__Sink { let __arg0 = this.0; let __arg1 = parallel; let __r = support::sink_op_infallible("polars::IpcWriter::with_parallel", || <polars_io::ipc::IpcWriter<super::support::Sink>>::with_parallel(__arg0, __arg1)); W_polars_io__ipc__write__IpcWriter_support__Sink(__r) }
+/// Polars: `polars_io::ipc::write::IpcWriter::with_record_batch_size`. with_record_batch_size(record_batch_size: option of int) -> IpcWriter (fallible)
+#[rune::function(instance, path = with_record_batch_size)]
+fn f_79a06aaf__polars_io__ipc__write__ipcwriter_support__sink_(this: W_polars_io__ipc__write__IpcWriter_support__Sink, record_batch_size: Option<i64>) -> Result<W_polars_io__ipc__write__IpcWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = match record_batch_size { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }; let __r = support::sink_op_infallible("polars::IpcWriter::with_record_batch_size", || <polars_io::ipc::IpcWriter<super::support::Sink>>::with_record_batch_size(__arg0, __arg1)); Ok(W_polars_io__ipc__write__IpcWriter_support__Sink(__r)) }
+/// Polars: `polars_io::ipc::write::IpcWriter::with_record_batch_statistics`. with_record_batch_statistics(record_batch_statistics: bool) -> IpcWriter
+#[rune::function(instance, path = with_record_batch_statistics)]
+fn f_18237b2e__polars_io__ipc__write__ipcwriter_support__sink_(this: W_polars_io__ipc__write__IpcWriter_support__Sink, record_batch_statistics: bool) -> W_polars_io__ipc__write__IpcWriter_support__Sink { let __arg0 = this.0; let __arg1 = record_batch_statistics; let __r = support::sink_op_infallible("polars::IpcWriter::with_record_batch_statistics", || <polars_io::ipc::IpcWriter<super::support::Sink>>::with_record_batch_statistics(__arg0, __arg1)); W_polars_io__ipc__write__IpcWriter_support__Sink(__r) }
 /// Polars: `polars_io::metrics::OptIOMetrics::add_bytes_received`. add_bytes_received(bytes_received: int) -> unit (fallible)
 #[rune::function(instance, path = add_bytes_received)]
 fn f_ff56388f__bytes_received_polars_io__metrics__optiometrics(this: &W_polars_io__metrics__OptIOMetrics, bytes_received: i64) -> Result<(), Error> { let __r = <polars::io::metrics::OptIOMetrics>::add_bytes_received(&this.0, support::narrow::<u64>(bytes_received, "bytes_received")?); Ok(__r) }
@@ -6714,6 +6825,50 @@ fn f_c3693210___parquet__read__read_impl__prefiltermasksetting() -> W_polars_io_
 /// Polars: `polars_io::parquet::read::read_impl::PrefilterMaskSetting::should_prefilter`. should_prefilter(prefilter_cost: float, dtype: ArrowDataType) -> bool
 #[rune::function(instance, path = should_prefilter)]
 fn f_08274e58___parquet__read__read_impl__prefiltermasksetting(this: &W_polars_io__parquet__read__read_impl__PrefilterMaskSetting, prefilter_cost: f64, dtype: &W_polars_arrow__datatypes__ArrowDataType) -> bool { let __r = <polars_io::parquet::read::_internal::PrefilterMaskSetting>::should_prefilter(&this.0, prefilter_cost, &dtype.0); __r }
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::get_metadata`. get_metadata() -> result of FileMetadataRef (fallible)
+#[rune::function(instance, path = get_metadata)]
+fn f_aa7fe5f8_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: &mut W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__) -> Result<W_polars_io__parquet__metadata__FileMetadataRef, Error> { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::get_metadata(&mut this.0); Ok({ let __r = __r.map_err(Error::from)?; { let __r = (__r).clone(); W_polars_io__parquet__metadata__FileMetadataRef(__r) } }) }
+/// Number of rows in the parquet file.
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::num_rows`. num_rows() -> result of int (checked into range) (fallible)
+#[rune::function(instance, path = num_rows)]
+fn f_9c144b88_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: &mut W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__) -> Result<i64, Error> { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::num_rows(&mut this.0); Ok({ let __r = __r.map_err(Error::from)?; support::widen::<usize>(__r, "num_rows")? }) }
+/// Read the parquet file in parallel (default). The single threaded reader consumes less memory.
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::read_parallel`. read_parallel(parallel: ParallelStrategy) -> ParquetReader
+#[rune::function(instance, path = read_parallel)]
+fn f_61eae575_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, parallel: &W_polars_io__parquet__read__options__ParallelStrategy) -> W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__ { let __arg0 = this.0; let __arg1 = parallel.0.clone(); let __r = crate::engine::infallible(crate::engine::run("polars::ParquetReader::read_parallel", move || <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::read_parallel(__arg0, __arg1)), "polars::ParquetReader::read_parallel"); W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r) }
+/// Try to reduce memory pressure at the expense of performance. If setting this does not reduce memory enough, turn off parallelization.
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::set_low_memory`. set_low_memory(low_memory: bool) -> ParquetReader
+#[rune::function(instance, path = set_low_memory)]
+fn f_5e28a9fa_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, low_memory: bool) -> W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__ { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::set_low_memory(this.0, low_memory); W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r) }
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::set_metadata`. set_metadata(metadata: FileMetadataRef) -> unit
+#[rune::function(instance, path = set_metadata)]
+fn f_17dceafe_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: &mut W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, metadata: &W_polars_io__parquet__metadata__FileMetadataRef) -> () { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::set_metadata(&mut this.0, metadata.0.clone()); __r }
+/// Columns to select/ project
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::with_columns`. with_columns(columns: option of vector of string) -> ParquetReader (fallible)
+#[rune::function(instance, path = with_columns)]
+fn f_17e1bdff_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, columns: Option<rune::Value>) -> Result<W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::with_columns(this.0, match columns { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "v")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?), None => None }); Ok(W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::with_hive_partition_columns`. with_hive_partition_columns(columns: option of vector of Series) -> ParquetReader (fallible)
+#[rune::function(instance, path = with_hive_partition_columns)]
+fn f_71562932_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, columns: Option<rune::Value>) -> Result<W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __arg0 = this.0; let __arg1 = match columns { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__series__Series>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = crate::engine::run("polars::ParquetReader::with_hive_partition_columns", move || <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::with_hive_partition_columns(__arg0, __arg1)).map_err(Error::engine)?; Ok(W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Set the reader's column projection. This counts from 0, meaning that `vec![0, 4]` would select the 1st and 5th column.
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::with_projection`. with_projection(projection: option of vector of int) -> ParquetReader (fallible)
+#[rune::function(instance, path = with_projection)]
+fn f_98315b8a_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, projection: Option<rune::Value>) -> Result<W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::with_projection(this.0, match projection { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<usize>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }); Ok(W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Add a row index column.
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::with_row_index`. with_row_index(row_index: option of RowIndex) -> ParquetReader (fallible)
+#[rune::function(instance, path = with_row_index)]
+fn f_d4886667_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, row_index: Option<rune::Value>) -> Result<W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::with_row_index(this.0, match row_index { Some(v) => Some(support::take::<W_polars_io__options__RowIndex>(&v, "v")?.0), None => None }); Ok(W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Polars: `polars_io::parquet::read::reader::ParquetReader::with_slice`. with_slice(slice: option of tuple of int, int) -> ParquetReader (fallible)
+#[rune::function(instance, path = with_slice)]
+fn f_d5edd37b_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, slice: Option<(i64, i64)>) -> Result<W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>>>::with_slice(this.0, match slice { Some(v) => Some((support::narrow::<usize>(v.0, "v.0")?, support::narrow::<usize>(v.1, "v.1")?)), None => None }); Ok(W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Writes the footer of the parquet file. Returns the total size of the file.
+/// Polars: `polars_io::parquet::write::batched_writer::BatchedWriter::finish`. finish() -> result of int (checked into range) (fallible)
+#[rune::function(instance, path = finish)]
+fn f_f1ce76a8_te__batched_writer__batchedwriter_support__sink_(this: &W_polars_io__parquet__write__batched_writer__BatchedWriter_support__Sink) -> Result<i64, Error> { let __arg0 = &this.0; let __r = support::sink_op("polars::ParquetBatchedWriter::finish", || <polars_io::parquet::write::BatchedWriter<super::support::Sink>>::finish(__arg0)); Ok({ let __r = __r.map_err(Error::from)?; support::widen::<u64>(__r, "finish")? }) }
+/// Write a batch to the parquet writer.
+/// Polars: `polars_io::parquet::write::batched_writer::BatchedWriter::write_batch`. write_batch(df: DataFrame) -> result of unit (fallible)
+#[rune::function(instance, path = write_batch)]
+fn f_5396ff03_te__batched_writer__batchedwriter_support__sink_(this: &mut W_polars_io__parquet__write__batched_writer__BatchedWriter_support__Sink, df: &DataFrame) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &df.0; let __r = crate::engine::run("polars::ParquetBatchedWriter::write_batch", move || support::sink_op("polars::ParquetBatchedWriter::write_batch", || <polars_io::parquet::write::BatchedWriter<super::support::Sink>>::write_batch(__arg0, __arg1))).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
 /// Create a key value metadata object from a static key value mapping.
 /// Polars: `polars_io::parquet::write::key_value_metadata::KeyValueMetadata::from_static`. from_static(kv: vector of tuple of string, string) -> KeyValueMetadata (fallible)
 #[rune::function(free, path = W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata::from_static)]
@@ -6721,6 +6876,41 @@ fn f_4dee524e_uet__write__key_value_metadata__keyvaluemetadata(kv: rune::Value) 
 /// Polars: `polars_io::parquet::write::options::ParquetWriteOptions::compat_level`. compat_level() -> CompatLevel
 #[rune::function(instance, path = compat_level)]
 fn f_b5e654fb_io__parquet__write__options__parquetwriteoptions(this: &W_polars_io__parquet__write__options__ParquetWriteOptions) -> W_polars_core__datatypes__dtype__CompatLevel { let __r = <polars_io::parquet::write::ParquetWriteOptions>::compat_level(&this.0); W_polars_core__datatypes__dtype__CompatLevel(__r) }
+/// Polars: `polars_io::parquet::write::writer::ParquetWriter::batched`. batched(schema: Schema) -> result of ParquetBatchedWriter (fallible)
+#[rune::function(instance, path = batched)]
+fn f_dcd20b3a_uet__write__writer__parquetwriter_support__sink_(this: W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, schema: &W_polars_core__schema__Schema) -> Result<W_polars_io__parquet__write__batched_writer__BatchedWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = &schema.0; let __r = support::sink_op("polars::ParquetWriter::batched", || <polars_io::parquet::write::ParquetWriter<super::support::Sink>>::batched(__arg0, __arg1)); Ok({ let __r = __r.map_err(Error::from)?; W_polars_io__parquet__write__batched_writer__BatchedWriter_support__Sink(__r) }) }
+/// Write the given DataFrame in the writer `W`. Returns the total size of the file.
+/// Polars: `polars_io::parquet::write::writer::ParquetWriter::finish`. finish(df: DataFrame) -> result of int (checked into range) (fallible)
+#[rune::function(instance, path = finish)]
+fn f_8c21a8f0_uet__write__writer__parquetwriter_support__sink_(this: W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, df: &mut DataFrame) -> Result<i64, Error> { let __arg0 = this.0; let __arg1 = &mut df.0; let __r = crate::engine::run("polars::ParquetWriter::finish", move || support::sink_op("polars::ParquetWriter::finish", || <polars_io::parquet::write::ParquetWriter<super::support::Sink>>::finish(__arg0, __arg1))).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; support::widen::<u64>(__r, "finish")? }) }
+/// Create a new writer
+/// Polars: `polars_io::parquet::write::writer::ParquetWriter::new`. new(writer: polars::Sink) -> ParquetWriter
+#[rune::function(free, path = W_polars_io__parquet__write__writer__ParquetWriter_support__Sink::new)]
+fn f_464e38ae_uet__write__writer__parquetwriter_support__sink_(writer: &support::Sink) -> W_polars_io__parquet__write__writer__ParquetWriter_support__Sink { let __arg0 = writer.clone(); let __r = support::sink_op_infallible("polars::ParquetWriter::new", || <polars_io::parquet::write::ParquetWriter<super::support::Sink>>::new(__arg0)); W_polars_io__parquet__write__writer__ParquetWriter_support__Sink(__r) }
+/// Serialize columns in parallel
+/// Polars: `polars_io::parquet::write::writer::ParquetWriter::set_parallel`. set_parallel(parallel: bool) -> ParquetWriter
+#[rune::function(instance, path = set_parallel)]
+fn f_6abbcf12_uet__write__writer__parquetwriter_support__sink_(this: W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, parallel: bool) -> W_polars_io__parquet__write__writer__ParquetWriter_support__Sink { let __arg0 = this.0; let __arg1 = parallel; let __r = support::sink_op_infallible("polars::ParquetWriter::set_parallel", || <polars_io::parquet::write::ParquetWriter<super::support::Sink>>::set_parallel(__arg0, __arg1)); W_polars_io__parquet__write__writer__ParquetWriter_support__Sink(__r) }
+/// Set the compression used. Defaults to `Zstd`.
+/// Polars: `polars_io::parquet::write::writer::ParquetWriter::with_compression`. with_compression(compression: ParquetCompression) -> ParquetWriter
+#[rune::function(instance, path = with_compression)]
+fn f_631a030c_uet__write__writer__parquetwriter_support__sink_(this: W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, compression: &W_polars_io__parquet__write__options__ParquetCompression) -> W_polars_io__parquet__write__writer__ParquetWriter_support__Sink { let __arg0 = this.0; let __arg1 = compression.0.clone(); let __r = support::sink_op_infallible("polars::ParquetWriter::with_compression", || <polars_io::parquet::write::ParquetWriter<super::support::Sink>>::with_compression(__arg0, __arg1)); W_polars_io__parquet__write__writer__ParquetWriter_support__Sink(__r) }
+/// Sets the maximum bytes size of a data page. If `None` will be 1024^2 bytes.
+/// Polars: `polars_io::parquet::write::writer::ParquetWriter::with_data_page_size`. with_data_page_size(limit: option of int) -> ParquetWriter (fallible)
+#[rune::function(instance, path = with_data_page_size)]
+fn f_a9418cb7_uet__write__writer__parquetwriter_support__sink_(this: W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, limit: Option<i64>) -> Result<W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = match limit { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }; let __r = support::sink_op_infallible("polars::ParquetWriter::with_data_page_size", || <polars_io::parquet::write::ParquetWriter<super::support::Sink>>::with_data_page_size(__arg0, __arg1)); Ok(W_polars_io__parquet__write__writer__ParquetWriter_support__Sink(__r)) }
+/// Set custom file-level key value metadata for the Parquet file
+/// Polars: `polars_io::parquet::write::writer::ParquetWriter::with_key_value_metadata`. with_key_value_metadata(key_value_metadata: option of KeyValueMetadata) -> ParquetWriter (fallible)
+#[rune::function(instance, path = with_key_value_metadata)]
+fn f_21fa02b7_uet__write__writer__parquetwriter_support__sink_(this: W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, key_value_metadata: Option<rune::Value>) -> Result<W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = match key_value_metadata { Some(v) => Some(support::take::<W_polars_io__parquet__write__key_value_metadata__KeyValueMetadata>(&v, "v")?.0), None => None }; let __r = support::sink_op_infallible("polars::ParquetWriter::with_key_value_metadata", || <polars_io::parquet::write::ParquetWriter<super::support::Sink>>::with_key_value_metadata(__arg0, __arg1)); Ok(W_polars_io__parquet__write__writer__ParquetWriter_support__Sink(__r)) }
+/// Set the row group size (in number of rows) during writing. This can reduce memory pressure and improve writing performance.
+/// Polars: `polars_io::parquet::write::writer::ParquetWriter::with_row_group_size`. with_row_group_size(size: option of int) -> ParquetWriter (fallible)
+#[rune::function(instance, path = with_row_group_size)]
+fn f_a31e8f47_uet__write__writer__parquetwriter_support__sink_(this: W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, size: Option<i64>) -> Result<W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, Error> { let __arg0 = this.0; let __arg1 = match size { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }; let __r = support::sink_op_infallible("polars::ParquetWriter::with_row_group_size", || <polars_io::parquet::write::ParquetWriter<super::support::Sink>>::with_row_group_size(__arg0, __arg1)); Ok(W_polars_io__parquet__write__writer__ParquetWriter_support__Sink(__r)) }
+/// Compute and write statistic
+/// Polars: `polars_io::parquet::write::writer::ParquetWriter::with_statistics`. with_statistics(statistics: StatisticsOptions) -> ParquetWriter
+#[rune::function(instance, path = with_statistics)]
+fn f_b1e1d525_uet__write__writer__parquetwriter_support__sink_(this: W_polars_io__parquet__write__writer__ParquetWriter_support__Sink, statistics: &W_polars_parquet__arrow__write__StatisticsOptions) -> W_polars_io__parquet__write__writer__ParquetWriter_support__Sink { let __arg0 = this.0; let __arg1 = statistics.0.clone(); let __r = support::sink_op_infallible("polars::ParquetWriter::with_statistics", || <polars_io::parquet::write::ParquetWriter<super::support::Sink>>::with_statistics(__arg0, __arg1)); W_polars_io__parquet__write__writer__ParquetWriter_support__Sink(__r) }
 /// Returns the [`DataType`] of the column.
 /// Polars: `polars_io::predicates::ColumnStats::dtype`. dtype() -> DataType
 #[rune::function(instance, path = dtype)]
@@ -13548,6 +13738,178 @@ fn f_34ba4454__from_index_polars_core__datatypes__uint8chunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::ChunkExplode::explode`. explode(options: ExplodeOptions) -> result of Series (fallible)
 #[rune::function(instance, path = explode)]
 fn f_163c7a76_ode__explode_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, options: &W_polars_core__chunked_array__ops__ExplodeOptions) -> Result<W_polars_core__series__Series, Error> { let __arg0 = &this.0; let __arg1 = options.0.clone(); let __r = crate::engine::run("polars::ListChunked::explode", move || <polars_core::datatypes::ListChunked as polars_core::chunked_array::ops::ChunkExplode>::explode(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__series__Series(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: vector of int) -> result of BinaryChunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_a40c1d0a_ith_values_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, value: rune::Value) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { let __t0 = support::borrow_vec(&value, "value")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "value")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars_core::datatypes::BinaryChunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, &__t0[..]); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BinaryChunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: bool) -> result of BooleanChunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_a9e2ce51_th_values_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, value: bool) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = <polars_core::datatypes::BooleanChunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, value); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BooleanChunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: float) -> result of Float32Chunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_db83d53b_th_values_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, value: f64) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __r = <polars_core::datatypes::Float32Chunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, (value as f32)); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Float32Chunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: float) -> result of Float64Chunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_e7cf3ce0_th_values_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, value: f64) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __r = <polars_core::datatypes::Float64Chunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, value); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Float64Chunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: int) -> result of Int16Chunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_f5c01028_with_values_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, value: i64) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __r = <polars_core::datatypes::Int16Chunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, support::narrow::<i16>(value, "value")?); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int16Chunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: int) -> result of Int32Chunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_4c45d0de_with_values_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, value: i64) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __r = <polars_core::datatypes::Int32Chunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, support::narrow::<i32>(value, "value")?); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int32Chunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: int) -> result of Int64Chunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_312c8a3f_with_values_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, value: i64) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __r = <polars_core::datatypes::Int64Chunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, value); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int64Chunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: int) -> result of Int8Chunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_b88d078f__with_values_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, value: i64) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __r = <polars_core::datatypes::Int8Chunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, support::narrow::<i8>(value, "value")?); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int8Chunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: int) -> result of UInt16Chunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_19ee9828_ith_values_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, value: i64) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __r = <polars_core::datatypes::UInt16Chunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, support::narrow::<u16>(value, "value")?); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__UInt16Chunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: int) -> result of IdxCa (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_e44be7ee_ith_values_polars_core__datatypes__uint32chunked(this: &W_polars_core__datatypes__aliases__IdxCa, value: i64) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __r = <polars_core::datatypes::IdxCa as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, support::narrow::<u32>(value, "value")?); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: int) -> result of UInt64Chunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_068886d1_ith_values_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, value: i64) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __r = <polars_core::datatypes::UInt64Chunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, support::narrow::<u64>(value, "value")?); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__UInt64Chunked(__r) }) }
+/// Replace None values with a give value `T`.
+/// Polars: `polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values`. fill_null_with_values(value: int) -> result of UInt8Chunked (fallible)
+#[rune::function(instance, path = fill_null_with_values)]
+fn f_6af609df_with_values_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, value: i64) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked as polars_core::chunked_array::ops::ChunkFillNullValue<_>>::fill_null_with_values(&this.0, support::narrow::<u8>(value, "value")?); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__UInt8Chunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of StructChunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_7807b30c_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__chunked_array__struct___StructChunked, Error> { let __r = <polars::chunked_array::StructChunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__chunked_array__struct___StructChunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of BinaryChunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_2a7d4e9b_er__filter_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { let __r = <polars_core::datatypes::BinaryChunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BinaryChunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of BinaryOffsetChunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_867b475f_lter_polars_core__datatypes__binaryoffsetchunked(this: &W_polars_core__datatypes__BinaryOffsetChunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { let __r = <polars_core::datatypes::BinaryOffsetChunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BinaryOffsetChunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of BooleanChunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_87ec297d_r__filter_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = <polars_core::datatypes::BooleanChunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BooleanChunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of Float32Chunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_a8839c5d_r__filter_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __r = <polars_core::datatypes::Float32Chunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Float32Chunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of Float64Chunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_225e1a56_r__filter_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __r = <polars_core::datatypes::Float64Chunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Float64Chunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of Int16Chunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_6b5160b5_ter__filter_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __r = <polars_core::datatypes::Int16Chunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int16Chunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of Int32Chunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_52f4bd76_ter__filter_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __r = <polars_core::datatypes::Int32Chunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int32Chunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of Int64Chunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_074e84bc_ter__filter_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __r = <polars_core::datatypes::Int64Chunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int64Chunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of Int8Chunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_10c74fda_lter__filter_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __r = <polars_core::datatypes::Int8Chunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int8Chunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of ListChunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_e500c131_lter__filter_polars_core__datatypes__listchunked(this: &W_polars_core__datatypes__ListChunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__ListChunked, Error> { let __r = <polars_core::datatypes::ListChunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__ListChunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of StringChunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_bcfc1510_er__filter_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __r = <polars_core::datatypes::StringChunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__StringChunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of UInt16Chunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_f73b451b_er__filter_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __r = <polars_core::datatypes::UInt16Chunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__UInt16Chunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of IdxCa (fallible)
+#[rune::function(instance, path = filter)]
+fn f_c537eb2f_er__filter_polars_core__datatypes__uint32chunked(this: &W_polars_core__datatypes__aliases__IdxCa, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __r = <polars_core::datatypes::IdxCa as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of UInt64Chunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_595cf205_er__filter_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __r = <polars_core::datatypes::UInt64Chunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__UInt64Chunked(__r) }) }
+/// Filter values in the ChunkedArray with a boolean mask.
+/// Polars: `polars_core::chunked_array::ops::ChunkFilter::filter`. filter(filter: BooleanChunked) -> result of UInt8Chunked (fallible)
+#[rune::function(instance, path = filter)]
+fn f_78a57704_ter__filter_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, filter: &W_polars_core__datatypes__BooleanChunked) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked as polars_core::chunked_array::ops::ChunkFilter<_>>::filter(&this.0, &filter.0); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__UInt8Chunked(__r) }) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: vector of int, length: int) -> BinaryChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__BinaryChunked::full)]
+fn f_7c40f9cb_full__full_polars_core__datatypes__binarychunked(name: &str, value: rune::Value, length: i64) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { let __t0 = support::borrow_vec(&value, "value")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "value")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars_core::datatypes::BinaryChunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), &__t0[..], support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BinaryChunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: vector of int, length: int) -> BinaryOffsetChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__BinaryOffsetChunked::full)]
+fn f_1285ebe0_full_polars_core__datatypes__binaryoffsetchunked(name: &str, value: rune::Value, length: i64) -> Result<W_polars_core__datatypes__BinaryOffsetChunked, Error> { let __t0 = support::borrow_vec(&value, "value")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "value")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = <polars_core::datatypes::BinaryOffsetChunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), &__t0[..], support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BinaryOffsetChunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: bool, length: int) -> BooleanChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__BooleanChunked::full)]
+fn f_65ef9102_ull__full_polars_core__datatypes__booleanchunked(name: &str, value: bool, length: i64) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = <polars_core::datatypes::BooleanChunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), value, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__BooleanChunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: float, length: int) -> Float32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float32Chunked::full)]
+fn f_bc8d33f6_ull__full_polars_core__datatypes__float32chunked(name: &str, value: f64, length: i64) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __r = <polars_core::datatypes::Float32Chunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), (value as f32), support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Float32Chunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: float, length: int) -> Float64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Float64Chunked::full)]
+fn f_4a19ea8f_ull__full_polars_core__datatypes__float64chunked(name: &str, value: f64, length: i64) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __r = <polars_core::datatypes::Float64Chunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), value, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Float64Chunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: int, length: int) -> Int16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int16Chunked::full)]
+fn f_f01cf963_kfull__full_polars_core__datatypes__int16chunked(name: &str, value: i64, length: i64) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __r = <polars_core::datatypes::Int16Chunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), support::narrow::<i16>(value, "value")?, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int16Chunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: int, length: int) -> Int32Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int32Chunked::full)]
+fn f_831e4857_kfull__full_polars_core__datatypes__int32chunked(name: &str, value: i64, length: i64) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __r = <polars_core::datatypes::Int32Chunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), support::narrow::<i32>(value, "value")?, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int32Chunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: int, length: int) -> Int64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int64Chunked::full)]
+fn f_91f31c7f_kfull__full_polars_core__datatypes__int64chunked(name: &str, value: i64, length: i64) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __r = <polars_core::datatypes::Int64Chunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), value, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int64Chunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: int, length: int) -> Int8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__Int8Chunked::full)]
+fn f_894d6ea1_nkfull__full_polars_core__datatypes__int8chunked(name: &str, value: i64, length: i64) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __r = <polars_core::datatypes::Int8Chunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), support::narrow::<i8>(value, "value")?, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__Int8Chunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: Series, length: int) -> ListChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__ListChunked::full)]
+fn f_9b7e0762_nkfull__full_polars_core__datatypes__listchunked(name: &str, value: &W_polars_core__series__Series, length: i64) -> Result<W_polars_core__datatypes__ListChunked, Error> { let __arg0 = p::PlSmallStr::from(name); let __arg1 = &value.0; let __arg2 = support::narrow::<usize>(length, "length")?; let __r = crate::engine::run("polars::ListChunked::full", move || <polars_core::datatypes::ListChunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok(W_polars_core__datatypes__ListChunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: string, length: int) -> StringChunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__StringChunked::full)]
+fn f_f7a17d27_full__full_polars_core__datatypes__stringchunked(name: &str, value: &str, length: i64) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __r = <polars_core::datatypes::StringChunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), value, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__StringChunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: int, length: int) -> UInt16Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt16Chunked::full)]
+fn f_13df0717_full__full_polars_core__datatypes__uint16chunked(name: &str, value: i64, length: i64) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __r = <polars_core::datatypes::UInt16Chunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), support::narrow::<u16>(value, "value")?, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__UInt16Chunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: int, length: int) -> IdxCa (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__aliases__IdxCa::full)]
+fn f_0339e927_full__full_polars_core__datatypes__uint32chunked(name: &str, value: i64, length: i64) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __r = <polars_core::datatypes::IdxCa as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), support::narrow::<u32>(value, "value")?, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__aliases__IdxCa(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: int, length: int) -> UInt64Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt64Chunked::full)]
+fn f_66845dbe_full__full_polars_core__datatypes__uint64chunked(name: &str, value: i64, length: i64) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __r = <polars_core::datatypes::UInt64Chunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), support::narrow::<u64>(value, "value")?, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__UInt64Chunked(__r)) }
+/// Create a ChunkedArray with a single value.
+/// Polars: `polars_core::chunked_array::ops::ChunkFull::full`. full(name: string, value: int, length: int) -> UInt8Chunked (fallible)
+#[rune::function(free, path = W_polars_core__datatypes__UInt8Chunked::full)]
+fn f_96d9623b_kfull__full_polars_core__datatypes__uint8chunked(name: &str, value: i64, length: i64) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked as polars_core::chunked_array::ops::ChunkFull<_>>::full(p::PlSmallStr::from(name), support::narrow::<u8>(value, "value")?, support::narrow::<usize>(length, "length")?); Ok(W_polars_core__datatypes__UInt8Chunked(__r)) }
 /// Returns the mean value in the array. Returns `None` if the array is empty or only contains null values.
 /// Polars: `polars_core::chunked_array::ops::ChunkQuantile::median`. median() -> option of bool
 #[rune::function(instance, path = median)]
@@ -13712,6 +14074,58 @@ fn f_67fbea36_e__reverse_polars_core__datatypes__binarychunked(this: &W_polars_c
 /// Polars: `polars_core::chunked_array::ops::ChunkReverse::reverse`. reverse() -> StringChunked
 #[rune::function(instance, path = reverse)]
 fn f_28090cf4_e__reverse_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked) -> W_polars_core__datatypes__StringChunked { let __r = <polars_core::datatypes::StringChunked as polars_core::chunked_array::ops::ChunkReverse>::reverse(&this.0); W_polars_core__datatypes__StringChunked(__r) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of vector of int) -> result of BinaryChunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_82cb2bdb_nkset__set_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<rune::Value>) -> Result<W_polars_core__datatypes__BinaryChunked, Error> { let __t1 = match opt_value { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "v")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __r = <polars_core::datatypes::BinaryChunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, __t1.as_deref()); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BinaryChunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of bool) -> result of BooleanChunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_c5d31295_kset__set_polars_core__datatypes__booleanchunked(this: &W_polars_core__datatypes__BooleanChunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<bool>) -> Result<W_polars_core__datatypes__BooleanChunked, Error> { let __r = <polars_core::datatypes::BooleanChunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(v), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__BooleanChunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of float) -> result of Float32Chunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_4d57ef12_kset__set_polars_core__datatypes__float32chunked(this: &W_polars_core__datatypes__Float32Chunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<f64>) -> Result<W_polars_core__datatypes__Float32Chunked, Error> { let __r = <polars_core::datatypes::Float32Chunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some((v as f32)), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Float32Chunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of float) -> result of Float64Chunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_731d30dc_kset__set_polars_core__datatypes__float64chunked(this: &W_polars_core__datatypes__Float64Chunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<f64>) -> Result<W_polars_core__datatypes__Float64Chunked, Error> { let __r = <polars_core::datatypes::Float64Chunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(v), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Float64Chunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of int) -> result of Int16Chunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_fc2ad688_unkset__set_polars_core__datatypes__int16chunked(this: &W_polars_core__datatypes__Int16Chunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<i64>) -> Result<W_polars_core__datatypes__Int16Chunked, Error> { let __r = <polars_core::datatypes::Int16Chunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(support::narrow::<i16>(v, "v")?), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int16Chunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of int) -> result of Int32Chunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_fa424cf6_unkset__set_polars_core__datatypes__int32chunked(this: &W_polars_core__datatypes__Int32Chunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<i64>) -> Result<W_polars_core__datatypes__Int32Chunked, Error> { let __r = <polars_core::datatypes::Int32Chunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(support::narrow::<i32>(v, "v")?), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int32Chunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of int) -> result of Int64Chunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_4582c467_unkset__set_polars_core__datatypes__int64chunked(this: &W_polars_core__datatypes__Int64Chunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<i64>) -> Result<W_polars_core__datatypes__Int64Chunked, Error> { let __r = <polars_core::datatypes::Int64Chunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(v), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int64Chunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of int) -> result of Int8Chunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_88cdc3ba_hunkset__set_polars_core__datatypes__int8chunked(this: &W_polars_core__datatypes__Int8Chunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<i64>) -> Result<W_polars_core__datatypes__Int8Chunked, Error> { let __r = <polars_core::datatypes::Int8Chunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(support::narrow::<i8>(v, "v")?), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__Int8Chunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of string) -> result of StringChunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_ae70a5a2_nkset__set_polars_core__datatypes__stringchunked(this: &W_polars_core__datatypes__StringChunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<String>) -> Result<W_polars_core__datatypes__StringChunked, Error> { let __t0: Option<String> = opt_value; let __r = <polars_core::datatypes::StringChunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, __t0.as_deref()); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__StringChunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of int) -> result of UInt16Chunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_9d95a2cd_nkset__set_polars_core__datatypes__uint16chunked(this: &W_polars_core__datatypes__UInt16Chunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<i64>) -> Result<W_polars_core__datatypes__UInt16Chunked, Error> { let __r = <polars_core::datatypes::UInt16Chunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(support::narrow::<u16>(v, "v")?), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__UInt16Chunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of int) -> result of IdxCa (fallible)
+#[rune::function(instance, path = set)]
+fn f_56bf4906_nkset__set_polars_core__datatypes__uint32chunked(this: &W_polars_core__datatypes__aliases__IdxCa, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<i64>) -> Result<W_polars_core__datatypes__aliases__IdxCa, Error> { let __r = <polars_core::datatypes::IdxCa as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(support::narrow::<u32>(v, "v")?), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__aliases__IdxCa(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of int) -> result of UInt64Chunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_e3ed928d_nkset__set_polars_core__datatypes__uint64chunked(this: &W_polars_core__datatypes__UInt64Chunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<i64>) -> Result<W_polars_core__datatypes__UInt64Chunked, Error> { let __r = <polars_core::datatypes::UInt64Chunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(support::narrow::<u64>(v, "v")?), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__UInt64Chunked(__r) }) }
+/// Set the values where the mask evaluates to `true` to some optional value `Option<T>`.
+/// Polars: `polars_core::chunked_array::ops::ChunkSet::set`. set(mask: BooleanChunked, opt_value: option of int) -> result of UInt8Chunked (fallible)
+#[rune::function(instance, path = set)]
+fn f_b978432d_unkset__set_polars_core__datatypes__uint8chunked(this: &W_polars_core__datatypes__UInt8Chunked, mask: &W_polars_core__datatypes__BooleanChunked, opt_value: Option<i64>) -> Result<W_polars_core__datatypes__UInt8Chunked, Error> { let __r = <polars_core::datatypes::UInt8Chunked as polars_core::chunked_array::ops::ChunkSet<_, _>>::set(&this.0, &mask.0, match opt_value { Some(v) => Some(support::narrow::<u8>(v, "v")?), None => None }); Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__UInt8Chunked(__r) }) }
 /// Polars: `polars_core::chunked_array::ops::ChunkShift::shift`. shift(periods: int) -> StructChunked
 #[rune::function(instance, path = shift)]
 fn f_3ebc369f_lars_core__chunked_array__struct___structchunked(this: &W_polars_core__chunked_array__struct___StructChunked, periods: i64) -> W_polars_core__chunked_array__struct___StructChunked { let __r = <polars::chunked_array::StructChunked as polars_core::chunked_array::ops::ChunkShift<_>>::shift(&this.0, periods); W_polars_core__chunked_array__struct___StructChunked(__r) }
@@ -15329,6 +15743,54 @@ fn f_c4e341b0_cloud__credential_provider__plcredentialprovider(this: &W_polars_i
 /// Polars: `polars_io::cloud::credential_provider::IntoCredentialProvider::storage_update_options`. storage_update_options() -> result of vector of tuple of string, string (fallible)
 #[rune::function(instance, path = storage_update_options)]
 fn f_67da5d37__credential_provider__credentialproviderfunction(this: &W_polars_io__cloud__credential_provider__CredentialProviderFunction) -> Result<Vec<(String, String)>, Error> { let __r = <polars_io::cloud::credential_provider::CredentialProviderFunction as polars_io::cloud::credential_provider::IntoCredentialProvider>::storage_update_options(&this.0); Ok({ let __r = __r.map_err(Error::from)?; { let mut __v = Vec::new(); for __r in __r { __v.push({ let __t = __r; ({ let __r = __t.0; __r.to_string() }, { let __r = __t.1; __r.to_string() }) }); } __v } }) }
+/// Take the SerReader and return a parsed DataFrame.
+/// Polars: `polars_io::shared::SerReader::finish`. finish() -> result of DataFrame (fallible)
+#[rune::function(instance, path = finish)]
+fn f_3bd49844_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__) -> Result<DataFrame, Error> { let __arg0 = this.0; let __r = crate::engine::run("polars::CsvReader::finish", move || <polars_io::csv::read::CsvReader<std::io::Cursor<Vec<u8>>> as polars::io::SerReader<_>>::finish(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
+/// Take the SerReader and return a parsed DataFrame.
+/// Polars: `polars_io::shared::SerReader::finish`. finish() -> result of DataFrame (fallible)
+#[rune::function(instance, path = finish)]
+fn f_55f95f9d_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__) -> Result<DataFrame, Error> { let __arg0 = this.0; let __r = crate::engine::run("polars::IpcReader::finish", move || <polars_io::ipc::IpcReader<std::io::Cursor<Vec<u8>>> as polars::io::SerReader<_>>::finish(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
+/// Take the SerReader and return a parsed DataFrame.
+/// Polars: `polars_io::shared::SerReader::finish`. finish() -> result of DataFrame (fallible)
+#[rune::function(instance, path = finish)]
+fn f_c0d40182_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__) -> Result<DataFrame, Error> { let __arg0 = this.0; let __r = crate::engine::run("polars::ParquetReader::finish", move || <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>> as polars::io::SerReader<_>>::finish(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
+/// Create a new instance of the [`SerReader`]
+/// Polars: `polars_io::shared::SerReader::new`. new(reader: Bytes) -> CsvReader (fallible)
+#[rune::function(free, path = W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__::new)]
+fn f_4e3b652a_r_core__io__cursor__cursor_alloc__vec__vec_u8___(reader: rune::Value) -> Result<W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::csv::read::CsvReader<std::io::Cursor<Vec<u8>>> as polars::io::SerReader<_>>::new(support::cursor_from_bytes(&reader, "reader")?); Ok(W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Create a new instance of the [`SerReader`]
+/// Polars: `polars_io::shared::SerReader::new`. new(reader: Bytes) -> IpcReader (fallible)
+#[rune::function(free, path = W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__::new)]
+fn f_d106399b_r_core__io__cursor__cursor_alloc__vec__vec_u8___(reader: rune::Value) -> Result<W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::ipc::IpcReader<std::io::Cursor<Vec<u8>>> as polars::io::SerReader<_>>::new(support::cursor_from_bytes(&reader, "reader")?); Ok(W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Create a new instance of the [`SerReader`]
+/// Polars: `polars_io::shared::SerReader::new`. new(reader: Bytes) -> ParquetReader (fallible)
+#[rune::function(free, path = W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__::new)]
+fn f_912c23cb_r_core__io__cursor__cursor_alloc__vec__vec_u8___(reader: rune::Value) -> Result<W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, Error> { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>> as polars::io::SerReader<_>>::new(support::cursor_from_bytes(&reader, "reader")?); Ok(W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r)) }
+/// Make sure that all columns are contiguous in memory by aggregating the chunks into a single array.
+/// Polars: `polars_io::shared::SerReader::set_rechunk`. set_rechunk(_rechunk: bool) -> CsvReader
+#[rune::function(instance, path = set_rechunk)]
+fn f_12d71977_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, _rechunk: bool) -> W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__ { let __r = <polars_io::csv::read::CsvReader<std::io::Cursor<Vec<u8>>> as polars::io::SerReader<_>>::set_rechunk(this.0, _rechunk); W_polars_io__csv__read__reader__CsvReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r) }
+/// Make sure that all columns are contiguous in memory by aggregating the chunks into a single array.
+/// Polars: `polars_io::shared::SerReader::set_rechunk`. set_rechunk(_rechunk: bool) -> IpcReader
+#[rune::function(instance, path = set_rechunk)]
+fn f_37782ddf_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, _rechunk: bool) -> W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__ { let __r = <polars_io::ipc::IpcReader<std::io::Cursor<Vec<u8>>> as polars::io::SerReader<_>>::set_rechunk(this.0, _rechunk); W_polars_io__ipc__ipc_file__IpcReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r) }
+/// Make sure that all columns are contiguous in memory by aggregating the chunks into a single array.
+/// Polars: `polars_io::shared::SerReader::set_rechunk`. set_rechunk(_rechunk: bool) -> ParquetReader
+#[rune::function(instance, path = set_rechunk)]
+fn f_12608ea4_r_core__io__cursor__cursor_alloc__vec__vec_u8___(this: W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__, _rechunk: bool) -> W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__ { let __r = <polars_io::parquet::read::ParquetReader<std::io::Cursor<Vec<u8>>> as polars::io::SerReader<_>>::set_rechunk(this.0, _rechunk); W_polars_io__parquet__read__reader__ParquetReader_core__io__cursor__Cursor_alloc__vec__Vec_u8__(__r) }
+/// Polars: `polars_io::shared::SerWriter::finish`. finish(df: DataFrame) -> result of unit (fallible)
+#[rune::function(instance, path = finish)]
+fn f_d87b8458_io__csv__write__writer__csvwriter_support__sink_(this: &mut W_polars_io__csv__write__writer__CsvWriter_support__Sink, df: &mut DataFrame) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &mut df.0; let __r = crate::engine::run("polars::CsvWriter::finish", move || support::sink_op("polars::CsvWriter::finish", || <polars_io::csv::write::CsvWriter<super::support::Sink> as polars::io::SerWriter<_>>::finish(__arg0, __arg1))).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_io::shared::SerWriter::finish`. finish(df: DataFrame) -> result of unit (fallible)
+#[rune::function(instance, path = finish)]
+fn f_277fc33d__polars_io__ipc__write__ipcwriter_support__sink_(this: &mut W_polars_io__ipc__write__IpcWriter_support__Sink, df: &mut DataFrame) -> Result<(), Error> { let __arg0 = &mut this.0; let __arg1 = &mut df.0; let __r = crate::engine::run("polars::IpcWriter::finish", move || support::sink_op("polars::IpcWriter::finish", || <polars_io::ipc::IpcWriter<super::support::Sink> as polars::io::SerWriter<_>>::finish(__arg0, __arg1))).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; __r }) }
+/// Polars: `polars_io::shared::SerWriter::new`. new(writer: polars::Sink) -> CsvWriter
+#[rune::function(free, path = W_polars_io__csv__write__writer__CsvWriter_support__Sink::new)]
+fn f_7ded6087_io__csv__write__writer__csvwriter_support__sink_(writer: &support::Sink) -> W_polars_io__csv__write__writer__CsvWriter_support__Sink { let __arg0 = writer.clone(); let __r = support::sink_op_infallible("polars::CsvWriter::new", || <polars_io::csv::write::CsvWriter<super::support::Sink> as polars::io::SerWriter<_>>::new(__arg0)); W_polars_io__csv__write__writer__CsvWriter_support__Sink(__r) }
+/// Polars: `polars_io::shared::SerWriter::new`. new(writer: polars::Sink) -> IpcWriter
+#[rune::function(free, path = W_polars_io__ipc__write__IpcWriter_support__Sink::new)]
+fn f_2739f519__polars_io__ipc__write__ipcwriter_support__sink_(writer: &support::Sink) -> W_polars_io__ipc__write__IpcWriter_support__Sink { let __arg0 = writer.clone(); let __r = support::sink_op_infallible("polars::IpcWriter::new", || <polars_io::ipc::IpcWriter<super::support::Sink> as polars::io::SerWriter<_>>::new(__arg0)); W_polars_io__ipc__write__IpcWriter_support__Sink(__r) }
 /// Polars: `polars_lazy::frame::IntoLazy::lazy`. lazy() -> LazyFrame
 #[rune::function(instance, path = lazy)]
 fn f_87471c27_me__intolazy__lazy_polars_lazy__frame__lazyframe(this: &LazyFrame) -> LazyFrame { let __arg0 = this.0.clone(); let __r = crate::engine::infallible(crate::engine::run("polars::LazyFrame::lazy", move || <polars_lazy::frame::LazyFrame as polars_lazy::frame::IntoLazy>::lazy(__arg0)), "polars::LazyFrame::lazy"); LazyFrame(__r) }
@@ -18519,6 +18981,19 @@ fn v_99e6a99f_polars_utils__pl_path__cloudscheme__s3() -> W_polars_utils__pl_pat
 #[rune::function(free, path = W_polars_utils__pl_path__CloudScheme::S3a)]
 fn v_2c190394_polars_utils__pl_path__cloudscheme__s3a() -> W_polars_utils__pl_path__CloudScheme { W_polars_utils__pl_path__CloudScheme(<polars::polars_utils::pl_path::CloudScheme>::S3a) }
 
+// record 0118: every shipped std fact, asserted at compile time at this pin
+const _: () = { fn holds<T: ?Sized + AsRef<[u8]>>() {} let _ = holds::<Vec<u8>>; };
+const _: () = { fn holds<T: ?Sized + Send>() {} let _ = holds::<Vec<u8>>; };
+const _: () = { fn holds<T: ?Sized + Sync>() {} let _ = holds::<Vec<u8>>; };
+const _: () = { fn holds<T: ?Sized + std::io::BufRead>() {} let _ = holds::<std::io::Cursor<Vec<u8>>>; };
+const _: () = { fn holds<T: ?Sized + std::io::Read>() {} let _ = holds::<std::io::Cursor<Vec<u8>>>; };
+const _: () = { fn holds<T: ?Sized + std::io::Seek>() {} let _ = holds::<std::io::Cursor<Vec<u8>>>; };
+const _: () = { fn holds<T: ?Sized + Send>() {} let _ = holds::<std::io::Cursor<Vec<u8>>>; };
+const _: () = { fn holds<T: ?Sized + Sync>() {} let _ = holds::<std::io::Cursor<Vec<u8>>>; };
+const _: () = { fn holds<T: ?Sized + std::io::Write>() {} let _ = holds::<support::Sink>; };
+const _: () = { fn holds<T: ?Sized + Send>() {} let _ = holds::<super::support::Sink>; };
+const _: () = { fn holds<T: ?Sized + Sync>() {} let _ = holds::<super::support::Sink>; };
+
 pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     install_0(m)?;
     install_1(m)?;
@@ -20164,6 +20639,7 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_fe99728a__select_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_cd592380__at_idx_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_d34cc6ee__to_vec_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_997dc7ce__writer_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_177133a5_o_bytes_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_921a5dfb___shape_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_324fdb5b_as_zero_polars_core__frame__dataframe__dataframe)?;
@@ -20287,6 +20763,7 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_82443fda__series__sample_frac_polars_core__series__series)?;
     m.function_meta(f_4e34f57c_es__series__sample_n_polars_core__series__series)?;
     m.function_meta(f_593c6edd_series__select_chunk_polars_core__series__series)?;
+    m.function_meta(f_23009123_erialize_into_writer_polars_core__series__series)?;
     m.function_meta(f_8b34a5f2___serialize_to_bytes_polars_core__series__series)?;
     m.function_meta(f_61634d18_ies__set_sorted_flag_polars_core__series__series)?;
     m.function_meta(f_7d950954_eries__shrink_to_fit_polars_core__series__series)?;
@@ -20441,10 +20918,38 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_015f8452___count_polars_io__csv__read__parser__countlines)?;
     m.function_meta(f_870338a8_nt_rows_polars_io__csv__read__parser__countlines)?;
     m.function_meta(f_41f05be3_es__new_polars_io__csv__read__parser__countlines)?;
+    m.function_meta(f_b9d2ddbb_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_757537b3_csv__write__writer__batchedwriter_support__sink_)?;
+    m.function_meta(f_9c75fd83_csv__write__writer__batchedwriter_support__sink_)?;
+    m.function_meta(f_4ecb4b1d_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_1a4590ec_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_635d9659_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_55763263_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_1c78dba9_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_49b06704_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_7621ff9f_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_b6390397_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_a1f8cf34_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_0ca11654_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_e2ef2a2d_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_d17e7c43_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_4d863aa8_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_9294b355_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_8e0065da_io__csv__write__writer__csvwriter_support__sink_)?;
     m.function_meta(f_adc3db55_ttl_polars_io__file_cache__entry__filecacheentry)?;
     m.function_meta(f_4ec56503_uri_polars_io__file_cache__entry__filecacheentry)?;
+    m.function_meta(f_6003823c_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_50b27060_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_59ea58aa_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_9f325852_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_2fd91572_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
     m.function_meta(f_703f050f_polars_io__ipc__ipc_reader_async__ipcreadoptions)?;
     m.function_meta(f_65e18fa9_polars_io__ipc__ipc_reader_async__ipcreadoptions)?;
+    m.function_meta(f_132a6528__polars_io__ipc__write__ipcwriter_support__sink_)?;
+    m.function_meta(f_51c745d6__polars_io__ipc__write__ipcwriter_support__sink_)?;
+    m.function_meta(f_138b2113__polars_io__ipc__write__ipcwriter_support__sink_)?;
+    m.function_meta(f_79a06aaf__polars_io__ipc__write__ipcwriter_support__sink_)?;
+    m.function_meta(f_18237b2e__polars_io__ipc__write__ipcwriter_support__sink_)?;
     m.function_meta(f_ff56388f__bytes_received_polars_io__metrics__optiometrics)?;
     m.function_meta(f_92898a5f_bytes_requested_polars_io__metrics__optiometrics)?;
     m.function_meta(f_7be254b2__add_bytes_sent_polars_io__metrics__optiometrics)?;
@@ -20453,8 +20958,29 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_3b6caaf9_ons__new_enabled_polars_io__options__hiveoptions)?;
     m.function_meta(f_c3693210___parquet__read__read_impl__prefiltermasksetting)?;
     m.function_meta(f_08274e58___parquet__read__read_impl__prefiltermasksetting)?;
+    m.function_meta(f_aa7fe5f8_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_9c144b88_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_61eae575_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_5e28a9fa_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_17dceafe_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_17e1bdff_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_71562932_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_98315b8a_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_d4886667_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_d5edd37b_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_f1ce76a8_te__batched_writer__batchedwriter_support__sink_)?;
+    m.function_meta(f_5396ff03_te__batched_writer__batchedwriter_support__sink_)?;
     m.function_meta(f_4dee524e_uet__write__key_value_metadata__keyvaluemetadata)?;
     m.function_meta(f_b5e654fb_io__parquet__write__options__parquetwriteoptions)?;
+    m.function_meta(f_dcd20b3a_uet__write__writer__parquetwriter_support__sink_)?;
+    m.function_meta(f_8c21a8f0_uet__write__writer__parquetwriter_support__sink_)?;
+    m.function_meta(f_464e38ae_uet__write__writer__parquetwriter_support__sink_)?;
+    m.function_meta(f_6abbcf12_uet__write__writer__parquetwriter_support__sink_)?;
+    m.function_meta(f_631a030c_uet__write__writer__parquetwriter_support__sink_)?;
+    m.function_meta(f_a9418cb7_uet__write__writer__parquetwriter_support__sink_)?;
+    m.function_meta(f_21fa02b7_uet__write__writer__parquetwriter_support__sink_)?;
+    m.function_meta(f_a31e8f47_uet__write__writer__parquetwriter_support__sink_)?;
+    m.function_meta(f_b1e1d525_uet__write__writer__parquetwriter_support__sink_)?;
     m.function_meta(f_a1b56602_nstats__dtype_polars_io__predicates__columnstats)?;
     m.function_meta(f_19b59964_s__field_name_polars_io__predicates__columnstats)?;
     m.function_meta(f_bb5dbf44_olumn_literal_polars_io__predicates__columnstats)?;
@@ -20548,6 +21074,11 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_ce7c3c0f_uster_with_columns_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_91afc6a0_frame__with_column_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_9ea02613_rame__with_columns_polars_lazy__frame__lazyframe)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_aadd3f47___with_columns_seq_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_f101a86f_rame__with_context_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_6df65b70_azyframe__with_gpu_polars_lazy__frame__lazyframe)?;
@@ -20599,11 +21130,6 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_140d3842_skip_lines_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_9e39814a__skip_rows_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_b4044a48_ter_header_polars_lazy__scan__csv__lazycsvreader)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_2a2f44b7_gged_lines_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_5654d29a_rgs__new_polars_ops__frame__join__args__joinargs)?;
     m.function_meta(f_056c59a8_coalesce_polars_ops__frame__join__args__joinargs)?;
@@ -21065,6 +21591,11 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_d23d1792_start_end_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_fd43897e__start_end_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_592f0402_start_end_polars_core__datatypes__float32chunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_beb978ed_start_end_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_a020c490_th_start_end_polars_core__datatypes__int8chunked)?;
     m.function_meta(f_7248ad2c_h_start_end_polars_core__datatypes__int16chunked)?;
@@ -21116,11 +21647,6 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_ab37fa21_polars_plan__dsl__functions__concat__as_list)?;
     m.function_meta(g_436d930f_polars_plan__dsl__functions__concat__concat_arr)?;
     m.function_meta(g_fc63e0dc_polars_plan__dsl__functions__concat__concat_expr)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_d0bef017_polars_plan__dsl__functions__concat__concat_list)?;
     m.function_meta(g_b5a60f4d_polars_plan__dsl__functions__first)?;
     m.function_meta(g_8ca8f5ac_plan__dsl__functions__horizontal__all_horizontal)?;
@@ -21582,6 +22108,11 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_7ade6fb3_ptions__serializeoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_5e30f25a_ions__serializeoptions_as_core__default__default)?;
     m.function_meta(p_1da82027_e__options__serializeoptions_as_core__fmt__debug)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_a25cc0f3_e__options__serializeoptions_as_core__hash__hash)?;
     m.function_meta(s_6dbe7892__serializeoptions_as_serde_core__de__deserialize)?;
     m.function_meta(s_882949fe___serializeoptions_as_serde_core__ser__serialize)?;
@@ -21633,11 +22164,6 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_829fe75d_xternalcompression_as_serde_core__ser__serialize)?;
     m.function_meta(p_e7f8e96f_s_io__options__hiveoptions_as_core__clone__clone)?;
     m.function_meta(p_4d8daaeb_polars_io__options__hiveoptions_as_core__cmp__eq)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_8e68d80d_io__options__hiveoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_67327926___options__hiveoptions_as_core__default__default)?;
     m.function_meta(p_f60f2259_ars_io__options__hiveoptions_as_core__fmt__debug)?;
@@ -22099,6 +22625,11 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_99b469a5_ars_plan__dsl__plan__dslplan_as_core__fmt__debug)?;
     m.function_meta(p_f9da6e55___planserializationcontext_as_core__clone__clone)?;
     m.function_meta(p_ba4a5f78_anserializationcontext_as_core__default__default)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_3243f37e___scan_sources__scansource_as_core__clone__clone)?;
     m.function_meta(p_fd6d8935_sl__scan_sources__scansource_as_core__fmt__debug)?;
     m.function_meta(p_e66cd64c__scan_sources__scansources_as_core__clone__clone)?;
@@ -22150,11 +22681,6 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_427c6d58_lan__dsl__selector__timezoneset_as_core__cmp__eq)?;
     m.function_meta(p_1135ac58_l__selector__timezoneset_as_core__cmp__partialeq)?;
     m.function_meta(p_651a00da___dsl__selector__timezoneset_as_core__fmt__debug)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_297ace29___dsl__selector__timezoneset_as_core__hash__hash)?;
     m.function_meta(p_854ec679___udf__userdefinedfunction_as_core__clone__clone)?;
     m.function_meta(p_1ac9d1d0_sl__udf__userdefinedfunction_as_core__fmt__debug)?;
@@ -22504,6 +23030,49 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_d340d502_from_index_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_34ba4454__from_index_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_163c7a76_ode__explode_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_a40c1d0a_ith_values_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_a9e2ce51_th_values_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_db83d53b_th_values_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_e7cf3ce0_th_values_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_f5c01028_with_values_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_4c45d0de_with_values_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_312c8a3f_with_values_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_b88d078f__with_values_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_19ee9828_ith_values_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_e44be7ee_ith_values_polars_core__datatypes__uint32chunked)?;
+    m.function_meta(f_068886d1_ith_values_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_6af609df_with_values_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_7807b30c_lars_core__chunked_array__struct___structchunked)?;
+    m.function_meta(f_2a7d4e9b_er__filter_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_867b475f_lter_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_87ec297d_r__filter_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_a8839c5d_r__filter_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_225e1a56_r__filter_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_6b5160b5_ter__filter_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_52f4bd76_ter__filter_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_074e84bc_ter__filter_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_10c74fda_lter__filter_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_e500c131_lter__filter_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_bcfc1510_er__filter_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_f73b451b_er__filter_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_c537eb2f_er__filter_polars_core__datatypes__uint32chunked)?;
+    m.function_meta(f_595cf205_er__filter_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_78a57704_ter__filter_polars_core__datatypes__uint8chunked)?;
+    m.function_meta(f_7c40f9cb_full__full_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_1285ebe0_full_polars_core__datatypes__binaryoffsetchunked)?;
+    m.function_meta(f_65ef9102_ull__full_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_bc8d33f6_ull__full_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_4a19ea8f_ull__full_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_f01cf963_kfull__full_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_831e4857_kfull__full_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_91f31c7f_kfull__full_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_894d6ea1_nkfull__full_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_9b7e0762_nkfull__full_polars_core__datatypes__listchunked)?;
+    m.function_meta(f_f7a17d27_full__full_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_13df0717_full__full_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_0339e927_full__full_polars_core__datatypes__uint32chunked)?;
+    m.function_meta(f_66845dbe_full__full_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_96d9623b_kfull__full_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_2b436814_e__median_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_f6117e14_e__median_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_5d49ff34_e__median_polars_core__datatypes__float64chunked)?;
@@ -22545,6 +23114,19 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_f906a050_rse__reverse_polars_core__datatypes__listchunked)?;
     m.function_meta(f_67fbea36_e__reverse_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_28090cf4_e__reverse_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_82cb2bdb_nkset__set_polars_core__datatypes__binarychunked)?;
+    m.function_meta(f_c5d31295_kset__set_polars_core__datatypes__booleanchunked)?;
+    m.function_meta(f_4d57ef12_kset__set_polars_core__datatypes__float32chunked)?;
+    m.function_meta(f_731d30dc_kset__set_polars_core__datatypes__float64chunked)?;
+    m.function_meta(f_fc2ad688_unkset__set_polars_core__datatypes__int16chunked)?;
+    m.function_meta(f_fa424cf6_unkset__set_polars_core__datatypes__int32chunked)?;
+    m.function_meta(f_4582c467_unkset__set_polars_core__datatypes__int64chunked)?;
+    m.function_meta(f_88cdc3ba_hunkset__set_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_ae70a5a2_nkset__set_polars_core__datatypes__stringchunked)?;
+    m.function_meta(f_9d95a2cd_nkset__set_polars_core__datatypes__uint16chunked)?;
+    m.function_meta(f_56bf4906_nkset__set_polars_core__datatypes__uint32chunked)?;
+    m.function_meta(f_e3ed928d_nkset__set_polars_core__datatypes__uint64chunked)?;
+    m.function_meta(f_b978432d_unkset__set_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_3ebc369f_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_6453505e_ift__shift_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_6ea4932a_hift_polars_core__datatypes__binaryoffsetchunked)?;
@@ -22560,6 +23142,11 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_514c0194_ift__shift_polars_core__datatypes__uint16chunked)?;
     m.function_meta(f_ec45445d_ift__shift_polars_core__datatypes__uint32chunked)?;
     m.function_meta(f_6784f000_ift__shift_polars_core__datatypes__uint64chunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_24aea672_hift__shift_polars_core__datatypes__uint8chunked)?;
     m.function_meta(f_3a8add60_ift_and_fill_polars_core__datatypes__listchunked)?;
     m.function_meta(f_4cd79eb6_lars_core__chunked_array__struct___structchunked)?;
@@ -22667,11 +23254,6 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_42efd10b_le_reduce_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_cbcb1277_es_reduce_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_28e326e1_es_reduce_polars_core__datatypes__float64chunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_9f6e44a1_td_reduce_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_3e498fb8_td_reduce_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_b2d26346_ar_reduce_polars_core__datatypes__float32chunked)?;
@@ -23013,6 +23595,19 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_8441615f_iner__should_rechunk_polars_core__series__series)?;
     m.function_meta(f_c4e341b0_cloud__credential_provider__plcredentialprovider)?;
     m.function_meta(f_67da5d37__credential_provider__credentialproviderfunction)?;
+    m.function_meta(f_3bd49844_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_55f95f9d_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_c0d40182_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_4e3b652a_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_d106399b_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_912c23cb_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_12d71977_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_37782ddf_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_12608ea4_r_core__io__cursor__cursor_alloc__vec__vec_u8___)?;
+    m.function_meta(f_d87b8458_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_277fc33d__polars_io__ipc__write__ipcwriter_support__sink_)?;
+    m.function_meta(f_7ded6087_io__csv__write__writer__csvwriter_support__sink_)?;
+    m.function_meta(f_2739f519__polars_io__ipc__write__ipcwriter_support__sink_)?;
     m.function_meta(f_87471c27_me__intolazy__lazy_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_c9e16b41_ud_options_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_f5b52f93_oncat_impl_polars_lazy__scan__csv__lazycsvreader)?;
@@ -23064,6 +23659,11 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_d3aa7241_ss_join_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_6ad5962c_oin__hash_join_inner_polars_core__series__series)?;
     m.function_meta(f_6830d3a7_iessealed__as_series_polars_core__series__series)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_88fadc71_max__argagg__arg_max_polars_core__series__series)?;
     m.function_meta(f_571b5c2b_max__argagg__arg_min_polars_core__series__series)?;
     m.function_meta(f_a5527433_inktype__shrink_type_polars_core__series__series)?;
@@ -23184,11 +23784,6 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(o_3a0515d0_polars_plan__dsl__selector__selector_sub)?;
     m.function_meta(x_2d2e134b_polars_core__frame__dataframe__dataframe_index)?;
     m.function_meta(v_28f6f718_polars_arrow__datatypes__arrowdatatype__null)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_0672668a_polars_arrow__datatypes__arrowdatatype__boolean)?;
     m.function_meta(v_46ba4b50_polars_arrow__datatypes__arrowdatatype__int8)?;
     m.function_meta(v_d782b62f_polars_arrow__datatypes__arrowdatatype__int16)?;
@@ -23581,6 +24176,11 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(w_0c91e600_ars_lazy__scan__parquet__scanargsparquet__schema)?;
     m.function_meta(s_b9b71c58_lazy__scan__parquet__scanargsparquet__low_memory)?;
     m.function_meta(w_b9b71c58_lazy__scan__parquet__scanargsparquet__low_memory)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_8313754a_rs_lazy__scan__parquet__scanargsparquet__rechunk)?;
     m.function_meta(w_8313754a_rs_lazy__scan__parquet__scanargsparquet__rechunk)?;
     m.function_meta(s_aba4aadc_lars_lazy__scan__parquet__scanargsparquet__cache)?;
@@ -23701,11 +24301,6 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_844d6840_astcolumnspolicy__datetime_microseconds_downcast)?;
     m.function_meta(w_844d6840_astcolumnspolicy__datetime_microseconds_downcast)?;
     m.function_meta(s_e6b1e92e__castcolumnspolicy__datetime_milliseconds_upcast)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(w_e6b1e92e__castcolumnspolicy__datetime_milliseconds_upcast)?;
     m.function_meta(s_8aeb4f93__castcolumnspolicy__datetime_microseconds_upcast)?;
     m.function_meta(w_8aeb4f93__castcolumnspolicy__datetime_microseconds_upcast)?;

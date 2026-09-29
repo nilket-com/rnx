@@ -179,6 +179,24 @@ pub(crate) fn generic_trait_arms(
 						continue;
 					}
 				}
+				// record 0118: a method's `Self: B` (rustdoc lists it with the
+				// generics) is proven for this receiver, then dropped; it is
+				// the receiver, never inferred from an argument
+				let mut self_ok = Ok(());
+				for (g, b) in p2.generics_canonical.iter().filter(|(g, _)| g == "Self") {
+					let _ = g;
+					match world.holds_all(&w.identity, b, 0) {
+						Applicability::Proven => {}
+						Applicability::Rejected(e) | Applicability::Unresolved(e) => {
+							self_ok = Err(e);
+						}
+					}
+				}
+				if let Err(e) = self_ok {
+					why.push(format!("{head} on {}: `Self` bound: {e}", w.identity));
+					continue;
+				}
+				p2.generics_canonical.retain(|(g, _)| g != "Self");
 				let (params, ret) = match world.substitute_signature(&p2, &w.identity, &subst) {
 					Ok(x) => x,
 					Err(e) => {
@@ -204,6 +222,8 @@ pub(crate) fn generic_trait_arms(
 				syn.impl_head = None;
 				syn.impl_bounds.clear();
 				syn.impl_where.clear();
+				// the receiver's `Self` bounds were proven above
+				syn.generics_canonical.retain(|(g, _)| g != "Self");
 				out.entry(path.clone())
 					.or_default()
 					.push(TraitArm { callable: syn });
@@ -681,6 +701,10 @@ pub(crate) fn generic_traits_self_test() {
 		),
 		// one trait argument for two parameters
 		gtrait("Bad", &["A", "B"], vec![imp(series, &["i64"], &[])]),
+		// record 0118: methods with a `Self` bound, proven for the receiver
+		gtrait("Sz", &["Rhs"], vec![imp(series, &["&str"], &[])]),
+		gtrait("Uns", &["Rhs"], vec![imp(series, &["&str"], &[])]),
+		gtrait("Gfn", &["Rhs"], vec![imp(series, &["&str"], &[])]),
 	];
 	let method = |tr: &str, name: &str, param: &str| Callable {
 		key: format!("k:{tr}"),
@@ -724,6 +748,21 @@ pub(crate) fn generic_traits_self_test() {
 		method("Over", "over_to", "Rhs"),
 		method("Gen", "gen_to", "Rhs"),
 		method("Bad", "bad_to", "A"),
+		{
+			let mut m = method("Sz", "sz_to", "Rhs");
+			m.generics_canonical = vec![("Self".into(), "core::marker::Sized".into())];
+			m
+		},
+		{
+			let mut m = method("Uns", "uns_to", "Rhs");
+			m.generics_canonical = vec![("Self".into(), "polars_core::ops::Unrecorded".into())];
+			m
+		},
+		{
+			let mut m = method("Gfn", "gfn_to", "Rhs");
+			m.generics_canonical = vec![("G".into(), "core::marker::Send".into())];
+			m
+		},
 	];
 	let mut supporting = vec![sup(series, "struct"), sup(frame, "struct")];
 	supporting.extend(traits);
@@ -820,6 +859,36 @@ pub(crate) fn generic_traits_self_test() {
 		("Over", "arms overlap in script"),
 		("Gen", "is not instantiable"),
 		("Bad", "1 trait arguments for the trait's 2 parameters"),
+	] {
+		let (e, f, r) = emit(tr);
+		assert_eq!(e.status, "unsupported", "{tr} must be refused");
+		let why = format!(
+			"{} {}",
+			e.reason.clone().unwrap_or_default(),
+			e.exceptions
+				.iter()
+				.map(|x| x.reason.clone())
+				.collect::<Vec<_>>()
+				.join("; ")
+		);
+		assert!(why.contains(want), "{tr}: {why}");
+		assert!(f.is_empty() && r.is_empty(), "{tr}: no binding text");
+	}
+	// record 0118: `Self: Sized` is proven for the sized receiver and dropped;
+	// an unproven `Self` bound refuses the arm with no text; a method generic
+	// no argument binds stays refused
+	let (e, f, _) = emit("Sz");
+	assert_eq!(
+		e.status,
+		"generated",
+		"{:?} {:?}",
+		e.reason,
+		e.exceptions.iter().map(|x| &x.reason).collect::<Vec<_>>()
+	);
+	assert!(f.contains("path = sz_to"), "{f}");
+	for (tr, want) in [
+		("Uns", "`Self` bound"),
+		("Gfn", "not inferable from arguments: G"),
 	] {
 		let (e, f, r) = emit(tr);
 		assert_eq!(e.status, "unsupported", "{tr} must be refused");

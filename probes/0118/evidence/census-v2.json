@@ -1,0 +1,996 @@
+{
+ "counts": {
+  "out of scope": 1,
+  "reachable": 115,
+  "refused: path": 13
+ },
+ "owners": {
+  "polars_io::avro::read::AvroReader": {
+   "detail": "SerReader::new then finish",
+   "reachable": true
+  },
+  "polars_io::avro::write::AvroWriter": {
+   "detail": "SerWriter::new then finish",
+   "reachable": true
+  },
+  "polars_io::csv::read::reader::CsvReader": {
+   "detail": "SerReader::new then finish",
+   "reachable": true
+  },
+  "polars_io::csv::write::writer::BatchedWriter": {
+   "detail": "constructed by CsvWriter::batched",
+   "reachable": true
+  },
+  "polars_io::csv::write::writer::CsvWriter": {
+   "detail": "SerWriter::new then finish",
+   "reachable": true
+  },
+  "polars_io::ipc::ipc_file::IpcReader": {
+   "detail": "SerReader::new then finish",
+   "reachable": true
+  },
+  "polars_io::ipc::ipc_stream::IpcStreamReader": {
+   "detail": "SerReader::new then finish",
+   "reachable": true
+  },
+  "polars_io::ipc::ipc_stream::IpcStreamWriter": {
+   "detail": "SerWriter::new then finish",
+   "reachable": true
+  },
+  "polars_io::ipc::write::BatchedWriter": {
+   "detail": "constructed by IpcWriter::batched",
+   "reachable": true
+  },
+  "polars_io::ipc::write::IpcWriter": {
+   "detail": "SerWriter::new then finish",
+   "reachable": true
+  },
+  "polars_io::json::BatchedWriter": {
+   "detail": "constructed by new; finished by write_batch",
+   "reachable": true
+  },
+  "polars_io::json::JsonReader": {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "reachable": false
+  },
+  "polars_io::json::JsonWriter": {
+   "detail": "SerWriter::new then finish",
+   "reachable": true
+  },
+  "polars_io::parquet::read::reader::ParquetReader": {
+   "detail": "SerReader::new then finish",
+   "reachable": true
+  },
+  "polars_io::parquet::write::batched_writer::BatchedWriter": {
+   "detail": "constructed by ParquetWriter::batched",
+   "reachable": true
+  },
+  "polars_io::parquet::write::writer::ParquetWriter": {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "reachable": true
+  },
+  "polars_io::utils::compression::ByteSourceReader": {
+   "detail": "constructed by try_new; finished by compression, is_compressed, read_next_slice",
+   "reachable": true
+  },
+  "polars_io::utils::compression::compressed_writer::CompressedWriter": {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "reachable": false
+  }
+ },
+ "reconcile": {
+  "only_0116": [
+   "polars_io:10029"
+  ],
+  "only_rule": [
+   "polars_io:10103",
+   "polars_io:4941",
+   "polars_io:7301"
+  ]
+ },
+ "rows": [
+  {
+   "detail": "a source this record does not instantiate (polars_io::utils::compression::ByteSourceReader<polars_io::utils::stream_buf_reader::ReaderSource>, core::option::Option<u8>, core::option::Option<&polars_io::csv::read::options::CommentPrefix>, u8, bool, usize, usize, usize, bool, core::option::Option<usiz",
+   "disposition": "refused: path",
+   "key": "polars_io:4640",
+   "owner": "",
+   "path": "polars_io::csv::read::parser::count_rows_from_reader_par"
+  },
+  {
+   "detail": "a source this record does not instantiate (&polars_io::csv::read::options::CsvReadOptions, core::option::Option<polars_core::schema::SchemaRef>, bool, bool, core::option::Option<usize>, core::option::Option<polars_io::csv::read::streaming::InspectContentFn>, &mut polars_io::utils::compression::ByteS",
+   "disposition": "refused: path",
+   "key": "polars_io:4941",
+   "owner": "",
+   "path": "polars_io::csv::read::streaming::read_until_start_and_infer_schema"
+  },
+  {
+   "detail": "function generic taken as R = core::io::cursor::Cursor<alloc::vec::Vec<u8>>",
+   "disposition": "reachable",
+   "key": "polars_io:7301",
+   "owner": "",
+   "path": "polars_io::ndjson::infer_schema"
+  },
+  {
+   "detail": "function generic taken as R = core::io::cursor::Cursor<alloc::vec::Vec<u8>>",
+   "disposition": "reachable",
+   "key": "polars_io:10103",
+   "owner": "",
+   "path": "polars_io::utils::other::get_reader_bytes"
+  },
+  {
+   "detail": "`&mut dyn core::io::write::Write` taken as Sink",
+   "disposition": "reachable",
+   "key": "polars_core:9738",
+   "owner": "polars_core::frame::dataframe::DataFrame",
+   "path": "polars_core::frame::dataframe::DataFrame::serialize_into_json"
+  },
+  {
+   "detail": "`&mut dyn core::io::write::Write` taken as Sink",
+   "disposition": "reachable",
+   "key": "polars_core:9741",
+   "owner": "polars_core::frame::dataframe::DataFrame",
+   "path": "polars_core::frame::dataframe::DataFrame::serialize_into_writer"
+  },
+  {
+   "detail": "`&mut dyn core::io::write::Write` taken as Sink",
+   "disposition": "reachable",
+   "key": "polars_core:13448",
+   "owner": "polars_core::series::Series",
+   "path": "polars_core::series::Series::serialize_into_writer"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:10",
+   "owner": "polars_io::avro::read::AvroReader",
+   "path": "polars_io::avro::read::AvroReader::arrow_schema"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7",
+   "owner": "polars_io::avro::read::AvroReader",
+   "path": "polars_io::avro::read::AvroReader::schema"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:16",
+   "owner": "polars_io::avro::read::AvroReader",
+   "path": "polars_io::avro::read::AvroReader::with_columns"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:12",
+   "owner": "polars_io::avro::read::AvroReader",
+   "path": "polars_io::avro::read::AvroReader::with_n_rows"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:14",
+   "owner": "polars_io::avro::read::AvroReader",
+   "path": "polars_io::avro::read::AvroReader::with_projection"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:246",
+   "owner": "polars_io::avro::write::AvroWriter",
+   "path": "polars_io::avro::write::AvroWriter::with_compression"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:247",
+   "owner": "polars_io::avro::write::AvroWriter",
+   "path": "polars_io::avro::write::AvroWriter::with_name"
+  },
+  {
+   "detail": "a file-handle constructor",
+   "disposition": "out of scope",
+   "key": "polars_io:4038",
+   "owner": "polars_io::csv::read::options::CsvReadOptions",
+   "path": "polars_io::csv::read::options::CsvReadOptions::into_reader_with_file_handle"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:4855",
+   "owner": "polars_io::csv::read::reader::CsvReader",
+   "path": "polars_io::csv::read::reader::CsvReader::with_options"
+  },
+  {
+   "detail": "constructed by CsvWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:5472",
+   "owner": "polars_io::csv::write::writer::BatchedWriter",
+   "path": "polars_io::csv::write::writer::BatchedWriter::finish"
+  },
+  {
+   "detail": "constructed by CsvWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:5471",
+   "owner": "polars_io::csv::write::writer::BatchedWriter",
+   "path": "polars_io::csv::write::writer::BatchedWriter::write_batch"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5391",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::batched"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5376",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::include_bom"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5377",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::include_header"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5390",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::n_threads"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5379",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_batch_size"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5380",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_date_format"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5382",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_datetime_format"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5385",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_decimal_comma"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5384",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_float_precision"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5383",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_float_scientific"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5388",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_line_terminator"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5387",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_null_value"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5386",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_quote_char"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5389",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_quote_style"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5378",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_separator"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5381",
+   "owner": "polars_io::csv::write::writer::CsvWriter",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_time_format"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5766",
+   "owner": "polars_io::ipc::ipc_file::IpcReader",
+   "path": "polars_io::ipc::ipc_file::IpcReader::custom_metadata"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5776",
+   "owner": "polars_io::ipc::ipc_file::IpcReader",
+   "path": "polars_io::ipc::ipc_file::IpcReader::finish_with_scan_ops"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5764",
+   "owner": "polars_io::ipc::ipc_file::IpcReader",
+   "path": "polars_io::ipc::ipc_file::IpcReader::schema"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5769",
+   "owner": "polars_io::ipc::ipc_file::IpcReader",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_columns"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5770",
+   "owner": "polars_io::ipc::ipc_file::IpcReader",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_hive_partition_columns"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5771",
+   "owner": "polars_io::ipc::ipc_file::IpcReader",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_include_file_path"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5768",
+   "owner": "polars_io::ipc::ipc_file::IpcReader",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_n_rows"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5774",
+   "owner": "polars_io::ipc::ipc_file::IpcReader",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_projection"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:5773",
+   "owner": "polars_io::ipc::ipc_file::IpcReader",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_row_index"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6032",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamReader",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamReader::arrow_schema"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6033",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamReader",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamReader::custom_metadata"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6031",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamReader",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamReader::schema"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6035",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamReader",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamReader::with_columns"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6034",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamReader",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamReader::with_n_rows"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6037",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamReader",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamReader::with_projection"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6036",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamReader",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamReader::with_row_index"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6122",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamWriter",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamWriter::set_custom_schema_metadata"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6120",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamWriter",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamWriter::with_compat_level"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6118",
+   "owner": "polars_io::ipc::ipc_stream::IpcStreamWriter",
+   "path": "polars_io::ipc::ipc_stream::IpcStreamWriter::with_compression"
+  },
+  {
+   "detail": "constructed by IpcWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:6480",
+   "owner": "polars_io::ipc::write::BatchedWriter",
+   "path": "polars_io::ipc::write::BatchedWriter::finish"
+  },
+  {
+   "detail": "constructed by IpcWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:6479",
+   "owner": "polars_io::ipc::write::BatchedWriter",
+   "path": "polars_io::ipc::write::BatchedWriter::set_custom_metadata"
+  },
+  {
+   "detail": "constructed by IpcWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:6475",
+   "owner": "polars_io::ipc::write::BatchedWriter",
+   "path": "polars_io::ipc::write::BatchedWriter::write_batch"
+  },
+  {
+   "detail": "constructed by IpcWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:6476",
+   "owner": "polars_io::ipc::write::BatchedWriter",
+   "path": "polars_io::ipc::write::BatchedWriter::write_encoded"
+  },
+  {
+   "detail": "constructed by IpcWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:6478",
+   "owner": "polars_io::ipc::write::BatchedWriter",
+   "path": "polars_io::ipc::write::BatchedWriter::write_encoded_dictionaries"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6395",
+   "owner": "polars_io::ipc::write::IpcWriter",
+   "path": "polars_io::ipc::write::IpcWriter::batched"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6398",
+   "owner": "polars_io::ipc::write::IpcWriter",
+   "path": "polars_io::ipc::write::IpcWriter::set_custom_schema_metadata"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6391",
+   "owner": "polars_io::ipc::write::IpcWriter",
+   "path": "polars_io::ipc::write::IpcWriter::with_compat_level"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6390",
+   "owner": "polars_io::ipc::write::IpcWriter",
+   "path": "polars_io::ipc::write::IpcWriter::with_compression"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6394",
+   "owner": "polars_io::ipc::write::IpcWriter",
+   "path": "polars_io::ipc::write::IpcWriter::with_parallel"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6392",
+   "owner": "polars_io::ipc::write::IpcWriter",
+   "path": "polars_io::ipc::write::IpcWriter::with_record_batch_size"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6393",
+   "owner": "polars_io::ipc::write::IpcWriter",
+   "path": "polars_io::ipc::write::IpcWriter::with_record_batch_statistics"
+  },
+  {
+   "detail": "function generic taken as W = support::Sink",
+   "disposition": "reachable",
+   "key": "polars_io:6283",
+   "owner": "polars_io::ipc::write::IpcWriterOptions",
+   "path": "polars_io::ipc::write::IpcWriterOptions::to_writer"
+  },
+  {
+   "detail": "constructed by new; finished by write_batch",
+   "disposition": "reachable",
+   "key": "polars_io:6923",
+   "owner": "polars_io::json::BatchedWriter",
+   "path": "polars_io::json::BatchedWriter::new"
+  },
+  {
+   "detail": "constructed by new; finished by write_batch",
+   "disposition": "reachable",
+   "key": "polars_io:6924",
+   "owner": "polars_io::json::BatchedWriter",
+   "path": "polars_io::json::BatchedWriter::write_batch"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:7008",
+   "owner": "polars_io::json::JsonReader",
+   "path": "polars_io::json::JsonReader::infer_schema_len"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:7009",
+   "owner": "polars_io::json::JsonReader",
+   "path": "polars_io::json::JsonReader::with_batch_size"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:7012",
+   "owner": "polars_io::json::JsonReader",
+   "path": "polars_io::json::JsonReader::with_ignore_errors"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:7011",
+   "owner": "polars_io::json::JsonReader",
+   "path": "polars_io::json::JsonReader::with_json_format"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:7010",
+   "owner": "polars_io::json::JsonReader",
+   "path": "polars_io::json::JsonReader::with_projection"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:7006",
+   "owner": "polars_io::json::JsonReader",
+   "path": "polars_io::json::JsonReader::with_schema"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:7007",
+   "owner": "polars_io::json::JsonReader",
+   "path": "polars_io::json::JsonReader::with_schema_overwrite"
+  },
+  {
+   "detail": "SerWriter::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:6846",
+   "owner": "polars_io::json::JsonWriter",
+   "path": "polars_io::json::JsonWriter::with_json_format"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7937",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::get_metadata"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7933",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::num_rows"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7926",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::read_parallel"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7932",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::schema"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7925",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::set_low_memory"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7936",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::set_metadata"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7931",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_arrow_schema_projection"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7928",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_columns"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7934",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_hive_partition_columns"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7935",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_include_file_path"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7929",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_projection"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7930",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_row_index"
+  },
+  {
+   "detail": "SerReader::new then finish",
+   "disposition": "reachable",
+   "key": "polars_io:7927",
+   "owner": "polars_io::parquet::read::reader::ParquetReader",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_slice"
+  },
+  {
+   "detail": "constructed by ParquetWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:8047",
+   "owner": "polars_io::parquet::write::batched_writer::BatchedWriter",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::encode_and_compress"
+  },
+  {
+   "detail": "constructed by ParquetWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:8056",
+   "owner": "polars_io::parquet::write::batched_writer::BatchedWriter",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::finish"
+  },
+  {
+   "detail": "constructed by ParquetWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:8054",
+   "owner": "polars_io::parquet::write::batched_writer::BatchedWriter",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::get_writer"
+  },
+  {
+   "detail": "constructed by ParquetWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:8041",
+   "owner": "polars_io::parquet::write::batched_writer::BatchedWriter",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::new"
+  },
+  {
+   "detail": "constructed by ParquetWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:8050",
+   "owner": "polars_io::parquet::write::batched_writer::BatchedWriter",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::parquet_schema"
+  },
+  {
+   "detail": "constructed by ParquetWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:8049",
+   "owner": "polars_io::parquet::write::batched_writer::BatchedWriter",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_batch"
+  },
+  {
+   "detail": "constructed by ParquetWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:8052",
+   "owner": "polars_io::parquet::write::batched_writer::BatchedWriter",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_group"
+  },
+  {
+   "detail": "constructed by ParquetWriter::batched",
+   "disposition": "reachable",
+   "key": "polars_io:8055",
+   "owner": "polars_io::parquet::write::batched_writer::BatchedWriter",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_groups"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8541",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::batched"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8542",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::finish"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8533",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::new"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8538",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::set_parallel"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8534",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_compression"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8540",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_context_info"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8537",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_data_page_size"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8539",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_key_value_metadata"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8536",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_row_group_size"
+  },
+  {
+   "detail": "constructed by ParquetWriteOptions::to_writer, new; finished by batched, finish",
+   "disposition": "reachable",
+   "key": "polars_io:8535",
+   "owner": "polars_io::parquet::write::writer::ParquetWriter",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_statistics"
+  },
+  {
+   "detail": "constructed by try_new; finished by compression, is_compressed, read_next_slice",
+   "disposition": "reachable",
+   "key": "polars_io:10024",
+   "owner": "polars_io::utils::compression::ByteSourceReader",
+   "path": "polars_io::utils::compression::ByteSourceReader::compression"
+  },
+  {
+   "detail": "a source this record does not instantiate (polars_io::utils::compression::ByteSourceReader<polars_io::utils::stream_buf_reader::ReaderSource>; parameters polars_buffer::buffer::Buffer<u8>)",
+   "disposition": "refused: path",
+   "key": "polars_io:10029",
+   "owner": "polars_io::utils::compression::ByteSourceReader",
+   "path": "polars_io::utils::compression::ByteSourceReader::from_memory"
+  },
+  {
+   "detail": "constructed by try_new; finished by compression, is_compressed, read_next_slice",
+   "disposition": "reachable",
+   "key": "polars_io:10026",
+   "owner": "polars_io::utils::compression::ByteSourceReader",
+   "path": "polars_io::utils::compression::ByteSourceReader::ideal_read_size"
+  },
+  {
+   "detail": "constructed by try_new; finished by compression, is_compressed, read_next_slice",
+   "disposition": "reachable",
+   "key": "polars_io:10025",
+   "owner": "polars_io::utils::compression::ByteSourceReader",
+   "path": "polars_io::utils::compression::ByteSourceReader::initial_read_size"
+  },
+  {
+   "detail": "constructed by try_new; finished by compression, is_compressed, read_next_slice",
+   "disposition": "reachable",
+   "key": "polars_io:10023",
+   "owner": "polars_io::utils::compression::ByteSourceReader",
+   "path": "polars_io::utils::compression::ByteSourceReader::is_compressed"
+  },
+  {
+   "detail": "constructed by try_new; finished by compression, is_compressed, read_next_slice",
+   "disposition": "reachable",
+   "key": "polars_io:10027",
+   "owner": "polars_io::utils::compression::ByteSourceReader",
+   "path": "polars_io::utils::compression::ByteSourceReader::read_next_slice"
+  },
+  {
+   "detail": "constructed by try_new; finished by compression, is_compressed, read_next_slice",
+   "disposition": "reachable",
+   "key": "polars_io:10022",
+   "owner": "polars_io::utils::compression::ByteSourceReader",
+   "path": "polars_io::utils::compression::ByteSourceReader::try_new"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:9732",
+   "owner": "polars_io::utils::compression::compressed_writer::CompressedWriter",
+   "path": "polars_io::utils::compression::compressed_writer::CompressedWriter::finish"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:9729",
+   "owner": "polars_io::utils::compression::compressed_writer::CompressedWriter",
+   "path": "polars_io::utils::compression::compressed_writer::CompressedWriter::gzip"
+  },
+  {
+   "detail": "path: the owner carries a lifetime parameter, which a wrapper cannot own",
+   "disposition": "refused: path",
+   "key": "polars_io:9730",
+   "owner": "polars_io::utils::compression::compressed_writer::CompressedWriter",
+   "path": "polars_io::utils::compression::compressed_writer::CompressedWriter::zstd"
+  },
+  {
+   "detail": "`&mut dyn alloc::io::read::Read` taken as Cursor",
+   "disposition": "reachable",
+   "key": "polars_plan:657",
+   "owner": "polars_plan::dsl::arity::ChainedThen",
+   "path": "polars_plan::dsl::arity::ChainedThen::deserialize_compact_from"
+  },
+  {
+   "detail": "`&mut dyn core::io::write::Write` taken as Sink",
+   "disposition": "reachable",
+   "key": "polars_plan:656",
+   "owner": "polars_plan::dsl::arity::ChainedThen",
+   "path": "polars_plan::dsl::arity::ChainedThen::serialize_compact_into"
+  },
+  {
+   "detail": "`&mut dyn alloc::io::read::Read` taken as Cursor",
+   "disposition": "reachable",
+   "key": "polars_plan:483",
+   "owner": "polars_plan::dsl::arity::Then",
+   "path": "polars_plan::dsl::arity::Then::deserialize_compact_from"
+  },
+  {
+   "detail": "`&mut dyn core::io::write::Write` taken as Sink",
+   "disposition": "reachable",
+   "key": "polars_plan:481",
+   "owner": "polars_plan::dsl::arity::Then",
+   "path": "polars_plan::dsl::arity::Then::serialize_compact_into"
+  },
+  {
+   "detail": "`&mut dyn alloc::io::read::Read` taken as Cursor",
+   "disposition": "reachable",
+   "key": "polars_plan:2150",
+   "owner": "polars_plan::dsl::expr::Expr",
+   "path": "polars_plan::dsl::expr::Expr::deserialize_binary_from"
+  },
+  {
+   "detail": "`&mut dyn alloc::io::read::Read` taken as Cursor",
+   "disposition": "reachable",
+   "key": "polars_plan:2152",
+   "owner": "polars_plan::dsl::expr::Expr",
+   "path": "polars_plan::dsl::expr::Expr::deserialize_compact_from"
+  },
+  {
+   "detail": "`&mut dyn core::io::write::Write` taken as Sink",
+   "disposition": "reachable",
+   "key": "polars_plan:2149",
+   "owner": "polars_plan::dsl::expr::Expr",
+   "path": "polars_plan::dsl::expr::Expr::serialize_binary_into"
+  },
+  {
+   "detail": "`&mut dyn core::io::write::Write` taken as Sink",
+   "disposition": "reachable",
+   "key": "polars_plan:2151",
+   "owner": "polars_plan::dsl::expr::Expr",
+   "path": "polars_plan::dsl::expr::Expr::serialize_compact_into"
+  },
+  {
+   "detail": "`&mut dyn core::io::write::Write` taken as Sink",
+   "disposition": "reachable",
+   "key": "polars_plan:2153",
+   "owner": "polars_plan::dsl::expr::Expr",
+   "path": "polars_plan::dsl::expr::Expr::serialize_json_into"
+  },
+  {
+   "detail": "function generic taken as R = core::io::cursor::Cursor<alloc::vec::Vec<u8>>",
+   "disposition": "reachable",
+   "key": "polars_plan:12577",
+   "owner": "polars_plan::dsl::plan::DslPlan",
+   "path": "polars_plan::dsl::plan::DslPlan::deserialize_versioned"
+  },
+  {
+   "detail": "`&mut dyn core::io::write::Write` taken as Sink",
+   "disposition": "reachable",
+   "key": "polars_plan:12573",
+   "owner": "polars_plan::dsl::plan::DslPlan",
+   "path": "polars_plan::dsl::plan::DslPlan::serialize_json_into"
+  },
+  {
+   "detail": "function generic taken as W = support::Sink",
+   "disposition": "reachable",
+   "key": "polars_plan:12575",
+   "owner": "polars_plan::dsl::plan::DslPlan",
+   "path": "polars_plan::dsl::plan::DslPlan::serialize_versioned"
+  }
+ ]
+}

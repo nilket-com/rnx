@@ -277,6 +277,59 @@ impl World {
 		if depth > 6 {
 			return Err(Unsupported("nesting", t.render()));
 		}
+		// record 0118: in-memory I/O. A reader's source is script `Bytes`
+		// (bounded, copied once); a writer's sink is a `polars::Sink` handle
+		// (a clone, sharing its committed state); `&mut dyn Read`/`Write`
+		// take the same two, as a temporary the call borrows
+		{
+			use crate::families::std_facts::{CURSOR, SINK};
+			let io = |rust_ty: &str, pre: Vec<String>, conv: String, doc: &str, shape: &str| Arg {
+				rust_ty: rust_ty.into(),
+				fallible: conv.contains('?') || pre.iter().any(|p| p.contains('?')),
+				conv,
+				doc: doc.into(),
+				pre,
+				borrow: 0,
+				owned: None,
+				shape: shape.into(),
+			};
+			let from_bytes = format!("support::cursor_from_bytes(&{name}, \"{name}\")?");
+			match t.render().as_str() {
+				r if r == CURSOR => {
+					return Ok(io("rune::Value", vec![], from_bytes, "Bytes", "bytes"));
+				}
+				r if r == SINK => {
+					return Ok(io(
+						"&support::Sink",
+						vec![],
+						format!("{name}.clone()"),
+						"polars::Sink",
+						"sink",
+					));
+				}
+				"&mut dyn core::io::write::Write" => {
+					let v = self.tmp();
+					return Ok(io(
+						"&support::Sink",
+						vec![format!("let mut {v} = {name}.clone();")],
+						format!("&mut {v}"),
+						"polars::Sink",
+						"sink",
+					));
+				}
+				"&mut dyn alloc::io::read::Read" => {
+					let v = self.tmp();
+					return Ok(io(
+						"rune::Value",
+						vec![format!("let mut {v} = {from_bytes};")],
+						format!("&mut {v}"),
+						"Bytes",
+						"bytes",
+					));
+				}
+				_ => {}
+			}
+		}
 		// record 0115: a listed bitmap input (`ARG_TOP`)
 		if let Some(a) = self.family_arg(ArgSite::Top, t, name, owner)? {
 			return Ok(a);

@@ -1,0 +1,3102 @@
+{
+ "census": [
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_core:7683",
+   "path": "polars_core::frame::dataframe::DataFrame::serialize_into_writer"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_core:11212",
+   "path": "polars_core::series::Series::serialize_into_writer"
+  },
+  {
+   "census": "out of scope",
+   "detail": "bound: reader (R)",
+   "final": "unsupported",
+   "key": "polars_io:2341",
+   "path": "polars_io::csv::read::options::CsvReadOptions::into_reader_with_file_handle"
+  },
+  {
+   "census": "refused: path",
+   "detail": "generic type: reader (polars_io::utils::compression::ByteSourceReader<polars_io::utils::stream_buf_reader::ReaderSource>)",
+   "final": "unsupported",
+   "key": "polars_io:2829",
+   "path": "polars_io::csv::read::parser::count_rows_from_reader_par"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3002",
+   "path": "polars_io::csv::read::reader::CsvReader::with_options"
+  },
+  {
+   "census": "refused: path",
+   "detail": "foreign type: inspect_first_content_row_fn (alloc::boxed::Box<dyn core::ops::function::FnMut(&[u8])>)",
+   "final": "unsupported",
+   "key": "polars_io:3070",
+   "path": "polars_io::csv::read::streaming::read_until_start_and_infer_schema"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3507",
+   "path": "polars_io::csv::write::writer::BatchedWriter::finish"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3506",
+   "path": "polars_io::csv::write::writer::BatchedWriter::write_batch"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3444",
+   "path": "polars_io::csv::write::writer::CsvWriter::batched"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3429",
+   "path": "polars_io::csv::write::writer::CsvWriter::include_bom"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3430",
+   "path": "polars_io::csv::write::writer::CsvWriter::include_header"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3443",
+   "path": "polars_io::csv::write::writer::CsvWriter::n_threads"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: batch_size (core::num::nonzero::NonZeroUsize)",
+   "final": "prediction_missed",
+   "key": "polars_io:3432",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_batch_size"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3433",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_date_format"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3435",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_datetime_format"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3438",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_decimal_comma"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3437",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_float_precision"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3436",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_float_scientific"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3441",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_line_terminator"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3440",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_null_value"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3439",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_quote_char"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3442",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_quote_style"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3431",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_separator"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3434",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_time_format"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: return (alloc::sync::Arc<polars_arrow::datatypes::Metadata>)",
+   "final": "prediction_missed",
+   "key": "polars_io:3744",
+   "path": "polars_io::ipc::ipc_file::IpcReader::custom_metadata"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: predicate (alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>)",
+   "final": "prediction_missed",
+   "key": "polars_io:3754",
+   "path": "polars_io::ipc::ipc_file::IpcReader::finish_with_scan_ops"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: return (polars_arrow::datatypes::schema::ArrowSchemaRef)",
+   "final": "prediction_missed",
+   "key": "polars_io:3742",
+   "path": "polars_io::ipc::ipc_file::IpcReader::schema"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3747",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_columns"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3748",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_hive_partition_columns"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: hidden type: include_file_path (polars_utils::pl_ref_str::PlRefStr)",
+   "final": "prediction_missed",
+   "key": "polars_io:3749",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_include_file_path"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3746",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_n_rows"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3752",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_projection"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3751",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_row_index"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "prediction_missed",
+   "key": "polars_io:4111",
+   "path": "polars_io::ipc::write::BatchedWriter::finish"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "prediction_missed",
+   "key": "polars_io:4110",
+   "path": "polars_io::ipc::write::BatchedWriter::set_custom_metadata"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "prediction_missed",
+   "key": "polars_io:4106",
+   "path": "polars_io::ipc::write::BatchedWriter::write_batch"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "prediction_missed",
+   "key": "polars_io:4107",
+   "path": "polars_io::ipc::write::BatchedWriter::write_encoded"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "prediction_missed",
+   "key": "polars_io:4109",
+   "path": "polars_io::ipc::write::BatchedWriter::write_encoded_dictionaries"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: ipc_fields (polars_arrow::io::ipc::IpcField)",
+   "final": "prediction_missed",
+   "key": "polars_io:4045",
+   "path": "polars_io::ipc::write::IpcWriter::batched"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: custom_metadata (alloc::sync::Arc<polars_arrow::datatypes::Metadata>)",
+   "final": "prediction_missed",
+   "key": "polars_io:4048",
+   "path": "polars_io::ipc::write::IpcWriter::set_custom_schema_metadata"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4041",
+   "path": "polars_io::ipc::write::IpcWriter::with_compat_level"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4040",
+   "path": "polars_io::ipc::write::IpcWriter::with_compression"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4044",
+   "path": "polars_io::ipc::write::IpcWriter::with_parallel"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4042",
+   "path": "polars_io::ipc::write::IpcWriter::with_record_batch_size"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4043",
+   "path": "polars_io::ipc::write::IpcWriter::with_record_batch_statistics"
+  },
+  {
+   "census": "reachable",
+   "detail": "bound: writer (W)",
+   "final": "prediction_missed",
+   "key": "polars_io:3952",
+   "path": "polars_io::ipc::write::IpcWriterOptions::to_writer"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5011",
+   "path": "polars_io::parquet::read::reader::ParquetReader::get_metadata"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5007",
+   "path": "polars_io::parquet::read::reader::ParquetReader::num_rows"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4999",
+   "path": "polars_io::parquet::read::reader::ParquetReader::read_parallel"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: return (polars_arrow::datatypes::schema::ArrowSchemaRef)",
+   "final": "prediction_missed",
+   "key": "polars_io:5006",
+   "path": "polars_io::parquet::read::reader::ParquetReader::schema"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4998",
+   "path": "polars_io::parquet::read::reader::ParquetReader::set_low_memory"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5010",
+   "path": "polars_io::parquet::read::reader::ParquetReader::set_metadata"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: first_schema (alloc::sync::Arc<polars_arrow::datatypes::schema::ArrowSchema>)",
+   "final": "prediction_missed",
+   "key": "polars_io:5004",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_arrow_schema_projection"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5001",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_columns"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5008",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_hive_partition_columns"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: hidden type: include_file_path (polars_utils::pl_ref_str::PlRefStr)",
+   "final": "prediction_missed",
+   "key": "polars_io:5009",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_include_file_path"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5002",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_projection"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5003",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_row_index"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5000",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_slice"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: iterator item: return (generic type: polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>)",
+   "final": "prediction_missed",
+   "key": "polars_io:5101",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::encode_and_compress"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5110",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::finish"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: return (std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>)",
+   "final": "prediction_missed",
+   "key": "polars_io:5108",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::get_writer"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: writer (std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>)",
+   "final": "prediction_missed",
+   "key": "polars_io:5095",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::new"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: return (polars_parquet::parquet::metadata::schema_descriptor::SchemaDescriptor)",
+   "final": "prediction_missed",
+   "key": "polars_io:5104",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::parquet_schema"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5103",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_batch"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: rg (polars_parquet::parquet::page::CompressedPage)",
+   "final": "prediction_missed",
+   "key": "polars_io:5106",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_group"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: generic type: rgs (polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>)",
+   "final": "prediction_missed",
+   "key": "polars_io:5109",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_groups"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5500",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::batched"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5501",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::finish"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5492",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::new"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5497",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::set_parallel"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5493",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_compression"
+  },
+  {
+   "census": "reachable",
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: generic type: context_info (polars_utils::aliases::PlHashMap<alloc::string::String, alloc::string::String>)",
+   "final": "prediction_missed",
+   "key": "polars_io:5499",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_context_info"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5496",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_data_page_size"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5498",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_key_value_metadata"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5495",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_row_group_size"
+  },
+  {
+   "census": "reachable",
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5494",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_statistics"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "prediction_missed",
+   "key": "polars_io:6466",
+   "path": "polars_io::utils::compression::ByteSourceReader::compression"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "prediction_missed",
+   "key": "polars_io:6468",
+   "path": "polars_io::utils::compression::ByteSourceReader::ideal_read_size"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "prediction_missed",
+   "key": "polars_io:6467",
+   "path": "polars_io::utils::compression::ByteSourceReader::initial_read_size"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "prediction_missed",
+   "key": "polars_io:6465",
+   "path": "polars_io::utils::compression::ByteSourceReader::is_compressed"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "prediction_missed",
+   "key": "polars_io:6469",
+   "path": "polars_io::utils::compression::ByteSourceReader::read_next_slice"
+  },
+  {
+   "census": "reachable",
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "prediction_missed",
+   "key": "polars_io:6464",
+   "path": "polars_io::utils::compression::ByteSourceReader::try_new"
+  },
+  {
+   "census": "reachable",
+   "detail": "mutable reference: reader (&mut R)",
+   "final": "prediction_missed",
+   "key": "polars_io:6590",
+   "path": "polars_io::utils::other::get_reader_bytes"
+  }
+ ],
+ "counts": {
+  "census": {
+   "generated": 51,
+   "prediction_missed": 30,
+   "unsupported": 3
+  },
+  "other_moves": 4,
+  "polars_io": {
+   "adapted": 55,
+   "generated": 54,
+   "out of scope": 114,
+   "unsupported": 187
+  }
+ },
+ "other": [
+  {
+   "bindings": 12,
+   "from": "unsupported",
+   "key": "polars_core:1821",
+   "old_reason": "on every implementor: generic parameter not inferable from arguments: Self",
+   "path": "polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values",
+   "to": "generated"
+  },
+  {
+   "bindings": 16,
+   "from": "unsupported",
+   "key": "polars_core:1873",
+   "old_reason": "on every implementor: generic parameter not inferable from arguments: Self",
+   "path": "polars_core::chunked_array::ops::ChunkFilter::filter",
+   "to": "generated"
+  },
+  {
+   "bindings": 15,
+   "from": "unsupported",
+   "key": "polars_core:1829",
+   "old_reason": "on every implementor: generic parameter not inferable from arguments: Self",
+   "path": "polars_core::chunked_array::ops::ChunkFull::full",
+   "to": "generated"
+  },
+  {
+   "bindings": 13,
+   "from": "unsupported",
+   "key": "polars_core:1319",
+   "old_reason": "on every implementor: generic parameter not inferable from arguments: Self",
+   "path": "polars_core::chunked_array::ops::ChunkSet::set",
+   "to": "generated"
+  }
+ ],
+ "polars_io": [
+  {
+   "detail": "mutable I/O trait: Write needs a byte-buffer input, a write count and I/O error routing that no binding boundary defines",
+   "final": "out of scope",
+   "key": "polars_io:800:872",
+   "path": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap as core::io::write::Write"
+  },
+  {
+   "detail": "0113 family: AsyncWrite: service trait: no Rune abstraction with a proven resource or lifetime contract",
+   "final": "out of scope",
+   "key": "polars_io:800:884",
+   "path": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap as tokio::io::async_write::AsyncWrite"
+  },
+  {
+   "detail": "foreign type: return (core::io::error::Result<&mut polars_io::cloud::cloud_writer::writer::CloudWriter>)",
+   "final": "out of scope",
+   "key": "polars_io:805",
+   "path": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap::as_cloud_writer"
+  },
+  {
+   "detail": "async: into_cloud_writer",
+   "final": "out of scope",
+   "key": "polars_io:804",
+   "path": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap::into_cloud_writer"
+  },
+  {
+   "detail": "async: write_all_owned",
+   "final": "out of scope",
+   "key": "polars_io:801",
+   "path": "polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap::write_all_owned"
+  },
+  {
+   "detail": "duplicate listing of impl polars_io:869: rustdoc lists it on this source type's page as well; its retained listing is on polars_io::cloud::cloud_writer::io_trait_wrap::CloudWriterIoTraitWrap; bound there as `from_cloud_writer`",
+   "final": "out of scope",
+   "key": "polars_io:797:869",
+   "path": "polars_io::cloud::cloud_writer::writer::CloudWriter as core::convert::From"
+  },
+  {
+   "detail": "async: finish",
+   "final": "out of scope",
+   "key": "polars_io:893",
+   "path": "polars_io::cloud::cloud_writer::writer::CloudWriter::finish"
+  },
+  {
+   "detail": "foreign type: path (object_store::path::Path)",
+   "final": "out of scope",
+   "key": "polars_io:889",
+   "path": "polars_io::cloud::cloud_writer::writer::CloudWriter::new"
+  },
+  {
+   "detail": "async: start",
+   "final": "out of scope",
+   "key": "polars_io:891",
+   "path": "polars_io::cloud::cloud_writer::writer::CloudWriter::start"
+  },
+  {
+   "detail": "async: write_all_owned",
+   "final": "out of scope",
+   "key": "polars_io:892",
+   "path": "polars_io::cloud::cloud_writer::writer::CloudWriter::write_all_owned"
+  },
+  {
+   "detail": "marker: the destructor runs when the owning Rune value is dropped, exactly once, moved or not (tests/protocols.rs drop control); there is no script-callable drop",
+   "final": "out of scope",
+   "key": "polars_io:557:1566",
+   "path": "polars_io::cloud::concurrency::ConcurrencyController as core::ops::drop::Drop"
+  },
+  {
+   "detail": "async: acquire",
+   "final": "out of scope",
+   "key": "polars_io:1510",
+   "path": "polars_io::cloud::concurrency::ConcurrencyController::acquire"
+  },
+  {
+   "detail": "foreign type: return (alloc::sync::Arc<polars_io::cloud::concurrency::admission::InFlightBudget>)",
+   "final": "out of scope",
+   "key": "polars_io:1509",
+   "path": "polars_io::cloud::concurrency::ConcurrencyController::inflight_budget"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "out of scope",
+   "key": "polars_io:1151:1426",
+   "path": "polars_io::cloud::concurrency::IoSample as core::clone::TrivialClone"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:1151:1429",
+   "path": "polars_io::cloud::concurrency::IoSample as core::marker::Copy"
+  },
+  {
+   "detail": "async: acquire",
+   "final": "out of scope",
+   "key": "polars_io:1023",
+   "path": "polars_io::cloud::concurrency::admission::InFlightBudget::acquire"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "out of scope",
+   "key": "polars_io:956:1013",
+   "path": "polars_io::cloud::concurrency::admission::InFlightStats as core::clone::TrivialClone"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:956:1016",
+   "path": "polars_io::cloud::concurrency::admission::InFlightStats as core::marker::Copy"
+  },
+  {
+   "detail": "foreign type: window (core::time::Duration)",
+   "final": "out of scope",
+   "key": "polars_io:1149",
+   "path": "polars_io::cloud::concurrency::model::Model::new"
+  },
+  {
+   "detail": "unreachable polars type: return (polars_io::cloud::concurrency::model::SignalStats)",
+   "final": "out of scope",
+   "key": "polars_io:1152",
+   "path": "polars_io::cloud::concurrency::model::Model::signal"
+  },
+  {
+   "detail": "foreign type: now (std::time::Instant)",
+   "final": "out of scope",
+   "key": "polars_io:1154",
+   "path": "polars_io::cloud::concurrency::model::Model::update"
+  },
+  {
+   "detail": "foreign type: now (std::time::Instant)",
+   "final": "out of scope",
+   "key": "polars_io:1297",
+   "path": "polars_io::cloud::concurrency::regime::Regime::new"
+  },
+  {
+   "detail": "unreachable polars type: signal (polars_io::cloud::concurrency::model::SignalStats)",
+   "final": "out of scope",
+   "key": "polars_io:1298",
+   "path": "polars_io::cloud::concurrency::regime::Regime::step"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "out of scope",
+   "key": "polars_io:1221:1280",
+   "path": "polars_io::cloud::concurrency::regime::RegimeState as core::clone::TrivialClone"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:1221:1283",
+   "path": "polars_io::cloud::concurrency::regime::RegimeState as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:1221:1286",
+   "path": "polars_io::cloud::concurrency::regime::RegimeState as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "shape: return (&'static str)",
+   "final": "out of scope",
+   "key": "polars_io:1222",
+   "path": "polars_io::cloud::concurrency::regime::RegimeState::label"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "out of scope",
+   "key": "polars_io:569:1631",
+   "path": "polars_io::cloud::concurrency_config::ConcurrencyStrategy as core::clone::TrivialClone"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:569:1636",
+   "path": "polars_io::cloud::concurrency_config::ConcurrencyStrategy as core::marker::Copy"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "out of scope",
+   "key": "polars_io:575:1699",
+   "path": "polars_io::cloud::concurrency_config::FetchConfig as core::clone::TrivialClone"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:575:1702",
+   "path": "polars_io::cloud::concurrency_config::FetchConfig as core::marker::Copy"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "out of scope",
+   "key": "polars_io:1707:1908",
+   "path": "polars_io::cloud::credential_provider::CredentialProviderFunction as core::cmp::Eq"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "out of scope",
+   "key": "polars_io:300:1783",
+   "path": "polars_io::cloud::credential_provider::PlCredentialProvider as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:300:1777",
+   "path": "polars_io::cloud::credential_provider::PlCredentialProvider as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: PlCredentialProvider -> CredentialProviderFunction reaches polars_io::cloud::credential_provider::CredentialProviderFunction: no public field, its content cannot be shown to be frame-free",
+   "final": "out of scope",
+   "key": "polars_io:300:1788",
+   "path": "polars_io::cloud::credential_provider::PlCredentialProvider as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: PlCredentialProvider -> CredentialProviderFunction reaches polars_io::cloud::credential_provider::CredentialProviderFunction: no public field, its content cannot be shown to be frame-free",
+   "final": "out of scope",
+   "key": "polars_io:300:1790",
+   "path": "polars_io::cloud::credential_provider::PlCredentialProvider as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "callback audit: refused",
+   "final": "out of scope",
+   "key": "polars_io:1708",
+   "path": "polars_io::cloud::credential_provider::PlCredentialProvider::from_func"
+  },
+  {
+   "detail": "0113 family: Resolve: generic trait impl without a family rule in this record",
+   "final": "out of scope",
+   "key": "polars_io:1982:2047",
+   "path": "polars_io::cloud::dns::CachingResolver as reqwest::dns::resolve::Resolve"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:7:155",
+   "path": "polars_io::cloud::glob::CloudLocation as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "async: glob",
+   "final": "out of scope",
+   "key": "polars_io:168",
+   "path": "polars_io::cloud::glob::glob"
+  },
+  {
+   "detail": "no wrapped implementor: ",
+   "final": "out of scope",
+   "key": "polars_io:174",
+   "path": "polars_io::cloud::object_store_setup::ExtObjectStoreBuilder::build"
+  },
+  {
+   "detail": "no wrapped implementor: ",
+   "final": "out of scope",
+   "key": "polars_io:177",
+   "path": "polars_io::cloud::object_store_setup::ExtObjectStoreBuilder::stable_cache_key"
+  },
+  {
+   "detail": "async: build_object_store",
+   "final": "out of scope",
+   "key": "polars_io:183",
+   "path": "polars_io::cloud::object_store_setup::build_object_store"
+  },
+  {
+   "detail": "foreign type: return (object_store::path::Path)",
+   "final": "out of scope",
+   "key": "polars_io:181",
+   "path": "polars_io::cloud::object_store_setup::object_path_from_str"
+  },
+  {
+   "detail": "foreign type: builder (alloc::sync::Arc<dyn polars_io::cloud::object_store_setup::ExtObjectStoreBuilder + core::marker::Send + core::marker::Sync>)",
+   "final": "out of scope",
+   "key": "polars_io:179",
+   "path": "polars_io::cloud::object_store_setup::register_object_store_builder"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "out of scope",
+   "key": "polars_io:190:290",
+   "path": "polars_io::cloud::options::CloudConfig as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:190:283",
+   "path": "polars_io::cloud::options::CloudConfig as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "out of scope",
+   "key": "polars_io:169:379",
+   "path": "polars_io::cloud::options::CloudOptions as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:169:373",
+   "path": "polars_io::cloud::options::CloudOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: CloudOptions -> CloudRetryConfig -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free",
+   "final": "out of scope",
+   "key": "polars_io:169:368",
+   "path": "polars_io::cloud::options::CloudOptions as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: CloudOptions -> CloudRetryConfig -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free",
+   "final": "out of scope",
+   "key": "polars_io:169:366",
+   "path": "polars_io::cloud::options::CloudOptions as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "impl return: return (polars_error::PolarsResult<impl object_store::ObjectStore>)",
+   "final": "out of scope",
+   "key": "polars_io:301",
+   "path": "polars_io::cloud::options::CloudOptions::build_http"
+  },
+  {
+   "detail": "shape: return (&'static Self)",
+   "final": "out of scope",
+   "key": "polars_io:296",
+   "path": "polars_io::cloud::options::CloudOptions::default_static_ref"
+  },
+  {
+   "detail": "tuple with a borrow: config ((impl core::convert::AsRef, impl core::convert::Into))",
+   "final": "out of scope",
+   "key": "polars_io:302",
+   "path": "polars_io::cloud::options::CloudOptions::from_untyped_config"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "out of scope",
+   "key": "polars_io:294:454",
+   "path": "polars_io::cloud::options::CloudRetryConfig as core::clone::TrivialClone"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "out of scope",
+   "key": "polars_io:294:469",
+   "path": "polars_io::cloud::options::CloudRetryConfig as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:294:458",
+   "path": "polars_io::cloud::options::CloudRetryConfig as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:294:463",
+   "path": "polars_io::cloud::options::CloudRetryConfig as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: CloudRetryConfig -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free",
+   "final": "out of scope",
+   "key": "polars_io:294:453",
+   "path": "polars_io::cloud::options::CloudRetryConfig as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: CloudRetryConfig -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free",
+   "final": "out of scope",
+   "key": "polars_io:294:451",
+   "path": "polars_io::cloud::options::CloudRetryConfig as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "out of scope",
+   "key": "polars_io:478:540",
+   "path": "polars_io::cloud::options::CloudType as core::clone::TrivialClone"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:478:539",
+   "path": "polars_io::cloud::options::CloudType as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "out of scope",
+   "key": "polars_io:478:543",
+   "path": "polars_io::cloud::options::CloudType as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "foreign type: err (object_store::Error)",
+   "final": "out of scope",
+   "key": "polars_io:732",
+   "path": "polars_io::cloud::polars_object_store::ObjectStoreErrorContext::attach_err_info"
+  },
+  {
+   "detail": "outward conversion, no retained listing on its target: From<PolarsObjectStoreError> for core::io::error::Error",
+   "final": "out of scope",
+   "key": "polars_io:646:725",
+   "path": "polars_io::cloud::polars_object_store::PolarsObjectStoreError as core::convert::From"
+  },
+  {
+   "detail": "outward conversion, no retained listing on its target: From<PolarsObjectStoreError> for polars_error::PolarsError",
+   "final": "out of scope",
+   "key": "polars_io:646:728",
+   "path": "polars_io::cloud::polars_object_store::PolarsObjectStoreError as core::convert::From"
+  },
+  {
+   "detail": "0113 family: Error: service trait: no Rune abstraction with a proven resource or lifetime contract",
+   "final": "out of scope",
+   "key": "polars_io:646:723",
+   "path": "polars_io::cloud::polars_object_store::PolarsObjectStoreError as core::error::Error"
+  },
+  {
+   "detail": "impl return: return (impl core::ops::function::FnOnce(object_store::Error) -> Self)",
+   "final": "out of scope",
+   "key": "polars_io:647",
+   "path": "polars_io::cloud::polars_object_store::PolarsObjectStoreError::from_url"
+  },
+  {
+   "detail": "foreign type: path (object_store::path::Path)",
+   "final": "out of scope",
+   "key": "polars_io:568",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::build_buffered_ranges_stream"
+  },
+  {
+   "detail": "async: download",
+   "final": "out of scope",
+   "key": "polars_io:578",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::download"
+  },
+  {
+   "detail": "callback audit: refused",
+   "final": "out of scope",
+   "key": "polars_io:561",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::exec_with_rebuild_retry_on_err"
+  },
+  {
+   "detail": "foreign type: return (alloc::sync::Arc<polars_io::cloud::concurrency::ConcurrencyController>)",
+   "final": "out of scope",
+   "key": "polars_io:556",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::get_or_init_concurrency"
+  },
+  {
+   "detail": "async: get_range",
+   "final": "out of scope",
+   "key": "polars_io:574",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::get_range"
+  },
+  {
+   "detail": "async: get_ranges_sort",
+   "final": "out of scope",
+   "key": "polars_io:576",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::get_ranges_sort"
+  },
+  {
+   "detail": "async: head",
+   "final": "out of scope",
+   "key": "polars_io:580",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::head"
+  },
+  {
+   "detail": "async: rebuild_inner",
+   "final": "out of scope",
+   "key": "polars_io:560",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::rebuild_inner"
+  },
+  {
+   "detail": "foreign type: io_metrics (alloc::sync::Arc<polars_io::metrics::IOMetrics>)",
+   "final": "out of scope",
+   "key": "polars_io:552",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::set_io_metrics"
+  },
+  {
+   "detail": "async: to_dyn_object_store",
+   "final": "out of scope",
+   "key": "polars_io:558",
+   "path": "polars_io::cloud::polars_object_store::inner::PolarsObjectStore::to_dyn_object_store"
+  },
+  {
+   "detail": "foreign type: return (core::num::nonzero::NonZeroUsize)",
+   "final": "unsupported",
+   "key": "polars_io:7613",
+   "path": "polars_io::configs::env_partitioned_upload_chunk_size"
+  },
+  {
+   "detail": "foreign type: return (core::num::nonzero::NonZeroUsize)",
+   "final": "unsupported",
+   "key": "polars_io:7615",
+   "path": "polars_io::configs::env_partitioned_upload_concurrency"
+  },
+  {
+   "detail": "foreign type: return (core::num::nonzero::NonZeroUsize)",
+   "final": "unsupported",
+   "key": "polars_io:7612",
+   "path": "polars_io::configs::env_upload_chunk_size"
+  },
+  {
+   "detail": "foreign type: return (core::num::nonzero::NonZeroUsize)",
+   "final": "unsupported",
+   "key": "polars_io:7614",
+   "path": "polars_io::configs::env_upload_concurrency"
+  },
+  {
+   "detail": "arity: free function with 6 parameters; Rune binds at most 5",
+   "final": "unsupported",
+   "key": "polars_io:2169",
+   "path": "polars_io::csv::read::builder::init_builders"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:2428:2672",
+   "path": "polars_io::csv::read::options::CommentPrefix as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:2428:2673",
+   "path": "polars_io::csv::read::options::CommentPrefix as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "adapted",
+   "key": "polars_io:2171:2584",
+   "path": "polars_io::csv::read::options::CsvEncoding as core::clone::TrivialClone"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:2171:2591",
+   "path": "polars_io::csv::read::options::CsvEncoding as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:2171:2583",
+   "path": "polars_io::csv::read::options::CsvEncoding as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:2171:2592",
+   "path": "polars_io::csv::read::options::CsvEncoding as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:2299:2513",
+   "path": "polars_io::csv::read::options::CsvParseOptions as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:2299:2509",
+   "path": "polars_io::csv::read::options::CsvParseOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:2311:2414",
+   "path": "polars_io::csv::read::options::CsvReadOptions as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:2311:2410",
+   "path": "polars_io::csv::read::options::CsvReadOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: CsvReadOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
+   "final": "unsupported",
+   "key": "polars_io:2311:2405",
+   "path": "polars_io::csv::read::options::CsvReadOptions as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: CsvReadOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
+   "final": "unsupported",
+   "key": "polars_io:2311:2403",
+   "path": "polars_io::csv::read::options::CsvReadOptions as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "foreign type: return (alloc::sync::Arc<polars_io::csv::read::options::CsvParseOptions>)",
+   "final": "unsupported",
+   "key": "polars_io:2312",
+   "path": "polars_io::csv::read::options::CsvReadOptions::get_parse_options"
+  },
+  {
+   "detail": "bound: reader (R)",
+   "final": "out of scope",
+   "key": "polars_io:2341",
+   "path": "polars_io::csv::read::options::CsvReadOptions::into_reader_with_file_handle"
+  },
+  {
+   "detail": "foreign type: path (std::path::PathBuf)",
+   "final": "out of scope",
+   "key": "polars_io:2338",
+   "path": "polars_io::csv::read::options::CsvReadOptions::try_into_reader_with_file_path"
+  },
+  {
+   "detail": "unreachable polars type: column_names_overwrite (polars_buffer::buffer::Buffer<polars_utils::pl_str::PlSmallStr>)",
+   "final": "unsupported",
+   "key": "polars_io:2324",
+   "path": "polars_io::csv::read::options::CsvReadOptions::with_column_names_overwrite"
+  },
+  {
+   "detail": "foreign type: columns (alloc::sync::Arc<[polars_utils::pl_str::PlSmallStr]>)",
+   "final": "unsupported",
+   "key": "polars_io:2319",
+   "path": "polars_io::csv::read::options::CsvReadOptions::with_columns"
+  },
+  {
+   "detail": "foreign type: dtype_overwrite (alloc::sync::Arc<alloc::vec::Vec<polars_core::datatypes::dtype::DataType>>)",
+   "final": "unsupported",
+   "key": "polars_io:2325",
+   "path": "polars_io::csv::read::options::CsvReadOptions::with_dtype_overwrite"
+  },
+  {
+   "detail": "foreign type: infer_schema_files (core::num::nonzero::NonZeroUsize)",
+   "final": "unsupported",
+   "key": "polars_io:2334",
+   "path": "polars_io::csv::read::options::CsvReadOptions::with_infer_schema_files"
+  },
+  {
+   "detail": "foreign type: path (std::path::PathBuf)",
+   "final": "out of scope",
+   "key": "polars_io:2313",
+   "path": "polars_io::csv::read::options::CsvReadOptions::with_path"
+  },
+  {
+   "detail": "foreign type: projection (alloc::sync::Arc<alloc::vec::Vec<usize>>)",
+   "final": "unsupported",
+   "key": "polars_io:2320",
+   "path": "polars_io::csv::read::options::CsvReadOptions::with_projection"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:2424:2756",
+   "path": "polars_io::csv::read::options::NullValues as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:2424:2757",
+   "path": "polars_io::csv::read::options::NullValues as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "shape: return ([polars_io::csv::read::parser::LineStats; ..])",
+   "final": "unsupported",
+   "key": "polars_io:2931",
+   "path": "polars_io::csv::read::parser::CountLines::analyze_chunk"
+  },
+  {
+   "detail": "mutable reference to non-wrapped: chunk_size (&mut usize)",
+   "final": "unsupported",
+   "key": "polars_io:2933",
+   "path": "polars_io::csv::read::parser::CountLines::find_next"
+  },
+  {
+   "detail": "0113 family: Iterator: iteration: the items borrow the receiver or have no proven finite bound, and no snapshot rule covers them in this record",
+   "final": "unsupported",
+   "key": "polars_io:2840:2924",
+   "path": "polars_io::csv::read::parser::SplitLines as core::iter::traits::iterator::Iterator"
+  },
+  {
+   "detail": "lifetime owner: polars_io::csv::read::parser::SplitLines",
+   "final": "unsupported",
+   "key": "polars_io:2841",
+   "path": "polars_io::csv::read::parser::SplitLines::new"
+  },
+  {
+   "detail": "arity: free function with 9 parameters; Rune binds at most 5",
+   "final": "unsupported",
+   "key": "polars_io:2828",
+   "path": "polars_io::csv::read::parser::count_rows"
+  },
+  {
+   "detail": "generic type: reader (polars_io::utils::compression::ByteSourceReader<polars_io::utils::stream_buf_reader::ReaderSource>)",
+   "final": "unsupported",
+   "key": "polars_io:2829",
+   "path": "polars_io::csv::read::parser::count_rows_from_reader_par"
+  },
+  {
+   "detail": "unreachable polars type: buffer (polars_buffer::buffer::Buffer<u8>)",
+   "final": "unsupported",
+   "key": "polars_io:2832",
+   "path": "polars_io::csv::read::parser::count_rows_from_slice_par"
+  },
+  {
+   "detail": "arity: free function with 11 parameters; Rune binds at most 5",
+   "final": "unsupported",
+   "key": "polars_io:2994",
+   "path": "polars_io::csv::read::read_impl::read_chunk"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3002",
+   "path": "polars_io::csv::read::reader::CsvReader::with_options"
+  },
+  {
+   "detail": "mutable reference: fields_to_cast (&mut alloc::vec::Vec<polars_core::datatypes::field::Field>)",
+   "final": "unsupported",
+   "key": "polars_io:3059",
+   "path": "polars_io::csv::read::reader::prepare_csv_schema"
+  },
+  {
+   "detail": "generic type: possibilities (polars_utils::aliases::PlIndexSet<polars_core::datatypes::dtype::DataType>)",
+   "final": "unsupported",
+   "key": "polars_io:3061",
+   "path": "polars_io::csv::read::schema_inference::finish_infer_field_schema"
+  },
+  {
+   "detail": "foreign type: inspect_first_content_row_fn (alloc::boxed::Box<dyn core::ops::function::FnMut(&[u8])>)",
+   "final": "unsupported",
+   "key": "polars_io:3070",
+   "path": "polars_io::csv::read::streaming::read_until_start_and_infer_schema"
+  },
+  {
+   "detail": "foreign type: inspect_first_content_row_fn (alloc::boxed::Box<dyn core::ops::function::FnMut(&[u8])>)",
+   "final": "unsupported",
+   "key": "polars_io:3068",
+   "path": "polars_io::csv::read::streaming::read_until_start_and_infer_schema_from_compressed_reader"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:3103:3171",
+   "path": "polars_io::csv::write::options::CsvWriterOptions as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3103:3174",
+   "path": "polars_io::csv::write::options::CsvWriterOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "adapted",
+   "key": "polars_io:3195:3339",
+   "path": "polars_io::csv::write::options::QuoteStyle as core::clone::TrivialClone"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:3195:3346",
+   "path": "polars_io::csv::write::options::QuoteStyle as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3195:3338",
+   "path": "polars_io::csv::write::options::QuoteStyle as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3195:3349",
+   "path": "polars_io::csv::write::options::QuoteStyle as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:3102:3263",
+   "path": "polars_io::csv::write::options::SerializeOptions as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3102:3266",
+   "path": "polars_io::csv::write::options::SerializeOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "foreign type: options (alloc::sync::Arc<polars_io::csv::write::options::SerializeOptions>)",
+   "final": "unsupported",
+   "key": "polars_io:3359",
+   "path": "polars_io::csv::write::write_impl::CsvSerializer::new"
+  },
+  {
+   "detail": "mutable reference: buffer (&mut alloc::vec::Vec<u8>)",
+   "final": "unsupported",
+   "key": "polars_io:3360",
+   "path": "polars_io::csv::write::write_impl::CsvSerializer::serialize_to_csv"
+  },
+  {
+   "detail": "slice of borrows: names (&[&str])",
+   "final": "unsupported",
+   "key": "polars_io:3419",
+   "path": "polars_io::csv::write::write_impl::csv_header"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3507",
+   "path": "polars_io::csv::write::writer::BatchedWriter::finish"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3506",
+   "path": "polars_io::csv::write::writer::BatchedWriter::write_batch"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3444",
+   "path": "polars_io::csv::write::writer::CsvWriter::batched"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3429",
+   "path": "polars_io::csv::write::writer::CsvWriter::include_bom"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3430",
+   "path": "polars_io::csv::write::writer::CsvWriter::include_header"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3443",
+   "path": "polars_io::csv::write::writer::CsvWriter::n_threads"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: batch_size (core::num::nonzero::NonZeroUsize)",
+   "final": "unsupported",
+   "key": "polars_io:3432",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_batch_size"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3433",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_date_format"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3435",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_datetime_format"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3438",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_decimal_comma"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3437",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_float_precision"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3436",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_float_scientific"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3441",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_line_terminator"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3440",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_null_value"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3439",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_quote_char"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3442",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_quote_style"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3431",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_separator"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3434",
+   "path": "polars_io::csv::write::writer::CsvWriter::with_time_format"
+  },
+  {
+   "detail": "foreign type: return (std::fs::File)",
+   "final": "unsupported",
+   "key": "polars_io:3584",
+   "path": "polars_io::file_cache::entry::FileCacheEntry::try_open_assume_latest"
+  },
+  {
+   "detail": "foreign type: return (std::fs::File)",
+   "final": "unsupported",
+   "key": "polars_io:3585",
+   "path": "polars_io::file_cache::entry::FileCacheEntry::try_open_check_latest"
+  },
+  {
+   "detail": "async: init_entries_from_uri_list",
+   "final": "out of scope",
+   "key": "polars_io:3645",
+   "path": "polars_io::file_cache::utils::init_entries_from_uri_list"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::hive::HivePathFormatter",
+   "final": "unsupported",
+   "key": "polars_io:7623:7680",
+   "path": "polars_io::hive::HivePathFormatter as core::fmt::Display"
+  },
+  {
+   "detail": "lifetime owner: polars_io::hive::HivePathFormatter",
+   "final": "unsupported",
+   "key": "polars_io:7624",
+   "path": "polars_io::hive::HivePathFormatter::new"
+  },
+  {
+   "detail": "mutable reference: cols_lhs (&mut dyn core::iter::traits::iterator::Iterator<Item = polars_core::frame::column::Column>)",
+   "final": "unsupported",
+   "key": "polars_io:7617",
+   "path": "polars_io::hive::merge_sorted_to_schema_order"
+  },
+  {
+   "detail": "callback audit: refused",
+   "final": "unsupported",
+   "key": "polars_io:7620",
+   "path": "polars_io::hive::merge_sorted_to_schema_order_impl"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: return (alloc::sync::Arc<polars_arrow::datatypes::Metadata>)",
+   "final": "unsupported",
+   "key": "polars_io:3744",
+   "path": "polars_io::ipc::ipc_file::IpcReader::custom_metadata"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: predicate (alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>)",
+   "final": "unsupported",
+   "key": "polars_io:3754",
+   "path": "polars_io::ipc::ipc_file::IpcReader::finish_with_scan_ops"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: return (polars_arrow::datatypes::schema::ArrowSchemaRef)",
+   "final": "unsupported",
+   "key": "polars_io:3742",
+   "path": "polars_io::ipc::ipc_file::IpcReader::schema"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3747",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_columns"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3748",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_hive_partition_columns"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: hidden type: include_file_path (polars_utils::pl_ref_str::PlRefStr)",
+   "final": "unsupported",
+   "key": "polars_io:3749",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_include_file_path"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3746",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_n_rows"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3752",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_projection"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:3751",
+   "path": "polars_io::ipc::ipc_file::IpcReader::with_row_index"
+  },
+  {
+   "detail": "Hash without a proven Eq: Rune map keys compare with EQ; a hashable key without total equality is refused",
+   "final": "unsupported",
+   "key": "polars_io:3658:3727",
+   "path": "polars_io::ipc::ipc_file::IpcScanOptions as core::hash::Hash"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3658:3723",
+   "path": "polars_io::ipc::ipc_file::IpcScanOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "foreign type: predicate (alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>)",
+   "final": "out of scope",
+   "key": "polars_io:3881",
+   "path": "polars_io::ipc::ipc_reader_async::IpcReadOptions::with_predicate"
+  },
+  {
+   "detail": "foreign type: projection (alloc::sync::Arc<[polars_utils::pl_str::PlSmallStr]>)",
+   "final": "out of scope",
+   "key": "polars_io:3878",
+   "path": "polars_io::ipc::ipc_reader_async::IpcReadOptions::with_projection"
+  },
+  {
+   "detail": "async: count_rows",
+   "final": "out of scope",
+   "key": "polars_io:3821",
+   "path": "polars_io::ipc::ipc_reader_async::IpcReaderAsync::count_rows"
+  },
+  {
+   "detail": "async: data",
+   "final": "out of scope",
+   "key": "polars_io:3819",
+   "path": "polars_io::ipc::ipc_reader_async::IpcReaderAsync::data"
+  },
+  {
+   "detail": "async: from_uri",
+   "final": "out of scope",
+   "key": "polars_io:3816",
+   "path": "polars_io::ipc::ipc_reader_async::IpcReaderAsync::from_uri"
+  },
+  {
+   "detail": "async: metadata",
+   "final": "out of scope",
+   "key": "polars_io:3817",
+   "path": "polars_io::ipc::ipc_reader_async::IpcReaderAsync::metadata"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:4254:4327",
+   "path": "polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:4254:4323",
+   "path": "polars_io::ipc::pl_ipc_metadata::PlIpcMetadata as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "unsupported",
+   "key": "polars_io:4111",
+   "path": "polars_io::ipc::write::BatchedWriter::finish"
+  },
+  {
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "unsupported",
+   "key": "polars_io:4110",
+   "path": "polars_io::ipc::write::BatchedWriter::set_custom_metadata"
+  },
+  {
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "unsupported",
+   "key": "polars_io:4106",
+   "path": "polars_io::ipc::write::BatchedWriter::write_batch"
+  },
+  {
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "unsupported",
+   "key": "polars_io:4107",
+   "path": "polars_io::ipc::write::BatchedWriter::write_encoded"
+  },
+  {
+   "detail": "generic owner: polars_io::ipc::write::BatchedWriter",
+   "final": "unsupported",
+   "key": "polars_io:4109",
+   "path": "polars_io::ipc::write::BatchedWriter::write_encoded_dictionaries"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "adapted",
+   "key": "polars_io:3946:4234",
+   "path": "polars_io::ipc::write::IpcCompression as core::clone::TrivialClone"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:3946:4242",
+   "path": "polars_io::ipc::write::IpcCompression as core::cmp::Eq"
+  },
+  {
+   "detail": "outward conversion, no retained listing on its target: From<IpcCompression> for polars_arrow::io::ipc::write::common::Compression",
+   "final": "unsupported",
+   "key": "polars_io:3946:4248",
+   "path": "polars_io::ipc::write::IpcCompression as core::convert::From"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3946:4237",
+   "path": "polars_io::ipc::write::IpcCompression as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3946:4238",
+   "path": "polars_io::ipc::write::IpcCompression as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: ipc_fields (polars_arrow::io::ipc::IpcField)",
+   "final": "unsupported",
+   "key": "polars_io:4045",
+   "path": "polars_io::ipc::write::IpcWriter::batched"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: custom_metadata (alloc::sync::Arc<polars_arrow::datatypes::Metadata>)",
+   "final": "unsupported",
+   "key": "polars_io:4048",
+   "path": "polars_io::ipc::write::IpcWriter::set_custom_schema_metadata"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4041",
+   "path": "polars_io::ipc::write::IpcWriter::with_compat_level"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4040",
+   "path": "polars_io::ipc::write::IpcWriter::with_compression"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4044",
+   "path": "polars_io::ipc::write::IpcWriter::with_parallel"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4042",
+   "path": "polars_io::ipc::write::IpcWriter::with_record_batch_size"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4043",
+   "path": "polars_io::ipc::write::IpcWriter::with_record_batch_statistics"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "adapted",
+   "key": "polars_io:3951:4019",
+   "path": "polars_io::ipc::write::IpcWriterOptions as core::clone::TrivialClone"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:3951:4028",
+   "path": "polars_io::ipc::write::IpcWriterOptions as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3951:4018",
+   "path": "polars_io::ipc::write::IpcWriterOptions as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3951:4024",
+   "path": "polars_io::ipc::write::IpcWriterOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "bound: writer (W)",
+   "final": "unsupported",
+   "key": "polars_io:3952",
+   "path": "polars_io::ipc::write::IpcWriterOptions::to_writer"
+  },
+  {
+   "detail": "async: record_bytes_tx",
+   "final": "out of scope",
+   "key": "polars_io:7550",
+   "path": "polars_io::metrics::OptIOMetrics::record_bytes_tx"
+  },
+  {
+   "detail": "async: record_io_read",
+   "final": "out of scope",
+   "key": "polars_io:7549",
+   "path": "polars_io::metrics::OptIOMetrics::record_io_read"
+  },
+  {
+   "detail": "hidden type: return (polars_utils::live_timer::LiveTimerSession)",
+   "final": "unsupported",
+   "key": "polars_io:7544",
+   "path": "polars_io::metrics::OptIOMetrics::start_io_session"
+  },
+  {
+   "detail": "no wrapped implementor: std::fs::File, alloc::io::buffered::bufreader::BufReader, alloc::io::buffered::bufreader::BufReader, core::io::cursor::Cursor, alloc::boxed::Box, &mut T [&mut T: a concrete impl with bounds is not decided here; alloc::io::buffered::bufreader::BufReader<&std::fs::File>: not wrapped; alloc::io::buffered::bufreader::BufReader<std::fs::File>: not wrapped; std::fs::File: not wrapped]",
+   "final": "unsupported",
+   "key": "polars_io:4339",
+   "path": "polars_io::mmap::MmapBytesReader::to_bytes"
+  },
+  {
+   "detail": "no wrapped implementor: std::fs::File, alloc::io::buffered::bufreader::BufReader, alloc::io::buffered::bufreader::BufReader, core::io::cursor::Cursor, alloc::boxed::Box, &mut T [&mut T: a concrete impl with bounds is not decided here; alloc::io::buffered::bufreader::BufReader<&std::fs::File>: not wrapped; alloc::io::buffered::bufreader::BufReader<std::fs::File>: not wrapped; std::fs::File: not wrapped]",
+   "final": "unsupported",
+   "key": "polars_io:4338",
+   "path": "polars_io::mmap::MmapBytesReader::to_file"
+  },
+  {
+   "detail": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping",
+   "final": "unsupported",
+   "key": "polars_io:4362:4422",
+   "path": "polars_io::mmap::ReaderBytes as core::convert::From"
+  },
+  {
+   "detail": "0113 family: Deref: borrowed view: the target is a reference into Polars storage, and no owned snapshot rule covers it in this record",
+   "final": "unsupported",
+   "key": "polars_io:4362:4420",
+   "path": "polars_io::mmap::ReaderBytes as core::ops::deref::Deref"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "adapted",
+   "key": "polars_io:3097:4654",
+   "path": "polars_io::options::ExternalCompression as core::clone::TrivialClone"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:3097:4662",
+   "path": "polars_io::options::ExternalCompression as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3097:4653",
+   "path": "polars_io::options::ExternalCompression as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:3097:4665",
+   "path": "polars_io::options::ExternalCompression as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "shape: return (&'static str)",
+   "final": "unsupported",
+   "key": "polars_io:4587",
+   "path": "polars_io::options::ExternalCompression::file_suffix"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:4503:4574",
+   "path": "polars_io::options::HiveOptions as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:4503:4575",
+   "path": "polars_io::options::HiveOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: HiveOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
+   "final": "unsupported",
+   "key": "polars_io:4503:4568",
+   "path": "polars_io::options::HiveOptions as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: HiveOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
+   "final": "unsupported",
+   "key": "polars_io:4503:4566",
+   "path": "polars_io::options::HiveOptions as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:2290:4493",
+   "path": "polars_io::options::RowIndex as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:2290:4494",
+   "path": "polars_io::options::RowIndex as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "async: from_uri",
+   "final": "out of scope",
+   "key": "polars_io:4683",
+   "path": "polars_io::parquet::read::async_impl::ParquetObjectStore::from_uri"
+  },
+  {
+   "detail": "async: get_metadata",
+   "final": "out of scope",
+   "key": "polars_io:4685",
+   "path": "polars_io::parquet::read::async_impl::ParquetObjectStore::get_metadata"
+  },
+  {
+   "detail": "async: num_rows",
+   "final": "out of scope",
+   "key": "polars_io:4684",
+   "path": "polars_io::parquet::read::async_impl::ParquetObjectStore::num_rows"
+  },
+  {
+   "detail": "async: num_rows_only",
+   "final": "out of scope",
+   "key": "polars_io:4686",
+   "path": "polars_io::parquet::read::async_impl::ParquetObjectStore::num_rows_only"
+  },
+  {
+   "detail": "async: schema",
+   "final": "out of scope",
+   "key": "polars_io:4687",
+   "path": "polars_io::parquet::read::async_impl::ParquetObjectStore::schema"
+  },
+  {
+   "detail": "unreachable polars type: columns (polars_parquet::parquet::metadata::column_chunk_metadata::ColumnChunkMetadata)",
+   "final": "unsupported",
+   "key": "polars_io:4741",
+   "path": "polars_io::parquet::read::mmap::to_deserializer"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "adapted",
+   "key": "polars_io:4750:4898",
+   "path": "polars_io::parquet::read::options::ParallelStrategy as core::clone::TrivialClone"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:4750:4903",
+   "path": "polars_io::parquet::read::options::ParallelStrategy as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:4750:4897",
+   "path": "polars_io::parquet::read::options::ParallelStrategy as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:4750:4904",
+   "path": "polars_io::parquet::read::options::ParallelStrategy as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:4753:4824",
+   "path": "polars_io::parquet::read::options::ParquetOptions as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:4753:4820",
+   "path": "polars_io::parquet::read::options::ParquetOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ParquetOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
+   "final": "unsupported",
+   "key": "polars_io:4753:4815",
+   "path": "polars_io::parquet::read::options::ParquetOptions as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ParquetOptions -> SchemaRef -> DataType -> Categories reaches polars_dtype::categorical::Categories: no public field, its content cannot be shown to be frame-free",
+   "final": "unsupported",
+   "key": "polars_io:4753:4813",
+   "path": "polars_io::parquet::read::options::ParquetOptions as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "adapted",
+   "key": "polars_io:4920:4980",
+   "path": "polars_io::parquet::read::read_impl::PrefilterMaskSetting as core::clone::TrivialClone"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:4920:4983",
+   "path": "polars_io::parquet::read::read_impl::PrefilterMaskSetting as core::marker::Copy"
+  },
+  {
+   "detail": "unreachable polars type: mask (polars_arrow::bitmap::immutable::Bitmap)",
+   "final": "unsupported",
+   "key": "polars_io:4916",
+   "path": "polars_io::parquet::read::read_impl::calc_prefilter_cost"
+  },
+  {
+   "detail": "unreachable polars type: md (polars_parquet::parquet::metadata::row_metadata::RowGroupMetadata)",
+   "final": "unsupported",
+   "key": "polars_io:4914",
+   "path": "polars_io::parquet::read::read_impl::create_sorting_map"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5011",
+   "path": "polars_io::parquet::read::reader::ParquetReader::get_metadata"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5007",
+   "path": "polars_io::parquet::read::reader::ParquetReader::num_rows"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4999",
+   "path": "polars_io::parquet::read::reader::ParquetReader::read_parallel"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: return (polars_arrow::datatypes::schema::ArrowSchemaRef)",
+   "final": "unsupported",
+   "key": "polars_io:5006",
+   "path": "polars_io::parquet::read::reader::ParquetReader::schema"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:4998",
+   "path": "polars_io::parquet::read::reader::ParquetReader::set_low_memory"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5010",
+   "path": "polars_io::parquet::read::reader::ParquetReader::set_metadata"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: first_schema (alloc::sync::Arc<polars_arrow::datatypes::schema::ArrowSchema>)",
+   "final": "unsupported",
+   "key": "polars_io:5004",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_arrow_schema_projection"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5001",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_columns"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5008",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_hive_partition_columns"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: hidden type: include_file_path (polars_utils::pl_ref_str::PlRefStr)",
+   "final": "unsupported",
+   "key": "polars_io:5009",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_include_file_path"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5002",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_projection"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5003",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_row_index"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5000",
+   "path": "polars_io::parquet::read::reader::ParquetReader::with_slice"
+  },
+  {
+   "detail": "generic type: schema (polars_schema::schema::Schema<polars_arrow::datatypes::field::Field, alloc::collections::btree::map::BTreeMap<polars_utils::pl_str::PlSmallStr, polars_utils::pl_str::PlSmallStr>>)",
+   "final": "unsupported",
+   "key": "polars_io:5070",
+   "path": "polars_io::parquet::read::utils::ensure_matching_dtypes_if_found"
+  },
+  {
+   "detail": "generic type: reader_schema (polars_schema::schema::Schema<polars_arrow::datatypes::field::Field, alloc::collections::btree::map::BTreeMap<polars_utils::pl_str::PlSmallStr, polars_utils::pl_str::PlSmallStr>>)",
+   "final": "unsupported",
+   "key": "polars_io:5069",
+   "path": "polars_io::parquet::read::utils::materialize_empty_df"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: iterator item: return (generic type: polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>)",
+   "final": "unsupported",
+   "key": "polars_io:5101",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::encode_and_compress"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5110",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::finish"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: return (std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>)",
+   "final": "unsupported",
+   "key": "polars_io:5108",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::get_writer"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: foreign type: writer (std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>)",
+   "final": "unsupported",
+   "key": "polars_io:5095",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::new"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: return (polars_parquet::parquet::metadata::schema_descriptor::SchemaDescriptor)",
+   "final": "unsupported",
+   "key": "polars_io:5104",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::parquet_schema"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5103",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_batch"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: unreachable polars type: rg (polars_parquet::parquet::page::CompressedPage)",
+   "final": "unsupported",
+   "key": "polars_io:5106",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_group"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: generic type: rgs (polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>)",
+   "final": "unsupported",
+   "key": "polars_io:5109",
+   "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_groups"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:5100:5296",
+   "path": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:5100:5292",
+   "path": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: KeyValueMetadata -> KeyValue reaches polars_parquet_format::parquet_format::KeyValue, which has no supporting record",
+   "final": "unsupported",
+   "key": "polars_io:5100:5287",
+   "path": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: KeyValueMetadata -> KeyValue reaches polars_parquet_format::parquet_format::KeyValue, which has no supporting record",
+   "final": "unsupported",
+   "key": "polars_io:5100:5285",
+   "path": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "lifetime type: ctx (polars_io::parquet::write::key_value_metadata::ParquetMetadataContext)",
+   "final": "unsupported",
+   "key": "polars_io:5224",
+   "path": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata::collect"
+  },
+  {
+   "detail": "marker: core::clone::TrivialClone is an unstable optimization marker with no method; its Clone::clone must be equivalent to a copy and it is \"not part of any API guarantee\" (rustc 1.98.1 core/src/clone.rs:255-283), so Clone carries the operation",
+   "final": "adapted",
+   "key": "polars_io:5302:5474",
+   "path": "polars_io::parquet::write::options::ParquetCompression as core::clone::TrivialClone"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:5302:5468",
+   "path": "polars_io::parquet::write::options::ParquetCompression as core::cmp::Eq"
+  },
+  {
+   "detail": "outward conversion, no retained listing on its target: From<ParquetCompression> for polars_parquet::parquet::parquet_bridge::CompressionOptions",
+   "final": "unsupported",
+   "key": "polars_io:5302:5481",
+   "path": "polars_io::parquet::write::options::ParquetCompression as core::convert::From"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:5302:5477",
+   "path": "polars_io::parquet::write::options::ParquetCompression as core::marker::Copy"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:5302:5469",
+   "path": "polars_io::parquet::write::options::ParquetCompression as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "marker: total equality; installs Rune EQ from the Rust ==",
+   "final": "adapted",
+   "key": "polars_io:5310:5390",
+   "path": "polars_io::parquet::write::options::ParquetWriteOptions as core::cmp::Eq"
+  },
+  {
+   "detail": "implied by the PartialEq or Clone protocol",
+   "final": "adapted",
+   "key": "polars_io:5310:5384",
+   "path": "polars_io::parquet::write::options::ParquetWriteOptions as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ParquetWriteOptions -> KeyValueMetadata -> KeyValue reaches polars_parquet_format::parquet_format::KeyValue, which has no supporting record",
+   "final": "unsupported",
+   "key": "polars_io:5310:5377",
+   "path": "polars_io::parquet::write::options::ParquetWriteOptions as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ParquetWriteOptions -> KeyValueMetadata -> KeyValue reaches polars_parquet_format::parquet_format::KeyValue, which has no supporting record",
+   "final": "unsupported",
+   "key": "polars_io:5310:5375",
+   "path": "polars_io::parquet::write::options::ParquetWriteOptions as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "bound: f (F)",
+   "final": "unsupported",
+   "key": "polars_io:5313",
+   "path": "polars_io::parquet::write::options::ParquetWriteOptions::to_writer"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5500",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::batched"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5501",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::finish"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5492",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::new"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5497",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::set_parallel"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5493",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_compression"
+  },
+  {
+   "detail": "bucket: generic (proven instantiations were not emitted; see exceptions) | unsupported: generic type: context_info (polars_utils::aliases::PlHashMap<alloc::string::String, alloc::string::String>)",
+   "final": "unsupported",
+   "key": "polars_io:5499",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_context_info"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5496",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_data_page_size"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5498",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_key_value_metadata"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5495",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_row_group_size"
+  },
+  {
+   "detail": "1 bindings",
+   "final": "generated",
+   "key": "polars_io:5494",
+   "path": "polars_io::parquet::write::writer::ParquetWriter::with_statistics"
+  },
+  {
+   "detail": "generic type: schema (polars_schema::schema::Schema<polars_arrow::datatypes::field::Field, alloc::collections::btree::map::BTreeMap<polars_utils::pl_str::PlSmallStr, polars_utils::pl_str::PlSmallStr>>)",
+   "final": "unsupported",
+   "key": "polars_io:5554",
+   "path": "polars_io::parquet::write::writer::get_encodings"
+  },
+  {
+   "detail": "foreign type: path (std::path::Path)",
+   "final": "unsupported",
+   "key": "polars_io:5571",
+   "path": "polars_io::path_utils::create_dir_owner_only"
+  },
+  {
+   "detail": "foreign type: return (alloc::borrow::Cow<[polars_utils::pl_path::PlRefPath]>)",
+   "final": "unsupported",
+   "key": "polars_io:5573",
+   "path": "polars_io::path_utils::decode_file_uri_paths"
+  },
+  {
+   "detail": "async: expand_paths",
+   "final": "out of scope",
+   "key": "polars_io:5575",
+   "path": "polars_io::path_utils::expand_paths"
+  },
+  {
+   "detail": "async: expand_paths_hive",
+   "final": "out of scope",
+   "key": "polars_io:5576",
+   "path": "polars_io::path_utils::expand_paths_hive"
+  },
+  {
+   "detail": "foreign type: path (std::path::Path)",
+   "final": "unsupported",
+   "key": "polars_io:5572",
+   "path": "polars_io::path_utils::resolve_homedir"
+  },
+  {
+   "detail": "no wrapped implementor: polars_buffer::buffer::Buffer, alloc::vec::Vec, core::result::Result [polars_buffer::buffer::Buffer<u8>: not wrapped]",
+   "final": "out of scope",
+   "key": "polars_io:5578",
+   "path": "polars_io::pl_async::GetSize::size"
+  },
+  {
+   "detail": "callback audit: refused",
+   "final": "out of scope",
+   "key": "polars_io:5587",
+   "path": "polars_io::pl_async::tune_with_concurrency_budget"
+  },
+  {
+   "detail": "callback audit: refused",
+   "final": "out of scope",
+   "key": "polars_io:5588",
+   "path": "polars_io::pl_async::with_concurrency_budget"
+  },
+  {
+   "detail": "foreign type: expr (alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>)",
+   "final": "unsupported",
+   "key": "polars_io:5674",
+   "path": "polars_io::predicates::ColumnPredicateExpr::new"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ColumnStats reaches polars_io::predicates::ColumnStats: no public field, its content cannot be shown to be frame-free",
+   "final": "unsupported",
+   "key": "polars_io:5745:5818",
+   "path": "polars_io::predicates::ColumnStats as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "serde through an unbounded IPC buffer: ColumnStats reaches polars_io::predicates::ColumnStats: no public field, its content cannot be shown to be frame-free",
+   "final": "unsupported",
+   "key": "polars_io:5745:5816",
+   "path": "polars_io::predicates::ColumnStats as serde_core::ser::Serialize"
+  },
+  {
+   "detail": "no wrapped implementor: polars_io::predicates::PhysicalExprWithConstCols, polars_expr::expressions::PhysicalIoHelper [polars_expr::expressions::PhysicalIoHelper: not wrapped; polars_io::predicates::PhysicalExprWithConstCols<alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>>: not wrapped]",
+   "final": "unsupported",
+   "key": "polars_io:5590",
+   "path": "polars_io::predicates::PhysicalIoExpr::evaluate_io"
+  },
+  {
+   "detail": "no wrapped implementor: polars_io::predicates::PhysicalExprWithConstCols [polars_io::predicates::PhysicalExprWithConstCols<alloc::sync::Arc<dyn polars_io::predicates::SkipBatchPredicate>>: not wrapped]",
+   "final": "unsupported",
+   "key": "polars_io:5881",
+   "path": "polars_io::predicates::SkipBatchPredicate::can_skip_batch"
+  },
+  {
+   "detail": "no wrapped implementor: polars_io::predicates::PhysicalExprWithConstCols [polars_io::predicates::PhysicalExprWithConstCols<alloc::sync::Arc<dyn polars_io::predicates::SkipBatchPredicate>>: not wrapped]",
+   "final": "unsupported",
+   "key": "polars_io:5883",
+   "path": "polars_io::predicates::SkipBatchPredicate::evaluate_with_stat_df"
+  },
+  {
+   "detail": "no wrapped implementor: polars_io::predicates::PhysicalExprWithConstCols [polars_io::predicates::PhysicalExprWithConstCols<alloc::sync::Arc<dyn polars_io::predicates::SkipBatchPredicate>>: not wrapped]",
+   "final": "unsupported",
+   "key": "polars_io:5880",
+   "path": "polars_io::predicates::SkipBatchPredicate::schema"
+  },
+  {
+   "detail": "trait object: predicate (dyn polars_io::predicates::PhysicalIoExpr)",
+   "final": "unsupported",
+   "key": "polars_io:5740",
+   "path": "polars_io::predicates::apply_predicate"
+  },
+  {
+   "detail": "no wrapped implementor: polars_arrow::io::ipc::read::reader::FileReader",
+   "final": "unsupported",
+   "key": "polars_io:6091",
+   "path": "polars_io::shared::ArrowReader::next_record_batch"
+  },
+  {
+   "detail": "3 bindings",
+   "final": "generated",
+   "key": "polars_io:6088",
+   "path": "polars_io::shared::SerReader::finish"
+  },
+  {
+   "detail": "3 bindings",
+   "final": "generated",
+   "key": "polars_io:6086",
+   "path": "polars_io::shared::SerReader::new"
+  },
+  {
+   "detail": "3 bindings",
+   "final": "generated",
+   "key": "polars_io:6087",
+   "path": "polars_io::shared::SerReader::set_rechunk"
+  },
+  {
+   "detail": "2 bindings",
+   "final": "generated",
+   "key": "polars_io:6090",
+   "path": "polars_io::shared::SerWriter::finish"
+  },
+  {
+   "detail": "2 bindings",
+   "final": "generated",
+   "key": "polars_io:6089",
+   "path": "polars_io::shared::SerWriter::new"
+  },
+  {
+   "detail": "generic type: return (polars_schema::schema::Schema<polars_arrow::datatypes::field::Field, alloc::collections::btree::map::BTreeMap<polars_utils::pl_str::PlSmallStr, polars_utils::pl_str::PlSmallStr>>)",
+   "final": "unsupported",
+   "key": "polars_io:6097",
+   "path": "polars_io::shared::schema_to_arrow_checked"
+  },
+  {
+   "detail": "duplicate listing whose retained listing is unsupported: owner not wrapped: polars_io::utils::byte_source::DynByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6609:6673",
+   "path": "polars_io::utils::byte_source::BufferByteSource as core::convert::From"
+  },
+  {
+   "detail": "trait has no public path: polars_io::utils::byte_source::ByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6602",
+   "path": "polars_io::utils::byte_source::ByteSource::get_range"
+  },
+  {
+   "detail": "trait has no public path: polars_io::utils::byte_source::ByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6603",
+   "path": "polars_io::utils::byte_source::ByteSource::get_ranges"
+  },
+  {
+   "detail": "trait has no public path: polars_io::utils::byte_source::ByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6601",
+   "path": "polars_io::utils::byte_source::ByteSource::get_size"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::byte_source::DynByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6619:6673",
+   "path": "polars_io::utils::byte_source::DynByteSource as core::convert::From"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::byte_source::DynByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6619:6729",
+   "path": "polars_io::utils::byte_source::DynByteSource as core::convert::From"
+  },
+  {
+   "detail": "0113 family: From: conversion: an outward target, a foreign or Arrow source, or a generic head without a proven value mapping",
+   "final": "unsupported",
+   "key": "polars_io:6619:6793",
+   "path": "polars_io::utils::byte_source::DynByteSource as core::convert::From"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::byte_source::DynByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6619:6791",
+   "path": "polars_io::utils::byte_source::DynByteSource as core::default::Default"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::byte_source::DynByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6736",
+   "path": "polars_io::utils::byte_source::DynByteSource::chunk_size"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::byte_source::DynByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6737",
+   "path": "polars_io::utils::byte_source::DynByteSource::concurrency_strategy"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::byte_source::DynByteSource",
+   "final": "out of scope",
+   "key": "polars_io:6735",
+   "path": "polars_io::utils::byte_source::DynByteSource::is_cloud"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::byte_source::DynByteSource",
+   "final": "unsupported",
+   "key": "polars_io:6734",
+   "path": "polars_io::utils::byte_source::DynByteSource::variant_name"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::byte_source::DynByteSourceBuilder",
+   "final": "unsupported",
+   "key": "polars_io:6797:6858",
+   "path": "polars_io::utils::byte_source::DynByteSourceBuilder as core::clone::Clone"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::byte_source::DynByteSourceBuilder",
+   "final": "unsupported",
+   "key": "polars_io:6797:6860",
+   "path": "polars_io::utils::byte_source::DynByteSourceBuilder as core::fmt::Debug"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::byte_source::DynByteSourceBuilder",
+   "final": "unsupported",
+   "key": "polars_io:6799",
+   "path": "polars_io::utils::byte_source::DynByteSourceBuilder::chunk_size"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::byte_source::DynByteSourceBuilder",
+   "final": "unsupported",
+   "key": "polars_io:6800",
+   "path": "polars_io::utils::byte_source::DynByteSourceBuilder::concurrency_strategy"
+  },
+  {
+   "detail": "async: try_build_from_path",
+   "final": "out of scope",
+   "key": "polars_io:6798",
+   "path": "polars_io::utils::byte_source::DynByteSourceBuilder::try_build_from_path"
+  },
+  {
+   "detail": "duplicate listing whose retained listing is unsupported: owner not wrapped: polars_io::utils::byte_source::DynByteSource",
+   "final": "out of scope",
+   "key": "polars_io:6614:6729",
+   "path": "polars_io::utils::byte_source::ObjectStoreByteSource as core::convert::From"
+  },
+  {
+   "detail": "0113 family: IntoIterator: iteration: the items borrow the receiver or have no proven finite bound, and no snapshot rule covers them in this record",
+   "final": "unsupported",
+   "key": "polars_io:6235:6305",
+   "path": "polars_io::utils::bytes_bufferer::BytesBufferer as core::iter::traits::collect::IntoIterator"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::bytes_bufferer::BytesBufferer",
+   "final": "unsupported",
+   "key": "polars_io:6242",
+   "path": "polars_io::utils::bytes_bufferer::BytesBufferer::drain"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::bytes_bufferer::BytesBufferer",
+   "final": "unsupported",
+   "key": "polars_io:6238",
+   "path": "polars_io::utils::bytes_bufferer::BytesBufferer::is_empty"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::bytes_bufferer::BytesBufferer",
+   "final": "unsupported",
+   "key": "polars_io:6239",
+   "path": "polars_io::utils::bytes_bufferer::BytesBufferer::len"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::bytes_bufferer::BytesBufferer",
+   "final": "unsupported",
+   "key": "polars_io:6236",
+   "path": "polars_io::utils::bytes_bufferer::BytesBufferer::new"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::bytes_bufferer::BytesBufferer",
+   "final": "unsupported",
+   "key": "polars_io:6240",
+   "path": "polars_io::utils::bytes_bufferer::BytesBufferer::push_owned"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::bytes_bufferer::BytesBufferer",
+   "final": "unsupported",
+   "key": "polars_io:6241",
+   "path": "polars_io::utils::bytes_bufferer::BytesBufferer::push_slice"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::bytes_bufferer::BytesBufferer",
+   "final": "unsupported",
+   "key": "polars_io:6237",
+   "path": "polars_io::utils::bytes_bufferer::BytesBufferer::stats"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::bytes_bufferer::BytesBuffererConfig",
+   "final": "unsupported",
+   "key": "polars_io:6102:6161",
+   "path": "polars_io::utils::bytes_bufferer::BytesBuffererConfig as core::clone::Clone"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::bytes_bufferer::BytesBuffererConfig",
+   "final": "unsupported",
+   "key": "polars_io:6102:6159",
+   "path": "polars_io::utils::bytes_bufferer::BytesBuffererConfig as core::fmt::Debug"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::bytes_bufferer::BytesBuffererStats",
+   "final": "unsupported",
+   "key": "polars_io:6166:6225",
+   "path": "polars_io::utils::bytes_bufferer::BytesBuffererStats as core::clone::Clone"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::bytes_bufferer::BytesBuffererStats",
+   "final": "unsupported",
+   "key": "polars_io:6166:6227",
+   "path": "polars_io::utils::bytes_bufferer::BytesBuffererStats as core::default::Default"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::bytes_bufferer::BytesBuffererStats",
+   "final": "unsupported",
+   "key": "polars_io:6166:6223",
+   "path": "polars_io::utils::bytes_bufferer::BytesBuffererStats as core::fmt::Debug"
+  },
+  {
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "unsupported",
+   "key": "polars_io:6466",
+   "path": "polars_io::utils::compression::ByteSourceReader::compression"
+  },
+  {
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "unsupported",
+   "key": "polars_io:6471",
+   "path": "polars_io::utils::compression::ByteSourceReader::from_memory"
+  },
+  {
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "unsupported",
+   "key": "polars_io:6468",
+   "path": "polars_io::utils::compression::ByteSourceReader::ideal_read_size"
+  },
+  {
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "unsupported",
+   "key": "polars_io:6467",
+   "path": "polars_io::utils::compression::ByteSourceReader::initial_read_size"
+  },
+  {
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "unsupported",
+   "key": "polars_io:6465",
+   "path": "polars_io::utils::compression::ByteSourceReader::is_compressed"
+  },
+  {
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "unsupported",
+   "key": "polars_io:6469",
+   "path": "polars_io::utils::compression::ByteSourceReader::read_next_slice"
+  },
+  {
+   "detail": "generic owner: polars_io::utils::compression::ByteSourceReader",
+   "final": "unsupported",
+   "key": "polars_io:6464",
+   "path": "polars_io::utils::compression::ByteSourceReader::try_new"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::CompressedReader",
+   "final": "unsupported",
+   "key": "polars_io:3069:6457",
+   "path": "polars_io::utils::compression::CompressedReader as alloc::io::read::Read"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::compression::CompressedReader",
+   "final": "unsupported",
+   "key": "polars_io:6390",
+   "path": "polars_io::utils::compression::CompressedReader::ideal_read_size"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::compression::CompressedReader",
+   "final": "unsupported",
+   "key": "polars_io:6389",
+   "path": "polars_io::utils::compression::CompressedReader::initial_read_size"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::compression::CompressedReader",
+   "final": "unsupported",
+   "key": "polars_io:6388",
+   "path": "polars_io::utils::compression::CompressedReader::is_compressed"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::compression::CompressedReader",
+   "final": "unsupported",
+   "key": "polars_io:6393",
+   "path": "polars_io::utils::compression::CompressedReader::read_next_slice"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::compression::CompressedReader",
+   "final": "unsupported",
+   "key": "polars_io:6391",
+   "path": "polars_io::utils::compression::CompressedReader::total_len_estimate"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::compression::CompressedReader",
+   "final": "unsupported",
+   "key": "polars_io:6387",
+   "path": "polars_io::utils::compression::CompressedReader::try_new"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::CompressedWriter",
+   "final": "unsupported",
+   "key": "polars_io:6524:6584",
+   "path": "polars_io::utils::compression::CompressedWriter as core::io::write::Write"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::compression::CompressedWriter",
+   "final": "unsupported",
+   "key": "polars_io:6525",
+   "path": "polars_io::utils::compression::CompressedWriter::gzip"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::compression::CompressedWriter",
+   "final": "unsupported",
+   "key": "polars_io:6527",
+   "path": "polars_io::utils::compression::CompressedWriter::zstd"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::SupportedCompression",
+   "final": "unsupported",
+   "key": "polars_io:6310:6374",
+   "path": "polars_io::utils::compression::SupportedCompression as core::clone::Clone"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::SupportedCompression",
+   "final": "unsupported",
+   "key": "polars_io:6310:6372",
+   "path": "polars_io::utils::compression::SupportedCompression as core::clone::TrivialClone"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::SupportedCompression",
+   "final": "unsupported",
+   "key": "polars_io:6310:6377",
+   "path": "polars_io::utils::compression::SupportedCompression as core::cmp::Eq"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::SupportedCompression",
+   "final": "unsupported",
+   "key": "polars_io:6310:6382",
+   "path": "polars_io::utils::compression::SupportedCompression as core::cmp::PartialEq"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::SupportedCompression",
+   "final": "unsupported",
+   "key": "polars_io:6310:6376",
+   "path": "polars_io::utils::compression::SupportedCompression as core::fmt::Debug"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::SupportedCompression",
+   "final": "unsupported",
+   "key": "polars_io:6310:6379",
+   "path": "polars_io::utils::compression::SupportedCompression as core::hash::Hash"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::SupportedCompression",
+   "final": "unsupported",
+   "key": "polars_io:6310:6371",
+   "path": "polars_io::utils::compression::SupportedCompression as core::marker::Copy"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::compression::SupportedCompression",
+   "final": "unsupported",
+   "key": "polars_io:6310:6380",
+   "path": "polars_io::utils::compression::SupportedCompression as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::compression::SupportedCompression",
+   "final": "unsupported",
+   "key": "polars_io:6311",
+   "path": "polars_io::utils::compression::SupportedCompression::check"
+  },
+  {
+   "detail": "no public path: polars_io::utils::compression::maybe_decompress_bytes",
+   "final": "unsupported",
+   "key": "polars_io:6383",
+   "path": "polars_io::utils::compression::maybe_decompress_bytes"
+  },
+  {
+   "detail": "0113 family: Deref: borrowed view: the target is a reference into Polars storage, and no owned snapshot rule covers it in this record",
+   "final": "unsupported",
+   "key": "polars_io:7008:7134",
+   "path": "polars_io::utils::file::BufferedWritable as core::ops::deref::Deref"
+  },
+  {
+   "detail": "0113 family: DerefMut: borrowed view: the target is a reference into Polars storage, and no owned snapshot rule covers it in this record",
+   "final": "unsupported",
+   "key": "polars_io:7008:7136",
+   "path": "polars_io::utils::file::BufferedWritable as core::ops::deref::DerefMut"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::file::Writable",
+   "final": "unsupported",
+   "key": "polars_io:6526:7069",
+   "path": "polars_io::utils::file::Writable as core::io::write::Write"
+  },
+  {
+   "detail": "0113 family: Deref: borrowed view: the target is a reference into Polars storage, and no owned snapshot rule covers it in this record",
+   "final": "unsupported",
+   "key": "polars_io:6526:7072",
+   "path": "polars_io::utils::file::Writable as core::ops::deref::Deref"
+  },
+  {
+   "detail": "0113 family: DerefMut: borrowed view: the target is a reference into Polars storage, and no owned snapshot rule covers it in this record",
+   "final": "unsupported",
+   "key": "polars_io:6526:7074",
+   "path": "polars_io::utils::file::Writable as core::ops::deref::DerefMut"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::file::Writable",
+   "final": "unsupported",
+   "key": "polars_io:7007",
+   "path": "polars_io::utils::file::Writable::as_buffered"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::file::Writable",
+   "final": "unsupported",
+   "key": "polars_io:7011",
+   "path": "polars_io::utils::file::Writable::close"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::file::Writable",
+   "final": "unsupported",
+   "key": "polars_io:7009",
+   "path": "polars_io::utils::file::Writable::sync_all"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::file::Writable",
+   "final": "unsupported",
+   "key": "polars_io:7010",
+   "path": "polars_io::utils::file::Writable::sync_data"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::file::Writable",
+   "final": "out of scope",
+   "key": "polars_io:7006",
+   "path": "polars_io::utils::file::Writable::try_into_async_writable"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::file::Writable",
+   "final": "unsupported",
+   "key": "polars_io:7004",
+   "path": "polars_io::utils::file::Writable::try_new"
+  },
+  {
+   "detail": "async: write_all_owned",
+   "final": "out of scope",
+   "key": "polars_io:7005",
+   "path": "polars_io::utils::file::Writable::write_all_owned"
+  },
+  {
+   "detail": "trait has no public path: polars_io::utils::file::WritableTrait",
+   "final": "unsupported",
+   "key": "polars_io:6995",
+   "path": "polars_io::utils::file::WritableTrait::close"
+  },
+  {
+   "detail": "trait has no public path: polars_io::utils::file::WritableTrait",
+   "final": "unsupported",
+   "key": "polars_io:6996",
+   "path": "polars_io::utils::file::WritableTrait::sync_all"
+  },
+  {
+   "detail": "trait has no public path: polars_io::utils::file::WritableTrait",
+   "final": "unsupported",
+   "key": "polars_io:6997",
+   "path": "polars_io::utils::file::WritableTrait::sync_data"
+  },
+  {
+   "detail": "0113 family: AsyncWrite: service trait: no Rune abstraction with a proven resource or lifetime contract",
+   "final": "out of scope",
+   "key": "polars_io:6863:6919",
+   "path": "polars_io::utils::file::async_writable::AsyncDynWritable as tokio::io::async_write::AsyncWrite"
+  },
+  {
+   "detail": "0113 family: Deref: borrowed view: the target is a reference into Polars storage, and no owned snapshot rule covers it in this record",
+   "final": "out of scope",
+   "key": "polars_io:6927:6988",
+   "path": "polars_io::utils::file::async_writable::AsyncWritable as core::ops::deref::Deref"
+  },
+  {
+   "detail": "0113 family: DerefMut: borrowed view: the target is a reference into Polars storage, and no owned snapshot rule covers it in this record",
+   "final": "out of scope",
+   "key": "polars_io:6927:6990",
+   "path": "polars_io::utils::file::async_writable::AsyncWritable as core::ops::deref::DerefMut"
+  },
+  {
+   "detail": "async: close",
+   "final": "out of scope",
+   "key": "polars_io:6926",
+   "path": "polars_io::utils::file::async_writable::AsyncWritable::close"
+  },
+  {
+   "detail": "async: sync_all",
+   "final": "out of scope",
+   "key": "polars_io:6930",
+   "path": "polars_io::utils::file::async_writable::AsyncWritable::sync_all"
+  },
+  {
+   "detail": "async: sync_data",
+   "final": "out of scope",
+   "key": "polars_io:6931",
+   "path": "polars_io::utils::file::async_writable::AsyncWritable::sync_data"
+  },
+  {
+   "detail": "async: try_new",
+   "final": "out of scope",
+   "key": "polars_io:6928",
+   "path": "polars_io::utils::file::async_writable::AsyncWritable::try_new"
+  },
+  {
+   "detail": "async: write_all_owned",
+   "final": "out of scope",
+   "key": "polars_io:6929",
+   "path": "polars_io::utils::file::async_writable::AsyncWritable::write_all_owned"
+  },
+  {
+   "detail": "no public path: polars_io::utils::mkdir::mkdir_recursive",
+   "final": "unsupported",
+   "key": "polars_io:7138",
+   "path": "polars_io::utils::mkdir::mkdir_recursive"
+  },
+  {
+   "detail": "async: tokio_mkdir_recursive",
+   "final": "out of scope",
+   "key": "polars_io:7139",
+   "path": "polars_io::utils::mkdir::tokio_mkdir_recursive"
+  },
+  {
+   "detail": "generic type: schema (polars_schema::schema::Schema<polars_arrow::datatypes::field::Field, alloc::collections::btree::map::BTreeMap<polars_utils::pl_str::PlSmallStr, polars_utils::pl_str::PlSmallStr>>)",
+   "final": "unsupported",
+   "key": "polars_io:6591",
+   "path": "polars_io::utils::other::apply_projection"
+  },
+  {
+   "detail": "slice of borrows: columns (&[T])",
+   "final": "unsupported",
+   "key": "polars_io:6592",
+   "path": "polars_io::utils::other::columns_to_projection"
+  },
+  {
+   "detail": "generic parameter not inferable from arguments: T",
+   "final": "unsupported",
+   "key": "polars_io:6599",
+   "path": "polars_io::utils::other::decode_json_response"
+  },
+  {
+   "detail": "mutable reference: reader (&mut R)",
+   "final": "unsupported",
+   "key": "polars_io:6590",
+   "path": "polars_io::utils::other::get_reader_bytes"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::slice::SplitSlicePosition",
+   "final": "unsupported",
+   "key": "polars_io:7147:7202",
+   "path": "polars_io::utils::slice::SplitSlicePosition as core::fmt::Debug"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::slice::SplitSlicePosition",
+   "final": "unsupported",
+   "key": "polars_io:7148",
+   "path": "polars_io::utils::slice::SplitSlicePosition::split_slice_at_file"
+  },
+  {
+   "detail": "no public path: polars_io::utils::slice::split_slice_at_file",
+   "final": "unsupported",
+   "key": "polars_io:7141",
+   "path": "polars_io::utils::slice::split_slice_at_file"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::stream_buf_reader::ReaderSource",
+   "final": "unsupported",
+   "key": "polars_io:2831:7389",
+   "path": "polars_io::utils::stream_buf_reader::ReaderSource as alloc::io::buf_read::BufRead"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::stream_buf_reader::ReaderSource",
+   "final": "unsupported",
+   "key": "polars_io:2831:7386",
+   "path": "polars_io::utils::stream_buf_reader::ReaderSource as alloc::io::read::Read"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::stream_buf_reader::StreamBufReader",
+   "final": "unsupported",
+   "key": "polars_io:7262:7326",
+   "path": "polars_io::utils::stream_buf_reader::StreamBufReader as alloc::io::buf_read::BufRead"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::stream_buf_reader::StreamBufReader",
+   "final": "unsupported",
+   "key": "polars_io:7262:7323",
+   "path": "polars_io::utils::stream_buf_reader::StreamBufReader as alloc::io::read::Read"
+  },
+  {
+   "detail": "owner has no public path: polars_io::utils::stream_buf_reader::StreamBufReader",
+   "final": "unsupported",
+   "key": "polars_io:7263",
+   "path": "polars_io::utils::stream_buf_reader::StreamBufReader::new"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7459",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as core::clone::Clone"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7457",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as core::clone::TrivialClone"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7464",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as core::cmp::Eq"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7463",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as core::cmp::PartialEq"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7468",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as core::default::Default"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7466",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as core::fmt::Debug"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7470",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as core::hash::Hash"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7460",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as core::marker::Copy"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7461",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as core::marker::StructuralPartialEq"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7456",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as serde_core::de::Deserialize"
+  },
+  {
+   "detail": "owner not wrapped: polars_io::utils::sync_on_close::SyncOnCloseType",
+   "final": "unsupported",
+   "key": "polars_io:6932:7454",
+   "path": "polars_io::utils::sync_on_close::SyncOnCloseType as serde_core::ser::Serialize"
+  }
+ ]
+}

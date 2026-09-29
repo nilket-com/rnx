@@ -6142,9 +6142,9 @@
   },
   "counts": {
     "adapted": 410,
-    "generated": 2664,
+    "generated": 2724,
     "out_of_scope": 710,
-    "unsupported": 1287
+    "unsupported": 1227
   },
   "entries": [
     {
@@ -41896,13 +41896,27 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (&mut dyn core::io::write::Write)",
+          "id": "polars_core__frame__dataframe__dataframe__serialize_into_writer",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::serialize_into_writer"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::serialize_into_writer",
+      "execution": "no fixture for a parameter (&mut dyn core::io::write::Write)",
+      "fallible": true,
       "key": "polars_core:7683",
       "kind": "inherent",
-      "reason": "mutable reference: writer (&mut dyn core::io::write::Write)",
+      "note": "mutates the Rune value in place; routed through the engine thread",
+      "rune": "polars::DataFrame::serialize_into_writer",
       "signature": "(&mut dyn core::io::write::Write) -> polars_error::PolarsResult<()>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -45536,13 +45550,27 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (&mut dyn core::io::write::Write)",
+          "id": "polars_core__series__series__serialize_into_writer",
+          "receiver": "polars_core::series::Series",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::Series::serialize_into_writer"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::series::Series::serialize_into_writer",
+      "execution": "no fixture for a parameter (&mut dyn core::io::write::Write)",
+      "fallible": true,
       "key": "polars_core:11212",
       "kind": "inherent",
-      "reason": "mutable reference: writer (&mut dyn core::io::write::Write)",
+      "note": "routed through the engine thread",
+      "rune": "polars::Series::serialize_into_writer",
       "signature": "(&mut dyn core::io::write::Write) -> polars_error::PolarsResult<()>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -49683,13 +49711,27 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__read__reader__csvreader__with_options__on__vec_u8___",
+          "receiver": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvReader::with_options"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::read::reader::CsvReader::with_options",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3002",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::read::reader::CsvReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvReader::with_options",
       "signature": "(polars_io::csv::read::options::CsvReadOptions) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "option_struct",
@@ -49710,166 +49752,411 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__batchedwriter__finish__on__sink_",
+          "receiver": "polars_io::csv::write::writer::BatchedWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvBatchedWriter::finish"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::BatchedWriter::finish",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3507",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::BatchedWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvBatchedWriter::finish",
       "signature": "() -> polars_error::PolarsResult<()>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__batchedwriter__write_batch__on__sink_",
+          "receiver": "polars_io::csv::write::writer::BatchedWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvBatchedWriter::write_batch"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::BatchedWriter::write_batch",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3506",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::BatchedWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvBatchedWriter::write_batch",
       "signature": "(&polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<()>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__batched__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::batched"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::batched",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3444",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::batched",
       "signature": "(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_io::csv::write::writer::BatchedWriter<W>>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__include_bom__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::include_bom"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::include_bom",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3429",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::include_bom",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__include_header__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::include_header"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::include_header",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3430",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::include_header",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__n_threads__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::n_threads"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::n_threads",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3443",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::n_threads",
       "signature": "(usize) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_batch_size",
+      "exceptions": [
+        {
+          "reason": "unsupported: foreign type: batch_size (core::num::nonzero::NonZeroUsize)",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:3432",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(core::num::nonzero::NonZeroUsize) -> Self",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_date_format__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_date_format"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_date_format",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3433",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_date_format",
       "signature": "(core::option::Option<polars_utils::pl_str::PlSmallStr>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_datetime_format__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_datetime_format"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_datetime_format",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3435",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_datetime_format",
       "signature": "(core::option::Option<polars_utils::pl_str::PlSmallStr>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_decimal_comma__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_decimal_comma"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_decimal_comma",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3438",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_decimal_comma",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_float_precision__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_float_precision"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_float_precision",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3437",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_float_precision",
       "signature": "(core::option::Option<usize>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_float_scientific__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_float_scientific"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_float_scientific",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3436",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_float_scientific",
       "signature": "(core::option::Option<bool>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_line_terminator__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_line_terminator"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_line_terminator",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3441",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_line_terminator",
       "signature": "(polars_utils::pl_str::PlSmallStr) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_null_value__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_null_value"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_null_value",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3440",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_null_value",
       "signature": "(polars_utils::pl_str::PlSmallStr) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_quote_char__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_quote_char"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_quote_char",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3439",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_quote_char",
       "signature": "(u8) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_quote_style__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_quote_style"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_quote_style",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3442",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_quote_style",
       "signature": "(polars_io::csv::write::options::QuoteStyle) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_separator__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_separator"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_separator",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3431",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_separator",
       "signature": "(u8) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__csv__write__writer__csvwriter__with_time_format__on__sink_",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::with_time_format"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::csv::write::writer::CsvWriter::with_time_format",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:3434",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::csv::write::writer::CsvWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::CsvWriter::with_time_format",
       "signature": "(core::option::Option<polars_utils::pl_str::PlSmallStr>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -49942,83 +50229,181 @@
     {
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcReader::custom_metadata",
+      "exceptions": [
+        {
+          "reason": "unsupported: foreign type: return (alloc::sync::Arc<polars_arrow::datatypes::Metadata>)",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:3744",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::ipc_file::IpcReader",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "() -> polars_error::PolarsResult<core::option::Option<alloc::sync::Arc<polars_arrow::datatypes::Metadata>>>",
       "status": "unsupported"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcReader::finish_with_scan_ops",
+      "exceptions": [
+        {
+          "reason": "unsupported: foreign type: predicate (alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>)",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:3754",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::ipc_file::IpcReader",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(core::option::Option<alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>>, bool) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcReader::schema",
+      "exceptions": [
+        {
+          "reason": "unsupported: unreachable polars type: return (polars_arrow::datatypes::schema::ArrowSchemaRef)",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:3742",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::ipc_file::IpcReader",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "() -> polars_error::PolarsResult<polars_arrow::datatypes::schema::ArrowSchemaRef>",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__ipc_file__ipcreader__with_columns__on__vec_u8___",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcReader::with_columns"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcReader::with_columns",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3747",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::ipc_file::IpcReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcReader::with_columns",
       "signature": "(core::option::Option<alloc::vec::Vec<alloc::string::String>>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__ipc_file__ipcreader__with_hive_partition_columns__on__vec_u8___",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcReader::with_hive_partition_columns"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcReader::with_hive_partition_columns",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3748",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::ipc_file::IpcReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcReader::with_hive_partition_columns",
       "signature": "(core::option::Option<alloc::vec::Vec<polars_core::series::Series>>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcReader::with_include_file_path",
+      "exceptions": [
+        {
+          "reason": "unsupported: hidden type: include_file_path (polars_utils::pl_ref_str::PlRefStr)",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:3749",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::ipc_file::IpcReader",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(core::option::Option<(polars_utils::pl_str::PlSmallStr, polars_utils::pl_ref_str::PlRefStr)>) -> Self",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__ipc_file__ipcreader__with_n_rows__on__vec_u8___",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcReader::with_n_rows"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcReader::with_n_rows",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3746",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::ipc_file::IpcReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcReader::with_n_rows",
       "signature": "(core::option::Option<usize>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__ipc_file__ipcreader__with_projection__on__vec_u8___",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcReader::with_projection"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcReader::with_projection",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3752",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::ipc_file::IpcReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcReader::with_projection",
       "signature": "(core::option::Option<alloc::vec::Vec<usize>>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__ipc_file__ipcreader__with_row_index__on__vec_u8___",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcReader::with_row_index"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::ipc_file::IpcReader::with_row_index",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:3751",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::ipc_file::IpcReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcReader::with_row_index",
       "signature": "(core::option::Option<polars_io::options::RowIndex>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -50164,65 +50549,149 @@
     {
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcWriter::batched",
+      "exceptions": [
+        {
+          "reason": "unsupported: unreachable polars type: ipc_fields (polars_arrow::io::ipc::IpcField)",
+          "receiver": "polars_io::ipc::write::IpcWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:4045",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::write::IpcWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(&polars_core::schema::Schema, alloc::vec::Vec<polars_arrow::io::ipc::IpcField>) -> polars_error::PolarsResult<polars_io::ipc::write::BatchedWriter<W>>",
       "status": "unsupported"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcWriter::set_custom_schema_metadata",
+      "exceptions": [
+        {
+          "reason": "unsupported: foreign type: custom_metadata (alloc::sync::Arc<polars_arrow::datatypes::Metadata>)",
+          "receiver": "polars_io::ipc::write::IpcWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:4048",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::write::IpcWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(alloc::sync::Arc<polars_arrow::datatypes::Metadata>) -> ()",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__write__ipcwriter__with_compat_level__on__sink_",
+          "receiver": "polars_io::ipc::write::IpcWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcWriter::with_compat_level"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcWriter::with_compat_level",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:4041",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::write::IpcWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcWriter::with_compat_level",
       "signature": "(polars_core::datatypes::dtype::CompatLevel) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__write__ipcwriter__with_compression__on__sink_",
+          "receiver": "polars_io::ipc::write::IpcWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcWriter::with_compression"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcWriter::with_compression",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:4040",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::write::IpcWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcWriter::with_compression",
       "signature": "(core::option::Option<polars_io::ipc::write::IpcCompression>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__write__ipcwriter__with_parallel__on__sink_",
+          "receiver": "polars_io::ipc::write::IpcWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcWriter::with_parallel"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcWriter::with_parallel",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:4044",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::write::IpcWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcWriter::with_parallel",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__write__ipcwriter__with_record_batch_size__on__sink_",
+          "receiver": "polars_io::ipc::write::IpcWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcWriter::with_record_batch_size"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcWriter::with_record_batch_size",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:4042",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::write::IpcWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcWriter::with_record_batch_size",
       "signature": "(core::option::Option<usize>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__ipc__write__ipcwriter__with_record_batch_statistics__on__sink_",
+          "receiver": "polars_io::ipc::write::IpcWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcWriter::with_record_batch_statistics"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::ipc::write::IpcWriter::with_record_batch_statistics",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:4043",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::ipc::write::IpcWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::IpcWriter::with_record_batch_statistics",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -50482,191 +50951,422 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__get_metadata__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::get_metadata"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::get_metadata",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5011",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::get_metadata",
       "signature": "() -> polars_error::PolarsResult<&polars_io::parquet::metadata::FileMetadataRef>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__num_rows__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::num_rows"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::num_rows",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5007",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::num_rows",
       "signature": "() -> polars_error::PolarsResult<usize>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__read_parallel__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::read_parallel"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::read_parallel",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:4999",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::read_parallel",
       "signature": "(polars_io::parquet::read::options::ParallelStrategy) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::schema",
+      "exceptions": [
+        {
+          "reason": "unsupported: unreachable polars type: return (polars_arrow::datatypes::schema::ArrowSchemaRef)",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5006",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "() -> polars_error::PolarsResult<polars_arrow::datatypes::schema::ArrowSchemaRef>",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__set_low_memory__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::set_low_memory"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::set_low_memory",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:4998",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::set_low_memory",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__set_metadata__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::set_metadata"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::set_metadata",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:5010",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::set_metadata",
       "signature": "(polars_io::parquet::metadata::FileMetadataRef) -> ()",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::with_arrow_schema_projection",
+      "exceptions": [
+        {
+          "reason": "unsupported: foreign type: first_schema (alloc::sync::Arc<polars_arrow::datatypes::schema::ArrowSchema>)",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5004",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(&alloc::sync::Arc<polars_arrow::datatypes::schema::ArrowSchema>, core::option::Option<&polars_arrow::datatypes::schema::ArrowSchema>, bool) -> polars_error::PolarsResult<Self>",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__with_columns__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::with_columns"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::with_columns",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5001",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::with_columns",
       "signature": "(core::option::Option<alloc::vec::Vec<alloc::string::String>>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__with_hive_partition_columns__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::with_hive_partition_columns"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::with_hive_partition_columns",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5008",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::with_hive_partition_columns",
       "signature": "(core::option::Option<alloc::vec::Vec<polars_core::series::Series>>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::with_include_file_path",
+      "exceptions": [
+        {
+          "reason": "unsupported: hidden type: include_file_path (polars_utils::pl_ref_str::PlRefStr)",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5009",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(core::option::Option<(polars_utils::pl_str::PlSmallStr, polars_utils::pl_ref_str::PlRefStr)>) -> Self",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__with_projection__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::with_projection"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::with_projection",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5002",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::with_projection",
       "signature": "(core::option::Option<alloc::vec::Vec<usize>>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__with_row_index__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::with_row_index"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::with_row_index",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5003",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::with_row_index",
       "signature": "(core::option::Option<polars_io::options::RowIndex>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__read__reader__parquetreader__with_slice__on__vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::with_slice"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::read::reader::ParquetReader::with_slice",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5000",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::read::reader::ParquetReader",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetReader::with_slice",
       "signature": "(core::option::Option<(usize, usize)>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::batched_writer::BatchedWriter::encode_and_compress",
+      "exceptions": [
+        {
+          "reason": "unsupported: iterator item: return (generic type: polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>)",
+          "receiver": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5101",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::batched_writer::BatchedWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(&polars_core::frame::dataframe::DataFrame) -> impl core::iter::traits::iterator::Iterator<Item = polars_error::PolarsResult<polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>>> + 'a",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__batched_writer__batchedwriter__finish__on__sink_",
+          "receiver": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetBatchedWriter::finish"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::batched_writer::BatchedWriter::finish",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5110",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::batched_writer::BatchedWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetBatchedWriter::finish",
       "signature": "() -> polars_error::PolarsResult<u64>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::batched_writer::BatchedWriter::get_writer",
+      "exceptions": [
+        {
+          "reason": "unsupported: foreign type: return (std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>)",
+          "receiver": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5108",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::batched_writer::BatchedWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "() -> &std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<W>>",
       "status": "unsupported"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::batched_writer::BatchedWriter::new",
+      "exceptions": [
+        {
+          "reason": "unsupported: foreign type: writer (std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>)",
+          "receiver": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5095",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::batched_writer::BatchedWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<W>>, polars_buffer::buffer::Buffer<alloc::vec::Vec<polars_parquet::parquet::parquet_bridge::Encoding>>, polars_parquet::arrow::write::WriteOptions, bool, core::option::Option<polars_io::parquet::write::key_value_metadata::KeyValueMetadata>) -> Self",
       "status": "unsupported"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::batched_writer::BatchedWriter::parquet_schema",
+      "exceptions": [
+        {
+          "reason": "unsupported: unreachable polars type: return (polars_parquet::parquet::metadata::schema_descriptor::SchemaDescriptor)",
+          "receiver": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5104",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::batched_writer::BatchedWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "() -> &polars_parquet::parquet::metadata::schema_descriptor::SchemaDescriptor",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__batched_writer__batchedwriter__write_batch__on__sink_",
+          "receiver": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetBatchedWriter::write_batch"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_batch",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5103",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::batched_writer::BatchedWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetBatchedWriter::write_batch",
       "signature": "(&polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<()>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_group",
+      "exceptions": [
+        {
+          "reason": "unsupported: unreachable polars type: rg (polars_parquet::parquet::page::CompressedPage)",
+          "receiver": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5106",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::batched_writer::BatchedWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(u64, &[alloc::vec::Vec<polars_parquet::parquet::page::CompressedPage>]) -> polars_error::PolarsResult<()>",
       "status": "unsupported"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_groups",
+      "exceptions": [
+        {
+          "reason": "unsupported: generic type: rgs (polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>)",
+          "receiver": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5109",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::batched_writer::BatchedWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(alloc::vec::Vec<polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>>) -> polars_error::PolarsResult<()>",
       "status": "unsupported"
     },
@@ -50732,94 +51432,227 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__writer__parquetwriter__batched__on__sink_",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetWriter::batched"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::batched",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5500",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetWriter::batched",
       "signature": "(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_io::parquet::write::batched_writer::BatchedWriter<W>>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__writer__parquetwriter__finish__on__sink_",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetWriter::finish"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::finish",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5501",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetWriter::finish",
       "signature": "(&mut polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<u64>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (support::Sink)",
+          "id": "polars_io__parquet__write__writer__parquetwriter__new__on__sink_",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetWriter::new"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::new",
+      "execution": "no fixture for a parameter (support::Sink)",
+      "fallible": false,
       "key": "polars_io:5492",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetWriter::new",
       "signature": "(W) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__writer__parquetwriter__set_parallel__on__sink_",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetWriter::set_parallel"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::set_parallel",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:5497",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetWriter::set_parallel",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__writer__parquetwriter__with_compression__on__sink_",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetWriter::with_compression"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::with_compression",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:5493",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetWriter::with_compression",
       "signature": "(polars_io::parquet::write::options::ParquetCompression) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::with_context_info",
+      "exceptions": [
+        {
+          "reason": "unsupported: generic type: context_info (polars_utils::aliases::PlHashMap<alloc::string::String, alloc::string::String>)",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "route": "instantiation"
+        }
+      ],
       "key": "polars_io:5499",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "reason": "bucket: generic (proven instantiations were not emitted; see exceptions)",
       "signature": "(core::option::Option<polars_utils::aliases::PlHashMap<alloc::string::String, alloc::string::String>>) -> Self",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__writer__parquetwriter__with_data_page_size__on__sink_",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetWriter::with_data_page_size"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::with_data_page_size",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5496",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetWriter::with_data_page_size",
       "signature": "(core::option::Option<usize>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__writer__parquetwriter__with_key_value_metadata__on__sink_",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetWriter::with_key_value_metadata"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::with_key_value_metadata",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5498",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetWriter::with_key_value_metadata",
       "signature": "(core::option::Option<polars_io::parquet::write::key_value_metadata::KeyValueMetadata>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__writer__parquetwriter__with_row_group_size__on__sink_",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "reentry": "error",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetWriter::with_row_group_size"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::with_row_group_size",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:5495",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetWriter::with_row_group_size",
       "signature": "(core::option::Option<usize>) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__parquet__write__writer__parquetwriter__with_statistics__on__sink_",
+          "receiver": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+          "reentry": "unwind",
+          "route": "instantiation",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetWriter::with_statistics"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::parquet::write::writer::ParquetWriter::with_statistics",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:5494",
       "kind": "inherent",
-      "reason": "generic owner: polars_io::parquet::write::writer::ParquetWriter",
+      "note": "instantiated on 1 of 1 alias identities",
+      "rune": "polars::ParquetWriter::with_statistics",
       "signature": "(polars_parquet::arrow::write::StatisticsOptions) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -103280,7 +104113,7 @@
       "canonical_path": "polars_core::chunked_array::from_iterator_par::ChunkedCollectParIterExt::collect_ca_with_dtype",
       "key": "polars_core:3181",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: blanket, I [I on 311 wrapped types: trait `rayon::iter::ParallelIterator` is outside the inventory]",
+      "reason": "no wrapped implementor: blanket, I [I on 319 wrapped types: trait `rayon::iter::ParallelIterator` is outside the inventory]",
       "signature": "(polars_utils::pl_str::PlSmallStr, polars_core::datatypes::dtype::DataType) -> B",
       "status": "unsupported"
     },
@@ -105373,252 +106206,387 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values",
+          "disposition": "case (fixture via producer Series::binary on series_binary)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values",
+          "receiver": "polars_core::datatypes::BinaryChunked",
+          "route": "implementor",
+          "rune": "polars::BinaryChunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__booleanchunked",
+          "receiver": "polars_core::datatypes::BooleanChunked",
+          "route": "implementor",
+          "rune": "polars::BooleanChunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__float32chunked",
+          "disposition": "case (fixture via producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__float32chunked",
+          "receiver": "polars_core::datatypes::Float32Chunked",
+          "route": "implementor",
+          "rune": "polars::Float32Chunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__float64chunked",
+          "disposition": "case (fixture via producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__float64chunked",
+          "receiver": "polars_core::datatypes::Float64Chunked",
+          "route": "implementor",
+          "rune": "polars::Float64Chunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int16chunked",
+          "disposition": "case (fixture via producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "route": "implementor",
+          "rune": "polars::Int16Chunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int32chunked",
+          "disposition": "case (fixture via producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "route": "implementor",
+          "rune": "polars::Int32Chunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int64chunked",
+          "disposition": "case (fixture via producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "route": "implementor",
+          "rune": "polars::Int64Chunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int8chunked",
+          "disposition": "case (fixture via producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "route": "implementor",
+          "rune": "polars::Int8Chunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "route": "implementor",
+          "rune": "polars::UInt16Chunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint32chunked",
+          "disposition": "case (fixture via producer Series::u32 on series_u32)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint32chunked",
+          "receiver": "polars_core::datatypes::UInt32Chunked",
+          "route": "implementor",
+          "rune": "polars::IdxCa::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "route": "implementor",
+          "rune": "polars::UInt64Chunked::fill_null_with_values"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__ops__chunkfillnullvalue__fill_null_with_values__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "route": "implementor",
+          "rune": "polars::UInt8Chunked::fill_null_with_values"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::ChunkFillNullValue::fill_null_with_values",
-      "exceptions": [
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::UInt32Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "implementor"
-        }
-      ],
+      "execution": "case (on 12 of 12 receivers)",
+      "fallible": true,
       "key": "polars_core:1821",
       "kind": "trait_method",
-      "reason": "on every implementor: generic parameter not inferable from arguments: Self",
+      "rune": "polars::BinaryChunked::fill_null_with_values polars::BooleanChunked::fill_null_with_values polars::Float32Chunked::fill_null_with_values polars::Float64Chunked::fill_null_with_values polars::Int16Chunked::fill_null_with_values polars::Int32Chunked::fill_null_with_values polars::Int64Chunked::fill_null_with_values polars::Int8Chunked::fill_null_with_values polars::UInt16Chunked::fill_null_with_values polars::IdxCa::fill_null_with_values polars::UInt64Chunked::fill_null_with_values polars::UInt8Chunked::fill_null_with_values",
       "signature": "(T) -> polars_error::PolarsResult<Self>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::struct_ on series_struct)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter",
+          "receiver": "polars_core::chunked_array::struct_::StructChunked",
+          "route": "implementor",
+          "rune": "polars::StructChunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__binarychunked",
+          "disposition": "case (fixture via producer Series::binary on series_binary, producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__binarychunked",
+          "receiver": "polars_core::datatypes::BinaryChunked",
+          "route": "implementor",
+          "rune": "polars::BinaryChunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__binaryoffsetchunked",
+          "disposition": "case (fixture via producer Series::binary_offset on series_binary_offset, producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__binaryoffsetchunked",
+          "receiver": "polars_core::datatypes::BinaryOffsetChunked",
+          "route": "implementor",
+          "rune": "polars::BinaryOffsetChunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__booleanchunked",
+          "receiver": "polars_core::datatypes::BooleanChunked",
+          "route": "implementor",
+          "rune": "polars::BooleanChunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__float32chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__float32chunked",
+          "receiver": "polars_core::datatypes::Float32Chunked",
+          "route": "implementor",
+          "rune": "polars::Float32Chunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__float64chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__float64chunked",
+          "receiver": "polars_core::datatypes::Float64Chunked",
+          "route": "implementor",
+          "rune": "polars::Float64Chunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int16chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int16chunked",
+          "receiver": "polars_core::datatypes::Int16Chunked",
+          "route": "implementor",
+          "rune": "polars::Int16Chunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int32chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int32chunked",
+          "receiver": "polars_core::datatypes::Int32Chunked",
+          "route": "implementor",
+          "rune": "polars::Int32Chunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int64chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int64chunked",
+          "receiver": "polars_core::datatypes::Int64Chunked",
+          "route": "implementor",
+          "rune": "polars::Int64Chunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int8chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__int8chunked",
+          "receiver": "polars_core::datatypes::Int8Chunked",
+          "route": "implementor",
+          "rune": "polars::Int8Chunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__listchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::list on series_list)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__listchunked",
+          "receiver": "polars_core::datatypes::ListChunked",
+          "route": "implementor",
+          "rune": "polars::ListChunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__stringchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__stringchunked",
+          "receiver": "polars_core::datatypes::StringChunked",
+          "route": "implementor",
+          "rune": "polars::StringChunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint16chunked",
+          "receiver": "polars_core::datatypes::UInt16Chunked",
+          "route": "implementor",
+          "rune": "polars::UInt16Chunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint32chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::u32 on series_u32)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint32chunked",
+          "receiver": "polars_core::datatypes::UInt32Chunked",
+          "route": "implementor",
+          "rune": "polars::IdxCa::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint64chunked",
+          "receiver": "polars_core::datatypes::UInt64Chunked",
+          "route": "implementor",
+          "rune": "polars::UInt64Chunked::filter"
+        },
+        {
+          "case_id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__ops__chunkfilter__filter__on__uint8chunked",
+          "receiver": "polars_core::datatypes::UInt8Chunked",
+          "route": "implementor",
+          "rune": "polars::UInt8Chunked::filter"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::chunked_array::ops::ChunkFilter::filter",
-      "exceptions": [
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::chunked_array::struct_::StructChunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::ListChunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::StringChunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::UInt32Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "implementor"
-        },
-        {
-          "reason": "generic parameter not inferable from arguments: Self",
-          "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "implementor"
-        }
-      ],
+      "execution": "case (on 16 of 16 receivers)",
+      "fallible": true,
       "key": "polars_core:1873",
       "kind": "trait_method",
-      "reason": "on every implementor: generic parameter not inferable from arguments: Self",
+      "rune": "polars::StructChunked::filter polars::BinaryChunked::filter polars::BinaryOffsetChunked::filter polars::BooleanChunked::filter polars::Float32Chunked::filter polars::Float64Chunked::filter polars::Int16Chunked::filter polars::Int32Chunked::filter polars::Int64Chunked::filter polars::Int8Chunked::filter polars::ListChunked::filter polars::StringChunked::filter polars::UInt16Chunked::filter polars::IdxCa::filter polars::UInt64Chunked::filter polars::UInt8Chunked::filter",
       "signature": "(&polars_core::datatypes::BooleanChunked) -> polars_error::PolarsResult<polars_core::chunked_array::ChunkedArray<T>>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
-      "bucket": "generic",
-      "canonical_path": "polars_core::chunked_array::ops::ChunkFull::full",
-      "exceptions": [
+      "bindings": [
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full",
           "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::BinaryChunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__binaryoffsetchunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__binaryoffsetchunked",
           "receiver": "polars_core::datatypes::BinaryOffsetChunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::BinaryOffsetChunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__booleanchunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__booleanchunked",
           "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::BooleanChunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__float32chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__float32chunked",
           "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Float32Chunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__float64chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__float64chunked",
           "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Float64Chunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__int16chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__int16chunked",
           "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Int16Chunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__int32chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__int32chunked",
           "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Int32Chunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__int64chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__int64chunked",
           "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Int64Chunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__int8chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__int8chunked",
           "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Int8Chunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__listchunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__listchunked",
           "receiver": "polars_core::datatypes::ListChunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::ListChunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__stringchunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__stringchunked",
           "receiver": "polars_core::datatypes::StringChunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::StringChunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__uint16chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__uint16chunked",
           "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::UInt16Chunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__uint32chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__uint32chunked",
           "receiver": "polars_core::datatypes::UInt32Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::IdxCa::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__uint64chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__uint64chunked",
           "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::UInt64Chunked::full"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkfull__full__on__uint8chunked",
+          "disposition": "case",
+          "id": "polars_core__chunked_array__ops__chunkfull__full__on__uint8chunked",
           "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::UInt8Chunked::full"
         }
       ],
+      "bucket": "generic",
+      "canonical_path": "polars_core::chunked_array::ops::ChunkFull::full",
+      "execution": "case (on 15 of 15 receivers)",
+      "fallible": true,
       "key": "polars_core:1829",
       "kind": "trait_method",
-      "reason": "on every implementor: generic parameter not inferable from arguments: Self",
+      "rune": "polars::BinaryChunked::full polars::BinaryOffsetChunked::full polars::BooleanChunked::full polars::Float32Chunked::full polars::Float64Chunked::full polars::Int16Chunked::full polars::Int32Chunked::full polars::Int64Chunked::full polars::Int8Chunked::full polars::ListChunked::full polars::StringChunked::full polars::UInt16Chunked::full polars::IdxCa::full polars::UInt64Chunked::full polars::UInt8Chunked::full",
       "signature": "(polars_utils::pl_str::PlSmallStr, T, usize) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "mechanical",
@@ -106240,80 +107208,121 @@
       "status": "unsupported"
     },
     {
-      "bucket": "generic",
-      "canonical_path": "polars_core::chunked_array::ops::ChunkSet::set",
-      "exceptions": [
+      "bindings": [
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set",
+          "disposition": "case (fixture via producer Series::binary on series_binary, producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__ops__chunkset__set",
           "receiver": "polars_core::datatypes::BinaryChunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::BinaryChunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__booleanchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__booleanchunked",
           "receiver": "polars_core::datatypes::BooleanChunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::BooleanChunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__float32chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::f32 on series_f32)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__float32chunked",
           "receiver": "polars_core::datatypes::Float32Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Float32Chunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__float64chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::f64 on series_f64)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__float64chunked",
           "receiver": "polars_core::datatypes::Float64Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Float64Chunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__int16chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::i16 on series_i16)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__int16chunked",
           "receiver": "polars_core::datatypes::Int16Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Int16Chunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__int32chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::i32 on series_i32)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__int32chunked",
           "receiver": "polars_core::datatypes::Int32Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Int32Chunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__int64chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::i64 on series_i64)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__int64chunked",
           "receiver": "polars_core::datatypes::Int64Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Int64Chunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__int8chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::i8 on series_i8)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__int8chunked",
           "receiver": "polars_core::datatypes::Int8Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::Int8Chunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__stringchunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::str on series_str)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__stringchunked",
           "receiver": "polars_core::datatypes::StringChunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::StringChunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__uint16chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::u16 on series_u16)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__uint16chunked",
           "receiver": "polars_core::datatypes::UInt16Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::UInt16Chunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__uint32chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::u32 on series_u32)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__uint32chunked",
           "receiver": "polars_core::datatypes::UInt32Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::IdxCa::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__uint64chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::u64 on series_u64)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__uint64chunked",
           "receiver": "polars_core::datatypes::UInt64Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::UInt64Chunked::set"
         },
         {
-          "reason": "generic parameter not inferable from arguments: Self",
+          "case_id": "polars_core__chunked_array__ops__chunkset__set__on__uint8chunked",
+          "disposition": "case (fixture via producer Series::bool on series_bool, producer Series::u8 on series_u8)",
+          "id": "polars_core__chunked_array__ops__chunkset__set__on__uint8chunked",
           "receiver": "polars_core::datatypes::UInt8Chunked",
-          "route": "implementor"
+          "route": "implementor",
+          "rune": "polars::UInt8Chunked::set"
         }
       ],
+      "bucket": "generic",
+      "canonical_path": "polars_core::chunked_array::ops::ChunkSet::set",
+      "execution": "case (on 13 of 13 receivers)",
+      "fallible": true,
       "key": "polars_core:1319",
       "kind": "trait_method",
-      "reason": "on every implementor: generic parameter not inferable from arguments: Self",
+      "rune": "polars::BinaryChunked::set polars::BooleanChunked::set polars::Float32Chunked::set polars::Float64Chunked::set polars::Int16Chunked::set polars::Int32Chunked::set polars::Int64Chunked::set polars::Int8Chunked::set polars::StringChunked::set polars::UInt16Chunked::set polars::IdxCa::set polars::UInt64Chunked::set polars::UInt8Chunked::set",
       "signature": "(&polars_core::datatypes::BooleanChunked, core::option::Option<A>) -> polars_error::PolarsResult<Self>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -109831,7 +110840,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::add",
       "key": "polars_core:10278",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 311 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 319 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -109840,7 +110849,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::div",
       "key": "polars_core:10280",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 311 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 319 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -109849,7 +110858,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::mul",
       "key": "polars_core:10281",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 311 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 319 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -109858,7 +110867,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::rem",
       "key": "polars_core:10282",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 311 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 319 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -109867,7 +110876,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::sub",
       "key": "polars_core:10279",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 311 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 319 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -114493,49 +115502,170 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__shared__serreader__finish",
+          "receiver": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "implementor",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvReader::finish"
+        },
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__shared__serreader__finish__on__ipcreader_vec_u8___",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "implementor",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcReader::finish"
+        },
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__shared__serreader__finish__on__parquetreader_vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "reentry": "error",
+          "route": "implementor",
+          "route_reason": "engine thread",
+          "rune": "polars::ParquetReader::finish"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::shared::SerReader::finish",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:6088",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: polars_io::csv::read::reader::CsvReader, polars_io::ipc::ipc_file::IpcReader, polars_io::parquet::read::reader::ParquetReader",
+      "rune": "polars::CsvReader::finish polars::IpcReader::finish polars::ParquetReader::finish",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (core::io::cursor::Cursor<alloc::vec::Vec<u8>>)",
+          "id": "polars_io__shared__serreader__new",
+          "receiver": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "implementor",
+          "rune": "polars::CsvReader::new"
+        },
+        {
+          "disposition": "no fixture for a parameter (core::io::cursor::Cursor<alloc::vec::Vec<u8>>)",
+          "id": "polars_io__shared__serreader__new__on__ipcreader_vec_u8___",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "implementor",
+          "rune": "polars::IpcReader::new"
+        },
+        {
+          "disposition": "no fixture for a parameter (core::io::cursor::Cursor<alloc::vec::Vec<u8>>)",
+          "id": "polars_io__shared__serreader__new__on__parquetreader_vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "implementor",
+          "rune": "polars::ParquetReader::new"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::shared::SerReader::new",
+      "execution": "no fixture for a parameter (core::io::cursor::Cursor<alloc::vec::Vec<u8>>)",
+      "fallible": true,
       "key": "polars_io:6086",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: polars_io::csv::read::reader::CsvReader, polars_io::ipc::ipc_file::IpcReader, polars_io::parquet::read::reader::ParquetReader",
+      "rune": "polars::CsvReader::new polars::IpcReader::new polars::ParquetReader::new",
       "signature": "(R) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__shared__serreader__set_rechunk",
+          "receiver": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "implementor",
+          "rune": "polars::CsvReader::set_rechunk"
+        },
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__shared__serreader__set_rechunk__on__ipcreader_vec_u8___",
+          "receiver": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "implementor",
+          "rune": "polars::IpcReader::set_rechunk"
+        },
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__shared__serreader__set_rechunk__on__parquetreader_vec_u8___",
+          "receiver": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+          "route": "implementor",
+          "rune": "polars::ParquetReader::set_rechunk"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::shared::SerReader::set_rechunk",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_io:6087",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: polars_io::csv::read::reader::CsvReader, polars_io::ipc::ipc_file::IpcReader, polars_io::parquet::read::reader::ParquetReader",
+      "rune": "polars::CsvReader::set_rechunk polars::IpcReader::set_rechunk polars::ParquetReader::set_rechunk",
       "signature": "(bool) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__shared__serwriter__finish",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "reentry": "error",
+          "route": "implementor",
+          "route_reason": "engine thread",
+          "rune": "polars::CsvWriter::finish"
+        },
+        {
+          "disposition": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+          "id": "polars_io__shared__serwriter__finish__on__sink_",
+          "receiver": "polars_io::ipc::write::IpcWriter<support::Sink>",
+          "reentry": "error",
+          "route": "implementor",
+          "route_reason": "engine thread",
+          "rune": "polars::IpcWriter::finish"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::shared::SerWriter::finish",
+      "execution": "no fixture for the receiver type (no public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_io:6090",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: polars_io::csv::write::writer::CsvWriter, polars_io::ipc::write::IpcWriter",
+      "rune": "polars::CsvWriter::finish polars::IpcWriter::finish",
       "signature": "(&mut polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<()>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for a parameter (support::Sink)",
+          "id": "polars_io__shared__serwriter__new",
+          "receiver": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+          "route": "implementor",
+          "rune": "polars::CsvWriter::new"
+        },
+        {
+          "disposition": "no fixture for a parameter (support::Sink)",
+          "id": "polars_io__shared__serwriter__new__on__sink_",
+          "receiver": "polars_io::ipc::write::IpcWriter<support::Sink>",
+          "route": "implementor",
+          "rune": "polars::IpcWriter::new"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_io::shared::SerWriter::new",
+      "execution": "no fixture for a parameter (support::Sink)",
+      "fallible": false,
       "key": "polars_io:6089",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: polars_io::csv::write::writer::CsvWriter, polars_io::ipc::write::IpcWriter",
+      "rune": "polars::CsvWriter::new polars::IpcWriter::new",
       "signature": "(W) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -115717,7 +116847,7 @@
       "canonical_path": "polars_ops::frame::join::args::CrossJoinFilter::apply",
       "key": "polars_ops:662",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 1 wrapped types: bound syntax `core::ops::function::Fn(T) -> polars_error::PolarsResult<T> + core::marker::Send + core::marker::Sync` is not modelled; T on 310 wrapped types: bound syntax `core::ops::function::Fn(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame> + core::marker::Send + core::marker::Sync` is not modelled]",
+      "reason": "no wrapped implementor: T [T on 1 wrapped types: bound syntax `core::ops::function::Fn(T) -> polars_error::PolarsResult<T> + core::marker::Send + core::marker::Sync` is not modelled; T on 318 wrapped types: bound syntax `core::ops::function::Fn(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame> + core::marker::Send + core::marker::Sync` is not modelled]",
       "signature": "(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -116187,7 +117317,7 @@
       "canonical_path": "polars_plan::dsl::expr::anonymous::expr::ColumnsUdf::as_any",
       "key": "polars_plan:881",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: polars_plan::dsl::expr::anonymous::expr::BaseColumnUdf, F [F on 1 wrapped types: bound syntax `core::ops::function::Fn(&mut [F]) -> polars_error::PolarsResult<F> + core::marker::Send + core::marker::Sync` is not modelled; F on 310 wrapped types: bound syntax `core::ops::function::Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column> + core::marker::Send + core::marker::Sync` is not modelled]",
+      "reason": "no wrapped implementor: polars_plan::dsl::expr::anonymous::expr::BaseColumnUdf, F [F on 1 wrapped types: bound syntax `core::ops::function::Fn(&mut [F]) -> polars_error::PolarsResult<F> + core::marker::Send + core::marker::Sync` is not modelled; F on 318 wrapped types: bound syntax `core::ops::function::Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column> + core::marker::Send + core::marker::Sync` is not modelled]",
       "signature": "() -> &dyn core::any::Any",
       "status": "unsupported"
     },
@@ -116196,7 +117326,7 @@
       "canonical_path": "polars_plan::dsl::expr::anonymous::expr::ColumnsUdf::call_udf",
       "key": "polars_plan:882",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: polars_plan::dsl::expr::anonymous::expr::BaseColumnUdf, F [F on 1 wrapped types: bound syntax `core::ops::function::Fn(&mut [F]) -> polars_error::PolarsResult<F> + core::marker::Send + core::marker::Sync` is not modelled; F on 310 wrapped types: bound syntax `core::ops::function::Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column> + core::marker::Send + core::marker::Sync` is not modelled]",
+      "reason": "no wrapped implementor: polars_plan::dsl::expr::anonymous::expr::BaseColumnUdf, F [F on 1 wrapped types: bound syntax `core::ops::function::Fn(&mut [F]) -> polars_error::PolarsResult<F> + core::marker::Send + core::marker::Sync` is not modelled; F on 318 wrapped types: bound syntax `core::ops::function::Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column> + core::marker::Send + core::marker::Sync` is not modelled]",
       "signature": "(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
       "status": "unsupported"
     },
@@ -116250,7 +117380,7 @@
       "canonical_path": "polars_plan::plans::apply::UdfSchema::get_schema",
       "key": "polars_plan:11659",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: F [F on 311 wrapped types: bound syntax `core::ops::function::Fn(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_core::schema::SchemaRef> + core::marker::Send + core::marker::Sync` is not modelled]",
+      "reason": "no wrapped implementor: F [F on 319 wrapped types: bound syntax `core::ops::function::Fn(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_core::schema::SchemaRef> + core::marker::Send + core::marker::Sync` is not modelled]",
       "signature": "(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_core::schema::SchemaRef>",
       "status": "unsupported"
     },
@@ -119961,11 +121091,31 @@
       },
       {
         "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
         "type": "polars_io::csv::write::write_impl::CsvSerializer"
       },
       {
         "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::csv::write::writer::BatchedWriter<support::Sink>"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
         "type": "polars_io::file_cache::entry::FileCacheEntry"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::ipc::write::IpcWriter<support::Sink>"
       },
       {
         "reason": "public fields, no Default, no constructor binding",
@@ -119974,6 +121124,22 @@
       {
         "reason": "public fields, no Default, no constructor binding",
         "type": "polars_io::options::RowIndex"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::parquet::metadata::FileMetadataRef"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>"
+      },
+      {
+        "reason": "no public fields, no Default, no constructor binding",
+        "type": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
       },
       {
         "reason": "no public fields, no Default, no constructor binding",
@@ -160172,6 +161338,754 @@
         "result": "Unresolved"
       },
       {
+        "alias": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "not eligible: the callable is in 0072's `unsupported` bucket (O1 P7 R1 T1 X5)",
+        "eligible": false,
+        "family": "other",
+        "identity": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:2999",
+        "method": "polars_io::csv::read::reader::CsvReader::_with_predicate",
+        "result": "Proven",
+        "signature": "(core::option::Option<alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>>) -> polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3002",
+        "method": "polars_io::csv::read::reader::CsvReader::with_options",
+        "result": "Proven",
+        "signature": "(polars_io::csv::read::options::CsvReadOptions) -> polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::BatchedWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:3507",
+        "method": "polars_io::csv::write::writer::BatchedWriter::finish",
+        "result": "Proven",
+        "signature": "() -> polars_error::PolarsResult<()>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::BatchedWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:3506",
+        "method": "polars_io::csv::write::writer::BatchedWriter::write_batch",
+        "result": "Proven",
+        "signature": "(&polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<()>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3444",
+        "method": "polars_io::csv::write::writer::CsvWriter::batched",
+        "result": "Proven",
+        "signature": "(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_io::csv::write::writer::BatchedWriter<support::Sink>>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3429",
+        "method": "polars_io::csv::write::writer::CsvWriter::include_bom",
+        "result": "Proven",
+        "signature": "(bool) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3430",
+        "method": "polars_io::csv::write::writer::CsvWriter::include_header",
+        "result": "Proven",
+        "signature": "(bool) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3443",
+        "method": "polars_io::csv::write::writer::CsvWriter::n_threads",
+        "result": "Proven",
+        "signature": "(usize) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "refused: unsupported: foreign type: batch_size (core::num::nonzero::NonZeroUsize)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3432",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_batch_size",
+        "result": "Proven",
+        "signature": "(core::num::nonzero::NonZeroUsize) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3433",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_date_format",
+        "result": "Proven",
+        "signature": "(core::option::Option<polars_utils::pl_str::PlSmallStr>) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3435",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_datetime_format",
+        "result": "Proven",
+        "signature": "(core::option::Option<polars_utils::pl_str::PlSmallStr>) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3438",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_decimal_comma",
+        "result": "Proven",
+        "signature": "(bool) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3437",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_float_precision",
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3436",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_float_scientific",
+        "result": "Proven",
+        "signature": "(core::option::Option<bool>) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3441",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_line_terminator",
+        "result": "Proven",
+        "signature": "(polars_utils::pl_str::PlSmallStr) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3440",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_null_value",
+        "result": "Proven",
+        "signature": "(polars_utils::pl_str::PlSmallStr) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3439",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_quote_char",
+        "result": "Proven",
+        "signature": "(u8) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3442",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_quote_style",
+        "result": "Proven",
+        "signature": "(polars_io::csv::write::options::QuoteStyle) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3431",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_separator",
+        "result": "Proven",
+        "signature": "(u8) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+        "key": "polars_io:3434",
+        "method": "polars_io::csv::write::writer::CsvWriter::with_time_format",
+        "result": "Proven",
+        "signature": "(core::option::Option<polars_utils::pl_str::PlSmallStr>) -> polars_io::csv::write::writer::CsvWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "refused: unsupported: foreign type: return (alloc::sync::Arc<polars_arrow::datatypes::Metadata>)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3744",
+        "method": "polars_io::ipc::ipc_file::IpcReader::custom_metadata",
+        "result": "Proven",
+        "signature": "() -> polars_error::PolarsResult<core::option::Option<alloc::sync::Arc<polars_arrow::datatypes::Metadata>>>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "refused: unsupported: foreign type: predicate (alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3754",
+        "method": "polars_io::ipc::ipc_file::IpcReader::finish_with_scan_ops",
+        "result": "Proven",
+        "signature": "(core::option::Option<alloc::sync::Arc<dyn polars_io::predicates::PhysicalIoExpr>>, bool) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "not eligible: the callable is in 0072's `unsupported` bucket (O1 P3 R1 T1 X1)",
+        "eligible": false,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3753",
+        "method": "polars_io::ipc::ipc_file::IpcReader::memory_mapped",
+        "result": "Proven",
+        "signature": "(core::option::Option<std::path::PathBuf>) -> polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "refused: unsupported: unreachable polars type: return (polars_arrow::datatypes::schema::ArrowSchemaRef)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3742",
+        "method": "polars_io::ipc::ipc_file::IpcReader::schema",
+        "result": "Proven",
+        "signature": "() -> polars_error::PolarsResult<polars_arrow::datatypes::schema::ArrowSchemaRef>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3747",
+        "method": "polars_io::ipc::ipc_file::IpcReader::with_columns",
+        "result": "Proven",
+        "signature": "(core::option::Option<alloc::vec::Vec<alloc::string::String>>) -> polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3748",
+        "method": "polars_io::ipc::ipc_file::IpcReader::with_hive_partition_columns",
+        "result": "Proven",
+        "signature": "(core::option::Option<alloc::vec::Vec<polars_core::series::Series>>) -> polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "refused: unsupported: hidden type: include_file_path (polars_utils::pl_ref_str::PlRefStr)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3749",
+        "method": "polars_io::ipc::ipc_file::IpcReader::with_include_file_path",
+        "result": "Proven",
+        "signature": "(core::option::Option<(polars_utils::pl_str::PlSmallStr, polars_utils::pl_ref_str::PlRefStr)>) -> polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3746",
+        "method": "polars_io::ipc::ipc_file::IpcReader::with_n_rows",
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3752",
+        "method": "polars_io::ipc::ipc_file::IpcReader::with_projection",
+        "result": "Proven",
+        "signature": "(core::option::Option<alloc::vec::Vec<usize>>) -> polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:3751",
+        "method": "polars_io::ipc::ipc_file::IpcReader::with_row_index",
+        "result": "Proven",
+        "signature": "(core::option::Option<polars_io::options::RowIndex>) -> polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "disposition": "refused: unsupported: unreachable polars type: ipc_fields (polars_arrow::io::ipc::IpcField)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "key": "polars_io:4045",
+        "method": "polars_io::ipc::write::IpcWriter::batched",
+        "result": "Proven",
+        "signature": "(&polars_core::schema::Schema, alloc::vec::Vec<polars_arrow::io::ipc::IpcField>) -> polars_error::PolarsResult<polars_io::ipc::write::BatchedWriter<support::Sink>>"
+      },
+      {
+        "alias": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "disposition": "refused: unsupported: foreign type: custom_metadata (alloc::sync::Arc<polars_arrow::datatypes::Metadata>)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "key": "polars_io:4048",
+        "method": "polars_io::ipc::write::IpcWriter::set_custom_schema_metadata",
+        "result": "Proven",
+        "signature": "(alloc::sync::Arc<polars_arrow::datatypes::Metadata>) -> ()"
+      },
+      {
+        "alias": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "key": "polars_io:4041",
+        "method": "polars_io::ipc::write::IpcWriter::with_compat_level",
+        "result": "Proven",
+        "signature": "(polars_core::datatypes::dtype::CompatLevel) -> polars_io::ipc::write::IpcWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "key": "polars_io:4040",
+        "method": "polars_io::ipc::write::IpcWriter::with_compression",
+        "result": "Proven",
+        "signature": "(core::option::Option<polars_io::ipc::write::IpcCompression>) -> polars_io::ipc::write::IpcWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "key": "polars_io:4044",
+        "method": "polars_io::ipc::write::IpcWriter::with_parallel",
+        "result": "Proven",
+        "signature": "(bool) -> polars_io::ipc::write::IpcWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "key": "polars_io:4042",
+        "method": "polars_io::ipc::write::IpcWriter::with_record_batch_size",
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> polars_io::ipc::write::IpcWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::ipc::write::IpcWriter<support::Sink>",
+        "key": "polars_io:4043",
+        "method": "polars_io::ipc::write::IpcWriter::with_record_batch_statistics",
+        "result": "Proven",
+        "signature": "(bool) -> polars_io::ipc::write::IpcWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5011",
+        "method": "polars_io::parquet::read::reader::ParquetReader::get_metadata",
+        "result": "Proven",
+        "signature": "() -> polars_error::PolarsResult<&polars_io::parquet::metadata::FileMetadataRef>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5007",
+        "method": "polars_io::parquet::read::reader::ParquetReader::num_rows",
+        "result": "Proven",
+        "signature": "() -> polars_error::PolarsResult<usize>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:4999",
+        "method": "polars_io::parquet::read::reader::ParquetReader::read_parallel",
+        "result": "Proven",
+        "signature": "(polars_io::parquet::read::options::ParallelStrategy) -> polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "refused: unsupported: unreachable polars type: return (polars_arrow::datatypes::schema::ArrowSchemaRef)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5006",
+        "method": "polars_io::parquet::read::reader::ParquetReader::schema",
+        "result": "Proven",
+        "signature": "() -> polars_error::PolarsResult<polars_arrow::datatypes::schema::ArrowSchemaRef>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:4998",
+        "method": "polars_io::parquet::read::reader::ParquetReader::set_low_memory",
+        "result": "Proven",
+        "signature": "(bool) -> polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5010",
+        "method": "polars_io::parquet::read::reader::ParquetReader::set_metadata",
+        "result": "Proven",
+        "signature": "(polars_io::parquet::metadata::FileMetadataRef) -> ()"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "refused: unsupported: foreign type: first_schema (alloc::sync::Arc<polars_arrow::datatypes::schema::ArrowSchema>)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5004",
+        "method": "polars_io::parquet::read::reader::ParquetReader::with_arrow_schema_projection",
+        "result": "Proven",
+        "signature": "(&alloc::sync::Arc<polars_arrow::datatypes::schema::ArrowSchema>, core::option::Option<&polars_arrow::datatypes::schema::ArrowSchema>, bool) -> polars_error::PolarsResult<polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5001",
+        "method": "polars_io::parquet::read::reader::ParquetReader::with_columns",
+        "result": "Proven",
+        "signature": "(core::option::Option<alloc::vec::Vec<alloc::string::String>>) -> polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5008",
+        "method": "polars_io::parquet::read::reader::ParquetReader::with_hive_partition_columns",
+        "result": "Proven",
+        "signature": "(core::option::Option<alloc::vec::Vec<polars_core::series::Series>>) -> polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "refused: unsupported: hidden type: include_file_path (polars_utils::pl_ref_str::PlRefStr)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5009",
+        "method": "polars_io::parquet::read::reader::ParquetReader::with_include_file_path",
+        "result": "Proven",
+        "signature": "(core::option::Option<(polars_utils::pl_str::PlSmallStr, polars_utils::pl_ref_str::PlRefStr)>) -> polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5002",
+        "method": "polars_io::parquet::read::reader::ParquetReader::with_projection",
+        "result": "Proven",
+        "signature": "(core::option::Option<alloc::vec::Vec<usize>>) -> polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5003",
+        "method": "polars_io::parquet::read::reader::ParquetReader::with_row_index",
+        "result": "Proven",
+        "signature": "(core::option::Option<polars_io::options::RowIndex>) -> polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+        "key": "polars_io:5000",
+        "method": "polars_io::parquet::read::reader::ParquetReader::with_slice",
+        "result": "Proven",
+        "signature": "(core::option::Option<(usize, usize)>) -> polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+      },
+      {
+        "alias": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "disposition": "refused: unsupported: iterator item: return (generic type: polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:5101",
+        "method": "polars_io::parquet::write::batched_writer::BatchedWriter::encode_and_compress",
+        "result": "Proven",
+        "signature": "(&polars_core::frame::dataframe::DataFrame) -> impl core::iter::traits::iterator::Iterator<Item = polars_error::PolarsResult<polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>>> + 'a"
+      },
+      {
+        "alias": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:5110",
+        "method": "polars_io::parquet::write::batched_writer::BatchedWriter::finish",
+        "result": "Proven",
+        "signature": "() -> polars_error::PolarsResult<u64>"
+      },
+      {
+        "alias": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "disposition": "refused: unsupported: foreign type: return (std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:5108",
+        "method": "polars_io::parquet::write::batched_writer::BatchedWriter::get_writer",
+        "result": "Proven",
+        "signature": "() -> &std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>"
+      },
+      {
+        "alias": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "disposition": "refused: unsupported: foreign type: writer (std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:5095",
+        "method": "polars_io::parquet::write::batched_writer::BatchedWriter::new",
+        "result": "Proven",
+        "signature": "(std::sync::poison::mutex::Mutex<polars_parquet::arrow::write::file::FileWriter<support::Sink>>, polars_buffer::buffer::Buffer<alloc::vec::Vec<polars_parquet::parquet::parquet_bridge::Encoding>>, polars_parquet::arrow::write::WriteOptions, bool, core::option::Option<polars_io::parquet::write::key_value_metadata::KeyValueMetadata>) -> polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "disposition": "refused: unsupported: unreachable polars type: return (polars_parquet::parquet::metadata::schema_descriptor::SchemaDescriptor)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:5104",
+        "method": "polars_io::parquet::write::batched_writer::BatchedWriter::parquet_schema",
+        "result": "Proven",
+        "signature": "() -> &polars_parquet::parquet::metadata::schema_descriptor::SchemaDescriptor"
+      },
+      {
+        "alias": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:5103",
+        "method": "polars_io::parquet::write::batched_writer::BatchedWriter::write_batch",
+        "result": "Proven",
+        "signature": "(&polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<()>"
+      },
+      {
+        "alias": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "disposition": "refused: unsupported: unreachable polars type: rg (polars_parquet::parquet::page::CompressedPage)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:5106",
+        "method": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_group",
+        "result": "Proven",
+        "signature": "(u64, &[alloc::vec::Vec<polars_parquet::parquet::page::CompressedPage>]) -> polars_error::PolarsResult<()>"
+      },
+      {
+        "alias": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "disposition": "refused: unsupported: generic type: rgs (polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "key": "polars_io:5109",
+        "method": "polars_io::parquet::write::batched_writer::BatchedWriter::write_row_groups",
+        "result": "Proven",
+        "signature": "(alloc::vec::Vec<polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>>) -> polars_error::PolarsResult<()>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5500",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::batched",
+        "result": "Proven",
+        "signature": "(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5501",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::finish",
+        "result": "Proven",
+        "signature": "(&mut polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<u64>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5492",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::new",
+        "result": "Proven",
+        "signature": "(support::Sink) -> polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5497",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::set_parallel",
+        "result": "Proven",
+        "signature": "(bool) -> polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5493",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::with_compression",
+        "result": "Proven",
+        "signature": "(polars_io::parquet::write::options::ParquetCompression) -> polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "refused: unsupported: generic type: context_info (polars_utils::aliases::PlHashMap<alloc::string::String, alloc::string::String>)",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5499",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::with_context_info",
+        "result": "Proven",
+        "signature": "(core::option::Option<polars_utils::aliases::PlHashMap<alloc::string::String, alloc::string::String>>) -> polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5496",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::with_data_page_size",
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5498",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::with_key_value_metadata",
+        "result": "Proven",
+        "signature": "(core::option::Option<polars_io::parquet::write::key_value_metadata::KeyValueMetadata>) -> polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5495",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::with_row_group_size",
+        "result": "Proven",
+        "signature": "(core::option::Option<usize>) -> polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
+      },
+      {
+        "alias": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "disposition": "emitted",
+        "eligible": true,
+        "family": "other",
+        "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+        "key": "polars_io:5494",
+        "method": "polars_io::parquet::write::writer::ParquetWriter::with_statistics",
+        "result": "Proven",
+        "signature": "(polars_parquet::arrow::write::StatisticsOptions) -> polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
+      },
+      {
         "alias": "polars_plan::dsl::options::file_provider::FileProviderFunction",
         "disposition": "unresolved: `polars_plan::callback::PlanCallbackArgs` has a blanket impl; `polars_plan::dsl::options::file_provider::FileProviderArgs` is not proven by a direct one",
         "eligible": true,
@@ -160780,7 +162694,7 @@
     "summary": {
       "by_family": {
         "all": {
-          "proven": 1543,
+          "proven": 1611,
           "rejected": 1613,
           "unresolved": 535
         },
@@ -160805,7 +162719,7 @@
           "unresolved": 290
         },
         "other": {
-          "proven": 48,
+          "proven": 116,
           "rejected": 6,
           "unresolved": 13
         },
@@ -160816,7 +162730,7 @@
         }
       },
       "eligible": {
-        "proven": 1355,
+        "proven": 1421,
         "rejected": 1397,
         "unresolved": 531
       },
@@ -160830,12 +162744,12 @@
         "trait argument": 32,
         "unresolved: no recorded": 64
       },
-      "pairs": 3691,
+      "pairs": 3759,
       "proven_dispositions": {
-        "emitted": 1260,
+        "emitted": 1309,
         "excluded": 12,
-        "not eligible": 188,
-        "refused": 83
+        "not eligible": 190,
+        "refused": 100
       }
     }
   },
@@ -161152,7 +163066,7 @@
         "wrap": "Plain"
       },
       {
-        "disposition": "unsupported: generic owner: polars_io::parquet::write::batched_writer::BatchedWriter",
+        "disposition": "unsupported: bucket: generic (proven instantiations were not emitted; see exceptions)",
         "item": "polars_error::PolarsResult<polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>>",
         "key": "polars_io:5101",
         "known_length": "Unknown",
@@ -162159,6 +164073,12 @@
         "method": "polars_core::chunked_array::logical::Logical::as_time_iter"
       },
       {
+        "alias": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+        "disposition": "refused: unsupported: iterator item: return (generic type: polars_parquet::parquet::write::RowGroupIterColumns<polars_error::PolarsError>)",
+        "key": "polars_io:5101",
+        "method": "polars_io::parquet::write::batched_writer::BatchedWriter::encode_and_compress"
+      },
+      {
         "alias": "polars_core::schema::Schema",
         "disposition": "emitted",
         "key": "polars_schema:264",
@@ -162213,17 +164133,17 @@
         "method": "polars_schema::schema::Schema::values_display"
       }
     ],
-    "pairs": 152,
+    "pairs": 153,
     "pairs_by_disposition": {
       "emitted": 114,
       "excluded: excluded by the release file": 2,
       "not eligible: the callable is in 0072's `unsupported` bucket (O2 R1 T3 X1)": 16,
       "refused: refused": 4,
-      "refused: unsupported": 16
+      "refused: unsupported": 17
     }
   },
   "materialize_limit": 1048576,
-  "oracle_cases": 3612,
+  "oracle_cases": 3668,
   "oracle_skipped": [
     {
       "path": "polars_core::chunked_array::ChunkedArray::apply_in_place",
@@ -162866,6 +164786,10 @@
       "reason": "excluded: nondeterministic oracle (the order of the partitions is unspecified (Polars documents only partition_by_stable as order-maintaining); the oracle's unordered policy covers rows within one frame, not a vector of frames (record 0084, observed run to run))"
     },
     {
+      "path": "polars_core::frame::dataframe::DataFrame::serialize_into_writer",
+      "reason": "no fixture for a parameter (&mut dyn core::io::write::Write)"
+    },
+    {
       "path": "polars_core::frame::dataframe::DataFrame::shape",
       "reason": "return type has no comparison ((i64, i64))"
     },
@@ -162892,6 +164816,10 @@
     {
       "path": "polars_core::series::Series::into_datetime",
       "reason": "no fixture for a parameter (core::option::Option<polars_core::datatypes::temporal::time_zone::TimeZone>)"
+    },
+    {
+      "path": "polars_core::series::Series::serialize_into_writer",
+      "reason": "no fixture for a parameter (&mut dyn core::io::write::Write)"
     },
     {
       "path": "polars_core::series::amortized_iter::AmortSeries::deep_clone",
@@ -163038,11 +164966,103 @@
       "reason": "return type has no comparison (W_polars_io__csv__read__parser__CountLines)"
     },
     {
+      "path": "polars_io::csv::read::reader::CsvReader::with_options",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::BatchedWriter::finish",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::BatchedWriter::write_batch",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::batched",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::include_bom",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::include_header",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::n_threads",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_date_format",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_datetime_format",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_decimal_comma",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_float_precision",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_float_scientific",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_line_terminator",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_null_value",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_quote_char",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_quote_style",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_separator",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::csv::write::writer::CsvWriter::with_time_format",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
       "path": "polars_io::file_cache::entry::FileCacheEntry::update_ttl",
       "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     },
     {
       "path": "polars_io::file_cache::entry::FileCacheEntry::uri",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::ipc::ipc_file::IpcReader::with_columns",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::ipc::ipc_file::IpcReader::with_hive_partition_columns",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::ipc::ipc_file::IpcReader::with_n_rows",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::ipc::ipc_file::IpcReader::with_projection",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::ipc::ipc_file::IpcReader::with_row_index",
       "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     },
     {
@@ -163052,6 +165072,26 @@
     {
       "path": "polars_io::ipc::ipc_reader_async::IpcReadOptions::with_row_limit",
       "reason": "return type has no comparison (W_polars_io__ipc__ipc_reader_async__IpcReadOptions)"
+    },
+    {
+      "path": "polars_io::ipc::write::IpcWriter::with_compat_level",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::ipc::write::IpcWriter::with_compression",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::ipc::write::IpcWriter::with_parallel",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::ipc::write::IpcWriter::with_record_batch_size",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::ipc::write::IpcWriter::with_record_batch_statistics",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     },
     {
       "path": "polars_io::metrics::OptIOMetrics::add_bytes_received",
@@ -163068,6 +165108,90 @@
     {
       "path": "polars_io::parquet::read::read_impl::PrefilterMaskSetting::init_from_env",
       "reason": "return type has no comparison (W_polars_io__parquet__read__read_impl__PrefilterMaskSetting)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::get_metadata",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::num_rows",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::read_parallel",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::set_low_memory",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::set_metadata",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::with_columns",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::with_hive_partition_columns",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::with_projection",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::with_row_index",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::read::reader::ParquetReader::with_slice",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::batched_writer::BatchedWriter::finish",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::batched_writer::BatchedWriter::write_batch",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::writer::ParquetWriter::batched",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::writer::ParquetWriter::finish",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::writer::ParquetWriter::new",
+      "reason": "no fixture for a parameter (support::Sink)"
+    },
+    {
+      "path": "polars_io::parquet::write::writer::ParquetWriter::set_parallel",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::writer::ParquetWriter::with_compression",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::writer::ParquetWriter::with_data_page_size",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::writer::ParquetWriter::with_key_value_metadata",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::writer::ParquetWriter::with_row_group_size",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::parquet::write::writer::ParquetWriter::with_statistics",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     },
     {
       "path": "polars_io::predicates::ScanIOPredicate::set_external_constant_columns",
@@ -166242,6 +168366,58 @@
       "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
     },
     {
+      "path": "polars_io::shared::SerReader::finish",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::shared::SerReader::finish",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::shared::SerReader::finish",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::shared::SerReader::new",
+      "reason": "no fixture for a parameter (core::io::cursor::Cursor<alloc::vec::Vec<u8>>)"
+    },
+    {
+      "path": "polars_io::shared::SerReader::new",
+      "reason": "no fixture for a parameter (core::io::cursor::Cursor<alloc::vec::Vec<u8>>)"
+    },
+    {
+      "path": "polars_io::shared::SerReader::new",
+      "reason": "no fixture for a parameter (core::io::cursor::Cursor<alloc::vec::Vec<u8>>)"
+    },
+    {
+      "path": "polars_io::shared::SerReader::set_rechunk",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::shared::SerReader::set_rechunk",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::shared::SerReader::set_rechunk",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::shared::SerWriter::finish",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::shared::SerWriter::finish",
+      "reason": "no fixture for the receiver type (no public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_io::shared::SerWriter::new",
+      "reason": "no fixture for a parameter (support::Sink)"
+    },
+    {
+      "path": "polars_io::shared::SerWriter::new",
+      "reason": "no fixture for a parameter (support::Sink)"
+    },
+    {
       "path": "polars_lazy::scan::file_list_reader::LazyFileListReader::cloud_options",
       "reason": "no fixture for the receiver type (constructors exist but none has fixtures for all arguments)"
     },
@@ -166301,7 +168477,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "773f5567f849dc73f87e2b8451bb963bcbf7e688d0f9d16fdf9c402363bdbcbe",
+    "sha256": "d2b64a41c0dc2986a3ae9f912ce9dfa94d0e832787bd0817996df7eb7fdcf992",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",
@@ -167568,6 +169744,14 @@
     },
     {
       "hand_written": false,
+      "identity": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+      "rule": "alias",
+      "rune": "polars::CsvReader",
+      "shared_with": [],
+      "type": "polars_io::csv::read::reader::CsvReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+    },
+    {
+      "hand_written": false,
       "identity": "polars_io::csv::write::options::CsvWriterOptions",
       "rule": "api type",
       "rune": "polars::CsvWriterOptions",
@@ -167600,11 +169784,35 @@
     },
     {
       "hand_written": false,
+      "identity": "polars_io::csv::write::writer::BatchedWriter<support::Sink>",
+      "rule": "alias",
+      "rune": "polars::CsvBatchedWriter",
+      "shared_with": [],
+      "type": "polars_io::csv::write::writer::BatchedWriter<support::Sink>"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_io::csv::write::writer::CsvWriter<support::Sink>",
+      "rule": "alias",
+      "rune": "polars::CsvWriter",
+      "shared_with": [],
+      "type": "polars_io::csv::write::writer::CsvWriter<support::Sink>"
+    },
+    {
+      "hand_written": false,
       "identity": "polars_io::file_cache::entry::FileCacheEntry",
       "rule": "api type",
       "rune": "polars::FileCacheEntry",
       "shared_with": [],
       "type": "polars_io::file_cache::entry::FileCacheEntry"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+      "rule": "alias",
+      "rune": "polars::IpcReader",
+      "shared_with": [],
+      "type": "polars_io::ipc::ipc_file::IpcReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
     },
     {
       "hand_written": false,
@@ -167637,6 +169845,14 @@
       "rune": "polars::IpcCompression",
       "shared_with": [],
       "type": "polars_io::ipc::write::IpcCompression"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_io::ipc::write::IpcWriter<support::Sink>",
+      "rule": "alias",
+      "rune": "polars::IpcWriter",
+      "shared_with": [],
+      "type": "polars_io::ipc::write::IpcWriter<support::Sink>"
     },
     {
       "hand_written": false,
@@ -167688,6 +169904,14 @@
     },
     {
       "hand_written": false,
+      "identity": "alloc::sync::Arc<polars_parquet::parquet::metadata::file_metadata::FileMetadata>",
+      "rule": "alias",
+      "rune": "polars::FileMetadataRef",
+      "shared_with": [],
+      "type": "polars_io::parquet::metadata::FileMetadataRef"
+    },
+    {
+      "hand_written": false,
       "identity": "polars_io::parquet::read::options::ParallelStrategy",
       "rule": "api type",
       "rune": "polars::ParallelStrategy",
@@ -167712,6 +169936,22 @@
     },
     {
       "hand_written": false,
+      "identity": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>",
+      "rule": "alias",
+      "rune": "polars::ParquetReader",
+      "shared_with": [],
+      "type": "polars_io::parquet::read::reader::ParquetReader<core::io::cursor::Cursor<alloc::vec::Vec<u8>>>"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>",
+      "rule": "alias",
+      "rune": "polars::ParquetBatchedWriter",
+      "shared_with": [],
+      "type": "polars_io::parquet::write::batched_writer::BatchedWriter<support::Sink>"
+    },
+    {
+      "hand_written": false,
       "identity": "polars_io::parquet::write::key_value_metadata::KeyValueMetadata",
       "rule": "api type",
       "rune": "polars::KeyValueMetadata",
@@ -167733,6 +169973,14 @@
       "rune": "polars::ParquetWriteOptions",
       "shared_with": [],
       "type": "polars_io::parquet::write::options::ParquetWriteOptions"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>",
+      "rule": "alias",
+      "rune": "polars::ParquetWriter",
+      "shared_with": [],
+      "type": "polars_io::parquet::write::writer::ParquetWriter<support::Sink>"
     },
     {
       "hand_written": false,

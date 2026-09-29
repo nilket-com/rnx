@@ -697,6 +697,31 @@ pub(crate) fn emit_method_with(
 		ret.doc,
 		if fallible { " (fallible)" } else { "" }
 	);
+	// record 0118: a call that can write to a `Sink` (the receiver is
+	// instantiated at it, or an argument is one) runs as one sink operation:
+	// committed on `Ok`, discarded on `Err`
+	let uses_sink = w.identity.contains(crate::families::std_facts::SINK)
+		|| params.iter().any(|(_, a)| a.shape == "sink");
+	if uses_sink && ret.materialize.is_some() {
+		out.unsupported(
+			c,
+			"sink operation",
+			"an iterator return from a call that writes to a Sink has no operation boundary",
+		);
+		return;
+	}
+	let rust_result = c.ret_canonical.as_deref().is_some_and(|r| {
+		r.starts_with("polars_error::PolarsResult<") || r.starts_with("core::result::Result<")
+	});
+	let sink_wrap = |expr: String| -> String {
+		if !uses_sink {
+			expr
+		} else if rust_result {
+			format!("support::sink_op(\"{rune}\", || {expr})")
+		} else {
+			format!("support::sink_op_infallible(\"{rune}\", || {expr})")
+		}
+	};
 	let (pre, call) = if let Some(m) = &ret.materialize {
 		// an iterator return: created, driven and converted inside the
 		// (routed) block; the receiver of a `&self` iterator stays usable
@@ -743,6 +768,7 @@ pub(crate) fn emit_method_with(
 		} else {
 			body
 		};
+		let body = sink_wrap(body);
 		let call = format!("crate::engine::run(\"{rune}\", move || {body})");
 		(
 			pre,
@@ -752,6 +778,15 @@ pub(crate) fn emit_method_with(
 				format!("crate::engine::infallible({call}, \"{rune}\")")
 			},
 		)
+	} else if uses_sink {
+		// conversions may fail with `?`, so they run before the sink operation
+		let mut pre = pre.clone();
+		let mut hoisted = Vec::new();
+		for (i, a) in args.iter().enumerate() {
+			pre.push_str(&format!("let __arg{i} = {a}; "));
+			hoisted.push(format!("__arg{i}"));
+		}
+		(pre, sink_wrap(format!("{callee}({})", hoisted.join(", "))))
 	} else {
 		(pre, format!("{callee}({})", args.join(", ")))
 	};

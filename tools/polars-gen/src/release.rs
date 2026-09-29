@@ -97,6 +97,9 @@ pub(crate) struct FamilyTables {
 	/// listed dtype as synthetic wrappers.
 	#[serde(default)]
 	pub(crate) dtype_instantiations: Vec<crate::families::dtype_owners::DtypeInstantiation>,
+	/// Record 0118: the closed std-facts table (allowlisted keys, cited).
+	#[serde(default)]
+	pub(crate) std_facts: Vec<crate::families::std_facts::StdFact>,
 	/// Record 0092: family-census methods whose one scalar function generic
 	/// is bound, per proven pair, to that pair's native type.
 	#[serde(default)]

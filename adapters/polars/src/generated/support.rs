@@ -16,6 +16,10 @@ pub struct Error(pub(crate) String, pub(crate) String);
 
 impl From<p::PolarsError> for Error {
 	fn from(e: p::PolarsError) -> Self {
+		// record 0118: a sink's limit refusal is the materialize bound's error
+		if let Some(m) = sink_limit(&e) {
+			return Error("MaterializeLimit".into(), m);
+		}
 		// The kind is the innermost error's: Polars wraps a failure in
 		// `Context`/`ExprContext` on some paths (`compute_schema`) and not
 		// on others (`collect`), and the wrapper is not a kind of its own.
@@ -1930,8 +1934,287 @@ pub(crate) mod callback {
 	use polars::prelude as p;
 }
 
+/// Record 0118: an in-memory sink for Polars writers, and the operation scope
+/// that makes each writer call all-or-nothing.
+///
+/// A `Sink` is a script handle, `polars::Sink`; clones share one state: the
+/// committed bytes, the staging of at most one operation, and the limit
+/// (the materialize bound when the handle was made). A generated writer
+/// binding runs its Polars call inside [`sink_op`]. The first write to a
+/// sink inside that scope claims the sink's operation gate (an atomic flag:
+/// no lock is held across the Polars call); every write checks committed +
+/// staged + new against the limit before copying, and the first one that
+/// would exceed it copies nothing and fails with a [`SinkLimit`] marker.
+/// When the call returns, the scope commits the staged bytes of every sink
+/// it touched in one step on `Ok`, or discards them on `Err`, and releases
+/// the gates. `bytes()` and `clear()` see and change committed state only.
+/// A write outside any operation fails closed.
+#[derive(Any, Clone)]
+#[rune(item = ::polars)]
+pub struct Sink(pub(crate) std::sync::Arc<SinkShared>);
+
+pub(crate) struct SinkShared {
+	limit: usize,
+	/// The operation gate: held from an operation's first write to its end.
+	busy: std::sync::atomic::AtomicBool,
+	state: std::sync::Mutex<SinkState>,
+}
+
+#[derive(Default)]
+struct SinkState {
+	committed: Vec<u8>,
+	staged: Vec<u8>,
+}
+
+/// The private marker a limit refusal carries inside its `io::Error`; the
+/// error mapping finds it by downcast, never by message text.
+#[derive(Debug)]
+pub(crate) struct SinkLimit(pub(crate) String);
+
+impl std::fmt::Display for SinkLimit {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.write_str(&self.0)
+	}
+}
+
+impl std::error::Error for SinkLimit {}
+
+std::thread_local! {
+	/// The operation in progress on this thread: its name and the sinks it
+	/// has written to (each with its gate held).
+	static SINK_OP: std::cell::RefCell<Option<(String, Vec<std::sync::Arc<SinkShared>>)>> =
+		const { std::cell::RefCell::new(None) };
+}
+
+impl Sink {
+	pub(crate) fn with_limit(limit: usize) -> Sink {
+		Sink(std::sync::Arc::new(SinkShared {
+			limit,
+			busy: std::sync::atomic::AtomicBool::new(false),
+			state: std::sync::Mutex::new(SinkState::default()),
+		}))
+	}
+
+	/// A new, empty sink bounded by the materialize limit.
+	#[rune::function(path = Self::new)]
+	pub(crate) fn new() -> Sink {
+		Sink::with_limit(materialize_limit())
+	}
+
+	/// The committed bytes (staged bytes of an operation are never visible).
+	#[rune::function(instance, path = bytes)]
+	pub(crate) fn bytes(&self) -> Result<rune::runtime::Bytes, Error> {
+		rune::alloc::Vec::try_from(self.committed())
+			.map(rune::runtime::Bytes::from_vec)
+			.map_err(|e| Error("MaterializeLimit".into(), format!("bytes: {e}")))
+	}
+
+	/// The number of committed bytes.
+	#[rune::function(instance, path = len)]
+	pub(crate) fn len(&self) -> usize {
+		self.state().committed.len()
+	}
+
+	/// The bound on committed plus staged bytes.
+	#[rune::function(instance, path = limit)]
+	pub(crate) fn limit(&self) -> usize {
+		self.0.limit
+	}
+
+	/// Empties the committed bytes; refused while an operation is writing.
+	#[rune::function(keep, instance, path = clear)]
+	pub(crate) fn clear(&self) -> Result<(), Error> {
+		self.clear_with(|| {})
+	}
+
+	/// `clear`, claiming the operation gate atomically, so no writer can be
+	/// admitted between the check and the change (review of 0118); the gate
+	/// is released on every path, a panic included. `between` runs while the
+	/// gate is held, before the change (a test hook for that window).
+	pub(crate) fn clear_with(&self, between: impl FnOnce()) -> Result<(), Error> {
+		if self
+			.0
+			.busy
+			.compare_exchange(
+				false,
+				true,
+				std::sync::atomic::Ordering::SeqCst,
+				std::sync::atomic::Ordering::SeqCst,
+			)
+			.is_err()
+		{
+			return Err(Error(
+				"SinkBusy".into(),
+				"clear: an operation is writing to this sink".into(),
+			));
+		}
+		struct Release<'a>(&'a std::sync::atomic::AtomicBool);
+		impl Drop for Release<'_> {
+			fn drop(&mut self) {
+				self.0.store(false, std::sync::atomic::Ordering::SeqCst);
+			}
+		}
+		let _release = Release(&self.0.busy);
+		between();
+		self.state().committed.clear();
+		Ok(())
+	}
+
+	pub(crate) fn committed(&self) -> Vec<u8> {
+		self.state().committed.clone()
+	}
+
+	fn state(&self) -> std::sync::MutexGuard<'_, SinkState> {
+		self.0.state.lock().unwrap_or_else(|e| e.into_inner())
+	}
+}
+
+impl std::io::Write for Sink {
+	fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+		SINK_OP.with(|cell| {
+			let mut cell = cell.borrow_mut();
+			let Some((op, touched)) = cell.as_mut() else {
+				return Err(std::io::Error::other(
+					"a write to a polars::Sink outside a writer operation",
+				));
+			};
+			if !touched.iter().any(|s| std::sync::Arc::ptr_eq(s, &self.0)) {
+				if self
+					.0
+					.busy
+					.compare_exchange(
+						false,
+						true,
+						std::sync::atomic::Ordering::SeqCst,
+						std::sync::atomic::Ordering::SeqCst,
+					)
+					.is_err()
+				{
+					return Err(std::io::Error::other(format!(
+						"{op}: another operation is writing to this sink"
+					)));
+				}
+				touched.push(self.0.clone());
+			}
+			let mut st = self.0.state.lock().unwrap_or_else(|e| e.into_inner());
+			let total = st
+				.committed
+				.len()
+				.checked_add(st.staged.len())
+				.and_then(|n| n.checked_add(buf.len()));
+			match total {
+				Some(n) if n <= self.0.limit => {
+					st.staged.extend_from_slice(buf);
+					Ok(buf.len())
+				}
+				_ => Err(std::io::Error::other(SinkLimit(format!(
+					"{op}: writing {} more bytes to a sink holding {} committed and {} staged exceeds its bound of {}",
+					buf.len(),
+					st.committed.len(),
+					st.staged.len(),
+					self.0.limit
+				)))),
+			}
+		})
+	}
+
+	fn flush(&mut self) -> std::io::Result<()> {
+		Ok(())
+	}
+}
+
+/// Runs one writer operation: every sink it writes to commits its staged
+/// bytes on `Ok` and discards them on `Err`. Operations do not nest.
+pub(crate) fn sink_op<T, E>(op: &str, f: impl FnOnce() -> Result<T, E>) -> Result<T, E> {
+	let nested = SINK_OP.with(|c| c.borrow().is_some());
+	assert!(!nested, "sink operations do not nest ({op})");
+	SINK_OP.with(|c| *c.borrow_mut() = Some((op.to_string(), Vec::new())));
+	// the scope ends however the call ends, a panic included (then discarded)
+	struct End(bool);
+	impl Drop for End {
+		fn drop(&mut self) {
+			let touched = SINK_OP
+				.with(|c| c.borrow_mut().take())
+				.map(|(_, t)| t)
+				.unwrap_or_default();
+			for s in touched {
+				{
+					let mut st = s.state.lock().unwrap_or_else(|e| e.into_inner());
+					let staged = std::mem::take(&mut st.staged);
+					if self.0 {
+						st.committed.extend_from_slice(&staged);
+					}
+				}
+				s.busy.store(false, std::sync::atomic::Ordering::SeqCst);
+			}
+		}
+	}
+	let mut end = End(false);
+	let r = f();
+	end.0 = r.is_ok();
+	drop(end);
+	r
+}
+
+/// [`sink_op`] for a call whose Rust return is not a `Result`: it commits.
+pub(crate) fn sink_op_infallible<T>(op: &str, f: impl FnOnce() -> T) -> T {
+	match sink_op::<T, std::convert::Infallible>(op, || Ok(f())) {
+		Ok(v) => v,
+		Err(e) => match e {},
+	}
+}
+
+/// Record 0118: a reader's source from script `Bytes`, length-checked
+/// against the materialize bound before its single copy; the script's value
+/// is only read.
+pub(crate) fn cursor_from_bytes(
+	value: &rune::Value,
+	op: &str,
+) -> Result<std::io::Cursor<Vec<u8>>, Error> {
+	let bytes = value
+		.borrow_ref::<rune::runtime::Bytes>()
+		.map_err(|_| Error::conversion(&format!("{op}: expected Bytes")))?;
+	let limit = materialize_limit();
+	if bytes.len() > limit {
+		return Err(Error(
+			"MaterializeLimit".into(),
+			format!(
+				"{op}: {} bytes, more than the bound of {limit}",
+				bytes.len()
+			),
+		));
+	}
+	Ok(std::io::Cursor::new(bytes.as_slice().to_vec()))
+}
+
+/// Record 0118: whether a Polars error is a sink's limit refusal (found by
+/// downcast through the I/O error, never by message text).
+pub(crate) fn sink_limit(e: &p::PolarsError) -> Option<String> {
+	let mut inner = e;
+	loop {
+		match inner {
+			p::PolarsError::Context { error, .. } | p::PolarsError::ExprContext { error, .. } => {
+				inner = error
+			}
+			p::PolarsError::IO { error, .. } => {
+				return error
+					.get_ref()
+					.and_then(|x| x.downcast_ref::<SinkLimit>())
+					.map(|m| m.0.clone());
+			}
+			_ => return None,
+		}
+	}
+}
+
 pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
 	m.ty::<Error>()?;
+	m.ty::<Sink>()?;
+	m.function_meta(Sink::new)?;
+	m.function_meta(Sink::bytes)?;
+	m.function_meta(Sink::len)?;
+	m.function_meta(Sink::limit)?;
+	m.function_meta(Sink::clear__meta)?;
 	m.function_meta(callback::set_callback_budget)?;
 	m.function_meta(Error::kind)?;
 	m.function_meta(Error::message)?;
@@ -3264,5 +3547,245 @@ mod bits_tests {
 			"a new call gets the whole bound"
 		);
 		limit(0);
+	}
+}
+
+/// Record 0118: the `Sink`/`Cursor` contract, tested directly (and through
+/// real Polars writers) before any generated binding uses it.
+#[cfg(test)]
+mod sink_tests {
+	use super::*;
+	use std::io::Write as _;
+
+	fn frame() -> p::DataFrame {
+		p::df!("a" => [1i64, 2, 3], "b" => ["x", "y", "z"]).unwrap()
+	}
+
+	fn csv_of(df: &mut p::DataFrame) -> Vec<u8> {
+		use p::SerWriter as _;
+		let mut v = Vec::new();
+		p::CsvWriter::new(&mut v).finish(df).unwrap();
+		v
+	}
+
+	fn write_all(s: &Sink, n: usize) -> std::io::Result<()> {
+		s.clone().write_all(&vec![b'.'; n])
+	}
+
+	#[test]
+	fn writes_at_the_limit_pass_and_one_more_byte_copies_nothing() {
+		let s = Sink::with_limit(10);
+		// several writes in one operation, exactly at the limit
+		sink_op("t", || {
+			write_all(&s, 4)?;
+			write_all(&s, 6)
+		})
+		.unwrap();
+		assert_eq!(s.committed().len(), 10);
+		// one byte past it: refused before copying, the operation discarded
+		let e = sink_op("t", || write_all(&s, 1)).unwrap_err();
+		assert!(e.get_ref().unwrap().downcast_ref::<SinkLimit>().is_some());
+		assert_eq!(s.committed().len(), 10);
+		assert!(s.state().staged.is_empty());
+		// cumulative within an operation: 3 + 3 over a 5-byte bound
+		let t = Sink::with_limit(5);
+		let e = sink_op("t", || {
+			write_all(&t, 3)?;
+			write_all(&t, 3)
+		})
+		.unwrap_err();
+		assert!(e.get_ref().unwrap().downcast_ref::<SinkLimit>().is_some());
+		assert!(
+			t.committed().is_empty(),
+			"a failed operation leaves nothing"
+		);
+	}
+
+	#[test]
+	fn the_handle_is_reusable_after_a_limit_error() {
+		let s = Sink::with_limit(8);
+		sink_op("t", || write_all(&s, 6)).unwrap();
+		assert!(sink_op("t", || write_all(&s, 3)).is_err());
+		assert_eq!(s.committed().len(), 6, "earlier committed bytes stay");
+		sink_op("t", || write_all(&s, 2)).unwrap();
+		assert_eq!(s.committed().len(), 8);
+		s.clear().unwrap();
+		sink_op("t", || write_all(&s, 8)).unwrap();
+		assert_eq!(s.committed().len(), 8);
+	}
+
+	#[test]
+	fn a_non_limit_error_discards_its_staged_bytes() {
+		let s = Sink::with_limit(100);
+		let r: Result<(), &str> = sink_op("t", || {
+			write_all(&s, 7).unwrap();
+			// staged bytes are never visible through any clone
+			assert!(s.clone().committed().is_empty());
+			Err("the operation failed after writing")
+		});
+		assert!(r.is_err());
+		assert!(s.committed().is_empty());
+		assert!(
+			!s.0.busy.load(std::sync::atomic::Ordering::SeqCst),
+			"the gate is released"
+		);
+	}
+
+	#[test]
+	fn the_limit_marker_maps_by_downcast_never_by_text() {
+		let marked = p::PolarsError::IO {
+			error: std::sync::Arc::new(std::io::Error::other(SinkLimit("w: over".into()))),
+			msg: None,
+		};
+		assert_eq!(Error::from(marked).0, "MaterializeLimit");
+		let text = p::PolarsError::IO {
+			error: std::sync::Arc::new(std::io::Error::other("limit exceeded: SinkLimit")),
+			msg: None,
+		};
+		assert_eq!(
+			Error::from(text).0,
+			"IO",
+			"a message that says limit is not the marker"
+		);
+		// a real writer over a small sink: Polars returns the marker inside its error
+		let s = Sink::with_limit(4);
+		let r = sink_op("CsvWriter::finish", || {
+			use p::SerWriter as _;
+			p::CsvWriter::new(s.clone()).finish(&mut frame())
+		});
+		assert_eq!(Error::from(r.unwrap_err()).0, "MaterializeLimit");
+		assert!(s.committed().is_empty());
+	}
+
+	#[test]
+	fn clones_share_one_committed_state() {
+		let script = Sink::with_limit(1 << 16);
+		// a writer owns a clone; the script's handle shows exactly its bytes after finish
+		sink_op("CsvWriter::finish", || {
+			use p::SerWriter as _;
+			p::CsvWriter::new(script.clone()).finish(&mut frame())
+		})
+		.unwrap();
+		let want = csv_of(&mut frame());
+		assert_eq!(script.committed(), want);
+		// two writers share one sink: the second fails at the limit, the first's bytes stay
+		let shared = Sink::with_limit(want.len() + 3);
+		sink_op("first", || {
+			use p::SerWriter as _;
+			p::CsvWriter::new(shared.clone()).finish(&mut frame())
+		})
+		.unwrap();
+		let second = sink_op("second", || {
+			use p::SerWriter as _;
+			p::CsvWriter::new(shared.clone()).finish(&mut frame())
+		});
+		assert_eq!(Error::from(second.unwrap_err()).0, "MaterializeLimit");
+		assert_eq!(shared.committed(), want);
+		// clear, then a write through a clone starts from empty
+		shared.clear().unwrap();
+		let clone = shared.clone();
+		sink_op("t", || write_all(&clone, 3)).unwrap();
+		assert_eq!(shared.committed(), b"...");
+	}
+
+	#[test]
+	fn a_write_outside_an_operation_fails_closed() {
+		let s = Sink::with_limit(10);
+		assert!(write_all(&s, 1).is_err());
+		assert!(s.committed().is_empty());
+	}
+
+	#[test]
+	fn operations_on_one_sink_are_serialized() {
+		// one thread holds the sink's gate mid-operation; another's write is refused
+		let s = Sink::with_limit(100);
+		let (held_tx, held_rx) = std::sync::mpsc::channel();
+		let (go_tx, go_rx) = std::sync::mpsc::channel::<()>();
+		let a = s.clone();
+		let t = std::thread::spawn(move || {
+			sink_op("first", || {
+				write_all(&a, 2)?;
+				held_tx.send(()).unwrap();
+				go_rx.recv().unwrap();
+				write_all(&a, 2)
+			})
+		});
+		held_rx.recv().unwrap();
+		let e = sink_op("second", || write_all(&s, 1)).unwrap_err();
+		assert!(
+			e.to_string().contains("another operation is writing"),
+			"{e}"
+		);
+		assert!(s.clear().is_err(), "clear waits for the operation");
+		go_tx.send(()).unwrap();
+		t.join().unwrap().unwrap();
+		assert_eq!(s.committed().len(), 4, "only the first operation's bytes");
+	}
+
+	#[test]
+	fn clear_holds_the_gate_through_its_change() {
+		// a writer arriving in the window between clear's check and its
+		// change is refused; the committed bytes are cleared exactly once
+		let s = Sink::with_limit(100);
+		sink_op("first", || write_all(&s, 5)).unwrap();
+		let other = s.clone();
+		s.clear_with(|| {
+			let r = std::thread::spawn(move || sink_op("writer", || write_all(&other, 3)))
+				.join()
+				.unwrap();
+			let e = r.unwrap_err();
+			assert!(
+				e.to_string().contains("another operation is writing"),
+				"{e}"
+			);
+		})
+		.unwrap();
+		assert!(s.committed().is_empty());
+		assert!(
+			!s.0.busy.load(std::sync::atomic::Ordering::SeqCst),
+			"the gate is released after clear"
+		);
+		// and a panic inside the window releases the gate too
+		let t = s.clone();
+		let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+			let _ = t.clear_with(|| panic!("inside clear"));
+		}));
+		assert!(caught.is_err());
+		assert!(!s.0.busy.load(std::sync::atomic::Ordering::SeqCst));
+		sink_op("after", || write_all(&s, 2)).unwrap();
+		assert_eq!(s.committed().len(), 2);
+	}
+
+	#[cfg(feature = "test-support")]
+	#[test]
+	fn cursor_input_is_bounded_before_its_one_copy() {
+		let _l = LIMIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+		set_limit_for_test(5);
+		let at = rune::to_value(rune::runtime::Bytes::from_vec(
+			rune::alloc::Vec::try_from(vec![1u8; 5]).unwrap(),
+		))
+		.unwrap();
+		let over = rune::to_value(rune::runtime::Bytes::from_vec(
+			rune::alloc::Vec::try_from(vec![1u8; 6]).unwrap(),
+		))
+		.unwrap();
+		let c = cursor_from_bytes(&at, "t").unwrap();
+		assert_eq!(c.get_ref().len(), 5);
+		assert_eq!(
+			cursor_from_bytes(&over, "t").unwrap_err().0,
+			"MaterializeLimit"
+		);
+		assert_eq!(
+			cursor_from_bytes(&rune::to_value(1i64).unwrap(), "t")
+				.unwrap_err()
+				.0,
+			"ConversionError"
+		);
+		set_limit_for_test(0);
+	}
+
+	#[cfg(feature = "test-support")]
+	fn set_limit_for_test(n: usize) {
+		TEST_LIMIT.store(n, std::sync::atomic::Ordering::SeqCst);
 	}
 }

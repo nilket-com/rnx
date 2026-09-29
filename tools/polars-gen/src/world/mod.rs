@@ -288,6 +288,8 @@ pub(crate) struct Wrapper {
 
 pub(crate) struct World {
 	pub(crate) release: Release,
+	/// Record 0118: the admitted std facts, (canonical type, trait).
+	pub(crate) std_facts: BTreeSet<(String, String)>,
 	pub(crate) callback_dispositions: BTreeMap<String, String>,
 	pub(crate) callback_unclassified_sinks: Vec<String>,
 	pub(crate) callback_sink_groups: BTreeSet<String>,
@@ -501,6 +503,7 @@ impl World {
 			.collect();
 		let mut w = World {
 			release: release.clone(),
+			std_facts: BTreeSet::new(),
 			callback_dispositions: BTreeMap::new(),
 			callback_unclassified_sinks,
 			callback_sink_groups,
@@ -848,6 +851,14 @@ impl World {
 				for p in &cand.paths {
 					self.wrappers.insert(p.clone(), w.clone());
 				}
+			}
+		}
+		// record 0118: the closed std-facts table, refused before any emission
+		match crate::families::std_facts::validate(&self.release.families.std_facts) {
+			Ok(f) => self.std_facts = f,
+			Err(why) => {
+				eprintln!("refusing to generate: std facts: {why}");
+				std::process::exit(2);
 			}
 		}
 		// record 0116 (rule 3): the listed dtype instantiations of generic

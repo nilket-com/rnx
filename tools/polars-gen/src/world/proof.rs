@@ -376,6 +376,13 @@ impl World {
 			Err(e) => return Applicability::Unresolved(e),
 		};
 		let short = last(&tpath);
+		// record 0118: the closed std-facts table decides its own keys first
+		if self
+			.std_facts
+			.contains(&(ty.to_string(), bound.to_string()))
+		{
+			return Applicability::Proven;
+		}
 		if tpath.starts_with("core::") || tpath.starts_with("alloc::") || tpath.starts_with("std::")
 		{
 			if let Some(a) = targs.first() {
@@ -1154,6 +1161,17 @@ pub(crate) fn applicability_self_test() {
 	// record 0117 (stage D): bare-parameter impl heads
 	let mut blank = sup("polars_core::chunked_array::ops::Blank", "trait", None);
 	blank.impls = vec![imp(&[], "T", &num_bound)];
+	// record 0118: an I/O trait whose one recorded impl over `Cursor<T>` needs
+	// `T: AsRef<[u8]> + Send + Sync`, decidable only from the std facts
+	let mut mmap = sup("polars_io::mmap::MmapBytesReader", "trait", None);
+	mmap.impls = vec![imp(
+		&[],
+		"core::io::cursor::Cursor<T>",
+		&[(
+			"T",
+			"core::convert::AsRef<[u8]> + core::marker::Send + core::marker::Sync",
+		)],
+	)];
 	let mut unbounded = sup("polars_core::chunked_array::ops::Unbounded", "trait", None);
 	unbounded.impls = vec![imp(&[], "T", &[("T", "?core::marker::Sized")])];
 	let inv = Inventory {
@@ -1164,6 +1182,7 @@ pub(crate) fn applicability_self_test() {
 			dup,
 			blank,
 			unbounded,
+			mmap,
 			base,
 			numeric,
 			data,
@@ -1610,6 +1629,36 @@ pub(crate) fn applicability_self_test() {
 			other => panic!("{bounds:?}: an unbounded head must be refused, got {other:?}"),
 		}
 	}
+	// record 0118: the std facts decide exactly their own keys
+	let cursor = crate::families::std_facts::CURSOR;
+	let mmap = "polars_io::mmap::MmapBytesReader";
+	assert!(
+		matches!(w.holds(cursor, mmap, 0), Applicability::Unresolved(_)),
+		"without the facts, the cursor's reader bound stays open"
+	);
+	let mut wf = World::new(&inv, &release, &["mechanical"]);
+	let vec_u8 = crate::families::std_facts::VEC_U8;
+	for tr in [
+		"core::convert::AsRef<[u8]>",
+		"core::marker::Send",
+		"core::marker::Sync",
+	] {
+		wf.std_facts.insert((vec_u8.to_string(), tr.to_string()));
+	}
+	assert!(
+		ok(&wf.holds(cursor, mmap, 0)),
+		"the one recorded impl, discharged by the facts"
+	);
+	assert!(
+		!ok(&wf.holds("alloc::vec::Vec<u16>", "core::marker::Send", 0)),
+		"a fact is its exact key, never a neighbour"
+	);
+	wf.std_facts
+		.remove(&(vec_u8.to_string(), "core::marker::Sync".to_string()));
+	assert!(
+		!ok(&wf.holds(cursor, mmap, 0)),
+		"one missing fact leaves the bound unproven"
+	);
 	println!("applicability self-test: ok");
 }
 
