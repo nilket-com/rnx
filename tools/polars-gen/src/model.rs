@@ -102,10 +102,16 @@ pub struct Supporting {
 	/// For a trait (record 0076): every recorded impl with its head.
 	#[serde(default)]
 	pub impls: Vec<TraitImpl>,
+	/// Record 0117: a generic trait's own type parameters, in order.
+	#[serde(default)]
+	pub trait_params: Vec<String>,
 }
 
 #[derive(Deserialize, Clone, Debug, Default)]
 pub struct TraitImpl {
+	/// Record 0117: the trait's own type arguments in this impl.
+	#[serde(default)]
+	pub trait_args: Vec<String>,
 	pub for_type: String,
 	#[serde(default)]
 	pub blanket: bool,

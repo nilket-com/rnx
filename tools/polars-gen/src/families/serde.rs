@@ -14,6 +14,7 @@ use std::fmt::Write as _;
 pub(crate) fn serde_self_test() {
 	let owner = "polars_core::datatypes::TimeUnit";
 	let sup = Supporting {
+		trait_params: vec![],
 		key: owner.to_string(),
 		kind: "enum".into(),
 		canonical_path: owner.to_string(),
@@ -157,6 +158,7 @@ pub(crate) fn serde_self_test() {
 	let opaque = "polars_core::datatypes::Opaque";
 	let frame = "polars_core::frame::dataframe::DataFrame";
 	let mk_sup = |path: &str, kind: &str, fields: Vec<(&str, &str)>, public: usize| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: kind.into(),
 		canonical_path: path.to_string(),

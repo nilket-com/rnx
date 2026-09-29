@@ -31,6 +31,18 @@ for cfg in ("default", "extra"):
         if p in calls or any(s["canonical_path"] == p for s in inv["supporting"]):
             ok = False; print(f"MISMATCH {cfg}: {p} should be unreachable")
     report(f"{cfg} unknown", inv["unknown"], exp["default"]["unknown"])
+    # record 0117: every impl keeps its own trait arguments (impls that differ
+    # only in them all survive, including those only the recovery pass sees),
+    # and a generic trait records its own parameters
+    sup = {s["canonical_path"]: s for s in inv["supporting"]}
+    for tr, args in exp["default"]["trait_args"].items():
+        report(f"{cfg} trait_args of {tr}", [tuple(i["trait_args"]) for i in sup[tr]["impls"]], [tuple(a) for a in args])
+    for tr, params in exp["default"]["trait_params"].items():
+        got = sup[tr]["trait_params"]
+        if got != params:
+            ok = False; print(f"MISMATCH {cfg} trait_params of {tr}: want {params}, got {got}")
+        else:
+            print(f"ok {cfg} trait_params of {tr} ({len(got)})")
     for path, want in exp["default"]["buckets"].items():
         got = calls.get(path, {}).get("bucket")
         if got != want:

@@ -224,6 +224,7 @@ impl Family for IteratorReturnFamily {
 pub(crate) fn checked_readback_self_test() {
 	let frame = "polars_core::frame::dataframe::DataFrame";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -420,6 +421,7 @@ pub(crate) fn cow_return_self_test() {
 	let series = "polars_core::series::Series";
 	let frame = "polars_core::frame::dataframe::DataFrame";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -580,6 +582,7 @@ pub(crate) fn iterator_return_self_test() {
 	let alias = "polars_core::chunked_array::ChunkLenIter";
 	let map = "core::iter::adapters::map::Map<core::slice::iter::Iter<'a, alloc::boxed::Box<dyn polars_arrow::array::Array>>, fn(&alloc::boxed::Box<dyn polars_arrow::array::Array>) -> usize>";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),

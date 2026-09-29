@@ -1062,6 +1062,7 @@ pub(crate) fn native_substitution_self_test() {
 	);
 	let ca = "polars_core::chunked_array::ChunkedArray";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -1814,6 +1815,7 @@ pub(crate) fn sized_self_self_test() {
 	// the emitter: guard before the call, and only on a receiver-typed return
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -1947,6 +1949,7 @@ pub(crate) fn null_aware_self_test() {
 	}
 	let owner = "polars_core::datatypes::Int8Chunked";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -2174,6 +2177,7 @@ pub(crate) fn hash_token_self_test() {
 	let cats = "polars_dtype::categorical::Categories";
 	let map = "polars_dtype::categorical::mapping::CategoricalMapping";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),

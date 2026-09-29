@@ -17,6 +17,7 @@ pub(crate) fn protocols_self_test() {
 	let keyed = "polars_core::datatypes::TimeUnit";
 	let loose = "polars_ops::frame::join::JoinType";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "enum".into(),
 		canonical_path: path.to_string(),

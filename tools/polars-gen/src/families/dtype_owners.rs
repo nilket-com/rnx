@@ -162,6 +162,7 @@ pub(crate) fn dtype_owners_self_test() {
 	use crate::model::{Inventory, Supporting};
 	use crate::release::{FamilyTables, InstantiationScope, Release, ReleaseProvenance};
 	let sup = |path: &str, generic: bool| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),

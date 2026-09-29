@@ -16,6 +16,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 pub(crate) fn wrapper_self_test() {
 	fn sup(path: &str, kind: &str, target: Option<&str>) -> Supporting {
 		Supporting {
+			trait_params: vec![],
 			key: path.to_string(),
 			kind: kind.to_string(),
 			canonical_path: path.to_string(),

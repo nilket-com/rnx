@@ -92,6 +92,7 @@ pub(crate) fn from_naming_self_test() {
 pub(crate) fn from_emission_self_test() {
 	fn sup(path: &str, derived: &[&str]) -> Supporting {
 		Supporting {
+			trait_params: vec![],
 			key: path.to_string(),
 			kind: "struct".into(),
 			canonical_path: path.to_string(),

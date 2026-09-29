@@ -188,6 +188,7 @@ pub(crate) fn generic_impls_self_test() {
 	let frame = "polars_core::frame::dataframe::DataFrame";
 	let column = "polars_core::frame::column::Column";
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),

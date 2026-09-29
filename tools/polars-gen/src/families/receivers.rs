@@ -13,6 +13,7 @@ use std::collections::{BTreeMap, BTreeSet};
 /// trait give no receiver.
 pub(crate) fn trait_receivers_self_test() {
 	let sup = |path: &str, kind: &str, target: Option<&str>| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: kind.to_string(),
 		canonical_path: path.to_string(),
@@ -32,6 +33,7 @@ pub(crate) fn trait_receivers_self_test() {
 	};
 	let ca = "polars_core::chunked_array::ChunkedArray";
 	let ti = |for_type: String, bounds: Vec<(&str, &str)>, blanket: bool| model::TraitImpl {
+		trait_args: vec![],
 		for_type,
 		blanket,
 		bounds: bounds
@@ -236,6 +238,7 @@ pub(crate) fn move_semantics_self_test() {
 	let series = "polars_core::series::Series";
 	let ns = "polars_plan::dsl::string::StringNameSpace";
 	let sup = |path: &str, clone: bool| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),
@@ -416,6 +419,7 @@ pub(crate) fn method_arity_self_test() {
 		trait_lifetimes: vec![],
 	};
 	let sup = Supporting {
+		trait_params: vec![],
 		key: series.to_string(),
 		kind: "struct".into(),
 		canonical_path: series.to_string(),
@@ -552,6 +556,9 @@ pub(crate) fn proven_trait_receivers(world: &World, c: &Callable) -> (Vec<String
 			.collect();
 		cands.sort_by(|a, b| a.0.cmp(b.0));
 		let mut seen_identity: BTreeSet<&str> = BTreeSet::new();
+		// record 0117 (stage D): a bare-parameter head is tried on every
+		// wrapper; its causes are grouped, the wrapper named as the parameter
+		let mut grouped: BTreeMap<String, usize> = BTreeMap::new();
 		for (path, w) in cands {
 			if !seen_identity.insert(w.identity.as_str()) {
 				continue;
@@ -559,8 +566,16 @@ pub(crate) fn proven_trait_receivers(world: &World, c: &Callable) -> (Vec<String
 			match world.applicability(&probe, &w.identity).0 {
 				Applicability::Proven => push(path, &mut out),
 				Applicability::Rejected(_) => {}
+				Applicability::Unresolved(e) if is_param(&head) => {
+					*grouped
+						.entry(e.replace(w.identity.as_str(), &head))
+						.or_default() += 1;
+				}
 				Applicability::Unresolved(e) => why.push(format!("{head} on {}: {e}", w.identity)),
 			}
+		}
+		for (e, n) in grouped {
+			why.push(format!("{head} on {n} wrapped types: {e}"));
 		}
 	}
 	why.sort();
@@ -607,6 +622,7 @@ pub(crate) fn mut_return_self_test() {
 		trait_lifetimes: vec![],
 	};
 	let sup = |path: &str| Supporting {
+		trait_params: vec![],
 		key: path.to_string(),
 		kind: "struct".into(),
 		canonical_path: path.to_string(),

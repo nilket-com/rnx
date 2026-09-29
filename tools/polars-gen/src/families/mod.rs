@@ -11,6 +11,7 @@ pub(crate) mod dtype_owners;
 pub(crate) mod free_instantiations;
 pub(crate) mod generic_impls;
 pub(crate) mod generic_inputs;
+pub(crate) mod generic_traits;
 pub(crate) mod protocols;
 pub(crate) mod receivers;
 pub(crate) mod returns;

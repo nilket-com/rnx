@@ -38,3 +38,9 @@ pub fn take_generic<T>(g: Gen<T>) -> Gen<T> { g }
 pub fn take_into<T: Into<Thing>>(t: T) -> Thing { t.into() }
 pub fn take_into_extra<T: Into<Thing> + Iterator>(t: T) -> Thing { t.into() }
 pub fn take_opt_vec(v: Option<Vec<&str>>) -> usize { v.map(|v| v.len()).unwrap_or(0) }
+/// Record 0117: a generic trait whose impls differ only in trait arguments.
+pub trait Cmp<Rhs> {
+    fn cmp_to(&self, rhs: Rhs) -> bool;
+}
+/// Written with the type: the type walk sees it.
+impl Cmp<i64> for Thing { fn cmp_to(&self, rhs: i64) -> bool { self.0 == rhs } }

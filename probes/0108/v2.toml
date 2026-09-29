@@ -1054,3 +1054,10 @@ generic = "T"
 types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
 names = ["ListInt8ChunkedBuilder", "ListInt16ChunkedBuilder", "ListInt32ChunkedBuilder", "ListInt64ChunkedBuilder", "ListUInt8ChunkedBuilder", "ListUInt16ChunkedBuilder", "ListUInt32ChunkedBuilder", "ListUInt64ChunkedBuilder", "ListFloat32ChunkedBuilder", "ListFloat64ChunkedBuilder"]
 cite = "record 0116 rule 3: impl<T: PolarsNumericType> ListPrimitiveChunkedBuilder<T> (polars-core chunked_array/builder/list/primitive.rs)"
+
+[[dtype_instantiations]]
+owner = "polars_core::chunked_array::builder::primitive::PrimitiveChunkedBuilder"
+generic = "T"
+types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
+names = ["Int8ChunkedBuilder", "Int16ChunkedBuilder", "Int32ChunkedBuilder", "Int64ChunkedBuilder", "UInt8ChunkedBuilder", "UInt16ChunkedBuilder", "UInt32ChunkedBuilder", "UInt64ChunkedBuilder", "Float32ChunkedBuilder", "Float64ChunkedBuilder"]
+cite = "record 0117 stage F: impl<T: PolarsNumericType> PrimitiveChunkedBuilder<T> and impl<T: PolarsNumericType> ChunkedBuilder<T::Native, T> for PrimitiveChunkedBuilder<T> (polars-core chunked_array/builder/primitive.rs)"
