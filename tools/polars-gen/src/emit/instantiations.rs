@@ -20,6 +20,9 @@ pub(crate) fn emit_instantiations(
 	c: &Callable,
 	pairs: &[&PairRecord],
 ) {
+	// record 0118: head parameters re-stated in a method where-clause
+	let c_owned = crate::census::head_bound_generics(c);
+	let c = c_owned.as_ref();
 	if let Err(reason) = callback_gate(world, c) {
 		out.unsupported(c, "callback audit", &reason);
 		return;

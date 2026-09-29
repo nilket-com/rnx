@@ -281,7 +281,7 @@ impl Emitted {
 		info: OracleInfo,
 	) {
 		let fallible = info.fallible;
-		let bindings: Vec<Binding> = per
+		let mut bindings: Vec<Binding> = per
 			.iter()
 			.enumerate()
 			.map(|(i, (rune, owner, route, callee))| Binding {
@@ -297,6 +297,25 @@ impl Emitted {
 				info: None,
 			})
 			.collect();
+		// record 0118: receivers whose last path segment is a shared generic
+		// argument (`CsvReader<…Cursor<…Vec<u8>>>`, `IpcReader<…>`) would share
+		// an id; only those are extended with the receiver's own type name
+		let mut seen: BTreeMap<String, usize> = BTreeMap::new();
+		for b in &bindings {
+			*seen.entry(b.id.clone()).or_default() += 1;
+		}
+		for (i, b) in bindings.iter_mut().enumerate() {
+			if seen[&b.id] > 1 && i > 0 {
+				let r = &per[i].1;
+				let head = r.split('<').next().unwrap_or(r);
+				b.id = format!(
+					"{}__on__{}_{}",
+					sanitize(&c.canonical_path).to_lowercase(),
+					sanitize(last(head)).to_lowercase(),
+					sanitize(last(r)).to_lowercase()
+				);
+			}
+		}
 		let rune = per
 			.iter()
 			.map(|(r, _, _, _)| r.as_str())

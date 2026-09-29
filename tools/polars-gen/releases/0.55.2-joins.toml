@@ -1053,3 +1053,114 @@ generic = "T"
 types = ["polars_core::datatypes::Int8Type", "polars_core::datatypes::Int16Type", "polars_core::datatypes::Int32Type", "polars_core::datatypes::Int64Type", "polars_core::datatypes::UInt8Type", "polars_core::datatypes::UInt16Type", "polars_core::datatypes::UInt32Type", "polars_core::datatypes::UInt64Type", "polars_core::datatypes::Float32Type", "polars_core::datatypes::Float64Type"]
 names = ["Int8ChunkedBuilder", "Int16ChunkedBuilder", "Int32ChunkedBuilder", "Int64ChunkedBuilder", "UInt8ChunkedBuilder", "UInt16ChunkedBuilder", "UInt32ChunkedBuilder", "UInt64ChunkedBuilder", "Float32ChunkedBuilder", "Float64ChunkedBuilder"]
 cite = "record 0117 stage F: impl<T: PolarsNumericType> PrimitiveChunkedBuilder<T> and impl<T: PolarsNumericType> ChunkedBuilder<T::Native, T> for PrimitiveChunkedBuilder<T> (polars-core chunked_array/builder/primitive.rs)"
+
+[[std_facts]]
+type = "alloc::vec::Vec<u8>"
+trait = "core::convert::AsRef<[u8]>"
+cite = "rustc 1.98.1 (48a229cea) library/alloc/src/vec/mod.rs:4342: impl<T, A: Allocator> AsRef<[T]> for Vec<T, A>"
+
+[[std_facts]]
+type = "alloc::vec::Vec<u8>"
+trait = "core::marker::Send"
+cite = "rustc 1.98.1 (48a229cea) library/core/src/ptr/unique.rs:50: Vec<u8>'s buffer is a Unique<u8>; unsafe impl<T: Send> Send for Unique<T> (auto trait, asserted at compile time)"
+
+[[std_facts]]
+type = "alloc::vec::Vec<u8>"
+trait = "core::marker::Sync"
+cite = "rustc 1.98.1 (48a229cea) library/core/src/ptr/unique.rs:57: unsafe impl<T: Sync> Sync for Unique<T> (auto trait, asserted at compile time)"
+
+[[std_facts]]
+type = "core::io::cursor::Cursor<alloc::vec::Vec<u8>>"
+trait = "alloc::io::read::Read"
+cite = "rustc 1.98.1 (48a229cea) library/std/src/io/cursor.rs:48: impl<T> Read for Cursor<T> where T: AsRef<[u8]>"
+
+[[std_facts]]
+type = "core::io::cursor::Cursor<alloc::vec::Vec<u8>>"
+trait = "core::io::seek::Seek"
+cite = "rustc 1.98.1 (48a229cea) library/std/src/io/cursor.rs:13: impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]>"
+
+[[std_facts]]
+type = "core::io::cursor::Cursor<alloc::vec::Vec<u8>>"
+trait = "alloc::io::buf_read::BufRead"
+cite = "rustc 1.98.1 (48a229cea) library/std/src/io/cursor.rs:128: impl<T> BufRead for Cursor<T> where T: AsRef<[u8]>"
+
+[[std_facts]]
+type = "core::io::cursor::Cursor<alloc::vec::Vec<u8>>"
+trait = "core::marker::Send"
+cite = "rustc 1.98.1 (48a229cea): Cursor<T> { inner: T, pos: u64 } is Send when T is (auto trait, asserted at compile time)"
+
+[[std_facts]]
+type = "core::io::cursor::Cursor<alloc::vec::Vec<u8>>"
+trait = "core::marker::Sync"
+cite = "rustc 1.98.1 (48a229cea): Cursor<T> { inner: T, pos: u64 } is Sync when T is (auto trait, asserted at compile time)"
+
+[[std_facts]]
+type = "support::Sink"
+trait = "core::io::write::Write"
+cite = "adapters/polars/src/generated/support.rs:2046: impl std::io::Write for Sink (record 0118)"
+
+[[std_facts]]
+type = "support::Sink"
+trait = "core::marker::Send"
+cite = "adapters/polars/src/generated/support.rs:1954: Sink(Arc<SinkShared>) of AtomicBool and Mutex<SinkState> (auto trait, asserted at compile time)"
+
+[[std_facts]]
+type = "support::Sink"
+trait = "core::marker::Sync"
+cite = "adapters/polars/src/generated/support.rs:1954: Sink(Arc<SinkShared>) of AtomicBool and Mutex<SinkState> (auto trait, asserted at compile time)"
+
+[[dtype_instantiations]]
+owner = "polars_io::csv::read::reader::CsvReader"
+generic = "R"
+types = ["core::io::cursor::Cursor<alloc::vec::Vec<u8>>"]
+names = ["CsvReader"]
+cite = "record 0118 stage 4: the in-memory reader over script Bytes (Cursor<Vec<u8>>); census path in probes/0118/census.py"
+
+[[dtype_instantiations]]
+owner = "polars_io::csv::write::writer::CsvWriter"
+generic = "W"
+types = ["support::Sink"]
+names = ["CsvWriter"]
+cite = "record 0118 stage 4: the in-memory writer into a polars::Sink; census path in probes/0118/census.py"
+
+[[dtype_instantiations]]
+owner = "polars_io::csv::write::writer::BatchedWriter"
+generic = "W"
+types = ["support::Sink"]
+names = ["CsvBatchedWriter"]
+cite = "record 0118 stage 4: the in-memory writer into a polars::Sink; census path in probes/0118/census.py"
+
+[[dtype_instantiations]]
+owner = "polars_io::ipc::ipc_file::IpcReader"
+generic = "R"
+types = ["core::io::cursor::Cursor<alloc::vec::Vec<u8>>"]
+names = ["IpcReader"]
+cite = "record 0118 stage 4: the in-memory reader over script Bytes (Cursor<Vec<u8>>); census path in probes/0118/census.py"
+
+[[dtype_instantiations]]
+owner = "polars_io::ipc::write::IpcWriter"
+generic = "W"
+types = ["support::Sink"]
+names = ["IpcWriter"]
+cite = "record 0118 stage 4: the in-memory writer into a polars::Sink; census path in probes/0118/census.py"
+
+[[dtype_instantiations]]
+owner = "polars_io::parquet::read::reader::ParquetReader"
+generic = "R"
+types = ["core::io::cursor::Cursor<alloc::vec::Vec<u8>>"]
+names = ["ParquetReader"]
+cite = "record 0118 stage 4: the in-memory reader over script Bytes (Cursor<Vec<u8>>); census path in probes/0118/census.py"
+
+[[dtype_instantiations]]
+owner = "polars_io::parquet::write::writer::ParquetWriter"
+generic = "W"
+types = ["support::Sink"]
+names = ["ParquetWriter"]
+cite = "record 0118 stage 4: the in-memory writer into a polars::Sink; census path in probes/0118/census.py"
+
+[[dtype_instantiations]]
+owner = "polars_io::parquet::write::batched_writer::BatchedWriter"
+generic = "W"
+types = ["support::Sink"]
+names = ["ParquetBatchedWriter"]
+cite = "record 0118 stage 4: the in-memory writer into a polars::Sink; census path in probes/0118/census.py"

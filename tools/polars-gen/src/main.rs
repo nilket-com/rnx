@@ -46,6 +46,7 @@ const SELF_TESTS: &[fn()] = &[
 	crate::families::receivers::move_semantics_self_test,
 	crate::families::receivers::trait_receivers_self_test,
 	crate::families::generic_traits::generic_traits_self_test,
+	crate::families::std_facts::std_facts_self_test,
 	crate::families::protocols::protocols_self_test,
 	crate::families::serde::serde_self_test,
 	crate::families::generic_impls::generic_impls_self_test,

@@ -58,13 +58,15 @@ pub(crate) fn instantiation_census(world: &World, inv: &Inventory) -> Vec<PairRe
 	// record 0116 (rule 2): every generic owner with concrete alias wrappers,
 	// not only `ChunkedArray` and `Logical` (0076's scope); each alias is a
 	// pair decided by the same applicability proof
-	for c in &inv.callables {
-		if c.kind != "inherent" || c.impl_head.is_none() {
+	for c0 in &inv.callables {
+		if c0.kind != "inherent" || c0.impl_head.is_none() {
 			continue;
 		}
-		let Some(ids) = by_base.get(&c.owner) else {
+		let Some(ids) = by_base.get(&c0.owner) else {
 			continue;
 		};
+		let c_owned = head_bound_generics(c0);
+		let c = c_owned.as_ref();
 		for (identity, alias) in ids {
 			let closure_generics: BTreeSet<&str> = c
 				.params
@@ -731,4 +733,36 @@ pub(crate) fn census_dispositions(
 		}
 	}
 	census
+}
+
+/// Record 0118: a method where-clause on the impl head's own parameter
+/// (`impl<W> ParquetWriter<W> { fn new(w: W) -> Self where W: Write }`) is
+/// listed by rustdoc as a method generic. It is the head's, bound by the
+/// receiver, so it moves to the impl predicates the proof discharges and
+/// stops being a generic to infer or to map to its bound.
+pub(crate) fn head_bound_generics(c: &Callable) -> std::borrow::Cow<'_, Callable> {
+	let Some(head) = c.impl_head.as_deref() else {
+		return std::borrow::Cow::Borrowed(c);
+	};
+	let head_params: BTreeSet<String> = crate::world::proof::split_head(head)
+		.1
+		.into_iter()
+		.filter(|a| crate::world::proof::is_param(a))
+		.collect();
+	if !c
+		.generics_canonical
+		.iter()
+		.any(|(n, _)| head_params.contains(n))
+	{
+		return std::borrow::Cow::Borrowed(c);
+	}
+	let mut x = c.clone();
+	for (n, b) in &c.generics_canonical {
+		if head_params.contains(n) && !b.is_empty() {
+			x.impl_where.push(format!("{n}: {b}"));
+		}
+	}
+	x.generics_canonical
+		.retain(|(n, _)| !head_params.contains(n));
+	std::borrow::Cow::Owned(x)
 }

@@ -18,6 +18,7 @@ pub(crate) mod returns;
 pub(crate) mod routes;
 pub(crate) mod serde;
 pub(crate) mod snapshots;
+pub(crate) mod std_facts;
 
 use crate::census::PairRecord;
 use crate::emit::Emitted;
