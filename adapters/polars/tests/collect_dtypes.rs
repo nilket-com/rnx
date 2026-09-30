@@ -36,12 +36,12 @@ fn sales() -> std::path::PathBuf {
 }
 
 #[test]
-fn a_count_collects_as_uint32_and_preview_still_refuses_it() {
+fn a_count_collects_as_uint32_and_previews() {
 	let path = sales();
 	let v = run(&format!(
 		"pub fn main() {{ let df = polars::read_csv({:?}, [(\"region\", \"string\"), (\"qty\", \"i64\")])?; \
 		 let out = df.lazy().group_by([polars::col(\"region\")])?.agg([polars::col(\"qty\").count().alias(\"n\")])?.sort([\"region\"])?.collect()?; \
-		 let shown = match out.preview() {{ Ok(_) => \"shown\", Err(e) => \"refused\" }}; \
+		 let shown = match out.preview() {{ Ok(t) => t, Err(e) => \"refused\" }}; \
 		 let d = out.dtypes(); Ok((`${{d[1]}}`, out.height()?, shown)) }}",
 		path.to_str().unwrap()
 	))
@@ -50,7 +50,9 @@ fn a_count_collects_as_uint32_and_preview_still_refuses_it() {
 		.unwrap()
 		.unwrap_or_else(|_| panic!("the query failed"));
 	assert!(got.0.contains("UInt32") || got.0.contains("u32"), "{got:?}");
-	assert_eq!((got.1, got.2.as_str()), (2, "refused"));
+	// record 0124: the preview shows every dtype (0122 found it refused)
+	assert_eq!(got.1, 2);
+	assert!(got.2.contains("\"n\": u32"), "{got:?}");
 }
 
 #[test]

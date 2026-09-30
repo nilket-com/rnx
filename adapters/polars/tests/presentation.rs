@@ -353,7 +353,15 @@ fn every_oracle_shape_presents_exactly_the_explicit_preview() {
 	w.text(r#"let f = polars::read_csv("wide.csv", [("c0","i64"),("c1","i64"),("c2","i64"),("c3","i64"),("c4","i64"),("c5","i64"),("c6","i64"),("c7","i64"),("c8","i64"),("c9","i64"),("c10","i64"),("c11","i64")])?;"#);
 	let text = w.text("f");
 	assert!(
-		text.contains("[0 rows and 4 columns omitted by display limits]") && !text.contains("c8"),
+		text.contains("[0 rows and 4 columns omitted by display limits]"),
+		"{text}"
+	);
+	// record 0124: the first and the last four columns, the middle marked
+	assert!(
+		text.contains("\"c3\": i64 | … | \"c8\": i64")
+			&& text.contains("\"c11\": i64")
+			&& !text.contains("\"c4\"")
+			&& !text.contains("\"c7\""),
 		"{text}"
 	);
 	w.text(r#"let f = polars::read_csv("tall.csv", [("n","i64")])?;"#);
