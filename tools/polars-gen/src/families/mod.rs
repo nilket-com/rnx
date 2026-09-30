@@ -14,6 +14,7 @@ pub(crate) mod generic_impls;
 pub(crate) mod generic_inputs;
 pub(crate) mod generic_traits;
 pub(crate) mod into_arguments;
+pub(crate) mod path_arguments;
 pub(crate) mod protocol_instantiations;
 pub(crate) mod protocols;
 pub(crate) mod receiver_guards;
@@ -279,6 +280,7 @@ pub(crate) static CALLABLE: &[&dyn Family] = &[
 	&BITMAP_INPUT,
 	&ITERATOR_RETURN,
 	&HASH_TOKEN,
+	&path_arguments::PATH_ARGUMENT,
 ];
 /// The pair scope before the return is substituted (0092, then 0096).
 pub(crate) static PAIR_PRE: &[&dyn Family] = &[&SCALAR_GENERIC, &NULL_AWARE];
@@ -322,7 +324,7 @@ pub(crate) static RET_TOP: &[&dyn Family] = &[
 pub(crate) static RET_COW: &[&dyn Family] = &[&COW_RETURN];
 pub(crate) static RET_SCALAR: &[&dyn Family] = &[&HASH_TOKEN, &BOUNDED_READBACK];
 pub(crate) static RET_UNWRAPPED: &[&dyn Family] = &[&BITMAP_RETURN];
-pub(crate) static ARG_TOP: &[&dyn Family] = &[&BITMAP_INPUT];
+pub(crate) static ARG_TOP: &[&dyn Family] = &[&BITMAP_INPUT, &path_arguments::PATH_ARGUMENT];
 pub(crate) static ARG_SCALAR: &[&dyn Family] = &[&ARG_GUARD, &HASH_TOKEN];
 /// `emit_method_with`'s checks, all run, the first refusal ending emission.
 pub(crate) static CHECK: &[&dyn Family] = &[
@@ -586,7 +588,9 @@ mod tests {
 				"bitmap_return",
 				"bitmap_input",
 				"iterator_return",
-				"hash_token"
+				"hash_token",
+				// record 0125
+				"path_argument"
 			]
 		);
 		assert_eq!(names(PAIR_PRE), ["scalar_generic", "null_aware"]);
@@ -609,7 +613,7 @@ mod tests {
 		assert_eq!(names(RET_COW), ["cow_return"]);
 		assert_eq!(names(RET_SCALAR), ["hash_token", "bounded_readback"]);
 		assert_eq!(names(RET_UNWRAPPED), ["bitmap_return"]);
-		assert_eq!(names(ARG_TOP), ["bitmap_input"]);
+		assert_eq!(names(ARG_TOP), ["bitmap_input", "path_argument"]);
 		assert_eq!(names(ARG_SCALAR), ["arg_guard", "hash_token"]);
 		let mut check = snapshots_top.to_vec();
 		check.extend(["chunk_snapshot", "sized_self", "null_aware"]);

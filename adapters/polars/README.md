@@ -7,7 +7,7 @@ is exercised by gate 4; the timing gate is recorded below; Linux regression resu
 The Polars feature set is `lazy`, `csv`, `parquet` and, since record 0081,
 the four narrow integer dtypes `dtype-i8`, `dtype-i16`, `dtype-u8` and
 `dtype-u16`; the generated bindings, their oracle fixtures and the rustdoc
-inventory they are generated from (`probes/0072/out/0.55.2-adapter-narrow`)
+inventory they are generated from (`probes/0072/out/0.55.2-adapter-json`, record 0125)
 all describe that one build.
 
 Borrowed slices (record 0082): a Polars method that returns or iterates

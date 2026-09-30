@@ -12,7 +12,7 @@ name = "0.55.2"
 source = "crates.io =0.55.2"
 api_crates = ["polars_arrow", "polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error"]
 namespaced_crates = ["polars_arrow"]
-frozen_bindings = "probes/0123/frozen-0.55.2.json"
+frozen_bindings = "probes/0125/frozen-0.55.2.json"
 # Record 0085: validity bitmap returns copied into an owned Vec<bool>;
 # only these paths, every other Bitmap stays refused.
 bitmap_returns = [
@@ -22,17 +22,19 @@ bitmap_returns = [
     "polars_arrow::array::utf8::Utf8Array::validity",              # record 0120
     "polars_arrow::array::binary::BinaryArray::validity",          # record 0120
     "polars_arrow::array::list::ListArray::validity",              # record 0120
+    "polars_arrow::array::struct_::StructArray::validity",         # record 0125: reachable with dtype-struct (as record 0120 at v2)
 ]
 
 # The inventory this policy belongs to; the generator refuses any other.
 [provenance]
 release = "0.55.2"
-# Record 0081: the inventory must be the `adapter-narrow` documentation run
-# and must have resolved exactly this Polars feature set (pins.json
-# `resolved_polars_features`: the adapter's declared features and what
-# they pull in), compared as a whole.
-cfg = "adapter-narrow"
-features = ["csv", "dtype-categorical", "dtype-i16", "dtype-i8", "dtype-u16", "dtype-u8", "lazy", "parquet", "polars-io", "polars-lazy", "polars-ops", "polars-parquet", "streaming"]
+# Record 0081: the inventory must be the named documentation run and must
+# have resolved exactly this Polars feature set (pins.json
+# `resolved_polars_features`: the adapter's declared features and what they
+# pull in), compared as a whole. Record 0125: `adapter-json`, the
+# `adapter-narrow` set plus `json` (which also resolves `dtype-struct`).
+cfg = "adapter-json"
+features = ["csv", "dtype-categorical", "dtype-i16", "dtype-i8", "dtype-struct", "dtype-u16", "dtype-u8", "json", "lazy", "parquet", "polars-io", "polars-lazy", "polars-ops", "polars-parquet", "streaming"]
 
 [[unordered]]
 path = "polars_lazy::frame::LazyFrame::unique"
@@ -1223,7 +1225,7 @@ prefix = "polars_arrow::legacy::array::"
 cite = "record 0119 plan stage 2: no concrete array wrapper in this record; the concrete arrays and array builders move to record 0120 with their readers"
 
 # Record 0120: the concrete Arrow arrays a script reaches (probes/0120/reach.sh), and their guards.
-# StructArray is reachable here too, but has no inventory row at this pin (no facade path), so it is outside the census and not listed.
+# Record 0125: with `json`, the build resolves `dtype-struct`, and StructArray has inventory rows at this pin too; it is listed as record 0120 lists it at v2.
 
 [[concrete_arrays]]
 owner = "polars_arrow::array::primitive::PrimitiveArray"
@@ -1329,6 +1331,20 @@ downcast = "as_large_list_array"
 route = "probes/0120/reach-0.55.2.json: list_i64 and list_str"
 cite = "record 0120 plan scope 1: an exact owner and instantiation a script reaches"
 
+[[concrete_arrays]]
+owner = "polars_arrow::array::struct_::StructArray"
+name = "StructArray"
+downcast = "as_struct_array"
+route = "probes/0125/reach-0.55.2.json: struct"
+cite = "record 0125: reachable once json resolves dtype-struct; the owner and instantiation record 0120 lists at v2"
+
+[[receiver_guards]]
+path = "polars_arrow::array::struct_::StructArray::sliced"
+check = "range_len_all"
+param = "offset"
+param2 = "length"
+cite = "polars-arrow 0.55.2 array/mod.rs:464-471 (impl_sliced!, used at array/struct_/mod.rs:202): checked_add(...).expect and assert!(offset + length <= len), for every length"
+
 [[receiver_guards]]
 path = "polars_arrow::array::primitive::PrimitiveArray::value"
 check = "below_len"
@@ -1406,40 +1422,29 @@ wrapper = "polars_core::schema::SchemaRef"
 display_from_debug = true
 cite = "polars-schema 0.55.2 schema.rs: #[derive(Debug, Clone)] pub struct Schema; no Display impl at the pin"
 
-# Record 0123: the contracts the `into_arguments` row widens (DataTypeExpr or DataType), each exact.
+# Record 0125: listed callables' by-value PlRefPath parameters that accept a
+# local path string (Polars' own From<&str>; support::local_path refuses URIs).
+[[path_arguments]]
+path = "polars_lazy::frame::LazyFrame::scan_parquet"
+param = "path"
+cite = "polars-lazy 0.55.2 scan/parquet.rs:169: scan_parquet(path: PlRefPath, args); polars-utils 0.55.2 pl_path.rs:398 impl From<&str> for PlRefPath"
+[[path_arguments]]
+path = "polars_lazy::scan::csv::LazyCsvReader::new"
+param = "path"
+cite = "polars-lazy 0.55.2 scan/csv.rs:58: LazyCsvReader::new(path: PlRefPath); polars-utils 0.55.2 pl_path.rs:398"
+[[path_arguments]]
+path = "polars_lazy::scan::ndjson::LazyJsonLineReader::new"
+param = "path"
+cite = "polars-lazy 0.55.2 scan/ndjson.rs:55: LazyJsonLineReader::new(path: PlRefPath); polars-utils 0.55.2 pl_path.rs:398"
 
+# Record 0125: the contracts the `path_arguments` rows widen (String or PlRefPath), each exact.
 [[frozen_widenings]]
-rune = "polars::CategoricalNameSpace::to"
-old = "to(dtype: DataTypeExpr, strict: bool) -> Expr"
-new = "to(dtype: DataTypeExpr or DataType, strict: bool) -> Expr"
-cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
-
+rune = "polars::LazyFrame::scan_parquet"
+old = "scan_parquet(path: PlRefPath, args: ScanArgsParquet) -> result of LazyFrame (fallible): Create a LazyFrame directly from a parquet scan."
+new = "scan_parquet(path: String or PlRefPath (a local path), args: ScanArgsParquet) -> result of LazyFrame (fallible): Create a LazyFrame directly from a parquet scan."
+cite = "record 0125 plan section 3: a listed PlRefPath parameter accepts a local path string"
 [[frozen_widenings]]
-rune = "polars::Expr::cast"
-old = "cast(dtype: DataTypeExpr) -> Expr: Cast expression to another data type."
-new = "cast(dtype: DataTypeExpr or DataType) -> Expr: Cast expression to another data type."
-cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
-
-[[frozen_widenings]]
-rune = "polars::Expr::cast_with_options"
-old = "cast_with_options(dtype: DataTypeExpr, cast_options: CastOptions) -> Expr: Cast expression to another data type."
-new = "cast_with_options(dtype: DataTypeExpr or DataType, cast_options: CastOptions) -> Expr: Cast expression to another data type."
-cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
-
-[[frozen_widenings]]
-rune = "polars::Expr::strict_cast"
-old = "strict_cast(dtype: DataTypeExpr) -> Expr: Cast expression to another data type. Throws an error if conversion had overflows. Returns an Error if cast is invalid on rows after predicates are pushed down."
-new = "strict_cast(dtype: DataTypeExpr or DataType) -> Expr: Cast expression to another data type. Throws an error if conversion had overflows. Returns an Error if cast is invalid on rows after predicates are pushed down."
-cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
-
-[[frozen_widenings]]
-rune = "polars::LazyFrame::cast_all"
-old = "cast_all(dtype: DataTypeExpr, strict: bool) -> LazyFrame: Cast all frame columns to the given dtype, resulting in a new LazyFrame"
-new = "cast_all(dtype: DataTypeExpr or DataType, strict: bool) -> LazyFrame: Cast all frame columns to the given dtype, resulting in a new LazyFrame"
-cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
-
-[[frozen_widenings]]
-rune = "polars::cast"
-old = "cast(expr: Expr, dtype: DataTypeExpr) -> Expr: Casts the column given by `Expr` to a different type."
-new = "cast(expr: Expr, dtype: DataTypeExpr or DataType) -> Expr: Casts the column given by `Expr` to a different type."
-cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+rune = "polars::LazyCsvReader::new"
+old = "new(path: PlRefPath) -> LazyCsvReader"
+new = "new(path: String or PlRefPath (a local path)) -> LazyCsvReader"
+cite = "record 0125 plan section 3: a listed PlRefPath parameter accepts a local path string"

@@ -149,6 +149,52 @@ fn read_csv(path: &str, schema: rune::Value) -> Result<DataFrame, String> {
 		.map_err(err)?
 		.map(DataFrame)
 }
+/// Record 0125: `read_csv(path)` without a schema reads with Polars' own
+/// schema inference, date parsing off (the 0.55.2 date-parsing crash).
+fn read_csv_inferred(path: &str) -> Result<DataFrame, String> {
+	let path = path.to_owned();
+	engine::run("read_csv", move || files::csv_inferred(&path))
+		.map_err(err)?
+		.map(DataFrame)
+}
+/// Record 0125: one `read_csv` for both forms. Rune has no optional
+/// arguments, so it is a raw function that dispatches on the count: one
+/// argument infers the schema, two are the strict `(name, dtype)` schema.
+fn read_csv_either(
+	stack: &mut dyn rune::runtime::Memory,
+	addr: rune::runtime::InstAddress,
+	len: usize,
+	out: rune::runtime::Output,
+) -> rune::runtime::VmResult<()> {
+	use rune::runtime::VmResult;
+	let args = rune::vm_try!(stack.slice_at(addr, len));
+	let result = match args {
+		[path] => {
+			// borrowed, never taken: the script keeps its path (review of 0125)
+			let path = rune::vm_try!(path.borrow_string_ref()).to_string();
+			read_csv_inferred(&path)
+		}
+		[path, schema] => {
+			// borrowed, never taken: the script keeps its path (review of 0125)
+			let path = rune::vm_try!(path.borrow_string_ref()).to_string();
+			read_csv(&path, schema.clone())
+		}
+		_ => {
+			return VmResult::panic(format!(
+				"read_csv takes (path) or (path, schema), found {len} arguments"
+			));
+		}
+	};
+	rune::vm_try!(out.store(stack, || rune::to_value(result)));
+	VmResult::Ok(())
+}
+/// Record 0125: a local JSON file, beside `read_csv` and `read_parquet`.
+fn read_json(path: &str) -> Result<DataFrame, String> {
+	let path = path.to_owned();
+	engine::run("read_json", move || files::json(&path))
+		.map_err(err)?
+		.map(DataFrame)
+}
 fn read_parquet(path: &str) -> Result<DataFrame, String> {
 	let path = path.to_owned();
 	engine::run("read_parquet", move || files::parquet(&path))
@@ -219,7 +265,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.ty::<LazyFrame>().map_err(err)?;
 	m.ty::<LazyGroupBy>().map_err(err)?;
 	m.ty::<Expr>().map_err(err)?;
-	m.function("read_csv", read_csv).build().map_err(err)?;
+	m.raw_function("read_csv", read_csv_either)
+		.build()
+		.map_err(err)?;
+	m.function("read_json", read_json).build().map_err(err)?;
 	m.function("read_parquet", read_parquet)
 		.build()
 		.map_err(err)?;
@@ -268,7 +317,11 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		),
 		(
 			"polars::read_csv".into(),
-			"read_csv(path, schema) -> Result<DataFrame>: strict local CSV; ordered (name, dtype) schema",
+			"read_csv(path[, schema]) -> Result<DataFrame>: local CSV; the schema inferred by Polars (dates stay strings), or a strict ordered (name, dtype) schema",
+		),
+		(
+			"polars::read_json".into(),
+			"read_json(path) -> Result<DataFrame>: local JSON array of objects, schema inferred by Polars; string/i64/f64/bool columns only",
 		),
 		(
 			"polars::read_parquet".into(),

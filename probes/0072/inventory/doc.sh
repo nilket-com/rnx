@@ -2,7 +2,7 @@
 # Produce rustdoc JSON for the polars facade and every polars-* crate it
 # activates, for one (release, configuration) pair.
 #
-#   doc.sh <release> <adapter|full>
+#   doc.sh <release> <adapter|adapter-narrow|adapter-json|full>
 #
 # Output: probes/0072/out/<release>-<cfg>/<crate>.json plus pins.json. The
 # output directory is cleared first so nothing stale can be reused. The
@@ -23,6 +23,9 @@ case "$cfg" in
   adapter) features='default-features = false, features = ["lazy", "csv", "parquet"]' ;;
   # Record 0081: the adapter's feature set with the four narrow integer dtypes.
   adapter-narrow) features='default-features = false, features = ["lazy", "csv", "parquet", "dtype-i8", "dtype-i16", "dtype-u8", "dtype-u16"]' ;;
+  # Record 0125: the adapter-narrow set plus `json`, for the hand-written
+  # read_json; the shipped inventory must describe the build that ships.
+  adapter-json) features='default-features = false, features = ["lazy", "csv", "parquet", "json", "dtype-i8", "dtype-i16", "dtype-u8", "dtype-u16"]' ;;
   full)
     cat > "$host/Cargo.toml" <<TOML
 [package]
