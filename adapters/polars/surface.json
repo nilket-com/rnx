@@ -6318,9 +6318,9 @@
   },
   "counts": {
     "adapted": 430,
-    "generated": 2842,
+    "generated": 2843,
     "out_of_scope": 379,
-    "unsupported": 1420
+    "unsupported": 1419
   },
   "entries": [
     {
@@ -102477,13 +102477,25 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "protocol Debug has no script-level trigger",
+          "id": "polars_schema__schema__schema_as_core__fmt__debug",
+          "receiver": "polars_core::schema::SchemaRef",
+          "route": "protocol",
+          "rune": "polars::SchemaRef DEBUG_FMT"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_schema::schema::Schema as core::fmt::Debug",
+      "execution": "protocol Debug has no script-level trigger",
+      "fallible": false,
       "key": "polars_schema:3:362",
       "kind": "foreign_trait_impl",
-      "reason": "0113 family: Debug: value protocol on a generic or lifetime-bearing head: the wrapped instantiations carry their own protocols",
+      "note": "derived: true",
+      "rune": "polars::SchemaRef DEBUG_FMT",
       "signature": "(&mut core::fmt::Formatter) -> core::fmt::Result",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
@@ -180710,6 +180722,10 @@
       "reason": "protocol Debug has no script-level trigger"
     },
     {
+      "path": "polars_schema::schema::Schema as core::fmt::Debug",
+      "reason": "protocol Debug has no script-level trigger"
+    },
+    {
       "path": "polars_arrow::array::Array::split_at_boxed",
       "reason": "return type has no comparison ((ArrayRef, ArrayRef))"
     },
@@ -181621,7 +181637,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "07c06893f9d9c68292b2a65ec1fb7a1b95eec8e6a94fcd179c7788db879de664",
+    "sha256": "90a59b9b2fb7c9b97184d80ae04b50850fda9de3450ebf8df0efaa169acad210",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",

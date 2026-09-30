@@ -18,7 +18,7 @@ name = "v2-rc2"
 source = "git da47b7405f0e2d188e71cce7c2d588c695f4098d (Rust workspace at py-2.0.0-rc.2)"
 api_crates = ["polars_arrow", "polars_core", "polars_defs", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error", "polars_sql", "polars_config"]
 namespaced_crates = ["polars_arrow"]
-frozen_bindings = "probes/0120/frozen-v2.json"
+frozen_bindings = "probes/0123/frozen-v2.json"
 # Record 0085: validity bitmap returns copied into an owned Vec<bool>;
 # only these paths, every other Bitmap stays refused.
 bitmap_returns = [
@@ -1484,3 +1484,91 @@ check = "range_len_all"
 param = "offset"
 param2 = "length"
 cite = "da47b74 polars-arrow array/mod.rs:465-471 (impl_sliced!): checked_add(...).expect and assert!(offset + length <= len), for every length"
+
+# Record 0123: an `impl Into<T>` parameter accepts its recorded `From` sources.
+[[into_arguments]]
+target = "polars_plan::dsl::datatype_expr::DataTypeExpr"
+sources = ["polars_core::datatypes::dtype::DataType"]
+cite = "record 0123 plan section 2: da47b74 polars-plan dsl/datatype_expr.rs impl From<DataType> for DataTypeExpr (recorded in the inventory); Expr::cast and 11 more take impl Into<DataTypeExpr>"
+
+# Record 0123: the 12 contracts the `into_arguments` row widens (DataTypeExpr or DataType), each exact.
+
+[[frozen_widenings]]
+rune = "polars::BinaryNameSpace::reinterpret"
+old = "reinterpret(to_type: DataTypeExpr, is_little_endian: bool) -> Expr"
+new = "reinterpret(to_type: DataTypeExpr or DataType, is_little_endian: bool) -> Expr"
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::CategoricalNameSpace::to"
+old = "to(dtype: DataTypeExpr, strict: bool) -> Expr"
+new = "to(dtype: DataTypeExpr or DataType, strict: bool) -> Expr"
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::Expr::cast"
+old = "cast(dtype: DataTypeExpr) -> Expr: Cast expression to another data type."
+new = "cast(dtype: DataTypeExpr or DataType) -> Expr: Cast expression to another data type."
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::Expr::cast_with_options"
+old = "cast_with_options(dtype: DataTypeExpr, cast_options: CastOptions) -> Expr: Cast expression to another data type."
+new = "cast_with_options(dtype: DataTypeExpr or DataType, cast_options: CastOptions) -> Expr: Cast expression to another data type."
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::Expr::strict_cast"
+old = "strict_cast(dtype: DataTypeExpr) -> Expr: Cast expression to another data type. Throws an error if conversion had overflows. Returns an Error if cast is invalid on rows after predicates are pushed down."
+new = "strict_cast(dtype: DataTypeExpr or DataType) -> Expr: Cast expression to another data type. Throws an error if conversion had overflows. Returns an Error if cast is invalid on rows after predicates are pushed down."
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::ExtensionNameSpace::to"
+old = "to(dtype: DataTypeExpr) -> Expr"
+new = "to(dtype: DataTypeExpr or DataType) -> Expr"
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::LazyFrame::cast_all"
+old = "cast_all(dtype: DataTypeExpr, strict: bool) -> LazyFrame: Cast all frame columns to the given dtype, resulting in a new LazyFrame"
+new = "cast_all(dtype: DataTypeExpr or DataType, strict: bool) -> LazyFrame: Cast all frame columns to the given dtype, resulting in a new LazyFrame"
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::StringNameSpace::json_decode"
+old = "json_decode(dtype: DataTypeExpr) -> Expr"
+new = "json_decode(dtype: DataTypeExpr or DataType) -> Expr"
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::StringNameSpace::strptime"
+old = "strptime(dtype: DataTypeExpr, options: StrptimeOptions, ambiguous: Expr) -> Expr: Convert a String column into a Date/Datetime/Time column."
+new = "strptime(dtype: DataTypeExpr or DataType, options: StrptimeOptions, ambiguous: Expr) -> Expr: Convert a String column into a Date/Datetime/Time column."
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::cast"
+old = "cast(expr: Expr, dtype: DataTypeExpr) -> Expr: Casts the column given by `Expr` to a different type."
+new = "cast(expr: Expr, dtype: DataTypeExpr or DataType) -> Expr: Casts the column given by `Expr` to a different type."
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::int_range"
+old = "int_range(start: Expr, end: Expr, step: int, dtype: DataTypeExpr) -> Expr: Generate a range of integers."
+new = "int_range(start: Expr, end: Expr, step: int, dtype: DataTypeExpr or DataType) -> Expr: Generate a range of integers."
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+[[frozen_widenings]]
+rune = "polars::int_ranges"
+old = "int_ranges(start: Expr, end: Expr, step: Expr, dtype: DataTypeExpr) -> Expr: Generate a range of integers for each row of the input columns."
+new = "int_ranges(start: Expr, end: Expr, step: Expr, dtype: DataTypeExpr or DataType) -> Expr: Generate a range of integers for each row of the input columns."
+cite = "record 0123 plan section 2: impl Into<DataTypeExpr> accepts its recorded From<DataType> source"
+
+# Record 0123: Schema derives Debug only (da47b74 polars-schema schema.rs:10-13); its Debug
+# impl is bound onto the SchemaRef wrapper, and DISPLAY_FMT shows the same Polars text.
+[[protocol_instantiations]]
+impl_path = "polars_schema::schema::Schema as core::fmt::Debug"
+wrapper = "polars_core::schema::SchemaRef"
+display_from_debug = true
+cite = "da47b74 polars-schema schema.rs:10-13: #[derive(Debug, Clone)] pub struct Schema; no Display impl at the pin"

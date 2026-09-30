@@ -7648,9 +7648,9 @@ fn f_40ec06b2_azyframe__bottom_k_polars_lazy__frame__lazyframe(this: &LazyFrame,
 #[rune::function(instance, path = cache)]
 fn f_20e05028___lazyframe__cache_polars_lazy__frame__lazyframe(this: &LazyFrame) -> LazyFrame { let __arg0 = this.0.clone(); let __r = crate::engine::infallible(crate::engine::run("polars::LazyFrame::cache", move || <polars_lazy::frame::LazyFrame>::cache(__arg0)), "polars::LazyFrame::cache"); LazyFrame(__r) }
 /// Cast all frame columns to the given dtype, resulting in a new LazyFrame
-/// Polars: `polars_lazy::frame::LazyFrame::cast_all`. cast_all(dtype: DataTypeExpr, strict: bool) -> LazyFrame
+/// Polars: `polars_lazy::frame::LazyFrame::cast_all`. cast_all(dtype: DataTypeExpr or DataType, strict: bool) -> LazyFrame
 #[rune::function(instance, path = cast_all)]
-fn f_336ce24f_azyframe__cast_all_polars_lazy__frame__lazyframe(this: &LazyFrame, dtype: &W_polars_plan__dsl__datatype_expr__DataTypeExpr, strict: bool) -> LazyFrame { let __arg0 = this.0.clone(); let __arg1 = dtype.0.clone(); let __arg2 = strict; let __r = crate::engine::infallible(crate::engine::run("polars::LazyFrame::cast_all", move || <polars_lazy::frame::LazyFrame>::cast_all(__arg0, __arg1, __arg2)), "polars::LazyFrame::cast_all"); LazyFrame(__r) }
+fn f_336ce24f_azyframe__cast_all_polars_lazy__frame__lazyframe(this: &LazyFrame, dtype: rune::Value, strict: bool) -> rune::runtime::VmResult<LazyFrame> { let __into_dtype = match dtype.borrow_ref::<W_polars_plan__dsl__datatype_expr__DataTypeExpr>() { Ok(w) => w.0.clone(), Err(_) => match dtype.borrow_ref::<W_polars_core__datatypes__dtype__DataType>() { Ok(w) => <polars_plan::dsl::DataTypeExpr as From<polars_core::datatypes::DataType>>::from(w.0.clone()), Err(_) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!("cast_all: `dtype` must be DataTypeExpr or DataType, found {}", dtype.type_info()))) } }; rune::runtime::VmResult::Ok((|| -> LazyFrame { let __arg0 = this.0.clone(); let __arg1 = __into_dtype; let __arg2 = strict; let __r = crate::engine::infallible(crate::engine::run("polars::LazyFrame::cast_all", move || <polars_lazy::frame::LazyFrame>::cast_all(__arg0, __arg1, __arg2)), "polars::LazyFrame::cast_all"); LazyFrame(__r) })()) }
 /// Remove all the rows of the LazyFrame.
 /// Polars: `polars_lazy::frame::LazyFrame::clear`. clear() -> LazyFrame
 #[rune::function(instance, path = clear)]
@@ -8252,9 +8252,9 @@ fn f_b3a92532_ries_polars_plan__dsl__cat__categoricalnamespace(this: W_polars_pl
 /// Polars: `polars_plan::dsl::cat::CategoricalNameSpace::physical`. physical() -> Expr
 #[rune::function(instance, path = physical)]
 fn f_0fbfbd8b_ical_polars_plan__dsl__cat__categoricalnamespace(this: W_polars_plan__dsl__cat__CategoricalNameSpace) -> Expr { let __r = <polars_plan::dsl::cat::CategoricalNameSpace>::physical(this.0); Expr(__r) }
-/// Polars: `polars_plan::dsl::cat::CategoricalNameSpace::to`. to(dtype: DataTypeExpr, strict: bool) -> Expr
+/// Polars: `polars_plan::dsl::cat::CategoricalNameSpace::to`. to(dtype: DataTypeExpr or DataType, strict: bool) -> Expr
 #[rune::function(instance, path = to)]
-fn f_7093fcf0___to_polars_plan__dsl__cat__categoricalnamespace(this: W_polars_plan__dsl__cat__CategoricalNameSpace, dtype: &W_polars_plan__dsl__datatype_expr__DataTypeExpr, strict: bool) -> Expr { let __r = <polars_plan::dsl::cat::CategoricalNameSpace>::to(this.0, dtype.0.clone(), strict); Expr(__r) }
+fn f_7093fcf0___to_polars_plan__dsl__cat__categoricalnamespace(this: W_polars_plan__dsl__cat__CategoricalNameSpace, dtype: rune::Value, strict: bool) -> rune::runtime::VmResult<Expr> { let __into_dtype = match dtype.borrow_ref::<W_polars_plan__dsl__datatype_expr__DataTypeExpr>() { Ok(w) => w.0.clone(), Err(_) => match dtype.borrow_ref::<W_polars_core__datatypes__dtype__DataType>() { Ok(w) => <polars_plan::dsl::DataTypeExpr as From<polars_core::datatypes::DataType>>::from(w.0.clone()), Err(_) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!("to: `dtype` must be DataTypeExpr or DataType, found {}", dtype.type_info()))) } }; rune::runtime::VmResult::Ok((|| -> Expr { let __r = <polars_plan::dsl::cat::CategoricalNameSpace>::to(this.0, __into_dtype, strict); Expr(__r) })()) }
 /// Polars: `polars_plan::dsl::datatype_expr::DataTypeExpr::as_literal`. as_literal() -> option of DataType
 #[rune::function(instance, path = as_literal)]
 fn f_d1fa510a_al_polars_plan__dsl__datatype_expr__datatypeexpr(this: &W_polars_plan__dsl__datatype_expr__DataTypeExpr) -> Option<W_polars_core__datatypes__dtype__DataType> { let __r = <polars_plan::dsl::DataTypeExpr>::as_literal(&this.0); match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_core__datatypes__dtype__DataType(__r) }), None => None } }
@@ -8360,13 +8360,13 @@ fn f_6415cc96_r__expr__arg_unique_polars_plan__dsl__expr__expr(this: &Expr) -> E
 #[rune::function(instance, path = binary)]
 fn f_212cc6d3__expr__expr__binary_polars_plan__dsl__expr__expr(this: &Expr) -> W_polars_plan__dsl__binary__BinaryNameSpace { let __r = <polars_plan::dsl::Expr>::binary(this.0.clone()); W_polars_plan__dsl__binary__BinaryNameSpace(__r) }
 /// Cast expression to another data type.
-/// Polars: `polars_plan::dsl::expr::Expr::cast`. cast(dtype: DataTypeExpr) -> Expr
+/// Polars: `polars_plan::dsl::expr::Expr::cast`. cast(dtype: DataTypeExpr or DataType) -> Expr
 #[rune::function(instance, path = cast)]
-fn f_c92628e8_l__expr__expr__cast_polars_plan__dsl__expr__expr(this: &Expr, dtype: &W_polars_plan__dsl__datatype_expr__DataTypeExpr) -> Expr { let __r = <polars_plan::dsl::Expr>::cast(this.0.clone(), dtype.0.clone()); Expr(__r) }
+fn f_c92628e8_l__expr__expr__cast_polars_plan__dsl__expr__expr(this: &Expr, dtype: rune::Value) -> rune::runtime::VmResult<Expr> { let __into_dtype = match dtype.borrow_ref::<W_polars_plan__dsl__datatype_expr__DataTypeExpr>() { Ok(w) => w.0.clone(), Err(_) => match dtype.borrow_ref::<W_polars_core__datatypes__dtype__DataType>() { Ok(w) => <polars_plan::dsl::DataTypeExpr as From<polars_core::datatypes::DataType>>::from(w.0.clone()), Err(_) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!("cast: `dtype` must be DataTypeExpr or DataType, found {}", dtype.type_info()))) } }; rune::runtime::VmResult::Ok((|| -> Expr { let __r = <polars_plan::dsl::Expr>::cast(this.0.clone(), __into_dtype); Expr(__r) })()) }
 /// Cast expression to another data type.
-/// Polars: `polars_plan::dsl::expr::Expr::cast_with_options`. cast_with_options(dtype: DataTypeExpr, cast_options: CastOptions) -> Expr
+/// Polars: `polars_plan::dsl::expr::Expr::cast_with_options`. cast_with_options(dtype: DataTypeExpr or DataType, cast_options: CastOptions) -> Expr
 #[rune::function(instance, path = cast_with_options)]
-fn f_3688684a___cast_with_options_polars_plan__dsl__expr__expr(this: &Expr, dtype: &W_polars_plan__dsl__datatype_expr__DataTypeExpr, cast_options: &W_polars_core__chunked_array__cast__CastOptions) -> Expr { let __r = <polars_plan::dsl::Expr>::cast_with_options(this.0.clone(), dtype.0.clone(), cast_options.0.clone()); Expr(__r) }
+fn f_3688684a___cast_with_options_polars_plan__dsl__expr__expr(this: &Expr, dtype: rune::Value, cast_options: &W_polars_core__chunked_array__cast__CastOptions) -> rune::runtime::VmResult<Expr> { let __into_dtype = match dtype.borrow_ref::<W_polars_plan__dsl__datatype_expr__DataTypeExpr>() { Ok(w) => w.0.clone(), Err(_) => match dtype.borrow_ref::<W_polars_core__datatypes__dtype__DataType>() { Ok(w) => <polars_plan::dsl::DataTypeExpr as From<polars_core::datatypes::DataType>>::from(w.0.clone()), Err(_) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!("cast_with_options: `dtype` must be DataTypeExpr or DataType, found {}", dtype.type_info()))) } }; rune::runtime::VmResult::Ok((|| -> Expr { let __r = <polars_plan::dsl::Expr>::cast_with_options(this.0.clone(), __into_dtype, cast_options.0.clone()); Expr(__r) })()) }
 /// Get the [`CategoricalNameSpace`].
 /// Polars: `polars_plan::dsl::expr::Expr::cat`. cat() -> CategoricalNameSpace
 #[rune::function(instance, path = cat)]
@@ -8699,9 +8699,9 @@ fn f_5984eac2_l__expr__expr__sqrt_polars_plan__dsl__expr__expr(this: &Expr) -> E
 #[rune::function(instance, path = std)]
 fn f_a3d84d62_sl__expr__expr__std_polars_plan__dsl__expr__expr(this: &Expr, ddof: i64) -> Result<Expr, Error> { let __r = <polars_plan::dsl::Expr>::std(this.0.clone(), support::narrow::<u8>(ddof, "ddof")?); Ok(Expr(__r)) }
 /// Cast expression to another data type. Throws an error if conversion had overflows. Returns an Error if cast is invalid on rows after predicates are pushed down.
-/// Polars: `polars_plan::dsl::expr::Expr::strict_cast`. strict_cast(dtype: DataTypeExpr) -> Expr
+/// Polars: `polars_plan::dsl::expr::Expr::strict_cast`. strict_cast(dtype: DataTypeExpr or DataType) -> Expr
 #[rune::function(instance, path = strict_cast)]
-fn f_b2601601___expr__strict_cast_polars_plan__dsl__expr__expr(this: &Expr, dtype: &W_polars_plan__dsl__datatype_expr__DataTypeExpr) -> Expr { let __r = <polars_plan::dsl::Expr>::strict_cast(this.0.clone(), dtype.0.clone()); Expr(__r) }
+fn f_b2601601___expr__strict_cast_polars_plan__dsl__expr__expr(this: &Expr, dtype: rune::Value) -> rune::runtime::VmResult<Expr> { let __into_dtype = match dtype.borrow_ref::<W_polars_plan__dsl__datatype_expr__DataTypeExpr>() { Ok(w) => w.0.clone(), Err(_) => match dtype.borrow_ref::<W_polars_core__datatypes__dtype__DataType>() { Ok(w) => <polars_plan::dsl::DataTypeExpr as From<polars_core::datatypes::DataType>>::from(w.0.clone()), Err(_) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!("strict_cast: `dtype` must be DataTypeExpr or DataType, found {}", dtype.type_info()))) } }; rune::runtime::VmResult::Ok((|| -> Expr { let __r = <polars_plan::dsl::Expr>::strict_cast(this.0.clone(), __into_dtype); Expr(__r) })()) }
 /// Get the [`struct_::StructNameSpace`].
 /// Polars: `polars_plan::dsl::expr::Expr::struct_`. struct_() -> StructNameSpace
 #[rune::function(instance, path = struct_)]
@@ -9981,9 +9981,9 @@ fn g_718d0364_lars_plan__dsl__functions__selectors__index_cols(indices: rune::Va
 #[rune::function(path = avg)]
 fn g_0f57e120_olars_plan__dsl__functions__syntactic_sugar__avg(name: &str) -> Expr { let __r = polars_plan::dsl::functions::avg(name); Expr(__r) }
 /// Casts the column given by `Expr` to a different type.
-/// Polars: `polars_plan::dsl::functions::syntactic_sugar::cast`. cast(expr: Expr, dtype: DataTypeExpr) -> Expr
+/// Polars: `polars_plan::dsl::functions::syntactic_sugar::cast`. cast(expr: Expr, dtype: DataTypeExpr or DataType) -> Expr
 #[rune::function(path = cast)]
-fn g_89d8b866_lars_plan__dsl__functions__syntactic_sugar__cast(expr: &Expr, dtype: &W_polars_plan__dsl__datatype_expr__DataTypeExpr) -> Expr { let __r = polars_plan::dsl::functions::cast(expr.0.clone(), dtype.0.clone()); Expr(__r) }
+fn g_89d8b866_lars_plan__dsl__functions__syntactic_sugar__cast(expr: &Expr, dtype: rune::Value) -> rune::runtime::VmResult<Expr> { let __into_dtype = match dtype.borrow_ref::<W_polars_plan__dsl__datatype_expr__DataTypeExpr>() { Ok(w) => w.0.clone(), Err(_) => match dtype.borrow_ref::<W_polars_core__datatypes__dtype__DataType>() { Ok(w) => <polars_plan::dsl::DataTypeExpr as From<polars_core::datatypes::DataType>>::from(w.0.clone()), Err(_) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!("cast: `dtype` must be DataTypeExpr or DataType, found {}", dtype.type_info()))) } }; rune::runtime::VmResult::Ok((|| -> Expr { let __r = polars_plan::dsl::functions::cast(expr.0.clone(), __into_dtype); Expr(__r) })()) }
 /// A column which is `false` wherever `expr` is null, `true` elsewhere.
 /// Polars: `polars_plan::dsl::functions::syntactic_sugar::is_not_null`. is_not_null(expr: Expr) -> Expr
 #[rune::function(path = is_not_null)]
@@ -13188,6 +13188,12 @@ fn f_74158adf_r__scalar__polars_plan__plans__lit__literalvalue(value: &W_polars_
 /// Polars: `polars_plan::plans::lit::LiteralValue as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_11de42d8_an__plans__lit__literalvalue_as_core__fmt__debug(this: &W_polars_plan__plans__lit__LiteralValue, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_schema::schema::Schema as core::fmt::Debug`.
+#[rune::function(instance, protocol = DEBUG_FMT)]
+fn p_f09dda1e_olars_schema__schema__schema_as_core__fmt__debug(this: &W_polars_core__schema__SchemaRef, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Record 0123: `polars_core::schema::SchemaRef` has no Rust `Display`; its text is Polars' own `Debug` (polars-schema 0.55.2 schema.rs: #[derive(Debug, Clone)] pub struct Schema; no Display impl at the pin).
+#[rune::function(instance, protocol = DISPLAY_FMT)]
+fn pi_display_polars_core__schema__schemaref(this: &W_polars_core__schema__SchemaRef, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
 /// The [`ArrowDataType`] of the [`Array`]. In combination with [`Array::as_any`], this can be used to downcast trait objects (`dyn Array`) to concrete arrays.
 /// Polars: `polars_arrow::array::Array::dtype`. dtype() -> ArrowDataType
 #[rune::function(instance, path = dtype)]
@@ -24193,6 +24199,8 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_f26c06a8_plans__lit__literalvalue_as_core__cmp__partialeq)?;
     m.function_meta(f_74158adf_r__scalar__polars_plan__plans__lit__literalvalue)?;
     m.function_meta(p_11de42d8_an__plans__lit__literalvalue_as_core__fmt__debug)?;
+    m.function_meta(p_f09dda1e_olars_schema__schema__schema_as_core__fmt__debug)?;
+    m.function_meta(pi_display_polars_core__schema__schemaref)?;
     m.function_meta(f_27f2168e__dtype_polars_arrow__array__list__listarray_i64_)?;
     m.function_meta(f_e8b0a6b5_row__array__array__dtype_support__arrayref_deref)?;
     m.function_meta(f_f35ddfd3_ars_arrow__array__primitive__primitivearray_f32_)?;
@@ -24431,13 +24439,13 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_0cb3d1dc_unkedbuilder_polars_core__datatypes__uint16type_)?;
     m.function_meta(f_b3c5f5a4_unkedbuilder_polars_core__datatypes__uint32type_)?;
     m.function_meta(f_e84af6dd_unkedbuilder_polars_core__datatypes__uint64type_)?;
-    m.function_meta(f_0bee918c_hunkedbuilder_polars_core__datatypes__uint8type_)?;
-    m.function_meta(f_d019adcd__builder__list__binary__liststringchunkedbuilder)?;
     Ok(())
 }
 
 #[inline(never)]
 fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
+    m.function_meta(f_0bee918c_hunkedbuilder_polars_core__datatypes__uint8type_)?;
+    m.function_meta(f_d019adcd__builder__list__binary__liststringchunkedbuilder)?;
     m.function_meta(f_d7730aef_lder__list__anonymous__anonymousownedlistbuilder)?;
     m.function_meta(f_83cfc3d5_ray__builder__list__null__listnullchunkedbuilder)?;
     m.function_meta(f_15852b0b__builder__list__binary__listbinarychunkedbuilder)?;
@@ -24948,13 +24956,13 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_70335d4e_into_column_polars_core__datatypes__int16chunked)?;
     m.function_meta(f_004561fd_into_column_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_84d9b0ac_into_column_polars_core__datatypes__int64chunked)?;
-    m.function_meta(f_59b1ac6a__into_column_polars_core__datatypes__int8chunked)?;
-    m.function_meta(f_d09b928c__into_column_polars_core__datatypes__listchunked)?;
     Ok(())
 }
 
 #[inline(never)]
 fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
+    m.function_meta(f_59b1ac6a__into_column_polars_core__datatypes__int8chunked)?;
+    m.function_meta(f_d09b928c__into_column_polars_core__datatypes__listchunked)?;
     m.function_meta(f_c9f61163_nto_column_polars_core__datatypes__stringchunked)?;
     m.function_meta(f_6cf14762_nto_column_polars_core__datatypes__uint16chunked)?;
     m.function_meta(f_3b1397d1_nto_column_polars_core__datatypes__uint32chunked)?;
@@ -25465,13 +25473,13 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_3e5ff50c_s_core__chunked_array__cast__castoptions__strict)?;
     m.function_meta(v_eb072983_ore__chunked_array__cast__castoptions__nonstrict)?;
     m.function_meta(v_fc0957e3_e__chunked_array__cast__castoptions__overflowing)?;
-    m.function_meta(s_a308de19_hunked_array__ops__explodeoptions__empty_as_null)?;
-    m.function_meta(w_a308de19_hunked_array__ops__explodeoptions__empty_as_null)?;
     Ok(())
 }
 
 #[inline(never)]
 fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
+    m.function_meta(s_a308de19_hunked_array__ops__explodeoptions__empty_as_null)?;
+    m.function_meta(w_a308de19_hunked_array__ops__explodeoptions__empty_as_null)?;
     m.function_meta(s_4a72f7c4___chunked_array__ops__explodeoptions__keep_nulls)?;
     m.function_meta(w_4a72f7c4___chunked_array__ops__explodeoptions__keep_nulls)?;
     m.function_meta(v_a8cbd086___chunked_array__ops__fillnullstrategy__backward)?;
@@ -25982,13 +25990,13 @@ fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_98f4fb8b__dsl__file_scan__unifiedscanargs__deletion_files)?;
     m.function_meta(w_98f4fb8b__dsl__file_scan__unifiedscanargs__deletion_files)?;
     m.function_meta(s_50618d26_sl__file_scan__unifiedscanargs__table_statistics)?;
-    m.function_meta(w_50618d26_sl__file_scan__unifiedscanargs__table_statistics)?;
-    m.function_meta(s_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count)?;
     Ok(())
 }
 
 #[inline(never)]
 fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
+    m.function_meta(w_50618d26_sl__file_scan__unifiedscanargs__table_statistics)?;
+    m.function_meta(s_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count)?;
     m.function_meta(w_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count)?;
     m.function_meta(v_557730eb_an__dsl__function_expr__functionexpr__binaryexpr)?;
     m.function_meta(v_5eade1b3_n__dsl__function_expr__functionexpr__categorical)?;

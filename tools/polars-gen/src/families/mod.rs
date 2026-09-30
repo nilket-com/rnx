@@ -13,6 +13,8 @@ pub(crate) mod free_instantiations;
 pub(crate) mod generic_impls;
 pub(crate) mod generic_inputs;
 pub(crate) mod generic_traits;
+pub(crate) mod into_arguments;
+pub(crate) mod protocol_instantiations;
 pub(crate) mod protocols;
 pub(crate) mod receiver_guards;
 pub(crate) mod receivers;
@@ -261,6 +263,7 @@ pub(crate) static CLAIM: &[&dyn Family] = &[
 	&FROM_ITER,
 	&UNARY,
 	&OPERATOR,
+	&protocol_instantiations::PROTOCOL_INSTANTIATION,
 	&FAMILY_REFUSAL,
 ];
 use free_instantiations::ARG_GUARD;
@@ -640,6 +643,7 @@ mod tests {
 				"from_iter",
 				"unary",
 				"operator",
+				"protocol_instantiation",
 				"generic_impl_refusal"
 			]
 		);

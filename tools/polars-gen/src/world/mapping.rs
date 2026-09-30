@@ -100,6 +100,10 @@ pub(crate) struct Arg {
 	/// What the script passes, for the oracle generator: `bool`, `int`,
 	/// `float`, `string`, `W:<canonical>`, `opt(..)`, `vec(..)`, `tuple(..;..)`, `unit`.
 	pub(crate) shape: String,
+	/// Record 0123: a statement run before the binding's body that converts
+	/// the argument or refuses it with a VM error (the binding then returns
+	/// `VmResult`, its script-visible return type unchanged).
+	pub(crate) vm_check: Option<String>,
 }
 
 pub(crate) struct Ret {
@@ -219,6 +223,7 @@ pub(crate) fn ok_arg(rust_ty: &str, conv: String, doc: &str) -> Result<Arg, Unsu
 		borrow: 0,
 		owned: None,
 		shape,
+		vm_check: None,
 	})
 }
 
@@ -303,6 +308,7 @@ impl World {
 				borrow: 0,
 				owned: None,
 				shape: shape.into(),
+				vm_check: None,
 			};
 			let from_bytes = format!("support::cursor_from_bytes(&{name}, \"{name}\")?");
 			match t.render().as_str() {
@@ -894,6 +900,18 @@ impl World {
 			return self.iterator_input(&item, name, generics, owner, depth, t);
 		}
 		match target {
+			// record 0123: a listed `Into` target accepts its recorded `From`
+			// sources, as a direct parameter only (inside an `Option` or other
+			// container the value's shape differs, and stays as it was)
+			Some(Ty::Path { path, args })
+				if args.is_empty()
+					&& depth == 0 && bounds.iter().any(|b| last(&b.path) == "Into")
+					&& crate::families::into_arguments::row(self, &path).is_some() =>
+			{
+				let r = crate::families::into_arguments::row(self, &path).unwrap();
+				crate::families::into_arguments::arg(self, r, name)
+					.ok_or_else(|| Unsupported("into argument", t.render()))
+			}
 			Some(tt) => {
 				let a = self.arg(&tt, name, generics, owner, depth + 1)?;
 				// `&str` for AsRef<str> must stay a reference; Into<T> takes T by value

@@ -51,6 +51,8 @@ const SELF_TESTS: &[fn()] = &[
 	crate::freeze::freeze_self_test,
 	crate::families::receiver_guards::receiver_guards_self_test,
 	crate::families::concrete_arrays::concrete_arrays_self_test,
+	crate::families::into_arguments::into_arguments_self_test,
+	crate::families::protocol_instantiations::protocol_instantiations_self_test,
 	crate::families::protocols::protocols_self_test,
 	crate::families::serde::serde_self_test,
 	crate::families::generic_impls::generic_impls_self_test,
@@ -129,7 +131,12 @@ fn main() {
 	let (out, census) = pipeline::generate(&world, &inv, &release, &buckets, &frozen);
 	// record 0119: every previously generated binding survives unchanged
 	if release.families.frozen_bindings.is_some() {
-		let problems = freeze::check(&frozen, &out.entries, &out.catalogue);
+		let problems = freeze::check(
+			&frozen,
+			&out.entries,
+			&out.catalogue,
+			&release.families.frozen_widenings,
+		);
 		if !problems.is_empty() {
 			for p in &problems {
 				eprintln!("refusing to generate: {p}");
@@ -137,8 +144,12 @@ fn main() {
 			std::process::exit(2);
 		}
 		println!(
-			"frozen bindings: {} checked, none moved, no contract changed",
-			frozen.len()
+			"frozen bindings: {} checked, none moved, no contract changed{}",
+			frozen.len(),
+			match release.families.frozen_widenings.len() {
+				0 => String::new(),
+				n => format!(" except {n} listed widenings"),
+			}
 		);
 	}
 	emit::output::write(

@@ -873,7 +873,19 @@ pub(crate) fn emit_method_with(
 	} else {
 		format!("/// {doc}\n")
 	};
-	writeln!(out.functions, "{docline}/// Polars: `{}`. {}\n{attr}\nfn {ident}({}) -> {ret_ty} {{ {pre}let __r = {call}; {commit}{body_conv} }}", c.canonical_path, summary, sig.join(", ")).unwrap();
+	// record 0123: arguments converted or refused before the body (a listed
+	// `Into` target's sources); a refusal is a VM error, so the binding returns
+	// `VmResult` around its unchanged body and script-visible return type
+	let vm_checks: String = params
+		.iter()
+		.filter_map(|(_, a)| a.vm_check.as_deref())
+		.map(|c| c.replace("__OP__", &name))
+		.collect();
+	if vm_checks.is_empty() {
+		writeln!(out.functions, "{docline}/// Polars: `{}`. {}\n{attr}\nfn {ident}({}) -> {ret_ty} {{ {pre}let __r = {call}; {commit}{body_conv} }}", c.canonical_path, summary, sig.join(", ")).unwrap();
+	} else {
+		writeln!(out.functions, "{docline}/// Polars: `{}`. {}\n{attr}\nfn {ident}({}) -> rune::runtime::VmResult<{ret_ty}> {{ {vm_checks}rune::runtime::VmResult::Ok((|| -> {ret_ty} {{ {pre}let __r = {call}; {commit}{body_conv} }})()) }}", c.canonical_path, summary, sig.join(", ")).unwrap();
+	}
 	out.registrations
 		.push(format!("m.function_meta({ident})?;"));
 	out.catalogue.push((
