@@ -464,6 +464,10 @@ pub struct W_polars_core__frame__column__scalar__ScalarColumn(pub(crate) polars:
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = UnpivotArgsIR)]
 pub struct W_polars_core__frame__explode__UnpivotArgsIR(pub(crate) polars::frame::explode::UnpivotArgsIR);
+/// `polars_core::frame::group_by::GroupBy`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = GroupBy)]
+pub struct W_polars_core__frame__group_by__GroupBy(pub(crate) super::support::GroupBySnapshot);
 /// `polars_core::frame::group_by::GroupByMethod`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = GroupByMethod)]
@@ -1425,6 +1429,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_core__frame__column__Column>()?;
     m.ty::<W_polars_core__frame__column__scalar__ScalarColumn>()?;
     m.ty::<W_polars_core__frame__explode__UnpivotArgsIR>()?;
+    m.ty::<W_polars_core__frame__group_by__GroupBy>()?;
     m.ty::<W_polars_core__frame__group_by__GroupByMethod>()?;
     m.ty::<W_polars_core__frame__group_by__position__GroupPositions>()?;
     m.ty::<W_polars_core__frame__group_by__position__GroupsIdx>()?;

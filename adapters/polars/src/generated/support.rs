@@ -3914,3 +3914,98 @@ fn raw_scheme(s: &str) -> bool {
 		_ => false,
 	}
 }
+
+/// Record 0126: Polars' `GroupBy<'a>` borrows its frame (`df: &'a DataFrame`),
+/// which a script value cannot hold. A script `GroupBy` owns everything the
+/// borrow and Polars' private fields hold: a snapshot of the frame (a
+/// `DataFrame` clone shares its column buffers), the full-length key columns,
+/// the groups (computed once, so every aggregation of one `GroupBy` shares
+/// them, as in Rust) and the `select`ed columns. Each call rebuilds a real
+/// `GroupBy` with Polars' public `GroupBy::new` for that call only: no borrow
+/// outlives a call, and nothing is `unsafe`. Every part is captured by the
+/// same public calls Polars makes, in Polars' order.
+#[derive(Clone)]
+pub(crate) struct GroupBySnapshot {
+	/// Polars' one public field, under its own name: the generated `df`
+	/// getter reads it (record 0126).
+	pub(crate) df: p::DataFrame,
+	keys: Vec<p::Column>,
+	groups: p::GroupPositions,
+	selection: Option<Vec<p::PlSmallStr>>,
+}
+
+impl GroupBySnapshot {
+	/// The borrowed `GroupBy`, for one call.
+	pub(crate) fn view(&self) -> p::GroupBy<'_> {
+		p::GroupBy::new(
+			&self.df,
+			self.keys.clone(),
+			self.groups.clone(),
+			self.selection.clone(),
+		)
+	}
+	/// `DataFrame::group_by(by)` / `group_by_stable(by)`: Polars' bodies are
+	/// `let selected_keys = self.select_to_vec(by)?;
+	/// self.group_by_with_series(selected_keys, true, sorted)`
+	/// (polars-core frame/group_by/mod.rs:115-133 at 0.55.2, :112-130 at
+	/// da47b74). The same two calls, over the snapshot; the broadcast inside
+	/// `group_by_with_series` is the identity for the frame's own columns.
+	fn capture<I, S>(frame: &p::DataFrame, by: I, sorted: bool) -> p::PolarsResult<Self>
+	where
+		I: IntoIterator<Item = S>,
+		S: AsRef<str>,
+	{
+		let df = frame.clone();
+		let keys = df.select_to_vec(by)?;
+		let groups = df
+			.group_by_with_series(keys.clone(), true, sorted)?
+			.get_groups()
+			.clone();
+		Ok(GroupBySnapshot {
+			df,
+			keys,
+			groups,
+			selection: None,
+		})
+	}
+	pub(crate) fn group_by<I, S>(frame: &p::DataFrame, by: I) -> p::PolarsResult<Self>
+	where
+		I: IntoIterator<Item = S>,
+		S: AsRef<str>,
+	{
+		Self::capture(frame, by, false)
+	}
+	pub(crate) fn group_by_stable<I, S>(frame: &p::DataFrame, by: I) -> p::PolarsResult<Self>
+	where
+		I: IntoIterator<Item = S>,
+		S: AsRef<str>,
+	{
+		Self::capture(frame, by, true)
+	}
+	/// `GroupBy::select(self, selection)`: Polars' body is
+	/// `self.selected_agg = Some(selection.into_iter().map(|s| s.into()).collect())`
+	/// (mod.rs:216 at 0.55.2, :213 at da47b74).
+	pub(crate) fn select<I, S>(mut self, selection: I) -> Self
+	where
+		I: IntoIterator<Item = S>,
+		S: Into<p::PlSmallStr>,
+	{
+		self.selection = Some(selection.into_iter().map(|s| s.into()).collect());
+		self
+	}
+	/// `GroupBy::into_groups(self)`: the groups.
+	pub(crate) fn into_groups(self) -> p::GroupPositions {
+		self.groups
+	}
+	/// `GroupBy::get_groups(&self)`: the snapshot's own groups, borrowed from
+	/// the snapshot (which outlives the call), never from a temporary view.
+	pub(crate) fn get_groups(&self) -> &p::GroupPositions {
+		&self.groups
+	}
+}
+
+impl std::fmt::Debug for GroupBySnapshot {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		std::fmt::Debug::fmt(&self.view(), f)
+	}
+}

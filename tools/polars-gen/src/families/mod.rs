@@ -17,6 +17,7 @@ pub(crate) mod into_arguments;
 pub(crate) mod path_arguments;
 pub(crate) mod protocol_instantiations;
 pub(crate) mod protocols;
+pub(crate) mod rebuilt_borrows;
 pub(crate) mod receiver_guards;
 pub(crate) mod receivers;
 pub(crate) mod returns;
@@ -281,6 +282,7 @@ pub(crate) static CALLABLE: &[&dyn Family] = &[
 	&ITERATOR_RETURN,
 	&HASH_TOKEN,
 	&path_arguments::PATH_ARGUMENT,
+	&rebuilt_borrows::REBUILT_BORROW,
 ];
 /// The pair scope before the return is substituted (0092, then 0096).
 pub(crate) static PAIR_PRE: &[&dyn Family] = &[&SCALAR_GENERIC, &NULL_AWARE];
@@ -590,7 +592,9 @@ mod tests {
 				"iterator_return",
 				"hash_token",
 				// record 0125
-				"path_argument"
+				"path_argument",
+				// record 0126
+				"rebuilt_borrow"
 			]
 		);
 		assert_eq!(names(PAIR_PRE), ["scalar_generic", "null_aware"]);

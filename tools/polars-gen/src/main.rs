@@ -53,6 +53,7 @@ const SELF_TESTS: &[fn()] = &[
 	crate::families::concrete_arrays::concrete_arrays_self_test,
 	crate::families::into_arguments::into_arguments_self_test,
 	crate::families::path_arguments::path_arguments_self_test,
+	crate::families::rebuilt_borrows::rebuilt_borrows_self_test,
 	crate::emit::pin_everywhere_self_test,
 	crate::families::protocol_instantiations::protocol_instantiations_self_test,
 	crate::families::protocols::protocols_self_test,
@@ -140,6 +141,13 @@ fn main() {
 			.filter(|e| e.status == "generated")
 			.map(|e| e.canonical_path.as_str())
 			.collect();
+		if let Err(e) = crate::families::rebuilt_borrows::check_used(
+			&release.families.rebuilt_borrows,
+			&generated,
+		) {
+			eprintln!("refusing to generate: rebuilt borrows: {e}");
+			std::process::exit(2);
+		}
 		if let Err(e) = crate::families::path_arguments::check_used(
 			&release.families.path_arguments,
 			&generated,

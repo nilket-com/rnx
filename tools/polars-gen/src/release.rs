@@ -120,6 +120,9 @@ pub(crate) struct FamilyTables {
 	/// cited allowlist of exact owners and instantiations.
 	#[serde(default)]
 	pub(crate) concrete_arrays: Vec<crate::families::concrete_arrays::ConcreteArray>,
+	/// Record 0126: borrowing Polars types wrapped by an owning snapshot, rebuilt per call.
+	#[serde(default)]
+	pub(crate) rebuilt_borrows: Vec<crate::families::rebuilt_borrows::RebuiltBorrow>,
 	/// Record 0125: listed callables' `PlRefPath` parameters that accept a local path string.
 	#[serde(default)]
 	pub(crate) path_arguments: Vec<crate::families::path_arguments::PathArgument>,

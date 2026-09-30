@@ -635,6 +635,16 @@ pub(crate) fn emit_method_with(
 		(None, Some(t), false) => format!("<{} as {t}>::{rust_name}", w.spell),
 		(None, None, _) => format!("<{}>::{rust_name}", w.spell),
 	};
+	// record 0126: a rebuilt borrow's receiver (the view, rebuilt for this
+	// call) or recipe (the snapshot's function of the same contract)
+	let (recv_expr, callee) = match world
+		.active
+		.get("rebuilt_borrow")
+		.and_then(|st| crate::families::rebuilt_borrows::route(&st, &rust_name))
+	{
+		Some((recv, callee)) => (recv.or(recv_expr), callee),
+		None => (recv_expr, callee),
+	};
 	let mut args: Vec<String> = Vec::new();
 	if let Some(r) = &recv_expr {
 		args.push(r.clone());
