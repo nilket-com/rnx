@@ -3868,3 +3868,49 @@ mod sink_tests {
 		TEST_LIMIT.store(n, std::sync::atomic::Ordering::SeqCst);
 	}
 }
+
+/// Record 0125: a script path for a listed Polars path parameter, local only.
+/// Two checks, both before any Polars call:
+/// 1. the string has no URI scheme: no `://`, and no `scheme:` prefix of two
+///    or more scheme characters (so a Windows drive, `C:`, stays a path);
+/// 2. the path Polars' own `From<&str>` builds has no scheme Polars itself
+///    sees (`has_scheme`: `PlRefPath::from` normalises Windows spellings, so
+///    a string can become `s3://…` only after conversion; `file:` counts).
+///
+/// Cloud and HTTP reads would give a script network access, and are out of
+/// scope.
+pub(crate) fn local_path(s: &str) -> Result<polars_utils::pl_path::PlRefPath, String> {
+	if raw_scheme(s) {
+		return Err(format!(
+			"{s:?} is not a local path (a URI; cloud and HTTP reads are out of scope)"
+		));
+	}
+	local_path_checked(polars_utils::pl_path::PlRefPath::from(s))
+}
+/// The second check alone, for a path that is already a `PlRefPath`.
+pub(crate) fn local_path_checked(
+	path: polars_utils::pl_path::PlRefPath,
+) -> Result<polars_utils::pl_path::PlRefPath, String> {
+	if path.has_scheme() {
+		return Err(format!(
+			"{:?} is not a local path (Polars reads it with a URI scheme; cloud and HTTP reads are out of scope)",
+			path.as_str()
+		));
+	}
+	Ok(path)
+}
+fn raw_scheme(s: &str) -> bool {
+	if s.contains("://") {
+		return true;
+	}
+	match s.find(':') {
+		Some(i) if i >= 2 => {
+			let head = &s[..i];
+			head.starts_with(|c: char| c.is_ascii_alphabetic())
+				&& head
+					.chars()
+					.all(|c| c.is_ascii_alphanumeric() || matches!(c, '+' | '.' | '-'))
+		}
+		_ => false,
+	}
+}

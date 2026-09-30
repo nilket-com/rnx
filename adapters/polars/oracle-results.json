@@ -1,5 +1,5 @@
 {
-  "cases": 3967,
+  "cases": 3997,
   "results": [
     {
       "detail": ":Binary:[Binary([97]), Null, Binary([99, 99, 99])]",
@@ -845,6 +845,54 @@
       "detail": "[1:1, 1:0, 1:3]",
       "id": "polars_arrow__array__primitive__primitivearray__values__on__primitivearray_u8_",
       "path": "polars_arrow::array::primitive::PrimitiveArray::values",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Struct({'x': Int64, 'y': String}):len=3:rows=[valid, valid, valid]:{x:Int64:[Int64(1), Null, Int64(3)]; y:String:[String(\"a\"), Null, String(\"ccc\")]}",
+      "id": "polars_arrow__array__struct___structarray__boxed",
+      "path": "polars_arrow::array::struct_::StructArray::boxed",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[68:Field { name: \"x\", dtype: Int64, is_nullable: true, metadata: None }, 71:Field { name: \"y\", dtype: Utf8View, is_nullable: true, metadata: None }]",
+      "id": "polars_arrow__array__struct___structarray__fields",
+      "path": "polars_arrow::array::struct_::StructArray::fields",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "3",
+      "id": "polars_arrow__array__struct___structarray__len",
+      "path": "polars_arrow::array::struct_::StructArray::len",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Struct({'x': Int64, 'y': String}):len=1:rows=[valid]:{x:Int64:[Int64(1)]; y:String:[String(\"a\")]}",
+      "id": "polars_arrow__array__struct___structarray__sliced",
+      "path": "polars_arrow::array::struct_::StructArray::sliced",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "None",
+      "id": "polars_arrow__array__struct___structarray__validity",
+      "path": "polars_arrow::array::struct_::StructArray::validity",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[33::Int64:[Int64(1), Null, Int64(3)], 42::String:[String(\"a\"), Null, String(\"ccc\")]]",
+      "id": "polars_arrow__array__struct___structarray__values",
+      "path": "polars_arrow::array::struct_::StructArray::values",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -15322,6 +15370,14 @@
       "unordered": false
     },
     {
+      "detail": "collect error: InvalidOperation",
+      "id": "polars_lazy__frame__lazyframe__unnest",
+      "path": "polars_lazy::frame::LazyFrame::unnest",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "collected shape=(1, 3); columns=[x:Float64,y:String,z:Float64,]; rows=[(Float64(2.0), Null, Float64(2.0))]",
       "id": "polars_lazy__frame__lazyframe__var",
       "path": "polars_lazy::frame::LazyFrame::var",
@@ -17498,6 +17554,14 @@
       "unordered": false
     },
     {
+      "detail": "selected shape=(3, 1); columns=[x:String,]; rows=[(String(\"1\")) | (String(\"2\")) | (String(\"3\"))]",
+      "id": "polars_plan__dsl__struct___structnamespace__json_encode",
+      "path": "polars_plan::dsl::struct_::StructNameSpace::json_encode",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "select error: ExprContext",
       "id": "polars_plan__dsl__struct___structnamespace__rename_fields",
       "path": "polars_plan::dsl::struct_::StructNameSpace::rename_fields",
@@ -18490,6 +18554,62 @@
       "unordered": false
     },
     {
+      "detail": "[1:2]",
+      "id": "polars_io__json__remove_bom",
+      "path": "polars_io::json::remove_bom",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "1",
+      "id": "polars_io__ndjson__core__estimate_n_lines_in_chunk",
+      "path": "polars_io::ndjson::core::estimate_n_lines_in_chunk",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "1",
+      "id": "polars_io__ndjson__core__estimate_n_lines_in_file",
+      "path": "polars_io::ndjson::core::estimate_n_lines_in_file",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true",
+      "id": "polars_io__ndjson__core__is_json_line",
+      "path": "polars_io::ndjson::core::is_json_line",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "[5:[1:2]]",
+      "id": "polars_io__ndjson__core__json_lines",
+      "path": "polars_io::ndjson::core::json_lines",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "ComputeError",
+      "id": "polars_io__ndjson__core__parse_ndjson",
+      "path": "polars_io::ndjson::core::parse_ndjson",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "both_error",
+      "unordered": false
+    },
+    {
+      "detail": "1",
+      "id": "polars_io__ndjson__count_rows",
+      "path": "polars_io::ndjson::count_rows",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "()",
       "id": "polars_io__parquet__read__read_impl__try_set_sorted_flag",
       "path": "polars_io::parquet::read::read_impl::try_set_sorted_flag",
@@ -18509,6 +18629,14 @@
       "detail": "Some(2:[])",
       "id": "polars_io__utils__other__materialize_projection",
       "path": "polars_io::utils::other::materialize_projection",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "()",
+      "id": "polars_io__utils__other__overwrite_schema",
+      "path": "polars_io::utils::other::overwrite_schema",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
       "unordered": false
@@ -19262,6 +19390,14 @@
       "id": "polars_plan__dsl__udf__try_infer_udf_output_dtype",
       "path": "polars_plan::dsl::udf::try_infer_udf_output_dtype",
       "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true",
+      "id": "polars_arrow__array__struct___structarray_as_core__cmp__partialeq",
+      "path": "polars_arrow::array::struct_::StructArray as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
       "status": "match",
       "unordered": false
     },
@@ -21339,6 +21475,46 @@
     },
     {
       "detail": "true",
+      "id": "polars_io__ndjson__ndjsonwriteroptions_as_core__cmp__partialeq",
+      "path": "polars_io::ndjson::NDJsonWriterOptions as core::cmp::PartialEq",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "NDJsonWriterOptions { compression: Uncompressed, check_extension: false }",
+      "id": "polars_io__ndjson__ndjsonwriteroptions_as_core__default__default",
+      "path": "polars_io::ndjson::NDJsonWriterOptions as core::default::Default",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true true 1",
+      "id": "polars_io__ndjson__ndjsonwriteroptions_as_core__hash__hash",
+      "path": "polars_io::ndjson::NDJsonWriterOptions as core::hash::Hash",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"compression\":\"Uncompressed\",\"check_extension\":false}",
+      "id": "polars_io__ndjson__ndjsonwriteroptions_as_serde_core__de__deserialize",
+      "path": "polars_io::ndjson::NDJsonWriterOptions as serde_core::de::Deserialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "{\"compression\":\"Uncompressed\",\"check_extension\":false}",
+      "id": "polars_io__ndjson__ndjsonwriteroptions_as_serde_core__ser__serialize",
+      "path": "polars_io::ndjson::NDJsonWriterOptions as serde_core::ser::Serialize",
+      "policy": "ordered (protocol)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true",
       "id": "polars_io__options__externalcompression_as_core__cmp__partialeq",
       "path": "polars_io::options::ExternalCompression as core::cmp::PartialEq",
       "policy": "ordered (protocol)",
@@ -22338,7 +22514,7 @@
       "unordered": false
     },
     {
-      "detail": "struct.field_by_name(x)",
+      "detail": "struct.to_json",
       "id": "polars_plan__dsl__function_expr__struct___structfunction_as_core__fmt__display",
       "path": "polars_plan::dsl::function_expr::struct_::StructFunction as core::fmt::Display",
       "policy": "ordered (protocol)",
@@ -22994,6 +23170,14 @@
       "unordered": false
     },
     {
+      "detail": "Struct([Field { name: \"x\", dtype: Int64, is_nullable: true, metadata: None }, Field { name: \"y\", dtype: Utf8View, is_nullable: true, metadata: None }])",
+      "id": "polars_arrow__array__array__dtype__on__structarray",
+      "path": "polars_arrow::array::Array::dtype",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "Int64",
       "id": "polars_arrow__array__array__dtype",
       "path": "polars_arrow::array::Array::dtype",
@@ -23100,6 +23284,14 @@
     {
       "detail": "false",
       "id": "polars_arrow__array__array__has_nulls__on__listarray_i64_",
+      "path": "polars_arrow::array::Array::has_nulls",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
+      "id": "polars_arrow__array__array__has_nulls__on__structarray",
       "path": "polars_arrow::array::Array::has_nulls",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
@@ -23219,6 +23411,14 @@
     },
     {
       "detail": "false",
+      "id": "polars_arrow__array__array__is_empty__on__structarray",
+      "path": "polars_arrow::array::Array::is_empty",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
       "id": "polars_arrow__array__array__is_empty",
       "path": "polars_arrow::array::Array::is_empty",
       "policy": "ordered (operation not listed as unordered)",
@@ -23331,6 +23531,14 @@
     },
     {
       "detail": "false",
+      "id": "polars_arrow__array__array__is_null__on__structarray",
+      "path": "polars_arrow::array::Array::is_null",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "false",
       "id": "polars_arrow__array__array__is_null",
       "path": "polars_arrow::array::Array::is_null",
       "policy": "ordered (operation not listed as unordered)",
@@ -23436,6 +23644,14 @@
     {
       "detail": "true",
       "id": "polars_arrow__array__array__is_valid__on__listarray_i64_",
+      "path": "polars_arrow::array::Array::is_valid",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": "true",
+      "id": "polars_arrow__array__array__is_valid__on__structarray",
       "path": "polars_arrow::array::Array::is_valid",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
@@ -23562,6 +23778,14 @@
       "unordered": false
     },
     {
+      "detail": "0",
+      "id": "polars_arrow__array__array__null_count__on__structarray",
+      "path": "polars_arrow::array::Array::null_count",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": "1",
       "id": "polars_arrow__array__array__null_count",
       "path": "polars_arrow::array::Array::null_count",
@@ -23682,6 +23906,14 @@
       "unordered": false
     },
     {
+      "detail": ":Struct({'x': Int64, 'y': String}):len=3:rows=[valid, valid, valid]:{x:Int64:[Int64(1), Null, Int64(3)]; y:String:[String(\"a\"), Null, String(\"ccc\")]}",
+      "id": "polars_arrow__array__array__to_boxed__on__structarray",
+      "path": "polars_arrow::array::Array::to_boxed",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
       "detail": ":Int64:[Int64(1), Null, Int64(3)]",
       "id": "polars_arrow__array__array__to_boxed",
       "path": "polars_arrow::array::Array::to_boxed",
@@ -23780,6 +24012,14 @@
     {
       "detail": ":UInt8:[UInt8(1), Null, UInt8(3)]",
       "id": "polars_arrow__array__intoboxedarray__into_boxed__on__primitivearray_u8_",
+      "path": "polars_arrow::array::IntoBoxedArray::into_boxed",
+      "policy": "ordered (operation not listed as unordered)",
+      "status": "match",
+      "unordered": false
+    },
+    {
+      "detail": ":Struct({'x': Int64, 'y': String}):len=3:rows=[valid, valid, valid]:{x:Int64:[Int64(1), Null, Int64(3)]; y:String:[String(\"a\"), Null, String(\"ccc\")]}",
+      "id": "polars_arrow__array__intoboxedarray__into_boxed__on__structarray",
       "path": "polars_arrow::array::IntoBoxedArray::into_boxed",
       "policy": "ordered (operation not listed as unordered)",
       "status": "match",
@@ -31739,9 +31979,9 @@
     }
   ],
   "tally": {
-    "both_error": 209,
+    "both_error": 210,
     "both_panic": 36,
-    "match": 3722
+    "match": 3751
   },
-  "verified": 3967
+  "verified": 3997
 }

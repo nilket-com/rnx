@@ -110,6 +110,65 @@ pub(crate) fn pin_frozen_ids(
 	}
 }
 
+/// Record 0125: the frozen ids kept on every emission path, as a last pass
+/// before the freeze. Some ids embed a rustdoc key (operator rows, receivers
+/// that name their impl), and rustdoc renumbers keys when a crate gains
+/// modules, so an unchanged binding would otherwise get a new id. A binding
+/// whose (key, Rune path) is frozen takes its frozen id; a pinned id that
+/// another binding already holds is refused, never silently shared. Returns
+/// how many ids were restored.
+pub(crate) fn pin_frozen_everywhere(
+	frozen: &BTreeMap<(String, String), String>,
+	entries: &mut [Entry],
+) -> Result<usize, String> {
+	let mut restored = 0;
+	for e in entries.iter_mut().filter(|e| e.status == "generated") {
+		for b in &mut e.bindings {
+			if let Some(id) = frozen.get(&(e.key.clone(), b.rune.clone())) {
+				if &b.id != id {
+					b.id = id.clone();
+					restored += 1;
+				}
+			}
+		}
+	}
+	let mut seen = std::collections::BTreeSet::new();
+	for e in entries.iter().filter(|e| e.status == "generated") {
+		for b in &e.bindings {
+			if !seen.insert(b.id.as_str()) {
+				return Err(format!(
+					"binding id {} is held by more than one binding",
+					b.id
+				));
+			}
+		}
+	}
+	Ok(restored)
+}
+
+/// Record 0125: a frozen id is restored on any path, and a pinned id that
+/// another binding holds is refused.
+pub(crate) fn pin_everywhere_self_test() {
+	let frozen: BTreeMap<(String, String), String> = [(
+		("k".to_string(), "polars::A | A".to_string()),
+		"a_old_630_6881".to_string(),
+	)]
+	.into();
+	let mut e = Entry::for_test("k");
+	e.status = "generated";
+	e.bindings = vec![Binding::for_test("a_new_717_6968", "polars::A | A")];
+	let mut entries = vec![e];
+	assert_eq!(pin_frozen_everywhere(&frozen, &mut entries), Ok(1));
+	assert_eq!(entries[0].bindings[0].id, "a_old_630_6881");
+	let mut other = Entry::for_test("j");
+	other.status = "generated";
+	other.bindings = vec![Binding::for_test("a_old_630_6881", "polars::B")];
+	entries.push(other);
+	let e = pin_frozen_everywhere(&frozen, &mut entries).unwrap_err();
+	assert!(e.contains("held by more than one binding"), "{e}");
+	println!("pin everywhere self-test: ok");
+}
+
 pub(crate) fn binding_id(canonical_path: &str, receiver: Option<&str>, first: bool) -> String {
 	let base = sanitize(canonical_path).to_lowercase();
 	match receiver {

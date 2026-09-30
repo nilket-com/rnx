@@ -577,6 +577,15 @@ impl World {
 				eprintln!("refusing to generate: into arguments: {why}");
 				std::process::exit(2);
 			}
+			// record 0125: the listed path parameters
+			if let Err(why) = crate::families::path_arguments::validate(
+				&w,
+				&w.release.families.path_arguments,
+				&inv.callables,
+			) {
+				eprintln!("refusing to generate: path arguments: {why}");
+				std::process::exit(2);
+			}
 			if let Err(why) = crate::families::receiver_guards::validate(
 				&w.release.families.receiver_guards,
 				&inv.callables,

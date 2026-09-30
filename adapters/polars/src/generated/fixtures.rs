@@ -79,6 +79,7 @@ pub mod values {
     pub fn large_string_array() -> polars_arrow::array::Utf8Array<i64> { p::Series::new("x".into(), [Some("a"), None, Some("ccc")]).to_arrow(0, p::CompatLevel::oldest()).as_any().downcast_ref::<polars_arrow::array::Utf8Array<i64>>().expect("oracle: the probe's concrete array").clone() }
     pub fn large_binary_array() -> polars_arrow::array::BinaryArray<i64> { p::Series::new("x".into(), [Some("a"), None, Some("ccc")]).cast(&p::DataType::Binary).unwrap().to_arrow(0, p::CompatLevel::oldest()).as_any().downcast_ref::<polars_arrow::array::BinaryArray<i64>>().expect("oracle: the probe's concrete array").clone() }
     pub fn large_list_array() -> polars_arrow::array::ListArray<i64> { p::IntoSeries::into_series(p::Series::new("x".into(), [Some(1i64), None, Some(3)]).implode().unwrap()).to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::ListArray<i64>>().expect("oracle: the probe's concrete array").clone() }
+    pub fn struct_array() -> polars_arrow::array::StructArray { p::IntoSeries::into_series(p::StructChunked::from_columns("s".into(), 3, &[p::Column::from(p::Series::new("x".into(), [Some(1i64), None, Some(3)])), p::Column::from(p::Series::new("x".into(), [Some("a"), None, Some("ccc")]).with_name("y".into()))]).unwrap()).to_arrow(0, p::CompatLevel::newest()).as_any().downcast_ref::<polars_arrow::array::StructArray>().expect("oracle: the probe's concrete array").clone() }
 }
 
 #[rune::function(path = dsl_plan)]
@@ -109,6 +110,8 @@ fn fx_large_string_array() -> W_polars_arrow__array__utf8__Utf8Array_i64_ { W_po
 fn fx_large_binary_array() -> W_polars_arrow__array__binary__BinaryArray_i64_ { W_polars_arrow__array__binary__BinaryArray_i64_(values::large_binary_array()) }
 #[rune::function(path = large_list_array)]
 fn fx_large_list_array() -> W_polars_arrow__array__list__ListArray_i64_ { W_polars_arrow__array__list__ListArray_i64_(values::large_list_array()) }
+#[rune::function(path = struct_array)]
+fn fx_struct_array() -> W_polars_arrow__array__struct___StructArray { W_polars_arrow__array__struct___StructArray(values::struct_array()) }
 #[rune::function(path = arrow_array)]
 fn fx_arrow_array() -> ArrayRef { ArrayRef(values::arrow_array()) }
 #[rune::function(path = df)]
@@ -237,6 +240,8 @@ pub fn show_w_polars_arrow__array__primitive__primitivearray_u32_(v: &rune::Valu
 pub fn show_w_polars_arrow__array__primitive__primitivearray_u64_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_u64_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
 /// Show a `polars_arrow::array::primitive::PrimitiveArray<u8>` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_arrow__array__primitive__primitivearray_u8_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__primitive__PrimitiveArray_u8_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
+/// Show a `polars_arrow::array::struct_::StructArray` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_arrow__array__struct___structarray(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__struct___StructArray>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
 /// Show a `polars_arrow::array::utf8::Utf8Array<i64>` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_arrow__array__utf8__utf8array_i64_(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_arrow__array__utf8__Utf8Array_i64_>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::series_repr(&p::Series::from_arrow("".into(), v.clone().boxed()).expect("oracle: a concrete array converts back")) }) }
 /// Show a `polars_arrow::datatypes::ArrowDataType` held in a Rune value, for the oracle tests.
@@ -397,6 +402,8 @@ pub fn show_w_polars_io__ipc__write__ipccompression(v: &rune::Value) -> Result<c
 pub fn show_w_polars_io__ipc__write__ipcwriteroptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__ipc__write__IpcWriterOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::metrics::IOMetrics` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_io__metrics__iometrics(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__metrics__IOMetrics>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
+/// Show a `polars_io::ndjson::NDJsonWriterOptions` held in a Rune value, for the oracle tests.
+pub fn show_w_polars_io__ndjson__ndjsonwriteroptions(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__ndjson__NDJsonWriterOptions>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::options::ExternalCompression` held in a Rune value, for the oracle tests.
 pub fn show_w_polars_io__options__externalcompression(v: &rune::Value) -> Result<crate_oracle::Repr, String> { v.borrow_ref::<W_polars_io__options__ExternalCompression>().map_err(|e| e.to_string()).map(|w| { let v = &w.0; crate_oracle::Repr::Text(format!("{:?}", v)) }) }
 /// Show a `polars_io::options::HiveOptions` held in a Rune value, for the oracle tests.
@@ -559,6 +566,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(fx_large_string_array)?;
     m.function_meta(fx_large_binary_array)?;
     m.function_meta(fx_large_list_array)?;
+    m.function_meta(fx_struct_array)?;
     m.function_meta(fx_dsl_plan)?;
     Ok(())
 }

@@ -45,6 +45,20 @@ pub(crate) fn csv(path: &str, schema: Arc<p::Schema>) -> Result<p::DataFrame, St
 	let mut file = regular(path)?;
 	csv_handle(&mut file, schema, || Ok(())).map_err(|e| format!("polars read_csv {path:?}: {e}"))
 }
+/// Record 0125: Polars' own schema inference over a local regular file. Date
+/// parsing is off explicitly: automatic date parsing crashes Polars 0.55.2
+/// (the user's constraint), and a date column stays a string, as it does in
+/// Polars by default.
+pub(crate) fn csv_inferred(path: &str) -> Result<p::DataFrame, String> {
+	let frame = p::CsvReadOptions::default()
+		.with_has_header(true)
+		.with_parse_options(p::CsvParseOptions::default().with_try_parse_dates(false))
+		.into_reader_with_file_handle(regular(path)?)
+		.finish()
+		.map_err(|e| format!("polars read_csv {path:?}: {e}"))?;
+	validate(&frame).map_err(|e| format!("polars read_csv {path:?}: {e}"))?;
+	Ok(frame)
+}
 fn csv_handle(
 	file: &mut File,
 	schema: Arc<p::Schema>,
@@ -75,6 +89,15 @@ fn csv_handle(
 		.finish()
 		.map_err(|e| e.to_string())?;
 	validate(&frame)?;
+	Ok(frame)
+}
+/// Record 0125: a local JSON file (an array of objects), read with Polars'
+/// own `JsonReader` and its default options, the schema inferred by Polars.
+pub(crate) fn json(path: &str) -> Result<p::DataFrame, String> {
+	let frame = p::JsonReader::new(regular(path)?)
+		.finish()
+		.map_err(|e| format!("polars read_json {path:?}: {e}"))?;
+	validate(&frame).map_err(|e| format!("polars read_json {path:?}: {e}"))?;
 	Ok(frame)
 }
 pub(crate) fn parquet(path: &str) -> Result<p::DataFrame, String> {

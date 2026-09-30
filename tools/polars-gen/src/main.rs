@@ -52,6 +52,8 @@ const SELF_TESTS: &[fn()] = &[
 	crate::families::receiver_guards::receiver_guards_self_test,
 	crate::families::concrete_arrays::concrete_arrays_self_test,
 	crate::families::into_arguments::into_arguments_self_test,
+	crate::families::path_arguments::path_arguments_self_test,
+	crate::emit::pin_everywhere_self_test,
 	crate::families::protocol_instantiations::protocol_instantiations_self_test,
 	crate::families::protocols::protocols_self_test,
 	crate::families::serde::serde_self_test,
@@ -128,9 +130,31 @@ fn main() {
 		.as_ref()
 		.map(|rel| freeze::load(&release_path, rel))
 		.unwrap_or_default();
-	let (out, census) = pipeline::generate(&world, &inv, &release, &buckets, &frozen);
+	let (mut out, census) = pipeline::generate(&world, &inv, &release, &buckets, &frozen);
 	// record 0119: every previously generated binding survives unchanged
 	if release.families.frozen_bindings.is_some() {
+		// record 0125: every listed path parameter's callable was generated
+		let generated: Vec<&str> = out
+			.entries
+			.iter()
+			.filter(|e| e.status == "generated")
+			.map(|e| e.canonical_path.as_str())
+			.collect();
+		if let Err(e) = crate::families::path_arguments::check_used(
+			&release.families.path_arguments,
+			&generated,
+		) {
+			eprintln!("refusing to generate: path arguments: {e}");
+			std::process::exit(2);
+		}
+		// record 0125: frozen ids kept on every path, before the check
+		match emit::pin_frozen_everywhere(&out.frozen_ids, &mut out.entries) {
+			Ok(n) => println!("frozen ids: {n} restored after rustdoc renumbering"),
+			Err(e) => {
+				eprintln!("refusing to generate: {e}");
+				std::process::exit(2);
+			}
+		}
 		let problems = freeze::check(
 			&frozen,
 			&out.entries,

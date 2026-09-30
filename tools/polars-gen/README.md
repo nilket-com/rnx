@@ -4,7 +4,7 @@ Generates the Polars adapter's Rune bindings from the record 0072
 inventory (`probes/0072/out/<release>-adapter/result/inventory.json`).
 
     cargo run --manifest-path tools/polars-gen/Cargo.toml -- \
-        probes/0072/out/0.55.2-adapter-narrow/result/inventory.json adapters/polars \
+        probes/0072/out/0.55.2-adapter-json/result/inventory.json adapters/polars \
         --release tools/polars-gen/releases/0.55.2-joins.toml \
         --buckets mechanical,conversion,option_struct,callback,generic_fn,generic
 

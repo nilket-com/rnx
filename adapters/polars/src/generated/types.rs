@@ -52,6 +52,10 @@ pub struct W_polars_arrow__array__primitive__PrimitiveArray_u64_(pub(crate) pola
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::arrow, name = UInt8Array)]
 pub struct W_polars_arrow__array__primitive__PrimitiveArray_u8_(pub(crate) polars_arrow::array::PrimitiveArray<u8>);
+/// polars_arrow::array::struct_::StructArray = `polars_arrow::array::struct_::StructArray`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars::arrow, name = StructArray)]
+pub struct W_polars_arrow__array__struct___StructArray(pub(crate) polars_arrow::array::StructArray);
 /// polars_arrow::array::utf8::Utf8Array<i64> = `polars_arrow::array::utf8::Utf8Array<i64>`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars::arrow, name = LargeStringArray)]
@@ -756,6 +760,10 @@ pub struct W_polars_io__ipc__write__IpcWriter_support__Sink(pub(crate) polars_io
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = IpcWriterOptions)]
 pub struct W_polars_io__ipc__write__IpcWriterOptions(pub(crate) polars_io::ipc::IpcWriterOptions);
+/// `polars_io::json::JsonFormat`
+#[derive(rune::Any)]
+#[rune(item = ::polars, name = JsonFormat)]
+pub struct W_polars_io__json__JsonFormat(pub(crate) polars_io::json::JsonFormat);
 /// `polars_io::metrics::IOMetrics`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = IOMetrics)]
@@ -764,6 +772,10 @@ pub struct W_polars_io__metrics__IOMetrics(pub(crate) polars::io::metrics::IOMet
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = OptIOMetrics)]
 pub struct W_polars_io__metrics__OptIOMetrics(pub(crate) polars::io::metrics::OptIOMetrics);
+/// `polars_io::ndjson::NDJsonWriterOptions`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = NDJsonWriterOptions)]
+pub struct W_polars_io__ndjson__NDJsonWriterOptions(pub(crate) polars::io::ndjson::NDJsonWriterOptions);
 /// `polars_io::options::ExternalCompression`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = ExternalCompression)]
@@ -856,6 +868,10 @@ pub struct W_polars_lazy__scan__anonymous_scan__ScanArgsAnonymous(pub(crate) pol
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = LazyCsvReader)]
 pub struct W_polars_lazy__scan__csv__LazyCsvReader(pub(crate) polars_lazy::frame::LazyCsvReader);
+/// `polars_lazy::scan::ndjson::LazyJsonLineReader`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = LazyJsonLineReader)]
+pub struct W_polars_lazy__scan__ndjson__LazyJsonLineReader(pub(crate) polars_lazy::frame::LazyJsonLineReader);
 /// `polars_lazy::scan::parquet::ScanArgsParquet`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = ScanArgsParquet)]
@@ -1104,6 +1120,10 @@ pub struct W_polars_plan__dsl__options__JoinTypeOptionsIR(pub(crate) polars_plan
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = LogicalPlanUdfOptions)]
 pub struct W_polars_plan__dsl__options__LogicalPlanUdfOptions(pub(crate) polars_plan::dsl::LogicalPlanUdfOptions);
+/// `polars_plan::dsl::options::NDJsonReadOptions`
+#[derive(rune::Any, Clone)]
+#[rune(item = ::polars, name = NDJsonReadOptions)]
+pub struct W_polars_plan__dsl__options__NDJsonReadOptions(pub(crate) polars_plan::dsl::NDJsonReadOptions);
 /// `polars_plan::dsl::options::RollingCovOptions`
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars, name = RollingCovOptions)]
@@ -1302,6 +1322,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_u32_>()?;
     m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_u64_>()?;
     m.ty::<W_polars_arrow__array__primitive__PrimitiveArray_u8_>()?;
+    m.ty::<W_polars_arrow__array__struct___StructArray>()?;
     m.ty::<W_polars_arrow__array__utf8__Utf8Array_i64_>()?;
     m.ty::<W_polars_arrow__datatypes__ArrowDataType>()?;
     m.ty::<W_polars_arrow__datatypes__TimeUnit>()?;
@@ -1478,8 +1499,10 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_io__ipc__write__IpcCompression>()?;
     m.ty::<W_polars_io__ipc__write__IpcWriter_support__Sink>()?;
     m.ty::<W_polars_io__ipc__write__IpcWriterOptions>()?;
+    m.ty::<W_polars_io__json__JsonFormat>()?;
     m.ty::<W_polars_io__metrics__IOMetrics>()?;
     m.ty::<W_polars_io__metrics__OptIOMetrics>()?;
+    m.ty::<W_polars_io__ndjson__NDJsonWriterOptions>()?;
     m.ty::<W_polars_io__options__ExternalCompression>()?;
     m.ty::<W_polars_io__options__HiveOptions>()?;
     m.ty::<W_polars_io__options__RowIndex>()?;
@@ -1503,6 +1526,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_lazy__frame__exitable__InProcessQuery>()?;
     m.ty::<W_polars_lazy__scan__anonymous_scan__ScanArgsAnonymous>()?;
     m.ty::<W_polars_lazy__scan__csv__LazyCsvReader>()?;
+    m.ty::<W_polars_lazy__scan__ndjson__LazyJsonLineReader>()?;
     m.ty::<W_polars_lazy__scan__parquet__ScanArgsParquet>()?;
     m.ty::<W_polars_ops__frame__join__args__CrossJoinOptions>()?;
     m.ty::<W_polars_ops__frame__join__args__JoinArgs>()?;
@@ -1565,6 +1589,7 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.ty::<W_polars_plan__dsl__options__JoinOptionsIR>()?;
     m.ty::<W_polars_plan__dsl__options__JoinTypeOptionsIR>()?;
     m.ty::<W_polars_plan__dsl__options__LogicalPlanUdfOptions>()?;
+    m.ty::<W_polars_plan__dsl__options__NDJsonReadOptions>()?;
     m.ty::<W_polars_plan__dsl__options__RollingCovOptions>()?;
     m.ty::<W_polars_plan__dsl__options__StrptimeOptions>()?;
     m.ty::<W_polars_plan__dsl__options__UnionArgs>()?;

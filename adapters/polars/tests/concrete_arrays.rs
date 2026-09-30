@@ -437,15 +437,13 @@ fn floats_keep_special_values() {
 
 #[test]
 fn struct_fields_are_owned_arrays() {
-	if !v2() {
-		// no inventory row at 0.55.2: outside the census, not listed
-		assert!(
-			!rnx_polars::generated::catalogue::CATALOGUE
-				.iter()
-				.any(|(p, _)| *p == "polars::arrow::ArrayRef::as_struct_array")
-		);
-		return;
-	}
+	// record 0125: at 0.55.2 too, now that `json` resolves `dtype-struct`
+	// (record 0120 found no StructArray inventory row at 0.55.2)
+	assert!(
+		rnx_polars::generated::catalogue::CATALOGUE
+			.iter()
+			.any(|(p, _)| *p == "polars::arrow::ArrayRef::as_struct_array")
+	);
 	let s = format!(
 		"{}.as_struct_array()?",
 		chunk(

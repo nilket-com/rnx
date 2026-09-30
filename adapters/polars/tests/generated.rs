@@ -16,11 +16,12 @@ fn root() -> PathBuf {
 
 fn inventory() -> PathBuf {
 	// Record 0081: the adapter is documented with the four narrow integer
-	// dtype features; the 0080 `0.55.2-adapter` inventory stays as a baseline.
-	let p = root().join("probes/0072/out/0.55.2-adapter-narrow/result/inventory.json");
+	// dtype features. Record 0125: and with `json` (`adapter-json`); the
+	// `0.55.2-adapter` and `0.55.2-adapter-narrow` inventories stay as baselines.
+	let p = root().join("probes/0072/out/0.55.2-adapter-json/result/inventory.json");
 	assert!(
 		p.exists(),
-		"missing {}: run probes/0072/inventory/doc.sh 0.55.2 adapter-narrow and extract it first",
+		"missing {}: run probes/0072/inventory/doc.sh 0.55.2 adapter-json and extract it first",
 		p.display()
 	);
 	p
@@ -76,13 +77,22 @@ fn a_release_file_for_another_inventory_is_refused() {
 	}
 }
 
-/// Record 0081: the shipped release policy names the `adapter-narrow`
-/// configuration and its dtype features; the previous adapter inventory,
-/// documented without them, is refused so a feature change cannot be
-/// reported against the denominator that predates it.
+/// Record 0081: the shipped release policy names its configuration and
+/// features; a previous adapter inventory, documented without them, is
+/// refused so a feature change cannot be reported against the denominator
+/// that predates it. Record 0125: the policy names `adapter-json`, and both
+/// earlier configurations (`adapter`, `adapter-narrow`) are refused.
 #[test]
 fn the_previous_feature_configuration_is_refused() {
-	let old = root().join("probes/0072/out/0.55.2-adapter/result/inventory.json");
+	for cfg in ["adapter", "adapter-narrow"] {
+		previous_configuration_is_refused(cfg);
+	}
+}
+
+fn previous_configuration_is_refused(cfg: &str) {
+	let old = root().join(format!(
+		"probes/0072/out/0.55.2-{cfg}/result/inventory.json"
+	));
 	assert!(old.exists(), "missing baseline {}", old.display());
 	let out = Command::new("cargo")
 		.args(["run", "-q", "--locked", "--manifest-path"])
@@ -99,10 +109,10 @@ fn the_previous_feature_configuration_is_refused() {
 	let stderr = String::from_utf8_lossy(&out.stderr);
 	assert!(
 		!out.status.success(),
-		"the 0.55.2-adapter inventory must be refused by the adapter-narrow policy"
+		"the 0.55.2-{cfg} inventory must be refused by the adapter-json policy"
 	);
 	assert!(
-		stderr.contains("refusing to generate") && stderr.contains("adapter-narrow"),
+		stderr.contains("refusing to generate") && stderr.contains("adapter-json"),
 		"refusal must name the configuration mismatch, got: {stderr}"
 	);
 }
@@ -114,7 +124,7 @@ fn the_previous_feature_configuration_is_refused() {
 fn a_wrong_feature_set_under_the_right_configuration_is_refused() {
 	let text = std::fs::read_to_string(inventory()).unwrap();
 	let mut inv: serde_json::Value = serde_json::from_str(&text).unwrap();
-	assert_eq!(inv["provenance"]["cfg"], "adapter-narrow");
+	assert_eq!(inv["provenance"]["cfg"], "adapter-json");
 	let pinned: Vec<String> = inv["provenance"]["features"]
 		.as_array()
 		.unwrap()
@@ -122,7 +132,9 @@ fn a_wrong_feature_set_under_the_right_configuration_is_refused() {
 		.map(|f| f.as_str().unwrap().to_string())
 		.collect();
 	assert!(
-		pinned.contains(&"lazy".to_string()) && pinned.contains(&"dtype-i8".to_string()),
+		pinned.contains(&"lazy".to_string())
+			&& pinned.contains(&"dtype-i8".to_string())
+			&& pinned.contains(&"json".to_string()),
 		"{pinned:?}"
 	);
 	let dir = root().join("target/0073/wrong-features");
@@ -160,7 +172,7 @@ fn a_wrong_feature_set_under_the_right_configuration_is_refused() {
 		let stderr = String::from_utf8_lossy(&out.stderr);
 		assert!(
 			!out.status.success(),
-			"{name}: a wrong feature set under cfg adapter-narrow must be refused"
+			"{name}: a wrong feature set under cfg adapter-json must be refused"
 		);
 		assert!(
 			stderr.contains("refusing to generate") && stderr.contains("feature set"),

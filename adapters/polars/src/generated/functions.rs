@@ -433,6 +433,29 @@ fn f_4717d16d_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_a
 #[rune::function(instance, path = values)]
 fn f_acf9d832_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> Result<Vec<i64>, Error> { let __r = <polars_arrow::array::PrimitiveArray<u8>>::values(&this.0); Ok({ let __r = (__r).clone(); support::copy_slice(&__r[..], "values", |__r| Ok::<_, Error>((__r as i64)))? }) }
 /// Boxes this array into a [`Box<dyn Array>`].
+/// Polars: `polars_arrow::array::struct_::StructArray::boxed`. boxed() -> ArrayRef
+#[rune::function(instance, path = boxed)]
+fn f_4ce23c6c__boxed_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> ArrayRef { let __r = <polars_arrow::array::StructArray>::boxed(this.0.clone()); ArrayRef(__r) }
+/// Returns the fields of this [`StructArray`].
+/// Polars: `polars_arrow::array::struct_::StructArray::fields`. fields() -> vector of Field (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = fields)]
+fn f_d4e073a3_fields_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> Result<Vec<W_polars_arrow__datatypes__field__Field>, Error> { let __r = <polars_arrow::array::StructArray>::fields(&this.0); Ok(support::copy_slice(__r, "fields", |__r| Ok::<_, Error>(W_polars_arrow__datatypes__field__Field(__r)))?) }
+/// Polars: `polars_arrow::array::struct_::StructArray::len`. len() -> int (checked into range) (fallible)
+#[rune::function(instance, path = len)]
+fn f_89e3b9ed_y__len_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> Result<i64, Error> { let __r = <polars_arrow::array::StructArray>::len(&this.0); Ok(support::widen::<usize>(__r, "len")?) }
+/// Returns this array sliced. # Implementation This function is `O(1)`. # Panics iff `offset + length > self.len()`.
+/// Polars: `polars_arrow::array::struct_::StructArray::sliced`. sliced(offset: int, length: int) -> StructArray (fallible)
+#[rune::function(instance, path = sliced)]
+fn f_f4bf2183_sliced_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray, offset: i64, length: i64) -> Result<W_polars_arrow__array__struct___StructArray, Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; let __guard_length = support::narrow::<usize>(length, "length")?; if __guard_offset.checked_add(__guard_length).is_none_or(|e| e > this.0.len()) { return Err(Error("OutOfBounds".into(), format!("polars::arrow::StructArray::sliced: offset {} + length {} is past length {}", __guard_offset, __guard_length, this.0.len()))); } let __r = <polars_arrow::array::StructArray>::sliced(this.0.clone(), __guard_offset, __guard_length); Ok(W_polars_arrow__array__struct___StructArray(__r)) }
+/// The optional validity.
+/// Polars: `polars_arrow::array::struct_::StructArray::validity`. validity() -> option of vector of bool (validity bits copied from a bitmap, at most 1048576 bits per call) (fallible)
+#[rune::function(instance, path = validity)]
+fn f_c554a9ed_lidity_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> Result<Option<Vec<bool>>, Error> { let __r = <polars_arrow::array::StructArray>::validity(&this.0); Ok(match __r { Some(__r) => Some({ let __r = (__r).clone(); support::copy_bits(&__r, "validity")? }), None => None }) }
+/// Returns the values of this [`StructArray`].
+/// Polars: `polars_arrow::array::struct_::StructArray::values`. values() -> vector of ArrayRef (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(instance, path = values)]
+fn f_679de225_values_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> Result<Vec<ArrayRef>, Error> { let __r = <polars_arrow::array::StructArray>::values(&this.0); Ok(support::copy_slice(__r, "values", |__r| Ok::<_, Error>(ArrayRef(__r)))?) }
+/// Boxes this array into a [`Box<dyn Array>`].
 /// Polars: `polars_arrow::array::utf8::Utf8Array::boxed`. boxed() -> ArrayRef
 #[rune::function(instance, path = boxed)]
 fn f_b0cce9e5__boxed_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> ArrayRef { let __r = <polars_arrow::array::Utf8Array<i64>>::boxed(this.0.clone()); ArrayRef(__r) }
@@ -7801,9 +7824,9 @@ fn f_b96ad877__lazyframe__rename_polars_lazy__frame__lazyframe(this: &LazyFrame,
 #[rune::function(instance, path = reverse)]
 fn f_14fb4665_lazyframe__reverse_polars_lazy__frame__lazyframe(this: &LazyFrame) -> LazyFrame { let __arg0 = this.0.clone(); let __r = crate::engine::infallible(crate::engine::run("polars::LazyFrame::reverse", move || <polars_lazy::frame::LazyFrame>::reverse(__arg0)), "polars::LazyFrame::reverse"); LazyFrame(__r) }
 /// Create a LazyFrame directly from a parquet scan.
-/// Polars: `polars_lazy::frame::LazyFrame::scan_parquet`. scan_parquet(path: PlRefPath, args: ScanArgsParquet) -> result of LazyFrame (fallible)
+/// Polars: `polars_lazy::frame::LazyFrame::scan_parquet`. scan_parquet(path: String or PlRefPath (a local path), args: ScanArgsParquet) -> result of LazyFrame (fallible)
 #[rune::function(free, path = LazyFrame::scan_parquet)]
-fn f_a59ee825_rame__scan_parquet_polars_lazy__frame__lazyframe(path: &W_polars_utils__pl_path__PlRefPath, args: &W_polars_lazy__scan__parquet__ScanArgsParquet) -> Result<LazyFrame, Error> { let __arg0 = path.0.clone(); let __arg1 = args.0.clone(); let __r = crate::engine::run("polars::LazyFrame::scan_parquet", move || <polars_lazy::frame::LazyFrame>::scan_parquet(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; LazyFrame(__r) }) }
+fn f_a59ee825_rame__scan_parquet_polars_lazy__frame__lazyframe(path: rune::Value, args: &W_polars_lazy__scan__parquet__ScanArgsParquet) -> rune::runtime::VmResult<Result<LazyFrame, Error>> { let __path_path = match path.borrow_ref::<W_polars_utils__pl_path__PlRefPath>() { Ok(w) => support::local_path_checked(w.0.clone()), Err(_) => match path.borrow_string_ref() { Ok(s) => support::local_path(&s), Err(_) => Err(format!("must be String or PlRefPath, found {}", path.type_info())) } }; let __path_path = match __path_path { Ok(p) => p, Err(why) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!("LazyFrame::scan_parquet: `path` {why}"))) }; rune::runtime::VmResult::Ok((|| -> Result<LazyFrame, Error> { let __arg0 = __path_path; let __arg1 = args.0.clone(); let __r = crate::engine::run("polars::LazyFrame::scan_parquet", move || <polars_lazy::frame::LazyFrame>::scan_parquet(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; LazyFrame(__r) }) })()) }
 /// Create a LazyFrame directly from a parquet scan.
 /// Polars: `polars_lazy::frame::LazyFrame::scan_parquet_sources`. scan_parquet_sources(sources: ScanSources, args: ScanArgsParquet) -> result of LazyFrame (fallible)
 #[rune::function(free, path = LazyFrame::scan_parquet_sources)]
@@ -7863,6 +7886,10 @@ fn f_eba2f7f3_ame__unique_stable_polars_lazy__frame__lazyframe(this: &LazyFrame,
 /// Polars: `polars_lazy::frame::LazyFrame::unique_stable_generic`. unique_stable_generic(subset: option of vector of Expr, keep_strategy: UniqueKeepStrategy) -> LazyFrame (fallible)
 #[rune::function(instance, path = unique_stable_generic)]
 fn f_12f0cd87_que_stable_generic_polars_lazy__frame__lazyframe(this: &LazyFrame, subset: Option<rune::Value>, keep_strategy: &W_polars_core__frame__UniqueKeepStrategy) -> Result<LazyFrame, Error> { let __arg0 = this.0.clone(); let __arg1 = match subset { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<Expr>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __arg2 = keep_strategy.0.clone(); let __r = crate::engine::run("polars::LazyFrame::unique_stable_generic", move || <polars_lazy::frame::LazyFrame>::unique_stable_generic(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok(LazyFrame(__r)) }
+/// Unnest the given `Struct` columns: the fields of the `Struct` type will be inserted as columns.
+/// Polars: `polars_lazy::frame::LazyFrame::unnest`. unnest(cols: Selector, separator: option of string) -> LazyFrame
+#[rune::function(instance, path = unnest)]
+fn f_12ba9f45__lazyframe__unnest_polars_lazy__frame__lazyframe(this: &LazyFrame, cols: &W_polars_plan__dsl__selector__Selector, separator: Option<String>) -> LazyFrame { let __arg0 = this.0.clone(); let __arg1 = cols.0.clone(); let __arg2 = match separator { Some(v) => Some(p::PlSmallStr::from(v.as_str())), None => None }; let __r = crate::engine::infallible(crate::engine::run("polars::LazyFrame::unnest", move || <polars_lazy::frame::LazyFrame>::unnest(__arg0, __arg1, __arg2)), "polars::LazyFrame::unnest"); LazyFrame(__r) }
 /// Aggregate all the columns as their variance values.
 /// Polars: `polars_lazy::frame::LazyFrame::var`. var(ddof: int) -> LazyFrame (fallible)
 #[rune::function(instance, path = var)]
@@ -7964,9 +7991,9 @@ fn f_29d029ef_ing_polars_lazy__frame__exitable__inprocessquery(this: &W_polars_l
 /// Polars: `polars_lazy::scan::csv::LazyCsvReader::map_parse_options`. map_parse_options(map_func: callback) -> LazyCsvReader (fallible)
 #[rune::function(instance, path = map_parse_options)]
 fn f_5e20b28a_se_options_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader, map_func: rune::runtime::Function) -> Result<W_polars_lazy__scan__csv__LazyCsvReader, Error> { let __cb_map_func = support::callback::install("LazyCsvReader::map_parse_options", map_func)?; let __arg0 = this.0.clone(); let __arg1 = move |__cb_a0: polars_io::csv::read::CsvParseOptions| { support::callback::bridge::<_, W_polars_io__csv__read__options__CsvParseOptions>("LazyCsvReader::map_parse_options", &__cb_map_func, ({ let __r = __cb_a0; W_polars_io__csv__read__options__CsvParseOptions(__r) },)).and_then(|__cb_result| support::callback::convert("LazyCsvReader::map_parse_options", || Ok::<_, Error>(__cb_result.0.clone()))).unwrap_or_else(support::callback::unwind) }; let __r = crate::engine::run("polars::LazyCsvReader::map_parse_options", move || <polars_lazy::frame::LazyCsvReader>::map_parse_options(__arg0, __arg1)).map_err(Error::engine)?; Ok(W_polars_lazy__scan__csv__LazyCsvReader(__r)) }
-/// Polars: `polars_lazy::scan::csv::LazyCsvReader::new`. new(path: PlRefPath) -> LazyCsvReader
+/// Polars: `polars_lazy::scan::csv::LazyCsvReader::new`. new(path: String or PlRefPath (a local path)) -> LazyCsvReader
 #[rune::function(free, path = W_polars_lazy__scan__csv__LazyCsvReader::new)]
-fn f_c29d46ce_eader__new_polars_lazy__scan__csv__lazycsvreader(path: &W_polars_utils__pl_path__PlRefPath) -> W_polars_lazy__scan__csv__LazyCsvReader { let __r = <polars_lazy::frame::LazyCsvReader>::new(path.0.clone()); W_polars_lazy__scan__csv__LazyCsvReader(__r) }
+fn f_c29d46ce_eader__new_polars_lazy__scan__csv__lazycsvreader(path: rune::Value) -> rune::runtime::VmResult<W_polars_lazy__scan__csv__LazyCsvReader> { let __path_path = match path.borrow_ref::<W_polars_utils__pl_path__PlRefPath>() { Ok(w) => support::local_path_checked(w.0.clone()), Err(_) => match path.borrow_string_ref() { Ok(s) => support::local_path(&s), Err(_) => Err(format!("must be String or PlRefPath, found {}", path.type_info())) } }; let __path_path = match __path_path { Ok(p) => p, Err(why) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!("LazyCsvReader::new: `path` {why}"))) }; rune::runtime::VmResult::Ok((|| -> W_polars_lazy__scan__csv__LazyCsvReader { let __r = <polars_lazy::frame::LazyCsvReader>::new(__path_path); W_polars_lazy__scan__csv__LazyCsvReader(__r) })()) }
 /// Polars: `polars_lazy::scan::csv::LazyCsvReader::new_with_sources`. new_with_sources(sources: ScanSources) -> LazyCsvReader
 #[rune::function(free, path = W_polars_lazy__scan__csv__LazyCsvReader::new_with_sources)]
 fn f_d2884174_th_sources_polars_lazy__scan__csv__lazycsvreader(sources: &W_polars_plan__dsl__scan_sources__ScanSources) -> W_polars_lazy__scan__csv__LazyCsvReader { let __r = <polars_lazy::frame::LazyCsvReader>::new_with_sources(sources.0.clone()); W_polars_lazy__scan__csv__LazyCsvReader(__r) }
@@ -8082,6 +8109,42 @@ fn f_b4044a48_ter_header_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_l
 /// Polars: `polars_lazy::scan::csv::LazyCsvReader::with_truncate_ragged_lines`. with_truncate_ragged_lines(truncate_ragged_lines: bool) -> LazyCsvReader
 #[rune::function(instance, path = with_truncate_ragged_lines)]
 fn f_2a2f44b7_gged_lines_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader, truncate_ragged_lines: bool) -> W_polars_lazy__scan__csv__LazyCsvReader { let __r = <polars_lazy::frame::LazyCsvReader>::with_truncate_ragged_lines(this.0.clone(), truncate_ragged_lines); W_polars_lazy__scan__csv__LazyCsvReader(__r) }
+/// Reduce memory usage at the expense of performance
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::low_memory`. low_memory(toggle: bool) -> LazyJsonLineReader
+#[rune::function(instance, path = low_memory)]
+fn f_e56561ae_ry_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, toggle: bool) -> W_polars_lazy__scan__ndjson__LazyJsonLineReader { let __r = <polars_lazy::frame::LazyJsonLineReader>::low_memory(this.0.clone(), toggle); W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r) }
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::new`. new(path: String or PlRefPath (a local path)) -> LazyJsonLineReader
+#[rune::function(free, path = W_polars_lazy__scan__ndjson__LazyJsonLineReader::new)]
+fn f_37fcf162_ew_polars_lazy__scan__ndjson__lazyjsonlinereader(path: rune::Value) -> rune::runtime::VmResult<W_polars_lazy__scan__ndjson__LazyJsonLineReader> { let __path_path = match path.borrow_ref::<W_polars_utils__pl_path__PlRefPath>() { Ok(w) => support::local_path_checked(w.0.clone()), Err(_) => match path.borrow_string_ref() { Ok(s) => support::local_path(&s), Err(_) => Err(format!("must be String or PlRefPath, found {}", path.type_info())) } }; let __path_path = match __path_path { Ok(p) => p, Err(why) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!("LazyJsonLineReader::new: `path` {why}"))) }; rune::runtime::VmResult::Ok((|| -> W_polars_lazy__scan__ndjson__LazyJsonLineReader { let __r = <polars_lazy::frame::LazyJsonLineReader>::new(__path_path); W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r) })()) }
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::new_with_sources`. new_with_sources(sources: ScanSources) -> LazyJsonLineReader
+#[rune::function(free, path = W_polars_lazy__scan__ndjson__LazyJsonLineReader::new_with_sources)]
+fn f_5823a583_es_polars_lazy__scan__ndjson__lazyjsonlinereader(sources: &W_polars_plan__dsl__scan_sources__ScanSources) -> W_polars_lazy__scan__ndjson__LazyJsonLineReader { let __r = <polars_lazy::frame::LazyJsonLineReader>::new_with_sources(sources.0.clone()); W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r) }
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::with_cloud_options`. with_cloud_options(cloud_options: option of CloudOptions) -> LazyJsonLineReader (fallible)
+#[rune::function(instance, path = with_cloud_options)]
+fn f_f0b0f755_ns_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, cloud_options: Option<rune::Value>) -> Result<W_polars_lazy__scan__ndjson__LazyJsonLineReader, Error> { let __r = <polars_lazy::frame::LazyJsonLineReader>::with_cloud_options(this.0.clone(), match cloud_options { Some(v) => Some(support::take::<W_polars_io__cloud__options__CloudOptions>(&v, "v")?.0), None => None }); Ok(W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r)) }
+/// Set values as `Null` if parsing fails because of schema mismatches.
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::with_ignore_errors`. with_ignore_errors(ignore_errors: bool) -> LazyJsonLineReader
+#[rune::function(instance, path = with_ignore_errors)]
+fn f_58bb1b34_rs_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, ignore_errors: bool) -> W_polars_lazy__scan__ndjson__LazyJsonLineReader { let __r = <polars_lazy::frame::LazyJsonLineReader>::with_ignore_errors(this.0.clone(), ignore_errors); W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r) }
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::with_include_file_paths`. with_include_file_paths(include_file_paths: option of string) -> LazyJsonLineReader
+#[rune::function(instance, path = with_include_file_paths)]
+fn f_f96cd98c_hs_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, include_file_paths: Option<String>) -> W_polars_lazy__scan__ndjson__LazyJsonLineReader { let __r = <polars_lazy::frame::LazyJsonLineReader>::with_include_file_paths(this.0.clone(), match include_file_paths { Some(v) => Some(p::PlSmallStr::from(v.as_str())), None => None }); W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r) }
+/// Try to stop parsing when `n` rows are parsed. During multithreaded parsing the upper bound `n` cannot be guaranteed.
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::with_n_rows`. with_n_rows(num_rows: option of int) -> LazyJsonLineReader (fallible)
+#[rune::function(instance, path = with_n_rows)]
+fn f_dea9d108_ws_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, num_rows: Option<i64>) -> Result<W_polars_lazy__scan__ndjson__LazyJsonLineReader, Error> { let __r = <polars_lazy::frame::LazyJsonLineReader>::with_n_rows(this.0.clone(), match num_rows { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }); Ok(W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r)) }
+/// Add a row index column.
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::with_row_index`. with_row_index(row_index: option of RowIndex) -> LazyJsonLineReader (fallible)
+#[rune::function(instance, path = with_row_index)]
+fn f_682af1c7_ex_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, row_index: Option<rune::Value>) -> Result<W_polars_lazy__scan__ndjson__LazyJsonLineReader, Error> { let __r = <polars_lazy::frame::LazyJsonLineReader>::with_row_index(this.0.clone(), match row_index { Some(v) => Some(support::take::<W_polars_io__options__RowIndex>(&v, "v")?.0), None => None }); Ok(W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r)) }
+/// Set the JSON file's schema
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::with_schema`. with_schema(schema: option of SchemaRef) -> LazyJsonLineReader (fallible)
+#[rune::function(instance, path = with_schema)]
+fn f_8fc9f4c2_ma_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, schema: Option<rune::Value>) -> Result<W_polars_lazy__scan__ndjson__LazyJsonLineReader, Error> { let __r = <polars_lazy::frame::LazyJsonLineReader>::with_schema(this.0.clone(), match schema { Some(v) => Some(support::take::<W_polars_core__schema__SchemaRef>(&v, "v")?.0), None => None }); Ok(W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r)) }
+/// Set the JSON file's schema
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader::with_schema_overwrite`. with_schema_overwrite(schema_overwrite: option of SchemaRef) -> LazyJsonLineReader (fallible)
+#[rune::function(instance, path = with_schema_overwrite)]
+fn f_1d9563e1_te_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, schema_overwrite: Option<rune::Value>) -> Result<W_polars_lazy__scan__ndjson__LazyJsonLineReader, Error> { let __r = <polars_lazy::frame::LazyJsonLineReader>::with_schema_overwrite(this.0.clone(), match schema_overwrite { Some(v) => Some(support::take::<W_polars_core__schema__SchemaRef>(&v, "v")?.0), None => None }); Ok(W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r)) }
 /// Polars: `polars_ops::frame::join::args::JoinArgs::new`. new(how: JoinType) -> JoinArgs
 #[rune::function(free, path = W_polars_ops__frame__join__args__JoinArgs::new)]
 fn f_5654d29a_rgs__new_polars_ops__frame__join__args__joinargs(how: &W_polars_ops__frame__join__args__JoinType) -> W_polars_ops__frame__join__args__JoinArgs { let __r = <polars_ops::frame::join::JoinArgs>::new(how.0.clone()); W_polars_ops__frame__join__args__JoinArgs(__r) }
@@ -9198,6 +9261,9 @@ fn f_502b5dcd__name_polars_plan__dsl__struct___structnamespace(this: W_polars_pl
 /// Polars: `polars_plan::dsl::struct_::StructNameSpace::field_by_names`. field_by_names(names: vector of string) -> Expr (fallible)
 #[rune::function(instance, path = field_by_names)]
 fn f_133cd030_names_polars_plan__dsl__struct___structnamespace(this: W_polars_plan__dsl__struct___StructNameSpace, names: rune::Value) -> Result<Expr, Error> { let __r = <polars_plan::dsl::StructNameSpace>::field_by_names(this.0, support::borrow_vec(&names, "names")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "names")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?); Ok(Expr(__r)) }
+/// Polars: `polars_plan::dsl::struct_::StructNameSpace::json_encode`. json_encode() -> Expr
+#[rune::function(instance, path = json_encode)]
+fn f_ef5b5e7b_ncode_polars_plan__dsl__struct___structnamespace(this: W_polars_plan__dsl__struct___StructNameSpace) -> Expr { let __r = <polars_plan::dsl::StructNameSpace>::json_encode(this.0); Expr(__r) }
 /// Rename the fields of the [`StructChunked`].
 /// Polars: `polars_plan::dsl::struct_::StructNameSpace::rename_fields`. rename_fields(names: vector of string) -> Expr (fallible)
 #[rune::function(instance, path = rename_fields)]
@@ -9656,6 +9722,29 @@ fn g_94b883eb__csv__read__schema_inference__infer_field_schema(string: &str, try
 /// Polars: `polars_io::file_cache::cache::get_env_file_cache_ttl`. get_env_file_cache_ttl() -> int (checked into range) (fallible)
 #[rune::function(path = get_env_file_cache_ttl)]
 fn g_9e6c78d8_rs_io__file_cache__cache__get_env_file_cache_ttl() -> Result<i64, Error> { let __r = polars::io::file_cache::get_env_file_cache_ttl(); Ok(support::widen::<u64>(__r, "get_env_file_cache_ttl")?) }
+/// Polars: `polars_io::json::remove_bom`. remove_bom(bytes: vector of int) -> result of vector of int (copied from a borrowed slice, at most 1048576 elements) (fallible)
+#[rune::function(path = remove_bom)]
+fn g_ec3dae24_polars_io__json__remove_bom(bytes: rune::Value) -> Result<Vec<i64>, Error> { let __t0 = support::borrow_vec(&bytes, "bytes")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "bytes")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = polars_io::json::remove_bom(&__t0[..]); Ok({ let __r = __r.map_err(Error::from)?; support::copy_slice(__r, "remove_bom", |__r| Ok::<_, Error>((__r as i64)))? }) }
+/// Total len divided by max len of first and last non-empty lines. This is intended to be cheaper than `estimate_n_lines_in_file`.
+/// Polars: `polars_io::ndjson::core::estimate_n_lines_in_chunk`. estimate_n_lines_in_chunk(chunk: vector of int) -> int (checked into range) (fallible)
+#[rune::function(path = estimate_n_lines_in_chunk)]
+fn g_a2a87f6c_lars_io__ndjson__core__estimate_n_lines_in_chunk(chunk: rune::Value) -> Result<i64, Error> { let __t0 = support::borrow_vec(&chunk, "chunk")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "chunk")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = polars_io::ndjson::core::estimate_n_lines_in_chunk(&__t0[..]); Ok(support::widen::<usize>(__r, "estimate_n_lines_in_chunk")?) }
+/// Polars: `polars_io::ndjson::core::estimate_n_lines_in_file`. estimate_n_lines_in_file(file_bytes: vector of int, sample_size: int) -> int (checked into range) (fallible)
+#[rune::function(path = estimate_n_lines_in_file)]
+fn g_ec9c78ba_olars_io__ndjson__core__estimate_n_lines_in_file(file_bytes: rune::Value, sample_size: i64) -> Result<i64, Error> { let __t0 = support::borrow_vec(&file_bytes, "file_bytes")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "file_bytes")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = polars_io::ndjson::core::estimate_n_lines_in_file(&__t0[..], support::narrow::<usize>(sample_size, "sample_size")?); Ok(support::widen::<usize>(__r, "estimate_n_lines_in_file")?) }
+/// Polars: `polars_io::ndjson::core::is_json_line`. is_json_line(bytes: vector of int) -> bool (fallible)
+#[rune::function(path = is_json_line)]
+fn g_816df8a6_polars_io__ndjson__core__is_json_line(bytes: rune::Value) -> Result<bool, Error> { let __t0 = support::borrow_vec(&bytes, "bytes")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "bytes")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = polars_io::ndjson::core::is_json_line(&__t0[..]); Ok(__r) }
+/// Polars: `polars_io::ndjson::core::json_lines`. json_lines(bytes: vector of int) -> vector of vector of int (copied from a borrowed slice, at most 1048576 elements) (materialized, at most 1048576 items) (fallible)
+#[rune::function(path = json_lines)]
+fn g_023ba3f0_polars_io__ndjson__core__json_lines(bytes: rune::Value) -> Result<Vec<Vec<i64>>, Error> { let __t0 = support::borrow_vec(&bytes, "bytes")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "bytes")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &__t0[..]; let __r = ({ let __slices = support::SliceBudget::enter(); { let __it = polars_io::ndjson::core::json_lines(__arg0); support::materialize_unknown(__it, "json_lines", |__r| Ok::<_, Error>(support::copy_slice(__r, "json_lines", |__r| Ok::<_, Error>((__r as i64)))?)) } })?; Ok(__r) }
+/// Polars: `polars_io::ndjson::core::parse_ndjson`. parse_ndjson(bytes: vector of int, n_rows_hint: option of int, schema: Schema, ignore_errors: bool) -> result of DataFrame (fallible)
+#[rune::function(path = parse_ndjson)]
+fn g_0c5c3548_polars_io__ndjson__core__parse_ndjson(bytes: rune::Value, n_rows_hint: Option<i64>, schema: &W_polars_core__schema__Schema, ignore_errors: bool) -> Result<DataFrame, Error> { let __t0 = support::borrow_vec(&bytes, "bytes")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "bytes")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &__t0[..]; let __arg1 = match n_rows_hint { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }; let __arg2 = &schema.0; let __arg3 = ignore_errors; let __r = crate::engine::run("polars::parse_ndjson", move || polars_io::ndjson::core::parse_ndjson(__arg0, __arg1, __arg2, __arg3)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
+/// Count the number of rows. The slice passed must represent the entire file. This does not check if the lines are valid NDJSON - it assumes that is the case.
+/// Polars: `polars_io::ndjson::count_rows`. count_rows(full_bytes: vector of int) -> int (checked into range) (fallible)
+#[rune::function(path = count_rows)]
+fn g_1c8b0099_polars_io__ndjson__count_rows(full_bytes: rune::Value) -> Result<i64, Error> { let __t0 = support::borrow_vec(&full_bytes, "full_bytes")?.into_iter().map(|v| { let v: i64 = support::borrow_element(&v, "full_bytes")?; Ok::<_, Error>(support::narrow::<u8>(v, "v")?) }).collect::<Result<Vec<_>, Error>>()?; let __r = polars::io::ndjson::count_rows(&__t0[..]); Ok(support::widen::<usize>(__r, "count_rows")?) }
 /// Polars: `polars_io::parquet::read::read_impl::try_set_sorted_flag`. try_set_sorted_flag(series: Series, col_idx: int, sorting_map: vector of tuple of int, IsSorted) -> unit (fallible)
 #[rune::function(path = try_set_sorted_flag)]
 fn g_69b668b8_o__parquet__read__read_impl__try_set_sorted_flag(series: &mut W_polars_core__series__Series, col_idx: i64, sorting_map: rune::Value) -> Result<(), Error> { let __t0 = support::borrow_vec(&sorting_map, "sorting_map")?.into_iter().map(|v| { let v: (i64, rune::Value) = support::borrow_element(&v, "sorting_map")?; Ok::<_, Error>((support::narrow::<usize>(v.0, "v.0")?, support::take::<W_polars_core__series__series_trait__IsSorted>(&v.1, "v.1")?.0)) }).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &mut series.0; let __arg1 = support::narrow::<usize>(col_idx, "col_idx")?; let __arg2 = &__t0[..]; let __r = crate::engine::run("polars::try_set_sorted_flag", move || polars_io::parquet::read::try_set_sorted_flag(__arg0, __arg1, __arg2)).map_err(Error::engine)?; Ok(__r) }
@@ -9669,6 +9758,9 @@ fn g_21295b1a_polars_io__pl_async__get_concurrency_limit() -> i64 { let __r = po
 /// Polars: `polars_io::utils::other::materialize_projection`. materialize_projection(with_columns: option of vector of string, schema: Schema, hive_partitions: option of vector of Series, has_row_index: bool) -> option of vector of int (checked into range) (fallible)
 #[rune::function(path = materialize_projection)]
 fn g_dd07d9d7_polars_io__utils__other__materialize_projection(with_columns: Option<rune::Value>, schema: &W_polars_core__schema__Schema, hive_partitions: Option<rune::Value>, has_row_index: bool) -> Result<Option<Vec<i64>>, Error> { let __t1 = match with_columns { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "v")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __t3 = match hive_partitions { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__series__Series>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?), None => None }; let __arg0 = __t1.as_deref(); let __arg1 = &schema.0; let __arg2 = __t3.as_deref(); let __arg3 = has_row_index; let __r = crate::engine::run("polars::materialize_projection", move || polars_io::prelude::materialize_projection(__arg0, __arg1, __arg2, __arg3)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some({ let mut __v = Vec::new(); for __r in __r { __v.push(support::widen::<usize>(__r, "materialize_projection")?); } __v }), None => None }) }
+/// Polars: `polars_io::utils::other::overwrite_schema`. overwrite_schema(schema: Schema, overwriting_schema: Schema) -> result of unit (fallible)
+#[rune::function(path = overwrite_schema)]
+fn g_6aab2d5f_polars_io__utils__other__overwrite_schema(schema: &mut W_polars_core__schema__Schema, overwriting_schema: &W_polars_core__schema__Schema) -> Result<(), Error> { let __r = polars_io::prelude::overwrite_schema(&mut schema.0, &overwriting_schema.0); Ok({ let __r = __r.map_err(Error::from)?; __r }) }
 /// Concat multiple [`LazyFrame`]s vertically.
 /// Polars: `polars_lazy::dsl::functions::concat`. concat(inputs: vector of LazyFrame, args: UnionArgs) -> result of LazyFrame (fallible)
 #[rune::function(path = concat)]
@@ -10032,6 +10124,15 @@ fn g_3a721c91_polars_plan__dsl__udf__infer_udf_output_dtype(f: rune::runtime::Fu
 /// Polars: `polars_plan::dsl::udf::try_infer_udf_output_dtype`. try_infer_udf_output_dtype(f: callback, input_fields: vector of Field) -> result of DataType (fallible)
 #[rune::function(path = try_infer_udf_output_dtype)]
 fn g_ec8f1f18_olars_plan__dsl__udf__try_infer_udf_output_dtype(f: rune::runtime::Function, input_fields: rune::Value) -> Result<W_polars_core__datatypes__dtype__DataType, Error> { let __cb_f = support::callback::install("try_infer_udf_output_dtype", f)?; let __cb_callable_f = move |__cb_a0: &[polars::frame::column::Column]| { support::callback::bridge::<_, W_polars_core__frame__column__Column>("try_infer_udf_output_dtype", &__cb_f, (__cb_a0.iter().map(|__r| { let __r = __r.clone(); W_polars_core__frame__column__Column(__r) }).collect::<Vec<_>>(),)).and_then(|__cb_result| support::callback::convert("try_infer_udf_output_dtype", || Ok::<_, Error>(__cb_result.0.clone()))).map_err(support::callback::compute_error) }; let __t0 = support::borrow_vec(&input_fields, "input_fields")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_core__datatypes__field__Field>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __arg0 = &__cb_callable_f; let __arg1 = &__t0[..]; let __r = crate::engine::run("polars::try_infer_udf_output_dtype", move || polars_plan::dsl::udf::try_infer_udf_output_dtype(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__dtype__DataType(__r) }) }
+/// Polars: `polars_arrow::array::struct_::StructArray as core::clone::Clone`.
+#[rune::function(instance, protocol = CLONE)]
+fn p_2ce5c035_rray__struct___structarray_as_core__clone__clone(this: &W_polars_arrow__array__struct___StructArray) -> W_polars_arrow__array__struct___StructArray { W_polars_arrow__array__struct___StructArray(this.0.clone()) }
+/// Polars: `polars_arrow::array::struct_::StructArray as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_ab35f386_ay__struct___structarray_as_core__cmp__partialeq(this: &W_polars_arrow__array__struct___StructArray, other: &W_polars_arrow__array__struct___StructArray) -> bool { this.0 == other.0 }
+/// Polars: `polars_arrow::array::struct_::StructArray as core::fmt::Debug`.
+#[rune::function(instance, protocol = DEBUG_FMT)]
+fn p_236bdeb4__array__struct___structarray_as_core__fmt__debug(this: &W_polars_arrow__array__struct___StructArray, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
 /// Polars: `polars_arrow::datatypes::ArrowDataType as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_4995d78c___datatypes__arrowdatatype_as_core__clone__clone(this: &W_polars_arrow__datatypes__ArrowDataType) -> W_polars_arrow__datatypes__ArrowDataType { W_polars_arrow__datatypes__ArrowDataType(this.0.clone()) }
@@ -11562,6 +11663,30 @@ fn p_9e1771e8__io__metrics__optiometrics_as_core__clone__clone(this: &W_polars_i
 /// Polars: `polars_io::metrics::OptIOMetrics as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_a18ed1d3_rs_io__metrics__optiometrics_as_core__fmt__debug(this: &W_polars_io__metrics__OptIOMetrics, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::ndjson::NDJsonWriterOptions as core::clone::Clone`.
+#[rune::function(instance, protocol = CLONE)]
+fn p_ad9d5701_djson__ndjsonwriteroptions_as_core__clone__clone(this: &W_polars_io__ndjson__NDJsonWriterOptions) -> W_polars_io__ndjson__NDJsonWriterOptions { W_polars_io__ndjson__NDJsonWriterOptions(this.0.clone()) }
+/// Polars: `polars_io::ndjson::NDJsonWriterOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_546af31e_io__ndjson__ndjsonwriteroptions_as_core__cmp__eq(this: &W_polars_io__ndjson__NDJsonWriterOptions, other: &W_polars_io__ndjson__NDJsonWriterOptions) -> bool { this.0 == other.0 }
+/// Polars: `polars_io::ndjson::NDJsonWriterOptions as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_2dc810aa_son__ndjsonwriteroptions_as_core__cmp__partialeq(this: &W_polars_io__ndjson__NDJsonWriterOptions, other: &W_polars_io__ndjson__NDJsonWriterOptions) -> bool { this.0 == other.0 }
+/// Polars: `polars_io::ndjson::NDJsonWriterOptions as core::default::Default`.
+#[rune::function(free, path = W_polars_io__ndjson__NDJsonWriterOptions::default_)]
+fn p_e0ff6aa1_n__ndjsonwriteroptions_as_core__default__default() -> W_polars_io__ndjson__NDJsonWriterOptions { W_polars_io__ndjson__NDJsonWriterOptions(<polars::io::ndjson::NDJsonWriterOptions>::default()) }
+/// Polars: `polars_io::ndjson::NDJsonWriterOptions as core::fmt::Debug`.
+#[rune::function(instance, protocol = DEBUG_FMT)]
+fn p_3096e399__ndjson__ndjsonwriteroptions_as_core__fmt__debug(this: &W_polars_io__ndjson__NDJsonWriterOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_io::ndjson::NDJsonWriterOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_5f707a28__ndjson__ndjsonwriteroptions_as_core__hash__hash(this: &W_polars_io__ndjson__NDJsonWriterOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
+/// Polars: `polars_io::ndjson::NDJsonWriterOptions as serde_core::de::Deserialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(free, path = W_polars_io__ndjson__NDJsonWriterOptions::from_json)]
+fn s_ec10df94_jsonwriteroptions_as_serde_core__de__deserialize(s: &str) -> Result<W_polars_io__ndjson__NDJsonWriterOptions, Error> { support::json_len_ok(s, "NDJsonWriterOptions::from_json")?; let __v = crate::engine::run("NDJsonWriterOptions::from_json", || support::from_json::<polars::io::ndjson::NDJsonWriterOptions>(s, "NDJsonWriterOptions::from_json")).map_err(Error::engine)??; Ok(W_polars_io__ndjson__NDJsonWriterOptions(__v)) }
+/// Polars: `polars_io::ndjson::NDJsonWriterOptions as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
+#[rune::function(instance, path = to_json)]
+fn s_6daef8bf_djsonwriteroptions_as_serde_core__ser__serialize(this: &W_polars_io__ndjson__NDJsonWriterOptions) -> Result<String, Error> { crate::engine::run("NDJsonWriterOptions::to_json", || support::to_json(&this.0, "NDJsonWriterOptions::to_json")).map_err(Error::engine)? }
 /// Polars: `polars_io::options::ExternalCompression as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_a06ea4a9_tions__externalcompression_as_core__clone__clone(this: &W_polars_io__options__ExternalCompression) -> W_polars_io__options__ExternalCompression { W_polars_io__options__ExternalCompression(this.0.clone()) }
@@ -11781,6 +11906,9 @@ fn p_d5504479_can__scanargsanonymous_as_core__default__default() -> W_polars_laz
 /// Polars: `polars_lazy::scan::csv::LazyCsvReader as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_0bf881c0___scan__csv__lazycsvreader_as_core__clone__clone(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> W_polars_lazy__scan__csv__LazyCsvReader { W_polars_lazy__scan__csv__LazyCsvReader(this.0.clone()) }
+/// Polars: `polars_lazy::scan::ndjson::LazyJsonLineReader as core::clone::Clone`.
+#[rune::function(instance, protocol = CLONE)]
+fn p_7a186e09_ndjson__lazyjsonlinereader_as_core__clone__clone(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader) -> W_polars_lazy__scan__ndjson__LazyJsonLineReader { W_polars_lazy__scan__ndjson__LazyJsonLineReader(this.0.clone()) }
 /// Polars: `polars_lazy::scan::parquet::ScanArgsParquet as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_28d7051d___parquet__scanargsparquet_as_core__clone__clone(this: &W_polars_lazy__scan__parquet__ScanArgsParquet) -> W_polars_lazy__scan__parquet__ScanArgsParquet { W_polars_lazy__scan__parquet__ScanArgsParquet(this.0.clone()) }
@@ -12245,7 +12373,7 @@ fn p_53601a2c_sl__file_scan__scanflags_as_core__cmp__partialeq(this: &W_polars_p
 fn p_85813242_n__dsl__file_scan__scanflags_as_core__fmt__debug(this: &W_polars_plan__dsl__file_scan__ScanFlags, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<ScanFlags>).
 #[rune::function(free, path = W_polars_plan__dsl__file_scan__ScanFlags::from_iter_self)]
-fn i_047e022d__dsl__file_scan__scanflags_polars_plan_7519_7663(v: rune::Value) -> Result<W_polars_plan__dsl__file_scan__ScanFlags, Error> { support::vec_len_bounded(&v, "ScanFlags::from_iter_self")?; let __v: Vec<polars_plan::dsl::ScanFlags> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_plan__dsl__file_scan__ScanFlags>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_plan__dsl__file_scan__ScanFlags(<polars_plan::dsl::ScanFlags as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+fn i_e609a6a8__dsl__file_scan__scanflags_polars_plan_7602_7746(v: rune::Value) -> Result<W_polars_plan__dsl__file_scan__ScanFlags, Error> { support::vec_len_bounded(&v, "ScanFlags::from_iter_self")?; let __v: Vec<polars_plan::dsl::ScanFlags> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_plan__dsl__file_scan__ScanFlags>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_plan__dsl__file_scan__ScanFlags(<polars_plan::dsl::ScanFlags as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
 /// Polars: `polars_plan::dsl::file_scan::ScanFlags as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_e3a6c61b_l__file_scan__scanflags_as_core__ops__arith__sub(this: &W_polars_plan__dsl__file_scan__ScanFlags, rhs: &W_polars_plan__dsl__file_scan__ScanFlags) -> W_polars_plan__dsl__file_scan__ScanFlags { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__dsl__file_scan__ScanFlags(__r) }
@@ -12660,6 +12788,21 @@ fn p_5d050719_s__logicalplanudfoptions_as_core__cmp__partialeq(this: &W_polars_p
 /// Polars: `polars_plan::dsl::options::LogicalPlanUdfOptions as core::fmt::Debug`.
 #[rune::function(instance, protocol = DEBUG_FMT)]
 fn p_73d61927_tions__logicalplanudfoptions_as_core__fmt__debug(this: &W_polars_plan__dsl__options__LogicalPlanUdfOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::NDJsonReadOptions as core::clone::Clone`.
+#[rune::function(instance, protocol = CLONE)]
+fn p_ef1c5b3c_options__ndjsonreadoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__NDJsonReadOptions) -> W_polars_plan__dsl__options__NDJsonReadOptions { W_polars_plan__dsl__options__NDJsonReadOptions(this.0.clone()) }
+/// Polars: `polars_plan::dsl::options::NDJsonReadOptions as core::cmp::Eq` (record 0111: EQ from the Rust `==`, Eq proven).
+#[rune::function(instance, protocol = EQ)]
+fn p_b13ee05e_dsl__options__ndjsonreadoptions_as_core__cmp__eq(this: &W_polars_plan__dsl__options__NDJsonReadOptions, other: &W_polars_plan__dsl__options__NDJsonReadOptions) -> bool { this.0 == other.0 }
+/// Polars: `polars_plan::dsl::options::NDJsonReadOptions as core::cmp::PartialEq`.
+#[rune::function(instance, protocol = PARTIAL_EQ)]
+fn p_40b9bcb3_tions__ndjsonreadoptions_as_core__cmp__partialeq(this: &W_polars_plan__dsl__options__NDJsonReadOptions, other: &W_polars_plan__dsl__options__NDJsonReadOptions) -> bool { this.0 == other.0 }
+/// Polars: `polars_plan::dsl::options::NDJsonReadOptions as core::fmt::Debug`.
+#[rune::function(instance, protocol = DEBUG_FMT)]
+fn p_50cea160___options__ndjsonreadoptions_as_core__fmt__debug(this: &W_polars_plan__dsl__options__NDJsonReadOptions, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
+/// Polars: `polars_plan::dsl::options::NDJsonReadOptions as core::hash::Hash`.
+#[rune::function(instance, protocol = HASH)]
+fn p_6c4360dc___options__ndjsonreadoptions_as_core__hash__hash(this: &W_polars_plan__dsl__options__NDJsonReadOptions, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::options::RollingCovOptions as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_2826953b_options__rollingcovoptions_as_core__clone__clone(this: &W_polars_plan__dsl__options__RollingCovOptions) -> W_polars_plan__dsl__options__RollingCovOptions { W_polars_plan__dsl__options__RollingCovOptions(this.0.clone()) }
@@ -13088,7 +13231,7 @@ fn p_9d113f22_dsl__selector__timeunitset_as_core__fmt__display(this: &W_polars_p
 fn p_60235dd2___dsl__selector__timeunitset_as_core__hash__hash(this: &W_polars_plan__dsl__selector__TimeUnitSet, hasher: &mut rune::runtime::Hasher) { core::hash::Hash::hash(&this.0, hasher) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<TimeUnitSet>).
 #[rune::function(free, path = W_polars_plan__dsl__selector__TimeUnitSet::from_iter_self)]
-fn i_a370a678_dsl__selector__timeunitset_polars_plan_6453_6626(v: rune::Value) -> Result<W_polars_plan__dsl__selector__TimeUnitSet, Error> { support::vec_len_bounded(&v, "TimeUnitSet::from_iter_self")?; let __v: Vec<polars_plan::dsl::TimeUnitSet> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_plan__dsl__selector__TimeUnitSet>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_plan__dsl__selector__TimeUnitSet(<polars_plan::dsl::TimeUnitSet as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+fn i_399685c6_dsl__selector__timeunitset_polars_plan_6535_6708(v: rune::Value) -> Result<W_polars_plan__dsl__selector__TimeUnitSet, Error> { support::vec_len_bounded(&v, "TimeUnitSet::from_iter_self")?; let __v: Vec<polars_plan::dsl::TimeUnitSet> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_plan__dsl__selector__TimeUnitSet>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_plan__dsl__selector__TimeUnitSet(<polars_plan::dsl::TimeUnitSet as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
 /// Polars: `polars_plan::dsl::selector::TimeUnitSet as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_131cc460___selector__timeunitset_as_core__ops__arith__sub(this: &W_polars_plan__dsl__selector__TimeUnitSet, rhs: &W_polars_plan__dsl__selector__TimeUnitSet) -> W_polars_plan__dsl__selector__TimeUnitSet { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__dsl__selector__TimeUnitSet(__r) }
@@ -13148,7 +13291,7 @@ fn p_daa4d180_e__opt_state__optflags_as_core__default__default() -> W_polars_pla
 fn p_15aad8a9___frame__opt_state__optflags_as_core__fmt__debug(this: &W_polars_plan__frame__opt_state__OptFlags, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
 /// Polars: `polars_plan::frame::opt_state::OptFlags as core::iter::traits::collect::FromIterator` (record 0113: FromIterator<OptFlags>).
 #[rune::function(free, path = W_polars_plan__frame__opt_state__OptFlags::from_iter_self)]
-fn i_77e55b32_frame__opt_state__optflags_polars_plan_7129_8593(v: rune::Value) -> Result<W_polars_plan__frame__opt_state__OptFlags, Error> { support::vec_len_bounded(&v, "OptFlags::from_iter_self")?; let __v: Vec<polars_plan::frame::AllowedOptimizations> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_plan__frame__opt_state__OptFlags>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_plan__frame__opt_state__OptFlags(<polars_plan::frame::AllowedOptimizations as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
+fn i_bceadd79_frame__opt_state__optflags_polars_plan_7212_8680(v: rune::Value) -> Result<W_polars_plan__frame__opt_state__OptFlags, Error> { support::vec_len_bounded(&v, "OptFlags::from_iter_self")?; let __v: Vec<polars_plan::frame::AllowedOptimizations> = support::borrow_vec(&v, "v")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<W_polars_plan__frame__opt_state__OptFlags>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; Ok(W_polars_plan__frame__opt_state__OptFlags(<polars_plan::frame::AllowedOptimizations as core::iter::FromIterator<_>>::from_iter(__v.into_iter()))) }
 /// Polars: `polars_plan::frame::opt_state::OptFlags as core::ops::arith::Sub`.
 #[rune::function(instance, protocol = SUB)]
 fn p_0e7083fb_me__opt_state__optflags_as_core__ops__arith__sub(this: &W_polars_plan__frame__opt_state__OptFlags, rhs: &W_polars_plan__frame__opt_state__OptFlags) -> W_polars_plan__frame__opt_state__OptFlags { let __r = this.0.clone() - rhs.0.clone(); W_polars_plan__frame__opt_state__OptFlags(__r) }
@@ -13201,6 +13344,10 @@ fn f_27f2168e__dtype_polars_arrow__array__list__listarray_i64_(this: &W_polars_a
 /// The [`ArrowDataType`] of the [`Array`]. In combination with [`Array::as_any`], this can be used to downcast trait objects (`dyn Array`) to concrete arrays.
 /// Polars: `polars_arrow::array::Array::dtype`. dtype() -> ArrowDataType
 #[rune::function(instance, path = dtype)]
+fn f_ae9ff28b__dtype_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <polars_arrow::array::StructArray as polars_arrow::array::Array>::dtype(&this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
+/// The [`ArrowDataType`] of the [`Array`]. In combination with [`Array::as_any`], this can be used to downcast trait objects (`dyn Array`) to concrete arrays.
+/// Polars: `polars_arrow::array::Array::dtype`. dtype() -> ArrowDataType
+#[rune::function(instance, path = dtype)]
 fn f_e8b0a6b5_row__array__array__dtype_support__arrayref_deref(this: &ArrayRef) -> W_polars_arrow__datatypes__ArrowDataType { let __r = <dyn polars_arrow::array::Array>::dtype(&*this.0); { let __r = (__r).clone(); W_polars_arrow__datatypes__ArrowDataType(__r) } }
 /// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
 #[rune::function(instance, path = has_nulls)]
@@ -13241,6 +13388,9 @@ fn f_272567da_ls_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_a
 /// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
 #[rune::function(instance, path = has_nulls)]
 fn f_e7c79b5a__nulls_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> bool { let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::has_nulls(&this.0); __r }
+/// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
+#[rune::function(instance, path = has_nulls)]
+fn f_bec65944__nulls_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> bool { let __r = <polars_arrow::array::StructArray as polars_arrow::array::Array>::has_nulls(&this.0); __r }
 /// Polars: `polars_arrow::array::Array::has_nulls`. has_nulls() -> bool
 #[rune::function(instance, path = has_nulls)]
 fn f_abb3a880__array__array__has_nulls_support__arrayref_deref(this: &ArrayRef) -> bool { let __r = <dyn polars_arrow::array::Array>::has_nulls(&*this.0); __r }
@@ -13296,6 +13446,10 @@ fn f_936ab09b_ty_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_a
 /// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
 #[rune::function(instance, path = is_empty)]
 fn f_86b449a9__empty_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_) -> bool { let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::is_empty(&this.0); __r }
+/// whether the array is empty
+/// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
+#[rune::function(instance, path = is_empty)]
+fn f_9d6dde7e__empty_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> bool { let __r = <polars_arrow::array::StructArray as polars_arrow::array::Array>::is_empty(&this.0); __r }
 /// whether the array is empty
 /// Polars: `polars_arrow::array::Array::is_empty`. is_empty() -> bool
 #[rune::function(instance, path = is_empty)]
@@ -13355,6 +13509,10 @@ fn f_19d281fe_s_null_polars_arrow__array__list__listarray_i64_(this: &W_polars_a
 /// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
 /// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
 #[rune::function(instance, path = is_null)]
+fn f_bbab0449_s_null_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::StructArray::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::StructArray as polars_arrow::array::Array>::is_null(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is null. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_null`. is_null(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_null)]
 fn f_62bb8445_w__array__array__is_null_support__arrayref_deref(this: &ArrayRef, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::ArrayRef::is_null: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <dyn polars_arrow::array::Array>::is_null(&*this.0, __guard_i); Ok(__r) }
 /// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
 /// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
@@ -13408,6 +13566,10 @@ fn f_e30de4b8_id_polars_arrow__array__binary__binaryarray_i64_(this: &W_polars_a
 /// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
 #[rune::function(instance, path = is_valid)]
 fn f_6fd9113e__valid_polars_arrow__array__list__listarray_i64_(this: &W_polars_arrow__array__list__ListArray_i64_, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::LargeListArray::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::ListArray<i64> as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
+/// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
+/// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
+#[rune::function(instance, path = is_valid)]
+fn f_04602a59__valid_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray, i: i64) -> Result<bool, Error> { let __guard_i = support::narrow::<usize>(i, "i")?; if __guard_i >= this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::StructArray::is_valid: index {} is out of bounds for length {}", __guard_i, this.0.len()))); } let __r = <polars_arrow::array::StructArray as polars_arrow::array::Array>::is_valid(&this.0, __guard_i); Ok(__r) }
 /// Returns whether slot `i` is valid. # Panic Panics iff `i >= self.len()`.
 /// Polars: `polars_arrow::array::Array::is_valid`. is_valid(i: int) -> bool (fallible)
 #[rune::function(instance, path = is_valid)]
@@ -13471,6 +13633,10 @@ fn f_d399b0c5__count_polars_arrow__array__list__listarray_i64_(this: &W_polars_a
 /// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
 /// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
 #[rune::function(instance, path = null_count)]
+fn f_e1337b35__count_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> Result<i64, Error> { let __r = <polars_arrow::array::StructArray as polars_arrow::array::Array>::null_count(&this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
+/// The number of null slots on this [`Array`]. # Implementation This is `O(1)` since the number of null elements is pre-computed.
+/// Polars: `polars_arrow::array::Array::null_count`. null_count() -> int (checked into range) (fallible)
+#[rune::function(instance, path = null_count)]
 fn f_087cd523_array__array__null_count_support__arrayref_deref(this: &ArrayRef) -> Result<i64, Error> { let __r = <dyn polars_arrow::array::Array>::null_count(&*this.0); Ok(support::widen::<usize>(__r, "null_count")?) }
 /// Returns a slice of this [`Array`]. # Implementation This operation is `O(1)` over `len`. # Panic This function panics iff `offset + length > self.len()`.
 /// Polars: `polars_arrow::array::Array::sliced`. sliced(offset: int, length: int) -> ArrayRef (fallible)
@@ -13531,6 +13697,10 @@ fn f_c8137570__boxed_polars_arrow__array__list__listarray_i64_(this: &W_polars_a
 /// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
 /// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
 #[rune::function(instance, path = split_at_boxed)]
+fn f_ea06bed9__boxed_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::StructArray::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <polars_arrow::array::StructArray as polars_arrow::array::Array>::split_at_boxed(&this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
+/// Split [`Self`] at `offset` into two boxed [`Array`]s where `offset <= self.len()`.
+/// Polars: `polars_arrow::array::Array::split_at_boxed`. split_at_boxed(offset: int) -> tuple of ArrayRef, ArrayRef (fallible)
+#[rune::function(instance, path = split_at_boxed)]
 fn f_4b6634be_y__array__split_at_boxed_support__arrayref_deref(this: &ArrayRef, offset: i64) -> Result<(ArrayRef, ArrayRef), Error> { let __guard_offset = support::narrow::<usize>(offset, "offset")?; if __guard_offset > this.0.len() { return Err(Error("OutOfBounds".into(), format!("polars::arrow::ArrayRef::split_at_boxed: offset {} is past length {}", __guard_offset, this.0.len()))); } let __r = <dyn polars_arrow::array::Array>::split_at_boxed(&*this.0, __guard_offset); Ok({ let __t = __r; ({ let __r = __t.0; ArrayRef(__r) }, { let __r = __t.1; ArrayRef(__r) }) }) }
 /// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
 /// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
@@ -13587,6 +13757,10 @@ fn f_877a4c9e__boxed_polars_arrow__array__list__listarray_i64_(this: &W_polars_a
 /// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
 /// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
 #[rune::function(instance, path = to_boxed)]
+fn f_f73d2009__boxed_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> ArrayRef { let __r = <polars_arrow::array::StructArray as polars_arrow::array::Array>::to_boxed(&this.0); ArrayRef(__r) }
+/// Clone a `&dyn Array` to an owned `Box<dyn Array>`.
+/// Polars: `polars_arrow::array::Array::to_boxed`. to_boxed() -> ArrayRef
+#[rune::function(instance, path = to_boxed)]
 fn f_6d10e6eb___array__array__to_boxed_support__arrayref_deref(this: &ArrayRef) -> ArrayRef { let __r = <dyn polars_arrow::array::Array>::to_boxed(&*this.0); ArrayRef(__r) }
 /// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
 #[rune::function(instance, path = into_boxed)]
@@ -13624,6 +13798,9 @@ fn f_e1f06cd1_ars_arrow__array__primitive__primitivearray_u64_(this: &W_polars_a
 /// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
 #[rune::function(instance, path = into_boxed)]
 fn f_e16b17b4_lars_arrow__array__primitive__primitivearray_u8_(this: &W_polars_arrow__array__primitive__PrimitiveArray_u8_) -> ArrayRef { let __r = <polars_arrow::array::PrimitiveArray<u8> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
+/// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
+#[rune::function(instance, path = into_boxed)]
+fn f_cefa44bf__boxed_polars_arrow__array__struct___structarray(this: &W_polars_arrow__array__struct___StructArray) -> ArrayRef { let __r = <polars_arrow::array::StructArray as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
 /// Polars: `polars_arrow::array::IntoBoxedArray::into_boxed`. into_boxed() -> ArrayRef
 #[rune::function(instance, path = into_boxed)]
 fn f_aa1f42d6__boxed_polars_arrow__array__utf8__utf8array_i64_(this: &W_polars_arrow__array__utf8__Utf8Array_i64_) -> ArrayRef { let __r = <polars_arrow::array::Utf8Array<i64> as polars_arrow::array::IntoBoxedArray>::into_boxed(this.0.clone()); ArrayRef(__r) }
@@ -17009,45 +17186,88 @@ fn f_87471c27_me__intolazy__lazy_polars_lazy__frame__lazyframe(this: &LazyFrame)
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::cloud_options`. cloud_options() -> option of CloudOptions
 #[rune::function(instance, path = cloud_options)]
 fn f_c9e16b41_ud_options_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> Option<W_polars_io__cloud__options__CloudOptions> { let __r = <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::cloud_options(&this.0); match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_io__cloud__options__CloudOptions(__r) }), None => None } }
+/// [CloudOptions] used to list files.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::cloud_options`. cloud_options() -> option of CloudOptions
+#[rune::function(instance, path = cloud_options)]
+fn f_0149a715_ns_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader) -> Option<W_polars_io__cloud__options__CloudOptions> { let __r = <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::cloud_options(&this.0); match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_io__cloud__options__CloudOptions(__r) }), None => None } }
 /// Recommended concatenation of [LazyFrame]s from many input files.
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::concat_impl`. concat_impl(lfs: vector of LazyFrame) -> result of LazyFrame (fallible)
 #[rune::function(instance, path = concat_impl)]
 fn f_f5b52f93_oncat_impl_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader, lfs: rune::Value) -> Result<LazyFrame, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&lfs, "lfs")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<LazyFrame>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::LazyCsvReader::concat_impl", move || <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::concat_impl(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; LazyFrame(__r) }) }
+/// Recommended concatenation of [LazyFrame]s from many input files.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::concat_impl`. concat_impl(lfs: vector of LazyFrame) -> result of LazyFrame (fallible)
+#[rune::function(instance, path = concat_impl)]
+fn f_e6b5c267_pl_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, lfs: rune::Value) -> Result<LazyFrame, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&lfs, "lfs")?.into_iter().map(|v| { Ok::<_, Error>(support::take::<LazyFrame>(&v, "v")?.0) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::LazyJsonLineReader::concat_impl", move || <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::concat_impl(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; LazyFrame(__r) }) }
 /// Get the final [LazyFrame].
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::finish`. finish() -> result of LazyFrame (fallible)
 #[rune::function(instance, path = finish)]
 fn f_a2acd63f_er__finish_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> Result<LazyFrame, Error> { let __arg0 = this.0.clone(); let __r = crate::engine::run("polars::LazyCsvReader::finish", move || <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::finish(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; LazyFrame(__r) }) }
+/// Get the final [LazyFrame].
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::finish`. finish() -> result of LazyFrame (fallible)
+#[rune::function(instance, path = finish)]
+fn f_ae16d73b_sh_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader) -> Result<LazyFrame, Error> { let __arg0 = this.0.clone(); let __r = crate::engine::run("polars::LazyJsonLineReader::finish", move || <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::finish(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; LazyFrame(__r) }) }
 /// Get the final [LazyFrame]. This method assumes, that path is *not* a glob.
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::finish_no_glob`. finish_no_glob() -> result of LazyFrame (fallible)
 #[rune::function(instance, path = finish_no_glob)]
 fn f_a5936a2d_sh_no_glob_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> Result<LazyFrame, Error> { let __arg0 = this.0.clone(); let __r = crate::engine::run("polars::LazyCsvReader::finish_no_glob", move || <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::finish_no_glob(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; LazyFrame(__r) }) }
+/// Get the final [LazyFrame]. This method assumes, that path is *not* a glob.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::finish_no_glob`. finish_no_glob() -> result of LazyFrame (fallible)
+#[rune::function(instance, path = finish_no_glob)]
+fn f_071a4224_ob_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader) -> Result<LazyFrame, Error> { let __arg0 = this.0.clone(); let __r = crate::engine::run("polars::LazyJsonLineReader::finish_no_glob", move || <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::finish_no_glob(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; LazyFrame(__r) }) }
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::glob`. glob() -> bool
 #[rune::function(instance, path = glob)]
 fn f_f51d77f0_ader__glob_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> bool { let __r = <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::glob(&this.0); __r }
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::glob`. glob() -> bool
+#[rune::function(instance, path = glob)]
+fn f_7fdd97f1_ob_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader) -> bool { let __r = <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::glob(&this.0); __r }
 /// Try to stop parsing when `n` rows are parsed. During multithreaded parsing the upper bound `n` cannot be guaranteed.
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::n_rows`. n_rows() -> option of int (checked into range) (fallible)
 #[rune::function(instance, path = n_rows)]
 fn f_b8a4cf31_er__n_rows_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> Result<Option<i64>, Error> { let __r = <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::n_rows(&this.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "n_rows")?), None => None }) }
+/// Try to stop parsing when `n` rows are parsed. During multithreaded parsing the upper bound `n` cannot be guaranteed.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::n_rows`. n_rows() -> option of int (checked into range) (fallible)
+#[rune::function(instance, path = n_rows)]
+fn f_c182cb1f_ws_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader) -> Result<Option<i64>, Error> { let __r = <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::n_rows(&this.0); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "n_rows")?), None => None }) }
 /// Rechunk the memory to contiguous chunks when parsing is done.
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::rechunk`. rechunk() -> bool
 #[rune::function(instance, path = rechunk)]
 fn f_b448a6e9_r__rechunk_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> bool { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::LazyCsvReader::rechunk", move || <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::rechunk(__arg0)), "polars::LazyCsvReader::rechunk"); __r }
+/// Rechunk the memory to contiguous chunks when parsing is done.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::rechunk`. rechunk() -> bool
+#[rune::function(instance, path = rechunk)]
+fn f_876b6578_nk_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader) -> bool { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::LazyJsonLineReader::rechunk", move || <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::rechunk(__arg0)), "polars::LazyJsonLineReader::rechunk"); __r }
 /// Add a row index column.
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::row_index`. row_index() -> option of RowIndex
 #[rune::function(instance, path = row_index)]
 fn f_0dbe9e80__row_index_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> Option<W_polars_io__options__RowIndex> { let __r = <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::row_index(&this.0); match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_io__options__RowIndex(__r) }), None => None } }
+/// Add a row index column.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::row_index`. row_index() -> option of RowIndex
+#[rune::function(instance, path = row_index)]
+fn f_08c1cb68_ex_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader) -> Option<W_polars_io__options__RowIndex> { let __r = <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::row_index(&this.0); match __r { Some(__r) => Some({ let __r = (__r).clone(); W_polars_io__options__RowIndex(__r) }), None => None } }
 /// Get the sources for this reader.
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::sources`. sources() -> ScanSources
 #[rune::function(instance, path = sources)]
 fn f_f3b2ec0f_r__sources_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader) -> W_polars_plan__dsl__scan_sources__ScanSources { let __r = <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::sources(&this.0); { let __r = (__r).clone(); W_polars_plan__dsl__scan_sources__ScanSources(__r) } }
+/// Get the sources for this reader.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::sources`. sources() -> ScanSources
+#[rune::function(instance, path = sources)]
+fn f_91224648_es_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader) -> W_polars_plan__dsl__scan_sources__ScanSources { let __r = <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::sources(&this.0); { let __r = (__r).clone(); W_polars_plan__dsl__scan_sources__ScanSources(__r) } }
 /// Rechunk the memory to contiguous chunks when parsing is done.
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::with_rechunk`. with_rechunk(toggle: bool) -> LazyCsvReader
 #[rune::function(instance, path = with_rechunk)]
 fn f_0b80ab04_th_rechunk_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader, toggle: bool) -> W_polars_lazy__scan__csv__LazyCsvReader { let __r = <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::with_rechunk(this.0.clone(), toggle); W_polars_lazy__scan__csv__LazyCsvReader(__r) }
+/// Rechunk the memory to contiguous chunks when parsing is done.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::with_rechunk`. with_rechunk(toggle: bool) -> LazyJsonLineReader
+#[rune::function(instance, path = with_rechunk)]
+fn f_24188c46_nk_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, toggle: bool) -> W_polars_lazy__scan__ndjson__LazyJsonLineReader { let __r = <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::with_rechunk(this.0.clone(), toggle); W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r) }
 /// Set sources of the scanned files.
 /// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::with_sources`. with_sources(source: ScanSources) -> LazyCsvReader
 #[rune::function(instance, path = with_sources)]
 fn f_a9a69c2c_th_sources_polars_lazy__scan__csv__lazycsvreader(this: &W_polars_lazy__scan__csv__LazyCsvReader, source: &W_polars_plan__dsl__scan_sources__ScanSources) -> W_polars_lazy__scan__csv__LazyCsvReader { let __r = <polars_lazy::frame::LazyCsvReader as polars_lazy::frame::LazyFileListReader>::with_sources(this.0.clone(), source.0.clone()); W_polars_lazy__scan__csv__LazyCsvReader(__r) }
+/// Set sources of the scanned files.
+/// Polars: `polars_lazy::scan::file_list_reader::LazyFileListReader::with_sources`. with_sources(source: ScanSources) -> LazyJsonLineReader
+#[rune::function(instance, path = with_sources)]
+fn f_dd24eeb2_es_polars_lazy__scan__ndjson__lazyjsonlinereader(this: &W_polars_lazy__scan__ndjson__LazyJsonLineReader, source: &W_polars_plan__dsl__scan_sources__ScanSources) -> W_polars_lazy__scan__ndjson__LazyJsonLineReader { let __r = <polars_lazy::frame::LazyJsonLineReader as polars_lazy::frame::LazyFileListReader>::with_sources(this.0.clone(), source.0.clone()); W_polars_lazy__scan__ndjson__LazyJsonLineReader(__r) }
 /// Polars: `polars_ops::chunked_array::binary::AsBinary::as_binary`. as_binary() -> BinaryChunked
 #[rune::function(instance, path = as_binary)]
 fn f_eb22748f__as_binary_polars_core__datatypes__binarychunked(this: &W_polars_core__datatypes__BinaryChunked) -> W_polars_core__datatypes__BinaryChunked { let __r = <polars_core::datatypes::BinaryChunked as polars_ops::chunked_array::AsBinary>::as_binary(&this.0); { let __r = (__r).clone(); W_polars_core__datatypes__BinaryChunked(__r) } }
@@ -18523,6 +18743,24 @@ fn s_29c9baaf_write__ipcwriteroptions__record_batch_statistics(this: &W_polars_i
 /// Set field `record_batch_statistics` of `polars_io::ipc::write::IpcWriterOptions`, returning the updated value.
 #[rune::function(instance, path = with_record_batch_statistics)]
 fn w_29c9baaf_write__ipcwriteroptions__record_batch_statistics(this: &W_polars_io__ipc__write__IpcWriterOptions, v: bool) -> W_polars_io__ipc__write__IpcWriterOptions { let mut __o = this.0.clone(); __o.record_batch_statistics = v; W_polars_io__ipc__write__IpcWriterOptions(__o) }
+/// Variant `Json` of `polars_io::json::JsonFormat`.
+#[rune::function(free, path = W_polars_io__json__JsonFormat::Json)]
+fn v_12851cfd_polars_io__json__jsonformat__json() -> W_polars_io__json__JsonFormat { W_polars_io__json__JsonFormat(<polars_io::json::JsonFormat>::Json) }
+/// Variant `JsonLines` of `polars_io::json::JsonFormat`.
+#[rune::function(free, path = W_polars_io__json__JsonFormat::JsonLines)]
+fn v_db883ecd_polars_io__json__jsonformat__jsonlines() -> W_polars_io__json__JsonFormat { W_polars_io__json__JsonFormat(<polars_io::json::JsonFormat>::JsonLines) }
+/// Field `compression` of `polars_io::ndjson::NDJsonWriterOptions`.
+#[rune::function(instance, path = compression)]
+fn s_750727b1_ars_io__ndjson__ndjsonwriteroptions__compression(this: &W_polars_io__ndjson__NDJsonWriterOptions) -> W_polars_io__options__ExternalCompression { let __r = this.0.compression.clone(); W_polars_io__options__ExternalCompression(__r) }
+/// Set field `compression` of `polars_io::ndjson::NDJsonWriterOptions`, returning the updated value.
+#[rune::function(instance, path = with_compression)]
+fn w_750727b1_ars_io__ndjson__ndjsonwriteroptions__compression(this: &W_polars_io__ndjson__NDJsonWriterOptions, v: &W_polars_io__options__ExternalCompression) -> W_polars_io__ndjson__NDJsonWriterOptions { let mut __o = this.0.clone(); __o.compression = v.0.clone(); W_polars_io__ndjson__NDJsonWriterOptions(__o) }
+/// Field `check_extension` of `polars_io::ndjson::NDJsonWriterOptions`.
+#[rune::function(instance, path = check_extension)]
+fn s_4f47f56c_io__ndjson__ndjsonwriteroptions__check_extension(this: &W_polars_io__ndjson__NDJsonWriterOptions) -> bool { let __r = this.0.check_extension.clone(); __r }
+/// Set field `check_extension` of `polars_io::ndjson::NDJsonWriterOptions`, returning the updated value.
+#[rune::function(instance, path = with_check_extension)]
+fn w_4f47f56c_io__ndjson__ndjsonwriteroptions__check_extension(this: &W_polars_io__ndjson__NDJsonWriterOptions, v: bool) -> W_polars_io__ndjson__NDJsonWriterOptions { let mut __o = this.0.clone(); __o.check_extension = v; W_polars_io__ndjson__NDJsonWriterOptions(__o) }
 /// Variant `Uncompressed` of `polars_io::options::ExternalCompression`.
 #[rune::function(free, path = W_polars_io__options__ExternalCompression::Uncompressed)]
 fn v_ef816786_s_io__options__externalcompression__uncompressed() -> W_polars_io__options__ExternalCompression { W_polars_io__options__ExternalCompression(<polars_io::prelude::ExternalCompression>::Uncompressed) }
@@ -19528,6 +19766,9 @@ fn v_a18b01bc_tion_expr__struct___structfunction__prefixfields(a0: &str) -> W_po
 /// Variant `SuffixFields` of `polars_plan::dsl::function_expr::struct_::StructFunction`.
 #[rune::function(free, path = W_polars_plan__dsl__function_expr__struct___StructFunction::SuffixFields)]
 fn v_d17b0629_tion_expr__struct___structfunction__suffixfields(a0: &str) -> W_polars_plan__dsl__function_expr__struct___StructFunction { W_polars_plan__dsl__function_expr__struct___StructFunction(<polars_plan::dsl::function_expr::StructFunction>::SuffixFields(p::PlSmallStr::from(a0))) }
+/// Variant `JsonEncode` of `polars_plan::dsl::function_expr::struct_::StructFunction`.
+#[rune::function(free, path = W_polars_plan__dsl__function_expr__struct___StructFunction::JsonEncode)]
+fn v_8b8488a1_nction_expr__struct___structfunction__jsonencode() -> W_polars_plan__dsl__function_expr__struct___StructFunction { W_polars_plan__dsl__function_expr__struct___StructFunction(<polars_plan::dsl::function_expr::StructFunction>::JsonEncode) }
 /// Variant `SelectFields` of `polars_plan::dsl::function_expr::struct_::StructFunction`.
 #[rune::function(free, path = W_polars_plan__dsl__function_expr__struct___StructFunction::SelectFields)]
 fn v_9b56b764_tion_expr__struct___structfunction__selectfields(a0: &W_polars_plan__dsl__selector__Selector) -> W_polars_plan__dsl__function_expr__struct___StructFunction { W_polars_plan__dsl__function_expr__struct___StructFunction(<polars_plan::dsl::function_expr::StructFunction>::SelectFields(a0.0.clone())) }
@@ -19603,6 +19844,9 @@ fn w_49fa8b8a__dsl__options__distinctoptionsdsl__keep_strategy(this: &W_polars_p
 /// Variant `Csv` of `polars_plan::dsl::options::FileWriteFormat`.
 #[rune::function(free, path = W_polars_plan__dsl__options__FileWriteFormat::Csv)]
 fn v_c23c757e_polars_plan__dsl__options__filewriteformat__csv(a0: &W_polars_io__csv__write__options__CsvWriterOptions) -> W_polars_plan__dsl__options__FileWriteFormat { W_polars_plan__dsl__options__FileWriteFormat(<polars_plan::dsl::FileWriteFormat>::Csv(a0.0.clone())) }
+/// Variant `NDJson` of `polars_plan::dsl::options::FileWriteFormat`.
+#[rune::function(free, path = W_polars_plan__dsl__options__FileWriteFormat::NDJson)]
+fn v_ff4bc3b6_lars_plan__dsl__options__filewriteformat__ndjson(a0: &W_polars_io__ndjson__NDJsonWriterOptions) -> W_polars_plan__dsl__options__FileWriteFormat { W_polars_plan__dsl__options__FileWriteFormat(<polars_plan::dsl::FileWriteFormat>::NDJson(a0.0.clone())) }
 /// Field `slice` of `polars_plan::dsl::options::GroupbyOptions`.
 #[rune::function(instance, path = slice)]
 fn s_a5f35e94_polars_plan__dsl__options__groupbyoptions__slice(this: &W_polars_plan__dsl__options__GroupbyOptions) -> Result<Option<(i64, i64)>, Error> { let __r = this.0.slice.clone(); Ok(match __r { Some(__r) => Some({ let __t = __r; ({ let __r = __t.0; __r }, { let __r = __t.1; support::widen::<usize>(__r, "slice")? }) }), None => None }) }
@@ -19681,6 +19925,36 @@ fn s_38bb4223_l__options__logicalplanudfoptions__projection_pd(this: &W_polars_p
 /// Set field `projection_pd` of `polars_plan::dsl::options::LogicalPlanUdfOptions`, returning the updated value.
 #[rune::function(instance, path = with_projection_pd)]
 fn w_38bb4223_l__options__logicalplanudfoptions__projection_pd(this: &W_polars_plan__dsl__options__LogicalPlanUdfOptions, v: bool) -> W_polars_plan__dsl__options__LogicalPlanUdfOptions { let mut __o = this.0.clone(); __o.projection_pd = v; W_polars_plan__dsl__options__LogicalPlanUdfOptions(__o) }
+/// Field `n_threads` of `polars_plan::dsl::options::NDJsonReadOptions`.
+#[rune::function(instance, path = n_threads)]
+fn s_cdc99785_plan__dsl__options__ndjsonreadoptions__n_threads(this: &W_polars_plan__dsl__options__NDJsonReadOptions) -> Result<Option<i64>, Error> { let __r = this.0.n_threads.clone(); Ok(match __r { Some(__r) => Some(support::widen::<usize>(__r, "n_threads")?), None => None }) }
+/// Set field `n_threads` of `polars_plan::dsl::options::NDJsonReadOptions`, returning the updated value.
+#[rune::function(instance, path = with_n_threads)]
+fn w_cdc99785_plan__dsl__options__ndjsonreadoptions__n_threads(this: &W_polars_plan__dsl__options__NDJsonReadOptions, v: Option<i64>) -> Result<W_polars_plan__dsl__options__NDJsonReadOptions, Error> { let mut __o = this.0.clone(); __o.n_threads = match v { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }; Ok(W_polars_plan__dsl__options__NDJsonReadOptions(__o)) }
+/// Field `low_memory` of `polars_plan::dsl::options::NDJsonReadOptions`.
+#[rune::function(instance, path = low_memory)]
+fn s_4f854cd9_lan__dsl__options__ndjsonreadoptions__low_memory(this: &W_polars_plan__dsl__options__NDJsonReadOptions) -> bool { let __r = this.0.low_memory.clone(); __r }
+/// Set field `low_memory` of `polars_plan::dsl::options::NDJsonReadOptions`, returning the updated value.
+#[rune::function(instance, path = with_low_memory)]
+fn w_4f854cd9_lan__dsl__options__ndjsonreadoptions__low_memory(this: &W_polars_plan__dsl__options__NDJsonReadOptions, v: bool) -> W_polars_plan__dsl__options__NDJsonReadOptions { let mut __o = this.0.clone(); __o.low_memory = v; W_polars_plan__dsl__options__NDJsonReadOptions(__o) }
+/// Field `ignore_errors` of `polars_plan::dsl::options::NDJsonReadOptions`.
+#[rune::function(instance, path = ignore_errors)]
+fn s_65032182___dsl__options__ndjsonreadoptions__ignore_errors(this: &W_polars_plan__dsl__options__NDJsonReadOptions) -> bool { let __r = this.0.ignore_errors.clone(); __r }
+/// Set field `ignore_errors` of `polars_plan::dsl::options::NDJsonReadOptions`, returning the updated value.
+#[rune::function(instance, path = with_ignore_errors)]
+fn w_65032182___dsl__options__ndjsonreadoptions__ignore_errors(this: &W_polars_plan__dsl__options__NDJsonReadOptions, v: bool) -> W_polars_plan__dsl__options__NDJsonReadOptions { let mut __o = this.0.clone(); __o.ignore_errors = v; W_polars_plan__dsl__options__NDJsonReadOptions(__o) }
+/// Field `schema` of `polars_plan::dsl::options::NDJsonReadOptions`.
+#[rune::function(instance, path = schema)]
+fn s_1b9d80ee_rs_plan__dsl__options__ndjsonreadoptions__schema(this: &W_polars_plan__dsl__options__NDJsonReadOptions) -> Option<W_polars_core__schema__SchemaRef> { let __r = this.0.schema.clone(); match __r { Some(__r) => Some(W_polars_core__schema__SchemaRef(__r)), None => None } }
+/// Set field `schema` of `polars_plan::dsl::options::NDJsonReadOptions`, returning the updated value.
+#[rune::function(instance, path = with_schema)]
+fn w_1b9d80ee_rs_plan__dsl__options__ndjsonreadoptions__schema(this: &W_polars_plan__dsl__options__NDJsonReadOptions, v: Option<rune::Value>) -> Result<W_polars_plan__dsl__options__NDJsonReadOptions, Error> { let mut __o = this.0.clone(); __o.schema = match v { Some(v) => Some(support::take::<W_polars_core__schema__SchemaRef>(&v, "v")?.0), None => None }; Ok(W_polars_plan__dsl__options__NDJsonReadOptions(__o)) }
+/// Field `schema_overwrite` of `polars_plan::dsl::options::NDJsonReadOptions`.
+#[rune::function(instance, path = schema_overwrite)]
+fn s_af8c9507_sl__options__ndjsonreadoptions__schema_overwrite(this: &W_polars_plan__dsl__options__NDJsonReadOptions) -> Option<W_polars_core__schema__SchemaRef> { let __r = this.0.schema_overwrite.clone(); match __r { Some(__r) => Some(W_polars_core__schema__SchemaRef(__r)), None => None } }
+/// Set field `schema_overwrite` of `polars_plan::dsl::options::NDJsonReadOptions`, returning the updated value.
+#[rune::function(instance, path = with_schema_overwrite)]
+fn w_af8c9507_sl__options__ndjsonreadoptions__schema_overwrite(this: &W_polars_plan__dsl__options__NDJsonReadOptions, v: Option<rune::Value>) -> Result<W_polars_plan__dsl__options__NDJsonReadOptions, Error> { let mut __o = this.0.clone(); __o.schema_overwrite = match v { Some(v) => Some(support::take::<W_polars_core__schema__SchemaRef>(&v, "v")?.0), None => None }; Ok(W_polars_plan__dsl__options__NDJsonReadOptions(__o)) }
 /// Field `window_size` of `polars_plan::dsl::options::RollingCovOptions`.
 #[rune::function(instance, path = window_size)]
 fn s_590d7978_an__dsl__options__rollingcovoptions__window_size(this: &W_polars_plan__dsl__options__RollingCovOptions) -> i64 { let __r = this.0.window_size.clone(); (__r as i64) }
@@ -20263,6 +20537,9 @@ fn ca_as_large_binary_array(this: &ArrayRef) -> Result<W_polars_arrow__array__bi
 /// Record 0120: a checked downcast to `polars_arrow::array::ListArray<i64>` (probe route: probes/0120/reach-0.55.2.json: list_i64 and list_str).
 #[rune::function(instance, path = as_large_list_array)]
 fn ca_as_large_list_array(this: &ArrayRef) -> Result<W_polars_arrow__array__list__ListArray_i64_, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::ListArray<i64>>().map(|a| W_polars_arrow__array__list__ListArray_i64_(a.clone())).ok_or_else(|| Error::conversion(&format!("as_large_list_array: the array is {:?}, not LargeListArray", this.0.dtype()))) }
+/// Record 0120: a checked downcast to `polars_arrow::array::StructArray` (probe route: probes/0125/reach-0.55.2.json: struct).
+#[rune::function(instance, path = as_struct_array)]
+fn ca_as_struct_array(this: &ArrayRef) -> Result<W_polars_arrow__array__struct___StructArray, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::StructArray>().map(|a| W_polars_arrow__array__struct___StructArray(a.clone())).ok_or_else(|| Error::conversion(&format!("as_struct_array: the array is {:?}, not StructArray", this.0.dtype()))) }
 
 // record 0120: every listed concrete array's parameter bound, asserted at compile time
 const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<f32>; };
@@ -20414,6 +20691,12 @@ fn install_0(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_3de9b23c_ars_arrow__array__primitive__primitivearray_u32_)?;
     m.function_meta(f_4717d16d_ars_arrow__array__primitive__primitivearray_u64_)?;
     m.function_meta(f_acf9d832_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_4ce23c6c__boxed_polars_arrow__array__struct___structarray)?;
+    m.function_meta(f_d4e073a3_fields_polars_arrow__array__struct___structarray)?;
+    m.function_meta(f_89e3b9ed_y__len_polars_arrow__array__struct___structarray)?;
+    m.function_meta(f_f4bf2183_sliced_polars_arrow__array__struct___structarray)?;
+    m.function_meta(f_c554a9ed_lidity_polars_arrow__array__struct___structarray)?;
+    m.function_meta(f_679de225_values_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_b0cce9e5__boxed_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_94829bfc__dtype_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_bb39e043__dtype_polars_arrow__array__utf8__utf8array_i64_)?;
@@ -20814,17 +21097,17 @@ fn install_0(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_a03853ae__validity_polars_core__datatypes__aliases__idxca)?;
     m.function_meta(f_b186022b_c_validity_polars_core__datatypes__uint64chunked)?;
     m.function_meta(f_94de7743_ec_validity_polars_core__datatypes__uint8chunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_1(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_45bb2e7b_like_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_a1cfb9fb__null_like_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_fc9d1711_null_like_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_c6d3cbcb_null_like_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_e41b523c_null_like_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_4ec68fae_l_null_like_polars_core__datatypes__int16chunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_1(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_1d5f7171_l_null_like_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_1561af0a_l_null_like_polars_core__datatypes__int64chunked)?;
     m.function_meta(f_2ded2757_ll_null_like_polars_core__datatypes__int8chunked)?;
@@ -21331,17 +21614,17 @@ fn install_1(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_4a4254a4__series_iter_polars_core__datatypes__listchunked)?;
     m.function_meta(f_993c040d_fast_explode_polars_core__datatypes__listchunked)?;
     m.function_meta(f_91dcee93_list_polars_core__datatypes__binaryoffsetchunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_2(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_275ea9e4_plode_list_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_5a9eab84_lode_list_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_c8f82a50_lode_list_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_3e42fe3d_lode_list_polars_core__datatypes__float64chunked)?;
     m.function_meta(f_999b89e4_xplode_list_polars_core__datatypes__int16chunked)?;
     m.function_meta(f_b9d24ff1_xplode_list_polars_core__datatypes__int32chunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_2(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_b53e525e_xplode_list_polars_core__datatypes__int64chunked)?;
     m.function_meta(f_1b1a9fa5_explode_list_polars_core__datatypes__int8chunked)?;
     m.function_meta(f_f75aec34_explode_list_polars_core__datatypes__listchunked)?;
@@ -21848,17 +22131,17 @@ fn install_2(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_fa449453__append_owned_polars_core__frame__column__column)?;
     m.function_meta(f_f96ffc43_y_elementwise_polars_core__frame__column__column)?;
     m.function_meta(f_6c8e4fa2_y_elementwise_polars_core__frame__column__column)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_d4190c21_y_elementwise_polars_core__frame__column__column)?;
     m.function_meta(f_c4efed35_umn__arg_sort_polars_core__frame__column__column)?;
     m.function_meta(f_38530e3e_sort_multiple_polars_core__frame__column__column)?;
     m.function_meta(f_88929844_n__arg_unique_polars_core__frame__column__column)?;
     m.function_meta(f_74951687_alized_series_polars_core__frame__column__column)?;
     m.function_meta(f_d21f8373_intain_scalar_polars_core__frame__column__column)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_2857dca8_scalar_column_polars_core__frame__column__column)?;
     m.function_meta(f_e7e14124_ar_column_mut_polars_core__frame__column__column)?;
     m.function_meta(f_e198d886_mn__as_series_polars_core__frame__column__column)?;
@@ -22365,17 +22648,17 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_e2856110_ds_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_8ed3db06_ns_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_2c116bbc_ty_polars_io__csv__read__options__csvreadoptions)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_b7bdaea8_nk_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_0077a3ee_ex_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_e0c6d6ed_ma_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_63a50c1b_te_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_f15229f6_es_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_7a8a0f5f_ws_polars_io__csv__read__options__csvreadoptions)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_1cfdb308_er_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_d865bd1a_ompile_polars_io__csv__read__options__nullvalues)?;
     m.function_meta(f_015f8452___count_polars_io__csv__read__parser__countlines)?;
@@ -22532,6 +22815,7 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_7cee064b_me__unique_generic_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_eba2f7f3_ame__unique_stable_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_12f0cd87_que_stable_generic_polars_lazy__frame__lazyframe)?;
+    m.function_meta(f_12ba9f45__lazyframe__unnest_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_9f161fde_me__lazyframe__var_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_816f8c35___with_check_order_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_ce7c3c0f_uster_with_columns_polars_lazy__frame__lazyframe)?;
@@ -22589,6 +22873,16 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_9e39814a__skip_rows_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_b4044a48_ter_header_polars_lazy__scan__csv__lazycsvreader)?;
     m.function_meta(f_2a2f44b7_gged_lines_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_e56561ae_ry_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
+    m.function_meta(f_37fcf162_ew_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
+    m.function_meta(f_5823a583_es_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
+    m.function_meta(f_f0b0f755_ns_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
+    m.function_meta(f_58bb1b34_rs_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
+    m.function_meta(f_f96cd98c_hs_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
+    m.function_meta(f_dea9d108_ws_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
+    m.function_meta(f_682af1c7_ex_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
+    m.function_meta(f_8fc9f4c2_ma_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
+    m.function_meta(f_1d9563e1_te_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_5654d29a_rgs__new_polars_ops__frame__join__args__joinargs)?;
     m.function_meta(f_056c59a8_coalesce_polars_ops__frame__join__args__joinargs)?;
     m.function_meta(f_6550d25e___suffix_polars_ops__frame__join__args__joinargs)?;
@@ -22871,6 +23165,11 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_9daaa45b_tor_polars_plan__dsl__selector__datatypeselector)?;
     m.function_meta(f_69c5d6ed_hes_polars_plan__dsl__selector__datatypeselector)?;
     m.function_meta(f_e8f426f9_or__as_expr_polars_plan__dsl__selector__selector)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_2296d8e8_xclude_cols_polars_plan__dsl__selector__selector)?;
     m.function_meta(f_c0bd85ee_clude_dtype_polars_plan__dsl__selector__selector)?;
     m.function_meta(f_71cc2ade_pe_selector_polars_plan__dsl__selector__selector)?;
@@ -22888,11 +23187,6 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_f49444a3_rsection_polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(f_ec72f725_tersects_polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(f_588f717d___is_all_polars_plan__dsl__selector__timeunitset)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_29500beb_is_empty_polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(f_64eb9208___remove_polars_plan__dsl__selector__timeunitset)?;
     m.function_meta(f_c6c6168a_set__set_polars_plan__dsl__selector__timeunitset)?;
@@ -22903,6 +23197,7 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_22a667d5_index_polars_plan__dsl__struct___structnamespace)?;
     m.function_meta(f_502b5dcd__name_polars_plan__dsl__struct___structnamespace)?;
     m.function_meta(f_133cd030_names_polars_plan__dsl__struct___structnamespace)?;
+    m.function_meta(f_ef5b5e7b_ncode_polars_plan__dsl__struct___structnamespace)?;
     m.function_meta(f_a9ef4b5d_ields_polars_plan__dsl__struct___structnamespace)?;
     m.function_meta(f_161c8501_ields_polars_plan__dsl__struct___structnamespace)?;
     m.function_meta(f_8282aa4d__call_polars_plan__dsl__udf__userdefinedfunction)?;
@@ -23037,10 +23332,18 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_f715ea4d_polars_io__csv__read__read_impl__cast_columns)?;
     m.function_meta(g_94b883eb__csv__read__schema_inference__infer_field_schema)?;
     m.function_meta(g_9e6c78d8_rs_io__file_cache__cache__get_env_file_cache_ttl)?;
+    m.function_meta(g_ec3dae24_polars_io__json__remove_bom)?;
+    m.function_meta(g_a2a87f6c_lars_io__ndjson__core__estimate_n_lines_in_chunk)?;
+    m.function_meta(g_ec9c78ba_olars_io__ndjson__core__estimate_n_lines_in_file)?;
+    m.function_meta(g_816df8a6_polars_io__ndjson__core__is_json_line)?;
+    m.function_meta(g_023ba3f0_polars_io__ndjson__core__json_lines)?;
+    m.function_meta(g_0c5c3548_polars_io__ndjson__core__parse_ndjson)?;
+    m.function_meta(g_1c8b0099_polars_io__ndjson__count_rows)?;
     m.function_meta(g_69b668b8_o__parquet__read__read_impl__try_set_sorted_flag)?;
     m.function_meta(g_f9cdb03e_s_io__path_utils__expanded_from_single_directory)?;
     m.function_meta(g_21295b1a_polars_io__pl_async__get_concurrency_limit)?;
     m.function_meta(g_dd07d9d7_polars_io__utils__other__materialize_projection)?;
+    m.function_meta(g_6aab2d5f_polars_io__utils__other__overwrite_schema)?;
     m.function_meta(g_8dd9254e_polars_lazy__dsl__functions__concat)?;
     m.function_meta(g_d97a5826_olars_lazy__dsl__functions__concat_lf_horizontal)?;
     m.function_meta(g_faa3ae57_polars_ops__chunked_array__binary__get__bin_get)?;
@@ -23137,6 +23440,9 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(g_fbb4e594_polars_plan__dsl__map_multiple)?;
     m.function_meta(g_3a721c91_polars_plan__dsl__udf__infer_udf_output_dtype)?;
     m.function_meta(g_ec8f1f18_olars_plan__dsl__udf__try_infer_udf_output_dtype)?;
+    m.function_meta(p_2ce5c035_rray__struct___structarray_as_core__clone__clone)?;
+    m.function_meta(p_ab35f386_ay__struct___structarray_as_core__cmp__partialeq)?;
+    m.function_meta(p_236bdeb4__array__struct___structarray_as_core__fmt__debug)?;
     m.function_meta(p_4995d78c___datatypes__arrowdatatype_as_core__clone__clone)?;
     m.function_meta(p_416ebb65_arrow__datatypes__arrowdatatype_as_core__cmp__eq)?;
     m.function_meta(p_3e05777a_datatypes__arrowdatatype_as_core__cmp__partialeq)?;
@@ -23376,6 +23682,11 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6c713403_roup_by__position__groupsidx_as_core__fmt__debug)?;
     m.function_meta(p_f2af2bd7_p_by__position__groupstype_as_core__clone__clone)?;
     m.function_meta(p_4a28399c__group_by__position__groupstype_as_core__cmp__eq)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6aaaae02_by__position__groupstype_as_core__cmp__partialeq)?;
     m.function_meta(f_20ff3b55_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(p_4abb1f5b___position__groupstype_as_core__default__default)?;
@@ -23405,11 +23716,6 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6e2f06bb_olars_core__series__series_as_core__clone__clone)?;
     m.function_meta(p_8b4f648d_ars_core__series__series_as_core__cmp__partialeq)?;
     m.function_meta(f_36f6b8e5___date__datechunked__polars_core__series__series)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5e9e47be_me__datetimechunked__polars_core__series__series)?;
     m.function_meta(f_0c440bdc_on__durationchunked__polars_core__series__series)?;
     m.function_meta(f_d04b837a___time__timechunked__polars_core__series__series)?;
@@ -23652,6 +23958,14 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_b7f962b9_olars_io__metrics__iometrics_as_core__fmt__debug)?;
     m.function_meta(p_9e1771e8__io__metrics__optiometrics_as_core__clone__clone)?;
     m.function_meta(p_a18ed1d3_rs_io__metrics__optiometrics_as_core__fmt__debug)?;
+    m.function_meta(p_ad9d5701_djson__ndjsonwriteroptions_as_core__clone__clone)?;
+    m.function_meta(p_546af31e_io__ndjson__ndjsonwriteroptions_as_core__cmp__eq)?;
+    m.function_meta(p_2dc810aa_son__ndjsonwriteroptions_as_core__cmp__partialeq)?;
+    m.function_meta(p_e0ff6aa1_n__ndjsonwriteroptions_as_core__default__default)?;
+    m.function_meta(p_3096e399__ndjson__ndjsonwriteroptions_as_core__fmt__debug)?;
+    m.function_meta(p_5f707a28__ndjson__ndjsonwriteroptions_as_core__hash__hash)?;
+    m.function_meta(s_ec10df94_jsonwriteroptions_as_serde_core__de__deserialize)?;
+    m.function_meta(s_6daef8bf_djsonwriteroptions_as_serde_core__ser__serialize)?;
     m.function_meta(p_a06ea4a9_tions__externalcompression_as_core__clone__clone)?;
     m.function_meta(p_3b1d4e85_o__options__externalcompression_as_core__cmp__eq)?;
     m.function_meta(p_d39608f6_ons__externalcompression_as_core__cmp__partialeq)?;
@@ -23725,6 +24039,7 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_76354ce8_us_scan__scanargsanonymous_as_core__clone__clone)?;
     m.function_meta(p_d5504479_can__scanargsanonymous_as_core__default__default)?;
     m.function_meta(p_0bf881c0___scan__csv__lazycsvreader_as_core__clone__clone)?;
+    m.function_meta(p_7a186e09_ndjson__lazyjsonlinereader_as_core__clone__clone)?;
     m.function_meta(p_28d7051d___parquet__scanargsparquet_as_core__clone__clone)?;
     m.function_meta(p_f5d4de20_rquet__scanargsparquet_as_core__default__default)?;
     m.function_meta(p_4a66d159_in__args__crossjoinoptions_as_core__clone__clone)?;
@@ -23879,11 +24194,16 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6db3fcc9_plan__dsl__file_scan__scanflags_as_core__cmp__eq)?;
     m.function_meta(p_53601a2c_sl__file_scan__scanflags_as_core__cmp__partialeq)?;
     m.function_meta(p_85813242_n__dsl__file_scan__scanflags_as_core__fmt__debug)?;
-    m.function_meta(i_047e022d__dsl__file_scan__scanflags_polars_plan_7519_7663)?;
+    m.function_meta(i_e609a6a8__dsl__file_scan__scanflags_polars_plan_7602_7746)?;
     m.function_meta(p_e3a6c61b_l__file_scan__scanflags_as_core__ops__arith__sub)?;
     m.function_meta(p_c969a7b2_e_scan__scanflags_as_core__ops__arith__subassign)?;
     m.function_meta(p_465cffe6___file_scan__scanflags_as_core__ops__bit__bitand)?;
     m.function_meta(p_75cd3730__scan__scanflags_as_core__ops__bit__bitandassign)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_58ff7fa2_l__file_scan__scanflags_as_core__ops__bit__bitor)?;
     m.function_meta(p_8529449e_e_scan__scanflags_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_989e9306___file_scan__scanflags_as_core__ops__bit__bitxor)?;
@@ -23922,11 +24242,6 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_ca164dbb_n__polars_plan__dsl__function_expr__functionexpr)?;
     m.function_meta(f_15df9d3a_n__polars_plan__dsl__function_expr__functionexpr)?;
     m.function_meta(f_5968e4dc_n__polars_plan__dsl__function_expr__functionexpr)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_04edafd8__function_expr__functionexpr_as_core__fmt__debug)?;
     m.function_meta(p_866e4150_unction_expr__functionexpr_as_core__fmt__display)?;
     m.function_meta(p_5ed25721_pr__binary__binaryfunction_as_core__clone__clone)?;
@@ -24023,6 +24338,11 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6d8f23dc__options__logicalplanudfoptions_as_core__cmp__eq)?;
     m.function_meta(p_5d050719_s__logicalplanudfoptions_as_core__cmp__partialeq)?;
     m.function_meta(p_73d61927_tions__logicalplanudfoptions_as_core__fmt__debug)?;
+    m.function_meta(p_ef1c5b3c_options__ndjsonreadoptions_as_core__clone__clone)?;
+    m.function_meta(p_b13ee05e_dsl__options__ndjsonreadoptions_as_core__cmp__eq)?;
+    m.function_meta(p_40b9bcb3_tions__ndjsonreadoptions_as_core__cmp__partialeq)?;
+    m.function_meta(p_50cea160___options__ndjsonreadoptions_as_core__fmt__debug)?;
+    m.function_meta(p_6c4360dc___options__ndjsonreadoptions_as_core__hash__hash)?;
     m.function_meta(p_2826953b_options__rollingcovoptions_as_core__clone__clone)?;
     m.function_meta(p_7698f2b6_dsl__options__rollingcovoptions_as_core__cmp__eq)?;
     m.function_meta(p_e720b3d5_tions__rollingcovoptions_as_core__cmp__partialeq)?;
@@ -24165,7 +24485,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_3b86c614___dsl__selector__timeunitset_as_core__fmt__debug)?;
     m.function_meta(p_9d113f22_dsl__selector__timeunitset_as_core__fmt__display)?;
     m.function_meta(p_60235dd2___dsl__selector__timeunitset_as_core__hash__hash)?;
-    m.function_meta(i_a370a678_dsl__selector__timeunitset_polars_plan_6453_6626)?;
+    m.function_meta(i_399685c6_dsl__selector__timeunitset_polars_plan_6535_6708)?;
     m.function_meta(p_131cc460___selector__timeunitset_as_core__ops__arith__sub)?;
     m.function_meta(p_343279b0_ctor__timeunitset_as_core__ops__arith__subassign)?;
     m.function_meta(p_dbe35a29__selector__timeunitset_as_core__ops__bit__bitand)?;
@@ -24185,7 +24505,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_419aa6c7_frame__opt_state__optflags_as_core__clone__clone)?;
     m.function_meta(p_daa4d180_e__opt_state__optflags_as_core__default__default)?;
     m.function_meta(p_15aad8a9___frame__opt_state__optflags_as_core__fmt__debug)?;
-    m.function_meta(i_77e55b32_frame__opt_state__optflags_polars_plan_7129_8593)?;
+    m.function_meta(i_bceadd79_frame__opt_state__optflags_polars_plan_7212_8680)?;
     m.function_meta(p_0e7083fb_me__opt_state__optflags_as_core__ops__arith__sub)?;
     m.function_meta(p_7feccd84_t_state__optflags_as_core__ops__arith__subassign)?;
     m.function_meta(p_196558ab_e__opt_state__optflags_as_core__ops__bit__bitand)?;
@@ -24202,6 +24522,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_f09dda1e_olars_schema__schema__schema_as_core__fmt__debug)?;
     m.function_meta(pi_display_polars_core__schema__schemaref)?;
     m.function_meta(f_27f2168e__dtype_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_ae9ff28b__dtype_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_e8b0a6b5_row__array__array__dtype_support__arrayref_deref)?;
     m.function_meta(f_f35ddfd3_ars_arrow__array__primitive__primitivearray_f32_)?;
     m.function_meta(f_a0132ef6_ars_arrow__array__primitive__primitivearray_f64_)?;
@@ -24216,6 +24537,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_0c10d0bf__nulls_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_272567da_ls_polars_arrow__array__binary__binaryarray_i64_)?;
     m.function_meta(f_e7c79b5a__nulls_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_bec65944__nulls_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_abb3a880__array__array__has_nulls_support__arrayref_deref)?;
     m.function_meta(f_edd5ae26_ars_arrow__array__primitive__primitivearray_f32_)?;
     m.function_meta(f_b2ff46f3_ars_arrow__array__primitive__primitivearray_f64_)?;
@@ -24230,6 +24552,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_652e89c4__empty_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_936ab09b_ty_polars_arrow__array__binary__binaryarray_i64_)?;
     m.function_meta(f_86b449a9__empty_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_9d6dde7e__empty_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_3c94a8bf___array__array__is_empty_support__arrayref_deref)?;
     m.function_meta(f_eb368716_ars_arrow__array__primitive__primitivearray_f32_)?;
     m.function_meta(f_36a4057f_ars_arrow__array__primitive__primitivearray_f64_)?;
@@ -24244,6 +24567,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_bc293e17_s_null_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_ea74fb9c_ll_polars_arrow__array__binary__binaryarray_i64_)?;
     m.function_meta(f_19d281fe_s_null_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_bbab0449_s_null_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_62bb8445_w__array__array__is_null_support__arrayref_deref)?;
     m.function_meta(f_faaad3ac_ars_arrow__array__primitive__primitivearray_f32_)?;
     m.function_meta(f_a5b989d1_ars_arrow__array__primitive__primitivearray_f64_)?;
@@ -24258,6 +24582,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_47bd6156__valid_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_e30de4b8_id_polars_arrow__array__binary__binaryarray_i64_)?;
     m.function_meta(f_6fd9113e__valid_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_04602a59__valid_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_d790edc4___array__array__is_valid_support__arrayref_deref)?;
     m.function_meta(f_8ea7b8d6_arrow__array__array__len_support__arrayref_deref)?;
     m.function_meta(f_38feb29a_ars_arrow__array__primitive__primitivearray_f32_)?;
@@ -24273,6 +24598,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_fa1c1a25__count_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_3e10e761_nt_polars_arrow__array__binary__binaryarray_i64_)?;
     m.function_meta(f_d399b0c5__count_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_e1337b35__count_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_087cd523_array__array__null_count_support__arrayref_deref)?;
     m.function_meta(f_112f218d_ow__array__array__sliced_support__arrayref_deref)?;
     m.function_meta(f_80442573_ars_arrow__array__primitive__primitivearray_f32_)?;
@@ -24288,6 +24614,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_0dabf5f3__boxed_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_ad8832b2_ed_polars_arrow__array__binary__binaryarray_i64_)?;
     m.function_meta(f_c8137570__boxed_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_ea06bed9__boxed_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_4b6634be_y__array__split_at_boxed_support__arrayref_deref)?;
     m.function_meta(f_62c6188c_ars_arrow__array__primitive__primitivearray_f32_)?;
     m.function_meta(f_a92e22d9_ars_arrow__array__primitive__primitivearray_f64_)?;
@@ -24302,6 +24629,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_852f4b2b__boxed_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_f1819f33_ed_polars_arrow__array__binary__binaryarray_i64_)?;
     m.function_meta(f_877a4c9e__boxed_polars_arrow__array__list__listarray_i64_)?;
+    m.function_meta(f_f73d2009__boxed_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_6d10e6eb___array__array__to_boxed_support__arrayref_deref)?;
     m.function_meta(f_7b4cc080_ed_polars_arrow__array__binary__binaryarray_i64_)?;
     m.function_meta(f_f5a4cf10__boxed_polars_arrow__array__list__listarray_i64_)?;
@@ -24315,6 +24643,7 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_b1b475cc_ars_arrow__array__primitive__primitivearray_u32_)?;
     m.function_meta(f_e1f06cd1_ars_arrow__array__primitive__primitivearray_u64_)?;
     m.function_meta(f_e16b17b4_lars_arrow__array__primitive__primitivearray_u8_)?;
+    m.function_meta(f_cefa44bf__boxed_polars_arrow__array__struct___structarray)?;
     m.function_meta(f_aa1f42d6__boxed_polars_arrow__array__utf8__utf8array_i64_)?;
     m.function_meta(f_ec221f7c_ay__intoboxedarray__into_boxed_support__arrayref)?;
     m.function_meta(f_d82eea81_ars_arrow__array__primitive__primitivearray_f32_)?;
@@ -24387,6 +24716,11 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_daae4686_r_options_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_db7c7741_r_options_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_f58f78f7_r_options_polars_core__datatypes__float64chunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_9c2ea52c_ter_options_polars_core__datatypes__int16chunked)?;
     m.function_meta(f_6e217914_ter_options_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_ca579628_ter_options_polars_core__datatypes__int64chunked)?;
@@ -24439,11 +24773,6 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_0cb3d1dc_unkedbuilder_polars_core__datatypes__uint16type_)?;
     m.function_meta(f_b3c5f5a4_unkedbuilder_polars_core__datatypes__uint32type_)?;
     m.function_meta(f_e84af6dd_unkedbuilder_polars_core__datatypes__uint64type_)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_0bee918c_hunkedbuilder_polars_core__datatypes__uint8type_)?;
     m.function_meta(f_d019adcd__builder__list__binary__liststringchunkedbuilder)?;
     m.function_meta(f_d7730aef_lder__list__anonymous__anonymousownedlistbuilder)?;
@@ -24904,6 +25233,11 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5c7f5aa7_pagate_nulls_polars_core__datatypes__listchunked)?;
     m.function_meta(f_e0ca10f9_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_cab9baac_ed_offsets_polars_core__datatypes__binarychunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_159f3ab1_sets_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_e0345fab_d_offsets_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_f77ad345_d_offsets_polars_core__datatypes__float32chunked)?;
@@ -24956,11 +25290,6 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_70335d4e_into_column_polars_core__datatypes__int16chunked)?;
     m.function_meta(f_004561fd_into_column_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_84d9b0ac_into_column_polars_core__datatypes__int64chunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_59b1ac6a__into_column_polars_core__datatypes__int8chunked)?;
     m.function_meta(f_d09b928c__into_column_polars_core__datatypes__listchunked)?;
     m.function_meta(f_c9f61163_nto_column_polars_core__datatypes__stringchunked)?;
@@ -25243,16 +25572,27 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_2739f519__polars_io__ipc__write__ipcwriter_support__sink_)?;
     m.function_meta(f_87471c27_me__intolazy__lazy_polars_lazy__frame__lazyframe)?;
     m.function_meta(f_c9e16b41_ud_options_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_0149a715_ns_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_f5b52f93_oncat_impl_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_e6b5c267_pl_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_a2acd63f_er__finish_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_ae16d73b_sh_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_a5936a2d_sh_no_glob_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_071a4224_ob_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_f51d77f0_ader__glob_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_7fdd97f1_ob_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_b8a4cf31_er__n_rows_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_c182cb1f_ws_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_b448a6e9_r__rechunk_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_876b6578_nk_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_0dbe9e80__row_index_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_08c1cb68_ex_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_f3b2ec0f_r__sources_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_91224648_es_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_0b80ab04_th_rechunk_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_24188c46_nk_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_a9a69c2c_th_sources_polars_lazy__scan__csv__lazycsvreader)?;
+    m.function_meta(f_dd24eeb2_es_polars_lazy__scan__ndjson__lazyjsonlinereader)?;
     m.function_meta(f_eb22748f__as_binary_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_4cbae8c8___bin_head_polars_core__datatypes__binarychunked)?;
     m.function_meta(f_c1a8b938__bin_slice_polars_core__datatypes__binarychunked)?;
@@ -25410,6 +25750,11 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(o_c6580359_polars_plan__dsl__selector__selector_bitor)?;
     m.function_meta(o_1517d1ff_polars_plan__dsl__selector__selector_bitxor)?;
     m.function_meta(o_3a0515d0_polars_plan__dsl__selector__selector_sub)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(x_2d2e134b_polars_core__frame__dataframe__dataframe_index)?;
     m.function_meta(v_28f6f718_polars_arrow__datatypes__arrowdatatype__null)?;
     m.function_meta(v_0672668a_polars_arrow__datatypes__arrowdatatype__boolean)?;
@@ -25473,11 +25818,6 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_3e5ff50c_s_core__chunked_array__cast__castoptions__strict)?;
     m.function_meta(v_eb072983_ore__chunked_array__cast__castoptions__nonstrict)?;
     m.function_meta(v_fc0957e3_e__chunked_array__cast__castoptions__overflowing)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_a308de19_hunked_array__ops__explodeoptions__empty_as_null)?;
     m.function_meta(w_a308de19_hunked_array__ops__explodeoptions__empty_as_null)?;
     m.function_meta(s_4a72f7c4___chunked_array__ops__explodeoptions__keep_nulls)?;
@@ -25741,6 +26081,12 @@ fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(w_cabdca99__ipc__write__ipcwriteroptions__record_batch_size)?;
     m.function_meta(s_29c9baaf_write__ipcwriteroptions__record_batch_statistics)?;
     m.function_meta(w_29c9baaf_write__ipcwriteroptions__record_batch_statistics)?;
+    m.function_meta(v_12851cfd_polars_io__json__jsonformat__json)?;
+    m.function_meta(v_db883ecd_polars_io__json__jsonformat__jsonlines)?;
+    m.function_meta(s_750727b1_ars_io__ndjson__ndjsonwriteroptions__compression)?;
+    m.function_meta(w_750727b1_ars_io__ndjson__ndjsonwriteroptions__compression)?;
+    m.function_meta(s_4f47f56c_io__ndjson__ndjsonwriteroptions__check_extension)?;
+    m.function_meta(w_4f47f56c_io__ndjson__ndjsonwriteroptions__check_extension)?;
     m.function_meta(v_ef816786_s_io__options__externalcompression__uncompressed)?;
     m.function_meta(s_44d888fe_polars_io__options__hiveoptions__enabled)?;
     m.function_meta(w_44d888fe_polars_io__options__hiveoptions__enabled)?;
@@ -25921,6 +26267,11 @@ fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_a87c94c0_lars_plan__dsl__expr__renamealiasfn__touppercase)?;
     m.function_meta(v_624cc180__expr__datatype_fn__arraydatatypefunction__width)?;
     m.function_meta(v_50c3f822__expr__datatype_fn__arraydatatypefunction__shape)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_63c6ac7a_sl__expr__datatype_fn__datatypefunction__display)?;
     m.function_meta(v_2216e246_an__dsl__expr__datatype_fn__datatypefunction__eq)?;
     m.function_meta(v_5b353ec7_sl__expr__datatype_fn__datatypefunction__matches)?;
@@ -25990,11 +26341,6 @@ fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_98f4fb8b__dsl__file_scan__unifiedscanargs__deletion_files)?;
     m.function_meta(w_98f4fb8b__dsl__file_scan__unifiedscanargs__deletion_files)?;
     m.function_meta(s_50618d26_sl__file_scan__unifiedscanargs__table_statistics)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(w_50618d26_sl__file_scan__unifiedscanargs__table_statistics)?;
     m.function_meta(s_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count)?;
     m.function_meta(w_94c8db43_plan__dsl__file_scan__unifiedscanargs__row_count)?;
@@ -26081,6 +26427,7 @@ fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_da5e9ba6_ction_expr__struct___structfunction__fieldbyname)?;
     m.function_meta(v_a18b01bc_tion_expr__struct___structfunction__prefixfields)?;
     m.function_meta(v_d17b0629_tion_expr__struct___structfunction__suffixfields)?;
+    m.function_meta(v_8b8488a1_nction_expr__struct___structfunction__jsonencode)?;
     m.function_meta(v_9b56b764_tion_expr__struct___structfunction__selectfields)?;
     m.function_meta(s_fe94abf0__schema__matchtoschemapercolumn__missing_columns)?;
     m.function_meta(w_fe94abf0__schema__matchtoschemapercolumn__missing_columns)?;
@@ -26106,6 +26453,7 @@ fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(s_49fa8b8a__dsl__options__distinctoptionsdsl__keep_strategy)?;
     m.function_meta(w_49fa8b8a__dsl__options__distinctoptionsdsl__keep_strategy)?;
     m.function_meta(v_c23c757e_polars_plan__dsl__options__filewriteformat__csv)?;
+    m.function_meta(v_ff4bc3b6_lars_plan__dsl__options__filewriteformat__ndjson)?;
     m.function_meta(s_a5f35e94_polars_plan__dsl__options__groupbyoptions__slice)?;
     m.function_meta(w_a5f35e94_polars_plan__dsl__options__groupbyoptions__slice)?;
     m.function_meta(s_ca52951a_ars_plan__dsl__options__hconcatoptions__parallel)?;
@@ -26132,6 +26480,16 @@ fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(w_00147976_sl__options__logicalplanudfoptions__predicate_pd)?;
     m.function_meta(s_38bb4223_l__options__logicalplanudfoptions__projection_pd)?;
     m.function_meta(w_38bb4223_l__options__logicalplanudfoptions__projection_pd)?;
+    m.function_meta(s_cdc99785_plan__dsl__options__ndjsonreadoptions__n_threads)?;
+    m.function_meta(w_cdc99785_plan__dsl__options__ndjsonreadoptions__n_threads)?;
+    m.function_meta(s_4f854cd9_lan__dsl__options__ndjsonreadoptions__low_memory)?;
+    m.function_meta(w_4f854cd9_lan__dsl__options__ndjsonreadoptions__low_memory)?;
+    m.function_meta(s_65032182___dsl__options__ndjsonreadoptions__ignore_errors)?;
+    m.function_meta(w_65032182___dsl__options__ndjsonreadoptions__ignore_errors)?;
+    m.function_meta(s_1b9d80ee_rs_plan__dsl__options__ndjsonreadoptions__schema)?;
+    m.function_meta(w_1b9d80ee_rs_plan__dsl__options__ndjsonreadoptions__schema)?;
+    m.function_meta(s_af8c9507_sl__options__ndjsonreadoptions__schema_overwrite)?;
+    m.function_meta(w_af8c9507_sl__options__ndjsonreadoptions__schema_overwrite)?;
     m.function_meta(s_590d7978_an__dsl__options__rollingcovoptions__window_size)?;
     m.function_meta(w_590d7978_an__dsl__options__rollingcovoptions__window_size)?;
     m.function_meta(s_07c1d79f_an__dsl__options__rollingcovoptions__min_periods)?;
@@ -26326,5 +26684,6 @@ fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(ca_as_large_string_array)?;
     m.function_meta(ca_as_large_binary_array)?;
     m.function_meta(ca_as_large_list_array)?;
+    m.function_meta(ca_as_struct_array)?;
     Ok(())
 }
