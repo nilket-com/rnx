@@ -6175,6 +6175,14 @@ fn f_564da124_s_owned_polars_core__frame__dataframe__dataframe(this: &DataFrame)
 /// Polars: `polars_core::frame::dataframe::DataFrame::get_supertype`. get_supertype() -> option of result of DataType (fallible)
 #[rune::function(instance, path = get_supertype)]
 fn f_574443cb_pertype_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Result<Option<W_polars_core__datatypes__dtype__DataType>, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::DataFrame::get_supertype", move || <polars::frame::DataFrame>::get_supertype(__arg0)).map_err(Error::engine)?; Ok(match __r { Some(__r) => Some({ let __r = __r.map_err(Error::from)?; W_polars_core__datatypes__dtype__DataType(__r) }), None => None }) }
+/// Group DataFrame using a Series column.
+/// Polars: `polars_core::frame::dataframe::DataFrame::group_by`. group_by(by: vector of string) -> result of GroupBy (fallible)
+#[rune::function(instance, path = group_by)]
+fn f_0830e958_roup_by_polars_core__frame__dataframe__dataframe(this: &DataFrame, by: rune::Value) -> Result<W_polars_core__frame__group_by__GroupBy, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&by, "by")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "by")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::DataFrame::group_by", move || support::GroupBySnapshot::group_by(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__frame__group_by__GroupBy(__r) }) }
+/// Group DataFrame using a Series column. The groups are ordered by their smallest row index.
+/// Polars: `polars_core::frame::dataframe::DataFrame::group_by_stable`. group_by_stable(by: vector of string) -> result of GroupBy (fallible)
+#[rune::function(instance, path = group_by_stable)]
+fn f_8c496439__stable_polars_core__frame__dataframe__dataframe(this: &DataFrame, by: rune::Value) -> Result<W_polars_core__frame__group_by__GroupBy, Error> { let __arg0 = &this.0; let __arg1 = support::borrow_vec(&by, "by")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "by")?; Ok::<_, Error>(v) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::DataFrame::group_by_stable", move || support::GroupBySnapshot::group_by_stable(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; W_polars_core__frame__group_by__GroupBy(__r) }) }
 /// Get the head of the [`DataFrame`].
 /// Polars: `polars_core::frame::dataframe::DataFrame::head`. head(length: option of int) -> DataFrame (fallible)
 #[rune::function(instance, path = head)]
@@ -6428,6 +6436,31 @@ fn f_c765c1ad_w_index_polars_core__frame__dataframe__dataframe(this: &DataFrame,
 /// Polars: `polars_core::frame::explode::UnpivotArgsIR::new`. new(all_column_names: vector of string, on: option of vector of string, index: vector of string, value_name: option of string, variable_name: option of string) -> UnpivotArgsIR (fallible)
 #[rune::function(free, path = W_polars_core__frame__explode__UnpivotArgsIR::new)]
 fn f_481ebcc4___new_polars_core__frame__explode__unpivotargsir(all_column_names: rune::Value, on: Option<rune::Value>, index: rune::Value, value_name: Option<String>, variable_name: Option<String>) -> Result<W_polars_core__frame__explode__UnpivotArgsIR, Error> { let __r = <polars::frame::explode::UnpivotArgsIR>::new(support::borrow_vec(&all_column_names, "all_column_names")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "all_column_names")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?, match on { Some(v) => Some(support::borrow_vec(&v, "v")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "v")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?), None => None }, support::borrow_vec(&index, "index")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "index")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?, match value_name { Some(v) => Some(p::PlSmallStr::from(v.as_str())), None => None }, match variable_name { Some(v) => Some(p::PlSmallStr::from(v.as_str())), None => None }); Ok(W_polars_core__frame__explode__UnpivotArgsIR(__r)) }
+/// Aggregate grouped series and compute the number of values per group.
+/// Polars: `polars_core::frame::group_by::GroupBy::count`. count() -> result of DataFrame (fallible)
+#[rune::function(instance, path = count)]
+fn f_8d9e4330_pby__count_polars_core__frame__group_by__groupby(this: &W_polars_core__frame__group_by__GroupBy) -> Result<DataFrame, Error> { let __arg0 = &this.0.view(); let __r = crate::engine::run("polars::GroupBy::count", move || <p::GroupBy>::count(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
+/// Get the internal representation of the GroupBy operation. The Vec returned contains:     (first_idx, [`Vec<indexes>`])     Where second value in the tuple is...
+/// Polars: `polars_core::frame::group_by::GroupBy::get_groups`. get_groups() -> GroupPositions
+#[rune::function(instance, path = get_groups)]
+fn f_a0940127_get_groups_polars_core__frame__group_by__groupby(this: &W_polars_core__frame__group_by__GroupBy) -> W_polars_core__frame__group_by__position__GroupPositions { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::GroupBy::get_groups", move || support::GroupBySnapshot::get_groups(__arg0)), "polars::GroupBy::get_groups"); { let __r = (__r).clone(); W_polars_core__frame__group_by__position__GroupPositions(__r) } }
+/// Get the group_by group indexes.
+/// Polars: `polars_core::frame::group_by::GroupBy::groups`. groups() -> result of DataFrame (fallible)
+#[rune::function(instance, path = groups)]
+fn f_559e717d_by__groups_polars_core__frame__group_by__groupby(this: &W_polars_core__frame__group_by__GroupBy) -> Result<DataFrame, Error> { let __arg0 = &this.0.view(); let __r = crate::engine::run("polars::GroupBy::groups", move || <p::GroupBy>::groups(__arg0)).map_err(Error::engine)?; Ok({ let __r = __r.map_err(Error::from)?; DataFrame(__r) }) }
+/// Polars: `polars_core::frame::group_by::GroupBy::into_groups`. into_groups() -> GroupPositions
+#[rune::function(instance, path = into_groups)]
+fn f_0ed08df8_nto_groups_polars_core__frame__group_by__groupby(this: &W_polars_core__frame__group_by__GroupBy) -> W_polars_core__frame__group_by__position__GroupPositions { let __arg0 = this.0.clone(); let __r = crate::engine::infallible(crate::engine::run("polars::GroupBy::into_groups", move || support::GroupBySnapshot::into_groups(__arg0)), "polars::GroupBy::into_groups"); W_polars_core__frame__group_by__position__GroupPositions(__r) }
+/// Polars: `polars_core::frame::group_by::GroupBy::keys`. keys() -> vector of Column
+#[rune::function(instance, path = keys)]
+fn f_0c62b108_upby__keys_polars_core__frame__group_by__groupby(this: &W_polars_core__frame__group_by__GroupBy) -> Vec<W_polars_core__frame__column__Column> { let __arg0 = &this.0.view(); let __r = crate::engine::infallible(crate::engine::run("polars::GroupBy::keys", move || <p::GroupBy>::keys(__arg0)), "polars::GroupBy::keys"); { let mut __v = Vec::new(); for __r in __r { __v.push(W_polars_core__frame__column__Column(__r)); } __v } }
+/// Polars: `polars_core::frame::group_by::GroupBy::keys_sliced`. keys_sliced(slice: option of tuple of int, int) -> vector of Column (fallible)
+#[rune::function(instance, path = keys_sliced)]
+fn f_6fd8fbe4_eys_sliced_polars_core__frame__group_by__groupby(this: &W_polars_core__frame__group_by__GroupBy, slice: Option<(i64, i64)>) -> Result<Vec<W_polars_core__frame__column__Column>, Error> { let __arg0 = &this.0.view(); let __arg1 = match slice { Some(v) => Some((v.0, support::narrow::<usize>(v.1, "v.1")?)), None => None }; let __r = crate::engine::run("polars::GroupBy::keys_sliced", move || <p::GroupBy>::keys_sliced(__arg0, __arg1)).map_err(Error::engine)?; Ok({ let mut __v = Vec::new(); for __r in __r { __v.push(W_polars_core__frame__column__Column(__r)); } __v }) }
+/// Select the column(s) that should be aggregated. You can select a single column or a slice of columns.
+/// Polars: `polars_core::frame::group_by::GroupBy::select`. select_(selection: vector of string) -> GroupBy (fallible)
+#[rune::function(instance, path = select_)]
+fn f_a6191273_by__select_polars_core__frame__group_by__groupby(this: &W_polars_core__frame__group_by__GroupBy, selection: rune::Value) -> Result<W_polars_core__frame__group_by__GroupBy, Error> { let __arg0 = this.0.clone(); let __arg1 = support::borrow_vec(&selection, "selection")?.into_iter().map(|v| { let v: String = support::borrow_element(&v, "selection")?; Ok::<_, Error>(p::PlSmallStr::from(v.as_str())) }).collect::<Result<Vec<_>, Error>>()?; let __r = crate::engine::run("polars::GroupBy::select_", move || support::GroupBySnapshot::select(__arg0, __arg1)).map_err(Error::engine)?; Ok(W_polars_core__frame__group_by__GroupBy(__r)) }
 /// Compare groups based on inner pointer.
 /// Polars: `polars_core::frame::group_by::position::GroupPositions::is_same`. is_same(other: GroupPositions) -> bool
 #[rune::function(instance, path = is_same)]
@@ -10811,6 +10844,9 @@ fn s_74d2a997_de__unpivotargsir_as_serde_core__de__deserialize(s: &str) -> Resul
 /// Polars: `polars_core::frame::explode::UnpivotArgsIR as serde_core::ser::Serialize` (record 0112: serde through serde_json, JSON-byte bounded).
 #[rune::function(instance, path = to_json)]
 fn s_7beebb91_ode__unpivotargsir_as_serde_core__ser__serialize(this: &W_polars_core__frame__explode__UnpivotArgsIR) -> Result<String, Error> { crate::engine::run("UnpivotArgsIR::to_json", || support::to_json(&this.0, "UnpivotArgsIR::to_json")).map_err(Error::engine)? }
+/// Polars: `polars_core::frame::group_by::GroupBy as core::fmt::Debug`.
+#[rune::function(instance, protocol = DEBUG_FMT)]
+fn p_a41b16ca_re__frame__group_by__groupby_as_core__fmt__debug(this: &W_polars_core__frame__group_by__GroupBy, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> { use rune::alloc::fmt::TryWrite; let s = format!("{:?}", this.0); rune::vm_write!(f, "{s}") }
 /// Polars: `polars_core::frame::group_by::GroupByMethod as core::clone::Clone`.
 #[rune::function(instance, protocol = CLONE)]
 fn p_852d6f78_e__group_by__groupbymethod_as_core__clone__clone(this: &W_polars_core__frame__group_by__GroupByMethod) -> W_polars_core__frame__group_by__GroupByMethod { W_polars_core__frame__group_by__GroupByMethod(this.0.clone()) }
@@ -18176,6 +18212,9 @@ fn s_2386ce4f__core__frame__explode__unpivotargsir__value_name(this: &W_polars_c
 /// Set field `value_name` of `polars_core::frame::explode::UnpivotArgsIR`, returning the updated value.
 #[rune::function(instance, path = with_value_name)]
 fn w_2386ce4f__core__frame__explode__unpivotargsir__value_name(this: &W_polars_core__frame__explode__UnpivotArgsIR, v: &str) -> W_polars_core__frame__explode__UnpivotArgsIR { let mut __o = this.0.clone(); __o.value_name = p::PlSmallStr::from(v); W_polars_core__frame__explode__UnpivotArgsIR(__o) }
+/// Field `df` of `polars_core::frame::group_by::GroupBy`.
+#[rune::function(instance, path = df)]
+fn s_9478fd23_polars_core__frame__group_by__groupby__df(this: &W_polars_core__frame__group_by__GroupBy) -> DataFrame { let __r = this.0.df.clone(); { let __r = (__r).clone(); DataFrame(__r) } }
 /// Variant `Min` of `polars_core::frame::group_by::GroupByMethod`.
 #[rune::function(free, path = W_polars_core__frame__group_by__GroupByMethod::Min)]
 fn v_9fb721bb_polars_core__frame__group_by__groupbymethod__min() -> W_polars_core__frame__group_by__GroupByMethod { W_polars_core__frame__group_by__GroupByMethod(<polars_core::frame::group_by::GroupByMethod>::Min) }
@@ -22339,6 +22378,8 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_2a29a8cb_n_names_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_564da124_s_owned_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_574443cb_pertype_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_0830e958_roup_by_polars_core__frame__dataframe__dataframe)?;
+    m.function_meta(f_8c496439__stable_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_b53f857e_e__head_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_bc8385b3__height_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_3524bdfc__hstack_polars_core__frame__dataframe__dataframe)?;
@@ -22406,6 +22447,13 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5e25c48a_mns_mut_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_c765c1ad_w_index_polars_core__frame__dataframe__dataframe)?;
     m.function_meta(f_481ebcc4___new_polars_core__frame__explode__unpivotargsir)?;
+    m.function_meta(f_8d9e4330_pby__count_polars_core__frame__group_by__groupby)?;
+    m.function_meta(f_a0940127_get_groups_polars_core__frame__group_by__groupby)?;
+    m.function_meta(f_559e717d_by__groups_polars_core__frame__group_by__groupby)?;
+    m.function_meta(f_0ed08df8_nto_groups_polars_core__frame__group_by__groupby)?;
+    m.function_meta(f_0c62b108_upby__keys_polars_core__frame__group_by__groupby)?;
+    m.function_meta(f_6fd8fbe4_eys_sliced_polars_core__frame__group_by__groupby)?;
+    m.function_meta(f_a6191273_by__select_polars_core__frame__group_by__groupby)?;
     m.function_meta(f_cdee5d55__core__frame__group_by__position__grouppositions)?;
     m.function_meta(f_4160001d__core__frame__group_by__position__grouppositions)?;
     m.function_meta(f_882f58a4__core__frame__group_by__position__grouppositions)?;
@@ -22639,6 +22687,11 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_09453ae3_s_polars_io__csv__read__options__csvparseoptions)?;
     m.function_meta(f_e60c8387_s_polars_io__csv__read__options__csvparseoptions)?;
     m.function_meta(f_444281a9_ns_polars_io__csv__read__options__csvreadoptions)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5b46920c_ze_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_61ea6beb_er_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_730b205c_rs_polars_io__csv__read__options__csvreadoptions)?;
@@ -22648,11 +22701,6 @@ fn install_3(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_e2856110_ds_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_8ed3db06_ns_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_2c116bbc_ty_polars_io__csv__read__options__csvreadoptions)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_b7bdaea8_nk_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_0077a3ee_ex_polars_io__csv__read__options__csvreadoptions)?;
     m.function_meta(f_e0c6d6ed_ma_polars_io__csv__read__options__csvreadoptions)?;
@@ -23156,6 +23204,11 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_a4116ac3_async_polars_plan__dsl__scan_sources__scansource)?;
     m.function_meta(f_aff8ef04_aths_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_7b5f45d4_path_polars_plan__dsl__scan_sources__scansources)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_0df4a794_ther_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_9cb35876___id_polars_plan__dsl__scan_sources__scansources)?;
     m.function_meta(f_6a9d6805__url_polars_plan__dsl__scan_sources__scansources)?;
@@ -23165,11 +23218,6 @@ fn install_4(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_9daaa45b_tor_polars_plan__dsl__selector__datatypeselector)?;
     m.function_meta(f_69c5d6ed_hes_polars_plan__dsl__selector__datatypeselector)?;
     m.function_meta(f_e8f426f9_or__as_expr_polars_plan__dsl__selector__selector)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_2296d8e8_xclude_cols_polars_plan__dsl__selector__selector)?;
     m.function_meta(f_c0bd85ee_clude_dtype_polars_plan__dsl__selector__selector)?;
     m.function_meta(f_71cc2ade_pe_selector_polars_plan__dsl__selector__selector)?;
@@ -23669,9 +23717,15 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_eb69a724_rame__explode__unpivotargsir_as_core__hash__hash)?;
     m.function_meta(s_74d2a997_de__unpivotargsir_as_serde_core__de__deserialize)?;
     m.function_meta(s_7beebb91_ode__unpivotargsir_as_serde_core__ser__serialize)?;
+    m.function_meta(p_a41b16ca_re__frame__group_by__groupby_as_core__fmt__debug)?;
     m.function_meta(p_852d6f78_e__group_by__groupbymethod_as_core__clone__clone)?;
     m.function_meta(p_daed314c_ame__group_by__groupbymethod_as_core__fmt__debug)?;
     m.function_meta(p_08409c5b_e__group_by__groupbymethod_as_core__fmt__display)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_abf88d37___position__grouppositions_as_core__clone__clone)?;
     m.function_meta(p_be5fbd4d_sition__grouppositions_as_core__default__default)?;
     m.function_meta(p_1af8b781_by__position__grouppositions_as_core__fmt__debug)?;
@@ -23682,11 +23736,6 @@ fn install_5(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6c713403_roup_by__position__groupsidx_as_core__fmt__debug)?;
     m.function_meta(p_f2af2bd7_p_by__position__groupstype_as_core__clone__clone)?;
     m.function_meta(p_4a28399c__group_by__position__groupstype_as_core__cmp__eq)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_6aaaae02_by__position__groupstype_as_core__cmp__partialeq)?;
     m.function_meta(f_20ff3b55_lars_core__frame__group_by__position__groupstype)?;
     m.function_meta(p_4abb1f5b___position__groupstype_as_core__default__default)?;
@@ -24189,6 +24238,11 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_8bfb60b7__scan__predicatefileskip_as_core__cmp__partialeq)?;
     m.function_meta(p_e4fc9250_can__predicatefileskip_as_core__default__default)?;
     m.function_meta(p_0399c809_file_scan__predicatefileskip_as_core__fmt__debug)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_4bb23654_file_scan__predicatefileskip_as_core__hash__hash)?;
     m.function_meta(p_87009bf1__dsl__file_scan__scanflags_as_core__clone__clone)?;
     m.function_meta(p_6db3fcc9_plan__dsl__file_scan__scanflags_as_core__cmp__eq)?;
@@ -24199,11 +24253,6 @@ fn install_6(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_c969a7b2_e_scan__scanflags_as_core__ops__arith__subassign)?;
     m.function_meta(p_465cffe6___file_scan__scanflags_as_core__ops__bit__bitand)?;
     m.function_meta(p_75cd3730__scan__scanflags_as_core__ops__bit__bitandassign)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(p_58ff7fa2_l__file_scan__scanflags_as_core__ops__bit__bitor)?;
     m.function_meta(p_8529449e_e_scan__scanflags_as_core__ops__bit__bitorassign)?;
     m.function_meta(p_989e9306___file_scan__scanflags_as_core__ops__bit__bitxor)?;
@@ -24706,6 +24755,11 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_73ba61bc_nkedbuilder_polars_core__datatypes__float32type_)?;
     m.function_meta(f_4934544b_nkedbuilder_polars_core__datatypes__float64type_)?;
     m.function_meta(f_8fbae58f_hunkedbuilder_polars_core__datatypes__int16type_)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_d62112b9_hunkedbuilder_polars_core__datatypes__int32type_)?;
     m.function_meta(f_e6f82a97_hunkedbuilder_polars_core__datatypes__int64type_)?;
     m.function_meta(f_7a2b765a_chunkedbuilder_polars_core__datatypes__int8type_)?;
@@ -24716,11 +24770,6 @@ fn install_7(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_daae4686_r_options_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_db7c7741_r_options_polars_core__datatypes__float32chunked)?;
     m.function_meta(f_f58f78f7_r_options_polars_core__datatypes__float64chunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_9c2ea52c_ter_options_polars_core__datatypes__int16chunked)?;
     m.function_meta(f_6e217914_ter_options_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_ca579628_ter_options_polars_core__datatypes__int64chunked)?;
@@ -25223,6 +25272,11 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_e7d462b3_agate_nulls_polars_core__datatypes__int16chunked)?;
     m.function_meta(f_8e0a0600_agate_nulls_polars_core__datatypes__int32chunked)?;
     m.function_meta(f_f84f06c7_agate_nulls_polars_core__datatypes__int64chunked)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_3506736d_pagate_nulls_polars_core__datatypes__int8chunked)?;
     m.function_meta(f_9f098afa_gate_nulls_polars_core__datatypes__stringchunked)?;
     m.function_meta(f_7b6c6282_gate_nulls_polars_core__datatypes__uint16chunked)?;
@@ -25233,11 +25287,6 @@ fn install_8(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_5c7f5aa7_pagate_nulls_polars_core__datatypes__listchunked)?;
     m.function_meta(f_e0ca10f9_lars_core__chunked_array__struct___structchunked)?;
     m.function_meta(f_cab9baac_ed_offsets_polars_core__datatypes__binarychunked)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(f_159f3ab1_sets_polars_core__datatypes__binaryoffsetchunked)?;
     m.function_meta(f_e0345fab_d_offsets_polars_core__datatypes__booleanchunked)?;
     m.function_meta(f_f77ad345_d_offsets_polars_core__datatypes__float32chunked)?;
@@ -25740,6 +25789,11 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(o_c677c961_polars_core__series__series_sub)?;
     m.function_meta(o_dc0862d4_polars_plan__dsl__expr__expr_div)?;
     m.function_meta(o_5a78051e_polars_plan__dsl__expr__expr_mul)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(o_32486ac7_polars_plan__dsl__expr__expr_rem)?;
     m.function_meta(o_35a054c1_polars_plan__dsl__expr__expr_sub)?;
     m.function_meta(o_30b9ed0b_ars_plan__dsl__selector__datatypeselector_bitand)?;
@@ -25750,11 +25804,6 @@ fn install_9(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(o_c6580359_polars_plan__dsl__selector__selector_bitor)?;
     m.function_meta(o_1517d1ff_polars_plan__dsl__selector__selector_bitxor)?;
     m.function_meta(o_3a0515d0_polars_plan__dsl__selector__selector_sub)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(x_2d2e134b_polars_core__frame__dataframe__dataframe_index)?;
     m.function_meta(v_28f6f718_polars_arrow__datatypes__arrowdatatype__null)?;
     m.function_meta(v_0672668a_polars_arrow__datatypes__arrowdatatype__boolean)?;
@@ -25892,6 +25941,7 @@ fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(w_4ffb57e3_re__frame__explode__unpivotargsir__variable_name)?;
     m.function_meta(s_2386ce4f__core__frame__explode__unpivotargsir__value_name)?;
     m.function_meta(w_2386ce4f__core__frame__explode__unpivotargsir__value_name)?;
+    m.function_meta(s_9478fd23_polars_core__frame__group_by__groupby__df)?;
     m.function_meta(v_9fb721bb_polars_core__frame__group_by__groupbymethod__min)?;
     m.function_meta(v_e4e8a117_ars_core__frame__group_by__groupbymethod__nanmin)?;
     m.function_meta(v_9ff89295_polars_core__frame__group_by__groupbymethod__max)?;
@@ -26256,6 +26306,11 @@ fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_3d8caf2d_polars_plan__dsl__expr__operator__truedivide)?;
     m.function_meta(v_6fbce3ae_polars_plan__dsl__expr__operator__floordivide)?;
     m.function_meta(v_3167092b_polars_plan__dsl__expr__operator__modulus)?;
+    Ok(())
+}
+
+#[inline(never)]
+fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_9bfb001a_polars_plan__dsl__expr__operator__and)?;
     m.function_meta(v_bf55eb81_polars_plan__dsl__expr__operator__or)?;
     m.function_meta(v_6b2f85f1_polars_plan__dsl__expr__operator__xor)?;
@@ -26267,11 +26322,6 @@ fn install_10(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_a87c94c0_lars_plan__dsl__expr__renamealiasfn__touppercase)?;
     m.function_meta(v_624cc180__expr__datatype_fn__arraydatatypefunction__width)?;
     m.function_meta(v_50c3f822__expr__datatype_fn__arraydatatypefunction__shape)?;
-    Ok(())
-}
-
-#[inline(never)]
-fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(v_63c6ac7a_sl__expr__datatype_fn__datatypefunction__display)?;
     m.function_meta(v_2216e246_an__dsl__expr__datatype_fn__datatypefunction__eq)?;
     m.function_meta(v_5b353ec7_sl__expr__datatype_fn__datatypefunction__matches)?;

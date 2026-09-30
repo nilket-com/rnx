@@ -15,8 +15,8 @@
       "feasible (vector argument)": 4,
       "not eligible": 16,
       "out of scope: internal crate": 26,
-      "refused": 79,
-      "unresolved": 1
+      "refused": 76,
+      "unresolved": 4
     },
     "count": 163,
     "rows": [
@@ -2535,8 +2535,8 @@
         "closures": [
           "f: FnMut(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>"
         ],
-        "disposition": "refused",
-        "disposition after emission": "refused: callback audit: refused",
+        "disposition": "unresolved",
+        "disposition after emission": "refused: callback audit: unresolved",
         "invocation": [
           {
             "invocation": "unresolved",
@@ -2548,9 +2548,7 @@
         "mutable_contracts": [],
         "name": "apply",
         "owner": "polars_core::frame::group_by::GroupBy",
-        "refusals": [
-          "owner not wrapped: polars_core::frame::group_by::GroupBy"
-        ],
+        "refusals": [],
         "today": "unsupported",
         "unresolved": [
           "f: invocation not audited"
@@ -2562,8 +2560,8 @@
         "closures": [
           "f: FnMut(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>"
         ],
-        "disposition": "refused",
-        "disposition after emission": "refused: callback audit: refused",
+        "disposition": "unresolved",
+        "disposition after emission": "refused: callback audit: unresolved",
         "invocation": [
           {
             "invocation": "unresolved",
@@ -2575,9 +2573,7 @@
         "mutable_contracts": [],
         "name": "apply_sliced",
         "owner": "polars_core::frame::group_by::GroupBy",
-        "refusals": [
-          "owner not wrapped: polars_core::frame::group_by::GroupBy"
-        ],
+        "refusals": [],
         "today": "unsupported",
         "unresolved": [
           "f: invocation not audited"
@@ -2589,8 +2585,8 @@
         "closures": [
           "f: Fn(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>"
         ],
-        "disposition": "refused",
-        "disposition after emission": "refused: callback audit: refused",
+        "disposition": "unresolved",
+        "disposition after emission": "refused: rebuilt borrow: par_apply: deprecated in Polars (use the lazy aggregations); removed by v2",
         "invocation": [
           {
             "invocation": "unresolved",
@@ -2602,9 +2598,7 @@
         "mutable_contracts": [],
         "name": "par_apply",
         "owner": "polars_core::frame::group_by::GroupBy",
-        "refusals": [
-          "owner not wrapped: polars_core::frame::group_by::GroupBy"
-        ],
+        "refusals": [],
         "today": "unsupported",
         "unresolved": [
           "f: invocation not audited"
@@ -6324,9 +6318,9 @@
   },
   "counts": {
     "adapted": 436,
-    "generated": 2884,
+    "generated": 2894,
     "out_of_scope": 379,
-    "unsupported": 1448
+    "unsupported": 1438
   },
   "entries": [
     {
@@ -44817,29 +44811,57 @@
       "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "excluded: nondeterministic oracle (record 0126 rebuilt borrow: the binding returns a GroupBy snapshot; the oracle's Rust side cannot hold Polars' borrowed GroupBy as that wrapper. tests/group_by.rs compares every operation (count, groups, keys, keys_sliced, get_groups, into_groups, select, Debug) with Rust's real borrowed GroupBy, at both pins)",
+          "id": "polars_core__frame__dataframe__dataframe__group_by",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::group_by"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::group_by",
+      "execution": "excluded: nondeterministic oracle (record 0126 rebuilt borrow: the binding returns a GroupBy snapshot; the oracle's Rust side cannot hold Polars' borrowed GroupBy as that wrapper. tests/group_by.rs compares every operation (count, groups, keys, keys_sliced, get_groups, into_groups, select, Debug) with Rust's real borrowed GroupBy, at both pins)",
+      "fallible": true,
       "key": "polars_core:7559",
       "kind": "inherent",
-      "reason": "lifetime type: return (polars_core::frame::group_by::GroupBy)",
+      "note": "routed through the engine thread",
+      "rune": "polars::DataFrame::group_by",
       "signature": "(I) -> polars_error::PolarsResult<polars_core::frame::group_by::GroupBy>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "excluded: nondeterministic oracle (record 0126 rebuilt borrow: the binding returns a GroupBy snapshot; the oracle's Rust side cannot hold Polars' borrowed GroupBy as that wrapper. tests/group_by.rs compares every operation (count, groups, keys, keys_sliced, get_groups, into_groups, select, Debug) with Rust's real borrowed GroupBy, at both pins)",
+          "id": "polars_core__frame__dataframe__dataframe__group_by_stable",
+          "receiver": "polars_core::frame::dataframe::DataFrame",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::DataFrame::group_by_stable"
+        }
+      ],
       "bucket": "generic",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::group_by_stable",
+      "execution": "excluded: nondeterministic oracle (record 0126 rebuilt borrow: the binding returns a GroupBy snapshot; the oracle's Rust side cannot hold Polars' borrowed GroupBy as that wrapper. tests/group_by.rs compares every operation (count, groups, keys, keys_sliced, get_groups, into_groups, select, Debug) with Rust's real borrowed GroupBy, at both pins)",
+      "fallible": true,
       "key": "polars_core:7560",
       "kind": "inherent",
-      "reason": "lifetime type: return (polars_core::frame::group_by::GroupBy)",
+      "note": "routed through the engine thread",
+      "rune": "polars::DataFrame::group_by_stable",
       "signature": "(I) -> polars_error::PolarsResult<polars_core::frame::group_by::GroupBy>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "generic",
       "canonical_path": "polars_core::frame::dataframe::DataFrame::group_by_with_series",
       "key": "polars_core:7557",
       "kind": "inherent",
-      "reason": "lifetime type: return (polars_core::frame::group_by::GroupBy)",
+      "reason": "rebuilt borrow: group_by_with_series takes or returns GroupBy, and is not a listed recipe (polars-core 0.55.2 frame/group_by/mod.rs:186-193 (GroupBy<'a> { pub df: &'a DataFrame, .. }), :196 GroupBy::new (public); record 0126 plan section 1)",
       "signature": "(alloc::vec::Vec<polars_core::frame::column::Column>, bool, bool) -> polars_error::PolarsResult<polars_core::frame::group_by::GroupBy>",
       "status": "unsupported"
     },
@@ -46576,7 +46598,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::apply",
       "key": "polars_core:8443",
       "kind": "inherent",
-      "reason": "callback audit: refused",
+      "reason": "callback audit: unresolved",
       "signature": "(F) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46585,79 +46607,163 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::apply_sliced",
       "key": "polars_core:8444",
       "kind": "inherent",
-      "reason": "callback audit: refused",
+      "reason": "callback audit: unresolved",
       "signature": "(core::option::Option<(i64, usize)>, F, core::option::Option<&polars_core::schema::SchemaRef>) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+          "id": "polars_core__frame__group_by__groupby__count",
+          "receiver": "polars_core::frame::group_by::GroupBy",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::GroupBy::count"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_core::frame::group_by::GroupBy::count",
+      "execution": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_core:8440",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "note": "routed through the engine thread",
+      "rune": "polars::GroupBy::count",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "mechanical",
       "canonical_path": "polars_core::frame::group_by::GroupBy::first",
       "key": "polars_core:8433",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: first: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+          "id": "polars_core__frame__group_by__groupby__get_groups",
+          "receiver": "polars_core::frame::group_by::GroupBy",
+          "reentry": "unwind",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::GroupBy::get_groups"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::group_by::GroupBy::get_groups",
+      "execution": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_core:8424",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "note": "routed through the engine thread",
+      "rune": "polars::GroupBy::get_groups",
       "signature": "() -> &polars_core::frame::group_by::position::GroupPositions",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+          "id": "polars_core__frame__group_by__groupby__groups",
+          "receiver": "polars_core::frame::group_by::GroupBy",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::GroupBy::groups"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_core::frame::group_by::GroupBy::groups",
+      "execution": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_core:8441",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "note": "routed through the engine thread",
+      "rune": "polars::GroupBy::groups",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+          "id": "polars_core__frame__group_by__groupby__into_groups",
+          "receiver": "polars_core::frame::group_by::GroupBy",
+          "reentry": "unwind",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::GroupBy::into_groups"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_core::frame::group_by::GroupBy::into_groups",
+      "execution": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_core:8426",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "note": "consumes in Rust; the Rune value is cloned and stays usable; routed through the engine thread",
+      "rune": "polars::GroupBy::into_groups",
       "signature": "() -> polars_core::frame::group_by::position::GroupPositions",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+          "id": "polars_core__frame__group_by__groupby__keys",
+          "receiver": "polars_core::frame::group_by::GroupBy",
+          "reentry": "unwind",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::GroupBy::keys"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::group_by::GroupBy::keys",
+      "execution": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+      "fallible": false,
       "key": "polars_core:8428",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "note": "routed through the engine thread",
+      "rune": "polars::GroupBy::keys",
       "signature": "() -> alloc::vec::Vec<polars_core::frame::column::Column>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+          "id": "polars_core__frame__group_by__groupby__keys_sliced",
+          "receiver": "polars_core::frame::group_by::GroupBy",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::GroupBy::keys_sliced"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::group_by::GroupBy::keys_sliced",
+      "execution": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_core:8427",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "note": "routed through the engine thread; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::GroupBy::keys_sliced",
       "signature": "(core::option::Option<(i64, usize)>) -> alloc::vec::Vec<polars_core::frame::column::Column>",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "mechanical",
       "canonical_path": "polars_core::frame::group_by::GroupBy::last",
       "key": "polars_core:8434",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: last: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46666,7 +46772,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::max",
       "key": "polars_core:8432",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: max: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46675,7 +46781,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::mean",
       "key": "polars_core:8429",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: mean: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46684,7 +46790,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::median",
       "key": "polars_core:8437",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: median: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46693,7 +46799,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::min",
       "key": "polars_core:8431",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: min: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46702,7 +46808,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::n_unique",
       "key": "polars_core:8435",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: n_unique: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46711,7 +46817,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::new",
       "key": "polars_core:8422",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: new: not a listed use of GroupBy (receiver none); only the listed recipes create or consume one (polars-core 0.55.2 frame/group_by/mod.rs:186-193 (GroupBy<'a> { pub df: &'a DataFrame, .. }), :196 GroupBy::new (public); record 0126 plan section 1)",
       "signature": "(&polars_core::frame::dataframe::DataFrame, alloc::vec::Vec<polars_core::frame::column::Column>, polars_core::frame::group_by::position::GroupPositions, core::option::Option<alloc::vec::Vec<polars_utils::pl_str::PlSmallStr>>) -> Self",
       "status": "unsupported"
     },
@@ -46720,7 +46826,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::par_apply",
       "key": "polars_core:8442",
       "kind": "inherent",
-      "reason": "callback audit: refused",
+      "reason": "rebuilt borrow: par_apply: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "(F) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46729,25 +46835,39 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::quantile",
       "key": "polars_core:8436",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: quantile: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "(f64, polars_compute::rolling::QuantileMethod) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+          "id": "polars_core__frame__group_by__groupby__select",
+          "receiver": "polars_core::frame::group_by::GroupBy",
+          "reentry": "error",
+          "route": "inherent",
+          "route_reason": "engine thread",
+          "rune": "polars::GroupBy::select_"
+        }
+      ],
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::group_by::GroupBy::select",
+      "execution": "no fixture for the receiver type (public fields, no Default, no constructor binding)",
+      "fallible": true,
       "key": "polars_core:8423",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "note": "consumes in Rust; the Rune value is cloned and stays usable; routed through the engine thread; renamed: `select` is a Rune keyword; fallible in Rune because an argument conversion can fail",
+      "rune": "polars::GroupBy::select_",
       "signature": "(I) -> Self",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bucket": "conversion",
       "canonical_path": "polars_core::frame::group_by::GroupBy::sliced",
       "key": "polars_core:8445",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "release policy: sliced leaves per-group keys beside frame row indices; any later aggregation (prepare_agg -> keys -> keys_sliced(None)) calls take_slice_unchecked with those row indices on the short keys, an unchecked out-of-bounds read (polars-core 0.55.2 frame/group_by/mod.rs:840 sliced, :302 keys, :306-307 prepare_agg, :264 keys_sliced take_slice_unchecked(groups.first()); record 0126 plan section 1)",
       "signature": "(core::option::Option<(i64, usize)>) -> Self",
       "status": "unsupported"
     },
@@ -46756,7 +46876,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::std",
       "key": "polars_core:8439",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: std: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "(u8) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46765,7 +46885,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::sum",
       "key": "polars_core:8430",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: sum: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "() -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -46774,7 +46894,7 @@
       "canonical_path": "polars_core::frame::group_by::GroupBy::var",
       "key": "polars_core:8438",
       "kind": "inherent",
-      "reason": "lifetime owner: polars_core::frame::group_by::GroupBy",
+      "reason": "rebuilt borrow: var: deprecated in Polars (use the lazy aggregations); removed by v2",
       "signature": "(u8) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -81571,13 +81691,25 @@
       "status": "unsupported"
     },
     {
+      "bindings": [
+        {
+          "disposition": "no fixture for the receiver type",
+          "id": "polars_core__frame__group_by__groupby_as_core__fmt__debug",
+          "receiver": "polars_core::frame::group_by::GroupBy",
+          "route": "protocol",
+          "rune": "polars::GroupBy DEBUG_FMT"
+        }
+      ],
       "bucket": "mechanical",
       "canonical_path": "polars_core::frame::group_by::GroupBy as core::fmt::Debug",
+      "execution": "no fixture for the receiver type",
+      "fallible": false,
       "key": "polars_core:7558:8500",
       "kind": "foreign_trait_impl",
-      "reason": "owner not wrapped: polars_core::frame::group_by::GroupBy",
+      "note": "derived: true",
+      "rune": "polars::GroupBy DEBUG_FMT",
       "signature": "(&mut core::fmt::Formatter) -> core::fmt::Result",
-      "status": "unsupported"
+      "status": "generated"
     },
     {
       "bindings": [
@@ -108869,7 +109001,7 @@
       "canonical_path": "polars_arrow::legacy::index::IndexToUsize::negative_to_usize",
       "key": "polars_arrow:13010",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: I [I on 338 wrapped types: no recorded impl of `PartialOrd` for `I`; I on 5 wrapped types: trait `num_traits::cast::NumCast` is outside the inventory]",
+      "reason": "no wrapped implementor: I [I on 339 wrapped types: no recorded impl of `PartialOrd` for `I`; I on 5 wrapped types: trait `num_traits::cast::NumCast` is outside the inventory]",
       "signature": "(usize) -> core::option::Option<usize>",
       "status": "unsupported"
     },
@@ -108878,7 +109010,7 @@
       "canonical_path": "polars_arrow::legacy::index::IndexToUsize::try_negative_to_usize",
       "key": "polars_arrow:13011",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: I [I on 338 wrapped types: no recorded impl of `PartialOrd` for `I`; I on 5 wrapped types: trait `num_traits::cast::NumCast` is outside the inventory]",
+      "reason": "no wrapped implementor: I [I on 339 wrapped types: no recorded impl of `PartialOrd` for `I`; I on 5 wrapped types: trait `num_traits::cast::NumCast` is outside the inventory]",
       "signature": "(usize) -> polars_error::PolarsResult<usize>",
       "status": "unsupported"
     },
@@ -108958,7 +109090,7 @@
       "canonical_path": "polars_arrow::legacy::utils::CustomIterTools::collect_reversed",
       "key": "polars_arrow:13285",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, T, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 343 wrapped types: core trait `core::iter::traits::iterator::Iterator` is not modelled]",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, T, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 344 wrapped types: core trait `core::iter::traits::iterator::Iterator` is not modelled]",
       "signature": "() -> T",
       "status": "unsupported"
     },
@@ -108967,7 +109099,7 @@
       "canonical_path": "polars_arrow::legacy::utils::CustomIterTools::collect_trusted",
       "key": "polars_arrow:13284",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, T, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 343 wrapped types: core trait `core::iter::traits::iterator::Iterator` is not modelled]",
+      "reason": "no wrapped implementor: blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, T, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket, blanket [T on 344 wrapped types: core trait `core::iter::traits::iterator::Iterator` is not modelled]",
       "signature": "() -> T",
       "status": "unsupported"
     },
@@ -112531,7 +112663,7 @@
       "canonical_path": "polars_core::chunked_array::from_iterator_par::ChunkedCollectParIterExt::collect_ca_with_dtype",
       "key": "polars_core:3181",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: blanket, I [I on 343 wrapped types: trait `rayon::iter::ParallelIterator` is outside the inventory]",
+      "reason": "no wrapped implementor: blanket, I [I on 344 wrapped types: trait `rayon::iter::ParallelIterator` is outside the inventory]",
       "signature": "(polars_utils::pl_str::PlSmallStr, polars_core::datatypes::dtype::DataType) -> B",
       "status": "unsupported"
     },
@@ -119258,7 +119390,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::add",
       "key": "polars_core:10278",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 343 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 344 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -119267,7 +119399,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::div",
       "key": "polars_core:10280",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 343 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 344 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -119276,7 +119408,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::mul",
       "key": "polars_core:10281",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 343 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 344 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -119285,7 +119417,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::rem",
       "key": "polars_core:10282",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 343 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 344 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -119294,7 +119426,7 @@
       "canonical_path": "polars_core::series::arithmetic::borrowed::LhsNumOps::sub",
       "key": "polars_core:10279",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 343 wrapped types: trait `num_traits::Num` is outside the inventory]",
+      "reason": "no wrapped implementor: T [T on 344 wrapped types: trait `num_traits::Num` is outside the inventory]",
       "signature": "(&polars_core::series::Series) -> Self::Output",
       "status": "unsupported"
     },
@@ -125365,7 +125497,7 @@
       "canonical_path": "polars_ops::frame::join::args::CrossJoinFilter::apply",
       "key": "polars_ops:662",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: T [T on 1 wrapped types: bound syntax `core::ops::function::Fn(T) -> polars_error::PolarsResult<T> + core::marker::Send + core::marker::Sync` is not modelled; T on 342 wrapped types: bound syntax `core::ops::function::Fn(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame> + core::marker::Send + core::marker::Sync` is not modelled]",
+      "reason": "no wrapped implementor: T [T on 1 wrapped types: bound syntax `core::ops::function::Fn(T) -> polars_error::PolarsResult<T> + core::marker::Send + core::marker::Sync` is not modelled; T on 343 wrapped types: bound syntax `core::ops::function::Fn(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame> + core::marker::Send + core::marker::Sync` is not modelled]",
       "signature": "(polars_core::frame::dataframe::DataFrame) -> polars_error::PolarsResult<polars_core::frame::dataframe::DataFrame>",
       "status": "unsupported"
     },
@@ -125835,7 +125967,7 @@
       "canonical_path": "polars_plan::dsl::expr::anonymous::expr::ColumnsUdf::as_any",
       "key": "polars_plan:881",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: polars_plan::dsl::expr::anonymous::expr::BaseColumnUdf, F [F on 1 wrapped types: bound syntax `core::ops::function::Fn(&mut [F]) -> polars_error::PolarsResult<F> + core::marker::Send + core::marker::Sync` is not modelled; F on 342 wrapped types: bound syntax `core::ops::function::Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column> + core::marker::Send + core::marker::Sync` is not modelled]",
+      "reason": "no wrapped implementor: polars_plan::dsl::expr::anonymous::expr::BaseColumnUdf, F [F on 1 wrapped types: bound syntax `core::ops::function::Fn(&mut [F]) -> polars_error::PolarsResult<F> + core::marker::Send + core::marker::Sync` is not modelled; F on 343 wrapped types: bound syntax `core::ops::function::Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column> + core::marker::Send + core::marker::Sync` is not modelled]",
       "signature": "() -> &dyn core::any::Any",
       "status": "unsupported"
     },
@@ -125844,7 +125976,7 @@
       "canonical_path": "polars_plan::dsl::expr::anonymous::expr::ColumnsUdf::call_udf",
       "key": "polars_plan:882",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: polars_plan::dsl::expr::anonymous::expr::BaseColumnUdf, F [F on 1 wrapped types: bound syntax `core::ops::function::Fn(&mut [F]) -> polars_error::PolarsResult<F> + core::marker::Send + core::marker::Sync` is not modelled; F on 342 wrapped types: bound syntax `core::ops::function::Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column> + core::marker::Send + core::marker::Sync` is not modelled]",
+      "reason": "no wrapped implementor: polars_plan::dsl::expr::anonymous::expr::BaseColumnUdf, F [F on 1 wrapped types: bound syntax `core::ops::function::Fn(&mut [F]) -> polars_error::PolarsResult<F> + core::marker::Send + core::marker::Sync` is not modelled; F on 343 wrapped types: bound syntax `core::ops::function::Fn(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column> + core::marker::Send + core::marker::Sync` is not modelled]",
       "signature": "(&mut [polars_core::frame::column::Column]) -> polars_error::PolarsResult<polars_core::frame::column::Column>",
       "status": "unsupported"
     },
@@ -125898,7 +126030,7 @@
       "canonical_path": "polars_plan::plans::apply::UdfSchema::get_schema",
       "key": "polars_plan:11747",
       "kind": "trait_method",
-      "reason": "no wrapped implementor: F [F on 343 wrapped types: bound syntax `core::ops::function::Fn(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_core::schema::SchemaRef> + core::marker::Send + core::marker::Sync` is not modelled]",
+      "reason": "no wrapped implementor: F [F on 344 wrapped types: bound syntax `core::ops::function::Fn(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_core::schema::SchemaRef> + core::marker::Send + core::marker::Sync` is not modelled]",
       "signature": "(&polars_core::schema::Schema) -> polars_error::PolarsResult<polars_core::schema::SchemaRef>",
       "status": "unsupported"
     },
@@ -129546,6 +129678,10 @@
       {
         "reason": "no public fields, no Default, no constructor binding",
         "type": "polars_core::frame::builder::DataFrameBuilder"
+      },
+      {
+        "reason": "public fields, no Default, no constructor binding",
+        "type": "polars_core::frame::group_by::GroupBy"
       },
       {
         "reason": "no public fields, no Default, no constructor binding",
@@ -179348,6 +179484,14 @@
       "reason": "no fixture for a parameter (polars_core::chunked_array::ops::ExplodeOptions)"
     },
     {
+      "path": "polars_core::frame::dataframe::DataFrame::group_by",
+      "reason": "excluded: nondeterministic oracle (record 0126 rebuilt borrow: the binding returns a GroupBy snapshot; the oracle's Rust side cannot hold Polars' borrowed GroupBy as that wrapper. tests/group_by.rs compares every operation (count, groups, keys, keys_sliced, get_groups, into_groups, select, Debug) with Rust's real borrowed GroupBy, at both pins)"
+    },
+    {
+      "path": "polars_core::frame::dataframe::DataFrame::group_by_stable",
+      "reason": "excluded: nondeterministic oracle (record 0126 rebuilt borrow: the binding returns a GroupBy snapshot; the oracle's Rust side cannot hold Polars' borrowed GroupBy as that wrapper. tests/group_by.rs compares every operation (count, groups, keys, keys_sliced, get_groups, into_groups, select, Debug) with Rust's real borrowed GroupBy, at both pins)"
+    },
+    {
       "path": "polars_core::frame::dataframe::DataFrame::partition_by",
       "reason": "excluded: nondeterministic oracle (the order of the partitions is unspecified (Polars documents only partition_by_stable as order-maintaining); the oracle's unordered policy covers rows within one frame, not a vector of frames (record 0084, observed run to run))"
     },
@@ -179362,6 +179506,34 @@
     {
       "path": "polars_core::frame::dataframe::DataFrame::split_at",
       "reason": "return type has no comparison ((DataFrame, DataFrame))"
+    },
+    {
+      "path": "polars_core::frame::group_by::GroupBy::count",
+      "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_core::frame::group_by::GroupBy::get_groups",
+      "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_core::frame::group_by::GroupBy::groups",
+      "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_core::frame::group_by::GroupBy::into_groups",
+      "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_core::frame::group_by::GroupBy::keys",
+      "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_core::frame::group_by::GroupBy::keys_sliced",
+      "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
+    },
+    {
+      "path": "polars_core::frame::group_by::GroupBy::select",
+      "reason": "no fixture for the receiver type (public fields, no Default, no constructor binding)"
     },
     {
       "path": "polars_core::frame::group_by::position::GroupPositions::is_same",
@@ -180706,6 +180878,10 @@
     {
       "path": "polars_core::frame::explode::UnpivotArgsIR as core::fmt::Debug",
       "reason": "protocol Debug has no script-level trigger"
+    },
+    {
+      "path": "polars_core::frame::group_by::GroupBy as core::fmt::Debug",
+      "reason": "no fixture for the receiver type"
     },
     {
       "path": "polars_core::frame::group_by::GroupByMethod as core::clone::Clone",
@@ -183259,7 +183435,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "f9aa8f5c58b47154fe1e049cd215ceb4f3f6c0219883f5e3edd6a3f2c9a65e14",
+    "sha256": "018278f2330f11da6dae12ed79da0e122a0a00f0bba6016d5cd95e76030b1097",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",
@@ -184213,6 +184389,14 @@
       "rune": "polars::UnpivotArgsIR",
       "shared_with": [],
       "type": "polars_core::frame::explode::UnpivotArgsIR"
+    },
+    {
+      "hand_written": false,
+      "identity": "polars_core::frame::group_by::GroupBy",
+      "rule": "rebuilt borrow",
+      "rune": "polars::GroupBy",
+      "shared_with": [],
+      "type": "polars_core::frame::group_by::GroupBy"
     },
     {
       "hand_written": false,

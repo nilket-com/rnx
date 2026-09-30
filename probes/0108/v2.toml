@@ -18,7 +18,7 @@ name = "v2-rc2"
 source = "git da47b7405f0e2d188e71cce7c2d588c695f4098d (Rust workspace at py-2.0.0-rc.2)"
 api_crates = ["polars_arrow", "polars_core", "polars_defs", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error", "polars_sql", "polars_config"]
 namespaced_crates = ["polars_arrow"]
-frozen_bindings = "probes/0125/frozen-v2.json"
+frozen_bindings = "probes/0126/frozen-v2.json"
 # Record 0085: validity bitmap returns copied into an owned Vec<bool>;
 # only these paths, every other Bitmap stays refused.
 bitmap_returns = [
@@ -94,6 +94,12 @@ args = { other = "*", left_on = "*", right_on = "*", args = "polars::JoinArgs::d
 options = "JoinArgs::default()"
 cite = "polars-ops-0.55.2 join/args.rs:153 JoinArgs::default() takes maintain_order: Default::default() = None"
 
+[[excluded_oracle]]
+path = "polars_core::frame::dataframe::DataFrame::group_by"
+reason = "record 0126 rebuilt borrow: the binding returns a GroupBy snapshot; the oracle's Rust side cannot hold Polars' borrowed GroupBy as that wrapper. tests/group_by.rs compares every operation (count, groups, keys, keys_sliced, get_groups, into_groups, select, Debug) with Rust's real borrowed GroupBy, at both pins"
+[[excluded_oracle]]
+path = "polars_core::frame::dataframe::DataFrame::group_by_stable"
+reason = "record 0126 rebuilt borrow: the binding returns a GroupBy snapshot; the oracle's Rust side cannot hold Polars' borrowed GroupBy as that wrapper. tests/group_by.rs compares every operation (count, groups, keys, keys_sliced, get_groups, into_groups, select, Debug) with Rust's real borrowed GroupBy, at both pins"
 [[excluded_oracle]]
 path = "polars_core::frame::dataframe::DataFrame::partition_by"
 reason = "the order of the partitions is unspecified (Polars documents only partition_by_stable as order-maintaining); the oracle's unordered policy covers rows within one frame, not a vector of frames (record 0084, observed run to run)"
@@ -1518,24 +1524,23 @@ path = "polars_lazy::scan::ndjson::LazyJsonLineReader::new"
 param = "path"
 cite = "da47b74 polars-lazy scan/ndjson.rs:55: LazyJsonLineReader::new(path: PlRefPath); polars-utils pl_path.rs:398"
 
-# Record 0125: the contracts the `path_arguments` rows widen (String or PlRefPath), each exact.
-[[frozen_widenings]]
-rune = "polars::LazyCsvReader::new"
-old = "new(path: PlRefPath) -> LazyCsvReader"
-new = "new(path: String or PlRefPath (a local path)) -> LazyCsvReader"
-cite = "record 0125 plan section 3: a listed PlRefPath parameter accepts a local path string"
-[[frozen_widenings]]
-rune = "polars::LazyJsonLineReader::new"
-old = "new(path: PlRefPath) -> LazyJsonLineReader"
-new = "new(path: String or PlRefPath (a local path)) -> LazyJsonLineReader"
-cite = "record 0125 plan section 3: a listed PlRefPath parameter accepts a local path string"
-[[frozen_widenings]]
-rune = "polars::LazyFrame::scan_ipc"
-old = "scan_ipc(path: PlRefPath, options: IpcScanOptions, unified_scan_args: UnifiedScanArgs) -> result of LazyFrame (fallible): Create a LazyFrame directly from a ipc scan."
-new = "scan_ipc(path: String or PlRefPath (a local path), options: IpcScanOptions, unified_scan_args: UnifiedScanArgs) -> result of LazyFrame (fallible): Create a LazyFrame directly from a ipc scan."
-cite = "record 0125 plan section 3: a listed PlRefPath parameter accepts a local path string"
-[[frozen_widenings]]
-rune = "polars::LazyFrame::scan_parquet"
-old = "scan_parquet(path: PlRefPath, args: ScanArgsParquet) -> result of LazyFrame (fallible): Create a LazyFrame directly from a parquet scan."
-new = "scan_parquet(path: String or PlRefPath (a local path), args: ScanArgsParquet) -> result of LazyFrame (fallible): Create a LazyFrame directly from a parquet scan."
-cite = "record 0125 plan section 3: a listed PlRefPath parameter accepts a local path string"
+# Record 0126: Polars' borrowing GroupBy, wrapped by an owning snapshot that
+# rebuilds the borrow for each call (support::GroupBySnapshot; plan section 1).
+[[rebuilt_borrows]]
+owner = "polars_core::frame::group_by::GroupBy"
+field = "df"
+snapshot = "support::GroupBySnapshot"
+polars = "p::GroupBy"
+cite = "da47b74 polars-core frame/group_by/mod.rs:183-190 (GroupBy<'a> { pub df: &'a DataFrame, .. }), :193 GroupBy::new (public); record 0126 plan section 1"
+recipes = [
+    { path = "polars_core::frame::dataframe::DataFrame::group_by", recipe = "group_by" },
+    { path = "polars_core::frame::dataframe::DataFrame::group_by_stable", recipe = "group_by_stable" },
+    { path = "polars_core::frame::group_by::GroupBy::select", recipe = "select" },
+    { path = "polars_core::frame::group_by::GroupBy::into_groups", recipe = "into_groups" },
+    { path = "polars_core::frame::group_by::GroupBy::get_groups", recipe = "get_groups" },
+]
+
+[[refused]]
+path = "polars_core::frame::group_by::GroupBy::sliced"
+reason = "sliced leaves per-group keys beside frame row indices; any later aggregation (prepare_agg -> keys -> keys_sliced(None)) calls take_slice_unchecked with those row indices on the short keys, an unchecked out-of-bounds read"
+cite = "da47b74 polars-core frame/group_by/mod.rs:461 sliced, :287 keys, :291-292 prepare_agg, :249 keys_sliced take_slice_unchecked(groups.first()); record 0126 plan section 1"

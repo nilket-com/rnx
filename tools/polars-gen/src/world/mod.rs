@@ -577,6 +577,15 @@ impl World {
 				eprintln!("refusing to generate: into arguments: {why}");
 				std::process::exit(2);
 			}
+			// record 0126: the rebuilt borrows
+			if let Err(why) = crate::families::rebuilt_borrows::validate(
+				&w,
+				&w.release.families.rebuilt_borrows,
+				&inv.callables,
+			) {
+				eprintln!("refusing to generate: rebuilt borrows: {why}");
+				std::process::exit(2);
+			}
 			// record 0125: the listed path parameters
 			if let Err(why) = crate::families::path_arguments::validate(
 				&w,
@@ -974,6 +983,10 @@ impl World {
 		}
 		for f in crate::families::concrete_arrays::facts(&rows) {
 			self.array_facts.insert(f);
+		}
+		// record 0126: a rebuilt borrow's owner is wrapped by its snapshot
+		for (key, w) in crate::families::rebuilt_borrows::wrappers(self) {
+			self.wrappers.insert(key, w);
 		}
 		for (key, w) in crate::families::concrete_arrays::wrappers(self, &rows) {
 			if let Some(base) = w.base.clone() {
