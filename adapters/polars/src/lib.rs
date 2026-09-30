@@ -62,9 +62,13 @@ fn agg(group: &LazyGroupBy, values: rune::Value) -> Result<LazyFrame, String> {
 fn collect(plan: &LazyFrame) -> Result<DataFrame, String> {
 	let plan = plan.0.clone();
 	engine::run("LazyFrame::collect", move || {
-		let frame = plan.collect().map_err(|e| format!("polars collect: {e}"))?;
-		files::validate(&frame)?;
-		Ok(frame)
+		// record 0122: a collected frame keeps whatever dtypes the query
+		// produced (a count is UInt32, a parsed date Date), as the generated
+		// eager operations' frames always have; record 0058 refused every
+		// dtype outside its four, which blocked every workflow that counts,
+		// ranks or parses dates. The hand-written readers and writers keep
+		// their four-dtype contract; `preview` refuses what it cannot show.
+		plan.collect().map_err(|e| format!("polars collect: {e}"))
 	})
 	.map_err(err)?
 	.map(DataFrame)
@@ -151,6 +155,53 @@ fn read_parquet(path: &str) -> Result<DataFrame, String> {
 		.map_err(err)?
 		.map(DataFrame)
 }
+/// Record 0122 (test support): the oracle's structural text of a script
+/// value, so a workflow probe compares a script's result with its Rust twin.
+/// A lazy frame is collected; other values show their scalar text.
+#[cfg(all(feature = "generated", feature = "test-support"))]
+fn oracle_repr(v: rune::Value) -> Result<String, String> {
+	use generated::types::{W_polars_core__frame__column__Column, W_polars_core__series__Series};
+	if let Ok(df) = v.borrow_ref::<DataFrame>() {
+		return Ok(oracle::frame_repr(&df.0).to_text());
+	}
+	if let Ok(lf) = v.borrow_ref::<LazyFrame>() {
+		let df = lf.0.clone().collect().map_err(err)?;
+		return Ok(oracle::frame_repr(&df).to_text());
+	}
+	if let Ok(s) = v.borrow_ref::<W_polars_core__series__Series>() {
+		return Ok(oracle::series_repr(&s.0).to_text());
+	}
+	if let Ok(c) = v.borrow_ref::<W_polars_core__frame__column__Column>() {
+		return Ok(oracle::column_repr(&c.0).to_text());
+	}
+	for f in [
+		|v: &rune::Value| rune::from_value::<String>(v.clone()).ok(),
+		|v: &rune::Value| {
+			rune::from_value::<i64>(v.clone())
+				.ok()
+				.map(|x| x.to_string())
+		},
+		|v: &rune::Value| {
+			rune::from_value::<f64>(v.clone())
+				.ok()
+				.map(|x| format!("{x:?}"))
+		},
+		|v: &rune::Value| {
+			rune::from_value::<bool>(v.clone())
+				.ok()
+				.map(|x| x.to_string())
+		},
+	] {
+		if let Some(s) = f(&v) {
+			return Ok(s);
+		}
+	}
+	Err(format!(
+		"oracle_repr: no structural text for {}",
+		v.type_info()
+	))
+}
+
 /// Install into an rnx-created `polars` module. All native values remain opaque.
 pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String> {
 	#[cfg(feature = "test-support")]
@@ -193,6 +244,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.function_meta(preview).map_err(err)?;
 	m.function_meta(display_fmt).map_err(err)?;
 	m.function_meta(write_parquet_new).map_err(err)?;
+	#[cfg(all(feature = "generated", feature = "test-support"))]
+	m.function("oracle_repr", oracle_repr)
+		.build()
+		.map_err(err)?;
 	#[cfg(feature = "test-support")]
 	m.function("engine_counts", engine::counts)
 		.build()
