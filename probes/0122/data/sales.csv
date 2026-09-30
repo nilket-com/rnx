@@ -1,0 +1,10 @@
+id,date,region,product,qty,price,note
+1,2026-01-03,north,apple,3,1.25,
+2,2026-01-03,south,pear,,2.5,promo
+3,2026-01-04,north,pear,5,2.5,
+4,2026-01-05,east,apple,2,1.25,late
+5,2026-01-05,south,apple,7,,
+6,2026-01-06,north,plum,1,3.1,
+7,2026-01-06,east,pear,4,2.5,promo
+8,2026-01-07,south,plum,,3.1,
+8,2026-01-07,south,plum,,3.1,
