@@ -120,6 +120,15 @@ pub(crate) struct FamilyTables {
 	/// cited allowlist of exact owners and instantiations.
 	#[serde(default)]
 	pub(crate) concrete_arrays: Vec<crate::families::concrete_arrays::ConcreteArray>,
+	/// Record 0123: `impl Into<T>` targets that accept their recorded `From` sources.
+	#[serde(default)]
+	pub(crate) into_arguments: Vec<crate::families::into_arguments::IntoArgument>,
+	/// Record 0123: value-protocol impls on generic heads, bound onto a listed wrapper.
+	#[serde(default)]
+	pub(crate) protocol_instantiations: Vec<crate::families::protocol_instantiations::ProtocolInstantiation>,
+	/// Record 0123: frozen bindings whose catalogue contract widens, each exact.
+	#[serde(default)]
+	pub(crate) frozen_widenings: Vec<crate::freeze::Widening>,
 	/// Record 0092: family-census methods whose one scalar function generic
 	/// is bound, per proven pair, to that pair's native type.
 	#[serde(default)]

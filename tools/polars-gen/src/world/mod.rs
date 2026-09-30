@@ -559,6 +559,24 @@ impl World {
 				.namespaced_crates
 				.iter()
 				.any(|k| k == "polars_arrow");
+			// record 0123: protocol impls bound onto a listed instantiation
+			if let Err(why) = crate::families::protocol_instantiations::validate(
+				&w,
+				&w.release.families.protocol_instantiations,
+				&inv.callables,
+			) {
+				eprintln!("refusing to generate: protocol instantiations: {why}");
+				std::process::exit(2);
+			}
+			// record 0123: the `Into` targets and their recorded `From` sources
+			if let Err(why) = crate::families::into_arguments::validate(
+				&w,
+				&w.release.families.into_arguments,
+				&inv.callables,
+			) {
+				eprintln!("refusing to generate: into arguments: {why}");
+				std::process::exit(2);
+			}
 			if let Err(why) = crate::families::receiver_guards::validate(
 				&w.release.families.receiver_guards,
 				&inv.callables,

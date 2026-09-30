@@ -19,13 +19,28 @@ pub(crate) struct Frozen {
 	pub(crate) summary: Option<String>,
 }
 
+/// Record 0123: a frozen binding whose catalogue contract widens, listed
+/// exactly (its Rune path, the frozen summary and the new one).
+#[derive(serde::Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Widening {
+	pub(crate) rune: String,
+	pub(crate) old: String,
+	pub(crate) new: String,
+	pub(crate) cite: String,
+}
+
 /// The problems, empty when every frozen binding survives and no Rune path
-/// is generated twice.
+/// is generated twice. A contract change is accepted only when a listed
+/// widening names it exactly; a listed widening that is not used is itself
+/// a problem.
 pub(crate) fn check(
 	frozen: &[Frozen],
 	entries: &[Entry],
 	catalogue: &[(String, String)],
+	widenings: &[Widening],
 ) -> Vec<String> {
+	let mut used = std::collections::BTreeSet::new();
 	let summaries: BTreeMap<&str, &str> = catalogue
 		.iter()
 		.map(|(r, s)| (r.as_str(), s.as_str()))
@@ -48,7 +63,14 @@ pub(crate) fn check(
 		} else if let Some(s) = &f.summary {
 			// the same path must keep the same contract
 			let now = summaries.get(f.rune.as_str()).copied();
-			if now != Some(s.as_str()) {
+			let widened = widenings.iter().position(|w| {
+				w.rune == f.rune
+					&& w.old == *s && Some(w.new.as_str()) == now
+					&& !w.cite.trim().is_empty()
+			});
+			if let Some(i) = widened {
+				used.insert(i);
+			} else if now != Some(s.as_str()) {
 				problems.push(format!(
 					"frozen binding {} ({}) changed its contract: `{s}` is now `{}`",
 					f.id,
@@ -56,6 +78,14 @@ pub(crate) fn check(
 					now.unwrap_or("(no summary)")
 				));
 			}
+		}
+	}
+	for (i, w) in widenings.iter().enumerate() {
+		if !used.contains(&i) {
+			problems.push(format!(
+				"listed widening of {} was not used (its old or new contract does not match)",
+				w.rune
+			));
 		}
 	}
 	for (rune, ids) in paths {
@@ -113,15 +143,15 @@ pub(crate) fn freeze_self_test() {
 	};
 	let now = vec![entry("k1", &[("a", "polars::A::f"), ("b", "polars::B::f")])];
 	let cat = vec![("polars::A::f".to_string(), "f() -> int".to_string())];
-	assert!(check(&[fz("k1", "a", "polars::A::f")], &now, &cat).is_empty());
-	let moved = check(&[fz("k1", "a", "polars::core::A::f")], &now, &cat);
+	assert!(check(&[fz("k1", "a", "polars::A::f")], &now, &cat, &[]).is_empty());
+	let moved = check(&[fz("k1", "a", "polars::core::A::f")], &now, &cat, &[]);
 	assert!(moved[0].contains("moved or disappeared"), "{moved:?}");
 	// the same path with another contract is refused too
 	let same = Frozen {
 		summary: Some("f() -> int".into()),
 		..fz("k1", "a", "polars::A::f")
 	};
-	assert!(check(&[same.clone()], &now, &cat).is_empty());
+	assert!(check(&[same.clone()], &now, &cat, &[]).is_empty());
 	let changed = check(
 		&[Frozen {
 			summary: Some("f() -> vector of int".into()),
@@ -129,13 +159,59 @@ pub(crate) fn freeze_self_test() {
 		}],
 		&now,
 		&cat,
+		&[],
 	);
 	assert!(changed[0].contains("changed its contract"), "{changed:?}");
+	// record 0123: an exact listed widening accepts the change; a wrong or
+	// unused one refuses
+	let wide = |old: &str, new: &str| Widening {
+		rune: "polars::A::f".into(),
+		old: old.into(),
+		new: new.into(),
+		cite: "c".into(),
+	};
+	let frozen_int = Frozen {
+		summary: Some("f() -> int".into()),
+		..fz("k1", "a", "polars::A::f")
+	};
+	let cat_wide = vec![(
+		"polars::A::f".to_string(),
+		"f() -> int or float".to_string(),
+	)];
+	assert!(
+		check(
+			&[frozen_int.clone()],
+			&now,
+			&cat_wide,
+			&[wide("f() -> int", "f() -> int or float")]
+		)
+		.is_empty()
+	);
+	assert!(
+		check(
+			&[frozen_int.clone()],
+			&now,
+			&cat_wide,
+			&[wide("f() -> int", "f() -> str")]
+		)
+		.iter()
+		.any(|p| p.contains("changed its contract"))
+	);
+	assert!(
+		check(
+			&[frozen_int],
+			&now,
+			&cat,
+			&[wide("f() -> int", "f() -> int or float")]
+		)
+		.iter()
+		.any(|p| p.contains("was not used"))
+	);
 	let dup = vec![
 		entry("k1", &[("a", "polars::A::f")]),
 		entry("k2", &[("c", "polars::A::f")]),
 	];
-	assert!(check(&[], &dup, &cat)[0].contains("generated 2 times"));
+	assert!(check(&[], &dup, &cat, &[])[0].contains("generated 2 times"));
 	// the namespace rule: an Arrow type sharing a core short name sits under
 	// polars::arrow and leaves the core path where it was
 	let sup = |path: &str, kind: &str, target: Option<&str>| Supporting {
