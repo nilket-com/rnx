@@ -9,6 +9,9 @@
 #![cfg(all(feature = "generated", feature = "test-support"))]
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 use std::sync::Arc;
+// Record 0130: a test here lowers the process-wide test limit, so every
+// test in this binary holds this lock.
+static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 fn run(script: &str) -> Result<rune::Value, String> {
 	let mut polars = Module::with_crate("polars").unwrap();
@@ -77,6 +80,7 @@ const STRS: &str = "polars::Series::from_iter_option_str([Some(\"a\"), None, Som
 
 #[test]
 fn primitive_read_guard_and_round_trip() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let a = format!("{}.as_int64_array()?", chunk(I64S, "newest"));
 	assert_eq!(
 		outcomes(
@@ -113,6 +117,7 @@ fn primitive_read_guard_and_round_trip() {
 
 #[test]
 fn wrong_downcast_names_the_dtype() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let a = chunk(STRS, "newest");
 	assert_eq!(
 		outcomes(
@@ -145,6 +150,7 @@ fn wrong_downcast_names_the_dtype() {
 
 #[test]
 fn large_string_and_binary_at_the_oldest_level() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let s = format!("{}.as_large_string_array()?", chunk(STRS, "oldest"));
 	let none = "match o { Some(s) => s, None => \"None\" }";
 	assert_eq!(
@@ -208,6 +214,7 @@ fn large_string_and_binary_at_the_oldest_level() {
 
 #[test]
 fn list_children_are_owned_arrays() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let l = format!(
 		"{}.as_large_list_array()?",
 		chunk(
@@ -231,6 +238,7 @@ fn list_children_are_owned_arrays() {
 
 #[test]
 fn copies_are_bounded_by_bytes_not_only_elements() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	// two strings, four payload bytes: an element-count bound of 3 would
 	// admit the copy; the byte buffer is copied element by element, so the
 	// bound counts bytes and refuses it before any copy
@@ -249,6 +257,7 @@ fn copies_are_bounded_by_bytes_not_only_elements() {
 
 #[test]
 fn every_native_value_and_validity() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let mut natives = vec![
 		("i8", "as_int8_array"),
 		("i16", "as_int16_array"),
@@ -306,6 +315,7 @@ fn every_native_value_and_validity() {
 
 #[test]
 fn wide_integers_are_checked_never_wrapped() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	// the values come from strict string casts, exact at every width
 	let wide = |dtype: &str, downcast: &str, vals: &[&str]| -> Vec<String> {
 		let lits: Vec<String> = vals.iter().map(|v| format!("Some(\"{v}\")")).collect();
@@ -375,6 +385,7 @@ fn wide_integers_are_checked_never_wrapped() {
 
 #[test]
 fn floats_keep_special_values() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	// each special value, read back and compared with Rust's own conversion
 	let series = "polars::Series::from_iter_option_f64([Some(0.0), Some(-0.0), Some(1.0 / 0.0), Some(-1.0 / 0.0), Some(0.0 / 0.0), Some(65504.0), Some(0.000000059604644775390625), None])?";
 	let reads = [
@@ -437,6 +448,7 @@ fn floats_keep_special_values() {
 
 #[test]
 fn struct_fields_are_owned_arrays() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	// record 0125: at 0.55.2 too, now that `json` resolves `dtype-struct`
 	// (record 0120 found no StructArray inventory row at 0.55.2)
 	assert!(
@@ -469,6 +481,7 @@ fn struct_fields_are_owned_arrays() {
 
 #[test]
 fn a_failing_element_names_its_index_and_value() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	// review of 0120: the whole vector fails, naming the element and its value
 	let a = format!(
 		"{}.as_uint64_array()?",
@@ -492,6 +505,7 @@ fn a_failing_element_names_its_index_and_value() {
 
 #[test]
 fn constructors_and_dtype_arguments_are_not_bound() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	// review of 0120: a dtype argument or a static length is the write side
 	// (record 0121); none of these is a script binding at either pin
 	let has = |k: &str| {

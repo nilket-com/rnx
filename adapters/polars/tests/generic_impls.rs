@@ -49,6 +49,7 @@ fn show_series(v: &rune::Value) -> Result<rnx_polars::oracle::Repr, String> {
 
 #[test]
 fn series_operators_preserve_nulls_and_match_rust() {
+	let _serial = LIMIT.lock().unwrap_or_else(|e| e.into_inner());
 	let a: Series = [Some(1i64), None, Some(3)].into_iter().collect();
 	let b: Series = [Some(10i64), Some(20), None].into_iter().collect();
 	let setup = "let a = polars::Series::from_iter_option_i64([Some(1), None, Some(3)])?; let b = polars::Series::from_iter_option_i64([Some(10), Some(20), None])?;";
@@ -72,6 +73,7 @@ fn series_operators_preserve_nulls_and_match_rust() {
 
 #[test]
 fn integer_division_by_zero_is_polars_own_semantics() {
+	let _serial = LIMIT.lock().unwrap_or_else(|e| e.into_inner());
 	let a: Series = [Some(4i64), Some(0), None].into_iter().collect();
 	let z: Series = [Some(0i64), Some(0), Some(0)].into_iter().collect();
 	let got = shown(
@@ -84,6 +86,7 @@ fn integer_division_by_zero_is_polars_own_semantics() {
 
 #[test]
 fn the_receiver_stays_usable_and_a_foreign_rhs_is_refused() {
+	let _serial = LIMIT.lock().unwrap_or_else(|e| e.into_inner());
 	let v = run("pub fn main() { let a = polars::Series::from_iter_i64([1, 2])?; let r = a + \"x\"; Ok((r.is_err(), a.len()?)) }").unwrap();
 	let (refused, len) = rune::from_value::<Result<(bool, i64), rune::Value>>(v)
 		.unwrap()
@@ -93,6 +96,7 @@ fn the_receiver_stays_usable_and_a_foreign_rhs_is_refused() {
 
 #[test]
 fn from_iter_checks_narrowing_nulls_and_empty() {
+	let _serial = LIMIT.lock().unwrap_or_else(|e| e.into_inner());
 	let got = shown(
 		run("pub fn main() { polars::Series::from_iter_option_u8([Some(1), None, Some(255)]) }")
 			.unwrap(),
@@ -128,6 +132,7 @@ fn from_iter_checks_narrowing_nulls_and_empty() {
 
 #[test]
 fn frame_indexing_clones_the_column_and_panics_like_rust() {
+	let _serial = LIMIT.lock().unwrap_or_else(|e| e.into_inner());
 	let df = fx::values::df();
 	for (key, direct) in [("\"x\"", df["x"].clone()), ("0", df[0].clone())] {
 		let got = shown(
@@ -148,14 +153,15 @@ fn frame_indexing_clones_the_column_and_panics_like_rust() {
 	);
 }
 
-/// The materialize bound is process-wide under test-support: the bound test runs alone.
+/// The materialize bound is process-wide under test-support, so every test in
+/// this binary holds this lock (record 0130).
 static LIMIT: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 #[test]
 fn from_iter_input_is_bounded_before_any_copy() {
+	let _serial = LIMIT.lock().unwrap_or_else(|e| e.into_inner());
 	// review of 0113: exactly the bound passes, bound + 1 is refused before the
 	// script vector is copied, and the source vector stays usable
-	let _g = LIMIT.lock().unwrap_or_else(|e| e.into_inner());
 	let v = run(
 		"pub fn main() { polars::set_materialize_limit(3); let at = [1, 2, 3]; let over = [1, 2, 3, 4]; let a = polars::Series::from_iter_u8(at); let b = polars::Series::from_iter_u8(over); polars::set_materialize_limit(0); let kind = match b { Ok(_) => \"accepted\", Err(e) => e.kind() }; Ok((a?.len()?, kind, over.len(), at.len())) }",
 	)

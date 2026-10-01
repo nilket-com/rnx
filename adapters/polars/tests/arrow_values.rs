@@ -8,6 +8,9 @@
 #![cfg(all(feature = "generated", feature = "test-support"))]
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 use std::sync::Arc;
+// Record 0130: a test here lowers the process-wide test limit, so every
+// test in this binary holds this lock.
+static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 fn run(script: &str) -> Result<rune::Value, String> {
 	let mut polars = Module::with_crate("polars").unwrap();
@@ -52,6 +55,7 @@ fn meta(s: &Series) -> (i64, i64, String) {
 
 #[test]
 fn numeric_chunk_inspect_read_and_round_trip() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let v = run(
 		"pub fn main() { let s = polars::Series::from_iter_option_i64([Some(1), None, Some(3)])?; let a = s.to_arrow(0, polars::CompatLevel::newest())?; let m = (a.len()?, a.null_count()?, a.is_null(1)?, a.dtype_name()); let vals = a.values_i64()?; let wrong = a.values_str(); let back = polars::Series::from_arrow(\"x\", a)?; Ok((m, vals, wrong, back.len()?)) }",
 	)
@@ -75,6 +79,7 @@ fn numeric_chunk_inspect_read_and_round_trip() {
 
 #[test]
 fn string_and_boolean_chunks_read_through_their_readers() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let v = run(
 		"pub fn main() { let c = polars::CompatLevel::newest(); let s = polars::Series::from_iter_option_str([Some(\"a\"), None, Some(\"ccc\")])?.to_arrow(0, c)?; let b = polars::Series::from_iter_option_bool([Some(true), None, Some(false)])?.to_arrow(0, c)?; Ok((s.values_str()?, b.values_bool()?, s.values_i64(), s.dtype_name(), b.dtype_name())) }",
 	)
@@ -111,6 +116,7 @@ fn string_and_boolean_chunks_read_through_their_readers() {
 
 #[test]
 fn an_all_null_chunk_is_null_typed() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let v = run(
 		"pub fn main() { let a = polars::Series::new_null(\"n\", 3)?.to_arrow(0, polars::CompatLevel::newest())?; Ok((a.null_count()?, a.dtype_name(), a.values_i64())) }",
 	)
@@ -132,6 +138,7 @@ fn an_all_null_chunk_is_null_typed() {
 
 #[test]
 fn indices_are_guarded_before_the_call() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let v = run(
 		"pub fn main() { let c = polars::CompatLevel::newest(); let s = polars::Series::from_iter_option_i64([Some(1), None, Some(3)])?; let chunk = s.to_arrow(5, c); let a = s.to_arrow(0, c)?; Ok((chunk, a.is_null(99), a.sliced(2, 5), a.split_at_boxed(4), a.sliced(99, 0)?.len()?, a.sliced(1, 2)?.values_i64()?)) }",
 	)
@@ -175,6 +182,7 @@ fn indices_are_guarded_before_the_call() {
 
 #[test]
 fn the_array_is_moved_into_from_arrow() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let err = run(
 		"pub fn main() { let a = polars::Series::from_iter_option_i64([Some(1)])?.to_arrow(0, polars::CompatLevel::newest())?; let s = polars::Series::from_arrow(\"x\", a)?; a.len() }",
 	)
@@ -191,6 +199,7 @@ fn the_array_is_moved_into_from_arrow() {
 /// usable and reads once the bound allows it.
 #[test]
 fn values_str_bounds_payload_bytes() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let v = run(
 		"pub fn main() { let c = polars::CompatLevel::newest(); let two = polars::Series::from_iter_option_str([Some(\"aaaaaaaa\"), Some(\"bbbbbbbb\")])?.to_arrow(0, c)?; let one = polars::Series::from_iter_option_str([Some(\"xxxxxxxxxxxxxxxxxxxx\")])?.to_arrow(0, c)?; polars::set_materialize_limit(12); let r2 = two.values_str(); let r1 = one.values_str(); let still = two.len()?; polars::set_materialize_limit(0); Ok((r2, r1, still, two.values_str()?)) }",
 	)
