@@ -297,6 +297,17 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.function("oracle_repr", oracle_repr)
 		.build()
 		.map_err(err)?;
+	// record 0127: the wide-binding control, registered typed here and raw
+	// by the generated install (the same function, two conventions)
+	#[cfg(all(feature = "generated", feature = "test-support"))]
+	{
+		m.function("wide_control_typed", generated::support::wide_control)
+			.build_associated::<DataFrame>()
+			.map_err(err)?;
+		m.function("wide_control_vm_typed", generated::support::wide_control_vm)
+			.build_associated::<DataFrame>()
+			.map_err(err)?;
+	}
 	#[cfg(feature = "test-support")]
 	m.function("engine_counts", engine::counts)
 		.build()

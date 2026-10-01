@@ -607,7 +607,39 @@ pub(crate) fn emit_method_with(
 	// shares the free-function limit, receiver included. First reached at v2
 	// (`Expr::qcut`, receiver + 5).
 	let arity = usize::from(!recv_sig.is_empty()) + params.len();
-	if arity > METHOD_ARITY {
+	// record 0127: a listed method above the typed limit gets a raw shim
+	let wide = if arity > METHOD_ARITY {
+		match crate::families::wide_bindings::listed(
+			&world.release.families.wide_bindings,
+			&c.canonical_path,
+		) {
+			Some(row) if row.arity == arity => {
+				let types: Vec<String> = std::iter::once(
+					recv_sig
+						.split_once(": ")
+						.map(|(_, t)| t.to_string())
+						.unwrap_or_default(),
+				)
+				.chain(params.iter().map(|(_, a)| a.rust_ty.clone()))
+				.collect();
+				match crate::families::wide_bindings::shim("__IDENT__", &types) {
+					Some(s) => Some(s),
+					None => {
+						out.unsupported(
+							c,
+							"wide binding",
+							&format!("a parameter type has no shim conversion: {types:?}"),
+						);
+						return;
+					}
+				}
+			}
+			_ => None,
+		}
+	} else {
+		None
+	};
+	if arity > METHOD_ARITY && wide.is_none() {
 		out.unsupported(
 			c,
 			"arity",
@@ -763,7 +795,10 @@ pub(crate) fn emit_method_with(
 		ret_conv
 	}
 	.replace("__OP__", &name);
-	let attr = if c.receiver == "none" {
+	let attr = if wide.is_some() {
+		// record 0127: registered through the raw shim below
+		format!("/// Registered through a raw shim (arity {arity}; record 0127).")
+	} else if c.receiver == "none" {
 		format!("#[rune::function(free, path = {}::{name})]", w.rust)
 	} else {
 		format!("#[rune::function(instance, path = {name})]")
@@ -896,8 +931,16 @@ pub(crate) fn emit_method_with(
 	} else {
 		writeln!(out.functions, "{docline}/// Polars: `{}`. {}\n{attr}\nfn {ident}({}) -> rune::runtime::VmResult<{ret_ty}> {{ {vm_checks}rune::runtime::VmResult::Ok((|| -> {ret_ty} {{ {pre}let __r = {call}; {commit}{body_conv} }})()) }}", c.canonical_path, summary, sig.join(", ")).unwrap();
 	}
-	out.registrations
-		.push(format!("m.function_meta({ident})?;"));
+	if let Some(shim) = &wide {
+		writeln!(out.functions, "{}", shim.replace("__IDENT__", &ident)).unwrap();
+		out.registrations.push(format!(
+			"m.raw_function(\"{name}\", s_{ident}).build_associated::<{}>()?;",
+			w.rust
+		));
+	} else {
+		out.registrations
+			.push(format!("m.function_meta({ident})?;"));
+	}
 	out.catalogue.push((
 		rune.clone(),
 		if doc.is_empty() {

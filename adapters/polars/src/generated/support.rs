@@ -4009,3 +4009,36 @@ impl std::fmt::Debug for GroupBySnapshot {
 		std::fmt::Debug::fmt(&self.view(), f)
 	}
 }
+
+/// Record 0127 (test support): the wide-binding control. Registered typed by
+/// the adapter and through a raw shim the generator emits, so a script can
+/// compare the two calling conventions. The receiver is borrowed, `name`
+/// borrowed, `n` copied and `e` (a frame) taken; a missing column is Polars' error.
+#[cfg(feature = "test-support")]
+pub(crate) fn wide_control(
+	this: &crate::DataFrame,
+	name: &str,
+	n: i64,
+	e: crate::DataFrame,
+) -> Result<i64, Error> {
+	drop(e);
+	let len = this.0.column(name).map_err(Error::from)?.len();
+	Ok(len as i64 + n)
+}
+
+/// The same, returning `VmResult`: a negative `n` is a VM error.
+#[cfg(feature = "test-support")]
+pub(crate) fn wide_control_vm(
+	this: &crate::DataFrame,
+	name: &str,
+	n: i64,
+	e: crate::DataFrame,
+) -> rune::runtime::VmResult<i64> {
+	drop(e);
+	if n < 0 {
+		return rune::runtime::VmResult::err(rune::runtime::VmError::panic(
+			"wide control: negative",
+		));
+	}
+	rune::runtime::VmResult::Ok(this.0.height() as i64 + name.len() as i64 + n)
+}

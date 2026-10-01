@@ -12,7 +12,7 @@ name = "0.55.2"
 source = "crates.io =0.55.2"
 api_crates = ["polars_arrow", "polars_core", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error"]
 namespaced_crates = ["polars_arrow"]
-frozen_bindings = "probes/0126/frozen-0.55.2.json"
+frozen_bindings = "probes/0127/frozen-0.55.2.json"
 # Record 0085: validity bitmap returns copied into an owned Vec<bool>;
 # only these paths, every other Bitmap stays refused.
 bitmap_returns = [

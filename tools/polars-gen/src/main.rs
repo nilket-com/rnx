@@ -54,6 +54,8 @@ const SELF_TESTS: &[fn()] = &[
 	crate::families::into_arguments::into_arguments_self_test,
 	crate::families::path_arguments::path_arguments_self_test,
 	crate::families::rebuilt_borrows::rebuilt_borrows_self_test,
+	crate::families::wide_bindings::wide_bindings_self_test,
+	crate::families::arc_arguments::arc_arguments_self_test,
 	crate::emit::pin_everywhere_self_test,
 	crate::families::protocol_instantiations::protocol_instantiations_self_test,
 	crate::families::protocols::protocols_self_test,
@@ -141,6 +143,18 @@ fn main() {
 			.filter(|e| e.status == "generated")
 			.map(|e| e.canonical_path.as_str())
 			.collect();
+		if let Err(e) =
+			crate::families::arc_arguments::check_used(&release.families.arc_arguments, &generated)
+		{
+			eprintln!("refusing to generate: arc arguments: {e}");
+			std::process::exit(2);
+		}
+		if let Err(e) =
+			crate::families::wide_bindings::check_used(&release.families.wide_bindings, &generated)
+		{
+			eprintln!("refusing to generate: wide bindings: {e}");
+			std::process::exit(2);
+		}
 		if let Err(e) = crate::families::rebuilt_borrows::check_used(
 			&release.families.rebuilt_borrows,
 			&generated,
