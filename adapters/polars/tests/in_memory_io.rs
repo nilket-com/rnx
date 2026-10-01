@@ -7,6 +7,9 @@
 #![cfg(all(feature = "generated", feature = "test-support"))]
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 use std::sync::Arc;
+// Record 0130: a test here lowers the process-wide test limit, so every
+// test in this binary holds this lock.
+static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 fn run(script: &str) -> Result<rune::Value, String> {
 	let mut polars = Module::with_crate("polars").unwrap();
@@ -59,6 +62,7 @@ fn repr(df: &DataFrame) -> String {
 
 #[test]
 fn csv_round_trip_with_a_separator() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let (bytes, back) = script_round_trip(
 		"polars::CsvWriter::new(s).with_separator(59)?",
 		"polars::CsvReader::new(b)?.finish()?",
@@ -79,6 +83,7 @@ fn csv_round_trip_with_a_separator() {
 
 #[test]
 fn parquet_round_trip_uncompressed() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let (bytes, back) = script_round_trip(
 		"polars::ParquetWriter::new(s).with_compression(polars::ParquetCompression::Uncompressed())",
 		"polars::ParquetReader::new(b)?.finish()?",
@@ -102,6 +107,7 @@ fn parquet_round_trip_uncompressed() {
 
 #[test]
 fn ipc_round_trip_lz4() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let (bytes, back) = script_round_trip(
 		"polars::IpcWriter::new(s).with_compression(Some(polars::IpcCompression::LZ4()))?",
 		"polars::IpcReader::new(b)?.finish()?",
@@ -122,6 +128,7 @@ fn ipc_round_trip_lz4() {
 /// header-less CSV), byte-equal to Rust's.
 #[test]
 fn a_sink_over_its_limit_commits_nothing_and_is_reusable() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let mut headerless = Vec::new();
 	CsvWriter::new(&mut headerless)
 		.include_header(false)
@@ -149,6 +156,7 @@ fn a_sink_over_its_limit_commits_nothing_and_is_reusable() {
 /// A reader's source is bounded before its one copy.
 #[test]
 fn reader_bytes_are_bounded() {
+	let _serial = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 	let v = run(
 		"pub fn main() { let s = polars::Sink::new(); polars::CsvWriter::new(s).finish(fx::df())?; let b = s.bytes()?; polars::set_materialize_limit(4); let r = polars::CsvReader::new(b); polars::set_materialize_limit(0); Ok(match r { Err(e) => e.kind(), Ok(_) => \"accepted\" }) }",
 	)
