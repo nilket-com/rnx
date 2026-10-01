@@ -2,6 +2,7 @@
 use p::IntoLazy;
 use polars::prelude as p;
 use rnx::rune::{self, runtime::Vec as RuneVec};
+mod dense;
 mod engine;
 mod files;
 #[cfg(feature = "generated")]
@@ -269,6 +270,16 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		.build()
 		.map_err(err)?;
 	m.function("read_json", read_json).build().map_err(err)?;
+	// record 0129: numeric columns to and from rnx's neutral block
+	m.function("to_dense", dense::to_dense)
+		.build_associated::<DataFrame>()
+		.map_err(err)?;
+	m.function("from_dense", dense::from_dense)
+		.build_associated::<DataFrame>()
+		.map_err(err)?;
+	m.function("with_dense", dense::with_dense)
+		.build_associated::<DataFrame>()
+		.map_err(err)?;
 	m.function("read_parquet", read_parquet)
 		.build()
 		.map_err(err)?;
@@ -329,6 +340,18 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		(
 			"polars::read_csv".into(),
 			"read_csv(path[, schema]) -> Result<DataFrame>: local CSV; the schema inferred by Polars (dates stay strings), or a strict ordered (name, dtype) schema",
+		),
+		(
+			"polars::DataFrame::to_dense".into(),
+			"to_dense(columns, dtype) -> Result<interchange::Dense>: listed numeric columns as an \"f32\"/\"f64\" row-major block; nulls, non-numeric, non-finite and inexact values refused",
+		),
+		(
+			"polars::DataFrame::from_dense".into(),
+			"from_dense(block) -> Result<DataFrame>: a new frame of the block's columns",
+		),
+		(
+			"polars::DataFrame::with_dense".into(),
+			"with_dense(block) -> Result<DataFrame>: this frame with the block's columns appended (same height)",
 		),
 		(
 			"polars::read_json".into(),

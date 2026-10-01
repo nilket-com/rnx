@@ -40,7 +40,10 @@ count-allocations = []
 # Only for gates that must inject what cannot be provoked. Off by default, and
 # nothing in an ordinary build reads it: record 0022 explains why the
 # delivery's failure path needs one.
-test-support = ["rnx-project?/test-support"]
+test-support = ["rnx-project?/test-support", "allocation-peak"]
+# Record 0129: the allocator's peak, readable by an adapter's own tests (a
+# dev-dependency feature) to show a refusal comes before an allocation.
+allocation-peak = []
 # Record 0056: caller-owned handler execution, without HTTP server dependencies.
 server-runtime = []
 # Record 0057: explicit versioned source maps for the file runner.

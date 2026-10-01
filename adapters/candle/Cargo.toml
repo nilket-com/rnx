@@ -1,0 +1,26 @@
+[package]
+name = "rnx-candle"
+version = "0.0.0"
+edition = "2024"
+publish = false
+description = "A CPU tensor and small-model inference extension for rnx (record 0129)"
+
+[workspace]
+
+[dependencies]
+rnx = { path = "../..", default-features = false, features = ["count-allocations"] }
+# Record 0129: CPU only. Candle's default features are empty: no CUDA,
+# Metal, MKL or Accelerate. No runtime library beyond libc: candle-core's
+# tokenizers dependency builds the bundled Oniguruma C source statically,
+# so the build needs a C compiler (as rnx's ring already does), not a
+# system library.
+candle-core = { version = "=0.11.0", default-features = false }
+candle-nn = { version = "=0.11.0", default-features = false }
+
+[dev-dependencies]
+# Record 0129: the allocator's peak, for the allocation controls only.
+rnx = { path = "../..", default-features = false, features = ["count-allocations", "allocation-peak"] }
+
+[[bin]]
+name = "rnx-candle"
+path = "src/main.rs"

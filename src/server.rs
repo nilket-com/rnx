@@ -102,6 +102,7 @@ fn context(extensions: Extensions) -> Result<(Context, Owner), Failure> {
 		// Unlike install_core, this path has no CLI interrupt initialization.
 		crate::json::install(&mut context)?;
 		crate::io::install(&mut context)?;
+		crate::interchange::install(&mut context)?;
 		crate::process::install_with_exit(&mut context, |_| {
 			Err("cannot exit: this is a server/embedding context".into())
 		})?;
@@ -666,12 +667,17 @@ mod source_tests {
 	}
 	#[test]
 	fn in_memory_source_refuses_module_declarations() {
-		let failure =
-			Program::compile_source("<buffer 2>", "mod helpers;\npub fn main() {}\n", Extensions::none())
-				.err()
-				.unwrap();
+		let failure = Program::compile_source(
+			"<buffer 2>",
+			"mod helpers;\npub fn main() {}\n",
+			Extensions::none(),
+		)
+		.err()
+		.unwrap();
 		assert!(
-			failure.message().contains("an in-memory source has no directory"),
+			failure
+				.message()
+				.contains("an in-memory source has no directory"),
 			"{failure}"
 		);
 		assert_eq!(failure.position().map(|p| p.0), Some(1));
@@ -683,11 +689,17 @@ mod source_tests {
 				.unwrap();
 		let failure = run(&program, "main", vec![]).unwrap_err();
 		assert_eq!(failure.category(), "vm");
-		assert_eq!(failure.message(), "the budget of 10000 instructions was exhausted");
+		assert_eq!(
+			failure.message(),
+			"the budget of 10000 instructions was exhausted"
+		);
 	}
 	#[test]
 	fn in_memory_source_counts_against_the_allowance() {
-		let text = format!("pub fn main() {{}}\n//{}\n", "x".repeat(crate::program::SOURCE_ALLOWANCE));
+		let text = format!(
+			"pub fn main() {{}}\n//{}\n",
+			"x".repeat(crate::program::SOURCE_ALLOWANCE)
+		);
 		let failure = Program::compile_source("<big>", &text, Extensions::none())
 			.err()
 			.unwrap();

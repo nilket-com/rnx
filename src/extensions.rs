@@ -115,8 +115,18 @@ impl Extensions {
 				return Err(failure("the name must be a Rune identifier".into()));
 			}
 			if [
-				"std", "json", "io", "process", "fs", "path", "time", "text", "http", "env",
+				"std",
+				"json",
+				"io",
+				"process",
+				"fs",
+				"path",
+				"time",
+				"text",
+				"http",
+				"env",
 				"rnx_test",
+				"interchange",
 			]
 			.contains(&name)
 			{
@@ -152,6 +162,8 @@ impl Extensions {
 			);
 		}
 		let mut presenters = crate::present::Presenters::default();
+		// the neutral block is rnx's own type, presented wherever it is installed
+		crate::interchange::present(&mut presenters)?;
 		for presentation in self.presentations {
 			let name = presentation.name;
 			let failure =
@@ -285,6 +297,7 @@ mod tests {
 			"http",
 			"env",
 			"rnx_test",
+			"interchange",
 		] {
 			let extensions =
 				Extensions::none().with(name, |_| panic!("invalid name reached its builder"));
