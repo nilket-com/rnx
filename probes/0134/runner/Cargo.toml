@@ -1,0 +1,12 @@
+[package]
+name = "runner0134"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+rnx = { path = "../../..", default-features = false, features = ["count-allocations"] }
+rnx-polars = { path = "../../../adapters/polars" }
+rnx-candle = { path = "../../../adapters/candle" }
