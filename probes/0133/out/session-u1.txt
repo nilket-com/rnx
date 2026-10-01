@@ -1,0 +1,45 @@
+### :dep returned to a prompt: True after 281.8 s
+run(["/home/me/.local/share/rnx-uat-0133/d1/plans", "/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/minilm", "/home/me/wor
+run(["/home/me/.local/share/rnx-uat-0133/d1/plans", "/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/minilm", "/home/me/work/rnx/probes/0133/rubric.tsv", "/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444
+run(["/home/me/.local/share/rnx-uat-0133/d1/plans", "/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/minilm", "/home/me/work/rnx/probes/0133/rubric.tsv", "/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/replay0133/session"])
+321 docs, 3658 passages; load 353 ms, embed 370036 ms
+Q1: how does a session add a native adapter with :dep?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "Q1": f32 | "excerpt": string
+"0001" | "Rune scripting 0001: the first release" | 0.48185435 | "a runtime error or an instruction-budget halt, the input's candidate bindings an"…[truncated]
+"0129" | "rnx 0129: Candle, scoped to one cross-adapter workflow" | 0.42273596 | "- **Composition.** A session with `:dep polars candle` runs one executable with "…[truncated]
+"0070" | "0070 gate 3: costs, regression and documentation" | 0.41114455 | "Feature audits (`feature-checks.json`): the stock, runner-only and server-runtim"…[truncated]
+"0123" | "rnx 0123 evidence: schema display, `cast` with a `DataType`, and a display check" | 0.4019534 | "Self-test `protocol_instantiations` covers: - the row-level refusals; - a mispai"…[truncated]
+"0063" | "rnx 0063: a session can request its next executable" | 0.395827 | "## Guardrails and later work This is a reviewable proposed UX, including its one"…[truncated]
+Q2: why was the thread-local test limit rejected?
+"record": string | "title": string | "Q2": f32 | "excerpt": string
+"0130" | "rnx 0130: test limit isolation (the in_memory_io flake)" | 0.52239376 | "**Rejected: a thread-local override.** It was tried first and disproven: `borrow"…[truncated]
+"0130" | "rnx 0130 evidence: test limit isolation" | 0.52082217 | "**Two details:** - The lock is poison-tolerant, so one failure doesn't cascade. "…[truncated]
+"0025" | "rnx 0025 evidence: the same contracts on Windows" | 0.50525385 | "**Raising the stack rnx runs a script on was not done here.** Section C names th"…[truncated]
+"0056" | "rnx 0056: gate 2, the embedding host keeps control" | 0.47137427 | "This establishes a real still-owned native poll with host-controlled release. It"…[truncated]
+"0117" | "rnx 0117 evidence: trait arguments" | 0.4675295 | "With about 385 more registrations, the single generated `install` (5,488 calls i"…[truncated]
+Q3: how is a borrowed Polars group-by kept valid during aggregation?
+"record": string | "title": string | "Q3": f32 | "excerpt": string
+"0126" | "rnx 0126: the eager group-by, with an explicit ownership model for Polars' borro"…[truncated] | 0.61550605 | "A script value can't hold `&'a DataFrame`: nothing ties the script's frame to th"…[truncated]
+"0126" | "rnx 0126 evidence: the eager group-by, with Polars' borrowed `GroupBy` as a rebu"…[truncated] | 0.5830556 | "**`support::GroupBySnapshot`** (`adapters/polars/src/generated/support.rs`, hand"…[truncated]
+"0089" | "rnx 0089: integer function-generic arg extrema" | 0.4918837 | "The first concrete policy covers eight integer wrapper identities: `Int8Chunked`"…[truncated]
+"0088" | "rnx 0088: owned `Cow` chunked-array returns" | 0.49176052 | "Pinned Polars 0.55.2 `polars-core/src/chunked_array/ops/chunkops.rs:162-182` ret"…[truncated]
+"0069" | "0069 gate 4: costs, regression and documentation" | 0.4871709 | "| step | baseline (three runs) | product (three runs) | Compiling entries | save"…[truncated]
+Q4: what limits does the neutral dense block enforce?
+"record": string | "title": string | "Q4": f32 | "excerpt": string
+"0082" | "0082 borrowed slices: evidence" | 0.47090298 | "`support::copy_slice` checks `n > limit || used + n > limit` before allocating, "…[truncated]
+"0129" | "rnx 0129 evidence: Candle, scoped to one cross-adapter workflow" | 0.42512444 | "**Policy boundaries** (`adapters/polars/tests/dense.rs`, 5 tests), each tested a"…[truncated]
+"0118" | "rnx 0118 evidence: in-memory I/O, through a closed table of std facts" | 0.40442875 | "The sink's bound is the materialize limit when it is created, as 0116's contract"…[truncated]
+"0093" | "0093 checked integer read-back: evidence" | 0.38822484 | "Codex asked for a strict allowlist rather than an assumption about practical mem"…[truncated]
+"0100" | "0100 owned Boolean, string and binary chunk snapshots: evidence" | 0.38113096 | "1. **Allocation before the bound.** It collected every downcast chunk into a `Ve"…[truncated]
+Q5: how is a large dataframe shown at the prompt without printing everything?
+"record": string | "title": string | "Q5": f32 | "excerpt": string
+"0068" | "rnx 0068: interactive frames show a bounded preview" | 0.49385172 | "Reuse the preview oracle: empty, narrow, wide and tall frames, nulls, long UTF-8"…[truncated]
+"0124" | "rnx 0124: the preview shows every dtype, and keeps a frame's last columns" | 0.44063094 | "- **Scope:** it inspects bounded slices only: at most 10 rows and 8 columns, eac"…[truncated]
+"0058" | "0058 gate 3: bounded native preview" | 0.40958142 | "Names and cells can be clipped while dimensions remain complete. Row/column omis"…[truncated]
+"0068" | "0068 gate 1: the presentation seam" | 0.4047289 | "**Journey** (`journey.json`). A real generated application with `presentation = "…[truncated]
+"0068" | "0068 gate 4: costs, regression and the walkthrough" | 0.39290854 | "Derived: presenting the small frame costs 0.06–0.07 ms over suppressing it, the "…[truncated]
+WORKFLOW OK u1
+[9] Ok(())
+### run returned to a prompt: True after 370.5 s
+:quit

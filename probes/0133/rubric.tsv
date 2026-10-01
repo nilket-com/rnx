@@ -1,0 +1,6 @@
+query	id	text	supporting_records
+Q1	adapter	how does a session add a native adapter with :dep?	0063 0067 0070
+Q2	limit	why was the thread-local test limit rejected?	0130
+Q3	groupby	how is a borrowed Polars group-by kept valid during aggregation?	0126
+Q4	dense	what limits does the neutral dense block enforce?	0129
+Q5	preview	how is a large dataframe shown at the prompt without printing everything?	0068 0124

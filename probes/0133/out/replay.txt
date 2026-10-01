@@ -1,0 +1,30 @@
+datasets verified
+ok: the retained data verifies
+ok: a duplicated issue refused
+ok: a missing issue refused
+ok: changed content refused
+ok: a changed label refused
+ok: reordering refused
+ok: missing D1 refused
+ok: missing D2 refused
+model verified
+session: OK (prompt True, marker True, errors 0)
+session: OK (prompt True, marker True, errors 0)
+session: OK (prompt True, marker True, errors 0)
+u1: 25 rows (session), 25 (twin)
+u2: 459 rows (session), 459 (twin)
+u3: 254 rows (session), 254 (twin)
+session vs twin: EQUAL
+control, a non-top U2 row's score: DIFFERENT: u2
+control, a wrong U1 document: DIFFERENT: u1
+control, a singleton moved to another U3 component: DIFFERENT: u3
+control, a dropped U3 singleton: DIFFERENT: u3
+D1 passages (pinned tokenizer, special tokens included): 3658 inputs; tokens median 235, p90 336, max 2079; over 256: 1426 (39.0%); tokens lost to truncation: 89477 of 843014 (10.6%)
+rubric records' passages truncated: 128 of 313
+D2 ticket inputs: 252 inputs; tokens median 185, p90 508, max 706; over 256: 85 (33.7%); tokens lost to truncation: 14132 of 57386 (24.6%)
+3658 passages: PyTorch 2.14.1+cpu CPU (20 threads) 52.5 s, peak RSS 821 MiB
+replay: all checks passed
+ok: a successful run passes
+ok: a run returning Err fails
+ok: a script that doesn't compile fails
+ok: a runtime error after the marker fails

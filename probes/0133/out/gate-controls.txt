@@ -1,0 +1,8 @@
+ok: an empty model directory stops the replay before any session or twin
+ok: a missing model directory stops the replay before any session or twin
+ok: a model with wrong files stops the replay before any session or twin
+ok: a successful run passes
+ok: a run returning Err fails
+ok: a script that doesn't compile fails
+ok: a runtime error after the marker fails
+ok: a returned Err after the marker fails

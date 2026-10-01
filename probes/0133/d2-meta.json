@@ -1,0 +1,6 @@
+{
+ "fetched_utc": "2026-10-01T11:35:42Z",
+ "issues": 252,
+ "max_updated_at": "2026-09-08T05:04:28Z",
+ "source": "GET /repos/rune-rs/rune/issues?state=all, pull requests excluded"
+}

@@ -1,0 +1,36 @@
+### :dep returned to a prompt: True after 15.1 s
+run(["/home/me/.local/share/rnx-uat-0133/d1/plans", "/home/me/.local/share/rnx-uat-0133/d2/issues.json", "/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-44
+run(["/home/me/.local/share/rnx-uat-0133/d1/plans", "/home/me/.local/share/rnx-uat-0133/d2/issues.json", "/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/minilm", "/tmp/claude-1003/-home-me-work/9bcf5c3
+run(["/home/me/.local/share/rnx-uat-0133/d1/plans", "/home/me/.local/share/rnx-uat-0133/d2/issues.json", "/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/minilm", "/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/replay0133/session"])
+D2 duplicate candidates (>= 0.95): 0 pairs
+D2 related (0.85 to 0.95): 0 pairs
+D1 duplicate candidates (>= 0.95): 3 pairs
+  0.9599273  0101 rnx 0101: owned snapshots from `downcast_get`  |  0102 rnx 0102: owned snapshots from `downcast_as_array`
+  0.95239466  0103 0103 owned snapshots from downcast_iter: evidence  |  0105 0105 owned snapshots from downcast_into_iter: evidence
+  0.95237863  0101 0101 owned snapshots from downcast_get: evidence  |  0104 0104 owned snapshots from downcast_chunks: evidence
+D1 related (0.85 to 0.95): 456 pairs
+  0.9492243  0127 rnx 0127: pivot, with an `Arc<DataFrame>` argument and higher-arity binding  |  0127 rnx 0127 evidence: pivot, with an `Arc<DataFrame>` argument and higher-arity binding
+  0.9460447  0079 rnx 0079: Polars callbacks, the production contract  |  0079 rnx 0079: Polars callbacks, evidence
+  0.9429759  0025 rnx 0025: the same contracts on Windows  |  0025 rnx 0025 evidence: the same contracts on Windows
+  0.942099  0117 rnx 0117: trait arguments, as one family-level record  |  0117 rnx 0117 evidence: trait arguments
+  0.9359654  0101 rnx 0101: owned snapshots from `downcast_get`  |  0104 rnx 0104: owned snapshots from `downcast_chunks`
+  0.93460387  0102 rnx 0102: owned snapshots from `downcast_as_array`  |  0104 rnx 0104: owned snapshots from `downcast_chunks`
+  0.9331991  0125 rnx 0125: loading, from CSV inference, JSON files and plain-string paths  |  0125 rnx 0125 evidence: loading, from CSV inference, JSON files and plain-string paths
+  0.9328431  0099 0099 owned numeric chunk snapshots: evidence  |  0100 0100 owned Boolean, string and binary chunk snapshots: evidence
+  0.9327533  0092 rnx 0092: numeric left-hand subtraction with a typed scalar  |  0095 rnx 0095: typed left-hand division and remainder
+  0.9325618  0076 rnx 0076: Polars coverage, stage three  |  0076 rnx 0076: Polars coverage, stage three, evidence
+  0.9316587  0103 rnx 0103: owned snapshots from `downcast_iter`  |  0105 rnx 0105: owned snapshots from `downcast_into_iter`
+  0.9311315  0101 0101 owned snapshots from downcast_get: evidence  |  0102 0102 owned snapshots from downcast_as_array: evidence
+  0.93103683  0032 rnx 0032: one way to run a script  |  0032 rnx 0032 evidence: one way to run a script
+  0.930656  0131 rnx 0131: a pretrained model on the CPU — text embeddings into a ranked table  |  0131 rnx 0131 evidence: a pretrained model on the CPU (text embeddings into a ranked table)
+  0.928287  0100 0100 owned Boolean, string and binary chunk snapshots: evidence  |  0101 0101 owned snapshots from downcast_get: evidence
+  0.9278559  0102 rnx 0102: owned snapshots from `downcast_as_array`  |  0103 rnx 0103: owned snapshots from `downcast_iter`
+  0.92780524  0090 rnx 0090: numeric peak functions with explicit boundaries  |  0091 rnx 0091: bounded integer index conversion
+  0.92732894  0064 rnx 0064 gate 4: ordinary installed runtimes serve the real adapters  |  0064 0064 gate 6: installation regression
+  0.9272081  0047 rnx 0047: a notebook cell over the worker  |  0047 rnx 0047 evidence: from stopped probes to an owned transport
+  0.9272046  0005 rnx 0005: the allocation ceiling  |  0005 rnx 0005 evidence: the allocation ceiling
+times: D2 27191 ms; D1 embed 373656 ms; D1 means and pairs 1005 ms
+WORKFLOW OK u2
+[13] Ok(())
+### run returned to a prompt: True after 402.0 s
+:quit
