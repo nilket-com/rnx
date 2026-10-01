@@ -331,47 +331,221 @@ fn fits(config: &Config, batch: usize, seq: usize, caps: Caps) -> bool {
 	)
 }
 
-/// One batch: ids checked, the mask into the model and the pooling, mean
-/// pooled, normalized as `x / max(‖x‖, 1e-12)`; rows appended to `out`.
-fn batch(
+/// Record 0132: the in-flight budget for one `embed` call, in f32 values
+/// (2²⁸, 1 GiB). Batch estimates are calibrated to Candle's measured
+/// transients (`TRANSIENT`), so the budget tracks real memory; it is still an
+/// estimate for this invocation, not a process-wide or allocator ceiling.
+pub const AGG: usize = 1 << 28;
+/// A batch's measured allocator peak is up to 3.70 times its activation
+/// formula (attention dominated, 32 × 256 tokens; 2.29 for short texts;
+/// `probes/0132/out/calibrate.txt`): the estimate is the formula times 4.
+pub const TRANSIENT: usize = 4;
+/// At most 32 batches run at once.
+pub const MAX_WORKERS: usize = 32;
+// a lone batch at 0131's caps always fits the budget: no deadlock
+const _: () = assert!(TRANSIENT * (CAPS.hidden + CAPS.ffn + CAPS.attention) <= AGG);
+
+/// The planned ids and mask: 2 × 4 bytes × 32,768 texts × 512 tokens, the
+/// largest input 0131's contract admits (128 MiB; 64 MiB at the pinned model).
+pub const PLAN_PAYLOAD: usize = 2 * 4 * MAX_TEXTS * 512;
+/// The batches' own records, derived from their actual size: at most one
+/// batch per text.
+pub const PLAN_METADATA: usize = std::mem::size_of::<Planned>() * MAX_TEXTS;
+
+/// One planned batch: its texts tokenized, checked and reduced to the ids
+/// and mask the model takes; the tokenizer's `Encoding`s are already gone.
+struct Planned {
+	b: usize,
+	seq: usize,
+	ids: Vec<u32>,
+	mask: Vec<u32>,
+	estimate: usize,
+}
+
+/// A batch's in-flight estimate: hidden and feed-forward states plus the
+/// attention scores, times the measured transient factor, checked.
+fn estimate(c: &Config, b: usize, seq: usize) -> Option<usize> {
+	let bs = b.checked_mul(seq)?;
+	bs.checked_mul(c.hidden_size.checked_add(c.intermediate_size)?)?
+		.checked_add(
+			b.checked_mul(c.num_attention_heads)?
+				.checked_mul(seq)?
+				.checked_mul(seq)?,
+		)?
+		.checked_mul(TRANSIENT)
+}
+
+/// Per-call controls. Production uses the defaults; the test-support entry
+/// point sets them per call, so no test shares global state with another.
+#[derive(Clone, Debug, Default)]
+pub struct Knobs {
+	pub workers: Option<usize>,
+	pub agg: Option<usize>,
+	pub plan_fail_at: Option<usize>,
+	pub fail_at: Vec<usize>,
+	pub panic_at: Vec<usize>,
+	/// Hold this batch at admission, as if over budget, until a higher index
+	/// has failed (the cutoff control's deterministic barrier).
+	pub hold: Option<usize>,
+	/// Panic after the model returns, before the rows are published.
+	pub panic_after_run: Vec<usize>,
+	/// Sleep this long (ms) inside a batch, before publication, so another
+	/// batch finishes first.
+	pub delay: Vec<(usize, u64)>,
+}
+
+/// What one call did, returned with its result.
+#[derive(Clone, Debug, Default)]
+pub struct Trace {
+	/// The planned batches' sizes, in order.
+	pub batches: Vec<usize>,
+	/// The batches that ran to success, sorted.
+	pub executed: Vec<usize>,
+	/// The failing batches, sorted, as (index, error).
+	pub failed: Vec<(usize, String)>,
+	/// The failing indices in the order they failed.
+	pub fail_order: Vec<usize>,
+	/// The successful indices in the order they completed.
+	pub completion_order: Vec<usize>,
+	pub workers: usize,
+	pub max_inflight: usize,
+	pub max_running: usize,
+	/// The in-flight sum after every worker joined: always 0.
+	pub inflight_end: usize,
+	/// Candle's matmul threads and the rayon pool, seen inside a batch.
+	pub threads: (usize, usize),
+	/// Wall time of the planning (tokenizing) and execution stages.
+	pub plan_s: f64,
+	pub exec_s: f64,
+}
+
+/// Stage 1, sequential: the same batches as 0131 (32, halved until the caps
+/// hold), each reduced to compact ids and mask at once. Stops at the first
+/// failing batch, returning the batches before it and that error.
+fn plan(
 	inner: &Inner,
-	encodings: &[tokenizers::Encoding],
-	out: &mut Vec<f32>,
+	strs: &[&str],
+	caps: Caps,
+	agg: usize,
+	knobs: &Knobs,
 	op: &str,
-) -> Result<(), String> {
-	let b = encodings.len();
-	let seq = encodings[0].len();
-	if seq > inner.max_seq || encodings.iter().any(|e| e.len() != seq) {
-		return Err(format!(
-			"{op}: a padded length of {seq}, at most {}",
-			inner.max_seq
-		));
-	}
-	let mut ids = Vec::with_capacity(b * seq);
-	let mut mask = Vec::with_capacity(b * seq);
-	for e in encodings {
-		for &id in e.get_ids() {
-			if id as usize >= inner.config.vocab_size {
-				return Err(format!(
-					"{op}: token id {id} is not below vocab_size {}",
-					inner.config.vocab_size
-				));
-			}
-			ids.push(id);
+) -> (Vec<Planned>, Option<String>) {
+	let n = strs.len();
+	let mut planned: Vec<Planned> = Vec::new();
+	let mut payload = 0usize;
+	let mut at = 0;
+	while at < n {
+		let index = planned.len();
+		let failed = |e: String| Some(e);
+		if knobs.plan_fail_at == Some(index) {
+			return (
+				planned,
+				failed(format!("{op}: injected planning failure at batch {index}")),
+			);
 		}
-		mask.extend_from_slice(e.get_attention_mask());
+		let mut b = BATCH.min(n - at);
+		let encodings = loop {
+			let encodings = match inner
+				.tokenizer
+				.encode_batch(strs[at..at + b].to_vec(), true)
+			{
+				Ok(e) => e,
+				Err(e) => return (planned, failed(format!("{op}: {e}"))),
+			};
+			let seq = encodings[0].len();
+			if fits(&inner.config, b, seq, caps) {
+				break encodings;
+			}
+			if b == 1 {
+				return (
+					planned,
+					failed(format!(
+						"{op}: text {at} at {seq} tokens exceeds the activation caps"
+					)),
+				);
+			}
+			b /= 2;
+		};
+		let seq = encodings[0].len();
+		if seq > inner.max_seq || encodings.iter().any(|e| e.len() != seq) {
+			return (
+				planned,
+				failed(format!(
+					"{op}: a padded length of {seq}, at most {}",
+					inner.max_seq
+				)),
+			);
+		}
+		let Some(est) = estimate(&inner.config, b, seq).filter(|e| *e <= agg) else {
+			return (
+				planned,
+				failed(format!(
+					"{op}: batch {index} ({b} texts at {seq} tokens) is above the in-flight budget of {agg} values"
+				)),
+			);
+		};
+		// the planned storage, checked before this batch's vectors exist
+		let need = b.checked_mul(seq).and_then(|v| v.checked_mul(8));
+		match need.and_then(|v| payload.checked_add(v)) {
+			Some(total) if total <= PLAN_PAYLOAD => payload = total,
+			_ => {
+				return (
+					planned,
+					failed(format!(
+						"{op}: the planned input exceeds {PLAN_PAYLOAD} bytes"
+					)),
+				);
+			}
+		}
+		if (index + 1) * std::mem::size_of::<Planned>() > PLAN_METADATA {
+			return (planned, failed(format!("{op}: too many batches")));
+		}
+		let mut ids = Vec::with_capacity(b * seq);
+		let mut mask = Vec::with_capacity(b * seq);
+		for e in &encodings {
+			for &id in e.get_ids() {
+				if id as usize >= inner.config.vocab_size {
+					return (
+						planned,
+						failed(format!(
+							"{op}: token id {id} is not below vocab_size {}",
+							inner.config.vocab_size
+						)),
+					);
+				}
+				ids.push(id);
+			}
+			mask.extend_from_slice(e.get_attention_mask());
+		}
+		drop(encodings);
+		if let Some(row) = mask.chunks(seq).position(|m| m.iter().all(|&x| x == 0)) {
+			return (
+				planned,
+				failed(format!(
+					"{op}: text {row} of its batch has no tokens to pool"
+				)),
+			);
+		}
+		planned.push(Planned {
+			b,
+			seq,
+			ids,
+			mask,
+			estimate: est,
+		});
+		at += b;
 	}
-	let counts: Vec<u32> = mask.chunks(seq).map(|m| m.iter().sum()).collect();
-	if let Some(row) = counts.iter().position(|&c| c == 0) {
-		return Err(format!(
-			"{op}: text {row} of its batch has no tokens to pool"
-		));
-	}
+	(planned, None)
+}
+
+/// One batch through the model: the mask into the model and the pooling,
+/// mean pooled, normalized as `x / max(‖x‖, 1e-12)`.
+fn run_batch(inner: &Inner, p: &Planned, op: &str) -> Result<Vec<f32>, String> {
 	let cpu = &Device::Cpu;
 	let e = |e: candle_core::Error| format!("{op}: {e}");
-	let input = CTensor::from_vec(ids, (b, seq), cpu).map_err(e)?;
+	let input = CTensor::from_slice(&p.ids, (p.b, p.seq), cpu).map_err(e)?;
 	let types = input.zeros_like().map_err(e)?;
-	let mask = CTensor::from_vec(mask, (b, seq), cpu).map_err(e)?;
+	let mask = CTensor::from_slice(&p.mask, (p.b, p.seq), cpu).map_err(e)?;
 	let hidden = inner
 		.model
 		.forward(&input, &types, Some(&mask))
@@ -394,8 +568,197 @@ fn batch(
 		.maximum(1e-12)
 		.map_err(e)?;
 	let rows = pooled.broadcast_div(&norm).map_err(e)?;
-	out.extend(rows.flatten_all().map_err(e)?.to_vec1::<f32>().map_err(e)?);
-	Ok(())
+	rows.flatten_all().map_err(e)?.to_vec1::<f32>().map_err(e)
+}
+
+/// The admission state, guarded by one mutex that the condition variable's
+/// predicate is checked under, so no change to `cutoff` or `inflight` can
+/// be missed between a check and a wait.
+struct Admission {
+	inflight: usize,
+	running: usize,
+	/// The lowest failing batch index so far; indices at or above it are
+	/// skipped, while a claimed lower index always still runs.
+	cutoff: usize,
+	failed: Vec<(usize, String)>,
+	executed: Vec<usize>,
+	completed: Vec<usize>,
+	max_inflight: usize,
+	max_running: usize,
+	threads: (usize, usize),
+}
+
+/// One admitted batch's reservation. Dropping it, on success, error or
+/// unwind, releases the in-flight estimate, records the outcome (an unwind
+/// with no outcome is that batch's "Candle panicked"), moves the cutoff on
+/// failure, and wakes every waiter, all under the admission mutex.
+struct Permit<'a> {
+	state: &'a std::sync::Mutex<Admission>,
+	wake: &'a std::sync::Condvar,
+	index: usize,
+	estimate: usize,
+	outcome: Option<Result<(), String>>,
+	op: &'a str,
+}
+
+impl Drop for Permit<'_> {
+	fn drop(&mut self) {
+		let mut st = lock(self.state);
+		st.inflight -= self.estimate;
+		st.running -= 1;
+		let outcome = self
+			.outcome
+			.take()
+			.unwrap_or_else(|| Err(format!("{}: Candle panicked", self.op)));
+		match outcome {
+			Ok(()) => {
+				st.executed.push(self.index);
+				st.completed.push(self.index);
+				#[cfg(feature = "test-support")]
+				{
+					st.threads = (
+						candle_core::utils::get_num_threads(),
+						rayon::current_num_threads(),
+					);
+				}
+			}
+			Err(e) => {
+				st.failed.push((self.index, e));
+				st.cutoff = st.cutoff.min(self.index);
+			}
+		}
+		self.wake.notify_all();
+	}
+}
+
+fn lock<T>(m: &std::sync::Mutex<T>) -> std::sync::MutexGuard<'_, T> {
+	m.lock().unwrap_or_else(|e| e.into_inner())
+}
+
+/// Stage 2, concurrent: W joined workers claim batch indices in order,
+/// wait for the budget, run, and write their rows into the batch's own
+/// slice of `out`. Returns once every worker has joined.
+fn execute(
+	inner: &Inner,
+	planned: &[Planned],
+	out: &mut [f32],
+	(workers, agg): (usize, usize),
+	knobs: &Knobs,
+	trace: &mut Trace,
+	op: &str,
+) {
+	use std::sync::atomic::{AtomicUsize, Ordering};
+	let n = planned.len();
+	let hidden = inner.config.hidden_size;
+	let mut slots = Vec::with_capacity(n);
+	let mut rest = out;
+	for p in planned {
+		let (slot, r) = rest.split_at_mut(p.b * hidden);
+		slots.push(std::sync::Mutex::new(slot));
+		rest = r;
+	}
+	let state = std::sync::Mutex::new(Admission {
+		inflight: 0,
+		running: 0,
+		cutoff: n,
+		failed: Vec::new(),
+		executed: Vec::new(),
+		completed: Vec::new(),
+		max_inflight: 0,
+		max_running: 0,
+		threads: (0, 0),
+	});
+	let wake = std::sync::Condvar::new();
+	let next = AtomicUsize::new(0);
+	let w = workers.clamp(1, MAX_WORKERS).min(n.max(1));
+	let work = || {
+		loop {
+			let i = next.fetch_add(1, Ordering::SeqCst);
+			if i >= n {
+				break;
+			}
+			let est = planned[i].estimate;
+			// admission, under the one mutex
+			let admitted = {
+				let mut st = lock(&state);
+				loop {
+					if i >= st.cutoff {
+						break false;
+					}
+					let held = knobs.hold == Some(i)
+						&& !st.failed.iter().any(|(j, _)| *j > i)
+						&& (st.running > 0 || next.load(Ordering::SeqCst) < n);
+					if !held && st.inflight + est <= agg {
+						st.inflight += est;
+						st.running += 1;
+						st.max_inflight = st.max_inflight.max(st.inflight);
+						st.max_running = st.max_running.max(st.running);
+						break true;
+					}
+					st = wake.wait(st).unwrap_or_else(|e| e.into_inner());
+				}
+			};
+			if !admitted {
+				continue;
+			}
+			// the reservation is a permit: its Drop releases it, records the
+			// outcome and wakes every waiter under the admission mutex, on
+			// every path, unwinding included
+			let mut permit = Permit {
+				state: &state,
+				wake: &wake,
+				index: i,
+				estimate: est,
+				outcome: None,
+				op,
+			};
+			// the batch and the publication of its rows, inside one indexed
+			// panic boundary
+			let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+				if knobs.panic_at.contains(&i) {
+					panic!("injected panic at batch {i}");
+				}
+				if knobs.fail_at.contains(&i) {
+					return Err(format!("{op}: injected failure at batch {i}"));
+				}
+				let rows = run_batch(inner, &planned[i], op)?;
+				if knobs.panic_after_run.contains(&i) {
+					panic!("injected panic after batch {i} ran");
+				}
+				if let Some((_, ms)) = knobs.delay.iter().find(|(j, _)| *j == i) {
+					std::thread::sleep(std::time::Duration::from_millis(*ms));
+				}
+				lock(&slots[i]).copy_from_slice(&rows);
+				Ok(())
+			}))
+			.unwrap_or_else(|_| Err(format!("{op}: Candle panicked")));
+			permit.outcome = Some(r);
+			drop(permit);
+		}
+	};
+	if w == 1 {
+		work();
+	} else {
+		std::thread::scope(|s| {
+			for _ in 0..w {
+				s.spawn(work);
+			}
+		});
+	}
+	let st = state.into_inner().unwrap_or_else(|e| e.into_inner());
+	let mut executed = st.executed;
+	executed.sort_unstable();
+	let mut failed = st.failed;
+	trace.fail_order = failed.iter().map(|(i, _)| *i).collect();
+	failed.sort_by_key(|(i, _)| *i);
+	trace.executed = executed;
+	trace.completion_order = st.completed;
+	trace.failed = failed;
+	trace.workers = w;
+	trace.max_inflight = st.max_inflight;
+	trace.max_running = st.max_running;
+	trace.inflight_end = st.inflight;
+	trace.threads = st.threads;
 }
 
 /// The texts, borrowed and checked before anything is copied or tokenized:
@@ -413,7 +776,7 @@ fn embed_value(this: &TextEncoder, texts: &rune::Value, caps: Caps) -> Result<De
 		guards.push(v.borrow_string_ref().map_err(|_| not_texts())?);
 	}
 	let strs: Vec<&str> = guards.iter().map(|s| &**s).collect();
-	embed_strs(this, &strs, caps)
+	embed_strs(this, &strs, caps, &Knobs::default()).0
 }
 
 /// Every entry point's checks, on borrowed text, before any tokenizing or
@@ -440,56 +803,71 @@ fn preflight(strs: &[&str], hidden: usize, op: &str) -> Result<(), String> {
 	Ok(())
 }
 
-/// The encoding itself, on the joined worker, after the shared preflight.
-fn embed_strs(this: &TextEncoder, strs: &[&str], caps: Caps) -> Result<Dense, String> {
+/// The shared preflight, then both stages inside 0129's joined worker.
+/// The error is the one sequential `embed` meets first: the lowest failing
+/// batch across both stages (execution failures occur only below a
+/// planning failure's index, so they win when present).
+fn embed_strs(
+	this: &TextEncoder,
+	strs: &[&str],
+	caps: Caps,
+	knobs: &Knobs,
+) -> (Result<Dense, String>, Trace) {
 	let op = "TextEncoder::embed";
 	let inner = &*this.0;
 	let n = strs.len();
 	let hidden = inner.config.hidden_size;
-	preflight(strs, hidden, op)?;
-	let out = worker::run(op, || -> Result<Vec<f32>, String> {
-		let mut out = Vec::with_capacity(n * hidden);
-		#[cfg(feature = "test-support")]
-		let mut sizes = Vec::new();
-		let mut at = 0;
-		while at < n {
-			let mut b = BATCH.min(n - at);
-			let encodings = loop {
-				let encodings = inner
-					.tokenizer
-					.encode_batch(strs[at..at + b].to_vec(), true)
-					.map_err(|e| format!("{op}: {e}"))?;
-				let seq = encodings[0].len();
-				if fits(&inner.config, b, seq, caps) {
-					break encodings;
-				}
-				if b == 1 {
-					return Err(format!(
-						"{op}: text {at} at {seq} tokens exceeds the activation caps"
-					));
-				}
-				b /= 2;
-			};
-			batch(inner, &encodings, &mut out, op)?;
-			#[cfg(feature = "test-support")]
-			sizes.push(b);
-			at += b;
+	let mut trace = Trace::default();
+	if let Err(e) = preflight(strs, hidden, op) {
+		return (Err(e), trace);
+	}
+	let agg = knobs.agg.unwrap_or(AGG);
+	let workers = knobs
+		.workers
+		.unwrap_or_else(|| std::thread::available_parallelism().map_or(1, |p| p.get()));
+	let ran = worker::run(op, || -> Result<(Vec<f32>, Trace), (String, Box<Trace>)> {
+		let mut trace = Trace::default();
+		let started = std::time::Instant::now();
+		let (planned, plan_err) = plan(inner, strs, caps, agg, knobs, op);
+		trace.plan_s = started.elapsed().as_secs_f64();
+		trace.batches = planned.iter().map(|p| p.b).collect();
+		let rows: usize = planned.iter().map(|p| p.b).sum();
+		let mut out = vec![0f32; rows * hidden];
+		let started = std::time::Instant::now();
+		execute(
+			inner,
+			&planned,
+			&mut out,
+			(workers, agg),
+			knobs,
+			&mut trace,
+			op,
+		);
+		trace.exec_s = started.elapsed().as_secs_f64();
+		if let Some((_, e)) = trace.failed.first() {
+			return Err((e.clone(), Box::new(trace)));
 		}
-		#[cfg(feature = "test-support")]
-		{
-			*LAST_BATCHES.lock().unwrap_or_else(|e| e.into_inner()) = sizes;
-			// what the inference worker itself sees: Candle's matmul thread
-			// count (read from RAYON_NUM_THREADS on every call) and the
-			// rayon pool its parallel work would run on
-			*LAST_THREADS.lock().unwrap_or_else(|e| e.into_inner()) = (
-				candle_core::utils::get_num_threads(),
-				rayon::current_num_threads(),
-			);
+		if let Some(e) = plan_err {
+			return Err((e, Box::new(trace)));
 		}
-		Ok(out)
-	})??;
+		Ok((out, trace))
+	});
+	let (out, t) = match ran {
+		Ok(Ok(v)) => v,
+		Ok(Err((e, t))) => return (Err(e), *t),
+		Err(e) => return (Err(e), trace),
+	};
+	trace = t;
+	#[cfg(feature = "test-support")]
+	{
+		*LAST_BATCHES.lock().unwrap_or_else(|e| e.into_inner()) = trace.batches.clone();
+		*LAST_THREADS.lock().unwrap_or_else(|e| e.into_inner()) = trace.threads;
+	}
 	let names = (0..hidden).map(|i| format!("e{i}")).collect();
-	Dense::new(Data::F32(Arc::new(out)), n, hidden, names).map_err(|e| format!("{op}: {e}"))
+	(
+		Dense::new(Data::F32(Arc::new(out)), n, hidden, names).map_err(|e| format!("{op}: {e}")),
+		trace,
+	)
 }
 
 fn embed(this: &TextEncoder, texts: rune::Value) -> Result<Dense, String> {
@@ -502,15 +880,14 @@ static LAST_BATCHES: std::sync::Mutex<Vec<usize>> = std::sync::Mutex::new(Vec::n
 #[cfg(feature = "test-support")]
 static LAST_THREADS: std::sync::Mutex<(usize, usize)> = std::sync::Mutex::new((0, 0));
 
-/// Test support: (Candle's matmul thread count, the current rayon pool's
-/// size) as observed inside the last `embed`'s inference worker.
+/// Test support (the probe): (Candle's matmul thread count, the rayon pool)
+/// seen inside a batch of the last successful `embed`.
 #[cfg(feature = "test-support")]
 pub fn last_threads() -> (usize, usize) {
 	*LAST_THREADS.lock().unwrap_or_else(|e| e.into_inner())
 }
 
-/// Test support: the batch sizes the last `embed` ran, so a control can
-/// prove a batch halved (padding can leave the embeddings bit identical).
+/// Test support (the probe): the batch sizes of the last successful `embed`.
 #[cfg(feature = "test-support")]
 pub fn last_batches() -> Vec<usize> {
 	LAST_BATCHES
@@ -523,7 +900,18 @@ pub fn last_batches() -> Vec<usize> {
 /// model (whose batches of 32 fit every production cap).
 #[cfg(feature = "test-support")]
 pub fn embed_with_caps(this: &TextEncoder, texts: &[&str], caps: Caps) -> Result<Dense, String> {
-	embed_strs(this, texts, caps)
+	embed_strs(this, texts, caps, &Knobs::default()).0
+}
+
+/// Test support: `embed` with per-call knobs, returning its trace.
+#[cfg(feature = "test-support")]
+pub fn embed_with(
+	this: &TextEncoder,
+	texts: &[&str],
+	caps: Caps,
+	knobs: &Knobs,
+) -> (Result<Dense, String>, Trace) {
+	embed_strs(this, texts, caps, knobs)
 }
 
 /// Rust callers (the probe's twin of the script): the production path.
@@ -531,7 +919,7 @@ pub fn load_dir(dir: &str) -> Result<TextEncoder, String> {
 	load(dir)
 }
 pub fn embed_texts(this: &TextEncoder, texts: &[&str]) -> Result<Dense, String> {
-	embed_strs(this, texts, CAPS)
+	embed_strs(this, texts, CAPS, &Knobs::default()).0
 }
 
 /// A row scaled by its largest magnitude, then divided by its norm, summed
@@ -1051,19 +1439,13 @@ mod tests {
 	#[test]
 	fn the_rust_entry_points_share_the_preflight() {
 		let enc = loads(&model(|_, _| {})).unwrap();
-		#[cfg(feature = "test-support")]
-		let untouched = || {
-			*LAST_BATCHES.lock().unwrap() = vec![usize::MAX];
-		};
-		#[cfg(not(feature = "test-support"))]
-		let untouched = || {};
 		let check = |texts: &[&str], want: &str| {
-			untouched();
-			let e = embed_texts(&enc, texts).unwrap_err();
+			// the per-call trace: no batch was planned or run
+			let (r, trace) = embed_strs(&enc, texts, CAPS, &Knobs::default());
+			let e = r.unwrap_err();
 			assert!(e.contains(want), "{e} (wanted {want})");
-			// no tokenizing or model work happened
-			#[cfg(feature = "test-support")]
-			assert_eq!(last_batches(), [usize::MAX]);
+			assert!(trace.batches.is_empty() && trace.executed.is_empty());
+			assert!(embed_texts(&enc, texts).unwrap_err().contains(want));
 		};
 		let big = "x".repeat(MAX_TEXT + 4);
 		check(&[&big], "text 0 is 65540 bytes, at most 65536");
@@ -1173,8 +1555,8 @@ mod tests {
 		};
 		assert!(fits(&inner.config, 3, 16, caps) && !fits(&inner.config, 4, 16, caps));
 		let long = vec!["the cat sat on the mat a dog ran far away home now the cat"; 10];
-		let halved = embed_strs(&enc, &long, caps).unwrap();
-		let whole = embed_strs(&enc, &long, CAPS).unwrap();
+		let halved = embed_strs(&enc, &long, caps, &Knobs::default()).0.unwrap();
+		let whole = embed_strs(&enc, &long, CAPS, &Knobs::default()).0.unwrap();
 		let (Data::F32(a), Data::F32(b)) = (halved.data(), whole.data()) else {
 			unreachable!()
 		};
@@ -1184,7 +1566,9 @@ mod tests {
 			ffn: 1 << 24,
 			attention: 511,
 		};
-		let e = embed_strs(&enc, &long[..1], none).unwrap_err();
+		let e = embed_strs(&enc, &long[..1], none, &Knobs::default())
+			.0
+			.unwrap_err();
 		assert!(e.contains("exceeds the activation caps"), "{e}");
 		// overflowing products are refusals, not wraps
 		assert!(!fits(&inner.config, usize::MAX, 16, CAPS));
@@ -1270,5 +1654,307 @@ mod tests {
 		similarity(&b, &b, n.clone()).unwrap();
 		assert_eq!(rune::from_value::<Vec<String>>(n).unwrap(), ["q0"]);
 		assert_eq!(b.rows(), 1);
+	}
+
+	// ---- record 0132: concurrent batches ----
+
+	fn words(n: usize, salt: usize) -> String {
+		let w = [
+			"the", "cat", "sat", "on", "mat", "a", "dog", "ran", "far", "away", "home", "now",
+		];
+		(0..n)
+			.map(|i| w[(i * 7 + salt) % w.len()])
+			.collect::<Vec<_>>()
+			.join(" ")
+	}
+	fn with(enc: &TextEncoder, texts: &[&str], knobs: Knobs) -> (Result<Dense, String>, Trace) {
+		embed_strs(enc, texts, CAPS, &knobs)
+	}
+	fn bits(d: &Dense) -> Vec<u32> {
+		match d.data() {
+			Data::F32(v) => v.iter().map(|x| x.to_bits()).collect(),
+			Data::F64(_) => unreachable!(),
+		}
+	}
+	fn workers(w: usize) -> Knobs {
+		Knobs {
+			workers: Some(w),
+			..Knobs::default()
+		}
+	}
+
+	#[test]
+	fn concurrent_batches_equal_the_sequential_order_bit_for_bit() {
+		let enc = loads(&model(|_, _| {})).unwrap();
+		// 300 texts of 1 to 14 words: 10 batches, long ones early so later
+		// (shorter) batches tend to finish first
+		let owned: Vec<String> = (0..300).map(|i| words(14 - (i * 13 / 300), i)).collect();
+		let texts: Vec<&str> = owned.iter().map(|s| s.as_str()).collect();
+		let (one, t1) = with(&enc, &texts, workers(1));
+		let one = one.unwrap();
+		assert_eq!(t1.workers, 1);
+		assert_eq!(t1.batches.len(), 10);
+		for w in [2, 8, 32] {
+			let (d, t) = with(&enc, &texts, workers(w));
+			assert_eq!(bits(&d.unwrap()), bits(&one), "W = {w}");
+			assert_eq!((t.batches.clone(), t.inflight_end), (t1.batches.clone(), 0));
+			assert_eq!(t.executed, (0..10).collect::<Vec<_>>());
+		}
+		let (d, t) = with(&enc, &texts, Knobs::default());
+		assert_eq!(bits(&d.unwrap()), bits(&one));
+		assert!(t.workers >= 1 && t.workers <= MAX_WORKERS);
+		// a single batch runs on the outer worker, one worker
+		let (_, t) = with(&enc, &texts[..5], Knobs::default());
+		assert_eq!((t.workers, t.batches.clone()), (1, vec![5]));
+	}
+
+	#[test]
+	fn a_512_token_model_plans_within_the_storage_bound_and_matches() {
+		let enc = loads(&model(|d, c| {
+			c["max_position_embeddings"] = json!(512);
+			write(
+				d,
+				"sentence_bert_config.json",
+				&json!({"max_seq_length": 512}),
+			);
+			// the weights must match the new position count
+			let typed: Config = serde_json::from_value(c.clone()).unwrap();
+			let varmap = candle_nn::VarMap::new();
+			BertModel::load(
+				VarBuilder::from_varmap(&varmap, DType::F32, &Device::Cpu),
+				&typed,
+			)
+			.unwrap();
+			varmap.save(d.join("model.safetensors")).unwrap();
+		}))
+		.unwrap();
+		assert_eq!(enc.0.max_seq, 512);
+		let owned: Vec<String> = (0..40).map(|i| words(600 + i, i)).collect();
+		let texts: Vec<&str> = owned.iter().map(|s| s.as_str()).collect();
+		let (one, t1) = with(&enc, &texts, workers(1));
+		let (four, _) = with(&enc, &texts, workers(4));
+		assert_eq!(bits(&one.unwrap()), bits(&four.unwrap()));
+		// every planned batch is at the full 512 tokens, within the bound
+		let planned: usize = t1.batches.iter().map(|b| b * 512 * 8).sum();
+		assert!(planned <= PLAN_PAYLOAD, "{planned}");
+		assert_eq!(PLAN_PAYLOAD, 128 << 20);
+		assert_eq!(PLAN_METADATA, std::mem::size_of::<Planned>() * MAX_TEXTS);
+	}
+
+	fn batches_of_32(enc: &TextEncoder, n: usize) -> Vec<String> {
+		let _ = enc;
+		(0..n).map(|i| words(3 + i % 5, i)).collect()
+	}
+
+	#[test]
+	fn the_lowest_failing_batch_wins_and_everything_joins() {
+		let enc = loads(&model(|_, _| {})).unwrap();
+		let owned = batches_of_32(&enc, 320);
+		let texts: Vec<&str> = owned.iter().map(|s| s.as_str()).collect();
+		let fail = |knobs: Knobs, want: &str| {
+			let (r, t) = with(
+				&enc,
+				&texts,
+				Knobs {
+					workers: Some(8),
+					..knobs
+				},
+			);
+			let e = r.unwrap_err();
+			assert!(e.contains(want), "{e} (wanted {want})");
+			assert_eq!(t.inflight_end, 0, "the budget is fully released");
+			t
+		};
+		fail(
+			Knobs {
+				fail_at: vec![3],
+				..Knobs::default()
+			},
+			"injected failure at batch 3",
+		);
+		fail(
+			Knobs {
+				fail_at: vec![6, 3],
+				..Knobs::default()
+			},
+			"injected failure at batch 3",
+		);
+		fail(
+			Knobs {
+				panic_at: vec![2],
+				..Knobs::default()
+			},
+			"Candle panicked",
+		);
+		// across the two stages: an execution failure below a planning
+		// failure wins; a planning failure below an execution failure wins
+		fail(
+			Knobs {
+				plan_fail_at: Some(5),
+				fail_at: vec![2],
+				..Knobs::default()
+			},
+			"injected failure at batch 2",
+		);
+		let t = fail(
+			Knobs {
+				plan_fail_at: Some(2),
+				fail_at: vec![5],
+				..Knobs::default()
+			},
+			"injected planning failure at batch 2",
+		);
+		assert_eq!(t.batches.len(), 2, "planning stopped at batch 2");
+		assert!(t.executed.iter().all(|&i| i < 2), "batch 5 never ran");
+		// the planned prefix before a planning failure still executes
+		let t = fail(
+			Knobs {
+				plan_fail_at: Some(4),
+				..Knobs::default()
+			},
+			"batch 4",
+		);
+		assert_eq!(t.executed, vec![0, 1, 2, 3]);
+	}
+
+	#[test]
+	fn a_lower_batch_held_for_the_budget_still_runs_after_a_higher_one_fails() {
+		let enc = loads(&model(|_, _| {})).unwrap();
+		let owned = batches_of_32(&enc, 320);
+		let texts: Vec<&str> = owned.iter().map(|s| s.as_str()).collect();
+		for _ in 0..20 {
+			// batch 3 is held at admission until a higher index has failed;
+			// batch 6 fails first, then 3 runs and fails: 3's error is returned
+			let (r, t) = with(
+				&enc,
+				&texts,
+				Knobs {
+					workers: Some(4),
+					hold: Some(3),
+					fail_at: vec![3, 6],
+					..Knobs::default()
+				},
+			);
+			assert!(r.unwrap_err().contains("injected failure at batch 3"));
+			assert_eq!(
+				t.fail_order,
+				vec![6, 3],
+				"6 failed while 3 was held, then 3 ran"
+			);
+			assert_eq!(t.inflight_end, 0);
+		}
+	}
+
+	#[test]
+	fn the_in_flight_budget_bounds_concurrency_and_refuses_what_cannot_fit() {
+		let enc = loads(&model(|_, _| {})).unwrap();
+		let owned = batches_of_32(&enc, 640);
+		let texts: Vec<&str> = owned.iter().map(|s| s.as_str()).collect();
+		let (_, t) = with(&enc, &texts, workers(8));
+		let largest = {
+			let inner = &*enc.0;
+			let (planned, _) = plan(inner, &texts, CAPS, AGG, &Knobs::default(), "t");
+			planned.iter().map(|p| p.estimate).max().unwrap()
+		};
+		// one batch at a time
+		let (r, t1) = with(
+			&enc,
+			&texts,
+			Knobs {
+				workers: Some(8),
+				agg: Some(largest),
+				..Knobs::default()
+			},
+		);
+		assert!(r.is_ok());
+		assert_eq!(t1.max_running, 1);
+		assert!(t1.max_inflight <= largest && t1.inflight_end == 0);
+		// two at a time at most
+		let (_, t2) = with(
+			&enc,
+			&texts,
+			Knobs {
+				workers: Some(8),
+				agg: Some(2 * largest),
+				..Knobs::default()
+			},
+		);
+		assert!(t2.max_running <= 2 && t2.max_inflight <= 2 * largest);
+		assert!(t.max_inflight <= AGG);
+		// a batch that can't fit is refused once its shape is known, during
+		// planning; the batches before it still ran, and nothing waits
+		let (r, t) = with(
+			&enc,
+			&texts,
+			Knobs {
+				workers: Some(8),
+				agg: Some(largest - 1),
+				..Knobs::default()
+			},
+		);
+		let e = r.unwrap_err();
+		assert!(e.contains("above the in-flight budget"), "{e}");
+		assert_eq!(t.inflight_end, 0);
+	}
+
+	#[test]
+	fn an_unwind_after_admission_releases_the_budget_and_terminates() {
+		let enc = loads(&model(|_, _| {})).unwrap();
+		let owned = batches_of_32(&enc, 320);
+		let texts: Vec<&str> = owned.iter().map(|s| s.as_str()).collect();
+		let largest = {
+			let (planned, _) = plan(&enc.0, &texts, CAPS, AGG, &Knobs::default(), "t");
+			planned.iter().map(|p| p.estimate).max().unwrap()
+		};
+		for _ in 0..10 {
+			// one batch at a time, so others wait for the budget while batch 2
+			// panics after its model step, before publishing its rows
+			let (r, t) = with(
+				&enc,
+				&texts,
+				Knobs {
+					workers: Some(4),
+					agg: Some(largest),
+					panic_after_run: vec![2],
+					..Knobs::default()
+				},
+			);
+			let e = r.unwrap_err();
+			assert!(e.contains("Candle panicked"), "{e}");
+			assert_eq!(t.failed.first().map(|f| f.0), Some(2));
+			assert_eq!(t.inflight_end, 0, "the permit released the reservation");
+			assert_eq!(t.max_running, 1);
+		}
+	}
+
+	#[test]
+	fn later_batches_finishing_first_keep_the_input_order() {
+		let enc = loads(&model(|_, _| {})).unwrap();
+		let owned = batches_of_32(&enc, 192);
+		let texts: Vec<&str> = owned.iter().map(|s| s.as_str()).collect();
+		let (one, _) = with(&enc, &texts, workers(1));
+		// batch 0 sleeps before publishing, so batches 1.. complete first
+		let (d, t) = with(
+			&enc,
+			&texts,
+			Knobs {
+				workers: Some(4),
+				delay: vec![(0, 200)],
+				..Knobs::default()
+			},
+		);
+		assert_ne!(
+			t.completion_order.first(),
+			Some(&0),
+			"{:?}",
+			t.completion_order
+		);
+		assert_eq!(
+			t.completion_order.last(),
+			Some(&0),
+			"{:?}",
+			t.completion_order
+		);
+		assert_eq!(bits(&d.unwrap()), bits(&one.unwrap()));
 	}
 }
