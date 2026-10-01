@@ -1,0 +1,18 @@
+# overlap 0
+D1: 321 texts, 3461 passages, 835698 content tokens; complete coverage 321 of 321; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 0, actual mean 0.0 over 3140 pairs (0 below the request); failures 0
+D2: 252 texts, 458 passages, 82607 content tokens; complete coverage 252 of 252; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 0, actual mean 0.0 over 206 pairs (0 below the request); failures 0
+passage ranges identical to twin0133 chunks: 3919 passages
+# overlap 32
+D1: 321 texts, 3870 passages, 835698 content tokens; complete coverage 321 of 321; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 32, actual mean 31.8 over 3549 pairs (352 below the request); failures 0
+D2: 252 texts, 480 passages, 82607 content tokens; complete coverage 252 of 252; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 32, actual mean 31.5 over 228 pairs (40 below the request); failures 0
+passage ranges identical to twin0133 chunks: 4350 passages
+# generated corpus, overlap 0
+generated, complete plans: 17 texts, 113 passages, 26118 content tokens; complete coverage 17 of 17; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 0, actual mean 0.0 over 98 pairs (0 below the request); failures 0
+generated, named refusals: 0
+# generated corpus, overlap 32
+generated, complete plans: 17 texts, 125 passages, 26118 content tokens; complete coverage 17 of 17; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 32, actual mean 31.7 over 110 pairs (13 below the request); failures 0
+generated, named refusals: 0
+# truncation
+D1 whole document bodies: 321 inputs; over 256 tokens: 321 (100.0%); tokens lost to truncation: 754164 of 836340 (90.2%)
+D2 whole tickets (title, newline, body): 252 inputs; over 256 tokens: 85 (33.7%); tokens lost to truncation: 39857 of 83111 (48.0%)
+D2 ticket inputs as U2 builds them (unchanged): 252 inputs; over 256 tokens: 85 (33.7%); tokens lost to truncation: 14132 of 57386 (24.6%)

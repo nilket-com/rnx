@@ -1,0 +1,23 @@
+# after push: d3376d8, clean worktree binary, fresh cache, ordinary :dep polars candle sessions (probes/0136/replay.sh, TWIN = the main tree twin0133, source committed at d3376d8)
+replay exit 0
+datasets verified
+model verified
+session: OK (prompt True, marker True, returned Ok, errors 0)
+overlap 0, gate 1: U1 prime against the twin
+  u1: 25 rows, BIT-EQUAL
+PASS
+overlap 0, the rubric (reported, not gated)
+hit@1 5 of 5, hit@5 5 of 5
+session: OK (prompt True, marker True, returned Ok, errors 0)
+overlap 32, gate 1: U1 prime against the twin
+  u1: 25 rows, BIT-EQUAL
+PASS
+overlap 32, the rubric (reported, not gated)
+hit@1 4 of 5, hit@5 5 of 5
+replay: all checks passed
+### :dep returned to a prompt: True after 389.7 s
+321 docs, 3461 passages; load 5142 ms, embed 64962 ms
+### run returned to a prompt: True after 70.2 s
+### :dep returned to a prompt: True after 16.9 s
+321 docs, 3870 passages; load 4872 ms, embed 75562 ms
+### run returned to a prompt: True after 80.6 s

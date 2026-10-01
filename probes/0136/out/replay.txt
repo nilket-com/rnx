@@ -1,0 +1,28 @@
+# probes/0136/replay.sh on runner0134 (this tree's adapters), sessions with repl
+datasets verified
+model verified
+session: OK (prompt True, marker True, returned Ok, errors 0)
+overlap 0, gate 1: U1 prime against the twin
+  u1: 25 rows, BIT-EQUAL
+PASS
+overlap 0, the rubric (reported, not gated)
+Q1: first supporting record at rank 1, top: 0063 0061 0071 0070 0001
+Q2: first supporting record at rank 1, top: 0130 0130 0056 0054 0025
+Q3: first supporting record at rank 1, top: 0126 0126 0089 0122 0093
+Q4: first supporting record at rank 1, top: 0129 0082 0129 0118 0097
+Q5: first supporting record at rank 1, top: 0068 0058 0068 0124 0131
+hit@1 5 of 5, hit@5 5 of 5
+session: OK (prompt True, marker True, returned Ok, errors 0)
+overlap 32, gate 1: U1 prime against the twin
+  u1: 25 rows, BIT-EQUAL
+PASS
+overlap 32, the rubric (reported, not gated)
+Q1: first supporting record at rank 1, top: 0070 0070 0057 0001 0002
+Q2: first supporting record at rank 1, top: 0130 0130 0025 0088 0056
+Q3: first supporting record at rank 1, top: 0126 0126 0093 0089 0088
+Q4: first supporting record at rank 2, top: 0082 0129 0129 0048 0118
+Q5: first supporting record at rank 1, top: 0068 0068 0068 0124 0058
+hit@1 4 of 5, hit@5 5 of 5
+replay: all checks passed
+overlap 0: 321 docs, 3461 passages; load 5162 ms, embed 63506 ms; ### run returned to a prompt: True after 68.8 s
+overlap 32: 321 docs, 3870 passages; load 5205 ms, embed 76308 ms; ### run returned to a prompt: True after 81.6 s

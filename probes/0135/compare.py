@@ -1,6 +1,6 @@
 """Record 0135: the two comparison gates, kept apart.
 
-  compare.py exact NEW_DIR TWIN_DIR           gate 1: every complete workflow output
+  compare.py exact NEW_DIR TWIN_DIR [NAMES]   gate 1 (NAMES, e.g. u1, limits the workflows): every complete workflow output
                                               bit for bit against the twin on the
                                               identical partition (0133's normalizers)
   compare.py tolerance OLD_DIR NEW_DIR        gate 2: the new outputs against retained
@@ -91,9 +91,9 @@ def score(name, key):
     return not (name == "u3" and key[0] == "ticket")
 
 
-def exact(new, twin):
+def exact(new, twin, names=("u1", "u2", "u3")):
     ok = True
-    for name in ["u1", "u2", "u3"]:
+    for name in names:
         a, b = keyed(name, rows(new / f"{name}.tsv")), keyed(name, rows(twin / f"{name}.tsv"))
         same = a.keys() == b.keys() and all(
             (a[k] == b[k]) if not score(name, k) else f32(a[k]) == f32(b[k]) for k in a
@@ -248,7 +248,8 @@ def controls(old, new, twin):
 if __name__ == "__main__":
     mode = sys.argv[1]
     if mode == "exact":
-        ok = guarded(exact, pathlib.Path(sys.argv[2]), pathlib.Path(sys.argv[3]))
+        names = sys.argv[4].split(",") if len(sys.argv) > 4 else ["u1", "u2", "u3"]
+        ok = guarded(exact, pathlib.Path(sys.argv[2]), pathlib.Path(sys.argv[3]), names)
     elif mode == "tolerance":
         ok = guarded(tolerance, pathlib.Path(sys.argv[2]), pathlib.Path(sys.argv[3]))
     elif mode == "embeddings":

@@ -10,9 +10,13 @@
 //!   batches that shrink until every activation cap holds; the attention
 //!   mask reaches the model and the pooling; rows are normalized exactly as
 //!   sentence-transformers' `Normalize` (`x / max(‖x‖, 1e-12)`).
+//! - `enc.count_tokens(texts)` and `enc.chunk(text, overlap)`: record 0136's
+//!   token-aware chunking (`text::chunk`).
 //! - `candle::similarity(a, b, names)`: cosine of every row pair, with a
 //!   stable row normalization (scaled by the row's largest magnitude, the
 //!   squares summed in f64).
+pub mod chunk;
+
 use crate::{read_limited, worker};
 use candle_core::{DType, Device, Tensor as CTensor};
 use candle_nn::VarBuilder;
@@ -1162,6 +1166,8 @@ pub(crate) fn build(
 	m.ty::<TextEncoder>()?;
 	m.function("load", load).build_associated::<TextEncoder>()?;
 	m.associated_function("embed", embed)?;
+	m.associated_function("count_tokens", chunk::count_tokens)?;
+	m.associated_function("chunk", chunk::chunk)?;
 	m.associated_function(&rune::runtime::Protocol::DISPLAY_FMT, display)?;
 	m.function("similarity", similarity).build()?;
 	Ok(vec![
@@ -2104,5 +2110,388 @@ mod tests {
 			t.completion_order
 		);
 		assert_eq!(bits(&d.unwrap()), bits(&one.unwrap()));
+	}
+
+	/// Record 0136: token-aware chunking, on fixture tokenizers that reach
+	/// every boundary case (whole words; WordPiece pieces, including
+	/// multi-byte ones; byte-level tokens repeating one character's offsets).
+	mod chunking {
+		use super::super::chunk::{self, LIMITS, Limits, Plan};
+		use super::*;
+
+		/// The fixture model with this tokenizer and `max_seq_length`.
+		fn with_tokenizer(tok: serde_json::Value, max_seq: usize) -> TextEncoder {
+			loads(&model(|d, _| {
+				write(d, "tokenizer.json", &tok);
+				write(
+					d,
+					"sentence_bert_config.json",
+					&json!({"max_seq_length": max_seq, "do_lower_case": false}),
+				);
+			}))
+			.unwrap()
+		}
+		fn words(max_seq: usize) -> TextEncoder {
+			with_tokenizer(tokenizer(vocab(), 3), max_seq)
+		}
+		/// WordPiece: "ab" and "é" with their continuations, so one word can
+		/// be many tokens, and a piece can be two bytes.
+		fn pieces(max_seq: usize) -> TextEncoder {
+			let mut v = serde_json::Map::new();
+			for (i, t) in [
+				"[PAD]", "[UNK]", "[CLS]", "[SEP]", "ab", "##ab", "cat", "dog", "é", "##é",
+			]
+			.iter()
+			.enumerate()
+			{
+				v.insert(t.to_string(), json!(i));
+			}
+			with_tokenizer(
+				json!({
+					"version": "1.0", "truncation": null, "padding": null, "added_tokens": [],
+					"normalizer": null, "pre_tokenizer": {"type": "BertPreTokenizer"},
+					"post_processor": {"type": "BertProcessing", "sep": ["[SEP]", 3], "cls": ["[CLS]", 2]},
+					"decoder": null,
+					"model": {"type": "WordPiece", "vocab": v, "unk_token": "[UNK]",
+						"continuing_subword_prefix": "##", "max_input_chars_per_word": 100}
+				}),
+				max_seq,
+			)
+		}
+		/// Byte-level BPE with no merges: a character outside the
+		/// vocabulary is one `[UNK]` token per byte, every one reporting the
+		/// whole character's offsets.
+		fn bytes(max_seq: usize) -> TextEncoder {
+			let mut v = serde_json::Map::new();
+			for (i, t) in ["[PAD]", "[UNK]", "[CLS]", "[SEP]", "a", "\u{120}"]
+				.iter()
+				.enumerate()
+			{
+				v.insert(t.to_string(), json!(i));
+			}
+			with_tokenizer(
+				json!({
+					"version": "1.0", "truncation": null, "padding": null, "added_tokens": [],
+					"normalizer": null,
+					"pre_tokenizer": {"type": "ByteLevel", "add_prefix_space": false, "trim_offsets": true, "use_regex": true},
+					"post_processor": {"type": "BertProcessing", "sep": ["[SEP]", 3], "cls": ["[CLS]", 2]},
+					"decoder": null,
+					"model": {"type": "BPE", "dropout": null, "unk_token": "[UNK]",
+						"continuing_subword_prefix": null, "end_of_word_suffix": null,
+						"fuse_unk": false, "byte_fallback": false, "ignore_merges": false,
+						"vocab": v, "merges": []}
+				}),
+				max_seq,
+			)
+		}
+
+		/// Every plan's invariants: substrings on character boundaries,
+		/// strictly advancing starts, no gaps (each start at or before the
+		/// previous end), every atom covered, each passage within the model's
+		/// limit once re-tokenized, the actual overlap at most the requested.
+		fn check(enc: &TextEncoder, text: &str, p: &Plan) {
+			let max_seq = enc.0.max_seq as i64;
+			let mut prev: Option<(usize, usize)> = None;
+			for (k, (&(s, e), &(a, b))) in p.ranges.iter().zip(&p.atoms).enumerate() {
+				assert!(s < e && text.is_char_boundary(s) && text.is_char_boundary(e));
+				assert!(a < b);
+				if let Some((pa, pb)) = prev {
+					assert!(a > pa, "passage {k} doesn't advance");
+					assert!(a <= pb, "passage {k} leaves a gap");
+				} else {
+					assert_eq!(a, 0, "the first passage starts at the first atom");
+				}
+				let n = chunk::count_strs(enc, &[&text[s..e]]).unwrap()[0];
+				assert!(n <= max_seq, "passage {k} re-tokenizes to {n} > {max_seq}");
+				prev = Some((a, b));
+			}
+			if p.atom_count > 0 {
+				assert_eq!(prev.unwrap().1, p.atom_count, "the last atom is covered");
+			}
+			assert_eq!(p.overlaps.len(), p.ranges.len().saturating_sub(1));
+			assert!(p.overlaps.iter().all(|&o| o <= p.overlap));
+		}
+		fn plan(enc: &TextEncoder, text: &str, overlap: i64) -> Plan {
+			let p = chunk::plan(enc, text, overlap).unwrap();
+			check(enc, text, &p);
+			p
+		}
+
+		#[test]
+		fn whole_words_cover_the_text_once_and_overlap_is_a_target() {
+			let enc = words(16); // W = 14
+			let text = ["the cat sat on the mat", "a dog ran far away home now"]
+				.repeat(4)
+				.join("  ");
+			let p = plan(&enc, &text, 0);
+			assert!(p.ranges.len() > 1 && p.passage_tokens.iter().all(|&t| t <= 14));
+			// overlap 0: consecutive passages share no atom
+			for w in p.atoms.windows(2) {
+				assert_eq!(w[0].1, w[1].0);
+			}
+			let q = plan(&enc, &text, 3);
+			assert!(q.ranges.len() >= p.ranges.len());
+			assert!(q.overlaps.iter().any(|&o| o > 0));
+			// the returned strings are exactly the planned substrings
+			let got = chunk::chunk(&enc, &text, 3).unwrap();
+			let want: Vec<&str> = q.ranges.iter().map(|&(s, e)| &text[s..e]).collect();
+			assert_eq!(got, want);
+		}
+
+		#[test]
+		fn arguments_are_refused_by_name_and_the_encoder_stays_usable() {
+			let enc = words(16);
+			for o in [-1, 8, i64::MAX] {
+				let e = chunk::plan(&enc, "the cat", o).unwrap_err();
+				assert!(e.contains("overlap") && e.contains("0 to 7"), "{e}");
+			}
+			let big = "a ".repeat(chunk::MAX_DOCUMENT / 2 + 1);
+			assert!(chunk::plan(&enc, &big, 0).unwrap_err().contains("at most"));
+			// a document above embed's per-text limit is chunked: its passages
+			// are each within that limit
+			let doc = "the cat sat ".repeat(MAX_TEXT / 12 + 100);
+			assert!(doc.len() > MAX_TEXT);
+			let p = plan(&enc, &doc, 0);
+			assert!(p.ranges.iter().all(|&(s, e)| e - s <= MAX_TEXT));
+			assert_eq!(chunk::chunk(&enc, "the cat", 0).unwrap(), ["the cat"]);
+			assert!(embed_texts(&enc, &["the cat"]).is_ok());
+		}
+
+		#[test]
+		fn no_tokens_is_empty_and_special_like_text_follows_the_encoding() {
+			let enc = words(16);
+			assert!(chunk::chunk(&enc, "", 0).unwrap().is_empty());
+			assert!(chunk::chunk(&enc, "   \n\t ", 0).unwrap().is_empty());
+			// "[SEP]" is a vocabulary word here: it is content, kept as written
+			let p = plan(&enc, "cat [SEP] dog", 0);
+			assert_eq!(p.tokens, 3);
+			assert_eq!(
+				chunk::chunk(&enc, "cat [SEP] dog", 0).unwrap(),
+				["cat [SEP] dog"]
+			);
+		}
+
+		#[test]
+		fn a_window_never_ends_inside_a_word_that_fits() {
+			let enc = pieces(16); // W = 14
+			// 12 one-piece words, then a 3-piece word: 15 > 14
+			let text = format!("{} ababab dog", ["cat"; 12].join(" "));
+			let p = plan(&enc, &text, 0);
+			assert_eq!(&text[p.ranges[0].0..p.ranges[0].1], ["cat"; 12].join(" "));
+			assert_eq!(&text[p.ranges[1].0..p.ranges[1].1], "ababab dog");
+			assert_eq!(p.fallback_cuts, 0);
+		}
+
+		#[test]
+		fn an_unfit_word_falls_back_to_atoms_on_character_boundaries() {
+			for (enc, word) in [(pieces(16), "ab".repeat(20)), (pieces(16), "é".repeat(20))] {
+				let text = format!("cat {word} dog");
+				let p = plan(&enc, &text, 0);
+				assert!(p.fallback_cuts >= 1, "{word}");
+				assert_eq!(
+					chunk::chunk(&enc, &text, 0)
+						.unwrap()
+						.concat()
+						.replace(' ', ""),
+					text.replace(' ', "")
+				);
+			}
+		}
+
+		#[test]
+		fn a_short_snapped_window_with_overlap_advances_without_gaps() {
+			let enc = pieces(16); // W = 14
+			// one short word, then a word of exactly 14 pieces, then more
+			let text = format!("cat {} dog cat", "ab".repeat(14));
+			let p = plan(&enc, &text, 7);
+			assert_eq!(&text[p.ranges[0].0..p.ranges[0].1], "cat");
+			assert_eq!(p.overlaps[0], 0, "no overlap is possible without stalling");
+			assert_eq!(&text[p.ranges[1].0..p.ranges[1].1], "ab".repeat(14));
+		}
+
+		#[test]
+		fn repeated_and_overlapping_offsets_group_into_atoms() {
+			let enc = bytes(32); // W = 30
+			// "é" is two [UNK] bytes on one character; "😀" four; each space
+			// is its own byte-level token
+			let text = "a é a 😀 a é".to_string();
+			let p = plan(&enc, &text, 0);
+			assert!(
+				p.atom_count < p.tokens,
+				"{} atoms for {} tokens",
+				p.atom_count,
+				p.tokens
+			);
+			assert_eq!(chunk::chunk(&enc, &text, 0).unwrap(), [text.as_str()]);
+			// at W = 14 the same text is 16 tokens: two passages, rejoining
+			// to the text exactly at overlap 0
+			let enc = bytes(16);
+			let p = plan(&enc, &text, 0);
+			assert_eq!(p.tokens, 16);
+			assert_eq!(chunk::chunk(&enc, &text, 0).unwrap().concat(), text);
+			// a long run of four-byte characters, cut only between characters
+			let long = "😀".repeat(10);
+			plan(&enc, &long, 0);
+		}
+
+		#[test]
+		fn an_unbreakable_atom_above_the_window_is_refused_atomically() {
+			let enc = bytes(5); // W = 3, and "😀" is one atom of 4 tokens
+			let e = chunk::plan(&enc, "a 😀 a", 0).unwrap_err();
+			assert!(e.contains("single unbreakable run of 4 tokens"), "{e}");
+			assert!(chunk::chunk(&enc, "a 😀 a", 0).is_err());
+		}
+
+		#[test]
+		fn repair_removes_words_that_begin_the_next_passage() {
+			let enc = words(16);
+			let text = ["the cat sat on the mat a dog ran far away home now"; 3].join(" ");
+			let forced = Limits {
+				inflate: 3,
+				..LIMITS
+			};
+			let p = chunk::plan_with(&enc, &text, 0, forced).unwrap();
+			check(&enc, &text, &p);
+			assert!(p.repairs > 0);
+			// each passage now holds at most 16 - 2 - 3 = 11 words, and the
+			// removed ones start the next: overlap 0 stays gapless
+			assert!(p.passage_tokens.iter().all(|&t| t <= 11));
+			for w in p.atoms.windows(2) {
+				assert_eq!(w[0].1, w[1].0);
+			}
+		}
+
+		#[test]
+		fn repair_beyond_its_bound_and_each_limit_are_refused_with_no_result() {
+			let enc = words(32); // W = 30
+			let text = ["the cat sat on the mat a dog ran far away home now"; 4].join(" ");
+			let e = chunk::plan_with(
+				&enc,
+				&text,
+				0,
+				Limits {
+					inflate: 1000,
+					..LIMITS
+				},
+			)
+			.unwrap_err();
+			assert!(e.contains("after 16 removals"), "{e}");
+			let small = Limits {
+				inflate: 1000,
+				repairs: 100,
+				..LIMITS
+			};
+			let e = chunk::plan_with(&enc, &text, 0, small).unwrap_err();
+			assert!(e.contains("nothing of the passage"), "{e}");
+			let e = chunk::plan_with(
+				&enc,
+				&text,
+				0,
+				Limits {
+					tokens: 10,
+					..LIMITS
+				},
+			)
+			.unwrap_err();
+			assert!(e.contains("tokens, at most 10"), "{e}");
+			let e = chunk::plan_with(&enc, &text, 0, Limits { texts: 1, ..LIMITS }).unwrap_err();
+			assert!(e.contains("more than 1 passages"), "{e}");
+			let e = chunk::plan_with(
+				&enc,
+				&text,
+				0,
+				Limits {
+					total: 20,
+					..LIMITS
+				},
+			)
+			.unwrap_err();
+			assert!(e.contains("exceed 20 bytes"), "{e}");
+			let e = chunk::plan_with(&enc, &text, 0, Limits { text: 10, ..LIMITS }).unwrap_err();
+			assert!(e.contains("above 10 (embed's per-text limit)"), "{e}");
+			let e = chunk::plan_with(
+				&enc,
+				&text,
+				0,
+				Limits {
+					document: 10,
+					..LIMITS
+				},
+			)
+			.unwrap_err();
+			assert!(e.contains("bytes, at most 10"), "{e}");
+		}
+
+		/// Review round 1's tokenizer: byte-level pre- and post-processing
+		/// with trimmed offsets, so a space is a Ġ token with an empty span.
+		fn trimmed() -> TextEncoder {
+			with_tokenizer(
+				json!({
+					"version": "1.0", "truncation": null, "padding": null, "added_tokens": [],
+					"normalizer": null,
+					"pre_tokenizer": {"type": "ByteLevel", "add_prefix_space": false, "trim_offsets": true, "use_regex": true},
+					"post_processor": {"type": "ByteLevel", "add_prefix_space": false, "trim_offsets": true, "use_regex": true},
+					"decoder": null,
+					"model": {"type": "BPE", "dropout": null, "unk_token": "[UNK]",
+						"continuing_subword_prefix": null, "end_of_word_suffix": null,
+						"fuse_unk": false, "byte_fallback": false, "ignore_merges": false,
+						"vocab": {"[PAD]": 0, "[UNK]": 1, "\u{120}": 2, "a": 3}, "merges": []}
+				}),
+				16,
+			)
+		}
+
+		#[test]
+		fn tokens_with_no_span_are_kept_or_refused_never_dropped() {
+			let enc = trimmed();
+			// three spaces: three tokens, none with a span; a passage is a
+			// substring, so they cannot be placed, and the call is refused
+			assert_eq!(chunk::count_strs(&enc, &["   "]).unwrap(), [3]);
+			let e = chunk::plan(&enc, "   ", 0).unwrap_err();
+			assert!(e.contains("3 tokens with no span"), "{e}");
+			assert!(chunk::chunk(&enc, "   ", 0).is_err());
+			// an empty-span token is placed in the gap it was trimmed from, so
+			// the passage is the text that produced it: checked on the actual
+			// passages, not only on the token sum
+			for (text, want) in [
+				("a ", vec!["a "]),
+				("a  ", vec!["a  "]),
+				(" a", vec![" a"]),
+				("a   a", vec!["a   a"]),
+				(" a a ", vec![" a a "]),
+			] {
+				assert_eq!(chunk::chunk(&enc, text, 0).unwrap(), want, "{text:?}");
+			}
+			// and across several passages (W = 16; 40 tokens): each passage
+			// re-tokenizes to exactly the tokens credited to it (this
+			// post-processor adds no specials), and they rejoin exactly
+			for text in [" a".repeat(20), "a ".repeat(20), " a  a ".repeat(8)] {
+				let p = plan(&enc, &text, 0);
+				let n = chunk::count_strs(&enc, &[text.as_str()]).unwrap()[0] as usize;
+				assert_eq!(p.tokens, n, "{text:?}: the plan holds every token");
+				let out = chunk::chunk(&enc, &text, 0).unwrap();
+				assert!(out.len() > 1, "{text:?}");
+				assert_eq!(out.concat(), text);
+				let subs: Vec<&str> = out.iter().map(String::as_str).collect();
+				let counts = chunk::count_strs(&enc, &subs).unwrap();
+				for (k, c) in counts.iter().enumerate() {
+					assert_eq!(*c as usize, p.passage_tokens[k], "{text:?} passage {k}");
+				}
+			}
+		}
+
+		#[test]
+		fn count_tokens_counts_specials_untruncated_and_shares_the_preflight() {
+			let enc = words(16);
+			let long = ["the cat"; 20].join(" ");
+			assert_eq!(
+				chunk::count_strs(&enc, &["the cat", &long, ""]).unwrap(),
+				[4, 42, 2]
+			);
+			let e = chunk::count_strs(&enc, &[]).unwrap_err();
+			assert!(e.contains("0 texts"), "{e}");
+			// embed's own truncation is untouched by the per-call copy
+			assert!(embed_texts(&enc, &[long.as_str()]).is_ok());
+		}
 	}
 }

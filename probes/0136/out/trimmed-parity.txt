@@ -1,0 +1,7 @@
+# probes/0136/trimmed_parity.sh: review round 1's trimmed byte-level tokenizer on the pinned weights
+D1: 8 texts, 13 passages, 1565 content tokens; complete coverage 8 of 8; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 0, actual mean 0.0 over 5 pairs (0 below the request); failures 0
+D2: 8 texts, 19 passages, 3122 content tokens; complete coverage 8 of 8; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 0, actual mean 0.0 over 11 pairs (0 below the request); failures 0
+overlap 0: 32 passage ranges identical to the twin
+D1: 8 texts, 13 passages, 1565 content tokens; complete coverage 8 of 8; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 32, actual mean 31.2 over 5 pairs (2 below the request); failures 0
+D2: 8 texts, 20 passages, 3122 content tokens; complete coverage 8 of 8; longest passage 256 tokens with specials, 0 over the limit; repairs 0, atom-fallback cuts 0; overlap requested 32, actual mean 31.3 over 12 pairs (4 below the request); failures 0
+overlap 32: 33 passage ranges identical to the twin
