@@ -48,7 +48,7 @@ pub(crate) struct Entry {
 	/// declarations are never rewritten.
 	shared_build: bool,
 }
-const ENTRIES: [Entry; 2] = [
+const ENTRIES: [Entry; 3] = [
 	Entry {
 		name: "polars",
 		package: "rnx-polars",
@@ -61,6 +61,15 @@ const ENTRIES: [Entry; 2] = [
 		package: "rnx-postgres",
 		hook: Hook::Lifecycle,
 		presentation: false,
+		shared_build: true,
+	}, // record 0129: a CPU tensor and small-model adapter (Candle, no system
+	// library); its shared_build is backed by the executable-without-build-
+	// output gate in plans/0129_candle_workflow_evidence.md
+	Entry {
+		name: "candle",
+		package: "rnx-candle",
+		hook: Hook::Plain,
+		presentation: true,
 		shared_build: true,
 	},
 ];
@@ -84,10 +93,9 @@ pub(crate) fn select(names: &[String]) -> Result<Vec<Entry>, String> {
 	}
 	let mut entries = BTreeMap::new();
 	for name in names {
-		let entry = ENTRIES
-			.iter()
-			.find(|e| e.name == name)
-			.ok_or_else(|| format!("unknown adapter {name}; available: polars, postgres"))?;
+		let entry = ENTRIES.iter().find(|e| e.name == name).ok_or_else(|| {
+			format!("unknown adapter {name}; available: candle, polars, postgres")
+		})?;
 		if entries.insert(entry.name, *entry).is_some() {
 			return Err(format!("duplicate adapter {name}"));
 		}
@@ -327,7 +335,7 @@ mod shared_build_tests {
 	use super::*;
 	const GIT: &str = "format = 2\n[application]\nentry = \"main.rn\"\n[runtime]\ngit = \"https://example.invalid/rnx\"\nrev = \"0123456789abcdef0123456789abcdef01234567\"\n";
 	/// Record 0069: a newly authored Git declaration carries the maintainers'
-	/// `shared_build = true` for both catalogue adapters; an existing
+	/// `shared_build = true` for every catalogue adapter; an existing
 	/// declaration without it is left alone, and one with it is accepted.
 	#[test]
 	fn git_authoring_writes_the_declaration_and_keeps_existing_choices() {
@@ -336,7 +344,9 @@ mod shared_build_tests {
 		let d = crate::schemas::Declaration::parse(text.as_bytes()).unwrap();
 		assert!(d.native["polars"].shared_build && d.native["postgres"].shared_build);
 		assert!(d.native["polars"].presentation && !d.native["postgres"].presentation);
-		assert_eq!(text.matches("shared_build = true").count(), 2);
+		// record 0129
+		assert!(d.native["candle"].shared_build && d.native["candle"].presentation);
+		assert_eq!(text.matches("shared_build = true").count(), 3);
 		let old = format!(
 			"{GIT}\n[native.polars]\ngit = \"https://example.invalid/rnx\"\nrev = \"0123456789abcdef0123456789abcdef01234567\"\npackage = \"rnx-polars\"\nbuilder = \"build\"\nhook = \"plain\"\npresentation = true\n"
 		);

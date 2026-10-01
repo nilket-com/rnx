@@ -33,6 +33,13 @@ mod fs_platform;
 mod host;
 mod http;
 mod inspect;
+pub mod interchange;
+/// Record 0129: the allocator's peak of tracked live bytes, and its reset to
+/// the current figure. Only with `allocation-peak` (and `count-allocations`).
+#[cfg(feature = "allocation-peak")]
+pub mod allocation {
+	pub use crate::memory::{peak, reset_peak};
+}
 mod io;
 mod json;
 mod memory;
@@ -74,6 +81,8 @@ fn install_core(context: &mut Context) -> Result<Vec<host::HostFunction>> {
 	platform::watch_for_interrupt();
 	let mut functions = json::install(context)?;
 	functions.extend(io::install(context)?);
+	// record 0129: the neutral block adapters exchange numbers through
+	functions.extend(interchange::install(context)?);
 	functions.extend(process::install(context)?);
 	#[cfg(feature = "test-support")]
 	functions.extend(rnx_test::install(context)?);
@@ -585,6 +594,10 @@ mod namespace_tests {
 			"process::exit",
 			"process::run",
 			"process::run_bytes",
+			"interchange::Dense",
+			"interchange::Dense::shape",
+			"interchange::Dense::names",
+			"interchange::Dense::dtype",
 		];
 		#[cfg(feature = "test-support")]
 		expected.extend([

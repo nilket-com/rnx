@@ -40,6 +40,8 @@ required-features = ["generated", "test-support"]
 
 [dev-dependencies]
 serde_json = "1"
+# Record 0129: the allocator's peak, for the allocation controls only.
+rnx = { path = "../..", default-features = false, features = ["count-allocations", "allocation-peak"] }
 
 [dependencies]
 rnx = { path = "../..", default-features = false, features = ["count-allocations"] }

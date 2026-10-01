@@ -335,7 +335,8 @@ mod installation_tests {
 			.with("frame", build)
 			.install_with(&mut context, &lifecycle)
 			.unwrap();
-		assert_eq!(installed.presenters.len(), 1);
+		// the extension's presenter beside rnx's own `interchange::Dense`
+		assert_eq!(installed.presenters.len(), 2);
 	}
 
 	#[test]
@@ -401,7 +402,8 @@ mod installation_tests {
 				.with("frame", build)
 				.present("frame", present),
 		);
-		assert_eq!(session.presenter_count(), 1);
+		// the extension's presenter beside rnx's own `interchange::Dense`
+		assert_eq!(session.presenter_count(), 2);
 		let value = session.eval("frame::Frame::new(3)").unwrap();
 		let text = session.present(&value, 16 * 1024).unwrap().unwrap();
 		assert_eq!(text, "Frame with 3 rows\n");
@@ -436,7 +438,7 @@ mod installation_tests {
 		assert_eq!(DEBUG_RAN.load(Ordering::SeqCst), 0);
 		// A reset keeps the presenter, as it keeps the extension.
 		session.reset();
-		assert_eq!(session.presenter_count(), 1);
+		assert_eq!(session.presenter_count(), 2);
 		let value = session.eval("frame::Frame::new(9)").unwrap();
 		assert_eq!(
 			session.present(&value, 1024).unwrap().unwrap(),
@@ -606,7 +608,7 @@ mod ownership_tests {
 				0,
 				"reset must not drop the registry"
 			);
-			assert_eq!(session.presenter_count(), 1, "reset must not re-register");
+			assert_eq!(session.presenter_count(), 2, "reset must not re-register");
 			let value = session.eval("owned::make(2)").unwrap();
 			assert_eq!(session.present(&value, 64).unwrap().unwrap(), "owned 2\n");
 		}
