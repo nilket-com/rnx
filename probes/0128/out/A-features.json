@@ -1,0 +1,1 @@
+["csv", "dtype-categorical", "dtype-i16", "dtype-i8", "dtype-struct", "dtype-u16", "dtype-u8", "json", "lazy", "parquet", "pivot", "polars-io", "polars-lazy", "polars-ops", "polars-parquet", "rows", "streaming"]

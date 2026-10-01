@@ -1,0 +1,1870 @@
+{
+ "counts": {
+  "lost in rnx (in the v2 inventory, not bound)": 218,
+  "lost for this type (bound for other types at v2)": 12,
+  "confirmed removed (no definition in the v2 source)": 63,
+  "absent from the v2 inventory, present in its source": 9
+ },
+ "rows": [
+  {
+   "rune": "polars::BinaryChunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BinaryChunked::downcast_as_array",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_as_array",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_as_array",
+    "polars::Float16Chunked::downcast_as_array",
+    "polars::Float32Chunked::downcast_as_array"
+   ]
+  },
+  {
+   "rune": "polars::BinaryChunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BinaryChunked::downcast_get",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_get",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_get",
+    "polars::Float16Chunked::downcast_get",
+    "polars::Float32Chunked::downcast_get"
+   ]
+  },
+  {
+   "rune": "polars::BinaryChunked::downcast_into_iter",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_into_iter",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_into_iter",
+    "polars::Float16Chunked::downcast_into_iter",
+    "polars::Float32Chunked::downcast_into_iter"
+   ]
+  },
+  {
+   "rune": "polars::BinaryChunked::downcast_iter",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_iter",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_iter",
+    "polars::Float16Chunked::downcast_iter",
+    "polars::Float32Chunked::downcast_iter"
+   ]
+  },
+  {
+   "rune": "polars::BinaryChunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::BinaryChunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::BinaryChunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::BinaryChunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BinaryChunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::BinaryChunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BinaryChunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::BinaryOffsetChunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BinaryOffsetChunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BinaryOffsetChunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::BinaryOffsetChunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::BinaryOffsetChunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::BinaryOffsetChunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BinaryOffsetChunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::BinaryOffsetChunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BinaryOffsetChunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::BooleanChunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BooleanChunked::downcast_as_array",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_as_array",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_as_array",
+    "polars::Float16Chunked::downcast_as_array",
+    "polars::Float32Chunked::downcast_as_array"
+   ]
+  },
+  {
+   "rune": "polars::BooleanChunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BooleanChunked::downcast_get",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_get",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_get",
+    "polars::Float16Chunked::downcast_get",
+    "polars::Float32Chunked::downcast_get"
+   ]
+  },
+  {
+   "rune": "polars::BooleanChunked::downcast_into_iter",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_into_iter",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_into_iter",
+    "polars::Float16Chunked::downcast_into_iter",
+    "polars::Float32Chunked::downcast_into_iter"
+   ]
+  },
+  {
+   "rune": "polars::BooleanChunked::downcast_iter",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_iter",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_iter",
+    "polars::Float16Chunked::downcast_iter",
+    "polars::Float32Chunked::downcast_iter"
+   ]
+  },
+  {
+   "rune": "polars::BooleanChunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::BooleanChunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::BooleanChunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::BooleanChunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BooleanChunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::BooleanChunked::rand_bernoulli",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rand_bernoulli",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of rand_bernoulli in polars-core/src"
+  },
+  {
+   "rune": "polars::BooleanChunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::BooleanChunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::CategoricalNameSpace::get_categories",
+   "canonical_path": "polars_plan::dsl::cat::CategoricalNameSpace::get_categories",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of get_categories in polars-plan/src"
+  },
+  {
+   "rune": "polars::Column::agg_valid_count",
+   "canonical_path": "polars_core::frame::column::Column::agg_valid_count",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "no surface entry"
+  },
+  {
+   "rune": "polars::ColumnPredicates CLONE",
+   "canonical_path": "polars_io::predicates::ColumnPredicates as core::clone::Clone",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of ColumnPredicates in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnPredicates default_() (renamed: `default` is a Rune keyword)",
+   "canonical_path": "polars_io::predicates::ColumnPredicates as core::default::Default",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of ColumnPredicates in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats CLONE",
+   "canonical_path": "polars_io::predicates::ColumnStats as core::clone::Clone",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of ColumnStats in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats DEBUG_FMT",
+   "canonical_path": "polars_io::predicates::ColumnStats as core::fmt::Debug",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of ColumnStats in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::dtype",
+   "canonical_path": "polars_io::predicates::ColumnStats::dtype",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::field_name",
+   "canonical_path": "polars_io::predicates::ColumnStats::field_name",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::from_column_literal",
+   "canonical_path": "polars_io::predicates::ColumnStats::from_column_literal",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::from_field",
+   "canonical_path": "polars_io::predicates::ColumnStats::from_field",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::get_max_state",
+   "canonical_path": "polars_io::predicates::ColumnStats::get_max_state",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::get_min_state",
+   "canonical_path": "polars_io::predicates::ColumnStats::get_min_state",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::get_null_count_state",
+   "canonical_path": "polars_io::predicates::ColumnStats::get_null_count_state",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::new",
+   "canonical_path": "polars_io::predicates::ColumnStats::new",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::null_count",
+   "canonical_path": "polars_io::predicates::ColumnStats::null_count",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::to_max",
+   "canonical_path": "polars_io::predicates::ColumnStats::to_max",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::to_min",
+   "canonical_path": "polars_io::predicates::ColumnStats::to_min",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::ColumnStats::to_min_max",
+   "canonical_path": "polars_io::predicates::ColumnStats::to_min_max",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner ColumnStats has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::DataFrame::serialize_to_bytes",
+   "canonical_path": "polars_core::frame::dataframe::DataFrame::serialize_to_bytes",
+   "kind": "absent from the v2 inventory, present in its source",
+   "evidence": "polars-core/src/serde/series.rs"
+  },
+  {
+   "rune": "polars::DataFrame::slice_par",
+   "canonical_path": "polars_core::frame::dataframe::DataFrame::slice_par",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of slice_par in polars-core/src"
+  },
+  {
+   "rune": "polars::DslBuilder::with_context",
+   "canonical_path": "polars_plan::dsl::builder_dsl::DslBuilder::with_context",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of with_context in polars-plan/src"
+  },
+  {
+   "rune": "polars::Expr::agg_groups",
+   "canonical_path": "polars_plan::dsl::expr::Expr::agg_groups",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of agg_groups in polars-plan/src"
+  },
+  {
+   "rune": "polars::Expr::agg_with_fmt_str",
+   "canonical_path": "polars_plan::dsl::expr::Expr::agg_with_fmt_str",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "callback audit: unresolved"
+  },
+  {
+   "rune": "polars::Expr::apply",
+   "canonical_path": "polars_plan::dsl::expr::Expr::apply",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "callback audit: unresolved"
+  },
+  {
+   "rune": "polars::Expr::apply_many",
+   "canonical_path": "polars_plan::dsl::expr::Expr::apply_many",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "callback audit: unresolved"
+  },
+  {
+   "rune": "polars::Expr::apply_with_fmt_str",
+   "canonical_path": "polars_plan::dsl::expr::Expr::apply_with_fmt_str",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "callback audit: unresolved"
+  },
+  {
+   "rune": "polars::Expr::map",
+   "canonical_path": "polars_plan::dsl::expr::Expr::map",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "callback audit: unresolved"
+  },
+  {
+   "rune": "polars::Expr::map_many",
+   "canonical_path": "polars_plan::dsl::expr::Expr::map_many",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "callback audit: unresolved"
+  },
+  {
+   "rune": "polars::Expr::map_with_fmt_str",
+   "canonical_path": "polars_plan::dsl::expr::Expr::map_with_fmt_str",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "callback audit: unresolved"
+  },
+  {
+   "rune": "polars::Expr::rechunk",
+   "canonical_path": "polars_plan::dsl::expr::Expr::rechunk",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of rechunk in polars-plan/src"
+  },
+  {
+   "rune": "polars::Field::coerce",
+   "canonical_path": "polars_core::datatypes::field::Field::coerce",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of coerce in polars-core/src"
+  },
+  {
+   "rune": "polars::Float32Chunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Float32Chunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Float32Chunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::Float32Chunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::is_finite",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_finite",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::is_infinite",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_infinite",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::is_nan",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_nan",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::is_not_nan",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_not_nan",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::Float32Chunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Float32Chunked::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::none_to_nan",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::none_to_nan",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Float32Chunked::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Float32Chunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Float32Chunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::to_canonical",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_canonical",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float32Chunked::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Float64Chunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Float64Chunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Float64Chunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::Float64Chunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::is_finite",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_finite",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::is_infinite",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_infinite",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::is_nan",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_nan",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::is_not_nan",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_not_nan",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::Float64Chunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Float64Chunked::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::none_to_nan",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::none_to_nan",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Float64Chunked::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Float64Chunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Float64Chunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::to_canonical",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_canonical",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Float64Chunked::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::IdxCa::arg_max_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::IdxCa::arg_min_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::IdxCa::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::IdxCa::convert_and_bound_idx_ca",
+   "canonical_path": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::IdxCa::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::IdxCa::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::IdxCa::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::IdxCa::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::IdxCa::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::IdxCa::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::IdxCa::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::IdxCa::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::IdxCa::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::IdxCa::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::IdxCa::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::IdxCa::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::IdxCa::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::IdxCa::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int16Chunked::arg_max_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int16Chunked::arg_min_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int16Chunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int16Chunked::convert_and_bound_idx_ca",
+   "canonical_path": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int16Chunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int16Chunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::Int16Chunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int16Chunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::Int16Chunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int16Chunked::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int16Chunked::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int16Chunked::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int16Chunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int16Chunked::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int16Chunked::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int16Chunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int16Chunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int16Chunked::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int32Chunked::arg_max_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int32Chunked::arg_min_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int32Chunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int32Chunked::convert_and_bound_idx_ca",
+   "canonical_path": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int32Chunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int32Chunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::Int32Chunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int32Chunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::Int32Chunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int32Chunked::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int32Chunked::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int32Chunked::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int32Chunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int32Chunked::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int32Chunked::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int32Chunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int32Chunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int32Chunked::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int64Chunked::arg_max_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int64Chunked::arg_min_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int64Chunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int64Chunked::convert_and_bound_idx_ca",
+   "canonical_path": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int64Chunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int64Chunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::Int64Chunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int64Chunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::Int64Chunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int64Chunked::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int64Chunked::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int64Chunked::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int64Chunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int64Chunked::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int64Chunked::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int64Chunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int64Chunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int64Chunked::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int8Chunked::arg_max_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int8Chunked::arg_min_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int8Chunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int8Chunked::convert_and_bound_idx_ca",
+   "canonical_path": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int8Chunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int8Chunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::Int8Chunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int8Chunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::Int8Chunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int8Chunked::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int8Chunked::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int8Chunked::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int8Chunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int8Chunked::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int8Chunked::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::Int8Chunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::Int8Chunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::Int8Chunked::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::JoinOptions::from_join_options_i_r",
+   "canonical_path": "polars_plan::dsl::options::JoinOptions as core::convert::From",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "outward conversion, no retained listing on its target: From<JoinOptions> for polars_plan::plans::options::JoinOptionsIR"
+  },
+  {
+   "rune": "polars::JoinOptionsIR CLONE",
+   "canonical_path": "polars_plan::dsl::options::JoinOptionsIR as core::clone::Clone",
+   "kind": "absent from the v2 inventory, present in its source",
+   "evidence": "polars-plan/src/plans/schema.rs"
+  },
+  {
+   "rune": "polars::JoinOptionsIR DEBUG_FMT",
+   "canonical_path": "polars_plan::dsl::options::JoinOptionsIR as core::fmt::Debug",
+   "kind": "absent from the v2 inventory, present in its source",
+   "evidence": "polars-plan/src/plans/schema.rs"
+  },
+  {
+   "rune": "polars::JoinOptionsIR PARTIAL_EQ",
+   "canonical_path": "polars_plan::dsl::options::JoinOptionsIR as core::cmp::PartialEq",
+   "kind": "absent from the v2 inventory, present in its source",
+   "evidence": "polars-plan/src/plans/optimizer/join_utils.rs"
+  },
+  {
+   "rune": "polars::JoinOptionsIR::from_join_options",
+   "canonical_path": "polars_plan::dsl::options::JoinOptionsIR as core::convert::From",
+   "kind": "absent from the v2 inventory, present in its source",
+   "evidence": "polars-plan/src/plans/options.rs"
+  },
+  {
+   "rune": "polars::JoinTypeOptionsIR CLONE",
+   "canonical_path": "polars_plan::dsl::options::JoinTypeOptionsIR as core::clone::Clone",
+   "kind": "absent from the v2 inventory, present in its source",
+   "evidence": "polars-plan/src/plans/stats/node.rs"
+  },
+  {
+   "rune": "polars::JoinTypeOptionsIR DEBUG_FMT",
+   "canonical_path": "polars_plan::dsl::options::JoinTypeOptionsIR as core::fmt::Debug",
+   "kind": "absent from the v2 inventory, present in its source",
+   "evidence": "polars-plan/src/plans/stats/node.rs"
+  },
+  {
+   "rune": "polars::JoinTypeOptionsIR HASH (with EQ from the proven Eq)",
+   "canonical_path": "polars_plan::dsl::options::JoinTypeOptionsIR as core::hash::Hash",
+   "kind": "absent from the v2 inventory, present in its source",
+   "evidence": "polars-plan/src/plans/options.rs"
+  },
+  {
+   "rune": "polars::JoinTypeOptionsIR PARTIAL_EQ",
+   "canonical_path": "polars_plan::dsl::options::JoinTypeOptionsIR as core::cmp::PartialEq",
+   "kind": "absent from the v2 inventory, present in its source",
+   "evidence": "polars-plan/src/plans/optimizer/join_utils.rs"
+  },
+  {
+   "rune": "polars::LazyFrame::profile",
+   "canonical_path": "polars_lazy::frame::LazyFrame::profile",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of profile in polars-lazy/src"
+  },
+  {
+   "rune": "polars::LazyFrame::with_context",
+   "canonical_path": "polars_lazy::frame::LazyFrame::with_context",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of with_context in polars-lazy/src"
+  },
+  {
+   "rune": "polars::ListBinaryChunkedBuilder::append_trusted_len_iter",
+   "canonical_path": "polars_core::chunked_array::builder::list::binary::ListBinaryChunkedBuilder::append_trusted_len_iter",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of append_trusted_len_iter in polars-core/src"
+  },
+  {
+   "rune": "polars::ListChunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::ListChunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::ListChunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::ListChunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::ListChunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::ListChunked::set_inner_dtype",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::set_inner_dtype",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "no surface entry"
+  },
+  {
+   "rune": "polars::ListChunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::ListChunked::to_physical_repr",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_physical_repr",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::ListStringChunkedBuilder::append_trusted_len_iter",
+   "canonical_path": "polars_core::chunked_array::builder::list::binary::ListStringChunkedBuilder::append_trusted_len_iter",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of append_trusted_len_iter in polars-core/src"
+  },
+  {
+   "rune": "polars::PrefilterMaskSetting CLONE",
+   "canonical_path": "polars_io::parquet::read::read_impl::PrefilterMaskSetting as core::clone::Clone",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of PrefilterMaskSetting in polars-io/src"
+  },
+  {
+   "rune": "polars::PrefilterMaskSetting::init_from_env",
+   "canonical_path": "polars_io::parquet::read::read_impl::PrefilterMaskSetting::init_from_env",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner PrefilterMaskSetting has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::PrefilterMaskSetting::should_prefilter",
+   "canonical_path": "polars_io::parquet::read::read_impl::PrefilterMaskSetting::should_prefilter",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "owner PrefilterMaskSetting has no definition in polars-io/src"
+  },
+  {
+   "rune": "polars::StringChunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::StringChunked::downcast_as_array",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_as_array",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_as_array",
+    "polars::Float16Chunked::downcast_as_array",
+    "polars::Float32Chunked::downcast_as_array"
+   ]
+  },
+  {
+   "rune": "polars::StringChunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::StringChunked::downcast_get",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_get",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_get",
+    "polars::Float16Chunked::downcast_get",
+    "polars::Float32Chunked::downcast_get"
+   ]
+  },
+  {
+   "rune": "polars::StringChunked::downcast_into_iter",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_into_iter",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_into_iter",
+    "polars::Float16Chunked::downcast_into_iter",
+    "polars::Float32Chunked::downcast_into_iter"
+   ]
+  },
+  {
+   "rune": "polars::StringChunked::downcast_iter",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_iter",
+   "kind": "lost for this type (bound for other types at v2)",
+   "evidence": [
+    "polars::BinaryOffsetChunked::downcast_iter",
+    "polars::Float16Chunked::downcast_iter",
+    "polars::Float32Chunked::downcast_iter"
+   ]
+  },
+  {
+   "rune": "polars::StringChunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::StringChunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::StringChunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::StringChunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::StringChunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::StringChunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::StringChunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::StructChunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::StructChunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::StructChunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::StructChunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::StructChunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::StructChunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::StructChunked::to_physical_repr",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_physical_repr",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::arg_max_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::arg_min_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::convert_and_bound_idx_ca",
+   "canonical_path": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::UInt16Chunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::UInt16Chunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt16Chunked::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::arg_max_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::arg_min_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::convert_and_bound_idx_ca",
+   "canonical_path": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::UInt64Chunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::UInt64Chunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt64Chunked::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::arg_max_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_max_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::arg_min_numeric",
+   "canonical_path": "polars_core::chunked_array::arg_min_max::arg_min_numeric",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::convert_and_bound_idx_ca",
+   "canonical_path": "polars_ops::series::ops::index::convert_and_bound_idx_ca",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::downcast_chunks",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_chunks",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::downcast_slices",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::downcast_slices",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of downcast_slices in polars-core/src"
+  },
+  {
+   "rune": "polars::UInt8Chunked::head",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::head",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::is_optimal_aligned",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::is_optimal_aligned",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of is_optimal_aligned in polars-core/src"
+  },
+  {
+   "rune": "polars::UInt8Chunked::layout",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::layout",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::lhs_div",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_div",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::lhs_rem",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_rem",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::lhs_sub",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::lhs_sub",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::limit",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::limit",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::peak_max_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_max_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::peak_min_with_start_end",
+   "canonical_path": "polars_ops::chunked_array::peaks::peak_min_with_start_end",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "generic type: ca (polars_core::chunked_array::ChunkedArray<T>)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::rechunk",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::rechunk",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::tail",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::tail",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (no proven instantiation)"
+  },
+  {
+   "rune": "polars::UInt8Chunked::to_vec_null_aware",
+   "canonical_path": "polars_core::chunked_array::ChunkedArray::to_vec_null_aware",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "bucket: generic (proven instantiations were not emitted; see exceptions)"
+  },
+  {
+   "rune": "polars::UnknownKind from_json",
+   "canonical_path": "polars_core::datatypes::dtype::UnknownKind as serde_core::de::Deserialize",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "serde through an unbounded IPC buffer: UnknownKind -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free"
+  },
+  {
+   "rune": "polars::UnknownKind to_json",
+   "canonical_path": "polars_core::datatypes::dtype::UnknownKind as serde_core::ser::Serialize",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "serde through an unbounded IPC buffer: UnknownKind -> TotalOrdWrap reaches polars_utils::total_ord::TotalOrdWrap: 1 public field(s), 0 recorded (tuple fields are not extracted), its content cannot be shown to be frame-free"
+  },
+  {
+   "rune": "polars::apply_multiple",
+   "canonical_path": "polars_plan::dsl::apply_multiple",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "callback audit: unresolved"
+  },
+  {
+   "rune": "polars::estimate_n_lines_in_file",
+   "canonical_path": "polars_io::ndjson::core::estimate_n_lines_in_file",
+   "kind": "confirmed removed (no definition in the v2 source)",
+   "evidence": "no definition of estimate_n_lines_in_file in polars-io/src"
+  },
+  {
+   "rune": "polars::map_multiple",
+   "canonical_path": "polars_plan::dsl::map_multiple",
+   "kind": "lost in rnx (in the v2 inventory, not bound)",
+   "evidence": "callback audit: unresolved"
+  }
+ ]
+}
