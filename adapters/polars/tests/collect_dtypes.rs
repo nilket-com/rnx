@@ -28,9 +28,12 @@ fn run(script: &str) -> Result<rune::Value, String> {
 }
 
 fn sales() -> std::path::PathBuf {
+	// record 0127 (review): a unique file per call, so parallel tests never share one
+	static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+	let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 	let dir = std::env::temp_dir().join(format!("rnx-0122-collect-{}", std::process::id()));
 	std::fs::create_dir_all(&dir).unwrap();
-	let p = dir.join("sales.csv");
+	let p = dir.join(format!("sales-{n}.csv"));
 	std::fs::write(&p, "region,qty\nnorth,3\nsouth,\nnorth,5\n").unwrap();
 	p
 }

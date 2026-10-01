@@ -120,6 +120,12 @@ pub(crate) struct FamilyTables {
 	/// cited allowlist of exact owners and instantiations.
 	#[serde(default)]
 	pub(crate) concrete_arrays: Vec<crate::families::concrete_arrays::ConcreteArray>,
+	/// Record 0127: listed `Arc<T>` parameters that take the script's `T` as a shared snapshot.
+	#[serde(default)]
+	pub(crate) arc_arguments: Vec<crate::families::arc_arguments::ArcArgument>,
+	/// Record 0127: listed methods above Rune's typed arity, bound through a raw shim.
+	#[serde(default)]
+	pub(crate) wide_bindings: Vec<crate::families::wide_bindings::WideBinding>,
 	/// Record 0126: borrowing Polars types wrapped by an owning snapshot, rebuilt per call.
 	#[serde(default)]
 	pub(crate) rebuilt_borrows: Vec<crate::families::rebuilt_borrows::RebuiltBorrow>,

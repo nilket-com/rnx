@@ -4,6 +4,7 @@
 //! ordered lists below at each site instead of carrying the rule inline.
 //! Every list is in the order the site's inline blocks had at `32d1b40`,
 //! and each site keeps its semantics (first match, or run all).
+pub(crate) mod arc_arguments;
 pub(crate) mod bounds;
 pub(crate) mod callbacks;
 pub(crate) mod concrete_arrays;
@@ -25,6 +26,7 @@ pub(crate) mod routes;
 pub(crate) mod serde;
 pub(crate) mod snapshots;
 pub(crate) mod std_facts;
+pub(crate) mod wide_bindings;
 
 use crate::census::PairRecord;
 use crate::emit::Emitted;
@@ -283,6 +285,7 @@ pub(crate) static CALLABLE: &[&dyn Family] = &[
 	&HASH_TOKEN,
 	&path_arguments::PATH_ARGUMENT,
 	&rebuilt_borrows::REBUILT_BORROW,
+	&arc_arguments::ARC_ARGUMENT,
 ];
 /// The pair scope before the return is substituted (0092, then 0096).
 pub(crate) static PAIR_PRE: &[&dyn Family] = &[&SCALAR_GENERIC, &NULL_AWARE];
@@ -326,7 +329,11 @@ pub(crate) static RET_TOP: &[&dyn Family] = &[
 pub(crate) static RET_COW: &[&dyn Family] = &[&COW_RETURN];
 pub(crate) static RET_SCALAR: &[&dyn Family] = &[&HASH_TOKEN, &BOUNDED_READBACK];
 pub(crate) static RET_UNWRAPPED: &[&dyn Family] = &[&BITMAP_RETURN];
-pub(crate) static ARG_TOP: &[&dyn Family] = &[&BITMAP_INPUT, &path_arguments::PATH_ARGUMENT];
+pub(crate) static ARG_TOP: &[&dyn Family] = &[
+	&BITMAP_INPUT,
+	&path_arguments::PATH_ARGUMENT,
+	&arc_arguments::ARC_ARGUMENT,
+];
 pub(crate) static ARG_SCALAR: &[&dyn Family] = &[&ARG_GUARD, &HASH_TOKEN];
 /// `emit_method_with`'s checks, all run, the first refusal ending emission.
 pub(crate) static CHECK: &[&dyn Family] = &[
@@ -594,7 +601,9 @@ mod tests {
 				// record 0125
 				"path_argument",
 				// record 0126
-				"rebuilt_borrow"
+				"rebuilt_borrow",
+				// record 0127
+				"arc_argument"
 			]
 		);
 		assert_eq!(names(PAIR_PRE), ["scalar_generic", "null_aware"]);
@@ -617,7 +626,10 @@ mod tests {
 		assert_eq!(names(RET_COW), ["cow_return"]);
 		assert_eq!(names(RET_SCALAR), ["hash_token", "bounded_readback"]);
 		assert_eq!(names(RET_UNWRAPPED), ["bitmap_return"]);
-		assert_eq!(names(ARG_TOP), ["bitmap_input", "path_argument"]);
+		assert_eq!(
+			names(ARG_TOP),
+			["bitmap_input", "path_argument", "arc_argument"]
+		);
 		assert_eq!(names(ARG_SCALAR), ["arg_guard", "hash_token"]);
 		let mut check = snapshots_top.to_vec();
 		check.extend(["chunk_snapshot", "sized_self", "null_aware"]);

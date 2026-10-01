@@ -183435,7 +183435,7 @@
   "release": {
     "file": "0.55.2-joins.toml",
     "name": "0.55.2",
-    "sha256": "018278f2330f11da6dae12ed79da0e122a0a00f0bba6016d5cd95e76030b1097",
+    "sha256": "98b8ef5df53fbed866ad75cdc9cb41b70a62b55ecd46f15f8b4481b3cb72bbbb",
     "source": "crates.io =0.55.2"
   },
   "source": "inventory.json",

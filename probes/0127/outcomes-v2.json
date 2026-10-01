@@ -1,0 +1,983 @@
+{
+ "completed": [
+  "W1",
+  "W2",
+  "W3",
+  "W4",
+  "W5",
+  "W6",
+  "W7"
+ ],
+ "counts": {
+  "blocked": 1,
+  "differs": 0,
+  "presented": 1,
+  "works": 38
+ },
+ "display_counts": {
+  "computed_frames": 42,
+  "displayed_both_ways": 42,
+  "partial_both_ways": 0,
+  "usable_workflows": [
+   "W1",
+   "W2",
+   "W3",
+   "W4",
+   "W5",
+   "W6",
+   "W7",
+   "W8"
+  ]
+ },
+ "display_ranking": [
+  {
+   "evidence": "the adapter's preview (record 0058, preview.rs dtype()) renders only String/Int64/Float64/Boolean columns; printing and the session presenter both use it, so a Date, a count (UInt32) or any other dtype shows 'preview unavailable: unsupported column dtype'",
+   "family": "P.preview_dtypes",
+   "kind": "presentation",
+   "risk": "low",
+   "steps_made_displayable": [],
+   "workflows_made_usable": []
+  },
+  {
+   "evidence": "a column the step derived or joined is hidden by the preview's column limit (0123: the preview shows the first columns up to its limit and omits the rest ('[0 rows and N columns omitted by display limits]'); a workflow's derived columns are appended last, so they are the ones cut, and a dtype the preview cannot show is never reached (Polars' own display elides middle columns instead))",
+   "family": "Q.preview_columns",
+   "kind": "presentation",
+   "risk": "low",
+   "steps_made_displayable": [],
+   "workflows_made_usable": []
+  }
+ ],
+ "display_unattributed": [],
+ "enabled": [
+  "w1.csv_file",
+  "w1.json_file",
+  "w1.scan_parquet",
+  "w2.schema",
+  "w3.cast",
+  "w4.parse_date",
+  "w4.temporal",
+  "w5.eager_group_by",
+  "w5.lazy_group_by",
+  "w6.pivot",
+  "w7.rank"
+ ],
+ "fixed": [
+  "A.collect_dtypes",
+  "B.read_csv_schema",
+  "C1.json_file",
+  "D.path_type",
+  "E.schema_display",
+  "F.dtype_expr_arg",
+  "G.eager_group_by",
+  "H.lazy_pivot",
+  "I.arity"
+ ],
+ "fixed_display": [
+  "P.preview_dtypes",
+  "Q.preview_columns"
+ ],
+ "pin": "v2",
+ "ranking": [
+  {
+   "evidence": "polars_io::json::JsonReader<'a, R>: a lifetime-bearing owner (schema_overwrite: Option<&'a Schema>), refused by name since 0118; binding it needs a lifetime-instantiation model",
+   "family": "C2.json_reader_lifetime",
+   "kind": "surface",
+   "marginal_steps": [
+    "w1.json_bytes"
+   ],
+   "marginal_workflows": [],
+   "multiply_blocked_steps": [],
+   "risk": "high"
+  }
+ ],
+ "steps": [
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.csv_file",
+   "title": "load a CSV file, as a user first tries it",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.csv_file_schema",
+   "title": "load a CSV file with its schema spelled out",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | 2026-01-03 | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | 2026"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | 2026-01-03 | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | 2026"
+    }
+   },
+   "outcome": "works",
+   "step": "w1.csv_bytes",
+   "title": "load CSV from bytes, parsing dates",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.parquet_file",
+   "title": "load a Parquet file",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.parquet_bytes",
+   "title": "load Parquet from bytes",
+   "workflow": "W1"
+  },
+  {
+   "blockers": [
+    "C2.json_reader_lifetime"
+   ],
+   "composed": false,
+   "error": "error at {OUT}/w1_json_bytes.rn, line 5, column 9: Missing item ::polars::JsonReader::new //           polars::JsonReader::new(bytes)?.finish()?",
+   "outcome": "blocked",
+   "step": "w1.json_bytes",
+   "title": "load JSON from bytes",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 3 columns\n\"region\": string | \"manager\": string | \"target\": i64\n\"north\" | \"Ada\" | 10\n\"south\" | \"Grace\" | 12\n\"east\" | \"Linus\" | 6"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 3 columns\n\"region\": string | \"manager\": string | \"target\": i64\n\"north\" | \"Ada\" | 10\n\"south\" | \"Grace\" | 12\n\"east\" | \"Linus\" | 6"
+    }
+   },
+   "outcome": "works",
+   "step": "w1.json_file",
+   "title": "load a JSON file",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.scan_parquet",
+   "title": "scan Parquet lazily",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "outcome": "works",
+   "step": "w2.schema",
+   "title": "the schema",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w2.head",
+   "title": "the first rows",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "outcome": "works",
+   "step": "w2.shape",
+   "title": "rows and columns",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 1 rows \u00d7 7 columns\n\"id\": u32 | \"date\": u32 | \"region\": u32 | \"product\": u32 | \"qty\": u32 | \"price\": u32 | \"note\": u32\n0 | 0 | 0 | 0 | 3 | 1 | 6"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 1 rows \u00d7 7 columns\n\"id\": u32 | \"date\": u32 | \"region\": u32 | \"product\": u32 | \"qty\": u32 | \"price\": u32 | \"note\": u32\n0 | 0 | 0 | 0 | 3 | 1 | 6"
+    }
+   },
+   "outcome": "works",
+   "step": "w2.null_count",
+   "title": "nulls per column",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 1 rows \u00d7 4 columns\n\"mean\": f64 | \"min\": i64 | \"max\": i64 | \"std\": f64\n3.66666666667 | 1 | 7 | 2.16024689947"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 1 rows \u00d7 4 columns\n\"mean\": f64 | \"min\": i64 | \"max\": i64 | \"std\": f64\n3.66666666667 | 1 | 7 | 2.16024689947"
+    }
+   },
+   "outcome": "works",
+   "step": "w2.summary",
+   "title": "summary statistics",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": f64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3.0 | 1.25 | null\n2 "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": f64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3.0 | 1.25 | null\n2 "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.cast",
+   "title": "cast a column",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"quantity\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"quantity\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null"
+    }
+   },
+   "outcome": "works",
+   "step": "w3.rename",
+   "title": "rename a column",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.fill_null",
+   "title": "fill missing values",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.drop_nulls",
+   "title": "drop rows with a missing price",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.dedupe",
+   "title": "remove duplicate rows",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 4 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n3 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 4 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n3 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.filter",
+   "title": "keep rows by a condition",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"product_uc\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\""
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"product_uc\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\""
+    }
+   },
+   "outcome": "works",
+   "step": "w4.string",
+   "title": "a string transformation",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | 2026-01-03 | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | 2026"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | 2026-01-03 | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | 2026"
+    }
+   },
+   "outcome": "works",
+   "step": "w4.parse_date",
+   "title": "parse a date column",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"weekday\": i8\n1 | 2026-01-03 | \"north\" | \"apple\" | 3 | 1.25"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"weekday\": i8\n1 | 2026-01-03 | \"north\" | \"apple\" | 3 | 1.25"
+    }
+   },
+   "outcome": "works",
+   "step": "w4.temporal",
+   "title": "a temporal part",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"size\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"size\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    }
+   },
+   "outcome": "works",
+   "step": "w4.conditional",
+   "title": "a conditional column",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"revenue\": f64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"revenue\": f64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    }
+   },
+   "outcome": "works",
+   "step": "w4.arithmetic",
+   "title": "arithmetic between columns",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 7 columns\n\"region\": string | \"id_count\": u32 | \"date_count\": u32 | \"product_count\": u32 | \"qty_count\": u32 | \"price_count\": u32 | \"note_count\": u32\n\"east\" | 2 | 2 | 2 | 2 | 2 | 2\n\""
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 7 columns\n\"region\": string | \"id_count\": u32 | \"date_count\": u32 | \"product_count\": u32 | \"qty_count\": u32 | \"price_count\": u32 | \"note_count\": u32\n\"east\" | 2 | 2 | 2 | 2 | 2 | 2\n\""
+    }
+   },
+   "outcome": "works",
+   "step": "w5.eager_group_by",
+   "title": "group and aggregate, eagerly",
+   "workflow": "W5"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 4 columns\n\"region\": string | \"qty\": i64 | \"avg_price\": f64 | \"n\": u32\n\"east\" | 6 | 1.875 | 2\n\"north\" | 9 | 2.283333333333333 | 3\n\"south\" | 7 | 2.9 | 4"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 4 columns\n\"region\": string | \"qty\": i64 | \"avg_price\": f64 | \"n\": u32\n\"east\" | 6 | 1.875 | 2\n\"north\" | 9 | 2.283333333333333 | 3\n\"south\" | 7 | 2.9 | 4"
+    }
+   },
+   "outcome": "works",
+   "step": "w5.lazy_group_by",
+   "title": "group and aggregate, lazily",
+   "workflow": "W5"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 3 columns\n\"region\": string | \"product\": string | \"qty\": i64\n\"east\" | \"apple\" | 2\n\"east\" | \"pear\" | 4\n\"north\" | \"apple\" | 3\n\"north\" | \"pear\" | 5\n\"north\" | \"plum\" | 1\n\"south\" | \"appl"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 3 columns\n\"region\": string | \"product\": string | \"qty\": i64\n\"east\" | \"apple\" | 2\n\"east\" | \"pear\" | 4\n\"north\" | \"apple\" | 3\n\"north\" | \"pear\" | 5\n\"north\" | \"plum\" | 1\n\"south\" | \"appl"
+    }
+   },
+   "outcome": "works",
+   "step": "w5.multi_key",
+   "title": "group by two keys",
+   "workflow": "W5"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string"
+    },
+    "printed": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string"
+    }
+   },
+   "outcome": "works",
+   "step": "w6.join_eager",
+   "title": "join two frames, eagerly",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string"
+    },
+    "printed": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string"
+    }
+   },
+   "outcome": "works",
+   "step": "w6.join_lazy",
+   "title": "join two frames, lazily",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 4 columns\n\"region\": string | \"apple\": i64 | \"pear\": i64 | \"plum\": i64\n\"north\" | 3 | 5 | 1\n\"south\" | 7 | 0 | 0\n\"east\" | 2 | 4 | 0"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 4 columns\n\"region\": string | \"apple\": i64 | \"pear\": i64 | \"plum\": i64\n\"north\" | 3 | 5 | 1\n\"south\" | 7 | 0 | 0\n\"east\" | 2 | 4 | 0"
+    }
+   },
+   "outcome": "works",
+   "step": "w6.pivot",
+   "title": "pivot wide",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 18 rows \u00d7 3 columns\n[8 rows and 0 columns omitted by display limits]\n\"id\": i64 | \"variable\": string | \"value\": f64\n1 | \"qty\" | 3.0\n2 | \"qty\" | null\n3 | \"qty\" | 5.0\n4 | \"qty\" | 2.0\n5 | \"qty\""
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 18 rows \u00d7 3 columns\n[8 rows and 0 columns omitted by display limits]\n\"id\": i64 | \"variable\": string | \"value\": f64\n1 | \"qty\" | 3.0\n2 | \"qty\" | null\n3 | \"qty\" | 5.0\n4 | \"qty\" | 2.0\n5 | \"qty\""
+    }
+   },
+   "outcome": "works",
+   "step": "w6.unpivot",
+   "title": "unpivot long",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 18 rows \u00d7 7 columns\n[8 rows and 0 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 18 rows \u00d7 7 columns\n[8 rows and 0 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026"
+    }
+   },
+   "outcome": "works",
+   "step": "w6.concat",
+   "title": "stack two frames",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"region_qty\": i64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"region_qty\": i64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | "
+    }
+   },
+   "outcome": "works",
+   "step": "w7.over",
+   "title": "a windowed aggregate",
+   "workflow": "W7"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"running\": i64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"running\": i64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    }
+   },
+   "outcome": "works",
+   "step": "w7.cum_sum",
+   "title": "a cumulative sum",
+   "workflow": "W7"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"roll\": f64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1."
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"roll\": f64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1."
+    }
+   },
+   "outcome": "works",
+   "step": "w7.rolling",
+   "title": "a rolling mean",
+   "workflow": "W7"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"rank\": u32\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1."
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"rank\": u32\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1."
+    }
+   },
+   "outcome": "works",
+   "step": "w7.rank",
+   "title": "a rank",
+   "workflow": "W7"
+  },
+  {
+   "composed": false,
+   "outcome": "works",
+   "step": "w8.csv",
+   "title": "write CSV",
+   "workflow": "W8"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w8.parquet",
+   "title": "write Parquet and read it back",
+   "workflow": "W8"
+  },
+  {
+   "composed": false,
+   "outcome": "works",
+   "step": "w8.json",
+   "title": "write JSON",
+   "workflow": "W8"
+  },
+  {
+   "composed": false,
+   "outcome": "presented",
+   "step": "w8.present",
+   "title": "present the result",
+   "workflow": "W8"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string |"
+    },
+    "printed": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string |"
+    }
+   },
+   "outcome": "works",
+   "step": "W1",
+   "title": "load each format and combine",
+   "workflow": "W1"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "Schema { fields: {\"id\": Int64, \"date\": String, \"region\": String, \"product\": String, \"qty\": Int64, \"price\": Float64, \"note\": String}, metadata: () }\nDataFrame: 1 rows \u00d7 2 columns\n\"mean\": f64 | \"max\": i"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "Schema { fields: {\"id\": Int64, \"date\": String, \"region\": String, \"product\": String, \"qty\": Int64, \"price\": Float64, \"note\": String}, metadata: () }\nDataFrame: 1 rows \u00d7 2 columns\n\"mean\": f64 | \"max\": i"
+    }
+   },
+   "outcome": "works",
+   "step": "W2",
+   "title": "inspect a frame",
+   "workflow": "W2"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 5 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"quantity\": f64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3.0 | 1.25 | nu"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 5 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"quantity\": f64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3.0 | 1.25 | nu"
+    }
+   },
+   "outcome": "works",
+   "step": "W3",
+   "title": "clean a frame",
+   "workflow": "W3"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty",
+      "price",
+      "note"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 11 columns\n[0 rows and 3 columns omitted by display limits]\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \u2026 | \"weekday\": i8 | \"product_uc\": string | \"size\": str"
+    },
+    "printed": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty",
+      "price",
+      "note"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 11 columns\n[0 rows and 3 columns omitted by display limits]\n\"id\": i64 | \"date\": date | \"region\": string | \"product\": string | \u2026 | \"weekday\": i8 | \"product_uc\": string | \"size\": str"
+    }
+   },
+   "outcome": "works",
+   "step": "W4",
+   "title": "derive columns",
+   "workflow": "W4"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 3 columns\n\"region\": string | \"qty\": i64 | \"n\": u32\n\"east\" | 6 | 2\n\"north\" | 9 | 3\n\"south\" | 7 | 4"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 3 columns\n\"region\": string | \"qty\": i64 | \"n\": u32\n\"east\" | 6 | 2\n\"north\" | 9 | 3\n\"south\" | 7 | 4"
+    }
+   },
+   "outcome": "works",
+   "step": "W5",
+   "title": "group and aggregate",
+   "workflow": "W5"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 3 columns\n\"region\": string | \"variable\": string | \"value\": i64\n\"east\" | \"apple\" | 2\n\"east\" | \"pear\" | 4\n\"east\" | \"plum\" | 0\n\"north\" | \"apple\" | 3\n\"north\" | \"pear\" | 5\n\"north\" | \"pl"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 3 columns\n\"region\": string | \"variable\": string | \"value\": i64\n\"east\" | \"apple\" | 2\n\"east\" | \"pear\" | 4\n\"east\" | \"plum\" | 0\n\"north\" | \"apple\" | 3\n\"north\" | \"pear\" | 5\n\"north\" | \"pl"
+    }
+   },
+   "outcome": "works",
+   "step": "W6",
+   "title": "reshape",
+   "workflow": "W6"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty",
+      "price",
+      "note"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 11 columns\n[0 rows and 3 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"region_qty\": i64 | \"running\": i64 | \"roll\": f64"
+    },
+    "printed": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty",
+      "price",
+      "note"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 11 columns\n[0 rows and 3 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"region_qty\": i64 | \"running\": i64 | \"roll\": f64"
+    }
+   },
+   "outcome": "works",
+   "step": "W7",
+   "title": "windows",
+   "workflow": "W7"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "W8",
+   "title": "write out and read back",
+   "workflow": "W8"
+  }
+ ],
+ "workflow_counts": {
+  "blocked": 0,
+  "differs": 0,
+  "presented": 0,
+  "works": 8
+ }
+}

@@ -20580,6 +20580,12 @@ fn ca_as_large_list_array(this: &ArrayRef) -> Result<W_polars_arrow__array__list
 #[rune::function(instance, path = as_struct_array)]
 fn ca_as_struct_array(this: &ArrayRef) -> Result<W_polars_arrow__array__struct___StructArray, Error> { this.0.as_any().downcast_ref::<polars_arrow::array::StructArray>().map(|a| W_polars_arrow__array__struct___StructArray(a.clone())).ok_or_else(|| Error::conversion(&format!("as_struct_array: the array is {:?}, not StructArray", this.0.dtype()))) }
 
+// record 0127: the typed-versus-raw control (test-support only)
+#[cfg(feature = "test-support")]
+fn s_wide_control(stack: &mut dyn rune::runtime::Memory, addr: rune::runtime::InstAddress, len: usize, out: rune::runtime::Output) -> rune::runtime::VmResult<()> { if len != 4 { return rune::runtime::VmResult::err(rune::runtime::RuntimeError::bad_argument_count(len, 4)); } let [__s0, __s1, __s2, __s3] = rune::vm_try!(stack.slice_at_mut(addr, len)) else { unreachable!() }; let __v0 = std::mem::replace(__s0, rune::Value::empty()); let __v1 = std::mem::replace(__s1, rune::Value::empty()); let __v2 = std::mem::replace(__s2, rune::Value::empty()); let __v3 = std::mem::replace(__s3, rune::Value::empty()); let __r = { let __g0 = rune::vm_try!(__v0.borrow_ref::<DataFrame>()); let __g1 = rune::vm_try!(__v1.borrow_string_ref()); let __g2: i64 = rune::vm_try!(rune::from_value(__v2)); let __g3: DataFrame = rune::vm_try!(rune::from_value(__v3)); support::wide_control(&*__g0, &*__g1, __g2, __g3) }; let __value = rune::vm_try!(rune::runtime::ToReturn::to_return(__r)); rune::vm_try!(out.store(stack, __value)); rune::runtime::VmResult::Ok(()) }
+#[cfg(feature = "test-support")]
+fn s_wide_control_vm(stack: &mut dyn rune::runtime::Memory, addr: rune::runtime::InstAddress, len: usize, out: rune::runtime::Output) -> rune::runtime::VmResult<()> { if len != 4 { return rune::runtime::VmResult::err(rune::runtime::RuntimeError::bad_argument_count(len, 4)); } let [__s0, __s1, __s2, __s3] = rune::vm_try!(stack.slice_at_mut(addr, len)) else { unreachable!() }; let __v0 = std::mem::replace(__s0, rune::Value::empty()); let __v1 = std::mem::replace(__s1, rune::Value::empty()); let __v2 = std::mem::replace(__s2, rune::Value::empty()); let __v3 = std::mem::replace(__s3, rune::Value::empty()); let __r = { let __g0 = rune::vm_try!(__v0.borrow_ref::<DataFrame>()); let __g1 = rune::vm_try!(__v1.borrow_string_ref()); let __g2: i64 = rune::vm_try!(rune::from_value(__v2)); let __g3: DataFrame = rune::vm_try!(rune::from_value(__v3)); support::wide_control_vm(&*__g0, &*__g1, __g2, __g3) }; let __value = rune::vm_try!(rune::runtime::ToReturn::to_return(__r)); rune::vm_try!(out.store(stack, __value)); rune::runtime::VmResult::Ok(()) }
+
 // record 0120: every listed concrete array's parameter bound, asserted at compile time
 const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<f32>; };
 const _: () = { fn holds<T: polars_arrow::types::NativeType>() {} let _ = holds::<f64>; };
@@ -26735,5 +26741,7 @@ fn install_11(m: &mut rune::Module) -> Result<(), rune::ContextError> {
     m.function_meta(ca_as_large_binary_array)?;
     m.function_meta(ca_as_large_list_array)?;
     m.function_meta(ca_as_struct_array)?;
+    #[cfg(feature = "test-support")] m.raw_function("wide_control_raw", s_wide_control).build_associated::<DataFrame>()?;
+    #[cfg(feature = "test-support")] m.raw_function("wide_control_vm_raw", s_wide_control_vm).build_associated::<DataFrame>()?;
     Ok(())
 }

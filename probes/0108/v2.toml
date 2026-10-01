@@ -18,7 +18,7 @@ name = "v2-rc2"
 source = "git da47b7405f0e2d188e71cce7c2d588c695f4098d (Rust workspace at py-2.0.0-rc.2)"
 api_crates = ["polars_arrow", "polars_core", "polars_defs", "polars_plan", "polars_lazy", "polars_io", "polars_ops", "polars_time", "polars_dtype", "polars_schema", "polars_error", "polars_sql", "polars_config"]
 namespaced_crates = ["polars_arrow"]
-frozen_bindings = "probes/0126/frozen-v2.json"
+frozen_bindings = "probes/0127/frozen-v2.json"
 # Record 0085: validity bitmap returns copied into an owned Vec<bool>;
 # only these paths, every other Bitmap stays refused.
 bitmap_returns = [
@@ -1544,3 +1544,17 @@ recipes = [
 path = "polars_core::frame::group_by::GroupBy::sliced"
 reason = "sliced leaves per-group keys beside frame row indices; any later aggregation (prepare_agg -> keys -> keys_sliced(None)) calls take_slice_unchecked with those row indices on the short keys, an unchecked out-of-bounds read"
 cite = "da47b74 polars-core frame/group_by/mod.rs:461 sliced, :287 keys, :291-292 prepare_agg, :249 keys_sliced take_slice_unchecked(groups.first()); record 0126 plan section 1"
+
+# Record 0127: LazyFrame::pivot. on_columns (Arc<DataFrame>) takes the script's
+# DataFrame as a shared snapshot; the method's 9 arguments (receiver included)
+# exceed Rune's typed limit of 5, so it is bound through a raw shim.
+[[arc_arguments]]
+path = "polars_lazy::frame::LazyFrame::pivot"
+param = "on_columns"
+target = "polars_core::frame::dataframe::DataFrame"
+cite = "da47b74 polars-lazy frame/mod.rs:1770-1773 (pivot(self, on, on_columns: Arc<DataFrame>, ..)); polars-plan plans/conversion/dsl_to_ir/mod.rs:942-1010 (on_columns read and validated as errors); record 0127 plan section 1"
+
+[[wide_bindings]]
+path = "polars_lazy::frame::LazyFrame::pivot"
+arity = 9
+cite = "rune 0.14.2 function/macros.rs permute! stops at arity 5 (Function, and InstanceFunction through it, function/mod.rs:122-140); module_raw_function_builder.rs build_associated (an instance function); record 0127 plan section 2"

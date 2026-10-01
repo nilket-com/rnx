@@ -1,0 +1,750 @@
+{
+ "counts": {
+  "blocked": 11,
+  "differs": 0,
+  "presented": 1,
+  "works": 28
+ },
+ "display_counts": {
+  "computed_frames": 28,
+  "displayed_both_ways": 28,
+  "partial_both_ways": 0,
+  "usable_workflows": [
+   "W2",
+   "W3",
+   "W5"
+  ]
+ },
+ "display_ranking": [
+  {
+   "evidence": "the adapter's preview (record 0058, preview.rs dtype()) renders only String/Int64/Float64/Boolean columns; printing and the session presenter both use it, so a Date, a count (UInt32) or any other dtype shows 'preview unavailable: unsupported column dtype'",
+   "family": "P.preview_dtypes",
+   "kind": "presentation",
+   "risk": "low",
+   "steps_made_displayable": [],
+   "workflows_made_usable": []
+  },
+  {
+   "evidence": "a column the step derived or joined is hidden by the preview's column limit (0123: the preview shows the first columns up to its limit and omits the rest ('[0 rows and N columns omitted by display limits]'); a workflow's derived columns are appended last, so they are the ones cut, and a dtype the preview cannot show is never reached (Polars' own display elides middle columns instead))",
+   "family": "Q.preview_columns",
+   "kind": "presentation",
+   "risk": "low",
+   "steps_made_displayable": [],
+   "workflows_made_usable": []
+  }
+ ],
+ "display_unattributed": [],
+ "fixed_display": [
+  "P.preview_dtypes",
+  "Q.preview_columns"
+ ],
+ "pin": "0.55.2",
+ "steps": [
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.csv_file",
+   "title": "load a CSV file, as a user first tries it",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.csv_file_schema",
+   "title": "load a CSV file with its schema spelled out",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "error": "thread 'rnx-polars-engine' (N) panicked at /home/me/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/polars-io-0.55.2/src/csv/read/schema_inference.rs:375:13: // activate one of {'dtype-date', 'dtype-datetime', dtype-time'} features",
+   "outcome": "blocked",
+   "step": "w1.csv_bytes",
+   "title": "load CSV from bytes, parsing dates",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.parquet_file",
+   "title": "load a Parquet file",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.parquet_bytes",
+   "title": "load Parquet from bytes",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "error": "error at {OUT}/w1_json_bytes.rn, line 5, column 9: Missing item ::polars::JsonReader::new //           polars::JsonReader::new(bytes)?.finish()?",
+   "outcome": "blocked",
+   "step": "w1.json_bytes",
+   "title": "load JSON from bytes",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 3 columns\n\"region\": string | \"manager\": string | \"target\": i64\n\"north\" | \"Ada\" | 10\n\"south\" | \"Grace\" | 12\n\"east\" | \"Linus\" | 6"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 3 columns\n\"region\": string | \"manager\": string | \"target\": i64\n\"north\" | \"Ada\" | 10\n\"south\" | \"Grace\" | 12\n\"east\" | \"Linus\" | 6"
+    }
+   },
+   "outcome": "works",
+   "step": "w1.json_file",
+   "title": "load a JSON file",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w1.scan_parquet",
+   "title": "scan Parquet lazily",
+   "workflow": "W1"
+  },
+  {
+   "composed": false,
+   "outcome": "works",
+   "step": "w2.schema",
+   "title": "the schema",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w2.head",
+   "title": "the first rows",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "outcome": "works",
+   "step": "w2.shape",
+   "title": "rows and columns",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 1 rows \u00d7 7 columns\n\"id\": u32 | \"date\": u32 | \"region\": u32 | \"product\": u32 | \"qty\": u32 | \"price\": u32 | \"note\": u32\n0 | 0 | 0 | 0 | 3 | 1 | 6"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 1 rows \u00d7 7 columns\n\"id\": u32 | \"date\": u32 | \"region\": u32 | \"product\": u32 | \"qty\": u32 | \"price\": u32 | \"note\": u32\n0 | 0 | 0 | 0 | 3 | 1 | 6"
+    }
+   },
+   "outcome": "works",
+   "step": "w2.null_count",
+   "title": "nulls per column",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 1 rows \u00d7 4 columns\n\"mean\": f64 | \"min\": i64 | \"max\": i64 | \"std\": f64\n3.66666666667 | 1 | 7 | 2.16024689947"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 1 rows \u00d7 4 columns\n\"mean\": f64 | \"min\": i64 | \"max\": i64 | \"std\": f64\n3.66666666667 | 1 | 7 | 2.16024689947"
+    }
+   },
+   "outcome": "works",
+   "step": "w2.summary",
+   "title": "summary statistics",
+   "workflow": "W2"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": f64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3.0 | 1.25 | null\n2 "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": f64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3.0 | 1.25 | null\n2 "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.cast",
+   "title": "cast a column",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"quantity\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"quantity\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null"
+    }
+   },
+   "outcome": "works",
+   "step": "w3.rename",
+   "title": "rename a column",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.fill_null",
+   "title": "fill missing values",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.drop_nulls",
+   "title": "drop rows with a missing price",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.dedupe",
+   "title": "remove duplicate rows",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 4 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n3 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 4 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n3 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w3.filter",
+   "title": "keep rows by a condition",
+   "workflow": "W3"
+  },
+  {
+   "composed": false,
+   "error": "runtime error at {OUT}/w4_string.rn, line 4, column 31: Missing instance function `0xcc8c612d2628ee35` for `::polars::Expr` //           df.lazy().with_column(polars::col(\"product\").str().to_uppercase().alias(\"product_uc\")).collect()?",
+   "outcome": "blocked",
+   "step": "w4.string",
+   "title": "a string transformation",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "error": "runtime error at {OUT}/w4_parse_date.rn, line 4, column 31: Missing instance function `0xcc8c612d2628ee35` for `::polars::Expr` //           df.lazy().with_column(polars::col(\"date\").str().to_date(polars::StrptimeOptions::default_())).collect()?",
+   "outcome": "blocked",
+   "step": "w4.parse_date",
+   "title": "parse a date column",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "error": "runtime error at {OUT}/w4_temporal.rn, line 2, column 237: Missing instance function `0xcc8c612d2628ee35` for `::polars::Expr` //       let df = polars::read_csv(\"{DATA}/sales.csv\", [(\"id\", \"i64\"), (\"date\", \"string\"), (\"region\", \"string\"), (\"product\", \"string\"), (\"qty\", \"i64\"), (\"price\", \"f64\"), (\"note\", \"string\")])?.lazy().with_columns([polars::col(\"date\").str().to_date(polars::StrptimeOptions::d",
+   "outcome": "blocked",
+   "step": "w4.temporal",
+   "title": "a temporal part",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"size\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"size\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    }
+   },
+   "outcome": "works",
+   "step": "w4.conditional",
+   "title": "a conditional column",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"revenue\": f64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"revenue\": f64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 |"
+    }
+   },
+   "outcome": "works",
+   "step": "w4.arithmetic",
+   "title": "arithmetic between columns",
+   "workflow": "W4"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 7 columns\n\"region\": string | \"id_count\": u32 | \"date_count\": u32 | \"product_count\": u32 | \"qty_count\": u32 | \"price_count\": u32 | \"note_count\": u32\n\"east\" | 2 | 2 | 2 | 2 | 2 | 2\n\""
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 7 columns\n\"region\": string | \"id_count\": u32 | \"date_count\": u32 | \"product_count\": u32 | \"qty_count\": u32 | \"price_count\": u32 | \"note_count\": u32\n\"east\" | 2 | 2 | 2 | 2 | 2 | 2\n\""
+    }
+   },
+   "outcome": "works",
+   "step": "w5.eager_group_by",
+   "title": "group and aggregate, eagerly",
+   "workflow": "W5"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 4 columns\n\"region\": string | \"qty\": i64 | \"avg_price\": f64 | \"n\": u32\n\"east\" | 6 | 1.875 | 2\n\"north\" | 9 | 2.283333333333333 | 3\n\"south\" | 7 | 2.9 | 4"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 4 columns\n\"region\": string | \"qty\": i64 | \"avg_price\": f64 | \"n\": u32\n\"east\" | 6 | 1.875 | 2\n\"north\" | 9 | 2.283333333333333 | 3\n\"south\" | 7 | 2.9 | 4"
+    }
+   },
+   "outcome": "works",
+   "step": "w5.lazy_group_by",
+   "title": "group and aggregate, lazily",
+   "workflow": "W5"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 3 columns\n\"region\": string | \"product\": string | \"qty\": i64\n\"east\" | \"apple\" | 2\n\"east\" | \"pear\" | 4\n\"north\" | \"apple\" | 3\n\"north\" | \"pear\" | 5\n\"north\" | \"plum\" | 1\n\"south\" | \"appl"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 8 rows \u00d7 3 columns\n\"region\": string | \"product\": string | \"qty\": i64\n\"east\" | \"apple\" | 2\n\"east\" | \"pear\" | 4\n\"north\" | \"apple\" | 3\n\"north\" | \"pear\" | 5\n\"north\" | \"plum\" | 1\n\"south\" | \"appl"
+    }
+   },
+   "outcome": "works",
+   "step": "w5.multi_key",
+   "title": "group by two keys",
+   "workflow": "W5"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string"
+    },
+    "printed": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string"
+    }
+   },
+   "outcome": "works",
+   "step": "w6.join_eager",
+   "title": "join two frames, eagerly",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string"
+    },
+    "printed": {
+     "cause": null,
+     "input_columns_elided": [
+      "qty"
+     ],
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 9 columns\n[0 rows and 1 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \u2026 | \"price\": f64 | \"note\": string | \"manager\": string"
+    }
+   },
+   "outcome": "works",
+   "step": "w6.join_lazy",
+   "title": "join two frames, lazily",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "error": "runtime error at {OUT}/w6_pivot.rn, line 5, column 9: Missing instance function `0x953ebce8cd395aeb` for `::polars::LazyFrame` //           df.lazy().pivot(polars::cols([\"product\"])?, on_columns, polars::cols([\"region\"])?, polars::cols([\"qty\"])?, polars::element().sum(), true, \"_\", polars::PivotColumnNaming::Auto()).collect()?",
+   "outcome": "blocked",
+   "step": "w6.pivot",
+   "title": "pivot wide",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "error": "runtime error at {OUT}/w6_unpivot.rn, line 4, column 9: Missing instance function `0xe6c6d382a0724048` for `::polars::DataFrame` //           df.unpivot(Some([\"qty\", \"price\"]), [\"id\"])?",
+   "outcome": "blocked",
+   "step": "w6.unpivot",
+   "title": "unpivot long",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 18 rows \u00d7 7 columns\n[8 rows and 0 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 18 rows \u00d7 7 columns\n[8 rows and 0 columns omitted by display limits]\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026"
+    }
+   },
+   "outcome": "works",
+   "step": "w6.concat",
+   "title": "stack two frames",
+   "workflow": "W6"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"region_qty\": i64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 8 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string | \"region_qty\": i64\n1 | \"2026-01-03\" | \"north\" | \"apple\" | "
+    }
+   },
+   "outcome": "works",
+   "step": "w7.over",
+   "title": "a windowed aggregate",
+   "workflow": "W7"
+  },
+  {
+   "composed": false,
+   "error": "runtime error at {OUT}/w7_cum_sum.rn, line 4, column 31: Missing instance function `0x87cda3cc525e909c` for `::polars::Expr` //           df.lazy().with_column(polars::col(\"qty\").cum_sum(false).alias(\"running\")).collect()?",
+   "outcome": "blocked",
+   "step": "w7.cum_sum",
+   "title": "a cumulative sum",
+   "workflow": "W7"
+  },
+  {
+   "composed": false,
+   "error": "error at {OUT}/w7_rolling.rn, line 4, column 65: Missing item ::polars::RollingOptionsFixedWindow::default_ //           df.lazy().with_column(polars::col(\"price\").rolling_mean(polars::RollingOptionsFixedWindow::default_()).alias(\"roll\")).collect()?",
+   "outcome": "blocked",
+   "step": "w7.rolling",
+   "title": "a rolling mean",
+   "workflow": "W7"
+  },
+  {
+   "composed": false,
+   "error": "error at {OUT}/w7_rank.rn, line 4, column 55: Missing item ::polars::RankOptions::default_ //           df.lazy().with_column(polars::col(\"qty\").rank(polars::RankOptions::default_(), None)?.alias(\"rank\")).collect()?",
+   "outcome": "blocked",
+   "step": "w7.rank",
+   "title": "a rank",
+   "workflow": "W7"
+  },
+  {
+   "composed": false,
+   "outcome": "works",
+   "step": "w8.csv",
+   "title": "write CSV",
+   "workflow": "W8"
+  },
+  {
+   "composed": false,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 9 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"qty\": i64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3 | 1.25 | null\n2 | "
+    }
+   },
+   "outcome": "works",
+   "step": "w8.parquet",
+   "title": "write Parquet and read it back",
+   "workflow": "W8"
+  },
+  {
+   "composed": false,
+   "error": "error at {OUT}/w8_json.rn, line 4, column 41: Missing item ::polars::JsonWriter::new //           let sink = polars::Sink::new(); polars::JsonWriter::new(sink).finish(df)?; String::from_utf8(sink.bytes()?)?",
+   "outcome": "blocked",
+   "step": "w8.json",
+   "title": "write JSON",
+   "workflow": "W8"
+  },
+  {
+   "composed": false,
+   "outcome": "presented",
+   "step": "w8.present",
+   "title": "present the result",
+   "workflow": "W8"
+  },
+  {
+   "composed": true,
+   "error": "thread 'rnx-polars-engine' (N) panicked at /home/me/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/polars-io-0.55.2/src/csv/read/schema_inference.rs:375:13: // activate one of {'dtype-date', 'dtype-datetime', dtype-time'} features",
+   "outcome": "blocked",
+   "step": "W1",
+   "title": "load each format and combine",
+   "workflow": "W1"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "Schema { fields: {\"id\": Int64, \"date\": String, \"region\": String, \"product\": String, \"qty\": Int64, \"price\": Float64, \"note\": String}, metadata: () }\nDataFrame: 1 rows \u00d7 2 columns\n\"mean\": f64 | \"max\": i"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "Schema { fields: {\"id\": Int64, \"date\": String, \"region\": String, \"product\": String, \"qty\": Int64, \"price\": Float64, \"note\": String}, metadata: () }\nDataFrame: 1 rows \u00d7 2 columns\n\"mean\": f64 | \"max\": i"
+    }
+   },
+   "outcome": "works",
+   "step": "W2",
+   "title": "inspect a frame",
+   "workflow": "W2"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 5 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"quantity\": f64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3.0 | 1.25 | nu"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 5 rows \u00d7 7 columns\n\"id\": i64 | \"date\": string | \"region\": string | \"product\": string | \"quantity\": f64 | \"price\": f64 | \"note\": string\n1 | \"2026-01-03\" | \"north\" | \"apple\" | 3.0 | 1.25 | nu"
+    }
+   },
+   "outcome": "works",
+   "step": "W3",
+   "title": "clean a frame",
+   "workflow": "W3"
+  },
+  {
+   "composed": true,
+   "error": "runtime error at {OUT}/W4.rn, line 5, column 24: Missing instance function `0xcc8c612d2628ee35` for `::polars::Expr` //             .with_column(polars::col(\"date\").str().to_date(polars::StrptimeOptions::default_()))",
+   "outcome": "blocked",
+   "step": "W4",
+   "title": "derive columns",
+   "workflow": "W4"
+  },
+  {
+   "composed": true,
+   "display": {
+    "presented": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 3 columns\n\"region\": string | \"qty\": i64 | \"n\": u32\n\"east\" | 6 | 2\n\"north\" | 9 | 3\n\"south\" | 7 | 4"
+    },
+    "printed": {
+     "cause": null,
+     "outcome": "displayed",
+     "text": "DataFrame: 3 rows \u00d7 3 columns\n\"region\": string | \"qty\": i64 | \"n\": u32\n\"east\" | 6 | 2\n\"north\" | 9 | 3\n\"south\" | 7 | 4"
+    }
+   },
+   "outcome": "works",
+   "step": "W5",
+   "title": "group and aggregate",
+   "workflow": "W5"
+  },
+  {
+   "composed": true,
+   "error": "runtime error at {OUT}/W6.rn, line 7, column 20: Missing instance function `0x953ebce8cd395aeb` for `::polars::LazyFrame` //           let wide = joined.pivot(polars::cols([\"product\"])?, on_columns, polars::cols([\"region\"])?, polars::cols([\"qty\"])?, polars::element().sum(), true, \"_\", polars::PivotColumnNaming::Auto()).collect()?;",
+   "outcome": "blocked",
+   "step": "W6",
+   "title": "reshape",
+   "workflow": "W6"
+  },
+  {
+   "composed": true,
+   "error": "error at {OUT}/W7.rn, line 7, column 58: Missing item ::polars::RollingOptionsFixedWindow::default_ //             .with_column(polars::col(\"price\").rolling_mean(polars::RollingOptionsFixedWindow::default_()).alias(\"roll\"))",
+   "outcome": "blocked",
+   "step": "W7",
+   "title": "windows",
+   "workflow": "W7"
+  },
+  {
+   "composed": true,
+   "error": "error at {OUT}/W8.rn, line 8, column 39: Missing item ::polars::JsonWriter::new //           let js = polars::Sink::new(); polars::JsonWriter::new(js).finish(again)?;",
+   "outcome": "blocked",
+   "step": "W8",
+   "title": "write out and read back",
+   "workflow": "W8"
+  }
+ ],
+ "workflow_counts": {
+  "blocked": 5,
+  "differs": 0,
+  "presented": 0,
+  "works": 3
+ }
+}

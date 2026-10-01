@@ -577,6 +577,22 @@ impl World {
 				eprintln!("refusing to generate: into arguments: {why}");
 				std::process::exit(2);
 			}
+			// record 0127: the Arc arguments and the wide bindings
+			if let Err(why) = crate::families::arc_arguments::validate(
+				&w,
+				&w.release.families.arc_arguments,
+				&inv.callables,
+			) {
+				eprintln!("refusing to generate: arc arguments: {why}");
+				std::process::exit(2);
+			}
+			if let Err(why) = crate::families::wide_bindings::validate(
+				&w.release.families.wide_bindings,
+				&inv.callables,
+			) {
+				eprintln!("refusing to generate: wide bindings: {why}");
+				std::process::exit(2);
+			}
 			// record 0126: the rebuilt borrows
 			if let Err(why) = crate::families::rebuilt_borrows::validate(
 				&w,
