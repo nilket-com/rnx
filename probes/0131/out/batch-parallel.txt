@@ -1,0 +1,9 @@
+# probe0131 bench-par; 2026-10-01T09:40:52Z; Model name: Intel(R) Core(TM) i7-14700
+640 texts on 1 concurrent calls in 3.903 s; max |diff| against one call 0e0; RAYON_NUM_THREADS=None; worker sees candle threads 20 / rayon pool 28 (one call: 20 / 28)
+640 texts on 8 concurrent calls in 0.750 s; max |diff| against one call 0e0; RAYON_NUM_THREADS=None; worker sees candle threads 20 / rayon pool 28 (one call: 20 / 28)
+640 texts on 20 concurrent calls in 0.652 s; max |diff| against one call 0e0; RAYON_NUM_THREADS=None; worker sees candle threads 20 / rayon pool 28 (one call: 20 / 28)
+640 texts on 1 concurrent calls in 4.681 s; max |diff| against one call 0e0; RAYON_NUM_THREADS=Some("1"); worker sees candle threads 1 / rayon pool 1 (one call: 1 / 1)
+640 texts on 8 concurrent calls in 0.763 s; max |diff| against one call 0e0; RAYON_NUM_THREADS=Some("1"); worker sees candle threads 1 / rayon pool 1 (one call: 1 / 1)
+640 texts on 20 concurrent calls in 0.644 s; max |diff| against one call 0e0; RAYON_NUM_THREADS=Some("1"); worker sees candle threads 1 / rayon pool 1 (one call: 1 / 1)
+10000 texts on 20 concurrent calls in 9.998 s; max |diff| against one call 0e0; RAYON_NUM_THREADS=None; worker sees candle threads 20 / rayon pool 28 (one call: 20 / 28)
+10000 texts on 20 concurrent calls in 9.573 s; max |diff| against one call 0e0; RAYON_NUM_THREADS=Some("1"); worker sees candle threads 1 / rayon pool 1 (one call: 1 / 1)

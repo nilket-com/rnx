@@ -1,0 +1,16 @@
+{
+ "docs": 0.9999999999991256,
+ "queries": 0.9999999999995498,
+ "scores_max_abs_diff": 6.666696010793061e-07,
+ "top5_margin_min": 0.0019179880619049072,
+ "top5_identical": "8/8",
+ "control:alone": 0.9999999999996774,
+ "control:empty": 0.9999999999990655,
+ "control:long": 0.9999999999998399,
+ "control:mixed": 0.999999999998318,
+ "control:mixed_halved": 0.999999999998318,
+ "control:thirty_three": 0.9999999999989,
+ "control:thirty_three_halved": 0.9999999999989,
+ "control:whitespace": 0.9999999999990655
+}
+PASS

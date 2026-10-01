@@ -1,0 +1,12 @@
+TextEncoder[bert; 6 layers, 384 dims, max 256 tokens]
+Dense[f32; 60 x 384](e0, e1, e2, e3, e4, e5, e6, e7, …)
+DataFrame: 5 rows × 3 columns
+"id": i64 | "text": string | "score": f32
+0 | "To reset your password, open Settings, choose Security and select Reset password"…[truncated] | 0.7344043
+1 | "If the password reset email never arrives, check your spam folder and confirm th"…[truncated] | 0.5348294
+4 | "Accounts are locked for fifteen minutes after five failed sign-in attempts to pr"…[truncated] | 0.385608
+6 | "Recovery codes let you sign in if you lose your phone; store them somewhere safe"…[truncated] | 0.36708972
+5 | "To delete your account permanently, contact support; deletion removes your data "…[truncated] | 0.32479578
+
+reuse: 60 texts, 8 queries, docs 60 rows
+wall 0.80 s, max rss 226620 KiB

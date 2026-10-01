@@ -35,10 +35,11 @@ mod http;
 mod inspect;
 pub mod interchange;
 /// Record 0129: the allocator's peak of tracked live bytes, and its reset to
-/// the current figure. Only with `allocation-peak` (and `count-allocations`).
+/// the current figure; record 0131 adds the live figure itself (`None`
+/// without `count-allocations`). Only with `allocation-peak`.
 #[cfg(feature = "allocation-peak")]
 pub mod allocation {
-	pub use crate::memory::{peak, reset_peak};
+	pub use crate::memory::{live, peak, reset_peak};
 }
 mod io;
 mod json;

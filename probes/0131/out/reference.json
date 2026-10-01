@@ -1,0 +1,14 @@
+{
+ "versions": {
+  "torch": "2.14.1+cpu",
+  "sentence_transformers": "6.1.0",
+  "transformers": "5.18.0",
+  "threads": 20
+ },
+ "load_s": 0.09666571393609047,
+ "embed_s_one": 0.004921471932902932,
+ "embed_s_batch32": 0.04219217994250357,
+ "embed_s_docs60": 0.07115246797911823,
+ "embed_s_corpus10k": 10.540567836957052,
+ "peak_rss_kib": 633920
+}

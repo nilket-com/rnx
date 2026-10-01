@@ -20,6 +20,7 @@ use std::io::Read;
 use std::sync::Arc;
 
 mod display;
+pub mod text;
 mod worker;
 
 /// A safetensors file is at most 64 MiB.
@@ -117,21 +118,26 @@ fn dtype(this: &Tensor) -> String {
 /// The file, bounded: its size from metadata, then a read of at most
 /// `MAX_FILE + 1` bytes, refused if it holds more.
 fn read_bounded(path: &str) -> Result<Vec<u8>, String> {
-	let op = "Mlp::load";
+	read_limited(path, MAX_FILE, "Mlp::load")
+}
+
+/// A local file of at most `limit` bytes: refused from its metadata before
+/// any read, then read with `take(limit + 1)` in case it grew meanwhile.
+pub(crate) fn read_limited(path: &str, limit: u64, op: &str) -> Result<Vec<u8>, String> {
 	let file = std::fs::File::open(path).map_err(|e| format!("{op} {path:?}: {e}"))?;
 	let len = file
 		.metadata()
 		.map_err(|e| format!("{op} {path:?}: {e}"))?
 		.len();
-	if len > MAX_FILE {
-		return Err(format!("{op} {path:?}: {len} bytes, at most {MAX_FILE}"));
+	if len > limit {
+		return Err(format!("{op} {path:?}: {len} bytes, at most {limit}"));
 	}
 	let mut bytes = Vec::with_capacity(len as usize);
-	file.take(MAX_FILE + 1)
+	file.take(limit + 1)
 		.read_to_end(&mut bytes)
 		.map_err(|e| format!("{op} {path:?}: {e}"))?;
-	if bytes.len() as u64 > MAX_FILE {
-		return Err(format!("{op} {path:?}: more than {MAX_FILE} bytes"));
+	if bytes.len() as u64 > limit {
+		return Err(format!("{op} {path:?}: more than {limit} bytes"));
 	}
 	Ok(bytes)
 }
@@ -276,7 +282,8 @@ pub fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, String> {
 		.map_err(err)?;
 	m.associated_function("forward", forward).map_err(err)?;
 	m.associated_function("dims", mlp_dims).map_err(err)?;
-	Ok(vec![
+	let text = text::build(m).map_err(err)?;
+	Ok(text.into_iter().chain(vec![
 		(
 			"candle::Tensor".into(),
 			"Tensor: a CPU tensor; its display is bounded (dtype, shape, at most 8x8 values)",
@@ -304,7 +311,7 @@ pub fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, String> {
 			"forward(tensor) -> Result<Tensor>: a 2-D F32 input with the model's input columns",
 		),
 		("candle::Mlp::dims".into(), "dims() -> (in, hidden, out)"),
-	])
+	]).collect())
 }
 
 /// The session presenter: a tensor's bounded display.
@@ -312,7 +319,8 @@ pub fn present(presenters: &mut rnx::Presenters) -> Result<(), String> {
 	presenters.register::<Tensor>(|t, out| {
 		out.push(&display::render(&t.0));
 		Ok(())
-	})
+	})?;
+	text::present(presenters)
 }
 
 #[cfg(test)]
