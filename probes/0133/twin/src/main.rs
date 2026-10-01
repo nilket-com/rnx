@@ -13,8 +13,8 @@ use candle_core::{DType, Device, Tensor};
 use candle_nn::VarBuilder;
 use candle_transformers::models::bert::{BertModel, Config};
 use tokenizers::{
-	PaddingDirection, PaddingParams, PaddingStrategy, Tokenizer, TruncationDirection,
-	TruncationParams, TruncationStrategy,
+	PaddingDirection, PaddingParams, PaddingStrategy, PostProcessor, Tokenizer,
+	TruncationDirection, TruncationParams, TruncationStrategy,
 };
 
 struct Twin {
@@ -156,6 +156,109 @@ fn twin_embed_sized(t: &Twin, xs: &[&str], sizes: &[usize]) -> Vec<f32> {
 	out
 }
 
+/// Record 0136's token-aware chunking, written here independently of rnx
+/// against the plan's contract: UTF-8 byte offsets grouped into atoms (a
+/// token whose range is empty or overlaps the current atom joins it), words
+/// by word id, passages of whole words within W content tokens (an unfit
+/// word falls back to whole atoms), repair by re-tokenizing the substring
+/// with specials and dropping the last word (atom), and the next start from
+/// the repaired end. Returns byte ranges into `text`.
+fn token_chunks(
+	tok: &Tokenizer,
+	text: &str,
+	max_seq: usize,
+	overlap: usize,
+) -> Result<Vec<(usize, usize)>, String> {
+	let mut t = tok.clone();
+	t.with_padding(None);
+	t.with_truncation(None).unwrap();
+	let w = max_seq - t.get_post_processor().map_or(0, |p| p.added_tokens(false));
+	let enc = t.encode(text, false).unwrap();
+	// atoms as (start, end, tokens, word key)
+	let mut atoms: Vec<(usize, usize, usize, Option<u32>)> = Vec::new();
+	let mut lead = 0;
+	for (k, &(s, e)) in enc.get_offsets().iter().enumerate() {
+		assert!(s <= e && e <= text.len() && text.is_char_boundary(s) && text.is_char_boundary(e));
+		let wid = enc.get_word_ids()[k];
+		match atoms.last_mut() {
+			Some(a) if s == e || s < a.1 => {
+				a.0 = a.0.min(s);
+				a.1 = a.1.max(e);
+				a.2 += 1;
+			}
+			None if s == e => lead += 1,
+			_ => atoms.push((s, e, 1, wid)),
+		}
+	}
+	// tokens with no span cannot be placed in a substring: refused
+	match atoms.first_mut() {
+		// leading empty-span tokens: the first atom starts at the text's start
+		Some(a) => {
+			a.2 += lead;
+			if lead > 0 {
+				a.0 = 0;
+			}
+		}
+		None if lead > 0 => return Err(format!("{lead} tokens with no span")),
+		None => {}
+	}
+	if atoms.iter().map(|a| a.2).sum::<usize>() != enc.len() {
+		return Err("the atoms do not hold every token".into());
+	}
+	let n = atoms.len();
+	// a new word starts where the word id changes or is missing
+	let starts: Vec<bool> = (0..n)
+		.map(|i| i == 0 || atoms[i].3.is_none() || atoms[i].3 != atoms[i - 1].3)
+		.collect();
+	let word_after = |i: usize| (i + 1..n).find(|&j| starts[j]).unwrap_or(n);
+	let count = |a: usize, b: usize| atoms[a..b].iter().map(|x| x.2).sum::<usize>();
+	let mut out = Vec::new();
+	let mut c = 0;
+	while c < n {
+		let mut e = c;
+		while e < n && count(c, word_after(e)) <= w {
+			e = word_after(e);
+		}
+		let atomwise = e == c;
+		if atomwise {
+			while e < n && count(c, e + 1) <= w {
+				e += 1;
+			}
+			assert!(e > c, "an unbreakable atom above the window");
+		}
+		let mut drops = 0;
+		while t
+			.encode(&text[atoms[c].0..atoms[e - 1].1], true)
+			.unwrap()
+			.len() > max_seq
+		{
+			drops += 1;
+			assert!(drops <= 16, "repair beyond its bound");
+			e = if atomwise {
+				e - 1
+			} else {
+				(c + 1..e).rev().find(|&j| starts[j]).unwrap_or(c)
+			};
+			assert!(e > c, "nothing fits");
+		}
+		out.push((atoms[c].0, atoms[e - 1].1));
+		if e == n {
+			break;
+		}
+		let mut b = e;
+		let mut back = 0;
+		while b - 1 > c && back + atoms[b - 1].2 <= overlap {
+			b -= 1;
+			back += atoms[b].2;
+		}
+		while b < e && !starts[b] {
+			b += 1;
+		}
+		c = b;
+	}
+	Ok(out)
+}
+
 /// The twin's cosine: the same stable normalization as rnx's, f32 matmul.
 fn twin_scores(a: &[f32], b: &[f32], w: usize) -> Vec<f32> {
 	let unit = |v: &[f32]| -> Vec<f32> {
@@ -227,6 +330,27 @@ struct Doc {
 }
 
 fn load(dir: &str) -> (Vec<Doc>, Vec<(usize, String)>) {
+	load_with(dir, &|body| chunks(body))
+}
+
+/// Record 0136: D1 chunked by the twin's token chunker instead, when
+/// `TWIN0136_OVERLAP` is set (U1 prime).
+fn load_tokens(dir: &str, model: &str) -> (Vec<Doc>, Vec<(usize, String)>) {
+	let Ok(overlap) = std::env::var("TWIN0136_OVERLAP") else {
+		return load(dir);
+	};
+	let overlap: usize = overlap.parse().unwrap();
+	let tok = twin_load(model).tok;
+	load_with(dir, &|body| {
+		token_chunks(&tok, body, 256, overlap)
+			.unwrap()
+			.into_iter()
+			.map(|(s, e)| body[s..e].to_owned())
+			.collect()
+	})
+}
+
+fn load_with(dir: &str, split: &dyn Fn(&str) -> Vec<String>) -> (Vec<Doc>, Vec<(usize, String)>) {
 	let mut names: Vec<String> = std::fs::read_dir(dir)
 		.unwrap()
 		.map(|e| e.unwrap().file_name().into_string().unwrap())
@@ -240,7 +364,7 @@ fn load(dir: &str) -> (Vec<Doc>, Vec<(usize, String)>) {
 		let first = text.split('\n').next().unwrap_or("");
 		let title = first.strip_prefix("# ").unwrap_or(first).to_owned();
 		let d = docs.len();
-		for c in chunks(&text[first.len()..]) {
+		for c in split(&text[first.len()..]) {
 			passages.push((d, c));
 		}
 		let _ = title;
@@ -250,7 +374,7 @@ fn load(dir: &str) -> (Vec<Doc>, Vec<(usize, String)>) {
 }
 
 fn u1(dir: &str, model: &str, rubric: &str) {
-	let (docs, passages) = load(dir);
+	let (docs, passages) = load_tokens(dir, model);
 	let t = twin_load(model);
 	let texts: Vec<&str> = passages.iter().map(|p| p.1.as_str()).collect();
 	let e = twin_embed(&t, &texts);
@@ -424,6 +548,48 @@ fn main() {
 			let v = twin_embed_sized(&twin_load(&a[3]), &xs, &sizes);
 			let bytes: Vec<u8> = v.iter().flat_map(|x| x.to_le_bytes()).collect();
 			std::fs::write(&a[5], bytes).unwrap();
+		}
+		// record 0136: every passage's byte range, D1 bodies (as U1 splits a
+		// document) then D2 tickets (title, newline, body), at an overlap
+		"chunks" => {
+			let tok = twin_load(&a[4]).tok;
+			let overlap: usize = a[5].parse().unwrap();
+			println!("source\tindex\tstart\tend");
+			let mut names: Vec<String> = std::fs::read_dir(&a[2])
+				.unwrap()
+				.map(|e| e.unwrap().file_name().into_string().unwrap())
+				.filter(|n| n.ends_with(".md"))
+				.collect();
+			names.sort();
+			for n in names {
+				let text = std::fs::read_to_string(format!("{}/{n}", a[2])).unwrap();
+				let first = text.split('\n').next().unwrap_or("");
+				match token_chunks(&tok, &text[first.len()..], 256, overlap) {
+					Ok(r) => {
+						for (k, (s, e)) in r.into_iter().enumerate() {
+							println!("d1:{n}\t{k}\t{s}\t{e}");
+						}
+					}
+					Err(e) => println!("d1:{n}\tREFUSED\t{e}\t"),
+				}
+			}
+			let v: serde_json::Value =
+				serde_json::from_slice(&std::fs::read(&a[3]).unwrap()).unwrap();
+			for i in v.as_array().unwrap() {
+				let text = format!(
+					"{}\n{}",
+					i["title"].as_str().unwrap(),
+					i["body"].as_str().unwrap()
+				);
+				match token_chunks(&tok, &text, 256, overlap) {
+					Ok(r) => {
+						for (k, (s, e)) in r.into_iter().enumerate() {
+							println!("d2:#{}\t{k}\t{s}\t{e}", i["number"]);
+						}
+					}
+					Err(e) => println!("d2:#{}\tREFUSED\t{e}\t", i["number"]),
+				}
+			}
 		}
 		// record 0135: D1's passages, as U1 chunks them, for timing
 		"passages" => {
