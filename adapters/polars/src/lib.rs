@@ -277,6 +277,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.function("from_dense", dense::from_dense)
 		.build_associated::<DataFrame>()
 		.map_err(err)?;
+	// record 0131: a text column as plain strings
+	m.function("strings", dense::strings)
+		.build_associated::<DataFrame>()
+		.map_err(err)?;
 	m.function("with_dense", dense::with_dense)
 		.build_associated::<DataFrame>()
 		.map_err(err)?;
@@ -340,6 +344,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		(
 			"polars::read_csv".into(),
 			"read_csv(path[, schema]) -> Result<DataFrame>: local CSV; the schema inferred by Polars (dates stay strings), or a strict ordered (name, dtype) schema",
+		),
+		(
+			"polars::DataFrame::strings".into(),
+			"strings(column) -> Result<Vec<String>>: a str column as strings; nulls refused by row, at most 65,536 rows and 64 MiB",
 		),
 		(
 			"polars::DataFrame::to_dense".into(),

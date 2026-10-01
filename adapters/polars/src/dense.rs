@@ -220,3 +220,38 @@ pub(crate) fn with_dense(this: &DataFrame, block: &Dense) -> Result<DataFrame, S
 		.map(DataFrame)
 		.map_err(|e| format!("with_dense: {e}"))
 }
+
+/// Record 0131: at most 65,536 rows of text, 64 MiB in all.
+pub(crate) const MAX_STRING_ROWS: usize = 65_536;
+pub(crate) const MAX_STRING_BYTES: usize = 64 << 20;
+
+/// `df.strings(column)`: a `String` column as a vector of strings. The
+/// dtype, nulls, row count and total bytes are checked (summing lengths, no
+/// copy) before anything is copied; the frame is borrowed.
+pub(crate) fn strings(this: &DataFrame, column: &str) -> Result<Vec<String>, String> {
+	let op = "strings";
+	let col = this.0.column(column).map_err(|e| format!("{op}: {e}"))?;
+	if !matches!(col.dtype(), p::DataType::String) {
+		return Err(format!(
+			"{op}: column {column:?} is {}, not str",
+			col.dtype()
+		));
+	}
+	let rows = col.len();
+	if rows > MAX_STRING_ROWS {
+		return Err(format!("{op}: {rows} rows, at most {MAX_STRING_ROWS}"));
+	}
+	let ca = col.str().map_err(|e| format!("{op}: {e}"))?;
+	if ca.null_count() > 0 {
+		let row = ca.iter().position(|v| v.is_none()).unwrap_or(0);
+		return Err(format!("{op}: a null in column {column:?} at row {row}"));
+	}
+	let mut total = 0usize;
+	for s in ca.iter().flatten() {
+		total = total
+			.checked_add(s.len())
+			.filter(|t| *t <= MAX_STRING_BYTES)
+			.ok_or_else(|| format!("{op}: more than {MAX_STRING_BYTES} bytes of text"))?;
+	}
+	Ok(ca.iter().flatten().map(str::to_owned).collect())
+}

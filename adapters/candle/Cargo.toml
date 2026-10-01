@@ -16,6 +16,19 @@ rnx = { path = "../..", default-features = false, features = ["count-allocations
 # system library.
 candle-core = { version = "=0.11.0", default-features = false }
 candle-nn = { version = "=0.11.0", default-features = false }
+# Record 0131: BERT for TextEncoder (default features off: no flash-attention,
+# MKL or Accelerate) and the tokenizer candle-core already links (onig only,
+# so esaxx-rs builds without its C++ path).
+candle-transformers = { version = "=0.11.0", default-features = false }
+tokenizers = { version = "=0.22.2", default-features = false, features = ["onig"] }
+serde_json = "1"
+# Record 0131: test-support only, to report the worker's rayon pool size.
+rayon = { version = "1", optional = true }
+
+[features]
+# Record 0131: lowered activation caps for the batch-halving controls, and
+# the inference worker's observed thread counts.
+test-support = ["dep:rayon"]
 
 [dev-dependencies]
 # Record 0129: the allocator's peak, for the allocation controls only.

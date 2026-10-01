@@ -171,3 +171,66 @@ fn round_trips_and_every_binding_stays_usable() {
 	.unwrap_err();
 	assert!(e.contains("with_dense") && e.contains("x"), "{e}");
 }
+
+#[test]
+fn strings_are_checked_before_copying_and_the_frame_stays_usable() {
+	let path = csv("id,text\n1,hello\n2,\"a, b\"\n3,\n");
+	let read = format!("polars::read_csv({path:?}, [(\"id\", \"i64\"), (\"text\", \"string\")])?");
+	let got = outcome(&format!(
+		"pub fn main() {{ let df = {read}; let c = \"text\"; let e = df.strings(c); let n = df.strings(\"id\"); \
+		   let ok = df.select_([\"id\"])?.height()?; Ok(`${{e.is_err()}} ${{n.is_err()}} ${{c}} ${{ok}}`) }}"
+	));
+	assert_eq!(got.unwrap(), "true true text 3");
+	let e = outcome(&format!(
+		"pub fn main() {{ let df = {read}; df.strings(\"text\")?; Ok(``) }}"
+	))
+	.unwrap_err();
+	assert!(e.contains("a null in column \"text\" at row 2"), "{e}");
+	let e = outcome(&format!(
+		"pub fn main() {{ let df = {read}; df.strings(\"id\")?; Ok(``) }}"
+	))
+	.unwrap_err();
+	assert!(e.contains("column \"id\" is i64, not str"), "{e}");
+	let e = outcome(&format!(
+		"pub fn main() {{ let df = {read}; df.strings(\"nope\")?; Ok(``) }}"
+	))
+	.unwrap_err();
+	assert!(e.contains("nope"), "{e}");
+	// the values, in order, commas and all
+	let path = csv("text\nhello\n\"a, b\"\nzz\n");
+	let got = outcome(&format!(
+		"pub fn main() {{ let df = polars::read_csv({path:?}, [(\"text\", \"string\")])?; let s = df.strings(\"text\")?; Ok(`${{s.len()}}|${{s[0]}}|${{s[1]}}|${{s[2]}}`) }}"
+	));
+	assert_eq!(got.unwrap(), "3|hello|a, b|zz");
+	// the row limit, at and past the boundary
+	let rows = |n: usize| {
+		let mut b = String::from("text\n");
+		for _ in 0..n {
+			b.push_str("x\n");
+		}
+		csv(&b)
+	};
+	for (n, ok) in [(65_536, true), (65_537, false)] {
+		let path = rows(n);
+		let r = outcome(&format!(
+			"pub fn main() {{ let df = polars::read_csv({path:?}, [(\"text\", \"string\")])?; Ok(`${{df.strings(\"text\")?.len()}}`) }}"
+		));
+		match ok {
+			true => assert_eq!(r.unwrap(), "65536"),
+			false => assert!(r.unwrap_err().contains("65537 rows, at most 65536")),
+		}
+	}
+	// the byte limit: 1,025 texts of 64 KiB is just over 64 MiB
+	let mut b = String::from("text\n");
+	let long = "y".repeat(64 << 10);
+	for _ in 0..1025 {
+		b.push_str(&long);
+		b.push('\n');
+	}
+	let path = csv(&b);
+	let e = outcome(&format!(
+		"pub fn main() {{ let df = polars::read_csv({path:?}, [(\"text\", \"string\")])?; df.strings(\"text\")?; Ok(``) }}"
+	))
+	.unwrap_err();
+	assert!(e.contains("more than 67108864 bytes of text"), "{e}");
+}
