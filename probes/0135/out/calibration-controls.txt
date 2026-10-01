@@ -1,0 +1,8 @@
+ok: calibrate, 256 tokens (pass, exit 0): # 3 asked: 3 ran, 0 skipped (above the caps), 0 failed
+ok: calibrate, 384 tokens with 32 ruled out by the caps (pass, exit 0): # 2 asked: 1 ran, 1 skipped (above the caps), 0 failed
+ok: calibrate with the S0 pin replaced (C = 32) (fail, exit 1): # 2 asked: 2 ran, 0 skipped (above the caps), 2 failed
+ok: calibrate with the estimate scaled to 0.5 (fail, exit 1): # 1 asked: 1 ran, 0 skipped (above the caps), 1 failed
+ok: calibrate on texts shorter than the full length (fail, exit 1): # 1 asked: 1 ran, 0 skipped (above the caps), 1 failed
+ok: configs with a refused configuration (fail, exit 1): # 432 expected cases: 384 ran, 12 skipped (above the caps), 36 failed; worst ratio 0.896
+ok: configs with the estimate scaled to 0.5 (fail, exit 1): # 396 expected cases: 384 ran, 12 skipped (above the caps), 290 failed; worst ratio 0.896
+calibration controls: all passed

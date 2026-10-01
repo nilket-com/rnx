@@ -1,0 +1,31 @@
+# after push: f0ee81f, clean worktree binary, fresh cache, ordinary :dep polars candle sessions (probes/0135/replay.sh; its twin step re-run with the main tree's twin0133, source identical to f0ee81f)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+u1: ### :dep returned to a prompt: True after 389.5 s ### run returned to a prompt: True after 59.5 s 
+u2: ### :dep returned to a prompt: True after 16.3 s ### run returned to a prompt: True after 66.4 s 
+u3: ### :dep returned to a prompt: True after 16.9 s ### run returned to a prompt: True after 3.7 s 
+gate 1
+  u1: 25 rows, BIT-EQUAL
+  u2: 459 rows, BIT-EQUAL
+  u3: 254 rows, BIT-EQUAL
+PASS
+gate 2
+  u1: 25 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  u3: 254 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+PASS
+controls
+ok: a duplicated U1 row: gate 1 fails, gate 2 fails
+ok: a duplicated U2 row: gate 1 fails, gate 2 fails
+ok: a duplicated U3 member row: gate 1 fails, gate 2 fails
+ok: a U3 member row with an extra field: gate 1 fails, gate 2 fails
+ok: a U3 ticket moved to another component: gate 1 fails, gate 2 fails
+ok: a U3 ticket in two components: gate 1 fails, gate 2 fails
+ok: a U3 edge removed: gate 1 fails, gate 2 fails
+ok: a U1 header without its score column: gate 1 fails, gate 2 fails
+ok: one f32 bit of a U1 score: gate 1 fails, gate 2 passes
+ok: a U1 score moved by 2e-5: gate 1 fails, gate 2 fails
+ok: a U1 document changed, numbers identical: gate 1 fails, gate 2 fails
+ok: a NaN U1 score: gate 1 fails, gate 2 fails
+PASS

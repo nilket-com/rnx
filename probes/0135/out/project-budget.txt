@@ -1,0 +1,16 @@
+# probes/0135/project_budget.sh at 818443e (S0 adapter), from a clean worktree
+added candle
+added polars
+Next:
+  '/home/me/work/rnx/target/0134-rnx/release/rnx' project lock --manifest '/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/p0135/app/rnx.toml'
+  '/home/me/work/rnx/target/0134-rnx/release/rnx' project build --manifest '/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/p0135/app/rnx.toml'
+  '/home/me/work/rnx/target/0134-rnx/release/rnx' project session --manifest '/tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/p0135/app/rnx.toml'
+locked /tmp/claude-1003/-home-me-work/9bcf5c32-b0f3-444d-855a-462dd5ef3ac1/scratchpad/p0135/app/rnx.toml
+build: 426 s
+== default budget: must halt and name the project flag
+halted: 2000000 instructions exceeded; rnx project run --budget N raises it
+ok: halted with code 1, naming rnx project run --budget
+== --budget 2000000000: must complete
+run: 397 s
+u1: 25 rows (session), 25 (twin)
+session vs twin: EQUAL

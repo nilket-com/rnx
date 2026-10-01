@@ -1,0 +1,93 @@
+# probes/0135/replay.sh, C = 32, runner0134 with this tree's adapters
+datasets verified
+model verified
+session: OK (prompt True, marker True, returned Ok, errors 0)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+gate 1: the new outputs against the twins on the identical partition
+  u1: 25 rows, BIT-EQUAL
+  u2: 459 rows, BIT-EQUAL
+  u3: 254 rows, BIT-EQUAL
+PASS
+gate 2: the new outputs against 0133's retained outputs
+  u1: 25 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  u3: 254 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+PASS
+the gates' mutation controls
+  refused: u1: duplicate row ('Q1', 1, '0001_the_first_release.md', 7)
+  refused: u1: duplicate row ('Q1', 1, '0001_the_first_release.md', 7)
+ok: a duplicated U1 row: gate 1 fails, gate 2 fails
+  u1: 25 rows, BIT-EQUAL
+  refused: u2: duplicate row ('d1-dup', '0101_polars_indexed_chunk_snapshots.md', '0102_polars_single_chunk_array_snapshots.md')
+  u1: 25 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+  refused: u2: duplicate row ('d1-dup', '0101_polars_indexed_chunk_snapshots.md', '0102_polars_single_chunk_array_snapshots.md')
+ok: a duplicated U2 row: gate 1 fails, gate 2 fails
+  u1: 25 rows, BIT-EQUAL
+  u2: 459 rows, BIT-EQUAL
+  refused: u3: ticket #521 in two components
+  u1: 25 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  refused: u3: ticket #521 in two components
+ok: a duplicated U3 member row: gate 1 fails, gate 2 fails
+  u1: 25 rows, BIT-EQUAL
+  u2: 459 rows, BIT-EQUAL
+  refused: u3: a member row of 3 fields: ['#521', '#521', 'garbage']
+  u1: 25 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  refused: u3: a member row of 3 fields: ['#521', '#521', 'garbage']
+ok: a U3 member row with an extra field: gate 1 fails, gate 2 fails
+  u1: 25 rows, BIT-EQUAL
+  u2: 459 rows, BIT-EQUAL
+  u3: 254 rows, DIFFERENT
+  u1: 25 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  u3: identities differ (ranks, bands, membership or edges), e.g. [('ticket', '#521')]
+ok: a U3 ticket moved to another component: gate 1 fails, gate 2 fails
+  u1: 25 rows, BIT-EQUAL
+  u2: 459 rows, BIT-EQUAL
+  refused: u3: ticket #521 in two components
+  u1: 25 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  refused: u3: ticket #521 in two components
+ok: a U3 ticket in two components: gate 1 fails, gate 2 fails
+  u1: 25 rows, BIT-EQUAL
+  u2: 459 rows, BIT-EQUAL
+  u3: 253 rows, DIFFERENT
+  u1: 25 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  u3: identities differ (ranks, bands, membership or edges), e.g. [('edge', '#521', '#525')]
+ok: a U3 edge removed: gate 1 fails, gate 2 fails
+  refused: u1: header ['query\trank\tpath\tpid'], want ['query', 'rank', 'path', 'pid', 'score']
+  refused: u1: header ['query\trank\tpath\tpid'], want ['query', 'rank', 'path', 'pid', 'score']
+ok: a U1 header without its score column: gate 1 fails, gate 2 fails
+  u1: 25 rows, DIFFERENT
+  u2: 459 rows, BIT-EQUAL
+  u3: 254 rows, BIT-EQUAL
+  u1: 25 rows, identities exact, largest score change 3.04e-08 (within 1e-05)
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  u3: 254 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+ok: one f32 bit of a U1 score: gate 1 fails, gate 2 passes
+  u1: 25 rows, DIFFERENT
+  u2: 459 rows, BIT-EQUAL
+  u3: 254 rows, BIT-EQUAL
+  u1: 25 rows, identities exact, largest score change 2.00e-05 (OUTSIDE 1e-05)
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  u3: 254 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+ok: a U1 score moved by 2e-5: gate 1 fails, gate 2 fails
+  u1: 25 rows, DIFFERENT
+  u2: 459 rows, BIT-EQUAL
+  u3: 254 rows, BIT-EQUAL
+  u1: identities differ (ranks, bands, membership or edges), e.g. [('Q1', 1, '0000_not_a_record.md', 7), ('Q1', 1, '0001_the_first_release.md', 7)]
+  u2: 459 rows, identities exact, largest score change 1.20e-07 (within 1e-05)
+  u3: 254 rows, identities exact, largest score change 0.00e+00 (within 1e-05)
+ok: a U1 document changed, numbers identical: gate 1 fails, gate 2 fails
+  refused: a non-finite value 'nan'
+  refused: a non-finite value 'nan'
+ok: a NaN U1 score: gate 1 fails, gate 2 fails
+PASS
+replay: all checks passed
+# session run times
+u1: ### run returned to a prompt: True after 60.1 s
+u2: ### run returned to a prompt: True after 66.9 s
+u3: ### run returned to a prompt: True after 3.8 s

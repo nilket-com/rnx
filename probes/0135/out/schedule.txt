@@ -1,0 +1,23 @@
+# D1 passages, one call each, uncontended (2026-10-01T11:42:58-05:00), after the per-term estimate
+3658 passages
+s1:16: 64.2 s (plan 1.35 s, exec 62.9 s); 1821 batches of sizes [1, 2, 3, 4]; W 28, max running 25, max in flight 1024 MiB of 1024; allocator peak +595 MiB; rss 316 MiB, high-water 833 MiB
+s1:8: 74.4 s (plan 1.19 s, exec 73.2 s); 915 batches of sizes [3, 4, 5]; W 28, max running 11, max in flight 1024 MiB of 1024; allocator peak +636 MiB; rss 260 MiB, high-water 1950 MiB
+s0: 358.3 s (plan 1.05 s, exec 357.2 s); 115 batches of sizes [10, 32]; W 28, max running 2, max in flight 1000 MiB of 1024; allocator peak +740 MiB; rss 277 MiB, high-water 2066 MiB
+s1:12: 61.6 s (plan 1.89 s, exec 59.7 s); 1712 batches of sizes [2, 3, 4]; W 28, max running 22, max in flight 1024 MiB of 1024; allocator peak +532 MiB; rss 977 MiB, high-water 2066 MiB
+s1:24: 62.0 s (plan 1.98 s, exec 60.0 s); 3103 batches of sizes [1, 2]; W 28, max running 28, max in flight 950 MiB of 1024; allocator peak +366 MiB; rss 1321 MiB, high-water 2066 MiB
+s1:32: 60.5 s (plan 1.41 s, exec 59.1 s); 3441 batches of sizes [1, 2]; W 28, max running 28, max in flight 763 MiB of 1024; allocator peak +307 MiB; rss 1321 MiB, high-water 2066 MiB
+# choosing C: D1, interleaved, 3 runs each (2026-10-01T11:57:01-05:00)
+3658 passages
+s1:12: 67.1 s (plan 1.36 s, exec 65.8 s); 1712 batches of sizes [2, 3, 4]; W 28, max running 22, max in flight 1024 MiB of 1024; allocator peak +582 MiB; rss 479 MiB, high-water 887 MiB
+s1:16: 69.7 s (plan 1.22 s, exec 68.4 s); 1821 batches of sizes [1, 2, 3, 4]; W 28, max running 25, max in flight 1024 MiB of 1024; allocator peak +533 MiB; rss 478 MiB, high-water 887 MiB
+s1:32: 60.7 s (plan 1.22 s, exec 59.5 s); 3441 batches of sizes [1, 2]; W 28, max running 28, max in flight 776 MiB of 1024; allocator peak +303 MiB; rss 215 MiB, high-water 887 MiB
+s1:12: 69.3 s (plan 1.16 s, exec 68.1 s); 1712 batches of sizes [2, 3, 4]; W 28, max running 22, max in flight 1024 MiB of 1024; allocator peak +548 MiB; rss 501 MiB, high-water 887 MiB
+s1:16: 68.9 s (plan 1.17 s, exec 67.8 s); 1821 batches of sizes [1, 2, 3, 4]; W 28, max running 25, max in flight 1024 MiB of 1024; allocator peak +551 MiB; rss 479 MiB, high-water 887 MiB
+s1:32: 61.1 s (plan 1.05 s, exec 60.1 s); 3441 batches of sizes [1, 2]; W 28, max running 28, max in flight 764 MiB of 1024; allocator peak +290 MiB; rss 233 MiB, high-water 887 MiB
+s1:12: 70.1 s (plan 1.11 s, exec 69.0 s); 1712 batches of sizes [2, 3, 4]; W 28, max running 22, max in flight 1024 MiB of 1024; allocator peak +569 MiB; rss 522 MiB, high-water 923 MiB
+s1:16: 69.7 s (plan 1.14 s, exec 68.5 s); 1821 batches of sizes [1, 2, 3, 4]; W 28, max running 25, max in flight 1024 MiB of 1024; allocator peak +535 MiB; rss 508 MiB, high-water 923 MiB
+s1:32: 61.4 s (plan 1.06 s, exec 60.3 s); 3441 batches of sizes [1, 2]; W 28, max running 28, max in flight 765 MiB of 1024; allocator peak +314 MiB; rss 273 MiB, high-water 923 MiB
+# PyTorch, contemporaneous, 3 runs
+3658 passages: PyTorch 2.14.1+cpu CPU (20 threads) 50.7 s, peak RSS 821 MiB
+3658 passages: PyTorch 2.14.1+cpu CPU (20 threads) 50.2 s, peak RSS 821 MiB
+3658 passages: PyTorch 2.14.1+cpu CPU (20 threads) 50.4 s, peak RSS 818 MiB

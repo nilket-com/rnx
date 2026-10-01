@@ -7,6 +7,8 @@
 //! - `twin0133 u2 D1 D2 MODEL`: U2's pairs in each band, as
 //!   `band\ti\tj\tscore` lines (D2 tickets, then D1 documents).
 //! - `twin0133 u3 D2 MODEL`: U3's edges and connected components.
+//! - `twin0133 passages D1`, `twin0133 embed PASSAGES MODEL BATCHES OUT`:
+//!   record 0135's passages, and their embedding on a given partition.
 use candle_core::{DType, Device, Tensor};
 use candle_nn::VarBuilder;
 use candle_transformers::models::bert::{BertModel, Config};
@@ -18,11 +20,12 @@ use tokenizers::{
 struct Twin {
 	model: BertModel,
 	tok: Tokenizer,
+	config_json: Vec<u8>,
 }
 
 fn twin_load(model: &str) -> Twin {
-	let config: Config =
-		serde_json::from_slice(&std::fs::read(format!("{model}/config.json")).unwrap()).unwrap();
+	let config_json = std::fs::read(format!("{model}/config.json")).unwrap();
+	let config: Config = serde_json::from_slice(&config_json).unwrap();
 	let mut tok = Tokenizer::from_file(format!("{model}/tokenizer.json")).unwrap();
 	let pad_token = tok.id_to_token(config.pad_token_id as u32).unwrap();
 	tok.with_padding(Some(PaddingParams {
@@ -46,12 +49,70 @@ fn twin_load(model: &str) -> Twin {
 	Twin {
 		model: BertModel::load(vb, &config).unwrap(),
 		tok,
+		config_json,
 	}
 }
 
 fn twin_embed(t: &Twin, xs: &[&str]) -> Vec<f32> {
+	let sizes = match std::env::var("TWIN0135_CONCURRENCY") {
+		Ok(c) => s1_sizes(t, xs, c.parse().unwrap()),
+		Err(_) => xs.chunks(32).map(<[&str]>::len).collect(),
+	};
+	twin_embed_sized(t, xs, &sizes)
+}
+
+/// Record 0135's S1 partition, derived here independently of rnx: from 32
+/// texts at a time, halve until the batch's in-flight estimate (7 × hidden
+/// states, 2 × feed-forward states, 6 × attention, plus 2^20) is at most
+/// 2^28 / C values, and its activations within the per-batch caps.
+fn s1_sizes(t: &Twin, xs: &[&str], c: usize) -> Vec<usize> {
+	let config: serde_json::Value = serde_json::from_slice(&t.config_json).unwrap();
+	let get = |k: &str| config[k].as_u64().unwrap() as usize;
+	let (hidden, ffn, heads) = (
+		get("hidden_size"),
+		get("intermediate_size"),
+		get("num_attention_heads"),
+	);
+	let lens: Vec<usize> = xs
+		.iter()
+		.map(|x| t.tok.encode(*x, true).unwrap().get_ids().len())
+		.collect();
+	let share = (1usize << 28) / c;
+	let mut sizes = Vec::new();
+	let mut at = 0;
+	while at < xs.len() {
+		let mut b = 32.min(xs.len() - at);
+		loop {
+			let seq = *lens[at..at + b].iter().max().unwrap();
+			let estimate =
+				7 * b * seq * hidden + 2 * b * seq * ffn + 6 * b * heads * seq * seq + (1 << 20);
+			let fits = b * seq * hidden <= 1 << 22
+				&& b * seq * ffn <= 1 << 24
+				&& b * heads * seq * seq <= 1 << 25;
+			if fits && (b == 1 || estimate <= share) {
+				break;
+			}
+			b /= 2;
+		}
+		sizes.push(b);
+		at += b;
+	}
+	sizes
+}
+
+/// Record 0135: the same embedding on a given partition, each batch
+/// tokenized by the tokenizer itself, with its own padding.
+fn twin_embed_sized(t: &Twin, xs: &[&str], sizes: &[usize]) -> Vec<f32> {
+	assert_eq!(
+		sizes.iter().sum::<usize>(),
+		xs.len(),
+		"the partition covers every text"
+	);
 	let mut out = Vec::new();
-	for chunk in xs.chunks(32) {
+	let mut at = 0;
+	for &b in sizes {
+		let chunk = &xs[at..at + b];
+		at += b;
 		let enc = t.tok.encode_batch(chunk.to_vec(), true).unwrap();
 		let (b, seq) = (enc.len(), enc[0].len());
 		let ids: Vec<u32> = enc.iter().flat_map(|e| e.get_ids().to_vec()).collect();
@@ -118,7 +179,6 @@ fn twin_scores(a: &[f32], b: &[f32], w: usize) -> Vec<f32> {
 		.to_vec1::<f32>()
 		.unwrap()
 }
-
 
 // ---- the frozen chunking rule, as the Rune script states it ----
 
@@ -227,7 +287,6 @@ fn u1(dir: &str, model: &str, rubric: &str) {
 	}
 }
 
-
 fn ticket_texts(d2: &str) -> (Vec<i64>, Vec<String>, Vec<String>) {
 	let v: serde_json::Value = serde_json::from_slice(&std::fs::read(d2).unwrap()).unwrap();
 	let mut numbers = Vec::new();
@@ -238,7 +297,11 @@ fn ticket_texts(d2: &str) -> (Vec<i64>, Vec<String>, Vec<String>) {
 		let n = ws.len().min(180);
 		numbers.push(i["number"].as_i64().unwrap());
 		titles.push(i["title"].as_str().unwrap().to_owned());
-		texts.push(format!("{}\n{}", i["title"].as_str().unwrap(), ws[..n].join(" ")));
+		texts.push(format!(
+			"{}\n{}",
+			i["title"].as_str().unwrap(),
+			ws[..n].join(" ")
+		));
 	}
 	(numbers, titles, texts)
 }
@@ -346,6 +409,27 @@ fn main() {
 		"u1" => u1(&a[2], &a[3], &a[4]),
 		"u2" => u2(&a[2], &a[3], &a[4]),
 		"u3" => u3(&a[2], &a[3]),
+		// record 0135: PASSAGES (a JSON list) embedded on the partition in
+		// BATCHES (comma-separated sizes), as little-endian f32 bits
+		"embed" => {
+			let texts: Vec<String> =
+				serde_json::from_slice(&std::fs::read(&a[2]).unwrap()).unwrap();
+			let xs: Vec<&str> = texts.iter().map(String::as_str).collect();
+			let sizes: Vec<usize> = std::fs::read_to_string(&a[4])
+				.unwrap()
+				.trim()
+				.split(',')
+				.map(|v| v.parse().unwrap())
+				.collect();
+			let v = twin_embed_sized(&twin_load(&a[3]), &xs, &sizes);
+			let bytes: Vec<u8> = v.iter().flat_map(|x| x.to_le_bytes()).collect();
+			std::fs::write(&a[5], bytes).unwrap();
+		}
+		// record 0135: D1's passages, as U1 chunks them, for timing
+		"passages" => {
+			let texts: Vec<String> = load(&a[2]).1.into_iter().map(|p| p.1).collect();
+			println!("{}", serde_json::to_string(&texts).unwrap());
+		}
 		other => panic!("unknown command {other}"),
 	}
 }

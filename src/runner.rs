@@ -31,6 +31,23 @@ pub const BUDGET: usize = 2_000_000;
 /// The flag that sets the budget, taking the count as the argument after it.
 /// Read only before the script path, like `--debug-source`.
 pub const BUDGET_FLAG: &str = "--budget";
+/// Says which command launched the run, so a halt names a flag that exists
+/// on that path: `rnx project run` forwards its own `--budget` and passes
+/// `--budget-hint project`. The only accepted value is `project`.
+pub const BUDGET_HINT: &str = "--budget-hint";
+static PROJECT_LAUNCH: std::sync::OnceLock<()> = std::sync::OnceLock::new();
+/// Marks this run as launched by `rnx project run`.
+pub fn launched_by_project() {
+	let _ = PROJECT_LAUNCH.set(());
+}
+/// The flag a halt message tells the reader to raise.
+fn budget_advice() -> &'static str {
+	if PROJECT_LAUNCH.get().is_some() {
+		"rnx project run --budget"
+	} else {
+		BUDGET_FLAG
+	}
+}
 
 /// The largest number that is still a budget.
 ///
@@ -325,7 +342,10 @@ pub(crate) fn run_loaded(
 			// because the bound cannot be removed.
 			unplaced(
 				"halted",
-				&format!("{budget} instructions exceeded; {BUDGET_FLAG} N raises it"),
+				&format!(
+					"{budget} instructions exceeded; {} N raises it",
+					budget_advice()
+				),
 			);
 			return 1;
 		}
@@ -358,7 +378,8 @@ pub(crate) fn run_loaded(
 				unplaced(
 					"halted",
 					&format!(
-						"the budget of {budget} instructions was exhausted at that point; {BUDGET_FLAG} N raises it"
+						"the budget of {budget} instructions was exhausted at that point; {} N raises it",
+						budget_advice()
 					),
 				);
 			}

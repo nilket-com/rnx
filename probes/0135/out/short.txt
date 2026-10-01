@@ -1,0 +1,12 @@
+# 10,000-text corpus (0131), S0 and the default (S1, C = 32) interleaved, 5 runs each (2026-10-01T12:14:36-05:00)
+10000 passages
+s0: 10.2 s (plan 0.39 s, exec 9.8 s); 313 batches of sizes [16, 32]; W 28, max running 28, max in flight 813 MiB of 1024; allocator peak +382 MiB; rss 190 MiB, high-water 788 MiB
+default: 10.3 s (plan 0.36 s, exec 9.9 s); 316 batches of sizes [16, 32]; W 28, max running 28, max in flight 810 MiB of 1024; allocator peak +351 MiB; rss 792 MiB, high-water 792 MiB
+s0: 12.8 s (plan 0.38 s, exec 12.4 s); 313 batches of sizes [16, 32]; W 28, max running 28, max in flight 813 MiB of 1024; allocator peak +351 MiB; rss 831 MiB, high-water 831 MiB
+default: 12.6 s (plan 0.40 s, exec 12.2 s); 316 batches of sizes [16, 32]; W 28, max running 28, max in flight 810 MiB of 1024; allocator peak +353 MiB; rss 842 MiB, high-water 842 MiB
+s0: 12.6 s (plan 0.40 s, exec 12.2 s); 313 batches of sizes [16, 32]; W 28, max running 28, max in flight 809 MiB of 1024; allocator peak +362 MiB; rss 850 MiB, high-water 850 MiB
+default: 12.7 s (plan 0.39 s, exec 12.3 s); 316 batches of sizes [16, 32]; W 28, max running 28, max in flight 807 MiB of 1024; allocator peak +352 MiB; rss 852 MiB, high-water 852 MiB
+s0: 12.7 s (plan 0.40 s, exec 12.3 s); 313 batches of sizes [16, 32]; W 28, max running 28, max in flight 812 MiB of 1024; allocator peak +366 MiB; rss 859 MiB, high-water 859 MiB
+default: 12.6 s (plan 0.40 s, exec 12.2 s); 316 batches of sizes [16, 32]; W 28, max running 28, max in flight 809 MiB of 1024; allocator peak +359 MiB; rss 861 MiB, high-water 861 MiB
+s0: 12.6 s (plan 0.40 s, exec 12.2 s); 313 batches of sizes [16, 32]; W 28, max running 28, max in flight 813 MiB of 1024; allocator peak +365 MiB; rss 862 MiB, high-water 862 MiB
+default: 12.6 s (plan 0.40 s, exec 12.2 s); 316 batches of sizes [16, 32]; W 28, max running 28, max in flight 808 MiB of 1024; allocator peak +360 MiB; rss 864 MiB, high-water 864 MiB

@@ -46,20 +46,22 @@ pub(crate) fn command(
 	expected: &str,
 	map: Option<&Path>,
 	entry: &Path,
+	flags: &[OsString],
 	args: &[OsString],
 ) -> Result<Command, String> {
 	let checked = crate::artifact::check(executable, expected, None, true)?;
-	command_checked(&checked, map, entry, args)
+	command_checked(&checked, map, entry, flags, args)
 }
 pub(crate) fn command_checked(
 	checked: &crate::artifact::Checked,
 	map: Option<&Path>,
 	entry: &Path,
+	flags: &[OsString],
 	args: &[OsString],
 ) -> Result<Command, String> {
 	let executable = checked.path();
 	let mut command = Command::new(executable);
-	command.arg("run");
+	command.arg("run").args(flags);
 	if let Some(path) = map {
 		let bytes = crate::input::read(path, crate::input::DOCUMENT_LIMIT)?;
 		let handoff = Handoff::decode(&bytes)?;

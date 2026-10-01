@@ -1,0 +1,21 @@
+# D1 passages: probe0135 dump (rnx) against twin0133 embed (tokenizer padding) on the identical partition
+s0: 115 batches, plan 2.86 s, exec 418.3 s
+s0: BIT-EQUAL to twin, 5618688 bytes
+s1:8: 914 batches, plan 1.11 s, exec 68.9 s
+s1:8: BIT-EQUAL to twin, 5618688 bytes
+s1:16: 1805 batches, plan 1.14 s, exec 64.2 s
+s1:16: BIT-EQUAL to twin, 5618688 bytes
+
+# across partitions, against S0 (compare.py embeddings)
+s1-8:
+  3658 rows: lowest cosine 1.000000000 (at least 0.999999); 3658 of 3658 rows bit-identical
+PASS
+s1-16:
+  3658 rows: lowest cosine 1.000000000 (at least 0.999999); 3654 of 3658 rows bit-identical
+PASS
+# the chosen default (S1, C = 32), after the per-term estimate
+default: 3441 batches, plan 1.23 s, exec 63.4 s
+default (C = 32): BIT-EQUAL to twin
+default against S0:
+  3658 rows: lowest cosine 1.000000000 (at least 0.999999); 3625 of 3658 rows bit-identical
+PASS
