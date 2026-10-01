@@ -1,0 +1,13 @@
+# E4 session (runner0134, repl) and twin0133 e4
+252 tickets, 458 passages; embed 5751 ms
+3 pairs at or above 0.80:
+  0.8113900423049927  #724 Can't get custom language server support to work
+        #775 Rune LSP cargo broken with multi-binary crates
+  0.8623254895210266  #755 `#[rune::function]` fails when adding a 6th argument
+        #810 Any::downcast_borrow_ref works with anyhow but not eyre
+  0.8028238415718079  #909 async paramters error
+        #912 async is not Work
+### run returned to a prompt: True after 8.0 s
+e4: 3 rows (script), 3 (twin): EQUAL
+# E5
+e5: 11 rows (script), 11 (twin): EQUAL

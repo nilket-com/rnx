@@ -19,6 +19,8 @@
 //! - **ownership:** tensors are immutable and cheap to clone; every
 //!   argument is borrowed and reusable after Ok and Err;
 //! - **execution:** every Candle call runs on 0129's joined worker.
+mod composition;
+
 use crate::{Tensor, worker};
 use candle_core::{DType, Device, Tensor as CTensor};
 use rnx::rune::{self, ContextError, Module, Value, runtime::Protocol, runtime::Vec as RuneVec};
@@ -111,11 +113,20 @@ fn capped(op: &str, dims: &[usize], what: &str) -> Result<usize, String> {
 			dims.len()
 		));
 	}
+	// record 0137: every axis and stride product is also an i64, so the
+	// metadata a script reads back (`dims`, `dim`, `stride`) never wraps
+	let wide = || format!("{op}: {what} {dims:?} has an axis or stride above i64::MAX");
 	let mut stride = 1usize;
 	for &d in dims.iter().rev() {
+		if d > i64::MAX as usize {
+			return Err(wide());
+		}
 		stride = stride
 			.checked_mul(d)
 			.ok_or_else(|| format!("{op}: {what} {dims:?} overflows its stride products"))?;
+		if stride > i64::MAX as usize {
+			return Err(wide());
+		}
 	}
 	match dims.iter().try_fold(1usize, |a, &d| a.checked_mul(d)) {
 		Some(n) if n <= MAX_ELEMS => Ok(n),
@@ -158,6 +169,13 @@ fn axes(op: &str, rank: usize, v: &Value) -> Result<Vec<usize>, String> {
 	let values = v
 		.borrow_ref::<RuneVec>()
 		.map_err(|_| format!("{op}: axes are an integer or a vector of integers"))?;
+	// record 0137: the count first, before anything proportional to it
+	if values.len() > rank {
+		return Err(format!(
+			"{op}: {} axes for a tensor of rank {rank}",
+			values.len()
+		));
+	}
 	let mut out = Vec::with_capacity(values.len());
 	for x in values.iter() {
 		let d = rune::from_value::<i64>(x.clone())
@@ -1196,6 +1214,7 @@ pub(crate) fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, Conte
 	m.function("softmax", softmax).build()?;
 	m.function("log_softmax", log_softmax).build()?;
 	m.function("softmax_last_dim", softmax_last_dim).build()?;
+	composition::build(m)?;
 	Ok(vec![
 		(
 			"candle::Tensor::from_vec".into(),

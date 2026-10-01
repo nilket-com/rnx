@@ -1,0 +1,23 @@
+# after push: ad94814, clean worktree binary, fresh cache; E5 and E4 in :dep candle sessions, then probes/0136/replay.sh in :dep polars candle sessions (TWIN = main tree twin0133, committed)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+e5: 11 rows (script), 11 (twin): EQUAL
+session: OK (prompt True, marker True, returned Ok, errors 0)
+e4: 3 rows (script), 3 (twin): EQUAL
+### :dep returned to a prompt: True after 71.7 s
+### run returned to a prompt: True after 0.0 s
+### :dep returned to a prompt: True after 16.4 s
+### run returned to a prompt: True after 8.0 s
+0136 replay under :dep polars candle exit 0
+session: OK (prompt True, marker True, returned Ok, errors 0)
+  u1: 25 rows, BIT-EQUAL
+PASS
+hit@1 5 of 5, hit@5 5 of 5
+session: OK (prompt True, marker True, returned Ok, errors 0)
+  u1: 25 rows, BIT-EQUAL
+PASS
+hit@1 4 of 5, hit@5 5 of 5
+replay: all checks passed
+### :dep returned to a prompt: True after 385.9 s
+### run returned to a prompt: True after 70.9 s
+### :dep returned to a prompt: True after 17.7 s
+### run returned to a prompt: True after 80.3 s

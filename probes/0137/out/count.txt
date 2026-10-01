@@ -1,0 +1,6 @@
+probes/0134/manifest.tsv: 97 core identities
+probes/0137/manifest.tsv: 40 core identities
+denominator: 220 public Tensor methods
+per family: {'A': 21, 'B': 7, 'C': 47, 'D': 18, 'E': 2, 'F': 2, 'G': 23, 'H': 8, 'I': 9}
+core identities: 137 (62.3%), missing: [], duplicates: []
+counted apart: {'nn': 3, 'derived': 2}
