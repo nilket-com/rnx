@@ -7,6 +7,7 @@
 //! - `twin0133 u2 D1 D2 MODEL`: U2's pairs in each band, as
 //!   `band\ti\tj\tscore` lines (D2 tickets, then D1 documents).
 //! - `twin0133 u3 D2 MODEL`: U3's edges and connected components.
+//! - `twin0133 e4 D2 MODEL`, `twin0133 e5`: record 0137's examples.
 //! - `twin0133 passages D1`, `twin0133 embed PASSAGES MODEL BATCHES OUT`:
 //!   record 0135's passages, and their embedding on a given partition.
 use candle_core::{DType, Device, Tensor};
@@ -548,6 +549,137 @@ fn main() {
 			let v = twin_embed_sized(&twin_load(&a[3]), &xs, &sizes);
 			let bytes: Vec<u8> = v.iter().flat_map(|x| x.to_le_bytes()).collect();
 			std::fs::write(&a[5], bytes).unwrap();
+		}
+		// record 0137, E4: whole tickets chunked (0136, overlap 0), embedded on
+		// 0135's S1 partition (C = 32), pooled per ticket by the same Candle
+		// calls as candle::segment_mean, renormalized, scored; the pairs at or
+		// above 0.80, as the script writes them
+		"e4" => {
+			let t = twin_load(&a[3]);
+			let v: serde_json::Value =
+				serde_json::from_slice(&std::fs::read(&a[2]).unwrap()).unwrap();
+			let mut numbers = Vec::new();
+			let mut passages = Vec::new();
+			let mut owner: Vec<u32> = Vec::new();
+			for (k, i) in v.as_array().unwrap().iter().enumerate() {
+				numbers.push(i["number"].as_i64().unwrap());
+				let text = format!(
+					"{}\n{}",
+					i["title"].as_str().unwrap(),
+					i["body"].as_str().unwrap()
+				);
+				for (s, e) in token_chunks(&t.tok, &text, 256, 0).unwrap() {
+					passages.push(text[s..e].to_owned());
+					owner.push(k as u32);
+				}
+			}
+			let n = numbers.len();
+			let refs: Vec<&str> = passages.iter().map(String::as_str).collect();
+			let sizes = s1_sizes(&t, &refs, 32);
+			let flat = twin_embed_sized(&t, &refs, &sizes);
+			let cpu = &Device::Cpu;
+			let rows = refs.len();
+			let emb = Tensor::from_vec(flat, (rows, 384), cpu).unwrap();
+			let seg = Tensor::from_vec(owner, rows, cpu).unwrap();
+			let sums = Tensor::zeros((n, 384), DType::F32, cpu)
+				.unwrap()
+				.index_add(&seg, &emb, 0)
+				.unwrap();
+			let ones = Tensor::ones(rows, DType::F32, cpu).unwrap();
+			let counts = Tensor::zeros(n, DType::F32, cpu)
+				.unwrap()
+				.index_add(&seg, &ones, 0)
+				.unwrap();
+			let pooled = sums.broadcast_div(&counts.unsqueeze(1).unwrap()).unwrap();
+			let norms = pooled
+				.sqr()
+				.unwrap()
+				.sum_keepdim(1)
+				.unwrap()
+				.sqrt()
+				.unwrap();
+			let unit = pooled.broadcast_div(&norms).unwrap();
+			let sims = unit
+				.matmul(&unit.t().unwrap())
+				.unwrap()
+				.to_vec2::<f32>()
+				.unwrap();
+			println!("issue_a\tissue_b\tscore");
+			for x in 0..n {
+				for y in x + 1..n {
+					if sims[x][y] as f64 >= 0.80 {
+						println!("#{}\t#{}\t{}", numbers[x], numbers[y], sims[x][y]);
+					}
+				}
+			}
+		}
+		// record 0137, E5: the tour's results, by the same Candle calls
+		"e5" => {
+			let cpu = &Device::Cpu;
+			let row = |name: &str, t: &Tensor| {
+				let dims: String = t.dims().iter().map(|d| format!("{d},")).collect();
+				let vals: String = t
+					.flatten_all()
+					.unwrap()
+					.to_vec1::<f32>()
+					.unwrap()
+					.iter()
+					.map(|x| format!("{x},"))
+					.collect();
+				println!("{name}\t{dims}\t{vals}");
+			};
+			let a = Tensor::arange(0f32, 12., cpu)
+				.unwrap()
+				.reshape((3, 4))
+				.unwrap();
+			let b = Tensor::arange(100f32, 108., cpu)
+				.unwrap()
+				.reshape((2, 4))
+				.unwrap();
+			let joined = Tensor::cat(&[&a, &b], 0).unwrap();
+			row("cat", &joined);
+			let stacked = Tensor::stack(&[&a, &a], 1).unwrap();
+			row("stack", &stacked);
+			row("permute", &stacked.permute((2, 0, 1)).unwrap());
+			let pick = Tensor::from_vec(vec![4u32, 0, 2], 3, cpu).unwrap();
+			row("index_select", &joined.index_select(&pick, 0).unwrap());
+			let g =
+				Tensor::from_vec(vec![3i64, 2, 1, 0, 0, 1, 2, 3, 1, 1, 1, 1], (3, 4), cpu).unwrap();
+			row("gather", &a.gather(&g, 1).unwrap());
+			row("cumsum", &a.cumsum(1).unwrap());
+			row(
+				"unfold",
+				&Tensor::arange(0f32, 6., cpu)
+					.unwrap()
+					.unfold(0, 3, 1)
+					.unwrap(),
+			);
+			let patch = Tensor::full(-1f32, (2, 2), cpu).unwrap();
+			row(
+				"slice_assign",
+				&a.slice_assign(&[0..2, 1..3], &patch).unwrap(),
+			);
+			row("a_unchanged", &a);
+			let gi = Tensor::from_vec(vec![1u32, 0, 1], 3, cpu).unwrap();
+			row(
+				"index_add",
+				&Tensor::zeros((2, 4), DType::F32, cpu)
+					.unwrap()
+					.index_add(&gi, &a, 0)
+					.unwrap(),
+			);
+			let sums = Tensor::zeros((2, 4), DType::F32, cpu)
+				.unwrap()
+				.index_add(&gi, &a, 0)
+				.unwrap();
+			let counts = Tensor::zeros(2, DType::F32, cpu)
+				.unwrap()
+				.index_add(&gi, &Tensor::ones(3, DType::F32, cpu).unwrap(), 0)
+				.unwrap();
+			row(
+				"segment_mean",
+				&sums.broadcast_div(&counts.unsqueeze(1).unwrap()).unwrap(),
+			);
 		}
 		// record 0136: every passage's byte range, D1 bodies (as U1 splits a
 		// document) then D2 tickets (title, newline, body), at an overlap
