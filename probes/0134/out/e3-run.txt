@@ -1,0 +1,47 @@
+Q1: how does a session add a native adapter with :dep?
+DataFrame: 5 rows × 3 columns
+"record": string | "title": string | "Q1": f64
+"0001" | "Rune scripting 0001: the first release" | 0.4818545877933502
+"0129" | "rnx 0129: Candle, scoped to one cross-adapter workflow" | 0.42273592948913574
+"0070" | "0070 gate 3: costs, regression and documentation" | 0.41114458441734314
+"0123" | "rnx 0123 evidence: schema display, `cast` with a `DataType`, and a display check" | 0.4019533693790436
+"0063" | "rnx 0063: a session can request its next executable" | 0.39582690596580505
+
+Q2: why was the thread-local test limit rejected?
+DataFrame: 5 rows × 3 columns
+"record": string | "title": string | "Q2": f64
+"0130" | "rnx 0130: test limit isolation (the in_memory_io flake)" | 0.5223936438560486
+"0130" | "rnx 0130 evidence: test limit isolation" | 0.520822286605835
+"0025" | "rnx 0025 evidence: the same contracts on Windows" | 0.5052539110183716
+"0056" | "rnx 0056: gate 2, the embedding host keeps control" | 0.4713742733001709
+"0117" | "rnx 0117 evidence: trait arguments" | 0.4675295054912567
+
+Q3: how is a borrowed Polars group-by kept valid during aggregation?
+DataFrame: 5 rows × 3 columns
+"record": string | "title": string | "Q3": f64
+"0126" | "rnx 0126: the eager group-by, with an explicit ownership model for Polars' borro"…[truncated] | 0.6155060529708862
+"0126" | "rnx 0126 evidence: the eager group-by, with Polars' borrowed `GroupBy` as a rebu"…[truncated] | 0.5830556154251099
+"0089" | "rnx 0089: integer function-generic arg extrema" | 0.49188363552093506
+"0088" | "rnx 0088: owned `Cow` chunked-array returns" | 0.49176040291786194
+"0069" | "0069 gate 4: costs, regression and documentation" | 0.487170934677124
+
+Q4: what limits does the neutral dense block enforce?
+DataFrame: 5 rows × 3 columns
+"record": string | "title": string | "Q4": f64
+"0082" | "0082 borrowed slices: evidence" | 0.4709029495716095
+"0129" | "rnx 0129 evidence: Candle, scoped to one cross-adapter workflow" | 0.4251244366168976
+"0118" | "rnx 0118 evidence: in-memory I/O, through a closed table of std facts" | 0.4044288396835327
+"0093" | "0093 checked integer read-back: evidence" | 0.38822484016418457
+"0100" | "0100 owned Boolean, string and binary chunk snapshots: evidence" | 0.38113105297088623
+
+Q5: how is a large dataframe shown at the prompt without printing everything?
+DataFrame: 5 rows × 3 columns
+"record": string | "title": string | "Q5": f64
+"0068" | "rnx 0068: interactive frames show a bounded preview" | 0.4938517212867737
+"0124" | "rnx 0124: the preview shows every dtype, and keeps a frame's last columns" | 0.4406309425830841
+"0058" | "0058 gate 3: bounded native preview" | 0.4095815122127533
+"0068" | "0068 gate 1: the presentation seam" | 0.40472903847694397
+"0068" | "0068 gate 4: costs, regression and the walkthrough" | 0.39290860295295715
+
+WORKFLOW OK e3
+e3 402.57 s

@@ -20,6 +20,7 @@ use std::io::Read;
 use std::sync::Arc;
 
 mod display;
+pub mod tensor_ops;
 pub mod text;
 mod worker;
 
@@ -282,8 +283,9 @@ pub fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, String> {
 		.map_err(err)?;
 	m.associated_function("forward", forward).map_err(err)?;
 	m.associated_function("dims", mlp_dims).map_err(err)?;
+	let ops = tensor_ops::build(m).map_err(err)?;
 	let text = text::build(m).map_err(err)?;
-	Ok(text.into_iter().chain(vec![
+	Ok(ops.into_iter().chain(text).chain(vec![
 		(
 			"candle::Tensor".into(),
 			"Tensor: a CPU tensor; its display is bounded (dtype, shape, at most 8x8 values)",
@@ -619,10 +621,8 @@ mod tests {
 			"Tensor[f32; 2x2]\n0.0 | 0.5\n1.0 | 1.5"
 		);
 		let one_d = CTensor::zeros(3, DType::F32, &Device::Cpu).unwrap();
-		assert_eq!(
-			display::render(&one_d),
-			"Tensor[f32; 3] (values shown for 2-D tensors only)"
-		);
+		// record 0134: every rank now shows its values
+		assert_eq!(display::render(&one_d), "Tensor[f32; 3]\n0.0 | 0.0 | 0.0");
 	}
 
 	#[test]

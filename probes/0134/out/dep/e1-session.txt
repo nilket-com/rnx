@@ -1,0 +1,70 @@
+### :dep returned to a prompt: True after 29.8 s
+Tensor[f32; 3658x5]
+0.071661636 | 0.18667667 | 0.03522258 | 0.037929952 | 0.037389357
+0.0943275 | 0.12265409 | 0.08390394 | 0.05446812 | 0.08068046
+0.28700343 | 0.23021099 | 0.23664732 | 0.13738655 | -0.008655516
+0.18276852 | 0.252439 | 0.03420464 | 0.09082629 | 0.31371555
+0.33280617 | 0.19069342 | 0.04071369 | 0.037391745 | 0.182856
+0.31811896 | 0.18456066 | 0.14282121 | 0.11976312 | 0.117167756
+0.24356954 | 0.12569821 | 0.12063382 | 0.21368499 | 0.005367001
+0.4818546 | 0.21049508 | 0.20437692 | 0.0804392 | 0.013476848
+…
+how does a session add a native adapter with :dep?
+  0.4818545877933502  0001  Rune scripting 0001: the first release
+      a runtime error or an instruction-budget halt, the input's candidate bindings and rebindings are not published: a name k
+  0.42273592948913574  0129  rnx 0129: Candle, scoped to one cross-adapter workflow
+      - **Composition.** A session with `:dep polars candle` runs one executable with one Rune `Context`. Each adapter's modul
+  0.41114458441734314  0070  0070 gate 3: costs, regression and documentation
+      Feature audits (`feature-checks.json`): the stock, runner-only and server-runtime dependency graphs carry no Polars and 
+  0.4019533693790436  0123  rnx 0123 evidence: schema display, `cast` with a `DataType`, and a display check
+      Self-test `protocol_instantiations` covers: - the row-level refusals; - a mispaired carrier (`Column` for Schema's `Debu
+  0.39582690596580505  0063  rnx 0063: a session can request its next executable
+      ## Guardrails and later work This is a reviewable proposed UX, including its one-time scratch runtime setup and its expl
+why was the thread-local test limit rejected?
+  0.5223936438560486  0130  rnx 0130: test limit isolation (the in_memory_io flake)
+      **Rejected: a thread-local override.** It was tried first and disproven: `borrowed_slices` lowers the bound and expects 
+  0.520822286605835  0130  rnx 0130 evidence: test limit isolation
+      **Two details:** - The lock is poison-tolerant, so one failure doesn't cascade. - `generic_impls`' bound test previously
+  0.5052539110183716  0025  rnx 0025 evidence: the same contracts on Windows
+      **Raising the stack rnx runs a script on was not done here.** Section C names the 1 MB main thread against Linux's 8 MB 
+  0.4713742733001709  0056  rnx 0056: gate 2, the embedding host keeps control
+      This establishes a real still-owned native poll with host-controlled release. It does not claim safe native cancellation
+  0.4675295054912567  0117  rnx 0117 evidence: trait arguments
+      With about 385 more registrations, the single generated `install` (5,488 calls in one frame) overflowed the 2 MiB test-t
+how is a borrowed Polars group-by kept valid during aggregation?
+  0.6155060529708862  0126  rnx 0126: the eager group-by, with an explicit ownership model for Polars' borrowed `GroupBy`
+      A script value can't hold `&'a DataFrame`: nothing ties the script's frame to the borrow, and the script could drop or r
+  0.5830556154251099  0126  rnx 0126 evidence: the eager group-by, with Polars' borrowed `GroupBy` as a rebuilt borrow
+      **`support::GroupBySnapshot`** (`adapters/polars/src/generated/support.rs`, hand-written) holds `df`, `keys`, `groups` a
+  0.49188363552093506  0089  rnx 0089: integer function-generic arg extrema
+      The first concrete policy covers eight integer wrapper identities: `Int8Chunked`, `Int16Chunked`, `Int32Chunked`, `Int64
+  0.49176040291786194  0088  rnx 0088: owned `Cow` chunked-array returns
+      Pinned Polars 0.55.2 `polars-core/src/chunked_array/ops/chunkops.rs:162-182` returns `Cow::Borrowed(self)` for one chunk
+  0.487170934677124  0069  0069 gate 4: costs, regression and documentation
+      | step | baseline (three runs) | product (three runs) | Compiling entries | saved (median) | |---|---|---|---|---| | fir
+what limits does the neutral dense block enforce?
+  0.4709029495716095  0082  0082 borrowed slices: evidence
+      `support::copy_slice` checks `n > limit || used + n > limit` before allocating, where `used` is the cumulative count of 
+  0.4251244366168976  0129  rnx 0129 evidence: Candle, scoped to one cross-adapter workflow
+      **Policy boundaries** (`adapters/polars/tests/dense.rs`, 5 tests), each tested as a policy: - **f64:** an `i64` of 2⁵³ i
+  0.4044288396835327  0118  rnx 0118 evidence: in-memory I/O, through a closed table of std facts
+      The sink's bound is the materialize limit when it is created, as 0116's contract specifies: 1 MiB (`1 << 20`, shared wit
+  0.38822484016418457  0093  0093 checked integer read-back: evidence
+      Codex asked for a strict allowlist rather than an assumption about practical memory, and the source supports that. `Chun
+  0.38113105297088623  0100  0100 owned Boolean, string and binary chunk snapshots: evidence
+      1. **Allocation before the bound.** It collected every downcast chunk into a `Vec<&A>` before checking the bound, so sto
+how is a large dataframe shown at the prompt without printing everything?
+  0.4938517212867737  0068  rnx 0068: interactive frames show a bounded preview
+      Reuse the preview oracle: empty, narrow, wide and tall frames, nulls, long UTF-8 cells, controls, directional characters
+  0.4406309425830841  0124  rnx 0124: the preview shows every dtype, and keeps a frame's last columns
+      - **Scope:** it inspects bounded slices only: at most 10 rows and 8 columns, each scalar cut at 80 characters, 8,192 byt
+  0.4095815122127533  0058  0058 gate 3: bounded native preview
+      Names and cells can be clipped while dimensions remain complete. Row/column omissions have their own explicit counts. By
+  0.40472903847694397  0068  0068 gate 1: the presentation seam
+      **Journey** (`journey.json`). A real generated application with `presentation = true` locks and builds (114.2 s cold Pol
+  0.39290860295295715  0068  0068 gate 4: costs, regression and the walkthrough
+      Derived: presenting the small frame costs 0.06–0.07 ms over suppressing it, the large frame 0.15 ms — twice the small on
+WORKFLOW OK e1
+[5] Ok(())
+[6] > 
+### run returned to a prompt: True after 360.3 s

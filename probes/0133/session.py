@@ -63,7 +63,8 @@ def prompt_after_newline(limit):
 pump(until_idle=1.0, limit=30)
 if not extra:
     t = time.time()
-    send(":dep polars candle")
+    # RNX_DEP picks the adapters (record 0134's candle-only examples)
+    send(":dep " + os.environ.get("RNX_DEP", "polars candle"))
     ok = prompt_after_newline(1500)
     log.write(f"\n### :dep returned to a prompt: {ok} after {time.time() - t:.1f} s\n".encode())
 for line in open(script).read().splitlines():

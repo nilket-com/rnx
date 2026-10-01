@@ -183,8 +183,10 @@ pub fn completeness(input: &str) -> Completeness {
 	let Some(span) = first_error_span(input) else {
 		return Completeness::Complete;
 	};
+	// Rune places the end-of-input error before trailing comments and
+	// whitespace, so the error is at the end when only trivia follows it.
 	let end = span.range().end;
-	if end < input.len() {
+	if end < input.len() && !only_trivia(&input[end..]) {
 		return Completeness::Complete;
 	}
 	if span.range().is_empty() {
@@ -197,6 +199,12 @@ pub fn completeness(input: &str) -> Completeness {
 		}
 		_ => Completeness::Complete,
 	}
+}
+fn only_trivia(text: &str) -> bool {
+	matches!(
+		rune::parse::Parser::new(text, SourceId::empty(), false).is_eof(),
+		Ok(true)
+	)
 }
 fn first_error_span(input: &str) -> Option<ast::Span> {
 	let mut parser = rune::parse::Parser::new(input, SourceId::empty(), false);
@@ -1154,6 +1162,10 @@ mod tests {
 			"let o = #{a: 1,",
 			// A `let` needs its `;` in Rune; without it the parser wants more.
 			"let s = \"closed\"",
+			// A trailing line comment doesn't finish an open block (0134's
+			// examples pasted line by line).
+			"fn f() {\n  let a = 1;  // note",
+			"fn f() {\n  let a = 1; // note\n",
 		] {
 			assert_eq!(completeness(input), Completeness::Incomplete, "{input:?}");
 		}
@@ -1172,6 +1184,8 @@ mod tests {
 			"[1, 2, 3]",
 			"let = 5;",
 			"1 +* 2;",
+			// Trivia after a real error doesn't hide it.
+			"let x = ; // note",
 		] {
 			assert_eq!(completeness(input), Completeness::Complete, "{input:?}");
 		}
