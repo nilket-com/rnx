@@ -333,17 +333,33 @@ fn fits(config: &Config, batch: usize, seq: usize, caps: Caps) -> bool {
 
 /// Record 0132: the in-flight budget for one `embed` call, in f32 values
 /// (2²⁸, 1 GiB). Batch estimates are calibrated to Candle's measured
-/// transients (`TRANSIENT`), so the budget tracks real memory; it is still an
+/// transients (`HIDDEN`, `FFN`, `ATTENTION`, `FIXED`), so the budget tracks real memory; it is still an
 /// estimate for this invocation, not a process-wide or allocator ceiling.
 pub const AGG: usize = 1 << 28;
-/// A batch's measured allocator peak is up to 3.70 times its activation
-/// formula (attention dominated, 32 × 256 tokens; 2.29 for short texts;
-/// `probes/0132/out/calibrate.txt`): the estimate is the formula times 4.
-pub const TRANSIENT: usize = 4;
+/// Record 0135's calibration: a batch's allocator peak, warmed and alone,
+/// across the configurations the loader admits (`probes/0135/out/configs.tsv`:
+/// hidden-, feed-forward- and attention-dominated extremes, 1 to 24 layers)
+/// and the pinned model from 64 to 512 tokens (`out/calibrate.txt`), is at
+/// most 5.9 hidden-state tensors, 2.2 feed-forward-state tensors and 5.3
+/// attention-score tensors, plus a few MiB. Each coefficient is rounded up.
+/// 0132's single factor of 4 on hidden plus feed-forward plus attention was
+/// calibrated on one model at 256 tokens: it fell short at 512 tokens and
+/// for hidden-dominated configurations (up to 2.27 × its estimate).
+pub const HIDDEN: usize = 7;
+pub const FFN: usize = 2;
+pub const ATTENTION: usize = 6;
+/// Per batch, in values (4 MiB).
+pub const FIXED: usize = 1 << 20;
+/// Record 0135's S1: a batch is halved until its in-flight estimate is at
+/// most `AGG / CONCURRENCY`, so long texts run several batches at once
+/// (`probes/0135/out/schedule.txt`). Short texts are unaffected: their
+/// 32-text batches are already below the share.
+pub const CONCURRENCY: usize = 32;
 /// At most 32 batches run at once.
 pub const MAX_WORKERS: usize = 32;
 // a lone batch at 0131's caps always fits the budget: no deadlock
-const _: () = assert!(TRANSIENT * (CAPS.hidden + CAPS.ffn + CAPS.attention) <= AGG);
+const _: () =
+	assert!(HIDDEN * CAPS.hidden + FFN * CAPS.ffn + ATTENTION * CAPS.attention + FIXED <= AGG);
 
 /// The planned ids and mask: 2 × 4 bytes × 32,768 texts × 512 tokens, the
 /// largest input 0131's contract admits (128 MiB; 64 MiB at the pinned model).
@@ -362,17 +378,21 @@ struct Planned {
 	estimate: usize,
 }
 
-/// A batch's in-flight estimate: hidden and feed-forward states plus the
-/// attention scores, times the measured transient factor, checked.
+/// A batch's in-flight estimate: its hidden states, feed-forward states and
+/// attention scores, each times its measured coefficient, plus the per-batch
+/// overhead, checked.
 fn estimate(c: &Config, b: usize, seq: usize) -> Option<usize> {
 	let bs = b.checked_mul(seq)?;
-	bs.checked_mul(c.hidden_size.checked_add(c.intermediate_size)?)?
+	bs.checked_mul(c.hidden_size)?
+		.checked_mul(HIDDEN)?
+		.checked_add(bs.checked_mul(c.intermediate_size)?.checked_mul(FFN)?)?
 		.checked_add(
 			b.checked_mul(c.num_attention_heads)?
 				.checked_mul(seq)?
-				.checked_mul(seq)?,
+				.checked_mul(seq)?
+				.checked_mul(ATTENTION)?,
 		)?
-		.checked_mul(TRANSIENT)
+		.checked_add(FIXED)
 }
 
 /// Per-call controls. Production uses the defaults; the test-support entry
@@ -392,6 +412,9 @@ pub struct Knobs {
 	/// Sleep this long (ms) inside a batch, before publication, so another
 	/// batch finishes first.
 	pub delay: Vec<(usize, u64)>,
+	/// Record 0135's S1 target concurrency, `CONCURRENCY` when unset; 1 is
+	/// 0131's batching (S0).
+	pub concurrency: Option<usize>,
 }
 
 /// What one call did, returned with its result.
@@ -434,6 +457,9 @@ fn plan(
 	let mut planned: Vec<Planned> = Vec::new();
 	let mut payload = 0usize;
 	let mut at = 0;
+	let pad_id = inner.config.pad_token_id as u32;
+	let mut cache: std::collections::VecDeque<Vec<u32>> = std::collections::VecDeque::new();
+	let mut cache_at = 0;
 	while at < n {
 		let index = planned.len();
 		let failed = |e: String| Some(e);
@@ -443,18 +469,43 @@ fn plan(
 				failed(format!("{op}: injected planning failure at batch {index}")),
 			);
 		}
+		// Each text is tokenized once into `cache`, unpadded (truncation is
+		// per text), and a batch pads its own texts to its longest on the
+		// right with the pad id and a zero mask: exactly the tokenizer's
+		// `BatchLongest` padding for that batch, so halving re-pads instead of
+		// re-tokenizing. The cache holds at most one batch window of texts.
 		let mut b = BATCH.min(n - at);
-		let encodings = loop {
+		while cache_at < at {
+			cache.pop_front();
+			cache_at += 1;
+		}
+		let have = cache_at + cache.len();
+		if have < at + b {
 			let encodings = match inner
 				.tokenizer
-				.encode_batch(strs[at..at + b].to_vec(), true)
+				.encode_batch(strs[have..at + b].to_vec(), true)
 			{
 				Ok(e) => e,
 				Err(e) => return (planned, failed(format!("{op}: {e}"))),
 			};
-			let seq = encodings[0].len();
-			if fits(&inner.config, b, seq, caps) {
-				break encodings;
+			for e in encodings {
+				let real = e.get_attention_mask().iter().filter(|&&m| m != 0).count();
+				cache.push_back(e.get_ids()[..real].to_vec());
+			}
+		}
+		let longest = |b: usize| cache.iter().take(b).map(Vec::len).max().unwrap_or(0);
+		loop {
+			let seq = longest(b);
+			// S1: a smaller batch, so several long ones fit the budget at once
+			// C = 1 is 0131's batching exactly: no share, so a batch over the
+			// budget is refused below rather than halved
+			let share = match knobs.concurrency.unwrap_or(CONCURRENCY) {
+				0 | 1 => usize::MAX,
+				c => agg / c,
+			};
+			let shared = b == 1 || estimate(&inner.config, b, seq).is_some_and(|e| e <= share);
+			if fits(&inner.config, b, seq, caps) && shared {
+				break;
 			}
 			if b == 1 {
 				return (
@@ -465,9 +516,9 @@ fn plan(
 				);
 			}
 			b /= 2;
-		};
-		let seq = encodings[0].len();
-		if seq > inner.max_seq || encodings.iter().any(|e| e.len() != seq) {
+		}
+		let seq = longest(b);
+		if seq > inner.max_seq {
 			return (
 				planned,
 				failed(format!(
@@ -502,8 +553,8 @@ fn plan(
 		}
 		let mut ids = Vec::with_capacity(b * seq);
 		let mut mask = Vec::with_capacity(b * seq);
-		for e in &encodings {
-			for &id in e.get_ids() {
+		for text in cache.iter().take(b) {
+			for &id in text {
 				if id as usize >= inner.config.vocab_size {
 					return (
 						planned,
@@ -515,10 +566,11 @@ fn plan(
 				}
 				ids.push(id);
 			}
-			mask.extend_from_slice(e.get_attention_mask());
+			ids.resize(ids.len() + seq - text.len(), pad_id);
+			mask.resize(mask.len() + text.len(), 1);
+			mask.resize(mask.len() + seq - text.len(), 0);
 		}
-		drop(encodings);
-		if let Some(row) = mask.chunks(seq).position(|m| m.iter().all(|&x| x == 0)) {
+		if let Some(row) = cache.iter().take(b).position(Vec::is_empty) {
 			return (
 				planned,
 				failed(format!(
@@ -540,16 +592,13 @@ fn plan(
 
 /// One batch through the model: the mask into the model and the pooling,
 /// mean pooled, normalized as `x / max(‖x‖, 1e-12)`.
-fn run_batch(inner: &Inner, p: &Planned, op: &str) -> Result<Vec<f32>, String> {
+fn run_batch(model: &BertModel, p: &Planned, op: &str) -> Result<Vec<f32>, String> {
 	let cpu = &Device::Cpu;
 	let e = |e: candle_core::Error| format!("{op}: {e}");
 	let input = CTensor::from_slice(&p.ids, (p.b, p.seq), cpu).map_err(e)?;
 	let types = input.zeros_like().map_err(e)?;
 	let mask = CTensor::from_slice(&p.mask, (p.b, p.seq), cpu).map_err(e)?;
-	let hidden = inner
-		.model
-		.forward(&input, &types, Some(&mask))
-		.map_err(e)?;
+	let hidden = model.forward(&input, &types, Some(&mask)).map_err(e)?;
 	let m = mask
 		.to_dtype(DType::F32)
 		.map_err(e)?
@@ -721,7 +770,7 @@ fn execute(
 				if knobs.fail_at.contains(&i) {
 					return Err(format!("{op}: injected failure at batch {i}"));
 				}
-				let rows = run_batch(inner, &planned[i], op)?;
+				let rows = run_batch(&inner.model, &planned[i], op)?;
 				if knobs.panic_after_run.contains(&i) {
 					panic!("injected panic after batch {i} ran");
 				}
@@ -894,6 +943,80 @@ pub fn last_batches() -> Vec<usize> {
 		.lock()
 		.unwrap_or_else(|e| e.into_inner())
 		.clone()
+}
+
+/// Test support (record 0135's calibration): whether `b` texts at the
+/// encoder's full length are one batch under the activation caps, so a
+/// shape the caps rule out is skipped by name rather than split.
+#[cfg(feature = "test-support")]
+pub fn full_length_fits(this: &TextEncoder, b: usize) -> bool {
+	fits(&this.0.config, b, this.0.max_seq, CAPS)
+}
+
+/// Test support (record 0135's calibration): the encoder's full length,
+/// and the in-flight estimate of `b` texts at `seq` tokens, so the probe can
+/// recover a run's actual sequence length from its estimate and require the
+/// full length.
+#[cfg(feature = "test-support")]
+pub fn max_seq(this: &TextEncoder) -> usize {
+	this.0.max_seq
+}
+#[cfg(feature = "test-support")]
+pub fn estimate_for(this: &TextEncoder, b: usize, seq: usize) -> Option<usize> {
+	estimate(&this.0.config, b, seq)
+}
+
+/// How `synthetic_batch` names a shape the caps rule out, the one refusal
+/// the calibration grid skips by name.
+#[cfg(feature = "test-support")]
+pub const ABOVE_CAPS: &str = "above the activation caps";
+
+/// Test support (record 0135's calibration): a model of any configuration
+/// the loader admits, with zero weights, and one batch of `b` texts at `seq`
+/// tokens (`real` of them unmasked per text) through the adapter's own
+/// `run_batch`. Returns the batch's in-flight estimate in values, and a
+/// runner for that batch, so the probe can warm it and measure its peak.
+#[cfg(feature = "test-support")]
+pub fn synthetic_batch(
+	hidden: usize,
+	ffn: usize,
+	heads: usize,
+	layers: usize,
+	b: usize,
+	seq: usize,
+	real: usize,
+) -> Result<(usize, impl Fn() -> Result<(), String>), String> {
+	let op = "synthetic_batch";
+	let config = Config {
+		vocab_size: 8,
+		hidden_size: hidden,
+		num_hidden_layers: layers,
+		num_attention_heads: heads,
+		intermediate_size: ffn,
+		hidden_dropout_prob: 0.0,
+		max_position_embeddings: 512,
+		type_vocab_size: 1,
+		pad_token_id: 0,
+		..Config::default()
+	};
+	if heads == 0 || !hidden.is_multiple_of(heads) || seq > 512 || real == 0 || real > seq {
+		return Err(format!("{op}: not an admitted shape"));
+	}
+	if !fits(&config, b, seq, CAPS) {
+		return Err(format!("{op}: {b} x {seq} is {ABOVE_CAPS}"));
+	}
+	let estimate = estimate(&config, b, seq).ok_or_else(|| format!("{op}: overflow"))?;
+	let vb = VarBuilder::zeros(DType::F32, &Device::Cpu);
+	let model = BertModel::load(vb, &config).map_err(|e| format!("{op}: {e}"))?;
+	let row: Vec<u32> = (0..seq).map(|i| u32::from(i < real)).collect();
+	let p = Planned {
+		b,
+		seq,
+		ids: (0..b * seq).map(|i| (i % 7) as u32 + 1).collect(),
+		mask: row.repeat(b),
+		estimate,
+	};
+	Ok((estimate, move || run_batch(&model, &p, op).map(|_| ())))
 }
 
 /// Test support: `embed` with lowered caps, so a batch halves at the pinned
@@ -1853,7 +1976,7 @@ mod tests {
 		let (_, t) = with(&enc, &texts, workers(8));
 		let largest = {
 			let inner = &*enc.0;
-			let (planned, _) = plan(inner, &texts, CAPS, AGG, &Knobs::default(), "t");
+			let (planned, _) = plan(inner, &texts, CAPS, AGG, &s0(), "t");
 			planned.iter().map(|p| p.estimate).max().unwrap()
 		};
 		// one batch at a time
@@ -1862,6 +1985,7 @@ mod tests {
 			&texts,
 			Knobs {
 				workers: Some(8),
+				concurrency: Some(1),
 				agg: Some(largest),
 				..Knobs::default()
 			},
@@ -1875,6 +1999,7 @@ mod tests {
 			&texts,
 			Knobs {
 				workers: Some(8),
+				concurrency: Some(1),
 				agg: Some(2 * largest),
 				..Knobs::default()
 			},
@@ -1888,6 +2013,7 @@ mod tests {
 			&texts,
 			Knobs {
 				workers: Some(8),
+				concurrency: Some(1),
 				agg: Some(largest - 1),
 				..Knobs::default()
 			},
@@ -1895,6 +2021,28 @@ mod tests {
 		let e = r.unwrap_err();
 		assert!(e.contains("above the in-flight budget"), "{e}");
 		assert_eq!(t.inflight_end, 0);
+		// record 0135's S1 (the default) halves that batch instead, until it
+		// fits its share of the same budget, and every text is embedded
+		let (r, t) = with(
+			&enc,
+			&texts,
+			Knobs {
+				workers: Some(8),
+				agg: Some(largest - 1),
+				..Knobs::default()
+			},
+		);
+		assert_eq!(r.unwrap().rows(), texts.len());
+		assert!(t.batches.iter().all(|&b| b < 32), "{:?}", t.batches);
+		assert!(t.max_inflight < largest && t.inflight_end == 0);
+	}
+
+	/// 0131's batching, as record 0132's budget controls were written for.
+	fn s0() -> Knobs {
+		Knobs {
+			concurrency: Some(1),
+			..Knobs::default()
+		}
 	}
 
 	#[test]

@@ -445,6 +445,7 @@ fn assembly_stages_without_overwriting_and_verifies_before_launch() {
 		Some(&t.0.join("missing-map")),
 		&t.0.join("main.rn"),
 		&[],
+		&[],
 	)
 	.err()
 	.unwrap();
@@ -475,4 +476,60 @@ fn shared_lock_current_schema_and_legacy_names() {
 	// The pre-existing source-map and user manifest formats do not move.
 	assert_eq!(doc.sources.format, 1);
 	assert_eq!(doc.declarations.format, 1);
+}
+
+#[test]
+fn project_run_budget_is_checked_before_any_launch() {
+	// Record 0135 (0133 F4b): `--budget` is `run`'s own range, refused by
+	// name before the manifest is opened, and accepted once.
+	let cli = |args: &[&str]| {
+		crate::workflow::cli(args.iter().map(std::ffi::OsString::from).collect())
+			.err()
+			.unwrap()
+	};
+	let largest = (usize::MAX - 1).to_string();
+	for value in ["0", "-5", "lots", "1.5", &usize::MAX.to_string()] {
+		let error = cli(&["run", "--manifest", "missing.toml", "--budget", value]);
+		assert!(
+			error.starts_with("--budget takes a whole number of instructions from 1 to")
+				&& error.contains(&largest),
+			"`{value}`: {error}"
+		);
+	}
+	let error = cli(&["run", "--manifest", "missing.toml", "--budget"]);
+	assert_eq!(error, "--budget needs a count of instructions");
+	let error = cli(&[
+		"run",
+		"--budget",
+		"5",
+		"--budget",
+		"6",
+		"--manifest",
+		"missing.toml",
+	]);
+	assert_eq!(error, "unexpected or duplicate option \"--budget\"");
+	// Only `run` has a budget to raise.
+	for command in ["session", "eval", "build"] {
+		let error = cli(&[command, "--manifest", "missing.toml", "--budget", "5"]);
+		assert_eq!(
+			error, "unexpected or duplicate option \"--budget\"",
+			"{command}"
+		);
+	}
+	// A valid value passes parsing and fails only at the missing manifest.
+	let error = cli(&["run", "--manifest", "missing.toml", "--budget", &largest]);
+	assert!(!error.contains("--budget"), "{error}");
+}
+
+#[test]
+fn project_run_forwards_the_budget_before_the_source_map() {
+	let flags = crate::workflow::run_flags(Some(40_000_000));
+	assert_eq!(
+		flags,
+		["--budget-hint", "project", "--budget", "40000000"].map(std::ffi::OsString::from)
+	);
+	assert_eq!(
+		crate::workflow::run_flags(None),
+		["--budget-hint", "project"].map(std::ffi::OsString::from)
+	);
 }

@@ -417,6 +417,14 @@ fn serve(
 				rest = &rest[1..];
 				continue;
 			}
+			if rest.first().is_some_and(|a| a == runner::BUDGET_HINT) {
+				match rest.get(1).map(String::as_str) {
+					Some("project") => runner::launched_by_project(),
+					_ => return Err(format!("{} takes only `project`", runner::BUDGET_HINT).into()),
+				}
+				rest = &rest[2..];
+				continue;
+			}
 			if rest.first().is_some_and(|a| a == runner::BUDGET_FLAG) {
 				// Refused here, before the file is read or compiled, so a bad
 				// value cannot be mistaken for something the script did.

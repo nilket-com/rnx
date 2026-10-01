@@ -538,7 +538,7 @@ impl Project {
 		let (checked, digest) = self.checked_artifact(&lock, &bytes, verify, true)?;
 
 		let mut command = match mode {
-			Launch::Run(args) => {
+			Launch::Run { script, budget } => {
 				let maps = self.dot.join("maps");
 				fs::create_dir_all(&maps).map_err(err)?;
 				let map_bytes = lock.sources.encode()?;
@@ -548,7 +548,8 @@ impl Project {
 					&checked,
 					Some(&map),
 					Path::new(&lock.sources.entry),
-					&args,
+					&run_flags(budget),
+					&script,
 				)?;
 				command.env_remove(transition::CARRIER);
 				command
@@ -668,8 +669,37 @@ fn fault(name: &str) -> Result<(), String> {
 	Ok(())
 }
 
+/// The same range as `rnx run --budget`, refused here before any launch:
+/// `usize::MAX` is Rune's sentinel for no budget, so it is outside the range.
+fn budget_value(value: Option<&OsString>) -> Result<usize, String> {
+	let value = value.ok_or("--budget needs a count of instructions")?;
+	value
+		.to_str()
+		.and_then(|v| v.parse::<usize>().ok())
+		.filter(|n| (1..usize::MAX).contains(n))
+		.ok_or_else(|| {
+			format!(
+				"--budget takes a whole number of instructions from 1 to {}, not {value:?}",
+				usize::MAX - 1
+			)
+		})
+}
+/// Flags for the artifact's `run`: a chosen budget, and the hint that makes
+/// its halt message name `rnx project run --budget`.
+pub(crate) fn run_flags(budget: Option<usize>) -> Vec<OsString> {
+	let mut flags = vec!["--budget-hint".into(), "project".into()];
+	if let Some(n) = budget {
+		flags.push("--budget".into());
+		flags.push(n.to_string().into());
+	}
+	flags
+}
 enum Launch {
-	Run(Vec<OsString>),
+	Run {
+		script: Vec<OsString>,
+		/// `--budget N`, forwarded to the artifact's own `run`.
+		budget: Option<usize>,
+	},
 	Session {
 		flags: Vec<OsString>,
 	},
@@ -730,7 +760,7 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	}
 	if args.len() == 1 && matches!(args[0].to_str(), Some("--help" | "help")) {
 		let help = String::from(
-			"rnx-project cache|runtime list [--root PATH] [--manifest FILE]...\nrnx-project cache|runtime remove ID [--root PATH] [--dry-run [--manifest FILE]...] [--resume] [--quiescent]\nRemoval requires stopping all consumers; named manifests are not a complete reference inventory.\nrnx-project runtime install --from PATH\nrnx-project runtime show\nrnx-project runtime select ID\nrnx-project adapters\nrnx-project add --manifest FILE NAME [NAME...]\nrnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build.",
+			"rnx-project cache|runtime list [--root PATH] [--manifest FILE]...\nrnx-project cache|runtime remove ID [--root PATH] [--dry-run [--manifest FILE]...] [--resume] [--quiescent]\nRemoval requires stopping all consumers; named manifests are not a complete reference inventory.\nrnx-project runtime install --from PATH\nrnx-project runtime show\nrnx-project runtime select ID\nrnx-project adapters\nrnx-project add --manifest FILE NAME [NAME...]\nrnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [--budget N] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build.",
 		);
 		println!(
 			"{}",
@@ -761,6 +791,7 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	let mut flags = Vec::new();
 	let mut script = Vec::new();
 	let mut source = None;
+	let mut budget = None;
 	let mut n = 1;
 	while n < args.len() {
 		match args[n].to_str() {
@@ -770,6 +801,10 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 			}
 			Some("--offline") if !launch && !offline => offline = true,
 			Some("--verify") if launch && !verify => verify = true,
+			Some("--budget") if command == "run" && budget.is_none() => {
+				n += 1;
+				budget = Some(budget_value(args.get(n))?);
+			}
 			Some("--no-splash") if command == "session" && !splash => {
 				splash = true;
 				flags.push(args[n].clone());
@@ -806,7 +841,7 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	match command {
 		"lock" => project.lock(offline),
 		"build" => project.build(offline),
-		"run" => project.launch(Launch::Run(script), verify),
+		"run" => project.launch(Launch::Run { script, budget }, verify),
 		"session" => project.launch(Launch::Session { flags }, verify),
 		"eval" => project.launch(
 			Launch::Eval {

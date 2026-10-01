@@ -195,7 +195,7 @@ impl Project {
 		let (checked, digest) = self.git_checked_artifact(&lock, &bytes, verify, true)?;
 
 		let mut command = match mode {
-			Launch::Run(args) => {
+			Launch::Run { script, budget } => {
 				let maps = self.dot.join("maps");
 				fs::create_dir_all(&maps).map_err(err)?;
 				let map_bytes = lock.sources.encode()?;
@@ -205,7 +205,8 @@ impl Project {
 					&checked,
 					Some(&map),
 					Path::new(&lock.sources.entry),
-					&args,
+					&super::run_flags(budget),
+					&script,
 				)?;
 				command.env_remove(transition::CARRIER);
 				command

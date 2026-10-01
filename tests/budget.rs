@@ -210,3 +210,37 @@ fn the_budget_is_written_in_one_place_in_the_source() {
 		"the budget can come from the environment"
 	);
 }
+
+#[test]
+fn the_halt_names_the_flag_of_the_path_that_ran() {
+	// Record 0135: `rnx run` names its own flag.
+	let ran = run_with(SPENDS_A_LITTLE, &["--budget", "1000"], &[]);
+	assert!(
+		ran.stderr
+			.starts_with("halted: 1000 instructions exceeded; --budget N raises it"),
+		"{}",
+		ran.stderr
+	);
+	// A run launched by `rnx project run` names that command's flag, which
+	// exists there, rather than one the reader could not pass.
+	let ran = run_with(
+		SPENDS_A_LITTLE,
+		&["--budget-hint", "project", "--budget", "1000"],
+		&[],
+	);
+	assert_eq!(ran.code, 1);
+	assert!(
+		ran.stderr.starts_with(
+			"halted: 1000 instructions exceeded; rnx project run --budget N raises it"
+		),
+		"{}",
+		ran.stderr
+	);
+	// The hint takes one value, refused otherwise before the script starts.
+	for value in ["repl", ""] {
+		let ran = run_with(SPENDS_ALMOST_NOTHING, &["--budget-hint", value], &[]);
+		assert_ne!(ran.code, 0, "`{value}` was accepted");
+		assert!(ran.stderr.contains("--budget-hint"), "{}", ran.stderr);
+		assert_eq!(ran.stdout, "");
+	}
+}

@@ -1,0 +1,13 @@
+[package]
+name = "probe0135"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+rnx = { path = "../../..", default-features = false, features = ["count-allocations", "allocation-peak"] }
+rnx-candle = { path = "../../../adapters/candle", features = ["test-support"] }
+serde_json = "1"
+tokenizers = { version = "=0.22.2", default-features = false, features = ["onig"] }

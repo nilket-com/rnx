@@ -147,6 +147,7 @@ fn run() -> Result<(), String> {
 				expected,
 				map,
 				Path::new(&args[4]),
+				&[],
 				&args[5..],
 			)?;
 			#[cfg(unix)]
