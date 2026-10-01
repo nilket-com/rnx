@@ -1,0 +1,4 @@
+denominator: 220 public Tensor methods
+per family: {'A': 21, 'B': 7, 'C': 47, 'D': 18, 'E': 2, 'F': 2}
+core identities: 97 (44.1%), missing: [], duplicates: []
+counted apart: {'nn': 3, 'derived': 1}
