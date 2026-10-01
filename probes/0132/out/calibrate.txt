@@ -1,0 +1,3 @@
+32 x 256 tokens: estimate 156.0 MiB, allocator peak +577.0 MiB, ratio 3.70
+8 x 256 tokens: estimate 39.0 MiB, allocator peak +144.3 MiB, ratio 3.70
+32 short (~40 tokens): estimate 8.0 MiB, allocator peak +18.4 MiB, ratio 2.29

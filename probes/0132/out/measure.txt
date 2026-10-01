@@ -1,0 +1,16 @@
+RAYON_NUM_THREADS=[unset]
+threads: 28
+embed one query: median 0.0327 s, 31 texts/s; plan (tokenize) 0.0001 s = 0%; W 1, max running 1, max in flight 73008 values
+embed batch of 32: median 0.2185 s, 146 texts/s; plan (tokenize) 0.0027 s = 1%; W 1, max running 1, max in flight 8418816 values
+embed 60 docs: median 0.1956 s, 307 texts/s; plan (tokenize) 0.0037 s = 2%; W 2, max running 2, max in flight 14634816 values
+embed 10,000 corpus: median 12.5473 s, 797 texts/s; plan (tokenize) 0.3666 s = 3%; W 28, max running 28, max in flight 213276672 values
+sweep (10,000 texts), 28 CPUs available:
+  W  1: 59.68 s (plan 0.36 s, exec 59.31 s), max running 1
+  W  4: 19.13 s (plan 0.36 s, exec 18.76 s), max running 4
+  W  8: 14.44 s (plan 0.37 s, exec 14.07 s), max running 8
+  W 16: 12.77 s (plan 0.37 s, exec 12.40 s), max running 16
+  W 20: 12.68 s (plan 0.37 s, exec 12.31 s), max running 20
+  W 28: 12.56 s (plan 0.36 s, exec 12.20 s), max running 28
+  default (W 28): 12.60 s
+memory, 10,000 corpus: 12.59 s; output 14.6 MiB; allocator peak during +360.1 MiB; max running 28, max in flight 214270464 values (817 MiB as f32; budget 1024 MiB); rss 872 MiB, high-water 872 MiB; 313 batches, 10000 texts
+memory, worst case: 512 texts at 256 tokens: 50.14 s; output 0.8 MiB; allocator peak during +578.6 MiB; max running 1, max in flight 163577856 values (624 MiB as f32; budget 1024 MiB); rss 688 MiB, high-water 1445 MiB; 16 batches, 512 texts
