@@ -1,0 +1,32 @@
+{
+ "note": "Record 0149's early semantic stop gate: hand-written chats, not drawn from D2, of mixed lengths (one near the 1,024-token prompt bound, one stopping by length). Frozen with the implementation, before any D2 generation.",
+ "max_new_tokens": [
+  24,
+  24,
+  24,
+  24,
+  6
+ ],
+ "chats": [
+  {
+   "system": "You are a helpful assistant.",
+   "user": "What is the capital of France? Answer in one word."
+  },
+  {
+   "system": "You are a triage assistant. Answer with exactly one word.",
+   "user": "Which category fits: 'The app crashes when I click save.' Options: bug, feature, question."
+  },
+  {
+   "system": "You are an assistant that summarizes text.",
+   "user": "Summarize in one sentence: The quarterly report shows revenue grew twelve percent, driven by sales in Europe and Asia, while costs stayed flat."
+  },
+  {
+   "system": "You are an assistant that summarizes issue tracker tickets.",
+   "user": "Summarize this ticket in one sentence of at most 20 words.\n\nTicket:\nThe import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. The import job reads every partition of the event log, joins it with the customer table, and writes a daily summary. Since the last upgrade it fails intermittently with a timeout on the largest partitions, and retrying sometimes succeeds. "
+  },
+  {
+   "system": "You are a helpful assistant.",
+   "user": "Count from one to twenty in words, separated by commas."
+  }
+ ]
+}
