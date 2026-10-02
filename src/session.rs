@@ -177,6 +177,11 @@ pub enum Completeness {
 ///   lexer consumes to the end of whatever it is given;
 /// - an open bracket, brace, or parenthesis: the same expected-token error at
 ///   the end, since the original text has no wrapper to supply a closer.
+/// - (record 0144) an open macro call: Rune reports an unterminated macro
+///   call's first error as a zero-width span at its opening delimiter, not at
+///   the end; it is incomplete when that delimiter, counted by Rune's own
+///   tokens, is still open at the input's end.
+///
 /// A real token at the end, such as the `;` of `let x = ;`, keeps its span
 /// when the input grows, so it is a diagnostic.
 pub fn completeness(input: &str) -> Completeness {
@@ -187,7 +192,11 @@ pub fn completeness(input: &str) -> Completeness {
 	// whitespace, so the error is at the end when only trivia follows it.
 	let end = span.range().end;
 	if end < input.len() && !only_trivia(&input[end..]) {
-		return Completeness::Complete;
+		return if span.range().is_empty() && open_to_the_end(&input[end..]) {
+			Completeness::Incomplete
+		} else {
+			Completeness::Complete
+		};
 	}
 	if span.range().is_empty() {
 		return Completeness::Incomplete;
@@ -198,6 +207,40 @@ pub fn completeness(input: &str) -> Completeness {
 			Completeness::Incomplete
 		}
 		_ => Completeness::Complete,
+	}
+}
+/// Whether `text` starts with an opening delimiter that its tokens leave
+/// open at the end. Delimiter kinds are kept on a stack: a closer that does
+/// not match the innermost open delimiter, at any depth, is a real error. A
+/// lexing error (an unterminated string or comment inside the call) counts
+/// as open only when its span reaches the end of `text`.
+fn open_to_the_end(text: &str) -> bool {
+	let mut parser = rune::parse::Parser::new(text, SourceId::empty(), false);
+	let mut open: Vec<ast::Delimiter> = Vec::new();
+	loop {
+		match parser.is_eof() {
+			Ok(true) => return !open.is_empty(),
+			Ok(false) => {}
+			Err(e) => return !open.is_empty() && e.span().range().end >= text.len(),
+		}
+		let token = match parser.parse::<ast::Token>() {
+			Ok(t) => t,
+			Err(e) => return !open.is_empty() && e.span().range().end >= text.len(),
+		};
+		match token.kind {
+			ast::Kind::Open(d) => open.push(d),
+			// a matching closer; the outermost closing means the call ends
+			ast::Kind::Close(d) if open.last() == Some(&d) => {
+				open.pop();
+				if open.is_empty() {
+					return false;
+				}
+			}
+			// a mismatched closer, or text that didn't start with a delimiter
+			ast::Kind::Close(_) => return false,
+			_ if open.is_empty() => return false,
+			_ => {}
+		}
 	}
 }
 fn only_trivia(text: &str) -> bool {
@@ -1166,6 +1209,18 @@ mod tests {
 			// examples pasted line by line).
 			"fn f() {\n  let a = 1;  // note",
 			"fn f() {\n  let a = 1; // note\n",
+			// Record 0144: a macro call open at the end (Rune reports it at
+			// the opening delimiter, not the end).
+			"pub fn run(args) {\n    println!(\"{} and {}\",",
+			"pub fn run(args) {\n    println!(\"{} and {}\",\n        1, 2",
+			"println!(\"{}\",",
+			"fn f() {\n    let s = format!(\"{}\",\n        1",
+			"fn f() {\n    let v = vec![1,\n        2",
+			"m!{ 1,",
+			"fn f() {\n    foo(format!(\"{}\",",
+			"fn f() {\n    println!(\"{}\", // the argument follows",
+			"fn f() {\n    println!(\"unterminated",
+			"println!([1, 2], {3},",
 		] {
 			assert_eq!(completeness(input), Completeness::Incomplete, "{input:?}");
 		}
@@ -1186,6 +1241,19 @@ mod tests {
 			"1 +* 2;",
 			// Trivia after a real error doesn't hide it.
 			"let x = ; // note",
+			// Record 0144: macro calls that close, or a real error first.
+			"println!(\"a {}\", 1);",
+			"fn f() {\n    println!(\"a {}\",\n        1);\n}",
+			"println!(\"a\"));",
+			"println!(\"a\"];",
+			"let = 1; println!(",
+			// nested mismatches of every kind are real errors
+			"println!([1}",
+			"println!([1)",
+			"println!({1]",
+			"println!({1)",
+			"println!((1]",
+			"println!((1}",
 		] {
 			assert_eq!(completeness(input), Completeness::Complete, "{input:?}");
 		}
