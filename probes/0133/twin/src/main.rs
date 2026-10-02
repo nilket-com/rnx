@@ -898,6 +898,8 @@ fn main() {
 		"u5" => u5(&a[2], &a[3], &a[4], &a[5], &a[6]),
 		// record 0148: NLI triage, and the early-gate pairs
 		"u6" => u6(&a[2], &a[3], &a[4], &a[5], &a[6]),
+		// record 0149: greedy generation over the tickets
+		"u7" => u7(&a[2], &a[3], &a[4], &a[5], &a[6], &a[7]),
 		// record 0135: D1's passages, as U1 chunks them, for timing
 		"passages" => {
 			let texts: Vec<String> = load(&a[2]).1.into_iter().map(|p| p.1).collect();
@@ -1528,4 +1530,128 @@ fn u6(d2: &str, ranges: &str, labels: &str, model: &str, out_dir: &str) {
 		table += "\n";
 	}
 	std::fs::write(format!("{out_dir}/u6-tickets.tsv"), table).unwrap();
+}
+
+// Record 0149: the generation twin, written directly against
+// candle-transformers' Qwen2 and tokenizers: its own prompt construction,
+// greedy loop (argmax, ties to the lowest id), top 5, stop policy and
+// decoding; one generation at a time, each on a fresh clone of the model.
+
+struct Gen {
+	model: candle_transformers::models::qwen2::ModelForCausalLM,
+	tok: Tokenizer,
+}
+
+fn gen_load(dir: &str) -> Gen {
+	use candle_transformers::models::qwen2::{Config as QConfig, ModelForCausalLM};
+	let config: QConfig = serde_json::from_slice(&std::fs::read(format!("{dir}/config.json")).unwrap()).unwrap();
+	let mut tok = Tokenizer::from_file(format!("{dir}/tokenizer.json")).unwrap();
+	tok.with_truncation(None).unwrap();
+	tok.with_padding(None);
+	let vb = unsafe {
+		VarBuilder::from_mmaped_safetensors(&[format!("{dir}/model.safetensors")], DType::F32, &Device::Cpu).unwrap()
+	};
+	Gen { model: ModelForCausalLM::new(&config, vb).unwrap(), tok }
+}
+
+/// (ids including a terminal EOS, stop, prompt length, per-step top 5)
+fn gen_one(g: &Gen, system: &str, user: &str, max_new: usize) -> (Vec<u32>, &'static str, usize, Vec<Vec<(u32, f32)>>) {
+	let text = format!("<|im_start|>system\n{system}<|im_end|>\n<|im_start|>user\n{user}<|im_end|>\n<|im_start|>assistant\n");
+	let prompt = g.tok.encode(text, false).unwrap().get_ids().to_vec();
+	assert!(prompt.len() <= 1024);
+	let mut model = g.model.clone();
+	let cpu = &Device::Cpu;
+	let mut logits = model.forward(&Tensor::new(prompt.as_slice(), cpu).unwrap().unsqueeze(0).unwrap(), 0).unwrap();
+	let (mut ids, mut tops) = (Vec::new(), Vec::new());
+	let mut stop = "length";
+	for k in 0..max_new {
+		let v: Vec<f32> = logits.flatten_all().unwrap().to_vec1().unwrap();
+		assert!(v.iter().all(|x| x.is_finite()));
+		let mut order: Vec<u32> = (0..v.len() as u32).collect();
+		order.sort_by(|&a, &b| v[b as usize].total_cmp(&v[a as usize]).then(a.cmp(&b)));
+		let top: Vec<(u32, f32)> = order[..5].iter().map(|&i| (i, v[i as usize])).collect();
+		let tok = top[0].0;
+		ids.push(tok);
+		tops.push(top);
+		if tok == 151645 || tok == 151643 {
+			stop = "eos";
+			break;
+		}
+		if k + 1 == max_new {
+			break;
+		}
+		logits = model.forward(&Tensor::new(&[tok], cpu).unwrap().unsqueeze(0).unwrap(), prompt.len() + k).unwrap();
+	}
+	(ids, stop, prompt.len(), tops)
+}
+
+fn u7_parse(text: &str, names: &[String]) -> String {
+	let mut t = text.trim().to_lowercase();
+	while t.ends_with(['.', ',', ':', ';', '!']) {
+		t.pop();
+	}
+	names.iter().find(|n| **n == t).cloned().unwrap_or_else(|| "review".to_string())
+}
+
+fn u7(d2: &str, ranges: &str, labels: &str, sample: &str, model: &str, out_dir: &str) {
+	let issues: serde_json::Value = serde_json::from_slice(&std::fs::read(d2).unwrap()).unwrap();
+	let issues = issues.as_array().unwrap();
+	let (mut names, mut descriptions) = (Vec::new(), Vec::new());
+	for line in std::fs::read_to_string(labels).unwrap().lines().skip(1).filter(|l| !l.is_empty()) {
+		let f: Vec<&str> = line.split('\t').collect();
+		names.push(f[0].to_owned());
+		descriptions.push(f[1].to_owned());
+	}
+	let sample: Vec<String> = std::fs::read_to_string(sample).unwrap().lines().skip(1).filter(|l| !l.is_empty()).map(str::to_owned).collect();
+	let mut texts = std::collections::HashMap::new();
+	for i in issues {
+		texts.insert(format!("d2:#{}", i["number"]), format!("{}\n{}", i["title"].as_str().unwrap(), i["body"].as_str().unwrap_or("")));
+	}
+	let mut first = std::collections::HashMap::new();
+	for line in std::fs::read_to_string(ranges).unwrap().lines().skip(1) {
+		let f: Vec<&str> = line.split('\t').collect();
+		if f[0].starts_with("d2:") && f[1] == "0" {
+			let (s, e): (usize, usize) = (f[2].parse().unwrap(), f[3].parse().unwrap());
+			first.insert(f[0].to_owned(), texts[f[0]][s..e].to_owned());
+		}
+	}
+	let g = gen_load(model);
+	let join = |v: &[u32]| v.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+	let decode = |ids: &[u32], stop: &str| {
+		let body = if stop == "eos" { &ids[..ids.len() - 1] } else { ids };
+		g.tok.decode(body, true).unwrap()
+	};
+	let mut steps = String::from("task\tticket\tk\tp\tposition\tid\ttop_ids\ttop_logits\n");
+	let step_rows = |task: &str, n: &str, p: usize, ids: &[u32], tops: &[Vec<(u32, f32)>], steps: &mut String| {
+		for (k, (id, top)) in ids.iter().zip(tops).enumerate() {
+			let ti: Vec<String> = top.iter().map(|(i, _)| i.to_string()).collect();
+			let tl: Vec<String> = top.iter().map(|(_, x)| format!("{x:?}")).collect();
+			*steps += &format!("{task}\t{n}\t{k}\t{p}\t{}\t{id}\t{}\t{}\n", p + k, ti.join(","), tl.join(","));
+		}
+	};
+	let mut rows = String::from("ticket\tprompt_tokens\tids\tstop\ttext\tclass\n");
+	let system = "You are a triage assistant for the issue tracker of Rune, a scripting language. Answer with exactly one word.";
+	for i in issues {
+		let n = i["number"].to_string();
+		let mut user = String::from("Which one category fits this ticket best?\n");
+		for (name, desc) in names.iter().zip(&descriptions) {
+			user += &format!("{name}: {desc}\n");
+		}
+		user += &format!("\nTicket:\n{}\n\nAnswer with one word: bug, feature, question, documentation or performance.", first[&format!("d2:#{n}")]);
+		let (ids, stop, p, tops) = gen_one(&g, system, &user, 8);
+		let text = decode(&ids, stop);
+		rows += &format!("{n}\t{p}\t{}\t{stop}\t{}\t{}\n", join(&ids), serde_json::to_string(&text).unwrap(), u7_parse(&text, &names));
+		step_rows("triage", &n, p, &ids, &tops, &mut steps);
+	}
+	std::fs::write(format!("{out_dir}/u7-triage.tsv"), rows).unwrap();
+	let mut rows = String::from("ticket\tprompt_tokens\tids\tstop\ttext\n");
+	for n in &sample {
+		let user = format!("Summarize this ticket in one sentence of at most 20 words.\n\nTicket:\n{}", first[&format!("d2:#{n}")]);
+		let (ids, stop, p, tops) = gen_one(&g, "You are an assistant that summarizes issue tracker tickets.", &user, 48);
+		let text = decode(&ids, stop);
+		rows += &format!("{n}\t{p}\t{}\t{stop}\t{}\n", join(&ids), serde_json::to_string(&text).unwrap());
+		step_rows("summary", n, p, &ids, &tops, &mut steps);
+	}
+	std::fs::write(format!("{out_dir}/u7-summaries.tsv"), rows).unwrap();
+	std::fs::write(format!("{out_dir}/u7-steps.tsv"), steps).unwrap();
 }

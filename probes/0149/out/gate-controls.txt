@@ -1,0 +1,12 @@
+stops: empty: exit 1; FAIL (the gate did not complete): 0 chats, want exactly the 5 frozen ones
+stops: a subset (four chats): exit 1; FAIL (the gate did not complete): 4 chats, want exactly the 5 frozen ones
+stops: a duplicated chat in place of another: exit 1; FAIL (the gate did not complete): chat 1 is not frozen chat 1 (its system, user or token limit differs)
+stops: a wrong chat (the user text changed): exit 1; FAIL (the gate did not complete): chat 0 is not frozen chat 0 (its system, user or token limit differs)
+stops: a shortened step count, vectors cut to match: exit 1; FAIL (the gate did not complete): chat 2: the ids and stop 'length' break the stopping policy
+stops: steps below the ids: exit 1; FAIL (the gate did not complete): chat 2: 23 steps x 151936 for 24 ids, want 24 x 151936
+stops: a truncated raw file: exit 1; FAIL (the gate did not complete): the raw vectors hold 8812287 values, want exactly 8812288
+stops: an extra vector: exit 1; FAIL (the gate did not complete): the raw vectors hold 8964224 values, want exactly 8812288
+stops: an arbitrary offset: exit 1; FAIL (the gate did not complete): chat 4: its vectors start at 7900673, want 7900672 (contiguous, non-overlapping)
+stops: a wrong vocab: exit 1; FAIL (the gate did not complete): chat 0: 2 steps x 151935 for 2 ids, want 2 x 151936
+pass: unmodified: exit 0; early gate: PASS
+all gate controls behave

@@ -1,0 +1,13 @@
+{
+ "check": "3a-native",
+ "completed": true,
+ "result": "PASS",
+ "chats": 292,
+ "counts": {
+  "identical": 292,
+  "i": 0,
+  "ii": 0,
+  "iii": 0
+ },
+ "differences": []
+}

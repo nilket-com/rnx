@@ -1,0 +1,2 @@
+:dep polars candle, U7: session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep polars candle, U7: IDENTICAL (each producer validated first against 292 reconstructed chats): 1354 generated ids and their top-5 ids and logits (f32 bits), stops, texts and classes

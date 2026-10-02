@@ -1,0 +1,62 @@
+252 tickets triaged (504 tokens generated) in 103824 ms; 40 summaries (850 tokens) in 35446 ms
+tickets per class ("review": the answer was not exactly one label):
+DataFrame: 4 rows × 2 columns
+"triage": string | "tickets": u32
+"bug" | 244
+"documentation" | 3
+"feature" | 3
+"question" | 2
+
+DataFrame: 10 rows × 4 columns
+"ticket": i64 | "title": string | "triage": string | "summary": string
+2 | "Fix tracing when sub-vms are being spawned" | "bug" | "Propagate instruction pointers on errors to allow for separate runtime state han"…[truncated]
+10 | "Lines starting with an object literal are hidden by mdbook" | "bug" | "Lines starting with an object literal are hidden by mdbook, while rune object li"…[truncated]
+25 | "feature: a bytecode format for units" | "bug" | "Design a preliminary bytecode format for units, including instructions, hash-to-"…[truncated]
+39 | "Support assign-based operators for objects and tuples" | "bug" | "Support for assigning to fields and tuples in Rust objects and tuples is request"…[truncated]
+58 | "Non-zero exit codes for failed executions" | "bug" | "CLI should exit with a non-zero exit code when encountering compile or execution"…[truncated]
+150 | "Support moving values into closures" | "bug" | "Move values into closures in Rust, configurable with `move` modifier."
+166 | "request: using external objects containing references" | "bug" | "Allow using external objects containing references with `runestick::Any` when no"…[truncated]
+224 | "request: executeCommand support to lsp" | "bug" | "Request for support to execute commands in LSP using rune-cli."
+244 | "Auto-formatter" | "bug" | "Auto-formatter for Rune would greatly enhance text formatting capabilities."
+262 | "Documentation within the book regarding default modules." | "documentation" | "Documentation for default modules in the book, including their usage and example"…[truncated]
+
+DataFrame: 10 rows × 4 columns
+"ticket": i64 | "title": string | "triage": string | "summary": string
+279 | "Function and SyncFunction documentation is not available due to type aliasing" | "bug" | "Documentation for `FunctionImpl` and `SyncFunction` is missing due to type alias"…[truncated]
+290 | "How to convert the return value into a STRING_DISPLAY string?" | "bug" | "To convert the return value of a Rust function into a `String_DISPLAY` string, y"…[truncated]
+302 | "Support parsing string sources in macros" | "bug" | "Support parsing rune code in macros to correctly reference sources for diagnosti"…[truncated]
+348 | "Re-use the same virtual machine in VmExecution" | "bug" | "Re-use the same virtual machine in `VmExecution` to improve memory locality and "…[truncated]
+378 | "Rust snippet in book's \"functions\" page is broken" | "bug" | "The Rust snippet in the book's \"functions\" page is broken, with the `basic_add` "…[truncated]
+400 | "Can't construct struct with named field" | "bug" | "The struct cannot be constructed due to missing runtime information."
+424 | "Some benchmarks are failing on the main branch" | "bug" | "Some benchmarks on the main branch are failing due to a known issue introduced b"…[truncated]
+434 | "Custom state?" | "bug" | "Passing custom state to native functions for better performance and flexibility."
+444 | "Project questions " | "question" | "Rune is a Rust library that can be used on no_std or WASM, but it may not align "…[truncated]
+456 | "Standard macros should live in the `rune` crate and not `rune-modules`" | "bug" | "Standard macros should live in the `rune` crate and not `rune-modules`."
+
+DataFrame: 10 rows × 4 columns
+"ticket": i64 | "title": string | "triage": string | "summary": string
+486 | "Proper way to call Rust from Rune Scripts" | "bug" | "Rune Scripts: How to call Rust libraries from Rune"
+530 | "Make derive macros work outside of `rune`" | "bug" | "Make derive macros work outside of `rune` by using either `proc-macro-crate` or "…[truncated]
+538 | "Custom prelude" | "bug" | "It's not possible to have the same type in the root and a module in Haskell."
+566 | "\"Vm::call takes self by value, which means we're forced to clone()\" - as per blo"…[truncated] | "bug" | "In 2023, Rune, a scripting language, might not be suitable for handling new even"…[truncated]
+583 | "Support `derive(Any)`  type protocols" | "bug" | "Support deriving `Any` for traits and functions in general."
+629 | "Modify a vm function" | "bug" | "Update or modify a function in a virtual machine (VM)."
+645 | "0.13.0 release build failure" | "bug" | "The build of the latest release of Homebrew/homebrew-core failed due to unresolv"…[truncated]
+659 | "Field not available to get on <struct>" | "bug" | "Summary: Unable to access a field on an external struct in runescript due to mis"…[truncated]
+681 | "`tracing::instrument` on `op_return_internal` is broken" | "bug" | "The `tracing::instrument` on `op_return_internal` is broken, and it's not clear "…[truncated]
+696 | "Allow the use of constants in patterns" | "bug" | "Allow the use of constants in patterns, similar to how `FOO` can be looked up to"…[truncated]
+
+DataFrame: 10 rows × 4 columns
+"ticket": i64 | "title": string | "triage": string | "summary": string
+731 | "Feature request: optional type annotations (to benefit LSP mostly)" | "bug" | "Proposal for optional and informational type annotations in Rust for LSP integra"…[truncated]
+745 | "Flaky auto-formatting in vscode / Rune LSP crashes" | "bug" | "The auto-formatting in Visual Studio Code (VS Code) sometimes crashes due to une"…[truncated]
+753 | "Runes `std::collections::HashMap` is not accessible from rust extension types" | "bug" | "To add a random access function to a `HashMap` using a rune script extension, yo"…[truncated]
+775 | "Rune LSP cargo broken with multi-binary crates" | "bug" | "Rune LSP cargo crates are broken, and moving to two binaries in the same crate r"…[truncated]
+810 | "Any::downcast_borrow_ref works with anyhow but not eyre" | "bug" | "This ticket describes a conflict between `any` and `eyre` crates, where `any` do"…[truncated]
+830 | "&& operator changes the value of a boolean" | "bug" | "The `&&` operator changes the value of `value` to `false` when used with `false`"…[truncated]
+892 | "missing methods for VecDeque: is_empty(), clear()" | "bug" | "missing methods for VecDeque: is_empty(), clear()"
+909 | "async paramters error" | "bug" | "The async function `asyn_call` cannot be compiled due to a `Send` trait mismatch"…[truncated]
+930 | "Implement de/serialization for Sources" | "bug" | "Implement de/serialization for Sources to improve error handling and re-use comp"…[truncated]
+962 | "Can we get a new version for the successful rust build?" | "bug" | "Yes, a new version for the successful rust build is available."
+
+WORKFLOW OK u7

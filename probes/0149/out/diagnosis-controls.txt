@@ -1,0 +1,6 @@
+pass: identical: ('identical', None)
+pass: a prompt-id difference: ('i', None)
+pass: a first divergence after equal prefixes, a near tie: ('ii', 1)
+pass: the same with a clear margin: ('iii', 1)
+pass: rnx shorter on an equal prefix: ('iii', 2)
+all diagnosis controls behave

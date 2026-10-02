@@ -1,0 +1,2 @@
+:dep candle: session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle: IDENTICAL: 5 chats' greedy ids (58 tokens) against the saved early gate

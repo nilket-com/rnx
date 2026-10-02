@@ -1,0 +1,9 @@
+{
+ "check": "3b-model",
+ "completed": true,
+ "result": "PASS",
+ "chats": 292,
+ "steps": 1354,
+ "max_diff": 8.96453857421875e-05,
+ "listed": []
+}

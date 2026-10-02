@@ -1,0 +1,52 @@
+{
+ "check": "early-gate",
+ "completed": true,
+ "result": "PASS",
+ "chats": [
+  {
+   "chat": 0,
+   "prompt_tokens": 31,
+   "template": true,
+   "greedy": true,
+   "finite": true,
+   "max_logit_diff": 6.246566772460938e-05,
+   "steps": 2
+  },
+  {
+   "chat": 1,
+   "prompt_tokens": 47,
+   "template": true,
+   "greedy": true,
+   "finite": true,
+   "max_logit_diff": 5.245208740234375e-05,
+   "steps": 2
+  },
+  {
+   "chat": 2,
+   "prompt_tokens": 50,
+   "template": true,
+   "greedy": true,
+   "finite": true,
+   "max_logit_diff": 6.29425048828125e-05,
+   "steps": 24
+  },
+  {
+   "chat": 3,
+   "prompt_tokens": 1008,
+   "template": true,
+   "greedy": true,
+   "finite": true,
+   "max_logit_diff": 4.9114227294921875e-05,
+   "steps": 24
+  },
+  {
+   "chat": 4,
+   "prompt_tokens": 31,
+   "template": true,
+   "greedy": true,
+   "finite": true,
+   "max_logit_diff": 5.245208740234375e-05,
+   "steps": 6
+  }
+ ]
+}

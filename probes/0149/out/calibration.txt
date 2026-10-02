@@ -1,0 +1,22 @@
+resident F32 weights: 1976131072 bytes (outside the per-call budget)
+p=16 m=1 alone: peak 2687059 B, estimate 4433704 B, headroom 1.65x
+p=16 m=1 x4: max running 4 at once (admitted), max in flight 17734816 B, peak 9648697 B, headroom 1.84x
+p=16 m=64 alone: peak 4849007 B, estimate 7992448 B, headroom 1.65x
+p=16 m=64 x4: max running 4 at once (admitted), max in flight 31969792 B, peak 18482233 B, headroom 1.73x
+p=16 m=256 alone: peak 11301647 B, estimate 18838144 B, headroom 1.67x
+p=16 m=256 x4: max running 4 at once (admitted), max in flight 75352576 B, peak 42218485 B, headroom 1.78x
+p=256 m=1 alone: peak 25199219 B, estimate 61935784 B, headroom 2.46x
+p=256 m=1 x4: max running 4 at once (admitted), max in flight 247743136 B, peak 93590043 B, headroom 2.65x
+p=256 m=64 alone: peak 25201991 B, estimate 65494528 B, headroom 2.60x
+p=256 m=64 x4: max running 4 at once (admitted), max in flight 261978112 B, peak 98442803 B, headroom 2.66x
+p=256 m=256 alone: peak 25210439 B, estimate 76340224 B, headroom 3.03x
+p=256 m=256 x4: max running 4 at once (admitted), max in flight 305360896 B, peak 94221251 B, headroom 3.24x
+p=1024 m=1 alone: peak 231785641 B, estimate 385288360 B, headroom 1.66x
+p=1024 m=1 x4: max running 2 at once (admitted), max in flight 770576720 B, peak 463571605 B, headroom 1.66x
+p=1024 m=64 alone: peak 231788413 B, estimate 388847104 B, headroom 1.68x
+p=1024 m=64 x4: max running 2 at once (admitted), max in flight 777694208 B, peak 463591871 B, headroom 1.68x
+p=1024 m=256 alone: peak 231796861 B, estimate 399692800 B, headroom 1.72x
+p=1024 m=256 x4: max running 2 at once (admitted), max in flight 799385600 B, peak 461518249 B, headroom 1.73x
+lowered limit: refused (TextGenerator::chat: chat 0 (1024 prompt tokens, 256 new) exceeds the in-flight budget); allocated 341264 B against an estimate of 399692800 B
+minimum budget: 4 chats of 1,024 + 8 tokens completed, one at a time
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 676.96s

@@ -1,0 +1,10 @@
+continues: all-pass: every later step began
+continues: 3a-fail-explained: every later step began
+stops: early-fail: STOP: early-gate completed, FAIL: the record stops here (plans/0149 section 6)
+stops: 3a-fail-unexplained: STOP: 3a-native has 1 unexplained difference(s) (iii): the record stops here
+stops: 3a-traceback: STOP: 3a-native exited 1: the check itself did not complete
+stops: 3a-no-counts: STOP: 3a-native's artifact has no diagnosis counts
+stops: 3a-wrong-name: STOP: 3a-native exited 0 with an artifact that does not record a completed PASS: {'check': '3b-model', 'completed': True, 'result': 'PASS'}
+stops: 3b-fail: STOP: 3b-model completed, FAIL: the record stops here (plans/0149 section 6)
+stops: 3b-mismatch: STOP: 3b-model exited 0 with an artifact that does not record a completed PASS: {'check': '3b-model', 'completed': True, 'result': 'FAIL'}
+all driver controls behave

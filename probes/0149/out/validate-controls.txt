@@ -1,0 +1,13 @@
+pass: unmodified: IDENTICAL (each producer validated first against 292 reconstructed chats): 1354 generated ids and their top-5 ids and logits (f32 bits), stops, texts and classes
+refused: both, a missing step: FAIL: TMP/a triage #2: 1 steps for 2 ids
+refused: both, an extra step: FAIL: TMP/a triage #2: 3 steps for 2 ids
+refused: both, a duplicate step: FAIL: TMP/a triage #2 step 1: k/p/position 0/351/351, want 1/351/352
+refused: both, two steps reordered: FAIL: TMP/a triage #2 step 0: k/p/position 1/351/352, want 0/351/351
+refused: both, a forged stop: FAIL: TMP/a triage #2: a length stop must have exactly 8 ids and no EOS
+refused: both, a forged count (an id dropped): FAIL: TMP/a triage #2: an eos stop must end in one EOS, none earlier, within 8
+refused: both, a non-finite logit: FAIL: TMP/a/u7-steps.tsv row 1: nan is not finite
+refused: both, a consistent forged token, text and parse (row level): FAIL: TMP/a triage #2 step 0: the chosen id 2313 is not the top-1 2313 and the row's 12753
+refused: one side, the lowest bit of a recorded logit: FAIL: ('triage', '2'): the producers' top-5 ids or logits differ
+accepted by the validator (expected: it can't see this): both, a fully consistent forgery, steps included: IDENTICAL (each producer validated first against 292 reconstructed chats): 1354 generated ids and their top-5 ids and logits (f32 bits), stops, texts and classes
+refused by 3b (exit 3): the same forgery, triage #2:   triage #2 step 0: |rnx - HF| 5.37 at the top 5 (bound 0.001) /   triage #2 step 0: HF argmax 2313, rnx 12753 (NOT explained within 2 x 0.001)
+all validation controls behave

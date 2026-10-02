@@ -16,6 +16,7 @@
 //!   stable row normalization (scaled by the row's largest magnitude, the
 //!   squares summed in f64).
 pub mod chunk;
+pub mod generate;
 pub mod nli;
 pub mod rerank;
 
@@ -437,6 +438,13 @@ pub struct Knobs {
 	/// Record 0135's S1 target concurrency, `CONCURRENCY` when unset; 1 is
 	/// 0131's batching (S0).
 	pub concurrency: Option<usize>,
+	/// Record 0149 (calibration only): generation ignores EOS and always
+	/// decodes `max_new_tokens`, so the worst case is the case measured.
+	pub force_length: bool,
+	/// Record 0149 (review round 1, b): fail, or panic, inside request `.0`
+	/// right after decode step `.1` has run (its KV cache exists).
+	pub fail_at_step: Option<(usize, usize)>,
+	pub panic_at_step: Option<(usize, usize)>,
 }
 
 /// What one call did, returned with its result.
@@ -713,12 +721,16 @@ fn lock<T>(m: &std::sync::Mutex<T>) -> std::sync::MutexGuard<'_, T> {
 /// model and its batch runner are parameters, and a row is `width` values
 /// (`hidden` for `embed`, 1 for a cross-encoder's scores).
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn execute<M: Sync>(
+/// Record 0149: generic over the output record `T`: `f32` for embeddings,
+/// pair scores and logits; a generation's fixed step record for
+/// `TextGenerator` (its row is reserved at `width` records, the most a
+/// request may produce).
+pub(crate) fn execute<M: Sync, T: Copy + Send>(
 	model: &M,
-	run: fn(&M, &Planned, &str) -> Result<Vec<f32>, String>,
+	run: fn(&M, &Planned, &str) -> Result<Vec<T>, String>,
 	width: usize,
 	planned: &[Planned],
-	out: &mut [f32],
+	out: &mut [T],
 	(workers, agg): (usize, usize),
 	knobs: &Knobs,
 	trace: &mut Trace,

@@ -1,0 +1,94 @@
+Agent-labelled evaluation, not human or user acceptance. 40 tickets: descriptive only.
+
+=== against claude's frozen labels
+U7 (0149): coverage 40 / 40; accuracy over assigned 11 / 40 = 0.28; full coverage 11 / 40 = 0.28
+  recall at full coverage: question 1/9, bug 9/9, feature 0/17, documentation 1/4, performance 0/1
+0139: coverage 32 / 40; accuracy over assigned 18 / 32 = 0.56; full coverage 19 / 40 = 0.47
+  recall at full coverage: question 0/9, bug 7/9, feature 11/17, documentation 0/4, performance 1/1
+0148: coverage 4 / 40; accuracy over assigned 4 / 4 = 1.00; full coverage 15 / 40 = 0.38
+  recall at full coverage: question 7/9, bug 4/9, feature 1/17, documentation 3/4, performance 0/1
+  U7 confusion, full coverage (rows reference, columns prediction; review not shown):
+         bug  featu  quest  docum  perfo
+  bug      9      0      0      0      0
+featu     17      0      0      0      0
+quest      8      0      1      0      0
+docum      3      0      0      1      0
+perfo      1      0      0      0      0
+paired with 0139, full coverage: both right 7, U7 only 4, 0139 only 12, both wrong 17; exact McNemar p = 0.077
+paired with 0148, full coverage: both right 5, U7 only 6, 0148 only 10, both wrong 19; exact McNemar p = 0.454
+U7 errors (including review):
+  #10 'Lines starting with an object literal are hidden by mdbook': documentation -> bug (generated 'bug')
+  #25 'feature: a bytecode format for units': feature -> bug (generated 'bug')
+  #39 'Support assign-based operators for objects and tuples': feature -> bug (generated 'bug')
+  #150 'Support moving values into closures': feature -> bug (generated 'bug')
+  #166 'request: using external objects containing references': feature -> bug (generated 'bug')
+  #224 'request: executeCommand support to lsp': feature -> bug (generated 'bug')
+  #244 'Auto-formatter': feature -> bug (generated 'bug')
+  #279 'Function and SyncFunction documentation is not available due': documentation -> bug (generated 'bug')
+  #290 'How to convert the return value into a STRING_DISPLAY string': question -> bug (generated 'bug')
+  #302 'Support parsing string sources in macros': feature -> bug (generated 'bug')
+  #348 'Re-use the same virtual machine in VmExecution': performance -> bug (generated 'bug')
+  #378 'Rust snippet in book\'s "functions" page is broken': documentation -> bug (generated 'bug')
+  #400 "Can't construct struct with named field": question -> bug (generated 'bug')
+  #434 'Custom state?': question -> bug (generated 'bug')
+  #456 'Standard macros should live in the `rune` crate and not `run': feature -> bug (generated 'bug')
+  #486 'Proper way to call Rust from Rune Scripts': question -> bug (generated 'bug')
+  #530 'Make derive macros work outside of `rune`': feature -> bug (generated 'bug')
+  #538 'Custom prelude': feature -> bug (generated 'bug')
+  #566 '"Vm::call takes self by value, which means we\'re forced to c': question -> bug (generated 'bug')
+  #583 'Support `derive(Any)`  type protocols': feature -> bug (generated 'bug')
+  #629 'Modify a vm function': question -> bug (generated 'bug')
+  #696 'Allow the use of constants in patterns': feature -> bug (generated 'bug')
+  #731 'Feature request: optional type annotations (to benefit LSP m': feature -> bug (generated 'bug')
+  #753 'Runes `std::collections::HashMap` is not accessible from rus': question -> bug (generated 'bug')
+  #810 'Any::downcast_borrow_ref works with anyhow but not eyre': feature -> bug (generated 'bug')
+  #892 'missing methods for VecDeque: is_empty(), clear()': feature -> bug (generated 'bug')
+  #909 'async paramters error': question -> bug (generated 'bug')
+  #930 'Implement de/serialization for Sources': feature -> bug (generated 'bug')
+  #962 'Can we get a new version for the successful rust build?': feature -> bug (generated 'bug')
+
+=== against codex's frozen labels
+U7 (0149): coverage 40 / 40; accuracy over assigned 14 / 40 = 0.35; full coverage 14 / 40 = 0.35
+  recall at full coverage: question 1/7, bug 12/12, feature 0/16, documentation 1/4, performance 0/1
+0139: coverage 32 / 40; accuracy over assigned 18 / 32 = 0.56; full coverage 20 / 40 = 0.50
+  recall at full coverage: question 0/7, bug 8/12, feature 11/16, documentation 0/4, performance 1/1
+0148: coverage 4 / 40; accuracy over assigned 4 / 4 = 1.00; full coverage 16 / 40 = 0.40
+  recall at full coverage: question 7/7, bug 5/12, feature 1/16, documentation 3/4, performance 0/1
+  U7 confusion, full coverage (rows reference, columns prediction; review not shown):
+         bug  featu  quest  docum  perfo
+  bug     12      0      0      0      0
+featu     16      0      0      0      0
+quest      6      0      1      0      0
+docum      3      0      0      1      0
+perfo      1      0      0      0      0
+paired with 0139, full coverage: both right 8, U7 only 6, 0139 only 12, both wrong 14; exact McNemar p = 0.238
+paired with 0148, full coverage: both right 6, U7 only 8, 0148 only 10, both wrong 16; exact McNemar p = 0.815
+U7 errors (including review):
+  #10 'Lines starting with an object literal are hidden by mdbook': documentation -> bug (generated 'bug')
+  #25 'feature: a bytecode format for units': feature -> bug (generated 'bug')
+  #39 'Support assign-based operators for objects and tuples': feature -> bug (generated 'bug')
+  #150 'Support moving values into closures': feature -> bug (generated 'bug')
+  #166 'request: using external objects containing references': feature -> bug (generated 'bug')
+  #224 'request: executeCommand support to lsp': feature -> bug (generated 'bug')
+  #244 'Auto-formatter': feature -> bug (generated 'bug')
+  #279 'Function and SyncFunction documentation is not available due': documentation -> bug (generated 'bug')
+  #290 'How to convert the return value into a STRING_DISPLAY string': question -> bug (generated 'bug')
+  #302 'Support parsing string sources in macros': feature -> bug (generated 'bug')
+  #348 'Re-use the same virtual machine in VmExecution': performance -> bug (generated 'bug')
+  #378 'Rust snippet in book\'s "functions" page is broken': documentation -> bug (generated 'bug')
+  #434 'Custom state?': question -> bug (generated 'bug')
+  #456 'Standard macros should live in the `rune` crate and not `run': feature -> bug (generated 'bug')
+  #486 'Proper way to call Rust from Rune Scripts': question -> bug (generated 'bug')
+  #530 'Make derive macros work outside of `rune`': feature -> bug (generated 'bug')
+  #538 'Custom prelude': feature -> bug (generated 'bug')
+  #566 '"Vm::call takes self by value, which means we\'re forced to c': question -> bug (generated 'bug')
+  #583 'Support `derive(Any)`  type protocols': feature -> bug (generated 'bug')
+  #629 'Modify a vm function': question -> bug (generated 'bug')
+  #696 'Allow the use of constants in patterns': feature -> bug (generated 'bug')
+  #731 'Feature request: optional type annotations (to benefit LSP m': feature -> bug (generated 'bug')
+  #753 'Runes `std::collections::HashMap` is not accessible from rus': question -> bug (generated 'bug')
+  #810 'Any::downcast_borrow_ref works with anyhow but not eyre': feature -> bug (generated 'bug')
+  #892 'missing methods for VecDeque: is_empty(), clear()': feature -> bug (generated 'bug')
+  #930 'Implement de/serialization for Sources': feature -> bug (generated 'bug')
+
+U7 classes over all 252 tickets: {'bug': 244, 'feature': 3, 'documentation': 3, 'question': 2}
