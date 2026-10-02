@@ -896,6 +896,8 @@ fn main() {
 			print!("{}", e7(&[s]).unwrap_or_else(|e| format!("refused\t{e}\n")));
 		}
 		"u5" => u5(&a[2], &a[3], &a[4], &a[5], &a[6]),
+		// record 0148: NLI triage, and the early-gate pairs
+		"u6" => u6(&a[2], &a[3], &a[4], &a[5], &a[6]),
 		// record 0135: D1's passages, as U1 chunks them, for timing
 		"passages" => {
 			let texts: Vec<String> = load(&a[2]).1.into_iter().map(|p| p.1).collect();
@@ -1343,4 +1345,187 @@ fn u5(dir: &str, minilm: &str, cross: &str, rubric: &str, out_dir: &str) {
 	let (pq, pp): (Vec<&str>, Vec<&str>) = pairs.iter().map(|(q, p)| (q.as_str(), p.as_str())).unzip();
 	let json = serde_json::json!({ "queries": pq, "passages": pp });
 	std::fs::write(format!("{out_dir}/u5-pairs.json"), json.to_string()).unwrap();
+}
+
+// Record 0148: the NLI twin, written directly against candle-transformers'
+// DeBERTa-v2 and tokenizers: its own pair encoding, S1 partition (from the
+// declared estimate), padding, f64 softmax and the frozen decision rule.
+
+struct Nli {
+	model: candle_transformers::models::debertav2::DebertaV2SeqClassificationModel,
+	tok: Tokenizer,
+}
+
+fn nli_load(dir: &str) -> Nli {
+	use candle_transformers::models::debertav2::{Config as DConfig, DebertaV2SeqClassificationModel};
+	let config: DConfig =
+		serde_json::from_slice(&std::fs::read(format!("{dir}/config.json")).unwrap()).unwrap();
+	let mut tok = Tokenizer::from_file(format!("{dir}/tokenizer.json")).unwrap();
+	tok.with_truncation(None).unwrap();
+	tok.with_padding(None);
+	let vb = unsafe {
+		VarBuilder::from_mmaped_safetensors(&[format!("{dir}/model.safetensors")], DType::F32, &Device::Cpu)
+			.unwrap()
+	};
+	let model = DebertaV2SeqClassificationModel::load(vb.pp("deberta"), &config, None).unwrap();
+	Nli { model, tok }
+}
+
+/// The declared estimate (plans/0148, the adapter's `estimate_nli`), in f32
+/// values, for the production geometry: H 384, I 1536, 6 heads, P 512.
+fn nli_estimate(b: usize, s: usize) -> usize {
+	let (h, i, heads, p) = (384, 1536, 6, 512);
+	let bytes = 8 * b * s + 168 * s * s + 8 * b * s * s + 8 * p * h + 8 * b * s * h + 12 * b * s * h + 8 * b * s
+		+ 60 * b * s * h + 8 * b * s * i + 66 * b * heads * s * s + 8 * b * heads * s * p + 16 * p * h
+		+ 8 * b * p * h + 32 * s * s + 12 * b * h + 12 * b;
+	bytes.div_ceil(4)
+}
+
+fn nli_partition(lens: &[usize]) -> Vec<usize> {
+	let agg = 1usize << 28;
+	let share = agg / 32;
+	let mut sizes = Vec::new();
+	let mut at = 0;
+	while at < lens.len() {
+		let mut b = 32.min(lens.len() - at);
+		loop {
+			let s = *lens[at..at + b].iter().max().unwrap();
+			let fits = b * s * 384 <= 1 << 22
+				&& b * s * 1536 <= 1 << 24
+				&& b * 6 * s * s <= 1 << 25
+				&& b * 6 * s * 512 <= 1 << 25;
+			let est = nli_estimate(b, s);
+			if b == 1 {
+				assert!(fits && est <= agg, "a single pair over the budget");
+				break;
+			}
+			if fits && est <= share {
+				break;
+			}
+			b /= 2;
+		}
+		sizes.push(b);
+		at += b;
+	}
+	sizes
+}
+
+/// Row-major N x 3 logits, and the batch sizes.
+fn nli_score(m: &Nli, pairs: &[(String, String)]) -> (Vec<f32>, Vec<usize>) {
+	let cpu = &Device::Cpu;
+	let enc: Vec<_> = pairs
+		.iter()
+		.map(|(p, h)| m.tok.encode((p.as_str(), h.as_str()), true).unwrap())
+		.collect();
+	let lens: Vec<usize> = enc.iter().map(|e| e.get_ids().len()).collect();
+	assert!(lens.iter().all(|&l| l <= 512));
+	let sizes = nli_partition(&lens);
+	let mut out = Vec::new();
+	let mut at = 0;
+	for &b in &sizes {
+		let seq = *lens[at..at + b].iter().max().unwrap();
+		let (mut ids, mut mask) = (Vec::new(), Vec::new());
+		for e in &enc[at..at + b] {
+			let n = e.get_ids().len();
+			ids.extend(e.get_ids().iter().copied().chain(std::iter::repeat_n(0u32, seq - n)));
+			mask.extend(std::iter::repeat_n(1u32, n).chain(std::iter::repeat_n(0, seq - n)));
+		}
+		let ids = Tensor::from_vec(ids, (b, seq), cpu).unwrap();
+		let mask = Tensor::from_vec(mask, (b, seq), cpu).unwrap();
+		let logits = m.model.forward(&ids, None, Some(mask)).unwrap();
+		out.extend(logits.flatten_all().unwrap().to_vec1::<f32>().unwrap());
+		at += b;
+	}
+	(out, sizes)
+}
+
+fn u6(d2: &str, ranges: &str, labels: &str, model: &str, out_dir: &str) {
+	let issues: serde_json::Value = serde_json::from_slice(&std::fs::read(d2).unwrap()).unwrap();
+	let issues = issues.as_array().unwrap();
+	let (mut names, mut descriptions) = (Vec::new(), Vec::new());
+	for line in std::fs::read_to_string(labels).unwrap().lines().skip(1) {
+		if line.is_empty() {
+			continue;
+		}
+		let f: Vec<&str> = line.split('\t').collect();
+		names.push(f[0].to_owned());
+		descriptions.push(f[1].to_owned());
+	}
+	let k = names.len();
+	let mut texts = std::collections::HashMap::new();
+	let numbers: Vec<i64> = issues.iter().map(|i| i["number"].as_i64().unwrap()).collect();
+	for i in issues {
+		let text = format!("{}\n{}", i["title"].as_str().unwrap(), i["body"].as_str().unwrap_or(""));
+		texts.insert(format!("d2:#{}", i["number"]), text);
+	}
+	let mut passages: std::collections::HashMap<String, Vec<String>> = Default::default();
+	for line in std::fs::read_to_string(ranges).unwrap().lines().skip(1) {
+		let f: Vec<&str> = line.split('\t').collect();
+		if !f[0].starts_with("d2:") {
+			continue;
+		}
+		let (s, e): (usize, usize) = (f[2].parse().unwrap(), f[3].parse().unwrap());
+		passages.entry(f[0].to_owned()).or_default().push(texts[f[0]][s..e].to_owned());
+	}
+	let mut pairs = Vec::new();
+	let mut ids = Vec::new();
+	for &num in &numbers {
+		for (p, text) in passages[&format!("d2:#{num}")].iter().enumerate() {
+			for j in 0..k {
+				pairs.push((text.clone(), descriptions[j].clone()));
+				ids.push((num, p, j));
+			}
+		}
+	}
+	let m = nli_load(model);
+	let (logits, sizes) = nli_score(&m, &pairs);
+	let mut counts = std::collections::BTreeMap::new();
+	for &b in &sizes {
+		*counts.entry(b).or_insert(0usize) += 1;
+	}
+	eprintln!("nli pairs {}, batches {counts:?}", pairs.len());
+	let raw = Tensor::from_vec(logits.clone(), (pairs.len(), 3), &Device::Cpu).unwrap();
+	let probs = candle_nn::ops::softmax_last_dim(&raw.to_dtype(DType::F64).unwrap())
+		.unwrap()
+		.to_vec2::<f64>()
+		.unwrap();
+	let mut out = String::from("ticket\tpassage\tlabel\tcontradiction\tentailment\tneutral\n");
+	for (r, &(num, p, j)) in ids.iter().enumerate() {
+		out += &format!(
+			"{num}\t{p}\t{}\t{}\t{}\t{}\n",
+			names[j],
+			logits[3 * r],
+			logits[3 * r + 1],
+			logits[3 * r + 2]
+		);
+	}
+	std::fs::write(format!("{out_dir}/u6-pairs.tsv"), out).unwrap();
+	let mut table = format!("ticket\ttriage\tbest\tsecond\tbest_score\t{}\n", names.join("\t"));
+	for &num in &numbers {
+		let mut s = vec![f64::NEG_INFINITY; k];
+		for (r, &(n2, _, j)) in ids.iter().enumerate() {
+			if n2 == num && probs[r][1] > s[j] {
+				s[j] = probs[r][1];
+			}
+		}
+		let mut best = 0;
+		for j in 1..k {
+			if s[j] > s[best] {
+				best = j;
+			}
+		}
+		let mut next = if best == 0 { 1 } else { 0 };
+		for j in 0..k {
+			if j != best && s[j] > s[next] {
+				next = j;
+			}
+		}
+		let triage = if s[best] < 0.5 { "review" } else { names[best].as_str() };
+		table += &format!("{num}\t{triage}\t{}\t{}\t{:?}", names[best], names[next], s[best]);
+		for v in &s {
+			table += &format!("\t{v:?}");
+		}
+		table += "\n";
+	}
+	std::fs::write(format!("{out_dir}/u6-tickets.tsv"), table).unwrap();
 }

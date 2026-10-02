@@ -16,6 +16,7 @@
 //!   stable row normalization (scaled by the row's largest magnitude, the
 //!   squares summed in f64).
 pub mod chunk;
+pub mod nli;
 pub mod rerank;
 
 use crate::{read_limited, worker};

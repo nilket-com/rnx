@@ -101,6 +101,19 @@ fn pair_template() -> serde_json::Value {
 /// checked exactly, and its own truncation and padding disabled, so a
 /// pair's full length is measured.
 fn tokenizer(dir: &std::path::Path, config: &Config, op: &str) -> Result<Tokenizer, String> {
+	pair_tokenizer(dir, config.vocab_size, config.pad_token_id, op)
+}
+
+/// Record 0148: the pair-tokenizer contract, shared with `NliModel`: every
+/// id below `vocab_size`, the pad id present, the exact pair template and
+/// special-token definitions, a complete probe pair, and truncation and
+/// padding disabled.
+pub(crate) fn pair_tokenizer(
+	dir: &std::path::Path,
+	vocab_size: usize,
+	pad_token_id: usize,
+	op: &str,
+) -> Result<Tokenizer, String> {
 	let path = dir.join("tokenizer.json");
 	let path = path
 		.to_str()
@@ -110,19 +123,14 @@ fn tokenizer(dir: &std::path::Path, config: &Config, op: &str) -> Result<Tokeniz
 	if let Some((token, id)) = t
 		.get_vocab(true)
 		.into_iter()
-		.find(|(_, id)| *id as usize >= config.vocab_size)
+		.find(|(_, id)| *id as usize >= vocab_size)
 	{
 		return Err(format!(
-			"{op}: tokenizer id {id} ({token:?}) is not below vocab_size {}",
-			config.vocab_size
+			"{op}: tokenizer id {id} ({token:?}) is not below vocab_size {vocab_size}"
 		));
 	}
-	t.id_to_token(config.pad_token_id as u32).ok_or_else(|| {
-		format!(
-			"{op}: pad_token_id {} is not in the tokenizer",
-			config.pad_token_id
-		)
-	})?;
+	t.id_to_token(pad_token_id as u32)
+		.ok_or_else(|| format!("{op}: pad_token_id {pad_token_id} is not in the tokenizer"))?;
 	let post = t
 		.get_post_processor()
 		.and_then(|p| serde_json::to_value(p).ok())
@@ -334,12 +342,45 @@ fn plan(
 	knobs: &Knobs,
 	op: &str,
 ) -> (Vec<Planned>, Option<String>) {
-	let n = pairs.len();
 	let c = &inner.config;
+	let model = PairModel {
+		tokenizer: &inner.tokenizer,
+		max_seq: inner.max_seq,
+		pad: c.pad_token_id as u32,
+		vocab_size: c.vocab_size,
+		type_vocab_size: Some(c.type_vocab_size),
+		estimate: &|b, seq| estimate_pairs(c, b, seq),
+		fits: &|b, seq| fits(c, b, seq, caps),
+	};
+	plan_pairs(&model, pairs, agg, knobs, op)
+}
+
+/// Record 0148: what the S1 pair planner needs from a model, so
+/// `CrossEncoder` and `NliModel` share one planner.
+pub(crate) struct PairModel<'a> {
+	pub(crate) tokenizer: &'a Tokenizer,
+	pub(crate) max_seq: usize,
+	pub(crate) pad: u32,
+	pub(crate) vocab_size: usize,
+	/// `Some(n)`: each token type is checked below `n` and passed to the
+	/// model; `None`: the model takes no token types.
+	pub(crate) type_vocab_size: Option<usize>,
+	pub(crate) estimate: &'a dyn Fn(usize, usize) -> Option<usize>,
+	pub(crate) fits: &'a dyn Fn(usize, usize) -> bool,
+}
+
+pub(crate) fn plan_pairs(
+	m: &PairModel,
+	pairs: &[(&str, &str)],
+	agg: usize,
+	knobs: &Knobs,
+	op: &str,
+) -> (Vec<Planned>, Option<String>) {
+	let n = pairs.len();
 	let mut planned: Vec<Planned> = Vec::new();
 	let mut payload = 0usize;
 	let mut at = 0;
-	let pad = c.pad_token_id as u32;
+	let pad = m.pad;
 	let mut cache: std::collections::VecDeque<(Vec<u32>, Vec<u32>)> = Default::default();
 	let mut cache_at = 0;
 	while at < n {
@@ -358,22 +399,19 @@ fn plan(
 		}
 		let have = cache_at + cache.len();
 		if have < at + b {
-			let encodings = match inner
-				.tokenizer
-				.encode_batch(pairs[have..at + b].to_vec(), true)
-			{
+			let encodings = match m.tokenizer.encode_batch(pairs[have..at + b].to_vec(), true) {
 				Ok(e) => e,
 				Err(e) => return (planned, failed(format!("{op}: {e}"))),
 			};
 			for (k, e) in encodings.into_iter().enumerate() {
 				let len = e.get_ids().len();
-				if len > inner.max_seq {
+				if len > m.max_seq {
 					return (
 						planned,
 						failed(format!(
 							"{op}: pair {} is {len} tokens, at most {} (chunk the passage; pairs are never truncated)",
 							have + k,
-							inner.max_seq
+							m.max_seq
 						)),
 					);
 				}
@@ -394,10 +432,10 @@ fn plan(
 		};
 		loop {
 			let seq = longest(b);
-			let est = estimate_pairs(c, b, seq);
+			let est = (m.estimate)(b, seq);
 			if b == 1 {
 				// the single-pair exception: the caps and the full budget
-				if fits(c, 1, seq, caps) && est.is_some_and(|e| e <= agg) {
+				if (m.fits)(1, seq) && est.is_some_and(|e| e <= agg) {
 					break;
 				}
 				return (
@@ -407,13 +445,13 @@ fn plan(
 					)),
 				);
 			}
-			if fits(c, b, seq, caps) && est.is_some_and(|e| e <= share) {
+			if (m.fits)(b, seq) && est.is_some_and(|e| e <= share) {
 				break;
 			}
 			b /= 2;
 		}
 		let seq = longest(b);
-		let est = estimate_pairs(c, b, seq).unwrap_or(usize::MAX);
+		let est = (m.estimate)(b, seq).unwrap_or(usize::MAX);
 		let need = b.checked_mul(seq).and_then(|v| v.checked_mul(12));
 		match need.and_then(|v| payload.checked_add(v)) {
 			Some(total) if total <= PAIR_PAYLOAD => payload = total,
@@ -430,23 +468,24 @@ fn plan(
 		let mut types = Vec::with_capacity(b * seq);
 		let mut mask = Vec::with_capacity(b * seq);
 		for (k, (pid, ptype)) in cache.iter().take(b).enumerate() {
-			if let Some(&id) = pid.iter().find(|&&id| id as usize >= c.vocab_size) {
+			if let Some(&id) = pid.iter().find(|&&id| id as usize >= m.vocab_size) {
 				return (
 					planned,
 					failed(format!(
 						"{op}: pair {}: token id {id} is not below vocab_size {}",
 						at + k,
-						c.vocab_size
+						m.vocab_size
 					)),
 				);
 			}
-			if let Some(&ty) = ptype.iter().find(|&&t| t as usize >= c.type_vocab_size) {
+			if let Some(tv) = m.type_vocab_size
+				&& let Some(&ty) = ptype.iter().find(|&&t| t as usize >= tv)
+			{
 				return (
 					planned,
 					failed(format!(
-						"{op}: pair {}: token type {ty} is not below type_vocab_size {}",
-						at + k,
-						c.type_vocab_size
+						"{op}: pair {}: token type {ty} is not below type_vocab_size {tv}",
+						at + k
 					)),
 				);
 			}
@@ -461,7 +500,7 @@ fn plan(
 			b,
 			seq,
 			ids,
-			types: Some(types),
+			types: m.type_vocab_size.map(|_| types),
 			mask,
 			estimate: est,
 		});
@@ -493,9 +532,25 @@ pub(crate) fn run_pairs(head: &Head, p: &Planned, op: &str) -> Result<Vec<f32>, 
 /// The pairs, borrowed and checked before anything is copied or
 /// tokenized: equal lengths, the count, each text, the combined bytes.
 fn preflight(queries: &[&str], passages: &[&str], op: &str) -> Result<(), String> {
+	pair_preflight(
+		queries,
+		passages,
+		[("query", "queries"), ("passage", "passages")],
+		op,
+	)
+}
+
+/// Record 0148, shared with `NliModel`: the Rust-side checks of
+/// `with_borrowed_pairs`, for callers that already hold `&str`s.
+pub(crate) fn pair_preflight(
+	queries: &[&str],
+	passages: &[&str],
+	[(a, aa), (b, bb)]: [(&str, &str); 2],
+	op: &str,
+) -> Result<(), String> {
 	if queries.len() != passages.len() {
 		return Err(format!(
-			"{op}: {} queries and {} passages; one pair per index",
+			"{op}: {} {aa} and {} {bb}; one pair per index",
 			queries.len(),
 			passages.len()
 		));
@@ -505,7 +560,7 @@ fn preflight(queries: &[&str], passages: &[&str], op: &str) -> Result<(), String
 		return Err(format!("{op}: {n} pairs, want 1 to {MAX_TEXTS}"));
 	}
 	let mut total = 0usize;
-	for (side, texts) in [("query", queries), ("passage", passages)] {
+	for (side, texts) in [(a, queries), (b, passages)] {
 		for (i, s) in texts.iter().enumerate() {
 			if s.len() > MAX_TEXT {
 				return Err(format!(
@@ -597,13 +652,36 @@ fn score(
 	queries: rune::Value,
 	passages: rune::Value,
 ) -> Result<Vec<f64>, String> {
-	let op = "CrossEncoder::score";
-	let qv = borrowed(&queries, "queries", op)?;
-	let pv = borrowed(&passages, "passages", op)?;
+	with_borrowed_pairs(
+		&queries,
+		&passages,
+		[("query", "queries"), ("passage", "passages")],
+		"CrossEncoder::score",
+		|q, p| {
+			score_strs(this, q, p, CAPS, &Knobs::default())
+				.0
+				.map(|v| v.into_iter().map(f64::from).collect())
+		},
+	)
+}
+
+/// Record 0148, shared with `NliModel`: two script vectors of strings,
+/// borrowed (never taken) and checked before anything proportional to them
+/// is allocated: equal lengths, the count, then every size and the combined
+/// total one borrowed string at a time. `f` gets the borrowed strings.
+pub(crate) fn with_borrowed_pairs<R>(
+	first: &rune::Value,
+	second: &rune::Value,
+	[(a, aa), (b, bb)]: [(&str, &str); 2],
+	op: &str,
+	f: impl FnOnce(&[&str], &[&str]) -> Result<R, String>,
+) -> Result<R, String> {
+	let qv = borrowed(first, aa, op)?;
+	let pv = borrowed(second, bb, op)?;
 	// the counts first, from the vectors' lengths, before anything is copied
 	if qv.len() != pv.len() {
 		return Err(format!(
-			"{op}: {} queries and {} passages; one pair per index",
+			"{op}: {} {aa} and {} {bb}; one pair per index",
 			qv.len(),
 			pv.len()
 		));
@@ -614,7 +692,7 @@ fn score(
 	// every size and the combined total, one borrowed string at a time,
 	// before anything proportional to the input is allocated
 	let mut total = 0usize;
-	for (side, v) in [("query", &qv), ("passage", &pv)] {
+	for (side, v) in [(a, &qv), (b, &pv)] {
 		for (i, x) in v.iter().enumerate() {
 			let t = x
 				.borrow_string_ref()
@@ -635,21 +713,19 @@ fn score(
 	for v in qv.iter() {
 		qg.push(
 			v.borrow_string_ref()
-				.map_err(|_| format!("{op}: queries must be a vector of strings"))?,
+				.map_err(|_| format!("{op}: {aa} must be a vector of strings"))?,
 		);
 	}
 	let mut pg = Vec::with_capacity(pv.len());
 	for v in pv.iter() {
 		pg.push(
 			v.borrow_string_ref()
-				.map_err(|_| format!("{op}: passages must be a vector of strings"))?,
+				.map_err(|_| format!("{op}: {bb} must be a vector of strings"))?,
 		);
 	}
 	let q: Vec<&str> = qg.iter().map(|s| &**s).collect();
 	let p: Vec<&str> = pg.iter().map(|s| &**s).collect();
-	score_strs(this, &q, &p, CAPS, &Knobs::default())
-		.0
-		.map(|v| v.into_iter().map(f64::from).collect())
+	f(&q, &p)
 }
 
 /// Test support: a loaded cross-encoder from Rust.

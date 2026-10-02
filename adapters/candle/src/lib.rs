@@ -304,7 +304,8 @@ pub fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, String> {
 	let ops = tensor_ops::build(m).map_err(err)?;
 	let text = text::build(m).map_err(err)?;
 	let rerank = text::rerank::build(m).map_err(err)?;
-	Ok(ops.into_iter().chain(text).chain(rerank).chain(vec![
+	let nli = text::nli::build(m).map_err(err)?;
+	Ok(ops.into_iter().chain(text).chain(rerank).chain(nli).chain(vec![
 		(
 			"candle::Tensor".into(),
 			"Tensor: a CPU tensor; its display is bounded (dtype, shape, at most 8x8 values)",
