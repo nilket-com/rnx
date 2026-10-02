@@ -914,7 +914,14 @@ fn main() {
 		// record 0149: greedy generation over the tickets
 		"u7" => u7(&a[2], &a[3], &a[4], &a[5], &a[6], &a[7]),
 		// record 0151: the development pool
-		"u8" => u8(&a[2], &a[3], &a[4], &a[5], &a[6]),
+		"u8" => {
+			let retrieval_only = match a.get(7).map(|s| s.as_str()) {
+				None => false,
+				Some("retrieval") => true,
+				Some(x) => panic!("u8: unknown mode {x:?}"),
+			};
+			u8(&a[2], &a[3], &a[4], &a[5], &a[6], retrieval_only)
+		}
 		// record 0135: D1's passages, as U1 chunks them, for timing
 		"passages" => {
 			let texts: Vec<String> = load(&a[2]).1.into_iter().map(|p| p.1).collect();
@@ -1897,7 +1904,9 @@ fn u7(d2: &str, ranges: &str, labels: &str, sample: &str, model: &str, out_dir: 
 // chunks, S1 embedding and scores), per query a stable descending sort of
 // passages, the first 40 documents in that order with each one's first 3
 // passages, and every (query, passage) pair scored alone (a batch of one).
-fn u8(dir: &str, minilm: &str, cross: &str, dev: &str, out_dir: &str) {
+/// `retrieval_only` (0152): the same path up to the pool, without loading
+/// the cross-encoder or scoring any pair; the pool has no `ce` column.
+fn u8(dir: &str, minilm: &str, cross: &str, dev: &str, out_dir: &str, retrieval_only: bool) {
 	let t = twin_load(minilm);
 	let (docs, passages) = load_with(dir, &|body| {
 		token_chunks(&t.tok, body, 256, 0)
@@ -1923,8 +1932,12 @@ fn u8(dir: &str, minilm: &str, cross: &str, dev: &str, out_dir: &str) {
 	let q = twin_embed_sized(&t, &qrefs, &s1_sizes(&t, &qrefs, 32));
 	let s = twin_scores(&e, &q, 384);
 	let m = ids.len();
-	let ce = ce_load(cross);
-	let mut pool = String::from("query\tcand\tpath\tprank\tpid\tretrieval\tce\n");
+	let ce = (!retrieval_only).then(|| ce_load(cross));
+	let mut pool = String::from(if retrieval_only {
+		"query\tcand\tpath\tprank\tpid\tretrieval\n"
+	} else {
+		"query\tcand\tpath\tprank\tpid\tretrieval\tce\n"
+	});
 	let mut pairs = 0;
 	for k in 0..m {
 		let mut order: Vec<usize> = (0..passages.len()).collect();
@@ -1947,7 +1960,18 @@ fn u8(dir: &str, minilm: &str, cross: &str, dev: &str, out_dir: &str) {
 		}
 		for (c, (d, ps)) in slots.iter().enumerate() {
 			for (j, &p) in ps.iter().enumerate() {
-				let (score, _) = ce_score(&ce, &[(qs[k].clone(), passages[p].1.clone())]);
+				let Some(ce) = &ce else {
+					pool += &format!(
+						"{}\t{}\t{}\t{}\t{p}\t{}\n",
+						ids[k],
+						c + 1,
+						docs[*d].path,
+						j + 1,
+						s[p * m + k]
+					);
+					continue;
+				};
+				let (score, _) = ce_score(ce, &[(qs[k].clone(), passages[p].1.clone())]);
 				pairs += 1;
 				pool += &format!(
 					"{}\t{}\t{}\t{}\t{p}\t{}\t{:?}\n",

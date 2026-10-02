@@ -144,10 +144,15 @@ pub fn main(args) {
 
 pub fn run(args) {
     let (dir, model, cross, rubric_path, out) = (args[0], args[1], args[2], args[3], args[4]);
+    // 0152: an optional sixth argument `retrieval` runs the same path up to
+    // the pool without the cross-encoder; the pool then has no ce column
+    let retrieval_only = if args.len() == 5 { false } else if args.len() == 6 && args[5] == "retrieval" { true } else {
+        return Err(`run: want 5 arguments, or a sixth "retrieval"`);
+    };
     order_controls()?;
     let t0 = time::monotonic_ms();
     let enc = candle::TextEncoder::load(model)?;
-    let ce = candle::CrossEncoder::load(cross)?;
+    let ce = if retrieval_only { None } else { Some(candle::CrossEncoder::load(cross)?) };
     let (docs, passages, ptext, ppaths) = load(dir, enc)?;
     let e = enc.embed(ptext)?;
     let (ids, texts, support) = rubric(rubric_path)?;
@@ -181,9 +186,11 @@ pub fn run(args) {
     let t1 = time::monotonic_ms();
     // every pair alone, in query, candidate rank, passage rank order
     let ce_scores = [];
-    for p in ordered {
-        let s = ce.score([p.text], [ptext[p.pid]])?;
-        ce_scores.push(s[0]);
+    if let Some(model) = ce {
+        for p in ordered {
+            let s = model.score([p.text], [ptext[p.pid]])?;
+            ce_scores.push(s[0]);
+        }
     }
     let t2 = time::monotonic_ms();
     // retained: the passages, the retrieval scores, the pool
@@ -203,13 +210,18 @@ pub fn run(args) {
         retained += "\n";
     }
     fs::write(out + "/u8-retrieval.tsv", retained)?;
-    let text = "query\tcand\tpath\tprank\tpid\tretrieval\tce\n";
+    let text = if retrieval_only { "query\tcand\tpath\tprank\tpid\tretrieval\n" } else { "query\tcand\tpath\tprank\tpid\tretrieval\tce\n" };
     for j in 0..ordered.len() {
         let p = ordered[j];
-        text += `${p.query}\t${p.cand}\t${p.path}\t${p.prank}\t${p.pid}\t${p.retrieval}\t${ce_scores[j]}\n`;
+        text += `${p.query}\t${p.cand}\t${p.path}\t${p.prank}\t${p.pid}\t${p.retrieval}`;
+        text += if retrieval_only { "\n" } else { `\t${ce_scores[j]}\n` };
     }
     fs::write(out + "/u8-pool.tsv", text)?;
-    let line = `${docs.height()?} docs, ${passages.height()?} passages, ${ids.len()} queries; retrieval and pool ${t1 - t0} ms; ${ordered.len()} pairs scored one at a time in ${t2 - t1} ms`;
+    let line = if retrieval_only {
+        `${docs.height()?} docs, ${passages.height()?} passages, ${ids.len()} queries; retrieval and pool ${t1 - t0} ms; retrieval only, ${ordered.len()} pool rows, no pairs scored`
+    } else {
+        `${docs.height()?} docs, ${passages.height()?} passages, ${ids.len()} queries; retrieval and pool ${t1 - t0} ms; ${ordered.len()} pairs scored one at a time in ${t2 - t1} ms`
+    };
     println!("{}", line);
     println!("WORKFLOW OK u8");
     Ok(())
