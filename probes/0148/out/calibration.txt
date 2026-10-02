@@ -1,0 +1,16 @@
+s=16 b=1 alone: peak 4333067 B, estimate 7532300 B, headroom 1.74x
+s=16 b=8 alone: peak 17193039 B, estimate 26869856 B, headroom 1.56x
+s=16 b=8 x32: the planner formed batch sizes {6: 1, 8: 29, 9: 2} (size: count)
+s=16 b=8 x32 batches: max running 32 at once (admitted by the budget), max in flight 859835392 B, peak 267649301 B, headroom 3.21x
+s=128 b=1 alone: peak 6825755 B, estimate 24844812 B, headroom 3.64x
+s=128 b=1 x32: the planner formed batch sizes {1: 32} (size: count)
+s=128 b=1 x32 batches: max running 32 at once (admitted by the budget), max in flight 795033984 B, peak 133932519 B, headroom 5.94x
+s=512 b=1 alone: peak 47466167 B, estimate 199242252 B, headroom 4.20x
+s=512 b=1 x32: the planner formed batch sizes {1: 32} (size: count)
+s=512 b=1 x32 batches: max running 5 at once (admitted by the budget), max in flight 996211260 B, peak 233515651 B, headroom 4.27x
+named skip: s=16 b=1 x32: the planner groups these pairs into batches of 8, so concurrent b=1 batches are not a shape it forms
+named skip: s=128 b=max: the planner admits only single pairs at this length
+named skip: s=512 b=max: the planner admits only single pairs at this length
+lowered limit: refused (NliModel::score: pair 0 at 512 tokens exceeds the activation caps or the in-flight budget); allocated 180748 B against an estimate of 199242252 B
+minimum budget: 4 single 512-token pairs completed, one at a time
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 19.98s

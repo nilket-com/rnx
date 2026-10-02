@@ -1,0 +1,73 @@
+252 tickets, 2290 pairs; NLI scoring 107166 ms
+tickets per class ("review": best entailment score below 0.5):
+DataFrame: 5 rows × 2 columns
+"triage": string | "tickets": u32
+"review" | 236
+"question" | 8
+"bug" | 5
+"documentation" | 2
+"feature" | 1
+
+the review queue (lowest best scores first):
+DataFrame: 10 rows × 5 columns
+"ticket": i64 | "title": string | "best": string | "second": string | "best score": f64
+422 | "Hex number literals containing `e` are considered invalid" | "bug" | "question" | 0.0020251018866484184
+456 | "Standard macros should live in the `rune` crate and not `rune-modules`" | "question" | "documentation" | 0.002301697506751803
+910 | "list functions by name in unit" | "question" | "feature" | 0.0023804994476850426
+160 | "Implement the extern prelude for module resolution which hosts native modules" | "question" | "documentation" | 0.003010921652135271
+409 | "Collect docstrings for modules" | "question" | "documentation" | 0.003260737028288456
+5 | "Support modules" | "question" | "feature" | 0.00334307729927202
+771 | "Before releasing 0.14" | "feature" | "question" | 0.004139002117456621
+1021 | "Statements like `if cond { } (..)` are incorrectly treated as function calls" | "question" | "documentation" | 0.004259411306117433
+768 | "New 0.13.x release?" | "question" | "documentation" | 0.0042604564481841505
+226 | "Use rune tests for testing rune" | "question" | "feature" | 0.004323057807322017
+
+DataFrame: 10 rows × 5 columns
+"ticket": i64 | "title": string | "best": string | "second": string | "best score": f64
+251 | "feature: support of global changeable variables" | "question" | "feature" | 0.0050393683105776485
+2 | "Fix tracing when sub-vms are being spawned" | "question" | "documentation" | 0.005447903367397713
+390 | "The INDEX_SET protocol fn now expects a unit return" | "bug" | "question" | 0.006201058893499809
+487 | "Language server should return `id` for unhandled requests" | "documentation" | "question" | 0.006270939799096474
+590 | "Using a dedicated enum for the `Try` protocol" | "question" | "documentation" | 0.006352765604729313
+960 | "Converting rune::Value to u128/i128 is accepted at compile time, but fails at ru"…[truncated] | "question" | "bug" | 0.007263560808165063
+700 | "Runtime metadata for closures is incorrect" | "question" | "documentation" | 0.007532469302176662
+830 | "&& operator changes the value of a boolean" | "question" | "bug" | 0.0075481186765278515
+387 | " thanks for sharing your code" | "question" | "documentation" | 0.008153835677980148
+252 | "OOTB template literal are missing for bool" | "question" | "documentation" | 0.008455133450554096
+
+most bug-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "bug": f64
+656 | "Error handling in built-in toml module" | 0.92312574987379
+747 | "Panic when formatting Value outside of virtual machines" | 0.8858034629930992
+424 | "Some benchmarks are failing on the main branch" | 0.684037183268749
+
+most feature-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "feature": f64
+540 | "Could variadic functions be supported?" | 0.6639999381200042
+444 | "Project questions " | 0.3689154537163218
+534 | "Printable errors" | 0.24482276231381941
+
+most question-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "question": f64
+811 | "How to get Rune backtraces for native Results at runtime?" | 0.8844727196275871
+44 | "request : repl and ide support" | 0.8052718701572443
+273 | "Function Loading Memory Leak" | 0.7990823275677128
+
+most documentation-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "documentation": f64
+1039 | "Compiling a `const` with overflowing integer arithmetic panics the compiler" | 0.6455110466495859
+684 | "`rune fmt` breaks multiline comments" | 0.5654133315528601
+801 | "Formatting jank with comments at the trailing position in lists" | 0.486214019002061
+
+most performance-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "performance": f64
+912 | "async is not Work" | 0.26001146805582986
+273 | "Function Loading Memory Leak" | 0.13218023161856163
+521 | "item macros not working" | 0.12636558460085728
+
+WORKFLOW OK u6

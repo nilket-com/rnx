@@ -1,0 +1,10 @@
+batched: 6 pairs x 3 logits, max |Candle - HF| = 4.77e-06 (bound 1e-4)
+alone: 6 pairs x 3 logits, max |Candle - HF| = 4.77e-06 (bound 1e-4)
+pair lengths (tokens): [18, 19, 37, 18, 46, 344]; Candle batches [6]
+  0: HF [-4.6857, 3.5726, -0.4925]  (A person is making music.)
+  1: HF [6.1663, -4.1053, -2.6532]  (The cat is running in the garden.)
+  2: HF [-3.84, 3.6466, -1.4883]  (Revenue increased.)
+  3: HF [5.7732, -3.879, -2.3743]  (The streets stayed completely dry.)
+  4: HF [-2.786, 1.5724, 0.6082]  (This text describes a crash.)
+  5: HF [-2.5368, -0.9544, 3.8507]  (The library is slow.)
+early gate: PASS

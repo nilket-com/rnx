@@ -1,0 +1,2 @@
+:dep polars candle, U6: session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep polars candle, U6: BIT-EQUAL (each producer validated first against 2290 reconstructed identities): 2290 pairs x 3 logits in f32 bits, 252 tickets' classes and s_label in f64 bits; the ticket tables recomputed from the logits within 1e-12

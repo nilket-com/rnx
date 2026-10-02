@@ -1,0 +1,2 @@
+:dep candle: session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle: BIT-EQUAL: 18 NLI logits (6 pairs, each alone), in f32 bits, against the saved early gate

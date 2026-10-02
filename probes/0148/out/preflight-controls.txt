@@ -1,0 +1,12 @@
+pass: unmodified: every step reached (u6 twin validate hf-frozen hf-tokenizers hf-model evaluate )
+refused: a D2 ticket's body changed: FAIL: D2: #2 changed; no step began
+refused: a D2 ticket removed: FAIL: D2: #2 missing; no step began
+refused: two D2 tickets reordered: FAIL: D2: the order differs from the manifest; no step began
+refused: 0139's labels changed: FAIL: probes/0139/frozen/labels.tsv changed; no step began
+refused: 0139's sample changed: FAIL: probes/0139/frozen/sample.tsv changed; no step began
+refused: an annotation changed: FAIL: probes/0139/frozen/annotations-codex.tsv changed; no step began
+refused: 0139's baseline changed: FAIL: probes/0139/out/u4-session.tsv changed; no step began
+refused: the byte ranges changed: FAIL: probes/0136/out/ranges-o0.tsv changed; no step began
+refused: an NLI weight byte changed: FAIL: NLI model: model.safetensors changed; no step began
+refused: the NLI tokenizer missing: FAIL: NLI model: tokenizer.json missing; no step began
+all provenance controls behave

@@ -1,0 +1,10 @@
+pass: unmodified: BIT-EQUAL (each producer validated first against 2290 reconstructed identities): 2290 pairs x 3 logits in f32 bits, 252 tickets' classes and s_label in f64 bits; the ticket tables recomputed from the logits within 1e-12
+refused: both, a passage swapped between two pairs (identities kept in place): FAIL: TMP/a/u6-pairs.tsv row 11: want ticket 6 passage 0 label bug, have ['6', '1', 'bug']
+refused: both, a ticket's identity swapped: FAIL: TMP/a/u6-pairs.tsv row 1: want ticket 2 passage 0 label bug, have ['5', '0', 'bug']
+refused: both, a label swapped: FAIL: TMP/a/u6-pairs.tsv row 1: want ticket 2 passage 0 label bug, have ['2', '0', 'feature']
+refused: both, a missing identity: FAIL: TMP/a/u6-pairs.tsv: 2289 pairs, want 2290
+refused: both, an extra identity: FAIL: TMP/a/u6-pairs.tsv: 2291 pairs, want 2290
+refused: both, a duplicate identity: FAIL: TMP/a/u6-pairs.tsv row 2: want ticket 2 passage 0 label feature, have ['2', '0', 'bug']
+refused: both, a ticket's class and scores forged consistently: FAIL: TMP/a ticket 2: ['bug', 'bug', 'feature'] is not the rule's ['bug', 'bug', 'question'] on its own scores
+refused: one side, the lowest bit of a non-maximal pair's logit: FAIL: pair 11 ((6, 0, 'bug')): logits differ in f32 bits
+all validation controls behave

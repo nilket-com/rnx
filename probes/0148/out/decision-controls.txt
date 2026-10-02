@@ -1,0 +1,10 @@
+bug's p_entail from logits [0, 0, -1000] = 0.5
+pass: exactly 0.5 is assigned: accepted
+pass: Codex's forged row at the boundary: refused (FAIL: ticket: ['question', 'question', 'documentation'] is not the rule's ['bug', 'bug', 'feature'] on its own scores)
+pass: just below 0.5 abstains: accepted
+pass: just below 0.5 assigned anyway: refused (FAIL: ticket: ['bug', 'bug', 'feature'] is not the rule's ['review', 'bug', 'feature'] on its own scores)
+pass: an exact tie goes to the first label: accepted
+pass: an exact tie given to the second label: refused (FAIL: ticket: ['feature', 'feature', 'bug'] is not the rule's ['bug', 'bug', 'feature'] on its own scores)
+pass: a genuine rounding ambiguity at 0.5: accepted (named: ticket: ['bug', 'bug', 'feature'] against the recomputed ['review', 'bug', 'feature']: a rounding ambiguity within 1e-12)
+pass: an unrelated label at a rounding ambiguity: refused (FAIL: ticket: ['question', 'question', 'bug'] is not the rule's ['bug', 'bug', 'feature'] on its own scores)
+all decision controls behave

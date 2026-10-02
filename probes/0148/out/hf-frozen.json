@@ -1,0 +1,16 @@
+{
+ "check": "hf-frozen",
+ "completed": true,
+ "result": "FAIL",
+ "pairs": 2290,
+ "max_logit_diff": 0.18844211101531982,
+ "listed": [
+  "ticket 771: near a boundary (HF best 0.004139, second 0.004100), decisions agree",
+  "ticket 975: HF ['question', 'question', 'feature'], producer ['review', 'question', 'feature'], HF best 0.520418 second 0.037873 (NOT explained within 1e-4)"
+ ],
+ "predict_s": [
+  126.8373512539547,
+  123.39290324412286,
+  124.59029727778398
+ ]
+}

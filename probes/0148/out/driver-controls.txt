@@ -1,0 +1,10 @@
+continues: pass: gate 3 as frozen (native HF CrossEncoder): completed, PASS (exit 0); every later step began
+continues: fail: gate 3 as frozen (native HF CrossEncoder): completed, FAIL (exit 3) - recorded; plan section 6a; every later step began
+stops: silent1: STOP: the frozen HF check exited 1: the check itself did not complete; no later step began
+stops: traceback1: STOP: the frozen HF check exited 1: the check itself did not complete; no later step began
+stops: missing3: STOP: exit 3 without a well-formed completion artifact (FileNotFoundError(2, 'No such file or directory')); no later step began
+stops: malformed3: STOP: exit 3 without a well-formed completion artifact (JSONDecodeError('Unterminated string starting at: line 1 column 24 (char 23)')); no later step began
+stops: incomplete3: STOP: exit 3 with an artifact that does not record a completed FAIL: {'check': 'hf-frozen', 'completed': False, 'result': 'FAIL', 'pairs': 2290}; no later step began
+stops: mismatch0: STOP: exit 0 with an artifact that does not record a completed PASS: {'check': 'hf-frozen', 'completed': True, 'result': 'FAIL', 'pairs': 2290}; no later step began
+stops: crash2: STOP: the frozen HF check exited 2: the check itself did not complete; no later step began
+all driver controls behave

@@ -1,0 +1,18 @@
+{"note": "Record 0148's early semantic stop gate: hand-written pairs, not drawn from D2, of mixed lengths (one near the 512-token bound), so batching pads them. Frozen with the implementation, before any D2 score.",
+ "premises": [
+  "A man is playing a guitar on stage.",
+  "The cat is sleeping on the sofa.",
+  "The quarterly report shows that revenue grew by twelve percent compared with last year, driven mainly by strong sales in Europe and Asia, while operating costs stayed flat.",
+  "It rained heavily all day in the city.",
+  "When the program opens a configuration file that contains a trailing comma, the parser panics with an index out of bounds error instead of reporting a syntax error, and the whole application exits.",
+  "LONG"
+ ],
+ "hypotheses": [
+  "A person is making music.",
+  "The cat is running in the garden.",
+  "Revenue increased.",
+  "The streets stayed completely dry.",
+  "This text describes a crash.",
+  "The library is slow."
+ ],
+ "long": "The library loads every record into memory before it starts processing, and on large inputs this takes several minutes and many gigabytes. "}
