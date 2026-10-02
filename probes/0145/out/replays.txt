@@ -1,0 +1,9 @@
+# Session-paste replays on the 0145 tree (runner0134)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+e4: 3 rows (script), 3 (twin): EQUAL
+session: OK (prompt True, marker True, returned Ok, errors 0)
+e5: 11 rows (script), 11 (twin): EQUAL
+session: OK (prompt True, marker True, returned Ok, errors 0)
+BIT-EQUAL (each trace validated first, N=252 K=6 D=384): init, 0 moves, 23 iterations of 252 assignments (converged True), 252 final assignments, 2304 centroid values in f32 bits (4 in a different notation)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+u4: 252 tickets, each table complete and valid: BIT-EQUAL

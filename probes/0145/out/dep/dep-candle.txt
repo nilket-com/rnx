@@ -1,0 +1,6 @@
+:dep candle, one-day: session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle, one-day: BIT-EQUAL (each trace validated first, C=1 N=400): 800 trend and z values, 1 events, 7 weekday values, 1 busiest weeks, all in f64 bits
+:dep candle, two-day: session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle, two-day: BIT-EQUAL (each trace validated first, C=1 N=400): 800 trend and z values, 1 events, 7 weekday values, 1 busiest weeks, all in f64 bits
+:dep candle, weekly: session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle, weekly: BIT-EQUAL (each trace validated first, C=1 N=196): 392 trend and z values, 0 events, 7 weekday values, 1 busiest weeks, all in f64 bits

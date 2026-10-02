@@ -1,0 +1,55 @@
+category	identity	reason
+custom-op	Tensor::apply	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_op1	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_op1_arc	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_op1_no_bwd	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_op2	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_op2_arc	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_op2_no_bwd	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_op3	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_op3_arc	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_op3_no_bwd	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::apply_t	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::inplace_op1	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::inplace_op2	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+custom-op	Tensor::inplace_op3	Rust trait objects (CustomOp, Module, ModuleT); no script contract
+autograd	Tensor::backward	the adapter evaluates eagerly without gradients
+autograd	Tensor::detach	the adapter evaluates eagerly without gradients
+autograd	Tensor::track_op	the adapter evaluates eagerly without gradients
+autograd	Tensor::sorted_nodes	the adapter evaluates eagerly without gradients
+autograd	Tensor::is_variable	the adapter evaluates eagerly without gradients
+internals	Tensor::from_raw_buffer	raw storage, layouts, strided iteration and identity, not script values
+internals	Tensor::from_storage	raw storage, layouts, strided iteration and identity, not script values
+internals	Tensor::storage_and_layout	raw storage, layouts, strided iteration and identity, not script values
+internals	Tensor::strided_blocks	raw storage, layouts, strided iteration and identity, not script values
+internals	Tensor::strided_index	raw storage, layouts, strided iteration and identity, not script values
+internals	Tensor::layout	raw storage, layouts, strided iteration and identity, not script values
+internals	Tensor::id	raw storage, layouts, strided iteration and identity, not script values
+internals	Tensor::is_fortran_contiguous	raw storage, layouts, strided iteration and identity, not script values
+internals	Tensor::normalize_axis	raw storage, layouts, strided iteration and identity, not script values
+internals	Tensor::new	raw storage, layouts, strided iteration and identity, not script values
+device	Tensor::device	the adapter is CPU-only
+device	Tensor::to_device	the adapter is CPU-only
+in-place	Tensor::scatter_set	deferred: Candle clones share writable storage; their own aliasing record
+in-place	Tensor::scatter_add_set	deferred: Candle clones share writable storage; their own aliasing record
+in-place	Tensor::slice_set	deferred: Candle clones share writable storage; their own aliasing record
+in-place	Tensor::const_set	deferred: Candle clones share writable storage; their own aliasing record
+in-place	Tensor::zero_set	deferred: Candle clones share writable storage; their own aliasing record
+in-place	Tensor::one_set	deferred: Candle clones share writable storage; their own aliasing record
+random	Tensor::rand	deferred: Candle 0.11 cannot seed its CPU generator (set_seed bails)
+random	Tensor::rand_like	deferred: Candle 0.11 cannot seed its CPU generator (set_seed bails)
+random	Tensor::randn	deferred: Candle 0.11 cannot seed its CPU generator (set_seed bails)
+random	Tensor::randn_like	deferred: Candle 0.11 cannot seed its CPU generator (set_seed bails)
+iterator	Tensor::from_iter	deferred: Rune 0.14.2 gives native code no public way to advance an iterator (probes/0143/out/from-iter-probe.txt)
+artifact	Tensor::vd_add	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vd_div	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vd_max	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vd_min	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vd_mul	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vd_sub	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vs_add	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vs_div	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vs_max	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vs_min	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vs_mul	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged
+artifact	Tensor::vs_sub	not a Tensor method: an MKL/Accelerate slice FFI wrapper matched by 0134's binary_op! regex; kept so the denominator is unchanged

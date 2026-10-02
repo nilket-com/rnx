@@ -1,0 +1,14 @@
+pass: unmodified: BIT-EQUAL (each trace validated first, C=4 N=1188): 9504 trend and z values, 17 events, 28 weekday values, 4 busiest weeks, all in f64 bits
+refused: both, both empty: FAIL: /tmp/tmpkgc1f2o3/a: empty
+refused: both, channel 0's trend and z deleted: FAIL: /tmp/tmpnnbqa30h/a: channel 0 has no trend line
+refused: both, a trend value dropped: FAIL: /tmp/tmppdwbapk0/a: channel 0 has 1187 trend and 1188 z values, want 1188
+refused: both, a z value NaN: FAIL: /tmp/tmpnplwcp56/a z 0: nan is not finite
+refused: both, an event deleted: FAIL: /tmp/tmp8p32fp31/a: channel 0's events are not the rule's from its z
+refused: both, an event's length changed: FAIL: /tmp/tmpppchq8a4/a: event (1123, 2) is not its run's earliest highest peak
+refused: both, an event's peak moved: FAIL: /tmp/tmpc2qf3s38/a: event (1124, 1, 8.675702339277553) disagrees with channel 0's z
+refused: both, a weekday value dropped: FAIL: /tmp/tmpurmoll6s/a: channel 0 has 6 weekday values
+refused: both, the busiest week out of range: FAIL: /tmp/tmpa48eas0o/a: busiest week 169 is outside [0, 169)
+refused: both, a channel's lines reordered: FAIL: /tmp/tmpoq5sj5pc/a: channel 0 has no trend line
+refused: both, an unknown line: FAIL: /tmp/tmp7n_9ddd0/a line 34: unexpected 'note'
+refused: one side, a z value's lowest bit: FAIL: channel 0: z differs in f64 bits
+all controls behave

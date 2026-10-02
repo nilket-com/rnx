@@ -1,0 +1,11 @@
+BIT-EQUAL (each trace validated first, C=4 N=1188): 9504 trend and z values, 17 events, 28 weekday values, 4 busiest weeks, all in f64 bits
+one-day: BIT-EQUAL (each trace validated first, C=1 N=400): 800 trend and z values, 1 events, 7 weekday values, 1 busiest weeks, all in f64 bits
+two-day: BIT-EQUAL (each trace validated first, C=1 N=400): 800 trend and z values, 1 events, 7 weekday values, 1 busiest weeks, all in f64 bits
+weekly: BIT-EQUAL (each trace validated first, C=1 N=196): 392 trend and z values, 0 events, 7 weekday values, 1 busiest weeks, all in f64 bits
+constant, flat-spike: both refused by both implementations (zero MAD)
+Rust_(programming_language): trend max |d| / (1e-12 + 1e-12|v|) = 0.00126; z max |d| = 7.19e-14; events identical (5); near-threshold days []; weekday max |d| = 5.55e-16; busiest week 34 (twin 34)
+Python_(programming_language): trend max |d| / (1e-12 + 1e-12|v|) = 0.00116; z max |d| = 5.85e-14; events identical (5); near-threshold days []; weekday max |d| = 6.28e-16; busiest week 29 (twin 29)
+Go_(programming_language): trend max |d| / (1e-12 + 1e-12|v|) = 0.00109; z max |d| = 1.88e-13; events identical (2); near-threshold days []; weekday max |d| = 5.83e-16; busiest week 0 (twin 0)
+Zig_(programming_language): trend max |d| / (1e-12 + 1e-12|v|) = 0.00121; z max |d| = 4e-14; events identical (5); near-threshold days []; weekday max |d| = 4.65e-16; busiest week 152 (twin 152)
+numpy method: 8.7 ms
+numpy gate: PASS

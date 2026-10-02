@@ -1,0 +1,33 @@
+Spike events (z ≥ 4, top 5 per article):
+DataFrame: 17 rows × 7 columns
+[7 rows and 0 columns omitted by display limits]
+"article": string | "peak day": string | "views": i64 | "trend": i64 | "× trend": f64 | "z": f64 | "days": i64
+"Rust" | "20260728" | 5735 | 1762 | 3.2549921333572125 | 8.675702339277553 | 1
+"Rust" | "20260514" | 5499 | 1876 | 2.9306521297672257 | 7.888389961717509 | 1
+"Rust" | "20251224" | 6611 | 2441 | 2.7088699502042175 | 7.298132614898926 | 3
+"Rust" | "20240228" | 7279 | 3321 | 2.191524043041924 | 5.708472198543608 | 2
+"Rust" | "20240720" | 3878 | 2159 | 1.7962191385891877 | 4.216479489346382 | 1
+"Python" | "20250606" | 15718 | 3735 | 4.208042347731295 | 9.181520394824277 | 2
+"Python" | "20260728" | 7899 | 3513 | 2.2484778434806554 | 5.057292185264852 | 1
+"Python" | "20240406" | 12936 | 5806 | 2.2281425447568615 | 4.997508080679094 | 1
+"Python" | "20260109" | 9136 | 4231 | 2.1592998524901375 | 4.790986938932294 | 1
+"Python" | "20240625" | 9828 | 5069 | 1.9387442727277684 | 4.081991044802679 | 1
+
+Weekday pattern (views vs. that week's geometric mean):
+DataFrame: 4 rows × 8 columns
+"article": string | "Mon %": f64 | "Tue %": f64 | "Wed %": f64 | "Thu %": f64 | "Fri %": f64 | "Sat %": f64 | "Sun %": f64
+"Rust" | 5.5 | 10.2 | 10.0 | 9.5 | 3.3 | -16.9 | -16.9
+"Python" | 8.9 | 14.4 | 12.2 | 10.4 | 2.9 | -20.2 | -21.1
+"Go" | 8.0 | 11.4 | 10.8 | 9.3 | 3.3 | -16.8 | -20.1
+"Zig" | 3.6 | 7.6 | 8.3 | 7.1 | 2.8 | -13.4 | -13.2
+
+Busiest week by raw views:
+DataFrame: 4 rows × 3 columns
+"article": string | "week from": string | "mean daily views": i64
+"Rust" | "20240224" | 4542
+"Python" | "20240120" | 9841
+"Go" | "20230701" | 4551
+"Zig" | "20260530" | 1628
+
+1188 days x 4 articles; load 3 ms, signal and statistics 12 ms, tables 1 ms
+WORKFLOW OK e7
