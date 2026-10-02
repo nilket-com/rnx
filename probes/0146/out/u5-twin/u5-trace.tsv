@@ -1,0 +1,110 @@
+cand	Q1	1	0063_a_session_can_request_its_next_executable.md	1597	0.46059683	2.0729992389678955
+cand	Q1	2	0061_projects_share_an_assembled_executable.md	1498	0.4298853	3.9414210319519043
+cand	Q1	3	0071_polars_version.md	2040	0.41303948	-3.303379535675049
+cand	Q1	4	0070_dep_is_quiet_by_default.md	2023	0.39414236	-7.2832841873168945
+cand	Q1	5	0001_the_first_release.md	3	0.38899046	-8.928701400756836
+cand	Q1	6	0002_the_interactive_session_evidence.md	24	0.38625747	-3.523733377456665
+cand	Q1	7	0051_an_executable_assembled_from_its_extensions.md	1111	0.38493812	-4.57023811340332
+cand	Q1	8	0070_prompt_evidence.md	2029	0.37740883	-1.5863885879516602
+cand	Q1	9	0067_one_install_journey_evidence.md	1878	0.37586418	0.12612618505954742
+cand	Q1	10	0046_a_worker_whose_output_has_a_boundary.md	977	0.3755829	-3.004924774169922
+cand	Q1	11	0123_schema_display_and_cast_evidence.md	3194	0.37365198	-10.305414199829102
+cand	Q1	12	0073_polars_generator.md	2092	0.36979896	-9.212261199951172
+cand	Q1	13	0002_the_interactive_session.md	17	0.36520237	-7.787426948547363
+cand	Q1	14	0052_one_query_through_the_extension_interface_implementation_evidence.md	1160	0.3650464	-4.736233711242676
+cand	Q1	15	0070_costs_and_regression_evidence.md	2014	0.36320782	0.2145766019821167
+cand	Q1	16	0069_costs_and_regression_evidence.md	1975	0.360751	-4.389248847961426
+cand	Q1	17	0057_a_project_declares_what_its_executable_contains.md	1339	0.35542047	-3.6746139526367188
+cand	Q1	18	0079_polars_callbacks.md	2313	0.35394326	-5.871461868286133
+cand	Q1	19	0068_presentation_seam_evidence.md	1930	0.35372156	-4.829872131347656
+cand	Q1	20	0062_an_adapter_name_becomes_a_declaration.md	1554	0.3519124	-1.9025633335113525
+rerank	Q1	2,1,15,9,8,20,10,3,6,17,16,7,14,19,18,4,13,5,12,11
+cand	Q2	1	0130_polars_test_limit_isolation.md	3377	0.59012544	4.436263084411621
+cand	Q2	2	0130_polars_test_limit_isolation_evidence.md	3380	0.54784817	-6.695278167724609
+cand	Q2	3	0056_a_server_entry_without_ownership_by_accident_host_evidence.md	1337	0.4876239	-4.787029266357422
+cand	Q2	4	0054_a_server_owns_more_than_a_handler_shutdown_evidence.md	1252	0.45015126	-4.698761940002441
+cand	Q2	5	0025_the_same_contracts_on_windows_evidence.md	430	0.4489411	-9.571558952331543
+cand	Q2	6	0131_text_embeddings_evidence.md	3411	0.44892997	-10.510663986206055
+cand	Q2	7	0127_pivot_evidence.md	3326	0.44451597	-7.670026779174805
+cand	Q2	8	0006_what_a_retained_value_pins_evidence.md	99	0.44375545	-11.286151885986328
+cand	Q2	9	0051_an_executable_assembled_from_its_extensions.md	1116	0.43915433	-10.479759216308594
+cand	Q2	10	0058_a_small_dataframe_pipeline_through_the_same_engine_cost_evidence.md	1430	0.43795767	-8.120251655578613
+cand	Q2	11	0058_a_small_dataframe_pipeline_through_the_same_engine_engine_thread_evidence.md	1433	0.43479022	-8.830263137817383
+cand	Q2	12	0025_the_same_contracts_on_windows.md	394	0.42909887	-10.858739852905273
+cand	Q2	13	0048_a_bounded_transport_before_a_notebook.md	1041	0.42882404	-10.932687759399414
+cand	Q2	14	0034_a_bounded_request_with_no_second_json.md	717	0.42864203	-9.246413230895996
+cand	Q2	15	0082_polars_borrowed_slice_bindings_evidence.md	2390	0.4277709	-6.001536846160889
+cand	Q2	16	0092_polars_typed_left_subtraction_evidence.md	2546	0.42753154	-11.313318252563477
+cand	Q2	17	0088_polars_owned_cow_chunked_returns_evidence.md	2486	0.42625147	-11.160358428955078
+cand	Q2	18	0058_a_small_dataframe_pipeline_through_the_same_engine_boundary_evidence.md	1419	0.42311713	-10.868127822875977
+cand	Q2	19	0129_candle_workflow_evidence.md	3361	0.42238665	-5.186151027679443
+cand	Q2	20	0079_polars_callbacks_evidence.md	2325	0.41788977	-11.083040237426758
+rerank	Q2	1,4,3,19,15,2,7,10,11,14,5,9,6,12,18,13,20,17,8,16
+cand	Q3	1	0126_eager_group_by_evidence.md	3291	0.59790033	0.5568380355834961
+cand	Q3	2	0126_eager_group_by.md	3283	0.551696	0.703385591506958
+cand	Q3	3	0089_polars_integer_generic_arg_extrema.md	2490	0.48539457	-7.399863243103027
+cand	Q3	4	0122_workflow_probe_evidence.md	3174	0.4743505	-5.695445537567139
+cand	Q3	5	0093_polars_checked_integer_readback_evidence.md	2560	0.47401276	-8.694652557373047
+cand	Q3	6	0058_a_small_dataframe_pipeline_through_the_same_engine.md	1395	0.4676221	-8.113637924194336
+cand	Q3	7	0058_a_small_dataframe_pipeline_through_the_same_engine_engine_thread_evidence.md	1435	0.46753326	3.9098498821258545
+cand	Q3	8	0108_polars_v2_rust_api_baseline_evidence.md	2832	0.46431315	-5.661958694458008
+cand	Q3	9	0076_polars_coverage_three_evidence.md	2218	0.46136475	-8.445335388183594
+cand	Q3	10	0074_polars_rc2_forward_probe_evidence.md	2136	0.4600733	-9.722013473510742
+cand	Q3	11	0062_an_adapter_name_becomes_a_declaration_implementation_evidence.md	1576	0.45882902	-2.1328299045562744
+cand	Q3	12	0075_polars_coverage_two_evidence.md	2166	0.45590016	-8.133593559265137
+cand	Q3	13	0092_polars_typed_left_subtraction.md	2536	0.45221132	-2.9564342498779297
+cand	Q3	14	0064_a_runtime_installation_outlives_its_checkout_index_evidence.md	1675	0.4504741	-3.714062213897705
+cand	Q3	15	0075_polars_coverage_two.md	2155	0.44280526	-7.174637794494629
+cand	Q3	16	0096_polars_null_aware_numeric_vectors.md	2615	0.4405824	-2.6877617835998535
+cand	Q3	17	0114_polars_gen_module_split.md	2946	0.43980116	-10.207438468933105
+cand	Q3	18	0095_polars_typed_left_division_and_remainder.md	2593	0.43843555	-5.242193222045898
+cand	Q3	19	0115_polars_gen_family_registry_evidence.md	2995	0.43769628	-9.330374717712402
+cand	Q3	20	0110_polars_trait_implementor_dispatch_evidence.md	2868	0.43466043	-4.112388610839844
+rerank	Q3	7,2,1,11,16,13,14,20,18,8,4,15,3,6,12,9,5,19,10,17
+cand	Q4	1	0129_candle_workflow.md	3343	0.46871933	-6.356903076171875
+cand	Q4	2	0082_polars_borrowed_slice_bindings_evidence.md	2390	0.44872883	-10.983158111572266
+cand	Q4	3	0129_candle_workflow_evidence.md	3359	0.4350449	-6.912196159362793
+cand	Q4	4	0118_polars_in_memory_io_evidence.md	3081	0.4237702	-11.392224311828613
+cand	Q4	5	0097_polars_sized_self_slices.md	2635	0.39073	-11.121112823486328
+cand	Q4	6	0120_polars_arrow_concrete_arrays_evidence.md	3136	0.38450375	-11.419267654418945
+cand	Q4	7	0097_polars_sized_self_slices_evidence.md	2642	0.38331157	-11.00087833404541
+cand	Q4	8	0048_a_bounded_transport_before_a_notebook.md	1048	0.38177687	-11.271038055419922
+cand	Q4	9	0117_polars_trait_arguments.md	3037	0.37657964	-11.45170783996582
+cand	Q4	10	0099_polars_numeric_chunk_snapshots_evidence.md	2684	0.37136906	-11.247183799743652
+cand	Q4	11	0077_polars_iterator_returns_evidence.md	2246	0.3706322	-11.369781494140625
+cand	Q4	12	0130_polars_test_limit_isolation_evidence.md	3380	0.370457	-10.48293685913086
+cand	Q4	13	0047_a_notebook_cell_over_the_worker_evidence.md	1025	0.36509788	-10.95059585571289
+cand	Q4	14	0131_text_embeddings.md	3394	0.36404803	-11.456626892089844
+cand	Q4	15	0054_a_server_owns_more_than_a_handler.md	1209	0.36254352	-10.705636978149414
+cand	Q4	16	0087_polars_chunk_length_snapshots.md	2463	0.36107206	-11.440513610839844
+cand	Q4	17	0090_polars_numeric_peak_boundaries.md	2506	0.36030143	-11.421382904052734
+cand	Q4	18	0093_polars_checked_integer_readback.md	2556	0.35979694	-11.067728996276855
+cand	Q4	19	0116_polars_generic_methods.md	3008	0.35975382	-11.256660461425781
+cand	Q4	20	0034_a_bounded_request_with_no_second_json.md	717	0.35967106	-10.879584312438965
+rerank	Q4	1,3,12,15,20,13,2,7,18,5,10,19,8,11,4,6,17,16,9,14
+cand	Q5	1	0068_interactive_frames_show_a_bounded_preview.md	1921	0.5136509	-3.635284423828125
+cand	Q5	2	0058_a_small_dataframe_pipeline_through_the_same_engine.md	1403	0.48578927	-9.679098129272461
+cand	Q5	3	0068_product_port_evidence.md	1944	0.4391321	-10.210538864135742
+cand	Q5	4	0124_preview_dtypes_and_columns_evidence.md	3225	0.39026126	-5.573154926300049
+cand	Q5	5	0131_text_embeddings.md	3387	0.38905957	-7.990187644958496
+cand	Q5	6	0124_preview_dtypes_and_columns.md	3212	0.38342455	-10.775436401367188
+cand	Q5	7	0068_costs_and_regression_evidence.md	1907	0.382491	-8.34650993347168
+cand	Q5	8	0068_interactive_journey_evidence.md	1924	0.37896708	0.9727107286453247
+cand	Q5	9	0039_colour_belongs_to_the_presentation.md	860	0.3576614	-5.60060977935791
+cand	Q5	10	0123_schema_display_and_cast.md	3189	0.35138252	-4.6914191246032715
+cand	Q5	11	0068_presentation_seam_evidence.md	1938	0.35113132	0.3855375051498413
+cand	Q5	12	0123_schema_display_and_cast_evidence.md	3202	0.350438	-10.715045928955078
+cand	Q5	13	0019_a_value_for_a_human_and_json_when_asked.md	278	0.3430275	-9.90286636352539
+cand	Q5	14	0058_a_small_dataframe_pipeline_through_the_same_engine_preview_evidence.md	1445	0.34215897	-2.9225361347198486
+cand	Q5	15	0112_polars_generic_trait_impls_evidence.md	2913	0.32516378	-7.43603515625
+cand	Q5	16	0002_the_interactive_session.md	20	0.3244566	-7.470877647399902
+cand	Q5	17	0127_pivot_evidence.md	3317	0.3088345	-8.635207176208496
+cand	Q5	18	0039_colour_belongs_to_the_presentation_evidence.md	866	0.30692166	-10.11153793334961
+cand	Q5	19	0131_text_embeddings_evidence.md	3407	0.30544576	-11.120811462402344
+cand	Q5	20	0007_the_binding_prelude_evidence.md	122	0.29882225	-11.412113189697266
+rerank	Q5	8,11,14,1,10,4,9,15,16,5,7,17,2,13,18,3,12,6,19,20
+metrics	Q1	true	true	0.6666666666666666	1.0	false	true	1.0	0.5
+metrics	Q2	true	true	1.0	1.0	true	true	1.0	1.0
+metrics	Q3	true	true	1.0	1.0	false	true	1.0	0.5
+metrics	Q4	true	true	1.0	1.0	true	true	1.0	1.0
+metrics	Q5	true	true	1.0	1.0	true	true	0.5	1.0

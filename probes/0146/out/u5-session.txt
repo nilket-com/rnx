@@ -1,0 +1,67 @@
+Q1: how does a session add a native adapter with :dep?
+re-ranked top 5:
+DataFrame: 5 rows × 5 columns
+"record": string | "title": string | "re-rank score": f64 | "retrieval rank": i64 | "excerpt": string
+"0061" | "rnx 0061: projects share an assembled executable" | 3.9414210319519043 | 2 | "adapter catalogue or :dep workflow.\n\n## Context\n\n0057 builds an executable per p"…[truncated]
+"0063" | "rnx 0063: a session can request its next executable" | 2.0729992389678955 | 1 | "is not a promise of transparent hot\nloading or rollback after destructive cleanu"…[truncated]
+"0070" | "0070 gate 3: costs, regression and documentation" | 0.2145766019821167 | 15 | "fifteen diagnostic sites, none added, none removed.\n\nFeature audits (`feature-ch"…[truncated]
+"0067" | "0067 gate 4: one installed rnx reaches the adapter session" | 0.12612618505954742 | 9 | "first adapter build. Cargo's\nbare origin remains available for acquisition; it i"…[truncated]
+"0070" | "0070 gate 2: the two spellings at the prompt" | -1.5863885879516602 | 8 | "commitment boundary\n\nA cleanup or exec failure after the commitment is named und"…[truncated]
+
+retrieval top 5: ["0063", "0061", "0071", "0070", "0001"]
+Q2: why was the thread-local test limit rejected?
+re-ranked top 5:
+DataFrame: 5 rows × 5 columns
+"record": string | "title": string | "re-rank score": f64 | "retrieval rank": i64 | "excerpt": string
+"0130" | "rnx 0130: test limit isolation (the in_memory_io flake)" | 4.436263084411621 | 1 | "impls.rs`: only its bound test held `LIMIT`, so the others could run inside its "…[truncated]
+"0054" | "0054 gate 6: shutdown, including the outcomes that fail" | -4.698761940002441 | 4 | "claim of thread preemption, a successful join, or arbitrary native\ncall cancella"…[truncated]
+"0056" | "rnx 0056: gate 2, the embedding host keeps control" | -4.787029266357422 | 3 | "review establishes that the execution API creates no threads or kill timer and\nh"…[truncated]
+"0129" | "rnx 0129 evidence: Candle, scoped to one cross-adapter workflow" | -5.186151027679443 | 19 | "polars/tests/dense_alloc.rs`, one test per binary so no parallel test moves the "…[truncated]
+"0082" | "0082 borrowed slices: evidence" | -6.001536846160889 | 15 | "callback copies on every invocation, the binding holds one `SliceBudget` guard a"…[truncated]
+
+retrieval top 5: ["0130", "0130", "0056", "0054", "0025"]
+Q3: how is a borrowed Polars group-by kept valid during aggregation?
+re-ranked top 5:
+DataFrame: 5 rows × 5 columns
+"record": string | "title": string | "re-rank score": f64 | "retrieval rank": i64 | "excerpt": string
+"0058" | "0058 gate 1 rerun: synchronous calls own and join their engine threads" | 3.9098498821258545 | 7 | "The complete driver passes with POLARS_MAX_THREADS=1 and again with 2, in fresh\n"…[truncated]
+"0126" | "rnx 0126: the eager group-by, with an explicit ownership model for Polars' borro"…[truncated] | 0.703385591506958 | 2 | ", with this reason. (Found while planning; Polars uses `sliced` internally only "…[truncated]
+"0126" | "rnx 0126 evidence: the eager group-by, with Polars' borrowed `GroupBy` as a rebu"…[truncated] | 0.5568380355834961 | 1 | "aggregation. No borrow outlives a call, and nothing is `unsafe`.\n\n**Replay:** `p"…[truncated]
+"0062" | "0062 gates 2–6: catalogue commands and real consumers" | -2.1328299045562744 | 11 | ". The retained Polars entry occupies **1,570,086,912 bytes** here.\n\nBoth project"…[truncated]
+"0096" | "rnx 0096: null-aware numeric vectors as owned script values" | -2.6877617835998535 | 16 | "pairs separate from this proven-pair pool.\n2. **Implement only the exact return "…[truncated]
+
+retrieval top 5: ["0126", "0126", "0089", "0122", "0093"]
+Q4: what limits does the neutral dense block enforce?
+re-ranked top 5:
+DataFrame: 5 rows × 5 columns
+"record": string | "title": string | "re-rank score": f64 | "retrieval rank": i64 | "excerpt": string
+"0129" | "rnx 0129: Candle, scoped to one cross-adapter workflow" | -6.356903076171875 | 1 | "rule included**: a NaN or ±∞ anywhere is refused there, so every `Dense`, built "…[truncated]
+"0129" | "rnx 0129 evidence: Candle, scoped to one cross-adapter workflow" | -6.912196159362793 | 3 | "`df.to_dense(columns, dtype)`: the frame is borrowed, and the column list is rea"…[truncated]
+"0130" | "rnx 0130 evidence: test limit isolation" | -10.48293685913086 | 12 | "_arrays.rs`: 0 of 11;\n- `generic_impls.rs`: only 1 of 6 held its `LIMIT` lock, a"…[truncated]
+"0054" | "rnx 0054: a server owns more than a handler" | -10.705636978149414 | 15 | "application target limit returns 414. |\n| Parsed headers | At most 64 fields and"…[truncated]
+"0034" | "rnx 0034: a bounded request, with no second JSON" | -10.879584312438965 | 20 | "fail here and nowhere else.\n4. **One deadline, one limit.** Headers that arrive "…[truncated]
+
+retrieval top 5: ["0129", "0082", "0129", "0118", "0097"]
+Q5: how is a large dataframe shown at the prompt without printing everything?
+re-ranked top 5:
+DataFrame: 5 rows × 5 columns
+"record": string | "title": string | "re-rank score": f64 | "retrieval rank": i64 | "excerpt": string
+"0068" | "0068 gate 3: the interactive and notebook journey" | 0.9727107286453247 | 8 | "after.\n\n## The prompt (`journey.json`, `target/journey/session.pty`)\n\n`rnx proje"…[truncated]
+"0068" | "0068 gate 1: the presentation seam" | 0.3855375051498413 | 11 | "the header and rows; `format!(\"{sales}\")` and `println!(\"{sales}\")` print the\nsa"…[truncated]
+"0058" | "0058 gate 3: bounded native preview" | -2.9225361347198486 | 14 | "Gate 3 is ready for review on Linux. Gates 1 and 2 are accepted and pushed;\ngate"…[truncated]
+"0068" | "rnx 0068: interactive frames show a bounded preview" | -3.635284423828125 | 1 | "bounded DataFrame presentation and explicit formatting\n\nReuse the preview oracle"…[truncated]
+"0123" | "rnx 0123: schema display, `cast` with a `DataType`, and a display check in the p"…[truncated] | -4.6914191246032715 | 10 | ",** printing the value (`println!(\"{}\", df)`, the hand-written `DISPLAY_FMT`) an"…[truncated]
+
+retrieval top 5: ["0068", "0058", "0068", "0124", "0131"]
+Retrieval alone against re-ranking (frozen rubric):
+DataFrame: 5 rows × 9 columns
+[0 rows and 1 columns omitted by display limits]
+"query": string | "supporting ranks, retrieval": string | "re-ranked": string | "hit@1 retrieval": i64 | … | "recall@5 retrieval": f64 | "recall@5 re-ranked": f64 | "MRR retrieval": f64 | "MRR re-ranked": f64
+"Q1" | "1 9 4" | "2 4 3" | 1 | … | 0.6666666666666666 | 1.0 | 1.0 | 0.5
+"Q2" | "1" | "1" | 1 | … | 1.0 | 1.0 | 1.0 | 1.0
+"Q3" | "1" | "2" | 1 | … | 1.0 | 1.0 | 1.0 | 0.5
+"Q4" | "1" | "1" | 1 | … | 1.0 | 1.0 | 1.0 | 1.0
+"Q5" | "1 4" | "1 6" | 1 | … | 1.0 | 0.5 | 1.0 | 1.0
+
+321 docs, 3461 passages; retrieval 69437 ms, re-ranking 100 pairs 2033 ms
+WORKFLOW OK u5

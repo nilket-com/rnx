@@ -1,0 +1,2 @@
+:dep candle: session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle: BIT-EQUAL: 100 cross-encoder scores, in f32 bits, against the U5 trace
