@@ -1,0 +1,4 @@
+0144 println: session: OK (prompt True, marker True, returned Ok, errors 0)
+0144 format: session: OK (prompt True, marker True, returned Ok, errors 0)
+0144 bracket: session: OK (prompt True, marker True, returned Ok, errors 0)
+0144 brace: session: OK (prompt True, marker True, returned Ok, errors 0)

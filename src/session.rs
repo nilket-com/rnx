@@ -192,7 +192,10 @@ pub fn completeness(input: &str) -> Completeness {
 	// whitespace, so the error is at the end when only trivia follows it.
 	let end = span.range().end;
 	if end < input.len() && !only_trivia(&input[end..]) {
-		return if span.range().is_empty() && open_to_the_end(&input[end..]) {
+		return if span.range().is_empty()
+			&& (open_to_the_end(&input[end..])
+				|| delimiter_before(input, end).is_some_and(|at| open_to_the_end(&input[at..])))
+		{
 			Completeness::Incomplete
 		} else {
 			Completeness::Complete
@@ -208,6 +211,16 @@ pub fn completeness(input: &str) -> Completeness {
 		}
 		_ => Completeness::Complete,
 	}
+}
+/// Record 0150: after a block-ended statement (`for`, `if`, `while`, a bare
+/// block), Rune places an open macro call's zero-width error one token
+/// inside its opening delimiter rather than at it (measured: `{ 1; }\n
+/// println!("{} a",` errs at the quote, one past the `(`). The position of
+/// that delimiter: the single `(`, `[` or `{` found by skipping whitespace
+/// backwards from `at`, if there is one.
+fn delimiter_before(input: &str, at: usize) -> Option<usize> {
+	let before = input.get(..at)?.trim_end();
+	before.ends_with(['(', '[', '{']).then(|| before.len() - 1)
 }
 /// Whether `text` starts with an opening delimiter that its tokens leave
 /// open at the end. Delimiter kinds are kept on a stack: a closer that does
@@ -265,6 +278,10 @@ fn first_error_span(input: &str) -> Option<ast::Span> {
 
 struct Declaration {
 	is_type: bool,
+	/// Record 0150: the kind, recorded from the parsed item when it was
+	/// entered ("function", "const", "struct" or "enum"), never inferred
+	/// from its text.
+	kind: &'static str,
 	source: String,
 	/// Input number the declaration was last entered in, and its offset there.
 	input: usize,
@@ -554,14 +571,7 @@ impl Session {
 	/// One retained declaration: its kind and the source last entered for it.
 	pub fn declaration(&self, name: &str) -> Option<(&'static str, &str)> {
 		let declaration = self.declarations.get(name)?;
-		let kind = if !declaration.is_type {
-			"function"
-		} else if declaration.source.starts_with("struct") {
-			"struct"
-		} else {
-			"enum"
-		};
-		Some((kind, declaration.source.as_str()))
+		Some((declaration.kind, declaration.source.as_str()))
 	}
 	/// Published binding names, for completion.
 	pub fn binding_names(&self) -> Vec<String> {
@@ -657,6 +667,7 @@ impl Session {
 					k.clone(),
 					Declaration {
 						is_type: d.is_type,
+						kind: d.kind,
 						source: d.source.clone(),
 						input: d.input,
 						offset: d.offset,
@@ -683,15 +694,21 @@ impl Session {
 			let statement_source = &wrapped[start..end];
 			match statement {
 				ast::Stmt::Item(item, _) => {
-					let (name, is_type, fields) = match item {
-						ast::Item::Fn(f) => (slice(f.name.span()), false, Vec::new()),
-						ast::Item::Struct(s) => {
-							(slice(s.ident.span()), true, struct_fields(s, &wrapped))
-						}
-						ast::Item::Enum(e) => (slice(e.name.span()), true, Vec::new()),
+					let (name, is_type, kind, fields) = match item {
+						ast::Item::Fn(f) => (slice(f.name.span()), false, "function", Vec::new()),
+						// record 0150: a const is a retained, non-type
+						// declaration, like a function
+						ast::Item::Const(c) => (slice(c.name.span()), false, "const", Vec::new()),
+						ast::Item::Struct(s) => (
+							slice(s.ident.span()),
+							true,
+							"struct",
+							struct_fields(s, &wrapped),
+						),
+						ast::Item::Enum(e) => (slice(e.name.span()), true, "enum", Vec::new()),
 						_ => {
 							return Err(self.refused_at(
-								"a session accepts fn, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files",
+								"a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files",
 								number,
 								start - 1,
 							));
@@ -716,6 +733,7 @@ impl Session {
 						name.to_owned(),
 						Declaration {
 							is_type,
+							kind,
 							source,
 							input: number,
 							offset: start + leading - 1,
@@ -1221,6 +1239,18 @@ mod tests {
 			"fn f() {\n    println!(\"{}\", // the argument follows",
 			"fn f() {\n    println!(\"unterminated",
 			"println!([1, 2], {3},",
+			// Record 0150: the same after a block-ended statement, where Rune
+			// puts the zero-width error one token inside the delimiter
+			"fn f() {\n    for r in [1] { r; }\n    println!(\"{} a\",",
+			"fn f() {\n    if true { 1; }\n    println!(\"{} a\",",
+			"fn f() {\n    while false { }\n    println!(\"{} a\",",
+			"fn f() {\n    loop { break; }\n    println!(\"{} a\",",
+			"fn f() {\n    { 1; }\n    println!(\"{} a\",",
+			"fn f() {\n    for r in [1] { r; }\n    let s = format!(\"{}\",",
+			"fn f() {\n    if true { 1; }\n    let v = vec![1,",
+			"fn f() {\n    while false { }\n    println!{ 1,",
+			"fn f() {\n    for r in [1] { r; }\n    println!(\n        \"{} a\",",
+			"fn f() {\n    for r in [1] { r; }\n    foo(format!(\"{}\",",
 		] {
 			assert_eq!(completeness(input), Completeness::Incomplete, "{input:?}");
 		}
@@ -1254,6 +1284,18 @@ mod tests {
 			"println!({1)",
 			"println!((1]",
 			"println!((1}",
+			// Record 0150: after a block-ended statement, still complete: a
+			// finished call, an extra closer, every mismatched closer, a
+			// real error before the call
+			"fn f() {\n    for r in [1] { r; }\n    println!(\"{} a\",\n        1);\n}",
+			"fn f() {\n    for r in [1] { r; }\n    println!(\"a\"));",
+			"fn f() {\n    for r in [1] { r; }\n    println!([1}",
+			"fn f() {\n    for r in [1] { r; }\n    println!([1)",
+			"fn f() {\n    for r in [1] { r; }\n    println!({1]",
+			"fn f() {\n    for r in [1] { r; }\n    println!({1)",
+			"fn f() {\n    for r in [1] { r; }\n    println!((1]",
+			"fn f() {\n    for r in [1] { r; }\n    println!((1}",
+			"fn f() {\n    for r in [1] { r; }\n    let = 1; println!(",
 		] {
 			assert_eq!(completeness(input), Completeness::Complete, "{input:?}");
 		}
@@ -2143,5 +2185,97 @@ mod method_naming_tests {
 			found,
 			"no coincident missing-method fault and exhaustion in 1..100"
 		);
+	}
+}
+
+#[cfg(test)]
+mod const_tests {
+	//! Record 0150: `const` items as session declarations.
+	use super::*;
+	fn session() -> Session {
+		Session::new(Context::with_default_modules().unwrap()).unwrap()
+	}
+	fn int(v: Value) -> i64 {
+		rune::from_value(v).unwrap()
+	}
+
+	#[test]
+	fn the_exact_u7_prefix_is_incomplete() {
+		let text = include_str!("../probes/0150/u7_prefix.rn");
+		assert_eq!(completeness(text.trim_end()), Completeness::Incomplete);
+	}
+
+	#[test]
+	fn a_const_is_retained_and_used_later() {
+		let mut s = session();
+		s.eval("const GREETING = \"hello\";").unwrap();
+		s.eval("const N = 40;").unwrap();
+		// at the top level, and inside a function declared later
+		assert_eq!(
+			rune::from_value::<String>(s.eval("GREETING").unwrap()).unwrap(),
+			"hello"
+		);
+		s.eval("fn more() { N + 2 }").unwrap();
+		assert_eq!(int(s.eval("more()").unwrap()), 42);
+		// a const using another const
+		s.eval("const M = N * 2;").unwrap();
+		assert_eq!(int(s.eval("M").unwrap()), 80);
+		// inspection reports the recorded kind, whatever the text starts with
+		assert_eq!(s.declaration("N").unwrap().0, "const");
+		s.eval("pub const P = 1;").unwrap();
+		assert_eq!(s.declaration("P").unwrap().0, "const");
+		assert_eq!(s.declaration("more").unwrap().0, "function");
+		s.eval("pub struct Point { x }").unwrap();
+		assert_eq!(s.declaration("Point").unwrap().0, "struct");
+		s.eval("enum E { A }").unwrap();
+		assert_eq!(s.declaration("E").unwrap().0, "enum");
+		// redeclared with a new value: replaced
+		s.eval("const N = 1;").unwrap();
+		assert_eq!(int(s.eval("more()").unwrap()), 3);
+		// :reset clears it
+		s.reset();
+		assert!(s.declaration("N").is_none());
+		assert!(s.eval("N").is_err());
+	}
+
+	#[test]
+	fn a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin() {
+		let mut s = session();
+		s.eval("const A = 1;").unwrap();
+		s.eval("const C = A + 1;").unwrap();
+		assert_eq!(int(s.eval("C").unwrap()), 2);
+		// redeclaring A as a string makes the retained C fail to compile
+		let e = s.eval("const A = \"x\";").unwrap_err().to_string();
+		// the previous, working A (and C) are kept: publication is transactional
+		assert_eq!(int(s.eval("A").unwrap()), 1);
+		assert_eq!(int(s.eval("C").unwrap()), 2);
+		// the error is located in the retained C, at its own origin: input 2,
+		// line 1, where `A + 1` starts (column 11), not at the redeclaration
+		assert!(e.contains("at input 2, line 1, column 11"), "{e}");
+	}
+
+	#[test]
+	fn reserved_names_and_type_shapes_still_apply() {
+		let mut s = session();
+		let e = s.eval("const main = 1;").unwrap_err().to_string();
+		assert!(e.contains("reserved"), "{e}");
+		let e = s.eval("const __rnx_x = 1;").unwrap_err().to_string();
+		assert!(e.contains("reserved"), "{e}");
+		// a const may not silently replace a type
+		s.eval("struct S { a }").unwrap();
+		let e = s.eval("const S = 1;").unwrap_err().to_string();
+		assert!(e.contains("is a type whose shape changed"), "{e}");
+		// the other item kinds are still refused, with the new message
+		for item in [
+			"mod m {}",
+			"use std::string::String;",
+			"impl S { fn f(self) {} }",
+		] {
+			let e = s.eval(item).unwrap_err().to_string();
+			assert!(
+				e.contains("a session accepts fn, const, struct, and enum declarations"),
+				"{item}: {e}"
+			);
+		}
 	}
 }

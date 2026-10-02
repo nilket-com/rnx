@@ -1,0 +1,5 @@
+for: session: OK (prompt True, marker True, returned Ok, errors 0)
+if: session: OK (prompt True, marker True, returned Ok, errors 0)
+while: session: OK (prompt True, marker True, returned Ok, errors 0)
+block: session: OK (prompt True, marker True, returned Ok, errors 0)
+const: session: OK (prompt True, marker True, returned Ok, errors 0)
