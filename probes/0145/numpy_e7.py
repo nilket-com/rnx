@@ -78,3 +78,43 @@ if __name__ == "__main__" and sys.argv[1] == "synthetic":
             print(f"{name}: events (day, length, z) {ev}; profile {prof}; busiest week {int(out['busiest'][0])}")
         except ValueError as e:
             print(f"{name}: refused: {e}")
+
+
+def real(tsv, trace):
+    """NumPy's run on D3 against the twin's trace, with the plan's declared
+    tolerances: trend 1e-12 absolute + 1e-12 relative; z 1e-9 absolute;
+    events identical except days whose |z - 4| < 1e-9 (listed); weekday
+    profile 1e-12 absolute; busiest weeks identical."""
+    import time
+    rows = [l.split("\t") for l in open(tsv).read().splitlines() if l]
+    names = rows[0][1:]
+    views = np.array([[int(x) for x in r[1:]] for r in rows[1:]], dtype=np.float64).T
+    t0 = time.perf_counter()
+    out = method(views)
+    t1 = time.perf_counter()
+    lines = open(trace).read().splitlines()
+    get = lambda kind, c: [l.split("\t") for l in lines if l.startswith(f"{kind}\t{c}\t")]
+    ok = True
+    for c, name in enumerate(names):
+        tt = np.array([float(x) for x in get("trend", c)[0][2].split(",")])
+        tz = np.array([float(x) for x in get("z", c)[0][2].split(",")])
+        dt = np.max(np.abs(out["trend"][c] - tt) / (1e-12 + 1e-12 * np.abs(tt)))
+        dz = np.max(np.abs(out["z"][c] - tz))
+        near = [int(i) for i in np.flatnonzero(np.abs(out["z"][c] - 4) < 1e-9)]
+        ev_n = [(p, length) for _, p, length in out["events"][c]]
+        ev_t = [(int(f[2]), int(f[3])) for f in get("event", c)]
+        tw = np.array([float(x) for x in get("weekday", c)[0][2].split(",")])
+        dw = np.max(np.abs(out["profile"][c] - tw))
+        bw = int(get("busiest", c)[0][2])
+        good = dt <= 1 and dz <= 1e-9 and (ev_n == ev_t or near) and dw <= 1e-12 and int(out["busiest"][c]) == bw
+        ok &= bool(good)
+        print(f"{name}: trend max |d| / (1e-12 + 1e-12|v|) = {dt:.3g}; z max |d| = {dz:.3g}; "
+              f"events {'identical' if ev_n == ev_t else 'DIFFER'} ({len(ev_t)}); near-threshold days {near}; "
+              f"weekday max |d| = {dw:.3g}; busiest week {int(out['busiest'][c])} (twin {bw})")
+    print(f"numpy method: {1e3 * (t1 - t0):.1f} ms")
+    print("numpy gate: PASS" if ok else "numpy gate: FAIL")
+    return ok
+
+
+if __name__ == "__main__" and sys.argv[1] == "real":
+    sys.exit(0 if real(sys.argv[2], sys.argv[3]) else 1)

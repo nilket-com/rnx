@@ -21,6 +21,7 @@
 //! - **execution:** every Candle call runs on 0129's joined worker.
 mod composition;
 mod interchange;
+mod signal;
 
 use crate::{Tensor, worker};
 use candle_core::{DType, Device, Tensor as CTensor};
@@ -1228,6 +1229,7 @@ pub(crate) fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, Conte
 	m.function("softmax_last_dim", softmax_last_dim).build()?;
 	composition::build(m)?;
 	interchange::build(m)?;
+	signal::build(m)?;
 	let mut catalogue = vec![
 		(
 			"candle::Tensor::from_vec".into(),
@@ -1283,6 +1285,7 @@ pub(crate) fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, Conte
 		),
 	];
 	catalogue.extend(interchange::catalogue());
+	catalogue.extend(signal::catalogue());
 	Ok(catalogue)
 }
 

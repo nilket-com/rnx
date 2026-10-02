@@ -11,6 +11,8 @@
 //! - `twin0133 u4 D2 MODEL LABELS`: record 0139's triage table.
 //! - `twin0133 e6 D2 MODEL LABELS`, `twin0133 e6-synth SPEC`: record 0143's
 //!   topic discovery trace (written independently of the Rune script).
+//! - `twin0133 e7 D3`, `twin0133 e7-synth SPEC`: record 0145's traffic
+//!   trace, by the same Candle calls, written independently.
 //! - `twin0133 passages D1`, `twin0133 embed PASSAGES MODEL BATCHES OUT`:
 //!   record 0135's passages, and their embedding on a given partition.
 use candle_core::{DType, Device, Tensor};
@@ -872,6 +874,25 @@ fn main() {
 				Err(e) => println!("refused\t{e}"),
 			}
 		}
+		// record 0145, E7: D3's views (articles in columns), the frozen method
+		"e7" => {
+			let text = std::fs::read_to_string(&a[2]).unwrap();
+			let mut lines = text.lines();
+			let c = lines.next().unwrap().split('\t').count() - 1;
+			let mut cols: Vec<Vec<f64>> = vec![Vec::new(); c];
+			for line in lines.filter(|l| !l.is_empty()) {
+				for (ch, f) in line.split('\t').skip(1).enumerate() {
+					cols[ch].push(f.parse::<i64>().unwrap() as f64);
+				}
+			}
+			print!("{}", e7(&cols).unwrap_or_else(|e| format!("refused\t{e}\n")));
+		}
+		"e7-synth" => {
+			let spec: serde_json::Value =
+				serde_json::from_slice(&std::fs::read(&a[2]).unwrap()).unwrap();
+			let s: Vec<f64> = spec["series"].as_array().unwrap().iter().map(|v| v.as_f64().unwrap()).collect();
+			print!("{}", e7(&[s]).unwrap_or_else(|e| format!("refused\t{e}\n")));
+		}
 		// record 0135: D1's passages, as U1 chunks them, for timing
 		"passages" => {
 			let texts: Vec<String> = load(&a[2]).1.into_iter().map(|p| p.1).collect();
@@ -996,4 +1017,111 @@ fn e6_trace(r: &E6) -> String {
 		out += &format!("centroid\t{c}\t{}\n", vals.join(","));
 	}
 	out
+}
+
+// ---- record 0145, E7: the frozen traffic method, independently ----
+
+fn e7_median(t: &Tensor, n: usize) -> Tensor {
+	let (s, _) = t.sort_last_dim(true).unwrap();
+	if n % 2 == 1 {
+		return s.narrow(2, n / 2, 1).unwrap();
+	}
+	s.narrow(2, n / 2 - 1, 1)
+		.unwrap()
+		.add(&s.narrow(2, n / 2, 1).unwrap())
+		.unwrap()
+		.affine(0.5, 0.0)
+		.unwrap()
+}
+
+fn e7(cols: &[Vec<f64>]) -> Result<String, String> {
+	let cpu = &Device::Cpu;
+	let c = cols.len();
+	let days = cols[0].len();
+	if cols.iter().flatten().any(|&v| !(v > 0.0)) {
+		return Err("a non-positive count".into());
+	}
+	let flat: Vec<f64> = cols.iter().flatten().copied().collect();
+	let views = Tensor::from_vec(flat, (1, c, days), cpu).unwrap();
+	let x = views.log().unwrap();
+	let k = Tensor::full(1.0f64 / 29.0, (c, 1, 29), cpu).unwrap();
+	let sums = x.conv1d(&k, 14, 1, 1, c).unwrap();
+	let norm = Tensor::ones((1, c, days), DType::F64, cpu).unwrap().conv1d(&k, 14, 1, 1, c).unwrap();
+	let trend = sums.div(&norm).unwrap();
+	let r = x.sub(&trend).unwrap();
+	let med = e7_median(&r, days);
+	let dev = r.broadcast_sub(&med).unwrap().abs().unwrap();
+	let mad = e7_median(&dev, days).affine(1.4826, 0.0).unwrap();
+	if mad.flatten_all().unwrap().to_vec1::<f64>().unwrap().iter().any(|&v| !(v > 0.0)) {
+		return Err("zero MAD".into());
+	}
+	let z = r.broadcast_sub(&med).unwrap().broadcast_div(&mad).unwrap();
+	let weeks = days / 7;
+	let whole = weeks * 7;
+	let xw = x.narrow(2, 0, whole).unwrap();
+	let wmean = xw.reshape((1, c, 1, whole)).unwrap().avg_pool2d_with_stride((1, 7), (1, 7)).unwrap();
+	let up = wmean.reshape((1, c, weeks)).unwrap().upsample_nearest1d(whole).unwrap();
+	let profile = xw
+		.sub(&up)
+		.unwrap()
+		.reshape((c, weeks, 7))
+		.unwrap()
+		.mean(1)
+		.unwrap()
+		.exp()
+		.unwrap()
+		.affine(1.0, -1.0)
+		.unwrap()
+		.to_vec2::<f64>()
+		.unwrap();
+	let raw = views
+		.narrow(2, 0, whole)
+		.unwrap()
+		.reshape((1, c, 1, whole))
+		.unwrap()
+		.avg_pool2d_with_stride((1, 7), (1, 7))
+		.unwrap();
+	let top = raw
+		.max_pool2d_with_stride((1, weeks), (1, weeks))
+		.unwrap()
+		.reshape(c)
+		.unwrap()
+		.to_vec1::<f64>()
+		.unwrap();
+	let rawv = raw.reshape((c, weeks)).unwrap().to_vec2::<f64>().unwrap();
+	let trend = trend.reshape((c, days)).unwrap().to_vec2::<f64>().unwrap();
+	let z = z.reshape((c, days)).unwrap().to_vec2::<f64>().unwrap();
+	let join = |xs: &[f64]| xs.iter().map(|x| format!("{x:?}")).collect::<Vec<_>>().join(",");
+	let mut out = String::new();
+	for ch in 0..c {
+		out += &format!("trend\t{ch}\t{}\n", join(&trend[ch]));
+		out += &format!("z\t{ch}\t{}\n", join(&z[ch]));
+		// runs of z >= 4: peak = highest z (ties to the earliest); then the
+		// five largest peaks (ties to the earliest peak)
+		let row = &z[ch];
+		let mut found: Vec<(f64, usize, usize)> = Vec::new();
+		let mut t = 0;
+		while t < row.len() {
+			if row[t] >= 4.0 {
+				let (s, mut p) = (t, t);
+				while t < row.len() && row[t] >= 4.0 {
+					if row[t] > row[p] {
+						p = t;
+					}
+					t += 1;
+				}
+				found.push((row[p], p, t - s));
+			} else {
+				t += 1;
+			}
+		}
+		found.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap().then(a.1.cmp(&b.1)));
+		for (zv, p, len) in found.iter().take(5) {
+			out += &format!("event\t{ch}\t{p}\t{len}\t{zv:?}\n");
+		}
+		out += &format!("weekday\t{ch}\t{}\n", join(&profile[ch]));
+		let w = rawv[ch].iter().position(|&v| v == top[ch]).unwrap();
+		out += &format!("busiest\t{ch}\t{w}\t{:?}\n", top[ch]);
+	}
+	Ok(out)
 }

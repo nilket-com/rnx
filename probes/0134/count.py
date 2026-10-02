@@ -29,7 +29,7 @@ for p in core.rglob("*.rs"):
             i += 1
         methods |= set(re.findall(r'\n    pub fn ([a-z_0-9]+)', s[m.end():i]))
     methods |= set(re.findall(r'(?:unary_op|binary_op|binary_op_scalar|broadcast_binary_op)!\(\s*([a-z_0-9]+)', s))
-CORE = set("ABCDEFGHIJK")
+CORE = set("ABCDEFGHIJKL")
 args = sys.argv[2:]
 exclusions = None
 if "--exclusions" in args:
