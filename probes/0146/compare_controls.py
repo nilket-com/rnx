@@ -109,7 +109,10 @@ cand1 = int(a0[0].split("\t")[4])
 # retained evidence, edited in both producers
 retained = {
     "a passage text not in its document": edit_json("u5-passages.json", lambda v: v["texts"].__setitem__(cand1, v["texts"][cand1] + " invented")),
-    "a passage moved to another document": edit_json("u5-passages.json", lambda v: v["paths"].__setitem__(cand1, v["paths"][cand1 - 1] if v["paths"][cand1 - 1] != v["paths"][cand1] else v["paths"][cand1 + 1])),
+    # to the first document that is not its own (0147: a neighbouring pid can
+    # belong to the same document, which made this a no-op on 0147's data)
+    "a passage moved to another document": edit_json("u5-passages.json", lambda v: v["paths"].__setitem__(cand1, next(
+        p for p in v["paths"] if p != v["paths"][cand1]))),
     "a D1 document with no passages": edit_json("u5-passages.json", lambda v: [v[k].__setitem__(slice(None), [x for x, p in zip(v[k], list(v["paths"])) if p != v["paths"][0]]) for k in ("texts", "paths")]),
     "a retained score raised past candidate 1": edit_lines("u5-retrieval.tsv", lambda l: [l[0]] + [
         "\t".join([f[0], "0.99"] + f[2:]) if f[0] == a0[20 * 0 + 5].split("\t")[4] else r

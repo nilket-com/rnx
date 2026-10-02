@@ -220,4 +220,4 @@ if __name__ == "__main__":
     print(f"BIT-EQUAL (each producer validated first, its candidates recomputed from its retained "
           f"retrieval evidence over D1): {len(ra[0])} passages and their {len(rubric)} query scores, "
           f"{len(rubric)} queries x 20 candidates (paths, pids, retrieval and cross-encoder scores in f32 bits), "
-          f"the 100 pairs' texts, re-ranked orders and metrics")
+          f"the {len(ra[3])} pairs' texts, re-ranked orders and metrics")
