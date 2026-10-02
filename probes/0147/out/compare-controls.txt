@@ -1,0 +1,28 @@
+pass: unmodified: BIT-EQUAL (each producer validated first, its candidates recomputed from its retained retrieval evidence over D1): 3461 passages and their 34 query scores, 34 queries x 20 candidates (paths, pids, retrieval and cross-encoder scores in f32 bits), the 680 pairs' texts, re-ranked orders and metrics
+refused: both, both empty: FAIL: TMP/a/u5-trace.tsv: empty
+refused: both, a candidate deleted: FAIL: TMP/a/u5-trace.tsv line 6: want candidate 6 of E01
+refused: both, a whole query deleted: FAIL: TMP/a/u5-trace.tsv line 1: want candidate 1 of E01
+refused: both, a candidate's ce score NaN: FAIL: TMP/a/u5-trace.tsv ce score: nan is not finite
+refused: both, retrieval order broken: FAIL: TMP/a/u5-trace.tsv line 1: want candidate 1 of E01
+refused: both, rerank not a permutation: FAIL: TMP/a/u5-trace.tsv: E01's rerank is not a permutation of 1..20
+refused: both, rerank not by score: FAIL: TMP/a/u5-trace.tsv: E01's rerank is not by ce score with ties to the retrieval rank
+refused: both, retrieval scores out of order: FAIL: TMP/a/u5-trace.tsv: E01's retrieval order is not by score
+refused: both, a metric changed: FAIL: TMP/a/u5-trace.tsv: E01's metrics are not those of its ranks
+refused: both, a hit flag flipped: FAIL: TMP/a/u5-trace.tsv: E01's metrics are not those of its ranks
+refused: both, a duplicated document: FAIL: TMP/a/u5-trace.tsv: E01's candidates repeat a document or passage
+refused: both, an unknown line: FAIL: TMP/a/u5-trace.tsv line 749: unexpected 'note'
+refused: both, a nonexistent document: FAIL: TMP/a: E01's candidates are not the top 20 recomputed from the retained scores and passages
+refused: both, an out-of-range pid: FAIL: TMP/a: E01's candidates are not the top 20 recomputed from the retained scores and passages
+refused: both, an existing document with another document's pid: FAIL: TMP/a: E01's candidates are not the top 20 recomputed from the retained scores and passages
+refused: both, a document swapped for another existing one: FAIL: TMP/a: E01's candidates are not the top 20 recomputed from the retained scores and passages
+refused: both, a retrieval score changed, still monotone: FAIL: TMP/a: E01's candidates are not the top 20 recomputed from the retained scores and passages
+refused: one side, a ce score's lowest bit: FAIL: E01: candidates or scores differ
+refused: both, a passage text not in its document: FAIL: TMP/a/u5-passages.json: passage 94 does not occur in 0006_what_a_retained_value_pins.md after the previous one
+refused: both, a passage moved to another document: FAIL: TMP/a/u5-passages.json: passage 94 does not occur in 0001_the_first_release.md after the previous one
+refused: both, a D1 document with no passages: FAIL: TMP/a/u5-passages.json: the documents are not exactly D1's
+refused: both, a retained score raised past candidate 1: FAIL: TMP/a: E01's candidates are not the top 20 recomputed from the retained scores and passages
+refused: both, a retained row deleted: FAIL: TMP/a/u5-retrieval.tsv: 3460 rows for 3461 passages
+refused: both, a pair's passage changed: FAIL: TMP/a/u5-pairs.json: not the rubric's queries and the candidates' retained passages, in order
+refused: both, a pair's query changed: FAIL: TMP/a/u5-pairs.json: not the rubric's queries and the candidates' retained passages, in order
+refused: one side, a non-candidate retained score's lowest bit: FAIL: the producers' retained scores differ
+all controls behave

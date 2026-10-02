@@ -1,0 +1,8 @@
+pass: unmodified: every step reached (u1 u5 twin compare hf evaluate )
+refused: a D1 byte changed: FAIL: D1: 0001_the_first_release.md changed; no step began
+refused: a D1 file removed: FAIL: D1: 0001_the_first_release.md missing; no step began
+refused: an extra D1 .md: FAIL: D1: 9999_extra.md extra; no step began
+refused: a MiniLM weight byte changed: FAIL: MiniLM: model.safetensors changed; no step began
+refused: a cross-encoder tokenizer byte changed: FAIL: cross-encoder: tokenizer.json changed; no step began
+refused: a model file missing: FAIL: cross-encoder: config.json missing; no step began
+all provenance controls behave

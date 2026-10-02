@@ -1,0 +1,307 @@
+E01: When does a session that has been open a long time refuse to continue because of memory, and what does its memory figure count?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E01": f32 | "excerpt": string
+"0006" | "rnx 0006: what a retained value pins" | 0.54606825 | ", the number of entries the session keeps is a\n   small constant rather than a t"…[truncated]
+"0055" | "rnx 0055: HTTP cancellation belongs to its execution" | 0.52513176 | "must observe the cancelled connection close while\nanother owner's request stays "…[truncated]
+"0005" | "rnx 0005: the allocation ceiling" | 0.51420164 | "says so.** One\n   workload, one revision, counting compiled in and compiled out,"…[truncated]
+"0041" | "rnx 0041 evidence: naming at the retained call site" | 0.514019 | "-process\ntimes. Binary size: 14,878,600 → 14,879,080 bytes (+480). Session start"…[truncated]
+"0001" | "Rune scripting 0001: the first release" | 0.5075776 | "own identifiers are reserved and\n  refused.\n\n### 3. Memory has a ceiling and a m"…[truncated]
+
+E02: A long script halts partway with a message about exceeding instructions; how can the person running it let it go further?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E02": f32 | "excerpt": string
+"0032" | "Upstream enhancement draft: no way to stop a running script but the budget" | 0.558348 | "is *running*. Its only bound is the total budget, which for\nan interactive sessi"…[truncated]
+"0009" | "rnx 0009: diagnostics for the file runner" | 0.546231 | "a value, not a fault at an instruction, so it has no\nsource position and none is"…[truncated]
+"0021" | "rnx 0021: a budget the operator chooses" | 0.5413588 | "lift its own ceiling would not have one. The\nperson who typed the command is the"…[truncated]
+"0025" | "rnx 0025: the same contracts on Windows" | 0.5167858 | "_the_cap_is_also_cut_short_when_the_call_ends` asks for `truncated=true`, `cut_s"…[truncated]
+"0079" | "rnx 0079: Polars callbacks, evidence" | 0.5040365 | "s halt\nmatched exactly (`Halted for unexpected reason \\`limited\\``) with the\nall"…[truncated]
+
+E03: How do I stop a computation that never finishes in the interactive session without killing the session?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E03": f32 | "excerpt": string
+"0032" | "Upstream enhancement draft: no way to stop a running script but the budget" | 0.49791324 | "is *running*. Its only bound is the total budget, which for\nan interactive sessi"…[truncated]
+"0032" | "rnx 0032: one way to run a script" | 0.48002845 | "and did before this\nrecord too. The session abandons an input Ctrl-C arrived dur"…[truncated]
+"0032" | "rnx 0032 evidence: one way to run a script" | 0.46612775 | ")\n- `SIGINT` 300 ms into a run pending on a 10 s future: exit 130,\n  `interrupte"…[truncated]
+"0034" | "rnx 0034: a bounded request, with no second JSON" | 0.4497584 | "'s own maintenance task. A request to a second fixture, cancelled\nby drop while "…[truncated]
+"0046" | "rnx 0046: a worker whose output has a boundary" | 0.44903353 | ".\n   Exercise the caps with continued draining, then compare retained prefixes\n "…[truncated]
+
+E04: Which third-party licence texts have to be distributed with an rnx binary?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E04": f32 | "excerpt": string
+"0029" | "rnx 0029: the notices a binary must carry" | 0.6297134 | "Status: proposed 2026-09-10. The twenty-ninth record of rnx. Record 0028\nestabli"…[truncated]
+"0028" | "rnx 0028: where rnx came from" | 0.46564934 | "Status: proposed 2026-09-09. The twenty-eighth record of rnx. Record 0001\ndecisi"…[truncated]
+"0031" | "rnx 0031: the batteries rnx ships" | 0.44986373 | "Status: proposed 2026-09-13. This record sets the integration direction and\nthe "…[truncated]
+"0027" | "rnx 0027: the latest released Rune" | 0.43270344 | "upstream isolation reproducer. A changed reproducer result calls for\n   review; "…[truncated]
+"0051" | "rnx 0051: an executable assembled from its extensions" | 0.4298523 | "Status: implemented 2026-09-15, drafted by Claude; revised the same day after\nCo"…[truncated]
+
+E05: Do child-process timeouts and cancellation behave the same on Windows as on Linux?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E05": f32 | "excerpt": string
+"0025" | "rnx 0025 evidence: the same contracts on Windows" | 0.5708708 | "exit ends an in-job reply-pipe holder\n\n`capture_hold_windows::a_normal_exit_ends"…[truncated]
+"0025" | "rnx 0025: the same contracts on Windows" | 0.5698891 | "as the\noperation stands. On Unix `cancel` does nothing,\nbecause a non-blocking d"…[truncated]
+"0022" | "rnx 0022: a child that is told what to do" | 0.53621656 | "a pipe's worth to standard\n   output and to standard error simultaneously**, so "…[truncated]
+"0020" | "rnx 0020: waiting for a child without sleeping through it" | 0.5291806 | "this cut gets for free and a gate asserts.\n\n### 3. Everything the loop already g"…[truncated]
+"0047" | "rnx 0047: a notebook cell over the worker" | 0.52544713 | "in the child’s async-signal-safe pre-exec hook, and recheck parent identity to\nc"…[truncated]
+
+E06: How can a script run a command in a different folder with an extra environment variable set only for that command?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E06": f32 | "excerpt": string
+"0044" | "rnx 0044: a child with its own directory and environment" | 0.4054391 | "` specified\nnames both the supplied program and the directory, without guessing\n"…[truncated]
+"0035" | "rnx 0035: a file is a value, and every refusal names its path" | 0.35005495 | "path a script *passes* is UTF-8 by construction, and goes to the OS\n  as is; on "…[truncated]
+"0057" | "rnx 0057: a project declares what its executable contains" | 0.32212326 | "directory. Script arguments after\n`--` arrive untouched. Run may accept explicit"…[truncated]
+"0036" | "rnx 0036: what the process was given" | 0.2966842 | "own platform question, and none has a use case\n  in front of it.\n- Path helpers."…[truncated]
+"0037" | "rnx 0037: paths are strings, until a script needs them not to be" | 0.29649648 | "said.\n- **A script that needs a non-Unicode name has nowhere to go yet.** True\n "…[truncated]
+
+E07: How does a script read the arguments it was launched with and the variables of its environment?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E07": f32 | "excerpt": string
+"0036" | "rnx 0036: what the process was given" | 0.5107267 | "s argument and\nevery call to `args()` are each built from it as an **independent"…[truncated]
+"0036" | "rnx 0036 evidence: what the process was given" | 0.4583939 | "Implemented and measured by Codex on nano, Linux, Intel i7-14700,\n2026-09-13, Ru"…[truncated]
+"0019" | "rnx 0019: a value for a human, and JSON when it is asked for" | 0.4365842 | "the caller of a script wants, which is\n  decision 1's product judgement rather t"…[truncated]
+"0009" | "rnx 0009 evidence: diagnostics for the file runner" | 0.4160443 | ".\n- `src/main.rs`: flags are read only before the script path, and everything\n  "…[truncated]
+"0012" | "rnx 0012: standard input" | 0.4044442 | "Status: proposed 2026-09-08. The twelfth record of rnx. The second port\nwanted s"…[truncated]
+
+E08: Why could a very large positive integer in JSON come back as the wrong number after parsing?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E08": f32 | "excerpt": string
+"0033" | "rnx 0033: the contract `json_parse` never had" | 0.57437515 | "asks for numeric\nconversion, null, duplicate keys, encoding, malformed input and"…[truncated]
+"0033" | "rnx 0033 evidence: the contract `json_parse` never had" | 0.56600636 | "Measured on nano, Linux, Intel i7-14700, 2026-09-13, Rust 1.98.1\n(`48a229cea`), "…[truncated]
+"0019" | "rnx 0019: a value for a human, and JSON when it is asked for" | 0.48559353 | "or they fail. This is a product\n  decision, not a defect being fixed: a preview "…[truncated]
+"0121" | "rnx 0121 evidence: oracle fixtures for the untested generated bindings" | 0.45364636 | "8 `deserialize_json_from_str` (a plan) and 3 `new` (fractions).\n\nAfter this reco"…[truncated]
+"0052" | "rnx 0052: one query through the extension interface" | 0.4433871 | "neither is a\nclient-side conversion failure. `f64` NaN and\ninfinities are sent a"…[truncated]
+
+E09: How does a Jupyter notebook run rnx code, and what sits between the notebook and the evaluator?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E09": f32 | "excerpt": string
+"0046" | "rnx 0046: a worker whose output has a boundary" | 0.58711016 | "Status: implemented 2026-09-14; Windows transport execution remains open. The fo"…[truncated]
+"0047" | "rnx 0047: a notebook cell over the worker" | 0.5588165 | "Status: revised 2026-09-15 after acceptance of record 0048. Its owned bounded\ntr"…[truncated]
+"0047" | "rnx 0047 evidence: from stopped probes to an owned transport" | 0.557675 | "rnx `7bb612e` and rnx-bench `4eefd66`\nbefore this step. Evidence is now rnx-benc"…[truncated]
+"0051" | "rnx 0051: an executable assembled from its extensions" | 0.52773285 | "each\n   process's measured count, not a requirement that different baselines mat"…[truncated]
+"0067" | "0067 gate 4: one installed rnx reaches the adapter session" | 0.52267087 | "in\ndeveloper path, not a step required by the default journey.\n\nA real Jupyter k"…[truncated]
+
+E10: Which problems in the Rune language runtime itself has the project written up as reports for its maintainers?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E10": f32 | "excerpt": string
+"0001" | "Rune scripting 0001: the first release" | 0.6130843 | "failure stay mutated, an external write\nbefore a runtime error stands, and nothi"…[truncated]
+"0002" | "rnx 0002: the interactive session" | 0.5903044 | "input through a small set of error\nkinds rather than one: an expected-token erro"…[truncated]
+"0032" | "Upstream enhancement draft: no way to stop a running script but the budget" | 0.5845 | "Ready to file against `rune-rs/rune`; the report is everything below the rule.\nT"…[truncated]
+"0046" | "rnx 0046: a worker whose output has a boundary" | 0.5769555 | "Rune value.\n\nFailures use the existing `Failure` variants: refused, compile, run"…[truncated]
+"0009" | "rnx 0009: diagnostics for the file runner" | 0.57090175 | "Status: proposed 2026-09-08. The ninth record of rnx. The session tells a\nperson"…[truncated]
+
+E11: How can a script use functions defined in another file next to it?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E11": f32 | "excerpt": string
+"0009" | "rnx 0009 evidence: diagnostics for the file runner" | 0.4676407 | ".\n- `src/main.rs`: flags are read only before the script path, and everything\n  "…[truncated]
+"0009" | "rnx 0009: diagnostics for the file runner" | 0.40049312 | ". Both already reach standard\nerror, which is the one thing about them that is r"…[truncated]
+"0001" | "Rune scripting 0001: the first release" | 0.39412898 | "value; and\n`repl` opens an interactive session. All three share one host library"…[truncated]
+"0004" | "rnx 0004 evidence: vars and help" | 0.38424087 | "HostFunction { path, doc }` per\n  function, both recorded by the same registrati"…[truncated]
+"0035" | "rnx 0035: a file is a value, and every refusal names its path" | 0.3822093 | ". The four file functions were\nregistered under `host::` before there was a modu"…[truncated]
+
+E12: Where does a project say which native extensions its executable has to contain?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E12": f32 | "excerpt": string
+"0062" | "rnx 0062: an adapter name becomes a declaration" | 0.54625577 | "executable overrides refuse: an opaque prebuilt binary cannot gain\nan extension "…[truncated]
+"0061" | "rnx 0061: projects share an assembled executable" | 0.47156334 | "adapter catalogue or :dep workflow.\n\n## Context\n\n0057 builds an executable per p"…[truncated]
+"0057" | "rnx 0057: a project declares what its executable contains" | 0.46713793 | "combined with native declarations. Its hash records\nidentity, not a description "…[truncated]
+"0060" | "rnx 0060: a project opens at its own prompt" | 0.4276393 | "Status: plan accepted 2026-09-17 at 9a5b510. Linux implementation and gates\n1–6 "…[truncated]
+"0028" | "rnx 0028 evidence: the provenance inventory, and how to reproduce it" | 0.4165704 | "The corrected scan walks `dirname` of each of the 91 resolved\n`manifest_path`s a"…[truncated]
+
+E13: Why was starting a verified project slow at first, and what made each launch cheaper?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E13": f32 | "excerpt": string
+"0109" | "rnx 0109: move semantics for non-Clone values (batch rule 1)" | 0.5757782 | "refreshed. The evidence quotes the new v2 applicable and available counts and th"…[truncated]
+"0063" | "0063 gate 6: ordinary regression and transition costs" | 0.52240086 | "one / repeat two:\n\n| Workload | Direct | Project default | Project `--verify` |\n"…[truncated]
+"0080" | "0080 Polars callback bindings: evidence" | 0.50245744 | ".14 ms | `probes/0080/launch-results-1.json` |\n| 2 | 19.16 ms | 19.61 ms | +0.45"…[truncated]
+"0058" | "0058 gate 6: final Linux regression and remaining qualifications" | 0.48626864 | "its cache assumptions and full-verification option, test\nin-place edits as well "…[truncated]
+"0064" | "rnx 0064 gate 5: installation and matched project launch costs" | 0.48593557 | "this record. Byte totals are host/build observations,\nnot a fixed storage requir"…[truncated]
+
+E14: How can old build output be deleted without removing something still in use?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E14": f32 | "excerpt": string
+"0066" | "rnx 0066: removal is an explicit ownership decision" | 0.5272325 | "with the\nexisting build guidance. Explicit build may reconstruct it when locked "…[truncated]
+"0069" | "0069 gate 2: the shared build directory in the product" | 0.5092595 | "build directory build-<key> …\n  wait for every build to finish, then retry\"; the"…[truncated]
+"0065" | "rnx 0065: a launch checks each native file once" | 0.50483614 | "publication retain the\nexisting installed-but-unselected and selection-may-have-"…[truncated]
+"0061" | "rnx 0061: projects share an assembled executable" | 0.5028112 | "wide or cross-user sharing in this record.\n\nLayout under that root is versioned:"…[truncated]
+"0066" | "0066 gate 2: product commands and interruption evidence" | 0.49576458 | "26c84d6caf76d268173a2d0806709437e53e081a4029d29a084ccba4379f4c17`.\nSetup install"…[truncated]
+
+E15: How does a script fetch a URL without risking an unbounded response?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E15": f32 | "excerpt": string
+"0054" | "rnx 0054: a server owns more than a handler" | 0.45124426 | ", with\nString or Bytes values; body is String (UTF-8 bytes) or Bytes. Unknown/mi"…[truncated]
+"0034" | "rnx 0034: a bounded request, with no second JSON" | 0.41830036 | "the result says which; a script that must not be\nredirected compares it.\n\n### 7."…[truncated]
+"0036" | "rnx 0036: what the process was given" | 0.34827054 | "There is no bytes form of `args`; a script that must accept\narbitrary bytes on t"…[truncated]
+"0013" | "rnx 0013: the exit status and standard error" | 0.34617808 | "depend on the script handling it.** A script that\n   asks for an impossible stat"…[truncated]
+"0022" | "rnx 0022: a child that is told what to do" | 0.34441492 | "exit code, and the flags for a deadline, a\ncancellation, and a truncated capture"…[truncated]
+
+E16: Which clocks can a script read, and how does it handle time zones?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E16": f32 | "excerpt": string
+"0038" | "rnx 0038: a moment is a number, and a clock is named" | 0.59224194 | "meaning and name, **not one the API enforces**: both are\nintegers, and a script "…[truncated]
+"0038" | "rnx 0038 evidence: a moment is a number, and a clock is named" | 0.5113843 | "Implemented and measured by Codex on nano (Linux, Intel i7-14700),\n2026-09-14, R"…[truncated]
+"0124" | "rnx 0124 evidence: the preview shows every dtype, and keeps a frame's last colum"…[truncated] | 0.4878549 | ", `188`, `133`). So an out-of-range date or timestamp panicked the preview, zone"…[truncated]
+"0020" | "rnx 0020: waiting for a child without sleeping through it" | 0.37069622 | "deadline still ends the wait, and no sleep outlives it.** A child that\n   outliv"…[truncated]
+"0052" | "rnx 0052: one query through the extension interface" | 0.3594081 | "neither is a\nclient-side conversion failure. `f64` NaN and\ninfinities are sent a"…[truncated]
+
+E17: How can a person pick their own colours for the session prompt and results?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E17": f32 | "excerpt": string
+"0045" | "rnx 0045: the number carries the colour" | 0.52656436 | "`). Plain blue is the\n   chosen palette slot, not a fixed RGB value; bold is ret"…[truncated]
+"0039" | "rnx 0039: colour belongs to the presentation" | 0.5166207 | "on a dark background and on a light one. The colours in\ndecision 3 are chosen fr"…[truncated]
+"0043" | "rnx 0043: colours a person can choose, in a Rune file" | 0.4703565 | "Status: implemented 2026-09-14; evidence is beside this record. Windows\nexecutio"…[truncated]
+"0042" | "rnx 0042: the prompt a person lives at" | 0.4494634 | "s own — because it is the same buffer under the same input, and\nrecord 0040 left"…[truncated]
+"0039" | "rnx 0039 evidence: colour belongs to the presentation" | 0.44941226 | "-test colour --test repl`: 4 colour tests and 17 REPL tests pass. The full\nsuite"…[truncated]
+
+E18: Why did an error name a hexadecimal hash instead of the method that was missing, and how was it fixed?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E18": f32 | "excerpt": string
+"0041" | "rnx 0041: the same name, wherever the method went missing" | 0.5806632 | "0xff0afefdd65e03a7` for `::std::i64`\n\n[4] rnx> let old = |v| v.missing_method();"…[truncated]
+"0014" | "rnx 0014 evidence: naming the missing method" | 0.50165635 | "or wrong, and the worst outcome is the message Rune\nalready prints.\n\n## Two defe"…[truncated]
+"0014" | "rnx 0014: naming the missing method" | 0.47138482 | "*A fault that is not a missing method is left alone.** A script that\n   panics w"…[truncated]
+"0011" | "rnx 0011: the second port" | 0.4675714 | "., line 73, column 2: Missing instance function\n`0xf77d93259f11131a` for `::std:"…[truncated]
+"0094" | "rnx 0094: lossless categorical hash tokens" | 0.46444082 | "as exactly 16 lowercase ASCII hexadecimal digits with no prefix, for example `00"…[truncated]
+
+E19: How does a script get a child process's output when it is not valid text?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E19": f32 | "excerpt": string
+"0018" | "rnx 0018: a failure is a failure from either entry point" | 0.544568 | "rather than `error: \"plain words\"`. `eval` now does the same, because the two\nar"…[truncated]
+"0013" | "rnx 0013: the exit status and standard error" | 0.5380804 | "depend on the script handling it.** A script that\n   asks for an impossible stat"…[truncated]
+"0013" | "rnx 0013 evidence: the exit status and standard error" | 0.52819985 | "an empty standard\n  error, and `compare.sh` lost the exception machinery it need"…[truncated]
+"0044" | "rnx 0044: a child with its own directory and environment" | 0.51398623 | "exit is an `Ok` reply, including its output. Callers inspect\n`timed_out` and `ca"…[truncated]
+"0015" | "rnx 0015: the third port" | 0.509848 | "it.\n\nSo there are two requirements, and the next cut should not confuse them:\n\n|"…[truncated]
+
+E20: After a child process times out, why could the call still take a long time to return?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E20": f32 | "excerpt": string
+"0023" | "rnx 0023: a capture that ends when the call does" | 0.60513467 | "Status: proposed 2026-09-09. The twenty-third record of rnx. A deadline ends\nthe"…[truncated]
+"0020" | "rnx 0020: waiting for a child without sleeping through it" | 0.5286472 | "s user / 0.01 s sys either way. So sleeping does buy something for a\n   long-liv"…[truncated]
+"0022" | "rnx 0022: a child that is told what to do" | 0.51985055 | "status\nit exited with. What it does not report is how much of the input the chil"…[truncated]
+"0025" | "rnx 0025 evidence: the same contracts on Windows" | 0.5175208 | "_exit_windows::a_normal_child_exit_collects_the_unfinished_writer`\nnow supplies "…[truncated]
+"0025" | "rnx 0025: the same contracts on Windows" | 0.4959246 | "back — the loop\n  waits, and so would the join behind it. That is the honest fai"…[truncated]
+
+E21: Which Polars release does rnx ship, and why not the 2.0 release candidate?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E21": f32 | "excerpt": string
+"0128" | "rnx 0128: which Polars rnx ships (a decision, with a bounded probe)" | 0.6080481 | "Status: decision, as the user settled it on 2026-09-30.\n\n**The question.** At v2"…[truncated]
+"0061" | "0061 gate 5: two Polars applications share one retained assembly" | 0.56165284 | "Status: ready for Linux review. Gate 4 is accepted and pushed at rnx `3c4ed67`\na"…[truncated]
+"0058" | "rnx 0058: a small dataframe pipeline through the same engine" | 0.52420163 | "allocation rejection inside native code. A native call can overrun a ceiling;\nal"…[truncated]
+"0068" | "0068 gate 1: the presentation seam" | 0.5024065 | "Status: the isolated prototype passes on Linux, ready for review before the\nprod"…[truncated]
+"0071" | "rnx 0071: `polars::version()`" | 0.5007873 | "executable. No stock rnx change: the function\nlives in the adapter and is reache"…[truncated]
+
+E22: How are the Polars bindings produced without writing each one by hand?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E22": f32 | "excerpt": string
+"0096" | "rnx 0096: null-aware numeric vectors as owned script values" | 0.5018417 | "pairs separate from this proven-pair pool.\n2. **Implement only the exact return "…[truncated]
+"0118" | "rnx 0118 evidence: in-memory I/O, through a closed table of std facts" | 0.38774186 | "bindings establish it inside the engine closure, so it is on the thread that wri"…[truncated]
+"0119" | "rnx 0119 evidence: the Arrow value layer, closed on the proven bridge" | 0.3793484 | "`polars_arrow` is admitted at both pins, under its own `polars::arrow` namespace"…[truncated]
+"0062" | "0062 gates 2–6: catalogue commands and real consumers" | 0.37557006 | ". The retained Polars entry occupies **1,570,086,912 bytes** here.\n\nBoth project"…[truncated]
+"0074" | "rnx 0074: forward-upgrade probe against Polars 2.0 rc2, evidence" | 0.34926224 | "expr::ClosedInterval, polars_utils::pl_str::PlSmallStr) -> polars_error::PolarsR"…[truncated]
+
+E23: Can a script pass its own function into a Polars operation, and what are the rules?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E23": f32 | "excerpt": string
+"0125" | "rnx 0125: loading, from CSV inference, JSON files and plain-string paths" | 0.5626976 | "takes a file path as `polars_utils::pl_path::PlRefPath`. The generator wraps it "…[truncated]
+"0097" | "rnx 0097: concrete `ChunkedArray` head, limit and tail" | 0.5363856 | "applicability rules.\n\nPinned Polars 0.55.2 `polars-core/src/chunked_array/ops/ch"…[truncated]
+"0127" | "rnx 0127: pivot, with an `Arc<DataFrame>` argument and higher-arity binding" | 0.5100625 | "snapshot (H)\n\n**What Polars wants.** `on_columns` is the frame of distinct value"…[truncated]
+"0096" | "rnx 0096: null-aware numeric vectors as owned script values" | 0.5039741 | "pairs separate from this proven-pair pool.\n2. **Implement only the exact return "…[truncated]
+"0114" | "rnx 0114: split the Polars generator by concern" | 0.50039023 | "(463), argument and return mapping (1,544), and bound proof (476).\n\n160 comments"…[truncated]
+
+E24: Why did very large unsigned integers read back from a dataframe column come out wrong?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E24": f32 | "excerpt": string
+"0129" | "rnx 0129 evidence: Candle, scoped to one cross-adapter workflow" | 0.53571194 | "`df.to_dense(columns, dtype)`: the frame is borrowed, and the column list is rea"…[truncated]
+"0120" | "rnx 0120: the concrete Arrow arrays scripts can reach" | 0.5217144 | "binary16 ⊂ f64, so the conversion is exact |\n\nFor pf16 the mapping keeps:\n- ±0 w"…[truncated]
+"0095" | "0095 typed left division and remainder: evidence" | 0.50614804 | "- for Float32 and Float64: NaN, inf, −inf, 0.0, −0.0 and a `-0.0` scalar, compar"…[truncated]
+"0129" | "rnx 0129: Candle, scoped to one cross-adapter workflow" | 0.50264704 | ":MAX` would itself round to `f32::MAX`.\n- **`f32` to `f64`:** exact.\n- **NaN or "…[truncated]
+"0099" | "0099 owned numeric chunk snapshots: evidence" | 0.49052325 | "[1,2,3] [1,2,3|1,n,3]`, and Float64 gives the same shape with `1.0` formatting.\n"…[truncated]
+
+E25: How does a script load a CSV or JSON file into a dataframe?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E25": f32 | "excerpt": string
+"0125" | "rnx 0125 evidence: loading, from CSV inference, JSON files and plain-string path"…[truncated] | 0.4569763 | "_csv takes (path) or (path, schema), found N arguments\".\n- The same host rules a"…[truncated]
+"0112" | "rnx 0112 evidence: serde impls through a bounded JSON boundary" | 0.39590353 | "-byte UTF-8 `RowIndex` name (Polars serializes a frame as IPC bytes, whose JSON "…[truncated]
+"0125" | "rnx 0125: loading, from CSV inference, JSON files and plain-string paths" | 0.39372218 | "inference | `polars::read_csv(path)` | \"Wrong number of arguments 1, expected 2\""…[truncated]
+"0058" | "0058 gate 2: CSV and Parquet through the product adapter" | 0.3887396 | "produce exactly (a,2), (🦀,7), with\nstring and i64 columns. Python independently "…[truncated]
+"0068" | "0068 gate 2: the product port and its matrix" | 0.36328012 | "), nulls\nin all four dtypes, an 81-scalar UTF-8 cell, controls with a tab, newli"…[truncated]
+
+E26: How can rows of long data be reshaped into a table with one column per category?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E26": f32 | "excerpt": string
+"0074" | "rnx 0074: forward-upgrade probe against Polars 2.0 rc2, evidence" | 0.27257016 | "{ head: \"collected shape=(3, 5); columns=[x:Int64,y:String,z:Float64,y_right:Str"…[truncated]
+"0122" | "rnx 0122: a workflow probe, then the first workflow fix" | 0.23306698 | "analyst is an empirical question, so this record measures it.\n\n## Stage 1: the p"…[truncated]
+"0131" | "rnx 0131: a pretrained model on the CPU — text embeddings into a ranked table" | 0.23075686 | "for text: the tokenizer needs `&str`, and a text block in `rnx::interchange` wou"…[truncated]
+"0094" | "0094 categorical hash tokens: evidence" | 0.22863266 | "malformed tokens, each to both consumers | `ConversionError` naming the operatio"…[truncated]
+"0084" | "rnx 0084: chained generic inference and iterator inputs" | 0.22065724 | "applicability is proven; `ChunkSet::scatter_single` lacks that family proof and "…[truncated]
+
+E27: Which everyday analytics tasks did not work end to end, and how was that measured?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E27": f32 | "excerpt": string
+"0122" | "rnx 0122: a workflow probe, then the first workflow fix" | 0.37042558 | "analyst is an empirical question, so this record measures it.\n\n## Stage 1: the p"…[truncated]
+"0080" | "0080 Polars callback bindings: evidence" | 0.3394829 | ".14 ms | `probes/0080/launch-results-1.json` |\n| 2 | 19.16 ms | 19.61 ms | +0.45"…[truncated]
+"0067" | "0067 gate 2 — management in stock rnx and the session protocol" | 0.33506355 | "own timing and final regression."
+"0038" | "rnx 0038: a moment is a number, and a clock is named" | 0.3341239 | "Status: implemented 2026-09-14 after review and the fixture correction below.\nEv"…[truncated]
+"0056" | "rnx 0056: a server entry without ownership by accident" | 0.33076826 | "CPU work, a failed transaction and subsequent borrower,\n   then shutdown. Record"…[truncated]
+
+E28: How was computing embeddings for many passages made faster on the CPU?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E28": f32 | "excerpt": string
+"0131" | "rnx 0131 evidence: a pretrained model on the CPU (text embeddings into a ranked "…[truncated] | 0.5867522 | "load, and 289 MiB after embedding 10,000 texts. The allocator peak during that e"…[truncated]
+"0132" | "rnx 0132: concurrent batches in `TextEncoder::embed` (CPU)" | 0.5720322 | "Status: plan, the user's go after 0131. This is CPU only, and comes before any G"…[truncated]
+"0131" | "rnx 0131: a pretrained model on the CPU — text embeddings into a ranked table" | 0.5496827 | "-desk passages over a few topics, with 8 queries.\n- A deterministic 10,000-row c"…[truncated]
+"0132" | "rnx 0132 evidence: concurrent batches in `TextEncoder::embed`" | 0.46417558 | "The 1.2× target is met narrowly** (12.55 s against 12.6 s). The remaining gap to"…[truncated]
+"0107" | "rnx 0107: in-memory source programs and multi-argument handlers for embedders" | 0.45788607 | "embedder receives is the whole `server-runtime` context (json, io, process with "…[truncated]
+
+E29: How does a model's numeric output become columns of a dataframe?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E29": f32 | "excerpt": string
+"0129" | "rnx 0129: Candle, scoped to one cross-adapter workflow" | 0.3746697 | ":MAX` would itself round to `f32::MAX`.\n- **`f32` to `f64`:** exact.\n- **NaN or "…[truncated]
+"0068" | "0068 gate 2: the product port and its matrix" | 0.3504073 | "), nulls\nin all four dtypes, an 81-scalar UTF-8 cell, controls with a tab, newli"…[truncated]
+"0127" | "rnx 0127: pivot, with an `Arc<DataFrame>` argument and higher-arity binding" | 0.3393971 | ".width()`;\n- with several `on` columns, the names match;\n- `values` is non-empty"…[truncated]
+"0131" | "rnx 0131: a pretrained model on the CPU — text embeddings into a ranked table" | 0.3385656 | ".with_order_descending(true))?.head(Some(5))?;\nranked\n```\n\n**Usability is measur"…[truncated]
+"0129" | "rnx 0129 evidence: Candle, scoped to one cross-adapter workflow" | 0.3313754 | "`df.to_dense(columns, dtype)`: the frame is borrowed, and the column list is rea"…[truncated]
+
+E30: Why doesn't a second project using the same adapters compile them all over again?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E30": f32 | "excerpt": string
+"0061" | "rnx 0061: projects share an assembled executable" | 0.5490237 | "adapter catalogue or :dep workflow.\n\n## Context\n\n0057 builds an executable per p"…[truncated]
+"0063" | "rnx 0063: a session can request its next executable" | 0.46807173 | "is not a promise of transparent hot\nloading or rollback after destructive cleanu"…[truncated]
+"0067" | "rnx 0067: one install provides the dependency workflow" | 0.44324303 | "a requirement to install runtime sources. Folding that second\ninstallation into "…[truncated]
+"0062" | "rnx 0062: an adapter name becomes a declaration" | 0.43479428 | "executable overrides refuse: an opaque prebuilt binary cannot gain\nan extension "…[truncated]
+"0056" | "rnx 0056: gate 1, external assembly" | 0.43282697 | ". The default\nsuite was rerun serially and passed. This was harness interference"…[truncated]
+
+E31: How can a script reach the Arrow arrays underneath Polars columns?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E31": f32 | "excerpt": string
+"0119" | "rnx 0119 evidence: the Arrow value layer, closed on the proven bridge" | 0.54240626 | "`polars_arrow` is admitted at both pins, under its own `polars::arrow` namespace"…[truncated]
+"0074" | "rnx 0074: forward-upgrade probe against Polars 2.0 rc2, evidence" | 0.49812937 | "::array::primitive::PrimitiveArray<polars_utils::index::IdxSize>, polars_arrow::"…[truncated]
+"0099" | "rnx 0099: owned numeric chunk snapshots" | 0.47750396 | ".55.2 `polars-core/src/chunked_array/mod.rs:479-481` returns a borrow of the act"…[truncated]
+"0097" | "rnx 0097: concrete `ChunkedArray` head, limit and tail" | 0.46413377 | "applicability rules.\n\nPinned Polars 0.55.2 `polars-core/src/chunked_array/ops/ch"…[truncated]
+"0127" | "rnx 0127: pivot, with an `Arc<DataFrame>` argument and higher-arity binding" | 0.41083783 | "LazyFrame::pivot` moves from `unsupported` to `generated` at v2. The frozen list"…[truncated]
+
+E32: Is there a short way to quit or clear the screen at the prompt?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E32": f32 | "excerpt": string
+"0042" | "rnx 0042: the prompt a person lives at" | 0.4444948 | "Status: implemented 2026-09-14. Evidence is beside this record; Windows\nexecutio"…[truncated]
+"0002" | "rnx 0002: the interactive session" | 0.38163716 | "first release record's failure rules apply\nunchanged, so mutations already made "…[truncated]
+"0025" | "rnx 0025: the same contracts on Windows" | 0.3465034 | "be read. The\nfirst draft of this seam broke that promise on the way past: it pub"…[truncated]
+"0040" | "rnx 0040 evidence: numbering without changing source identities" | 0.3085662 | "Implemented on nano, Linux x86_64, 2026-09-14. Plan: bdb64d6.\nBench reference: r"…[truncated]
+"0068" | "0068 gate 1: the presentation seam" | 0.30804732 | "re-registration); `:quit` drops it exactly once. A presenter that\nwrites 10,000 "…[truncated]
+
+E33: What does pressing Tab complete at the prompt?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E33": f32 | "excerpt": string
+"0003" | "rnx 0003: completion" | 0.45801014 | "is offered only where a name can stand. It is suppressed when\nthe cursor is insi"…[truncated]
+"0039" | "rnx 0039: colour belongs to the presentation" | 0.45054102 | "* The tokenizer over a\n   10 000-character pasted block completes under a stated"…[truncated]
+"0042" | "rnx 0042: the prompt a person lives at" | 0.44685262 | "named prompt\n   and banner tests changed; startup and the session baseline befor"…[truncated]
+"0042" | "rnx 0042 evidence: the compact prompt" | 0.44123507 | "Plan 8978a15. Bench e272789, probes/prompt and results/prompt_0042.\n\nBoth suites"…[truncated]
+"0040" | "rnx 0040 evidence: numbering without changing source identities" | 0.4308088 | "Implemented on nano, Linux x86_64, 2026-09-14. Plan: bdb64d6.\nBench reference: r"…[truncated]
+
+E34: How does a script read data piped into it?
+DataFrame: 5 rows × 4 columns
+"record": string | "title": string | "E34": f32 | "excerpt": string
+"0012" | "rnx 0012: standard input" | 0.5103698 | "Status: proposed 2026-09-08. The twelfth record of rnx. The second port\nwanted s"…[truncated]
+"0012" | "rnx 0012 evidence: standard input" | 0.4947395 | "- `nilket/crates/toron/scripts/bench/summarize_runtime_filter_perft.rn` in\n  ket"…[truncated]
+"0019" | "rnx 0019: a value for a human, and JSON when it is asked for" | 0.4650663 | "the caller of a script wants, which is\n  decision 1's product judgement rather t"…[truncated]
+"0070" | "rnx 0070: `:dep` is quiet by default, `:depv` says everything" | 0.45922306 | "noisy child is never blocked on a full pipe, and Ctrl-C still kills the\nprocess "…[truncated]
+"0039" | "rnx 0039 evidence: colour belongs to the presentation" | 0.4503851 | ". The new pipe gates cover run, eval, help, piped sessions,\ninspection, errors, "…[truncated]
+
+WORKFLOW OK u1c

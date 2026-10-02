@@ -1,0 +1,6 @@
+BIT-EQUAL (each producer validated first, its candidates recomputed from its retained retrieval evidence over D1): 3461 passages and their 34 query scores, 34 queries x 20 candidates (paths, pids, retrieval and cross-encoder scores in f32 bits), the 680 pairs' texts, re-ranked orders and metrics
+../0147/out/u5-script: validated against its retained evidence and D1
+680 pairs; max |rnx - HF| = 1.19e-05 (bound 1e-4)
+re-ranked orders: identical
+HF CrossEncoder.predict: 10613 ms median of [9438, 10613, 11209] ms
+semantic gate: PASS

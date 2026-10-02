@@ -1,0 +1,13 @@
+pass: unmodified: U1' validated against U5's retained evidence; its top 5 equals U5's retrieval top 5 for all 34 queries (0 equal-score choices named above)
+refused: Codex's: a nonexistent document and pid, score kept: FAIL: U1' E01 rank 1: pid '999999999' is not a retained passage
+refused: Codex's: the score NaN, identity kept: FAIL: U1' E01 rank 1: score nan is not finite
+refused: an out-of-range pid, path kept: FAIL: U1' E01 rank 1: pid '3461' is not a retained passage
+refused: a valid pid with another document's path: FAIL: U1' E01 rank 1: pid 94 belongs to 0006_what_a_retained_value_pins.md, not 0002_the_interactive_session.md
+refused: a forged finite score, identity kept (one f32 step): FAIL: U1' E01 rank 1: score 0.5460683107376099 is not pid 94's retained score
+refused: another passage of the same document, with its own retained score: FAIL: U1' E01 rank 1: pid 88 is not 0006_what_a_retained_value_pins.md's best passage
+refused: a duplicated document: FAIL: U1' E01: a document repeats
+refused: an unexpected query: FAIL: U1': the rows are not each rubric query's ranks 1 to 5, in order
+refused: an extra row: FAIL: U1': the rows are not each rubric query's ranks 1 to 5, in order
+refused: a missing row: FAIL: U1': the rows are not each rubric query's ranks 1 to 5, in order
+refused: a wrong header: FAIL: U1': the header is not query, rank, path, pid, score
+all U1' controls behave
