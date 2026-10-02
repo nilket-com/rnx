@@ -1,0 +1,147 @@
+# frame
+> let df = polars::DataFrame::new(6, [polars::Series::from_iter_i64([101, 102, 103, 104, 105, 106])?.with_name("ticket").into_column(), polars::Series::from_iter_str(["api", "ui", "api", "data", "ui", "api"])?.with_name("team").into_column(), polars::Series::from_iter_f64([3.5, 1.0, 2.5, 4.0, 0.5, 1.5])?.with_name("hours").into_column()])?;
+(no value)
+
+# show
+> df
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+102 | "ui" | 1.0
+103 | "api" | 2.5
+104 | "data" | 4.0
+105 | "ui" | 0.5
+106 | "api" | 1.5
+
+# view 1: lazy group-by
+> df.lazy().group_by([polars::col("team")])?.agg([polars::col("hours").sum().alias("total")])?.sort(["team"])?.collect()?
+DataFrame: 3 rows × 2 columns
+"team": string | "total": f64
+"api" | 7.5
+"data" | 4.0
+"ui" | 1.5
+
+# show
+> df
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+102 | "ui" | 1.0
+103 | "api" | 2.5
+104 | "data" | 4.0
+105 | "ui" | 0.5
+106 | "api" | 1.5
+
+# view 2: sort by hours, descending
+> df.sort(["hours"], polars::SortMultipleOptions::default_().with_order_descending(true))?
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+104 | "data" | 4.0
+101 | "api" | 3.5
+103 | "api" | 2.5
+106 | "api" | 1.5
+102 | "ui" | 1.0
+105 | "ui" | 0.5
+
+# show
+> df
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+102 | "ui" | 1.0
+103 | "api" | 2.5
+104 | "data" | 4.0
+105 | "ui" | 0.5
+106 | "api" | 1.5
+
+# view 3: sort by team
+> df.sort(["team"], polars::SortMultipleOptions::default_())?
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+103 | "api" | 2.5
+106 | "api" | 1.5
+104 | "data" | 4.0
+102 | "ui" | 1.0
+105 | "ui" | 0.5
+
+# show
+> df
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+102 | "ui" | 1.0
+103 | "api" | 2.5
+104 | "data" | 4.0
+105 | "ui" | 0.5
+106 | "api" | 1.5
+
+# view 4: head
+> df.head(Some(2))?
+DataFrame: 2 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+102 | "ui" | 1.0
+
+# show
+> df
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+102 | "ui" | 1.0
+103 | "api" | 2.5
+104 | "data" | 4.0
+105 | "ui" | 0.5
+106 | "api" | 1.5
+
+# view 5: lazy filter
+> df.lazy().filter(polars::col("hours").gt(polars::lit(2.0)?)).collect()?
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+103 | "api" | 2.5
+104 | "data" | 4.0
+
+# show
+> df
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+102 | "ui" | 1.0
+103 | "api" | 2.5
+104 | "data" | 4.0
+105 | "ui" | 0.5
+106 | "api" | 1.5
+
+# clone, then sort the clone in place
+> let copy = df.clone(); copy.sort_in_place(["hours"], polars::SortMultipleOptions::default_().with_order_descending(true))?; copy
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+104 | "data" | 4.0
+101 | "api" | 3.5
+103 | "api" | 2.5
+106 | "api" | 1.5
+102 | "ui" | 1.0
+105 | "ui" | 0.5
+
+# show
+> df
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+101 | "api" | 3.5
+102 | "ui" | 1.0
+103 | "api" | 2.5
+104 | "data" | 4.0
+105 | "ui" | 0.5
+106 | "api" | 1.5
+
+# alias, then sort the alias in place
+> let same = df; same.sort_in_place(["hours"], polars::SortMultipleOptions::default_().with_order_descending(true))?; df
+DataFrame: 6 rows × 3 columns
+"ticket": i64 | "team": string | "hours": f64
+104 | "data" | 4.0
+101 | "api" | 3.5
+103 | "api" | 2.5
+106 | "api" | 1.5
+102 | "ui" | 1.0
+105 | "ui" | 0.5

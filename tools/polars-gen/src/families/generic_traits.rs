@@ -463,7 +463,9 @@ pub(crate) fn emit_trait_dispatch(
 	// every arm emitted by the ordinary path, into a scratch output; any
 	// refusal refuses the whole receiver with that arm's reason
 	let mut texts: Vec<ArmText> = Vec::new();
-	let mut first: Option<(crate::emit::Entry, Vec<(String, String)>)> = None;
+	// the first arm's entry, catalogue lines and consuming paths
+	type FirstArm = (crate::emit::Entry, Vec<(String, String)>, Vec<String>);
+	let mut first: Option<FirstArm> = None;
 	let mut fn_index = out.fn_index;
 	let mut key_taken = None;
 	for (i, a) in arms.iter().enumerate() {
@@ -472,6 +474,7 @@ pub(crate) fn emit_trait_dispatch(
 			functions: String::new(),
 			registrations: vec![],
 			catalogue: vec![],
+			consuming: vec![],
 			entries: vec![],
 			taken: out.taken.clone(),
 			fn_index,
@@ -511,11 +514,12 @@ pub(crate) fn emit_trait_dispatch(
 				.iter()
 				.find(|(key, _)| !out.taken.contains_key(*key))
 				.map(|(key, v)| (key.clone(), v.clone(), ident.clone()));
-			first = Some((e, s.catalogue));
+			first = Some((e, s.catalogue, s.consuming));
 		}
 		texts.push(t);
 	}
-	let (Some((mut entry, catalogue)), Some((key, took, ident))) = (first, key_taken) else {
+	let (Some((mut entry, catalogue, consuming)), Some((key, took, ident))) = (first, key_taken)
+	else {
 		return refuse(out, "the first arm took no name".into());
 	};
 	// everything but the dispatched parameter agrees
@@ -590,6 +594,7 @@ pub(crate) fn emit_trait_dispatch(
 	out.registrations
 		.push(format!("m.function_meta({ident})?;"));
 	out.catalogue.extend(catalogue);
+	out.consuming.extend(consuming);
 	out.taken.insert(key, took);
 	out.fn_index = fn_index;
 	entry.fallible = Some(true);
@@ -791,6 +796,7 @@ pub(crate) fn generic_traits_self_test() {
 			functions: String::new(),
 			registrations: vec![],
 			catalogue: vec![],
+			consuming: vec![],
 			entries: vec![],
 			taken: BTreeMap::new(),
 			fn_index: 0,

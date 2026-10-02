@@ -1,0 +1,4 @@
+rows | clone µs | clone bytes | shared | rename µs | rename bytes | sort µs | sort bytes | original intact | deep copy µs | deep copy bytes
+1 | 2.0 | 1672 | true | 102.8 | 272 | 186.1 | 768 | true | 11.4 | 4880
+100000 | 2.4 | 1672 | true | 74.8 | 272 | 1252.8 | 8045584 | true | 2652.4 | 8004800
+1000000 | 6.0 | 1672 | true | 306.2 | 272 | 10245.5 | 80045584 | true | 32179.4 | 80004800

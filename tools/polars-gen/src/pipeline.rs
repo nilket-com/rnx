@@ -25,6 +25,7 @@ pub(crate) fn generate(
 		functions: String::new(),
 		registrations: vec![],
 		catalogue: vec![],
+		consuming: vec![],
 		entries: vec![],
 		taken: BTreeMap::new(),
 		fn_index: 0,

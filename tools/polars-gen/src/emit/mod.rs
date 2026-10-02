@@ -250,6 +250,9 @@ pub(crate) struct Emitted {
 	pub(crate) functions: String,
 	pub(crate) registrations: Vec<String>,
 	pub(crate) catalogue: Vec<(String, String)>,
+	/// Record 0141: the Rune paths whose binding takes its receiver by
+	/// value (a non-Clone owner moved out of the Rune value).
+	pub(crate) consuming: Vec<String>,
 	pub(crate) entries: Vec<Entry>,
 	/// per (wrapper rust path, rune method name) -> canonical path that took it
 	pub(crate) taken: BTreeMap<(String, String), String>,
