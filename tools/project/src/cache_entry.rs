@@ -656,7 +656,43 @@ mod shared_build_tests {
 			Err(std::fs::TryLockError::WouldBlock)
 		));
 		drop(b);
-		assert!(remover.try_lock().is_ok());
+		// Record 0142: a concurrent test's spawn can hold a copy of the
+		// lock's description until its exec (the control below)
+		freed_within(&remover, Duration::from_secs(5));
+	}
+	/// The last acquisition waits, as production's `lock()` does; any error
+	/// other than WouldBlock fails at once.
+	fn freed_within(remover: &File, bound: Duration) {
+		let deadline = std::time::Instant::now() + bound;
+		loop {
+			match remover.try_lock() {
+				Ok(()) => return,
+				Err(std::fs::TryLockError::WouldBlock) if std::time::Instant::now() < deadline => {
+					std::thread::sleep(Duration::from_millis(10))
+				}
+				Err(e) => panic!("the exclusive taker was not freed: {e}"),
+			}
+		}
+	}
+	/// Record 0142's mechanism control: a forked child holding a copy of a
+	/// shared holder's description keeps the lock held after every handle
+	/// in this process is dropped; it is free once the child is reaped.
+	#[test]
+	#[cfg(target_os = "linux")]
+	fn an_inherited_description_keeps_the_shared_lock_until_the_child_ends() {
+		let d = temp("lock-inherited");
+		let path = d.join("build-k.lock");
+		let a = lock_shared(&path).unwrap();
+		let remover = options().read(true).write(true).open(&path).unwrap();
+		let child = crate::fork_hold::Held::fork();
+		drop(a);
+		assert!(matches!(
+			remover.try_lock(),
+			Err(std::fs::TryLockError::WouldBlock)
+		));
+		assert!(child.release());
+		// other tests' spawns may also have forked while `a` was open
+		freed_within(&remover, Duration::from_secs(5));
 	}
 	#[test]
 	fn the_shared_directory_follows_the_recorded_build_kind() {

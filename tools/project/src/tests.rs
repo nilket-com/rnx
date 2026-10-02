@@ -311,16 +311,75 @@ fn declared_table_limits_and_duplicate_json_aliases() {
 	assert!(doc.validate().is_err());
 	assert!(Manifest::parse(toml::to_string(&doc).unwrap().as_bytes()).is_err());
 }
+/// Record 0142: install an executable without this process ever holding a
+/// writer on it. A concurrent test's spawn forks every open descriptor until
+/// its exec, so a script written here can be "Text file busy" when executed;
+/// the body goes to a staging file, and `cp` (another process) writes the
+/// executable.
+#[cfg(unix)]
+fn install(staging: &Path, executable: &Path, body: &str) {
+	use std::os::unix::fs::PermissionsExt;
+	std::fs::write(staging, body).unwrap();
+	let _ = std::fs::remove_file(executable);
+	let status = std::process::Command::new("/bin/cp")
+		.arg(staging)
+		.arg(executable)
+		.stdin(std::process::Stdio::null())
+		.status()
+		.unwrap();
+	assert!(status.success());
+	std::fs::set_permissions(executable, std::fs::Permissions::from_mode(0o700)).unwrap();
+}
+/// Record 0142's mechanism control: a writer held by a forked child (as a
+/// concurrent spawn holds one until its exec) makes the handshake's exec
+/// fail with ETXTBSY; installing by `cp` leaves the child holding only the
+/// staging file, and the handshake succeeds while it lives.
+#[test]
+#[cfg(target_os = "linux")]
+fn an_inherited_writer_makes_the_script_busy_and_cp_installation_does_not() {
+	use std::io::Write;
+	use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+	let t = Tree::new();
+	let body = "#!/bin/sh\nprintf '%s' '{\"format\":1}'\n";
+	// unfixed: this process writes the executable; the child inherits it
+	let written = t.0.join("written");
+	let mut f = std::fs::OpenOptions::new()
+		.write(true)
+		.create_new(true)
+		.mode(0o700)
+		.open(&written)
+		.unwrap();
+	f.write_all(body.as_bytes()).unwrap();
+	let child = crate::fork_hold::Held::fork();
+	drop(f);
+	let e = crate::handshake::check(&written).unwrap_err();
+	assert!(e.contains("Text file busy"), "{e}");
+	assert!(child.release());
+	// fixed: the child inherits a writer on the staging file only
+	let staging = t.0.join("staging");
+	let installed = t.0.join("installed");
+	let mut f = std::fs::File::create(&staging).unwrap();
+	f.write_all(body.as_bytes()).unwrap();
+	let child = crate::fork_hold::Held::fork();
+	let status = std::process::Command::new("/bin/cp")
+		.arg(&staging)
+		.arg(&installed)
+		.stdin(std::process::Stdio::null())
+		.status()
+		.unwrap();
+	assert!(status.success());
+	std::fs::set_permissions(&installed, std::fs::Permissions::from_mode(0o700)).unwrap();
+	drop(f);
+	assert_eq!(crate::handshake::check(&installed), Ok(()));
+	assert!(child.release());
+}
 #[test]
 #[cfg(unix)]
 fn capability_refuses_bad_replies_and_retires_timed_out_child() {
-	use std::os::unix::fs::PermissionsExt;
 	let t = Tree::new();
 	let script = t.0.join("executable");
-	let set = |body: &str| {
-		std::fs::write(&script, format!("#!/bin/sh\n{body}\n")).unwrap();
-		std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o700)).unwrap();
-	};
+	let staging = t.0.join("staging");
+	let set = |body: &str| install(&staging, &script, &format!("#!/bin/sh\n{body}\n"));
 	set("test \"$1\" = project-source-version || exit 8\nprintf '%s' '{\"format\":1}'");
 	assert!(crate::handshake::check(&script).is_ok());
 	set("printf '%s' '{\"format\":1}'; printf '%4084s' ''");

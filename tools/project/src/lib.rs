@@ -25,6 +25,8 @@ mod workflow;
 
 mod entry;
 pub use entry::{Coordinates, dispatch, dispatch_stock, is_stock_runner, mark_stock_runner};
+#[cfg(all(test, target_os = "linux"))]
+mod fork_hold;
 #[cfg(test)]
 mod tests;
 pub fn failure_status() -> i32 {
