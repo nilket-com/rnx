@@ -1,0 +1,41 @@
+number	label	reason
+2	bug	Errors in sub-VMs point to the call site instead of the failing instruction.
+10	documentation	Published book examples lose object-literal lines; no Rune execution defect is claimed.
+25	feature	Requests a new serialized bytecode format for units.
+39	feature	Requests assignment operators on object and tuple fields, currently unsupported.
+58	bug	Failed CLI executions should report failure through a nonzero exit status.
+150	feature	Requests a move modifier to configure closure capture semantics.
+166	feature	Requests support for external objects with non-static references.
+224	feature	Requests new LSP executeCommand support.
+244	feature	Requests an automatic source formatter.
+262	documentation	Requests book coverage of default modules and a missing field-function entry.
+279	documentation	Generated documentation hides available methods behind type aliases.
+290	question	Asks how to format a returned external error outside the VM.
+302	feature	Requests source registration and string parsing inside macros; unsupported use is described as a footgun.
+348	performance	Proposes VM and stack reuse specifically for improved memory locality.
+378	documentation	A book example displays an include directive instead of the intended Rust snippet.
+400	bug	Reports a named-field struct construction failure with missing runtime information and a reproducer.
+424	bug	Reports previously working benchmarks failing after a specific commit.
+434	question	Asks whether native functions can access custom state and how to supply it.
+444	question	Asks about supported deployment targets and the project design.
+456	feature	Proposes relocating standard macros and their installation API, not a current execution defect.
+486	question	Asks how to expose Rust libraries and plugins to Rune scripts.
+530	feature	Proposes enabling derive macros outside Rune with a new crate-path resolution mechanism.
+538	feature	Proposes public prelude APIs and configurable build/context preludes.
+566	question	Asks whether an old VM limitation remains and what workaround is available.
+583	feature	Requests deriving protocol registration from Rust traits and functions.
+629	question	Asks whether a function in an existing VM can be updated.
+645	bug	Reports a released version failing to build with an unresolved import.
+659	bug	Reports a field getter failing instead of printing its expected value, with a reproducer.
+681	bug	Reports tracing causing a hard crash when a returned value lacks a debug protocol.
+696	feature	Requests use of named constants in patterns.
+731	feature	Explicitly requests new optional type annotations for tooling.
+745	bug	Reports flaky formatting and language-server crashes.
+753	question	Explicitly asks for the best way to accept a Rune HashMap, allowing that an existing solution may exist.
+775	bug	Reports LSP Cargo integration failing for a multi-binary crate.
+810	feature	Explicitly requests eyre support analogous to existing anyhow support.
+830	bug	Reports logical conjunction changing a boolean operand unexpectedly.
+892	feature	Requests two currently missing VecDeque methods.
+909	bug	Reports an async call failing to compile with a Send error; no request for new API is stated.
+930	feature	Requests Sources serialization and deserialization.
+962	bug	Reports a released version failing with a newer Rust compiler; a patch release is requested to fix it.
