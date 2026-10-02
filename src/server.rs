@@ -651,6 +651,28 @@ mod source_tests {
 		invocation.close().unwrap();
 		assert_eq!(rune::from_value::<i64>(value).unwrap(), 2);
 	}
+	/// Record 0140: the server names a missing method on a type outside
+	/// 0040's table, and a `Result` receiver gets the `?` hint.
+	#[test]
+	fn a_missing_method_on_a_result_is_named_with_the_hint() {
+		let program = Program::compile_source(
+			"<buffer 3>",
+			"pub fn main(a) {\n    let r = Ok(a);\n    r.frobnicate()\n}\n",
+			Extensions::none(),
+		)
+		.unwrap();
+		let failure = run(&program, "main", vec![Value::from(1i64)])
+			.err()
+			.unwrap();
+		assert!(
+			failure.message().starts_with(
+				"no method `frobnicate` on `::std::result::Result` (this value is a `Result`"
+			),
+			"{}",
+			failure.message()
+		);
+		assert_eq!(failure.position().map(|p| p.0), Some(3));
+	}
 	#[test]
 	fn in_memory_compile_failure_names_the_source() {
 		let failure = Program::compile_source(
