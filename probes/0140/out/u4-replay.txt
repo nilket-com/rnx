@@ -1,0 +1,1 @@
+u4: 252 tickets, each table complete and valid: BIT-EQUAL

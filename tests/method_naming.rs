@@ -66,16 +66,22 @@ fn retained_sources_supply_the_name_across_renumber_and_redefinition() {
 	assert!(!text.contains("first_missing"));
 }
 #[test]
-fn chains_are_named_but_unknown_types_and_quoted_errors_are_unchanged() {
+fn chains_are_named_on_every_type_and_quoted_errors_are_unchanged() {
 	let text = invoke(&[], "\"abc\".to_uppercase().frobnicate()\n:quit\n");
 	assert!(
 		text.contains("no method `frobnicate` on `::std::string::String`"),
 		"{text}"
 	);
+	// Record 0140: a type outside 0040's ten-entry table (here an iterator
+	// over an object's values) is named too, by the same hash proof, in both
+	// eval and a session.
 	for args in [vec!["eval", "#{a: 1}.values().frobnicate()"], vec![]] {
 		let text = invoke(&args, "#{a: 1}.values().frobnicate()\n:quit\n");
-		assert!(text.contains("Missing instance function `0x"), "{text}");
-		assert!(text.contains("::std::object::Values"));
+		assert!(
+			text.contains("no method `frobnicate` on `::std::object::Values`"),
+			"{text}"
+		);
+		assert!(!text.contains("Missing instance function `0x"), "{text}");
 	}
 	let text = invoke(
 		&[],

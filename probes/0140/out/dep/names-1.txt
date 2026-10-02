@@ -1,0 +1,10 @@
+ok: session, make a frame: (no error)
+ok: session, 0139: DataFrame has no clone: runtime error at input 2, line 1, column 1: no method `clone` on `::polars::DataFrame`
+ok: session, 0139: slice without ?: runtime error at input 3, line 1, column 1: no method `select_` on `::std::result::Result` (this value is a `Result`; did you mean to unwrap it with `?` first?)
+ok: session, 0139: with_order_descending_multi without ?: runtime error at input 4, line 1, column 1: no method `with_maintain_order` on `::std::result::Result` (this value is a `Result`; did you mean to unwrap it with `?` first?)
+ok: session, Series: runtime error at input 5, line 1, column 1: no method `frobnicate` on `::polars::Series`
+ok: session, Tensor: runtime error at input 6, line 1, column 1: no method `frobnicate` on `::candle::Tensor`
+ok: session, TextEncoder: runtime error at input 7, line 1, column 1: no method `frobnicate` on `::candle::TextEncoder`
+ok: session, LazyFrame: runtime error at input 8, line 1, column 1: no method `frobnicate` on `::polars::LazyFrame`
+(eval and run skipped: a :dep binary has no adapters outside a session)
+all named as expected

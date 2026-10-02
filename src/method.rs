@@ -16,6 +16,7 @@ use rune::Hash;
 use rune::SourceId;
 use rune::ast;
 use rune::parse::Parser;
+#[cfg(test)]
 use rune::runtime::{TypeHash, TypeOf};
 
 const OPENING: &str = "Missing instance function `";
@@ -23,7 +24,10 @@ const BETWEEN: &str = "` for `";
 
 /// The displayed name and type hash of each type a script commonly calls a
 /// method on, taken from the linked Rune rather than written down, so the two
-/// cannot disagree with the version in use.
+/// cannot disagree with the version in use. Record 0140: `named` no longer
+/// looks types up here (it computes a type's hash from its printed path, for
+/// every type); the table remains the equivalence test's reference.
+#[cfg(test)]
 pub fn known_types() -> Vec<(String, Hash)> {
 	macro_rules! entry {
 		($t:ty) => {
@@ -79,6 +83,40 @@ pub fn method_candidates(source: &str) -> Vec<String> {
 	found
 }
 
+/// The type hash of a printed type path such as `::polars::DataFrame`, as
+/// Rune derives it (`Hash::type_hash` of the item with the first segment as
+/// its crate), or `None` when the path isn't one: it must start with `::`,
+/// have at least two segments, and each segment must be exactly one
+/// identifier as Rune's own lexer reads it. So empty segments, a trailing
+/// `::`, whitespace or control characters, generic or tuple syntax and a
+/// segment beginning with a digit are all refused, and an identifier Rune
+/// accepts (Unicode included) is accepted.
+pub fn type_hash_of(path: &str) -> Option<Hash> {
+	let parts: Vec<&str> = path.strip_prefix("::")?.split("::").collect();
+	if parts.len() < 2 || !parts.iter().all(|p| is_identifier(p)) {
+		return None;
+	}
+	let item = rune::ItemBuf::with_crate_item(parts[0], parts[1..].iter().copied()).ok()?;
+	Some(Hash::type_hash(&item))
+}
+
+/// Exactly one identifier token spanning the whole text, by Rune's lexer.
+fn is_identifier(text: &str) -> bool {
+	if text.is_empty() {
+		return false;
+	}
+	let mut parser = Parser::new(text, SourceId::EMPTY, false);
+	let Ok(token) = parser.parse::<ast::Token>() else {
+		return false;
+	};
+	matches!(token.kind, ast::Kind::Ident(..))
+		&& token.span.range() == (0..text.len())
+		&& parser.is_eof().unwrap_or(false)
+}
+
+/// The receiver a fallible chain leaves when `?` is missing.
+const RESULT: &str = "::std::result::Result";
+
 /// A sentence naming the method, or `None` to leave the message alone.
 ///
 /// Every step can fail: a message that no longer parses, a type rnx has no
@@ -93,12 +131,17 @@ pub fn named(message: &str, source: &str) -> Option<String> {
 	let end = rest.find(BETWEEN)?;
 	let hash = &rest[..end];
 	let instance = rest[end + BETWEEN.len()..].strip_suffix('`')?;
-	let (_, type_hash) = known_types()
-		.into_iter()
-		.find(|(name, _)| name == instance)?;
+	let type_hash = type_hash_of(instance)?;
 	let name = method_candidates(source).into_iter().find(|candidate| {
 		Hash::associated_function(type_hash, candidate.as_str()).to_string() == hash
 	})?;
+	// Proven receiver and proven name: an unwrapped `Result` is the usual
+	// cause, so say so, without guessing which call produced it.
+	if instance == RESULT {
+		return Some(format!(
+			"no method `{name}` on `{instance}` (this value is a `Result`; did you mean to unwrap it with `?` first?)"
+		));
+	}
 	Some(format!("no method `{name}` on `{instance}`"))
 }
 
@@ -224,5 +267,90 @@ mod tests {
 			named(message, "parts.iter().map(f).join(UNIT)").unwrap(),
 			"no method `join` on `::std::vec::Vec`"
 		);
+	}
+
+	// ---- record 0140: every type, by its printed path ----
+
+	#[test]
+	fn computed_hashes_equal_the_linked_types_and_result() {
+		for (name, hash) in known_types() {
+			assert_eq!(type_hash_of(&name), Some(hash), "{name}");
+		}
+		let result = <std::result::Result<rune::Value, rune::Value> as TypeHash>::HASH;
+		assert_eq!(type_hash_of(RESULT), Some(result));
+	}
+
+	#[test]
+	fn malformed_paths_are_refused() {
+		for path in [
+			"",
+			"::",
+			"polars::DataFrame",
+			"::polars",
+			"::polars::",
+			"::polars::::DataFrame",
+			"::polars:: DataFrame",
+			"::polars::Data Frame",
+			"::polars::DataFrame\n",
+			"::polars::Data\u{7}Frame",
+			"::std::vec::Vec<i64>",
+			"::std::(i64, i64)",
+			"::polars::2DataFrame",
+			"::polars::fn",
+		] {
+			assert_eq!(type_hash_of(path), None, "{path:?}");
+		}
+		// an identifier Rune's lexer accepts, Unicode included
+		assert!(type_hash_of("::polars::DataFrame").is_some());
+		assert!(
+			type_hash_of("::crate_\u{e9}::Tabl\u{e9}").is_some() == is_identifier("Tabl\u{e9}")
+		);
+	}
+
+	fn diagnostic(path: &str, method: &str) -> String {
+		let hash = Hash::associated_function(type_hash_of(path).unwrap(), method);
+		format!("Missing instance function `{hash}` for `{path}`")
+	}
+
+	#[test]
+	fn adapter_types_are_named_and_a_result_gets_the_hint() {
+		let m = diagnostic("::polars::DataFrame", "clone");
+		assert_eq!(
+			named(&m, "let t = frame.clone();").as_deref(),
+			Some("no method `clone` on `::polars::DataFrame`")
+		);
+		let m = diagnostic("::candle::Tensor", "frobnicate");
+		assert_eq!(
+			named(&m, "t.frobnicate()").as_deref(),
+			Some("no method `frobnicate` on `::candle::Tensor`")
+		);
+		let m = diagnostic(RESULT, "sort");
+		let got = named(&m, "opts.with_order_descending_multi([true]).sort([])").unwrap();
+		assert!(
+			got.starts_with(
+				"no method `sort` on `::std::result::Result` (this value is a `Result`"
+			),
+			"{got}"
+		);
+		assert!(got.contains("`?`"), "{got}");
+	}
+
+	#[test]
+	fn unprovable_cases_keep_the_hash() {
+		// no candidate in the source spells the method
+		let m = diagnostic("::polars::DataFrame", "clone");
+		assert_eq!(named(&m, "let t = frame.copy();"), None);
+		// a Result receiver with no proven name gets no hint either
+		let m = diagnostic(RESULT, "sort");
+		assert_eq!(named(&m, "x.select_()"), None);
+		// the diagnostic quoted inside other text
+		let quoted = format!("Panicked: {}", diagnostic("::polars::DataFrame", "clone"));
+		assert_eq!(named(&quoted, "frame.clone()"), None);
+		// a malformed path in an otherwise well-formed diagnostic
+		let m = format!(
+			"Missing instance function `{}` for `::std::vec::Vec<i64>`",
+			Hash::associated_function(type_hash_of("::std::vec::Vec").unwrap(), "clone")
+		);
+		assert_eq!(named(&m, "v.clone()"), None);
 	}
 }

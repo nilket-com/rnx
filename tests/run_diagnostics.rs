@@ -283,23 +283,27 @@ fn a_chain_names_the_method_that_failed_not_the_first_one() {
 }
 
 #[test]
-fn a_type_outside_the_map_keeps_the_message_rune_produced() {
-	// `::std::object::Values` is an iterator type rnx has no entry for, so
-	// there is nothing to hash against and the message is left alone. This
-	// also pins the upstream shape that the rewrite parses: if Rune stops
-	// rendering a missing method this way, this test fails rather than the
+fn a_type_outside_the_old_map_is_named_by_its_printed_path() {
+	// `::std::object::Values` is an iterator type outside 0040's ten-entry
+	// table. Record 0140 computes a type's hash from the path the diagnostic
+	// prints, so it is named by the same proof. This still pins the upstream
+	// shape the rewrite parses: if Rune stops rendering a missing method this
+	// way, the sentence below disappears and this test fails rather than the
 	// rewrite silently falling back for ever.
 	let ran = run("pub fn main(args) {\n\tlet counts = #{};\n\tcounts.values().frobnicate()\n}\n");
 	assert_eq!(ran.code, 1);
 	assert!(
-		ran.stderr.contains("Missing instance function `0x"),
+		ran.stderr
+			.contains("no method `frobnicate` on `::std::object::Values`"),
 		"the upstream message shape changed: {}",
 		ran.stderr
 	);
-	assert!(ran.stderr.contains("` for `"), "{}", ran.stderr);
-	assert!(!ran.stderr.contains("no method"), "{}", ran.stderr);
-	// The place is still given, so the fallback loses the sentence and
-	// nothing else.
+	assert!(
+		!ran.stderr.contains("Missing instance function `0x"),
+		"{}",
+		ran.stderr
+	);
+	// The place is given as before.
 	assert!(ran.stderr.contains(", line 3, "), "{}", ran.stderr);
 	assert!(ran.stderr.contains('^'), "{}", ran.stderr);
 }
