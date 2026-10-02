@@ -151,6 +151,8 @@ fn the_column_list_and_dtype_are_checked_first() {
 	assert!(!e.contains("bytes") && e.contains("not found"), "{e}");
 }
 
+// Record 0142: uses the generated `select_`
+#[cfg(feature = "generated")]
 #[test]
 fn round_trips_and_every_binding_stays_usable() {
 	let path = csv("id,x,y\n1,1.5,10\n2,-2.25,20\n3,0.0,30\n");
@@ -172,6 +174,8 @@ fn round_trips_and_every_binding_stays_usable() {
 	assert!(e.contains("with_dense") && e.contains("x"), "{e}");
 }
 
+// Record 0142: uses the generated `select_`
+#[cfg(feature = "generated")]
 #[test]
 fn strings_are_checked_before_copying_and_the_frame_stays_usable() {
 	let path = csv("id,text\n1,hello\n2,\"a, b\"\n3,\n");

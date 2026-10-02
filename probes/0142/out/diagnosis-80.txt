@@ -1,0 +1,7 @@
+run 9:
+called `Result::unwrap()` on an `Err` value: "executable <tmp>/executable: Text file busy (os error 26)"
+run 40:
+called `Result::unwrap()` on an `Err` value: "executable <tmp>/executable: Text file busy (os error 26)"
+run 46:
+called `Result::unwrap()` on an `Err` value: "executable <tmp>/executable: Text file busy (os error 26)"
+80 runs, 3 failed
