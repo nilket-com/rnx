@@ -1,0 +1,16 @@
+init	0,0,0
+move	1	1	0
+move	1	2	1
+move	2	1	0
+move	2	2	1
+iter	1	1,2,0,0,0
+iter	2	1,2,0,0,0
+iterations	2	true
+assign	0	1
+assign	1	2
+assign	2	0
+assign	3	0
+assign	4	0
+centroid	0	1.0,0.0,0.0
+centroid	1	1.0,0.0,0.0
+centroid	2	1.0,0.0,0.0

@@ -1,0 +1,7 @@
+BIT-EQUAL (each trace validated first, N=252 K=6 D=384): init, 0 moves, 23 iterations of 252 assignments (converged True), 252 final assignments, 2304 centroid values in f32 bits (4 in a different notation)
+archive: {'embeddings': ('<f4', (252, 384)), 'centroids': ('<f4', (6, 384)), 'assignments': ('<u4', (252,))}
+round trip: EXACT (centroids and assignments equal the twin's bits; centroids.npy equals the archive)
+numpy k-means: init [204, 57, 87, 163, 141, 136] (twin [204, 57, 87, 163, 141, 136]), 23 iterations (twin 23), 0 moves, 24.8 ms
+assignments differing: 0; near-ties (< 1e-6): []; unexplained: []
+centroid max abs difference: 5.960e-08 (bound 1e-5)
+numpy gate: PASS

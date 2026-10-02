@@ -1,0 +1,1 @@
+Err("a row has norm 0.0; it cannot be normalized")

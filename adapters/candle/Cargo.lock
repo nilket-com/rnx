@@ -1873,10 +1873,13 @@ dependencies = [
  "candle-core",
  "candle-nn",
  "candle-transformers",
+ "libc",
  "rayon",
  "rnx",
+ "safetensors",
  "serde_json",
  "tokenizers",
+ "zip",
 ]
 
 [[package]]

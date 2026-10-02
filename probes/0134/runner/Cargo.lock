@@ -3353,9 +3353,12 @@ dependencies = [
  "candle-core",
  "candle-nn",
  "candle-transformers",
+ "libc",
  "rnx",
+ "safetensors",
  "serde_json",
  "tokenizers",
+ "zip",
 ]
 
 [[package]]

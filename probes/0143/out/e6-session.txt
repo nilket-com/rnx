@@ -1,0 +1,11 @@
+DataFrame: 6 rows × 5 columns
+"cluster": i64 | "size": i64 | "suggested": string | "similarity": f64 | "most central tickets": string
+0 | 106 | "bug" | 0.6261411905288696 | "#560 [Regression] Installing a module with a crate name panics. | #810 Any::down"…[truncated]
+1 | 1 | "bug" | 0.08915893733501434 | "#266 License question "
+2 | 23 | "feature" | 0.7752770185470581 | "#486 Proper way to call Rust from Rune Scripts | #444 Project questions  | #692 "…[truncated]
+3 | 82 | "feature" | 0.5138209462165833 | "#23 feature: runtime traits to represent protocols | #771 Before releasing 0.14 "…[truncated]
+4 | 39 | "bug" | 0.4113244414329529 | "#435 Allow variable names starting with an underscore `_` | #325 Incorrect error"…[truncated]
+5 | 1 | "feature" | 0.09818197786808014 | "#559 Is there a reason LitStr does not implement Peek?"
+
+252 tickets, 458 passages; embed 5872 ms, k-means 71 ms (23 iterations, converged true, 0 moves), export 8 ms; read back exact: true
+WORKFLOW OK e6

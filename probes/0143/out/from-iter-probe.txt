@@ -1,0 +1,9 @@
+error[E0624]: method `next` is private
+  --> src/lib.rs:7:54
+   |                                                         ^^^^ private method
+   |     -------------------------------------------------------- private method defined here
+error[E0624]: method `protocol_next` is private
+    --> src/lib.rs:15:53
+     |                                                        ^^^^^^^^^^^^^ private method
+     |     ------------------------------------------------------------- private method defined here
+error: could not compile `from_iter_probe` (lib) due to 2 previous errors

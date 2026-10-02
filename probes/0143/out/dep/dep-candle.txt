@@ -1,0 +1,8 @@
+session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle, identical: BIT-EQUAL (each trace validated first, N=5 K=3 D=3): init, 4 moves, 2 iterations of 5 assignments (converged True), 5 final assignments, 9 centroid values in f32 bits (0 in a different notation)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle, distinct: BIT-EQUAL (each trace validated first, N=4 K=3 D=3): init, 0 moves, 2 iterations of 4 assignments (converged True), 4 final assignments, 9 centroid values in f32 bits (0 in a different notation)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle, two-empty: BIT-EQUAL (each trace validated first, N=4 K=4 D=3): init, 4 moves, 2 iterations of 4 assignments (converged True), 4 final assignments, 12 centroid values in f32 bits (0 in a different notation)
+session: OK (prompt True, marker True, returned Ok, errors 0)
+:dep candle, singleton: BIT-EQUAL (each trace validated first, N=3 K=3 D=3): init, 2 moves, 2 iterations of 3 assignments (converged True), 3 final assignments, 9 centroid values in f32 bits (0 in a different notation)

@@ -20,6 +20,7 @@
 //!   argument is borrowed and reusable after Ok and Err;
 //! - **execution:** every Candle call runs on 0129's joined worker.
 mod composition;
+mod interchange;
 
 use crate::{Tensor, worker};
 use candle_core::{DType, Device, Tensor as CTensor};
@@ -31,6 +32,12 @@ pub const MAX_ELEMS: usize = rnx::interchange::MAX_VALUES;
 pub const MAX_RANK: usize = 6;
 
 const CPU: &Device = &Device::Cpu;
+
+/// The Candle tensor inside a script value, for the parity controls.
+#[doc(hidden)]
+pub fn inner(t: &Tensor) -> &CTensor {
+	&t.0
+}
 
 // ---- the family helpers ----
 
@@ -300,7 +307,12 @@ fn operand_like(op: &str, this: &CTensor, v: &Value) -> Result<CTensor, String> 
 // ---- A: construction and readback ----
 
 fn from_vec(values: Value, shape: Value, dtype: &str) -> Result<Tensor, String> {
-	let op = "Tensor::from_vec";
+	from_vec_named("Tensor::from_vec", values, shape, dtype)
+}
+
+/// `from_vec`'s contract under another operation's name (record 0143's
+/// `from_slice` builds on it).
+fn from_vec_named(op: &str, values: Value, shape: Value, dtype: &str) -> Result<Tensor, String> {
 	let dims = shape_arg(op, &shape)?;
 	let n = capped(op, &dims, "the shape")?;
 	let d = dtype_from(dtype, op)?;
@@ -1215,7 +1227,8 @@ pub(crate) fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, Conte
 	m.function("log_softmax", log_softmax).build()?;
 	m.function("softmax_last_dim", softmax_last_dim).build()?;
 	composition::build(m)?;
-	Ok(vec![
+	interchange::build(m)?;
+	let mut catalogue = vec![
 		(
 			"candle::Tensor::from_vec".into(),
 			"from_vec(values, shape, dtype) -> Result<Tensor>: dtype \"f32\" | \"f64\" | \"i64\" | \"u32\" | \"u8\"; strict ranges",
@@ -1268,7 +1281,9 @@ pub(crate) fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, Conte
 			"candle::softmax".into(),
 			"softmax(t, dim), log_softmax(t, dim), softmax_last_dim(t) -> Result<Tensor>",
 		),
-	])
+	];
+	catalogue.extend(interchange::catalogue());
+	Ok(catalogue)
 }
 
 #[cfg(test)]

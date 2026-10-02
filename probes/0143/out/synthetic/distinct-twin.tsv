@@ -1,0 +1,11 @@
+init	0,2,3
+iter	1	0,0,1,2
+iter	2	0,0,1,2
+iterations	2	true
+assign	0	0
+assign	1	0
+assign	2	1
+assign	3	2
+centroid	0	1.0,0.0,0.0
+centroid	1	0.0,1.0,0.0
+centroid	2	0.0,0.0,1.0

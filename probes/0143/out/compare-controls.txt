@@ -1,0 +1,15 @@
+pass: unmodified: BIT-EQUAL (each trace validated first, N=252 K=6 D=384): init, 0 moves, 23 iterations of 252 assignments (converged True), 252 final assignments, 2304 centroid values in f32 bits (4 in a different notation)
+refused: both, both empty: FAIL: /tmp/tmpq9n4b92e/a: empty
+refused: both, assign 0 and centroid 0 deleted: FAIL: /tmp/tmp101hqjl4/a: assign 1 out of order
+refused: both, a centroid value dropped: FAIL: /tmp/tmpleg3ocaf/a: centroid 0 has 383 values, want 384
+refused: both, a centroid value NaN: FAIL: /tmp/tmp_vq5g66a/a centroid 0: nan is not finite
+refused: both, the iteration count changed: FAIL: /tmp/tmpjr9yk4zc/a: 23 iter lines for 24 iterations
+refused: both, the last iter line removed: FAIL: /tmp/tmp3gbr24ni/a: 22 iter lines for 23 iterations
+refused: both, every iter line removed: FAIL: /tmp/tmp4f29qpqh/a: 0 iter lines for 23 iterations
+refused: both, a final assignment changed: FAIL: /tmp/tmpgq_xdnxw/a: the final assignments differ from the last iteration's
+refused: both, an assign line duplicated: FAIL: /tmp/tmp7buwxfmt/a line 284: unexpected 'assign'
+refused: both, an unknown line: FAIL: /tmp/tmph7qrri0j/a line 284: unexpected 'note'
+refused: both, init with five picks: FAIL: /tmp/tmpny017l2z/a init: 5 values, want 6
+refused: both, converged with one iteration: FAIL: /tmp/tmpbc3rkgsn/a: 23 iter lines for 1 iterations
+refused: one side, a centroid's lowest bit: FAIL: centroid f32 bits differ
+all controls behave

@@ -1,0 +1,9 @@
+probes/0134/manifest.tsv: 97 core identities
+probes/0137/manifest.tsv: 40 core identities
+probes/0143/manifest.tsv: 13 core identities
+denominator: 220 public Tensor methods
+per family: {'A': 21, 'B': 7, 'C': 47, 'D': 18, 'E': 2, 'F': 2, 'G': 23, 'H': 8, 'I': 9, 'J': 8, 'K': 5}
+core identities: 150 (68.2%), missing: [], duplicates: []
+counted apart: {'nn': 3, 'derived': 2}
+excluded: 70, per category: {'custom-op': 14, 'autograd': 5, 'internals': 10, 'device': 2, 'in-place': 6, 'random': 4, 'iterator': 1, 'signal': 16, 'artifact': 12}
+bound + excluded = 220 of 220; both: []; neither: []; malformed: []; unknown: []; duplicates: []
