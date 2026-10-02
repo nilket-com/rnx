@@ -1,0 +1,27 @@
+pass: unmodified: semantic check: PASS; hf-retrieval: completed, PASS (exit 0)
+refused: a matrix row missing: validation: FAIL: TMP/u8/u8-retrieval.tsv: 3460 rows for 3461 passages; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: an extra matrix row: validation: FAIL: TMP/u8/u8-retrieval.tsv: 3462 rows for 3461 passages; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: a duplicated matrix row (pid kept): completed FAIL: semantic check: FAIL; driver: STOP: hf-retrieval completed, FAIL: the record stops here (plans/0152 section 4)
+refused: two matrix rows reordered: validation: FAIL: TMP/u8/u8-retrieval.tsv row 5: want pid 4 and 30 scores; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: a query column missing: validation: FAIL: TMP/u8/u8-retrieval.tsv: the header is not pid and the development ids; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: an extra query column: validation: FAIL: TMP/u8/u8-retrieval.tsv: the header is not pid and the development ids; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: a duplicated query column (header kept): validation: FAIL: TMP/u8/u8-pool.tsv row 121: ('T03', 1, '0007_the_binding_prelude.md', 1, 111) is not the recomputed ('T03', 1, '0004_vars_and_help.md', 1, 48; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: two query columns reordered with their header: validation: FAIL: TMP/u8/u8-retrieval.tsv: the header is not pid and the development ids; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: two query columns' values reordered (wrong query binding): validation: FAIL: TMP/u8/u8-pool.tsv row 1: ('T01', 1, '0004_vars_and_help.md', 1, 48) is not the recomputed ('T01', 1, '0007_the_binding_prelude.md', 1, 111) ; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: two query texts swapped in the queries file (wrong query binding): completed FAIL: semantic check: FAIL; driver: STOP: hf-retrieval completed, FAIL: the record stops here (plans/0152 section 4)
+refused: two passage texts swapped (wrong passage binding): validation: FAIL: TMP/u8: passage 3460 does not occur in polars-parity-map.md after the previous one; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: a non-finite retained score: validation: FAIL: retrieval: inf is not finite; driver: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: a genuine over-tolerance difference (+2e-4, outside the pool): completed FAIL: semantic check: FAIL; driver: STOP: hf-retrieval completed, FAIL: the record stops here (plans/0152 section 4)
+pass: hf_result, a well-formed PASS artifact: hf-retrieval: completed, PASS (exit 0)
+refused: hf_result, a missing artifact: STOP: hf-retrieval exited 0 without a well-formed completion artifact (FileNotFoundError(2, 'No such file or directory'))
+refused: hf_result, a malformed artifact: STOP: hf-retrieval exited 0 without a well-formed completion artifact (JSONDecodeError('Expecting property name enclosed in double quotes: l
+refused: hf_result, another check's artifact: STOP: hf-retrieval exited 0 with an artifact that does not record a completed PASS: {'check': 'hf-pool', 'completed': True, 'result': 'PASS'
+refused: hf_result, not completed: STOP: hf-retrieval exited 0 with an artifact that does not record a completed PASS: {'check': 'hf-retrieval', 'completed': False, 'result':
+refused: hf_result, PASS recorded with exit 3: STOP: hf-retrieval exited 3 with an artifact that does not record a completed FAIL: {'check': 'hf-retrieval', 'completed': True, 'result': '
+refused: hf_result, an exception (exit 1) with a PASS artifact: STOP: hf-retrieval exited 1: the check itself did not complete
+refused: hf_result, a completed FAIL: STOP: hf-retrieval completed, FAIL: the record stops here (plans/0152 section 4)
+refused: hf_result, the wrong passage count: STOP: hf-retrieval's artifact records (3460, 30, 103800) and other query ids; want (3461, 30, 103830) and the file's
+refused: hf_result, the wrong value count: STOP: hf-retrieval's artifact records (3461, 30, 103829) and other query ids; want (3461, 30, 103830) and the file's
+refused: hf_result, a query missing: STOP: hf-retrieval's artifact records (3461, 29, 100369) and other query ids; want (3461, 30, 103830) and the file's
+refused: hf_result, the query ids reordered: STOP: hf-retrieval's artifact records (3461, 30, 103830) and other query ids; want (3461, 30, 103830) and the file's
+all semantic-check controls behave

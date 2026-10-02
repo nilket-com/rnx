@@ -1,0 +1,4 @@
+ordering control: 8,3,5,4,7,2,1,6,0
+321 docs, 3461 passages, 40 queries; retrieval and pool 70654 ms; retrieval only, 4796 pool rows, no pairs scored
+WORKFLOW OK u8
+### run returned to a prompt: True after 70.9 s

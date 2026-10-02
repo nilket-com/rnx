@@ -1,0 +1,98 @@
+attempt 1 at 19521f8edca72a75d59107975570e14489144c93, tree clean: 0 changes, 2026-10-02T17:21:50-05:00
+provenance: D1 321 files match 0133's manifest; MiniLM and the cross-encoder match their pinned SHA-256s; dev.tsv and holdout.tsv match plans/0151; the split replays
+pins: bm25.py, evaluate.py, validate.py, preflight.py, split.py match 43711c4
+queries: holdout.tsv
+pass: passage 0, 'cat', hand-computed: 0.7361701090084937
+pass: passage 2, 'cat' twice, hand-computed: 0.8505551060257497
+pass: a passage without the term: 0.0
+pass: a repeated query term counts once: [0.7361701090084937, 0.0, 0.8505551060257497, 0.0]
+pass: case and punctuation are ignored: [0.7361701090084937, 0.0, 0.8505551060257497, 0.0]
+pass: an empty query scores 0 everywhere: [0.0, 0.0, 0.0, 0.0]
+pass: a token-free passage scores 0: 0.0
+pass: an all-token-free corpus scores 0: [0.0, 0.0]
+pass: ranking by the best passage: ['b.md', 'a.md', 'c.md']
+pass: document ties to the lower pid: [('q.md', 0, 0.4344571362775708), ('p.md', 1, 0.4344571362775708)]
+pass: an empty query ranks by pid: ['q.md', 'p.md', 'r.md']
+all BM25 controls behave
+session: OK (prompt True, marker True, returned Ok, errors 0)
+u8: 40 queries, 0 pairs scored one at a time
+BIT-EQUAL (each producer validated first, its pool recomputed from its retained evidence over D1): 3461 passages and their 40 query scores, 4796 pool rows (40 candidates x up to 3 passages), retrieval only
+ordering control: 8,3,5,4,7,2,1,6,0
+ordered 40 queries over 3461 passages
+SCRATCH/h0152-a1/u8: the script's order equals the numeric stable sort for all 40 queries over 3461 passages, and the retained pool is exactly the pool it builds
+3461 passages x 40 queries = 138440 retrieval scores, bound to the validated passages and the queries file's ordered ids and texts; max |rnx - HF| = 7.63e-07 (bound 0.0001), 0 over; HF encode 47.9 s
+semantic check: PASS
+hf-retrieval: completed, PASS (exit 0)
+SCRATCH/h0152-a1/u8: validated against its retained evidence and D1 (4796 pool rows, retrieval only)
+
+all queries in holdout.tsv (40 queries)
+| system | mean RR@20 | hit@1 | hit@5 | mean recall@5 | mean candidate recall@40 |
+|---|---:|---:|---:|---:|---:|
+| B | 0.525 | 15 | 29 | 0.666 | 0.900 |
+| R | 0.564 | 19 | 26 | 0.613 | 0.947 |
+
+direct (descriptive only) (35 queries)
+| system | mean RR@20 | hit@1 | hit@5 | mean recall@5 | mean candidate recall@40 |
+|---|---:|---:|---:|---:|---:|
+| B | 0.540 | 14 | 26 | 0.675 | 0.914 |
+| R | 0.556 | 16 | 23 | 0.614 | 0.968 |
+
+paraphrase (descriptive only) (5 queries)
+| system | mean RR@20 | hit@1 | hit@5 | mean recall@5 | mean candidate recall@40 |
+|---|---:|---:|---:|---:|---:|
+| B | 0.418 | 1 | 3 | 0.600 | 0.800 |
+| R | 0.622 | 3 | 3 | 0.600 | 0.800 |
+
+primary, paired B - R on RR@20: mean -0.040, 95% bootstrap [-0.189, +0.117] (10,000 resamples, seed 151)
+sign test (descriptive): 9 wins / 18 losses / 13 ties, p = 0.122
+OUTCOME (plans/0152 section 2): inconclusive
+
+development (0151, selection-biased) against holdout, mean RR@20: B 0.569 -> 0.525; R 0.412 -> 0.564
+
+per query, r by system (> 20 shown as -):
+| query | kind | supporting | B | R |
+|---|---|---|---:|---:|
+| T02 | paraphrase | 0006 | 1 | 1 |
+| T05 | direct | 0009 | 1 | 1 |
+| T06 | direct | 0010 | 9 | 2 |
+| T07 | paraphrase | 0011 0015 | 2 | 1 |
+| T09 | paraphrase | 0018 | 2 | 1 |
+| T10 | direct | 0019 | 3 | 2 |
+| T11 | direct | 0020 | 1 | 1 |
+| T12 | direct | 0022 0044 | 6 | 3 |
+| T16 | direct | 0030 | 14 | 1 |
+| T18 | direct | 0032 | 2 | 1 |
+| T19 | direct | 0035 | 3 | 3 |
+| T20 | direct | 0037 | 2 | 1 |
+| T21 | direct | 0039 | 3 | 3 |
+| T22 | direct | 0040 | 3 | 1 |
+| T24 | direct | 0051 | 2 | 9 |
+| T26 | direct | 0053 0055 | 1 | 6 |
+| T27 | direct | 0054 0056 | 1 | 1 |
+| T29 | direct | 0060 | 3 | 1 |
+| T30 | direct | 0064 | 1 | 1 |
+| T34 | direct | 0081 | - | - |
+| T35 | direct | 0082 | 1 | 8 |
+| T38 | direct | 0087 | 13 | 8 |
+| T41 | direct | 0090 | 1 | 9 |
+| T44 | direct | 0094 | 1 | 1 |
+| T45 | direct | 0096 | 14 | 8 |
+| T46 | paraphrase | 0097 | - | - |
+| T47 | direct | 0098 | - | 1 |
+| T48 | direct | 0099 0100 0101 0102 0103 0104 0105 0106 | 3 | 1 |
+| T49 | direct | 0107 | - | 11 |
+| T52 | direct | 0110 | 1 | - |
+| T54 | direct | 0112 0113 | 1 | 15 |
+| T56 | direct | 0117 | 5 | 3 |
+| T59 | paraphrase | 0123 | 11 | 9 |
+| T60 | direct | 0123 | 1 | 1 |
+| T61 | direct | 0131 | 1 | 1 |
+| T62 | direct | 0055 | 4 | 5 |
+| T63 | direct | 0017 | 1 | - |
+| T64 | direct | 0011 | 9 | - |
+| T65 | direct | 0051 | 3 | 1 |
+| T69 | direct | 0033 0019 | 1 | 1 |
+
+cost: BM25 index and 40 rankings over 3461 passages in 0.32 s (no model)
+wrote SCRATCH/h0152-a1/result.json
+RUN EXIT 0

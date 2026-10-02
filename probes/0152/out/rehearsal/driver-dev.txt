@@ -1,0 +1,87 @@
+provenance: D1 321 files match 0133's manifest; MiniLM and the cross-encoder match their pinned SHA-256s; dev.tsv and holdout.tsv match plans/0151; the split replays
+pins: bm25.py, evaluate.py, validate.py, preflight.py, split.py match 43711c4
+queries: dev.tsv
+pass: passage 0, 'cat', hand-computed: 0.7361701090084937
+pass: passage 2, 'cat' twice, hand-computed: 0.8505551060257497
+pass: a passage without the term: 0.0
+pass: a repeated query term counts once: [0.7361701090084937, 0.0, 0.8505551060257497, 0.0]
+pass: case and punctuation are ignored: [0.7361701090084937, 0.0, 0.8505551060257497, 0.0]
+pass: an empty query scores 0 everywhere: [0.0, 0.0, 0.0, 0.0]
+pass: a token-free passage scores 0: 0.0
+pass: an all-token-free corpus scores 0: [0.0, 0.0]
+pass: ranking by the best passage: ['b.md', 'a.md', 'c.md']
+pass: document ties to the lower pid: [('q.md', 0, 0.4344571362775708), ('p.md', 1, 0.4344571362775708)]
+pass: an empty query ranks by pid: ['q.md', 'p.md', 'r.md']
+all BM25 controls behave
+session: OK (prompt True, marker True, returned Ok, errors 0)
+u8: 30 queries, 0 pairs scored one at a time
+BIT-EQUAL (each producer validated first, its pool recomputed from its retained evidence over D1): 3461 passages and their 30 query scores, 3593 pool rows (40 candidates x up to 3 passages), retrieval only
+ordering control: 8,3,5,4,7,2,1,6,0
+ordered 30 queries over 3461 passages
+SCRATCH/r0152/drv/u8: the script's order equals the numeric stable sort for all 30 queries over 3461 passages, and the retained pool is exactly the pool it builds
+3461 passages x 30 queries = 103830 retrieval scores, bound to the validated passages and the queries file's ordered ids and texts; max |rnx - HF| = 8.58e-07 (bound 0.0001), 0 over; HF encode 48.1 s
+semantic check: PASS
+hf-retrieval: completed, PASS (exit 0)
+SCRATCH/r0152/drv/u8: validated against its retained evidence and D1 (3593 pool rows, retrieval only)
+
+all queries in dev.tsv (30 queries)
+| system | mean RR@20 | hit@1 | hit@5 | mean recall@5 | mean candidate recall@40 |
+|---|---:|---:|---:|---:|---:|
+| B | 0.569 | 12 | 23 | 0.733 | 0.967 |
+| R | 0.412 | 9 | 16 | 0.483 | 0.933 |
+
+direct (descriptive only) (26 queries)
+| system | mean RR@20 | hit@1 | hit@5 | mean recall@5 | mean candidate recall@40 |
+|---|---:|---:|---:|---:|---:|
+| B | 0.559 | 10 | 19 | 0.712 | 0.962 |
+| R | 0.428 | 8 | 15 | 0.519 | 0.923 |
+
+paraphrase (descriptive only) (4 queries)
+| system | mean RR@20 | hit@1 | hit@5 | mean recall@5 | mean candidate recall@40 |
+|---|---:|---:|---:|---:|---:|
+| B | 0.633 | 2 | 4 | 0.875 | 1.000 |
+| R | 0.314 | 1 | 1 | 0.250 | 1.000 |
+
+primary, paired B - R on RR@20: mean +0.156, 95% bootstrap [+0.050, +0.274] (10,000 resamples, seed 151)
+sign test (descriptive): 16 wins / 5 losses / 9 ties, p = 0.027
+OUTCOME (plans/0152 section 2): B better
+
+development (0151, selection-biased) against holdout, mean RR@20: B 0.569 -> 0.569; R 0.412 -> 0.412
+
+per query, r by system (> 20 shown as -):
+| query | kind | supporting | B | R |
+|---|---|---|---:|---:|
+| T01 | direct | 0004 | 2 | 1 |
+| T03 | paraphrase | 0007 | 1 | 1 |
+| T04 | direct | 0008 | 2 | 6 |
+| T08 | direct | 0013 | 1 | 1 |
+| T13 | paraphrase | 0024 | 3 | 11 |
+| T14 | direct | 0026 | 2 | 4 |
+| T15 | direct | 0027 | 1 | 2 |
+| T17 | direct | 0031 | 1 | 1 |
+| T23 | direct | 0049 | 1 | 1 |
+| T25 | direct | 0052 | 1 | 1 |
+| T28 | direct | 0058 | 1 | 1 |
+| T31 | direct | 0071 | 1 | 1 |
+| T32 | paraphrase | 0072 | 1 | - |
+| T33 | direct | 0074 | 6 | 7 |
+| T36 | direct | 0083 0084 | 2 | 4 |
+| T37 | paraphrase | 0085 0086 | 5 | 6 |
+| T39 | direct | 0088 | - | 9 |
+| T40 | direct | 0089 | - | 5 |
+| T42 | direct | 0091 | 5 | - |
+| T43 | direct | 0092 0095 | - | 4 |
+| T50 | direct | 0108 | 2 | 6 |
+| T51 | direct | 0109 | 2 | 6 |
+| T53 | direct | 0111 | 1 | 1 |
+| T55 | direct | 0116 | 2 | 14 |
+| T57 | direct | 0118 | 1 | 11 |
+| T58 | direct | 0121 | - | - |
+| T66 | direct | 0075 0076 | - | 4 |
+| T67 | direct | 0077 | 6 | - |
+| T68 | direct | 0078 | 2 | - |
+| T70 | direct | 0019 | 1 | 2 |
+
+cost: BM25 index and 40 rankings over 3461 passages in 0.29 s (no model)
+wrote SCRATCH/r0152/drv/result.json
+RUN EXIT 0

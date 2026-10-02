@@ -1,0 +1,19 @@
+Record 0152 rehearsal on the spent DEVELOPMENT queries (plumbing only; no holdout input).
+
+Default mode unchanged (full U8 on dev.tsv with the cross-encoder, every pair alone):
+- script: u8-retrieval.tsv and u8-pool.tsv (with CE scores) byte-identical to probes/0151/out/u8-script;
+  u8-passages.json identical in content (paths and texts lists equal); its two keys came out in the
+  other order, because Rune objects don't keep key order, so the bytes differ from run to run
+  (every validator parses the JSON)
+- twin: u8-passages.json, u8-retrieval.tsv and u8-pool.tsv byte-identical to probes/0151/out/u8-twin
+
+Retrieval-only mode (cross-encoder directory nonexistent, so it provably isn't loaded):
+- script and twin: u8-passages.json and u8-retrieval.tsv byte-identical to 0151's retained files;
+  u8-pool.tsv byte-identical to 0151's pool with the ce column cut (cut -f1-6)
+- validate_retrieval.py: BIT-EQUAL; order step: PASS for both producers
+- hf_retrieval.py: 3461 x 30 = 103,830 scores, max |rnx - HF| = 8.58e-07 (bound 1e-4), PASS
+- the full driver (RNX_0152_QUERIES=dev run.sh): exit 0, and evaluate.py reproduces 0151's development
+  B and R exactly (0.569 / 0.412; 16 / 5 / 9; [+0.050, +0.274]) (driver-dev.txt)
+
+Rune quirk found and worked around: `if let Some(ce) = ce` (a shadowing binding) fails to compile
+with "Missing variable"; the binding is named `model` instead.

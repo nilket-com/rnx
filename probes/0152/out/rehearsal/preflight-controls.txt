@@ -1,0 +1,11 @@
+pass: unmodified: every step reached (bm25-controls u8 twin validate order hf-retrieval evaluate )
+refused: a D1 byte changed: FAIL: D1: 0001_the_first_release.md changed; no step began
+refused: a D1 file removed: FAIL: D1: 0001_the_first_release.md missing; no step began
+refused: a MiniLM weight byte changed: FAIL: MiniLM: model.safetensors changed; no step began
+refused: a cross-encoder tokenizer byte changed: FAIL: cross-encoder: tokenizer.json changed; no step began
+refused: the development queries changed: FAIL: dev.tsv changed; no step began
+refused: the holdout queries changed: FAIL: holdout.tsv changed; no step began
+refused: bm25.py changed since 43711c4: FAIL: 0151/bm25.py changed since 43711c4; no step began
+refused: 0151's evaluate.py changed since 43711c4: FAIL: 0151/evaluate.py changed since 43711c4; no step began
+refused: 0151's validate.py changed since 43711c4: FAIL: 0151/validate.py changed since 43711c4; no step began
+all provenance controls behave
