@@ -360,7 +360,12 @@ mod tests {
 	use super::*;
 	use std::process::{Command, Stdio};
 	fn temp(tag: &str) -> PathBuf {
-		let d = std::env::temp_dir().join(format!("rnx-quiet-{}-{tag}", std::process::id()));
+		// a child's fixtures live in the parent-owned directory, which the
+		// parent removes whatever the child's fate
+		let base = std::env::var_os(DIR_VAR)
+			.map(PathBuf::from)
+			.unwrap_or_else(std::env::temp_dir);
+		let d = base.join(format!("rnx-quiet-{}-{tag}", std::process::id()));
 		let _ = std::fs::remove_dir_all(&d);
 		std::fs::create_dir_all(&d).unwrap();
 		d
@@ -419,11 +424,16 @@ mod tests {
 	/// A real child on both streams, past pipe capacity and past the log
 	/// limit, then a distinct final error: the tail ends with the error, the
 	/// log holds the header, the prefix and the byte-counted marker, and
-	/// nothing reaches the terminal. Serialized: the capture moves this
-	/// process's descriptors.
+	/// nothing reaches the terminal. Isolated (record 0138): the capture
+	/// moves this process's descriptors, so it runs alone in a child.
 	#[test]
 	fn a_flooding_child_is_drained_and_reported() {
-		let _guard = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+		isolated(
+			"a_flooding_child_is_drained_and_reported",
+			a_flooding_child_is_drained_and_reported_body,
+		);
+	}
+	fn a_flooding_child_is_drained_and_reported_body() {
 		let dir = temp("flood");
 		let mut c = Capture::begin().unwrap();
 		c.attach_log(&dir, "reopen with: fixture");
@@ -484,7 +494,12 @@ mod tests {
 	/// captured by the caller arrives intact while its stderr goes to the log.
 	#[test]
 	fn parsed_stdout_is_untouched_while_stderr_is_captured() {
-		let _guard = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+		isolated(
+			"parsed_stdout_is_untouched_while_stderr_is_captured",
+			parsed_stdout_is_untouched_while_stderr_is_captured_body,
+		);
+	}
+	fn parsed_stdout_is_untouched_while_stderr_is_captured_body() {
 		let dir = temp("metadata");
 		let mut c = Capture::begin().unwrap();
 		c.attach_log(&dir, "header");
@@ -509,7 +524,12 @@ mod tests {
 	/// tail continues, and the report names the failure instead of a path.
 	#[test]
 	fn a_mid_stream_write_failure_keeps_the_tail_and_reports_no_usable_log() {
-		let _guard = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+		isolated(
+			"a_mid_stream_write_failure_keeps_the_tail_and_reports_no_usable_log",
+			a_mid_stream_write_failure_keeps_the_tail_and_reports_no_usable_log_body,
+		);
+	}
+	fn a_mid_stream_write_failure_keeps_the_tail_and_reports_no_usable_log_body() {
 		let dir = temp("midwrite");
 		let mut c = Capture::begin().unwrap();
 		c.attach_log(&dir, "header");
@@ -541,7 +561,12 @@ mod tests {
 	/// a symlink after the log was opened reaches nothing outside.
 	#[test]
 	fn finalization_never_follows_a_replaced_path() {
-		let _guard = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+		isolated(
+			"finalization_never_follows_a_replaced_path",
+			finalization_never_follows_a_replaced_path_body,
+		);
+	}
+	fn finalization_never_follows_a_replaced_path_body() {
 		let dir = temp("replace");
 		let mut c = Capture::begin().unwrap();
 		c.attach_log(&dir, "header");
@@ -566,8 +591,13 @@ mod tests {
 	/// tail, and this process's streams are restored.
 	#[test]
 	fn cancellation_with_full_pipes_is_prompt_and_reaped() {
+		isolated(
+			"cancellation_with_full_pipes_is_prompt_and_reaped",
+			cancellation_with_full_pipes_is_prompt_and_reaped_body,
+		);
+	}
+	fn cancellation_with_full_pipes_is_prompt_and_reaped_body() {
 		use std::os::unix::process::CommandExt;
-		let _guard = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 		let dir = temp("cancel");
 		let mut c = Capture::begin().unwrap();
 		c.attach_log(&dir, "header");
@@ -578,6 +608,7 @@ mod tests {
 			.process_group(0)
 			.spawn()
 			.unwrap();
+		register(child.id() as i32);
 		std::thread::sleep(std::time::Duration::from_millis(300));
 		unsafe { libc::kill(-(child.id() as i32), libc::SIGKILL) };
 		let status = child.wait().unwrap();
@@ -605,8 +636,13 @@ mod tests {
 	/// and says so.
 	#[test]
 	fn a_lingering_writer_cannot_hang_finalization() {
+		isolated(
+			"a_lingering_writer_cannot_hang_finalization",
+			a_lingering_writer_cannot_hang_finalization_body,
+		);
+	}
+	fn a_lingering_writer_cannot_hang_finalization_body() {
 		use std::os::unix::process::CommandExt;
-		let _guard = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
 		let dir = temp("linger");
 		let mut c = Capture::begin().unwrap();
 		c.attach_log(&dir, "header");
@@ -617,6 +653,7 @@ mod tests {
 			.process_group(0)
 			.spawn()
 			.unwrap();
+		register(lingering.id() as i32);
 		std::thread::sleep(std::time::Duration::from_millis(200));
 		let start = Instant::now();
 		let message = c
@@ -641,7 +678,566 @@ mod tests {
 		assert_eq!(unsafe { libc::kill(-(lingering.id() as i32), 0) }, -1);
 		let _ = std::fs::remove_dir_all(&dir);
 	}
-	static SERIAL: Mutex<()> = Mutex::new(());
+	// ---- record 0138: one child process per capture test ----
+	//
+	// `Capture::begin` redirects this process's own fds 1 and 2, so a
+	// capture test sharing a process with the test harness also captures
+	// whatever the harness, or any test finishing in parallel, writes. Each
+	// capture test therefore runs alone in a re-executed child; the parent
+	// drains the child's output into bounded tails within one deadline and
+	// owns all cleanup.
+
+	/// The child's selector: the name of the one test it runs.
+	const CHILD_VAR: &str = "RNX_QUIET_CHILD";
+	/// The parent-owned directory: fixture groups are registered here, and
+	/// the child's temporary directories live here.
+	const DIR_VAR: &str = "RNX_QUIET_DIR";
+	/// Each of the child's streams is kept as its last 64 KiB.
+	const TAIL: usize = 64 << 10;
+	const DEADLINE: std::time::Duration = std::time::Duration::from_secs(60);
+	/// One isolated child at a time. This doesn't protect descriptors (each
+	/// child has its own); it bounds the suite's extra load, so timing-based
+	/// tests elsewhere (the handshake's 1 s deadline) don't see a burst of
+	/// re-executed test binaries.
+	static ONE_CHILD: Mutex<()> = Mutex::new(());
+
+	/// A capture test's body, run alone in a child. In the child it runs
+	/// in-process; in the parent it fails with the child's status and tails.
+	fn isolated(name: &str, body: fn()) {
+		match std::env::var(CHILD_VAR) {
+			Ok(v) if v == name => body(),
+			Ok(v) => panic!("a misrouted quiet test child: selected {v:?}, reached {name:?}"),
+			Err(_) => {
+				if let Err(e) = run_isolated(name, name, DEADLINE).result {
+					panic!("{e}");
+				}
+			}
+		}
+	}
+
+	/// A fixture that exists only as a child body for the helper's own
+	/// controls: a no-op in an ordinary run.
+	fn child_only(name: &str, body: fn()) {
+		match std::env::var(CHILD_VAR) {
+			Ok(v) if v == name => body(),
+			Ok(v) => panic!("a misrouted quiet test child: selected {v:?}, reached {name:?}"),
+			Err(_) => {}
+		}
+	}
+
+	/// Registers a fixture's process group with the parent, which kills it
+	/// on every outcome.
+	fn register(pgid: i32) {
+		use std::io::Write;
+		if let Some(dir) = std::env::var_os(DIR_VAR) {
+			let mut f = std::fs::OpenOptions::new()
+				.create(true)
+				.append(true)
+				.open(PathBuf::from(dir).join("groups"))
+				.unwrap();
+			writeln!(f, "{pgid}").unwrap();
+		}
+	}
+
+	struct Report {
+		result: Result<(Vec<u8>, Vec<u8>), String>,
+		/// The helper's own time, from after it holds `ONE_CHILD`: waiting
+		/// behind other isolated children isn't the child's time.
+		elapsed: std::time::Duration,
+		/// The process groups the parent killed: registered fixtures, then
+		/// the child's own.
+		killed: Vec<i32>,
+	}
+
+	fn parent_dir(name: &str) -> PathBuf {
+		std::env::temp_dir().join(format!("rnx-quiet-parent-{}-{name}", std::process::id()))
+	}
+
+	/// Runs the test named `path` in a child selected as `selector`, with
+	/// both streams drained into bounded tails, one deadline for the whole
+	/// call, and parent-owned cleanup.
+	fn run_isolated(path: &str, selector: &str, deadline: std::time::Duration) -> Report {
+		run_isolated_with(path, selector, deadline, || (), |_| ()).0
+	}
+
+	/// As `run_isolated`, with `admitted` run once this caller holds the
+	/// child slot (`ONE_CHILD`) and the parent-owned directory exists, just
+	/// before the child is spawned: anything that observes the child, and
+	/// its deadline, starts here, never while queued behind another child.
+	/// `collect` reads what the child left in the parent-owned directory
+	/// after it exits, still under the slot and before the directory is
+	/// removed (review round 2: nothing a child leaves is shared between
+	/// invocations or read after the slot is released).
+	fn run_isolated_with<T, U>(
+		path: &str,
+		selector: &str,
+		deadline: std::time::Duration,
+		admitted: impl FnOnce() -> T,
+		collect: impl FnOnce(&Path) -> U,
+	) -> (Report, T, Option<U>) {
+		use std::os::unix::process::CommandExt;
+		assert!(
+			std::env::var_os(CHILD_VAR).is_none(),
+			"a quiet test child never re-executes"
+		);
+		let _one = ONE_CHILD.lock().unwrap_or_else(|e| e.into_inner());
+		let start = Instant::now();
+		let dir = parent_dir(path);
+		let _ = std::fs::remove_dir_all(&dir);
+		std::fs::create_dir_all(&dir).unwrap();
+		let hooked = admitted();
+		let mut child = Command::new(std::env::current_exe().unwrap())
+			.args([
+				"--exact",
+				&format!("workflow::quiet::tests::{path}"),
+				"--test-threads=1",
+				"--nocapture",
+			])
+			.env(CHILD_VAR, selector)
+			.env(DIR_VAR, &dir)
+			.stdin(Stdio::null())
+			.stdout(Stdio::piped())
+			.stderr(Stdio::piped())
+			.process_group(0)
+			.spawn()
+			.unwrap();
+		let pgid = child.id() as i32;
+		// both streams drained while the child runs, each into its tail
+		let (sender, tails) = std::sync::mpsc::channel();
+		for (k, stream) in [
+			(
+				0usize,
+				Box::new(child.stdout.take().unwrap()) as Box<dyn Read + Send>,
+			),
+			(1, Box::new(child.stderr.take().unwrap())),
+		] {
+			let sender = sender.clone();
+			std::thread::spawn(move || {
+				let mut stream = stream;
+				let mut tail = Vec::new();
+				let mut buffer = [0u8; 8192];
+				loop {
+					match stream.read(&mut buffer) {
+						Ok(0) | Err(_) => break,
+						Ok(n) => {
+							tail.extend_from_slice(&buffer[..n]);
+							if tail.len() > TAIL {
+								tail.drain(..tail.len() - TAIL);
+							}
+						}
+					}
+				}
+				let _ = sender.send((k, tail));
+			});
+		}
+		drop(sender);
+		// the child's exit, within the deadline
+		let status = loop {
+			if let Some(s) = child.try_wait().unwrap() {
+				break Some(s);
+			}
+			if start.elapsed() > deadline {
+				break None;
+			}
+			std::thread::sleep(std::time::Duration::from_millis(20));
+		};
+		// cleanup, on every outcome: registered fixture groups, then the
+		// child's own group; reap the child
+		let mut killed: Vec<i32> = std::fs::read_to_string(dir.join("groups"))
+			.unwrap_or_default()
+			.lines()
+			.filter_map(|l| l.trim().parse().ok())
+			.collect();
+		killed.push(pgid);
+		for &g in &killed {
+			unsafe { libc::kill(-g, libc::SIGKILL) };
+		}
+		let status = match status {
+			Some(s) => s,
+			None => {
+				let _ = child.wait();
+				let _ = std::fs::remove_dir_all(&dir);
+				return (
+					Report {
+						result: Err(format!(
+							"quiet test child {path} timed out after {deadline:?}; killed"
+						)),
+						elapsed: start.elapsed(),
+						killed,
+					},
+					hooked,
+					None,
+				);
+			}
+		};
+		// both streams' end, within the same deadline
+		let mut out = [None, None];
+		while out.iter().any(Option::is_none) {
+			let left = deadline.saturating_sub(start.elapsed());
+			match tails.recv_timeout(left) {
+				Ok((k, t)) => out[k] = Some(t),
+				Err(_) => break,
+			}
+		}
+		let collected = out.iter().all(Option::is_some).then(|| collect(&dir));
+		let _ = std::fs::remove_dir_all(&dir);
+		let [Some(stdout), Some(stderr)] = out else {
+			return (
+				Report {
+					result: Err(format!(
+						"quiet test child {path}: a descendant kept the child's output open past {deadline:?}"
+					)),
+					elapsed: start.elapsed(),
+					killed,
+				},
+				hooked,
+				None,
+			);
+		};
+		let result = if status.success() {
+			Ok((stdout, stderr))
+		} else {
+			Err(format!(
+				"quiet test child {path} failed ({status})\n--- stdout tail ---\n{}\n--- stderr tail ---\n{}",
+				String::from_utf8_lossy(&stdout),
+				String::from_utf8_lossy(&stderr)
+			))
+		};
+		(
+			Report {
+				result,
+				elapsed: start.elapsed(),
+				killed,
+			},
+			hooked,
+			collected,
+		)
+	}
+
+	/// A process group is gone: signalling it finds nothing (polled briefly,
+	/// as a SIGKILLed group may take a moment to be reaped by init).
+	fn gone(pgid: i32) -> bool {
+		let deadline = Instant::now() + std::time::Duration::from_secs(5);
+		loop {
+			if unsafe { libc::kill(-pgid, 0) } == -1
+				&& std::io::Error::last_os_error().raw_os_error() == Some(libc::ESRCH)
+			{
+				return true;
+			}
+			if Instant::now() > deadline {
+				return false;
+			}
+			std::thread::sleep(std::time::Duration::from_millis(20));
+		}
+	}
+
+	// the helper's lifecycle controls, each with its child-only fixture
+
+	#[test]
+	fn helper_fixture_flood() {
+		child_only("helper_fixture_flood", || {
+			let chunk = [b'x'; 65536];
+			// 2 MiB per stream: past pipe capacity and the 64 KiB tail
+			for _ in 0..32 {
+				unsafe {
+					libc::write(1, chunk.as_ptr().cast(), chunk.len());
+					libc::write(2, chunk.as_ptr().cast(), chunk.len());
+				}
+			}
+		});
+	}
+	#[test]
+	fn the_helper_drains_a_flooding_child_into_bounded_tails() {
+		let r = run_isolated("helper_fixture_flood", "helper_fixture_flood", DEADLINE);
+		let (out, err) = r.result.unwrap();
+		assert!(
+			out.len() <= TAIL && err.len() <= TAIL,
+			"{} {}",
+			out.len(),
+			err.len()
+		);
+		assert!(out.ends_with(&[b'x'; 1024]) || out.windows(1024).any(|w| w == [b'x'; 1024]));
+		assert!(err.len() == TAIL, "{}", err.len());
+	}
+
+	#[test]
+	fn helper_fixture_panics() {
+		child_only("helper_fixture_panics", || panic!("a planted failure"));
+	}
+	#[test]
+	fn a_failing_child_fails_the_parent_with_its_output() {
+		let r = run_isolated("helper_fixture_panics", "helper_fixture_panics", DEADLINE);
+		let e = r.result.unwrap_err();
+		assert!(
+			e.contains("failed") && e.contains("a planted failure"),
+			"{e}"
+		);
+	}
+
+	#[test]
+	fn helper_fixture_hangs() {
+		child_only("helper_fixture_hangs", || {
+			std::thread::sleep(std::time::Duration::from_secs(30))
+		});
+	}
+	#[test]
+	fn a_hanging_child_is_killed_at_the_deadline() {
+		let r = run_isolated(
+			"helper_fixture_hangs",
+			"helper_fixture_hangs",
+			std::time::Duration::from_secs(2),
+		);
+		let e = r.result.unwrap_err();
+		assert!(e.contains("timed out"), "{e}");
+		assert!(
+			r.elapsed < std::time::Duration::from_secs(10),
+			"{:?}",
+			r.elapsed
+		);
+		assert!(r.killed.iter().all(|&g| gone(g)));
+	}
+
+	fn stray_file() -> PathBuf {
+		// keyed by the parent's pid, outside the parent-owned directory
+		let parent = unsafe { libc::getppid() };
+		std::env::temp_dir().join(format!("rnx-quiet-stray-{parent}"))
+	}
+	#[test]
+	#[allow(
+		clippy::zombie_processes,
+		reason = "the stray must outlive this child; the control kills it"
+	)]
+	fn helper_fixture_stray_descendant() {
+		child_only("helper_fixture_stray_descendant", || {
+			use std::os::unix::process::CommandExt;
+			// a descendant in its own, unregistered group, holding fd 1
+			let stray = Command::new("sleep")
+				.arg("30")
+				.stdin(Stdio::null())
+				.process_group(0)
+				.spawn()
+				.unwrap();
+			std::fs::write(stray_file(), stray.id().to_string()).unwrap();
+		});
+	}
+	#[test]
+	fn a_descendant_holding_the_output_cannot_hang_the_helper() {
+		let r = run_isolated(
+			"helper_fixture_stray_descendant",
+			"helper_fixture_stray_descendant",
+			std::time::Duration::from_secs(3),
+		);
+		let e = r.result.unwrap_err();
+		assert!(
+			e.contains("a descendant kept the child's output open"),
+			"{e}"
+		);
+		assert!(
+			r.elapsed < std::time::Duration::from_secs(10),
+			"{:?}",
+			r.elapsed
+		);
+		// clean up the stray, which the helper could not know about
+		let file = std::env::temp_dir().join(format!("rnx-quiet-stray-{}", std::process::id()));
+		let pid: i32 = std::fs::read_to_string(&file)
+			.unwrap()
+			.trim()
+			.parse()
+			.unwrap();
+		unsafe { libc::kill(-pid, libc::SIGKILL) };
+		assert!(gone(pid));
+		let _ = std::fs::remove_file(file);
+	}
+
+	#[test]
+	#[allow(
+		clippy::zombie_processes,
+		reason = "registered with the parent, which kills the group"
+	)]
+	fn helper_fixture_lingering_then_panics() {
+		child_only("helper_fixture_lingering_then_panics", || {
+			use std::os::unix::process::CommandExt;
+			let lingering = Command::new("sh")
+				.arg("-c")
+				.arg("echo early; sleep 30")
+				.stdin(Stdio::null())
+				.process_group(0)
+				.spawn()
+				.unwrap();
+			register(lingering.id() as i32);
+			std::thread::sleep(std::time::Duration::from_millis(200));
+			panic!("a planted failure after starting a lingering fixture");
+		});
+	}
+	#[test]
+	fn a_failed_child_leaves_no_fixture_group_and_no_open_pipe() {
+		let r = run_isolated(
+			"helper_fixture_lingering_then_panics",
+			"helper_fixture_lingering_then_panics",
+			DEADLINE,
+		);
+		let e = r.result.unwrap_err();
+		assert!(e.contains("a planted failure after starting"), "{e}");
+		// prompt: the lingering fixture's pipe was closed by its killing
+		assert!(
+			r.elapsed < std::time::Duration::from_secs(10),
+			"{:?}",
+			r.elapsed
+		);
+		assert_eq!(r.killed.len(), 2, "{:?}", r.killed);
+		assert!(r.killed.iter().all(|&g| gone(g)), "{:?}", r.killed);
+		assert!(!parent_dir("helper_fixture_lingering_then_panics").exists());
+	}
+
+	#[test]
+	fn a_misrouted_child_is_refused() {
+		let r = run_isolated("helper_fixture_flood", "another_test", DEADLINE);
+		let e = r.result.unwrap_err();
+		assert!(e.contains("misrouted"), "{e}");
+	}
+
+	#[test]
+	fn helper_fixture_reexec() {
+		child_only("helper_fixture_reexec", || {
+			let _ = run_isolated("helper_fixture_flood", "helper_fixture_flood", DEADLINE);
+		});
+	}
+	#[test]
+	fn a_child_never_re_executes() {
+		let r = run_isolated("helper_fixture_reexec", "helper_fixture_reexec", DEADLINE);
+		let e = r.result.unwrap_err();
+		assert!(e.contains("never re-executes"), "{e}");
+	}
+
+	// the leak, both forms, deterministically
+
+	#[test]
+	fn leak_fixture_in_process() {
+		child_only("leak_fixture_in_process", || {
+			// the old form: a capture in a process where something else
+			// writes to fd 1 while it is open, as the harness does
+			let dir = temp("leak-old");
+			let mut c = Capture::begin().unwrap();
+			c.attach_log(&dir, "header");
+			let (tx, rx) = std::sync::mpsc::channel();
+			std::thread::spawn(move || {
+				let marker = "FOREIGN-MARKER-IN-PROCESS\n";
+				unsafe { libc::write(1, marker.as_ptr().cast(), marker.len()) };
+				tx.send(()).unwrap();
+			});
+			rx.recv().unwrap();
+			c.finish(Ok(()), "phase", "").unwrap();
+			let log = std::fs::read_to_string(dir.join("dep.log")).unwrap();
+			assert!(log.contains("FOREIGN-MARKER-IN-PROCESS"), "{log}");
+		});
+	}
+	#[test]
+	fn the_in_process_form_captures_foreign_output() {
+		let r = run_isolated(
+			"leak_fixture_in_process",
+			"leak_fixture_in_process",
+			DEADLINE,
+		);
+		r.result.unwrap();
+	}
+
+	#[test]
+	fn leak_fixture_isolated() {
+		child_only("leak_fixture_isolated", || {
+			let dir = PathBuf::from(std::env::var_os(DIR_VAR).unwrap());
+			let mut c = Capture::begin().unwrap();
+			c.attach_log(&dir, "header");
+			std::fs::write(dir.join("capturing"), b"").unwrap();
+			let deadline = Instant::now() + std::time::Duration::from_secs(20);
+			while !dir.join("written").exists() {
+				assert!(Instant::now() < deadline, "the parent never wrote");
+				std::thread::sleep(std::time::Duration::from_millis(10));
+			}
+			c.finish(Ok(()), "phase", "").unwrap();
+			// the log stays in this invocation's parent-owned directory; the
+			// parent reads it under the slot before removing the directory
+		});
+	}
+	/// The isolated non-leak run, its handshake bounded by `handshake` from
+	/// the moment the child is admitted (review round 1), and its log read
+	/// under the slot from this invocation's own directory (review round 2).
+	fn non_leak_log(handshake: std::time::Duration) -> String {
+		let dir = parent_dir("leak_fixture_isolated");
+		let (r, writer, log) = run_isolated_with(
+			"leak_fixture_isolated",
+			"leak_fixture_isolated",
+			DEADLINE,
+			move || {
+				// the parent writes its marker while the child's capture is open
+				std::thread::spawn(move || {
+					let deadline = Instant::now() + handshake;
+					while !dir.join("capturing").exists() {
+						if Instant::now() > deadline {
+							// unblock the child, then fail
+							let _ = std::fs::write(dir.join("written"), b"");
+							panic!("the child never captured within {handshake:?} of admission");
+						}
+						std::thread::sleep(std::time::Duration::from_millis(10));
+					}
+					let marker = "FOREIGN-MARKER-FROM-THE-PARENT\n";
+					unsafe { libc::write(1, marker.as_ptr().cast(), marker.len()) };
+					std::fs::write(dir.join("written"), b"").unwrap();
+				})
+			},
+			|d| std::fs::read_to_string(d.join("dep.log")),
+		);
+		writer.join().unwrap();
+		r.result.unwrap();
+		log.expect("the child exited").expect("the child's dep.log")
+	}
+	fn no_foreign_marker(log: &str) {
+		assert!(log.starts_with("header\n"), "{log}");
+		assert!(!log.contains("FOREIGN-MARKER-FROM-THE-PARENT"), "{log}");
+	}
+	fn non_leak(handshake: std::time::Duration) {
+		no_foreign_marker(&non_leak_log(handshake));
+	}
+	#[test]
+	fn an_isolated_capture_does_not_capture_the_parents_output() {
+		non_leak(std::time::Duration::from_secs(20));
+	}
+	/// Review round 1: queueing behind another child doesn't count against
+	/// the handshake. The slot is held for 3 s by another thread; the
+	/// handshake's 2 s bound starts only at admission, so it passes.
+	#[test]
+	fn queued_admission_does_not_start_the_handshake_clock() {
+		let (held, holding) = std::sync::mpsc::channel();
+		let holder = std::thread::spawn(move || {
+			let _slot = ONE_CHILD.lock().unwrap_or_else(|e| e.into_inner());
+			held.send(()).unwrap();
+			std::thread::sleep(std::time::Duration::from_secs(3));
+		});
+		holding.recv().unwrap();
+		let start = Instant::now();
+		non_leak(std::time::Duration::from_secs(2));
+		assert!(
+			start.elapsed() >= std::time::Duration::from_secs(3),
+			"it queued"
+		);
+		holder.join().unwrap();
+	}
+	/// Review round 2: two invocations never share what a child leaves. The
+	/// first pauses 3 s after its run returns while a second runs entirely
+	/// within that pause; the first's log is still its own.
+	#[test]
+	fn overlapping_consumers_each_keep_their_own_log() {
+		let (returned, waiting) = std::sync::mpsc::channel();
+		let first = std::thread::spawn(move || {
+			let log = non_leak_log(std::time::Duration::from_secs(20));
+			returned.send(()).unwrap();
+			std::thread::sleep(std::time::Duration::from_secs(3));
+			no_foreign_marker(&log);
+		});
+		waiting.recv().unwrap();
+		non_leak(std::time::Duration::from_secs(20));
+		first.join().unwrap();
+	}
+
 	fn fd2(text: &str) {
 		unsafe { libc::write(2, text.as_ptr().cast(), text.len()) };
 	}
