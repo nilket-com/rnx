@@ -16,6 +16,7 @@
 //!   stable row normalization (scaled by the row's largest magnitude, the
 //!   squares summed in f64).
 pub mod chunk;
+pub mod rerank;
 
 use crate::{read_limited, worker};
 use candle_core::{DType, Device, Tensor as CTensor};
@@ -74,7 +75,11 @@ struct Inner {
 #[rune(item = ::candle)]
 pub struct TextEncoder(Arc<Inner>);
 
-fn json(dir: &std::path::Path, name: &str, op: &str) -> Result<serde_json::Value, String> {
+pub(crate) fn json(
+	dir: &std::path::Path,
+	name: &str,
+	op: &str,
+) -> Result<serde_json::Value, String> {
 	let path = dir.join(name);
 	let path = path
 		.to_str()
@@ -92,8 +97,9 @@ fn sized(v: usize, name: &str, max: usize, op: &str) -> Result<usize, String> {
 }
 
 /// The model contract, checked on the parsed files before any weight is read.
-fn contract(dir: &std::path::Path, op: &str) -> Result<(Config, usize), String> {
-	let raw = json(dir, "config.json", op)?;
+/// The BERT fields both models rely on, checked (record 0146 shares this
+/// between `TextEncoder` and `CrossEncoder`).
+pub(crate) fn bert_config(raw: &serde_json::Value, op: &str) -> Result<Config, String> {
 	let field = |k: &str| raw.get(k).and_then(|v| v.as_str()).unwrap_or("");
 	if field("model_type") != "bert" {
 		return Err(format!(
@@ -121,7 +127,7 @@ fn contract(dir: &std::path::Path, op: &str) -> Result<(Config, usize), String> 
 	sized(config.num_hidden_layers, "num_hidden_layers", 24, op)?;
 	sized(config.intermediate_size, "intermediate_size", 4096, op)?;
 	let vocab = sized(config.vocab_size, "vocab_size", 250_000, op)?;
-	let positions = sized(
+	sized(
 		config.max_position_embeddings,
 		"max_position_embeddings",
 		512,
@@ -140,6 +146,14 @@ fn contract(dir: &std::path::Path, op: &str) -> Result<(Config, usize), String> 
 		));
 	}
 
+	Ok(config)
+}
+
+fn contract(dir: &std::path::Path, op: &str) -> Result<(Config, usize), String> {
+	let raw = json(dir, "config.json", op)?;
+	let config = bert_config(&raw, op)?;
+	let hidden = config.hidden_size;
+	let positions = config.max_position_embeddings;
 	let modules = json(dir, "modules.json", op)?;
 	let types: Vec<(&str, &str)> = modules
 		.as_array()
@@ -309,7 +323,7 @@ fn load(dir: &str) -> Result<TextEncoder, String> {
 
 /// The one known unused buffer: an integer `embeddings.position_ids`, bare
 /// or under the model-type prefix (BertModel::load tries both).
-fn unused_buffer(key: &str, dtype: DType) -> bool {
+pub(crate) fn unused_buffer(key: &str, dtype: DType) -> bool {
 	matches!(
 		key,
 		"embeddings.position_ids" | "bert.embeddings.position_ids"
@@ -317,7 +331,7 @@ fn unused_buffer(key: &str, dtype: DType) -> bool {
 }
 
 /// The caps for one batch of `batch` texts padded to `seq`, checked.
-fn fits(config: &Config, batch: usize, seq: usize, caps: Caps) -> bool {
+pub(crate) fn fits(config: &Config, batch: usize, seq: usize, caps: Caps) -> bool {
 	let within = |a: Option<usize>, cap: usize| a.is_some_and(|v| v <= cap);
 	let bs = batch.checked_mul(seq);
 	within(
@@ -374,18 +388,21 @@ pub const PLAN_METADATA: usize = std::mem::size_of::<Planned>() * MAX_TEXTS;
 
 /// One planned batch: its texts tokenized, checked and reduced to the ids
 /// and mask the model takes; the tokenizer's `Encoding`s are already gone.
-struct Planned {
-	b: usize,
-	seq: usize,
-	ids: Vec<u32>,
-	mask: Vec<u32>,
-	estimate: usize,
+pub(crate) struct Planned {
+	pub(crate) b: usize,
+	pub(crate) seq: usize,
+	pub(crate) ids: Vec<u32>,
+	/// Record 0146: a pair batch's token types; `None` for `embed`, whose
+	/// types are all zero.
+	pub(crate) types: Option<Vec<u32>>,
+	pub(crate) mask: Vec<u32>,
+	pub(crate) estimate: usize,
 }
 
 /// A batch's in-flight estimate: its hidden states, feed-forward states and
 /// attention scores, each times its measured coefficient, plus the per-batch
 /// overhead, checked.
-fn estimate(c: &Config, b: usize, seq: usize) -> Option<usize> {
+pub(crate) fn estimate(c: &Config, b: usize, seq: usize) -> Option<usize> {
 	let bs = b.checked_mul(seq)?;
 	bs.checked_mul(c.hidden_size)?
 		.checked_mul(HIDDEN)?
@@ -586,6 +603,7 @@ fn plan(
 			b,
 			seq,
 			ids,
+			types: None,
 			mask,
 			estimate: est,
 		});
@@ -690,9 +708,14 @@ fn lock<T>(m: &std::sync::Mutex<T>) -> std::sync::MutexGuard<'_, T> {
 
 /// Stage 2, concurrent: W joined workers claim batch indices in order,
 /// wait for the budget, run, and write their rows into the batch's own
-/// slice of `out`. Returns once every worker has joined.
-fn execute(
-	inner: &Inner,
+/// slice of `out`. Returns once every worker has joined. Record 0146: the
+/// model and its batch runner are parameters, and a row is `width` values
+/// (`hidden` for `embed`, 1 for a cross-encoder's scores).
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn execute<M: Sync>(
+	model: &M,
+	run: fn(&M, &Planned, &str) -> Result<Vec<f32>, String>,
+	width: usize,
 	planned: &[Planned],
 	out: &mut [f32],
 	(workers, agg): (usize, usize),
@@ -702,7 +725,7 @@ fn execute(
 ) {
 	use std::sync::atomic::{AtomicUsize, Ordering};
 	let n = planned.len();
-	let hidden = inner.config.hidden_size;
+	let hidden = width;
 	let mut slots = Vec::with_capacity(n);
 	let mut rest = out;
 	for p in planned {
@@ -774,7 +797,7 @@ fn execute(
 				if knobs.fail_at.contains(&i) {
 					return Err(format!("{op}: injected failure at batch {i}"));
 				}
-				let rows = run_batch(&inner.model, &planned[i], op)?;
+				let rows = run(model, &planned[i], op)?;
 				if knobs.panic_after_run.contains(&i) {
 					panic!("injected panic after batch {i} ran");
 				}
@@ -888,7 +911,9 @@ fn embed_strs(
 		let mut out = vec![0f32; rows * hidden];
 		let started = std::time::Instant::now();
 		execute(
-			inner,
+			&inner.model,
+			run_batch,
+			hidden,
 			&planned,
 			&mut out,
 			(workers, agg),
@@ -1017,6 +1042,7 @@ pub fn synthetic_batch(
 		b,
 		seq,
 		ids: (0..b * seq).map(|i| (i % 7) as u32 + 1).collect(),
+		types: None,
 		mask: row.repeat(b),
 		estimate,
 	};

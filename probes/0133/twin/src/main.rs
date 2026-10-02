@@ -13,6 +13,8 @@
 //!   topic discovery trace (written independently of the Rune script).
 //! - `twin0133 e7 D3`, `twin0133 e7-synth SPEC`: record 0145's traffic
 //!   trace, by the same Candle calls, written independently.
+//! - `twin0133 u5 D1 MINILM CROSS RUBRIC`: record 0146's retrieve-then-rerank
+//!   trace, with its own pair tokenizer, partition, pooler and classifier.
 //! - `twin0133 passages D1`, `twin0133 embed PASSAGES MODEL BATCHES OUT`:
 //!   record 0135's passages, and their embedding on a given partition.
 use candle_core::{DType, Device, Tensor};
@@ -893,6 +895,7 @@ fn main() {
 			let s: Vec<f64> = spec["series"].as_array().unwrap().iter().map(|v| v.as_f64().unwrap()).collect();
 			print!("{}", e7(&[s]).unwrap_or_else(|e| format!("refused\t{e}\n")));
 		}
+		"u5" => u5(&a[2], &a[3], &a[4], &a[5], &a[6]),
 		// record 0135: D1's passages, as U1 chunks them, for timing
 		"passages" => {
 			let texts: Vec<String> = load(&a[2]).1.into_iter().map(|p| p.1).collect();
@@ -1124,4 +1127,220 @@ fn e7(cols: &[Vec<f64>]) -> Result<String, String> {
 		out += &format!("busiest\t{ch}\t{w}\t{:?}\n", top[ch]);
 	}
 	Ok(out)
+}
+
+// ---- record 0146, U5: retrieve then re-rank, independently ----
+
+struct Ce {
+	bert: BertModel,
+	pooler: candle_nn::Linear,
+	classifier: candle_nn::Linear,
+	tok: Tokenizer,
+	hidden: usize,
+	ffn: usize,
+	heads: usize,
+	pad: u32,
+}
+
+fn ce_load(dir: &str) -> Ce {
+	let cfg_bytes = std::fs::read(format!("{dir}/config.json")).unwrap();
+	let config: Config = serde_json::from_slice(&cfg_bytes).unwrap();
+	let raw: serde_json::Value = serde_json::from_slice(&cfg_bytes).unwrap();
+	let mut tok = Tokenizer::from_file(format!("{dir}/tokenizer.json")).unwrap();
+	tok.with_truncation(None).unwrap();
+	tok.with_padding(None);
+	let vb = unsafe {
+		VarBuilder::from_mmaped_safetensors(&[format!("{dir}/model.safetensors")], DType::F32, &Device::Cpu).unwrap()
+	};
+	let h = config.hidden_size;
+	let bert = BertModel::load(vb.clone(), &config).unwrap();
+	let pooler = candle_nn::linear(h, h, vb.pp("bert.pooler.dense")).unwrap();
+	let classifier = candle_nn::linear(h, 1, vb.pp("classifier")).unwrap();
+	let get = |k: &str| raw[k].as_u64().unwrap() as usize;
+	Ce {
+		bert,
+		pooler,
+		classifier,
+		tok,
+		hidden: h,
+		ffn: get("intermediate_size"),
+		heads: get("num_attention_heads"),
+		pad: get("pad_token_id") as u32,
+	}
+}
+
+/// 0135's S1 rule for pairs: start at 32, halve while more than one pair
+/// until the caps hold and the estimate (with the head) is within the
+/// share; a single pair needs the caps and the full budget.
+fn ce_partition(ce: &Ce, lens: &[usize]) -> Vec<usize> {
+	let agg = 1usize << 28;
+	let share = agg / 32;
+	let mut sizes = Vec::new();
+	let mut at = 0;
+	while at < lens.len() {
+		let mut b = 32.min(lens.len() - at);
+		loop {
+			let seq = *lens[at..at + b].iter().max().unwrap();
+			let est = 7 * b * seq * ce.hidden + 2 * b * seq * ce.ffn + 6 * b * ce.heads * seq * seq + (1 << 20)
+				+ 3 * b * ce.hidden + b;
+			let fits = b * seq * ce.hidden <= 1 << 22
+				&& b * seq * ce.ffn <= 1 << 24
+				&& b * ce.heads * seq * seq <= 1 << 25;
+			if b == 1 {
+				assert!(fits && est <= agg, "a single pair over the budget");
+				break;
+			}
+			if fits && est <= share {
+				break;
+			}
+			b /= 2;
+		}
+		sizes.push(b);
+		at += b;
+	}
+	sizes
+}
+
+fn ce_score(ce: &Ce, pairs: &[(String, String)]) -> (Vec<f32>, Vec<usize>) {
+	let cpu = &Device::Cpu;
+	let enc: Vec<_> = pairs
+		.iter()
+		.map(|(q, p)| ce.tok.encode((q.as_str(), p.as_str()), true).unwrap())
+		.collect();
+	let lens: Vec<usize> = enc.iter().map(|e| e.get_ids().len()).collect();
+	assert!(lens.iter().all(|&l| l <= 512));
+	let sizes = ce_partition(ce, &lens);
+	let mut out = Vec::new();
+	let mut at = 0;
+	for &b in &sizes {
+		let seq = *lens[at..at + b].iter().max().unwrap();
+		let (mut ids, mut types, mut mask) = (Vec::new(), Vec::new(), Vec::new());
+		for e in &enc[at..at + b] {
+			let n = e.get_ids().len();
+			ids.extend(e.get_ids().iter().copied().chain(std::iter::repeat_n(ce.pad, seq - n)));
+			types.extend(e.get_type_ids().iter().copied().chain(std::iter::repeat_n(0, seq - n)));
+			mask.extend(std::iter::repeat_n(1u32, n).chain(std::iter::repeat_n(0, seq - n)));
+		}
+		let ids = Tensor::from_vec(ids, (b, seq), cpu).unwrap();
+		let types = Tensor::from_vec(types, (b, seq), cpu).unwrap();
+		let mask = Tensor::from_vec(mask, (b, seq), cpu).unwrap();
+		let hidden = ce.bert.forward(&ids, &types, Some(&mask)).unwrap();
+		let cls = hidden.narrow(1, 0, 1).unwrap().squeeze(1).unwrap();
+		let pooled = candle_nn::Module::forward(&ce.pooler, &cls).unwrap().tanh().unwrap();
+		let logits = candle_nn::Module::forward(&ce.classifier, &pooled).unwrap();
+		out.extend(logits.flatten_all().unwrap().to_vec1::<f32>().unwrap());
+		at += b;
+	}
+	(out, sizes)
+}
+
+fn u5_measures(records: &[&str], support: &[&str]) -> (bool, bool, f64, f64, Vec<usize>) {
+	let ranks: Vec<usize> = support
+		.iter()
+		.map(|r| records.iter().position(|x| x == r).map_or(0, |i| i + 1))
+		.collect();
+	let first = ranks.iter().copied().filter(|&k| k > 0).min().unwrap_or(0);
+	let within = ranks.iter().filter(|&&k| k > 0 && k <= 5).count();
+	let mrr = if first == 0 { 0.0 } else { 1.0 / first as f64 };
+	(first == 1, first > 0 && first <= 5, within as f64 / support.len() as f64, mrr, ranks)
+}
+
+fn u5(dir: &str, minilm: &str, cross: &str, rubric: &str, out_dir: &str) {
+	let t = twin_load(minilm);
+	let (docs, passages) = load_with(dir, &|body| {
+		token_chunks(&t.tok, body, 256, 0)
+			.unwrap()
+			.into_iter()
+			.map(|(s, e)| body[s..e].to_owned())
+			.collect()
+	});
+	let texts: Vec<&str> = passages.iter().map(|p| p.1.as_str()).collect();
+	let e = twin_embed_sized(&t, &texts, &s1_sizes(&t, &texts, 32));
+	let mut ids = Vec::new();
+	let mut qs = Vec::new();
+	let mut support: Vec<Vec<String>> = Vec::new();
+	for line in std::fs::read_to_string(rubric).unwrap().lines().skip(1) {
+		if line.is_empty() {
+			continue;
+		}
+		let f: Vec<&str> = line.split('\t').collect();
+		ids.push(f[0].to_owned());
+		qs.push(f[2].to_owned());
+		support.push(f[3].split(' ').map(str::to_owned).collect());
+	}
+	let qrefs: Vec<&str> = qs.iter().map(|s| s.as_str()).collect();
+	let q = twin_embed_sized(&t, &qrefs, &s1_sizes(&t, &qrefs, 32));
+	let s = twin_scores(&e, &q, 384);
+	let m = ids.len();
+	// retrieval: a stable descending sort of passages, the first passage per
+	// document, the top 20 documents
+	let mut cands: Vec<Vec<(usize, usize, f32)>> = Vec::new();
+	for k in 0..m {
+		let mut order: Vec<usize> = (0..passages.len()).collect();
+		order.sort_by(|&a, &b| s[b * m + k].total_cmp(&s[a * m + k]));
+		let mut seen = std::collections::HashSet::new();
+		let mut c = Vec::new();
+		for p in order {
+			let d = passages[p].0;
+			if seen.insert(d) {
+				c.push((d, p, s[p * m + k]));
+				if c.len() == 20 {
+					break;
+				}
+			}
+		}
+		cands.push(c);
+	}
+	// review round 1: the retrieval evidence, retained for the comparer: every
+	// passage's document and text, and every passage's score per query
+	let ppaths: Vec<&str> = passages.iter().map(|p| docs[p.0].path.as_str()).collect();
+	let ptexts: Vec<&str> = passages.iter().map(|p| p.1.as_str()).collect();
+	let json = serde_json::json!({ "paths": ppaths, "texts": ptexts });
+	std::fs::write(format!("{out_dir}/u5-passages.json"), json.to_string()).unwrap();
+	let mut retained = format!("pid\t{}\n", ids.join("\t"));
+	for p in 0..passages.len() {
+		retained += &p.to_string();
+		for k in 0..m {
+			retained += &format!("\t{}", s[p * m + k]);
+		}
+		retained += "\n";
+	}
+	std::fs::write(format!("{out_dir}/u5-retrieval.tsv"), retained).unwrap();
+	let ce = ce_load(cross);
+	let mut pairs = Vec::new();
+	for (k, c) in cands.iter().enumerate() {
+		for &(_, p, _) in c {
+			pairs.push((qs[k].clone(), passages[p].1.clone()));
+		}
+	}
+	let (scores, sizes) = ce_score(&ce, &pairs);
+	eprintln!("pair batches: {sizes:?}");
+	let mut out = String::new();
+	let mut metrics = String::new();
+	let mut at = 0;
+	for (k, c) in cands.iter().enumerate() {
+		let n = c.len();
+		let sc = &scores[at..at + n];
+		at += n;
+		for (j, &(d, p, r)) in c.iter().enumerate() {
+			out += &format!("cand\t{}\t{}\t{}\t{p}\t{r}\t{:?}\n", ids[k], j + 1, docs[d].path, sc[j] as f64);
+		}
+		let mut order: Vec<usize> = (0..n).collect();
+		order.sort_by(|&a, &b| sc[b].total_cmp(&sc[a]));
+		out += &format!(
+			"rerank\t{}\t{}\n",
+			ids[k],
+			order.iter().map(|o| (o + 1).to_string()).collect::<Vec<_>>().join(",")
+		);
+		let recs: Vec<&str> = c.iter().map(|&(d, _, _)| &docs[d].path[0..4]).collect();
+		let rrecs: Vec<&str> = order.iter().map(|&o| recs[o]).collect();
+		let sup: Vec<&str> = support[k].iter().map(String::as_str).collect();
+		let (b1, b5, br, bm, _) = u5_measures(&recs, &sup);
+		let (a1, a5, ar, am, _) = u5_measures(&rrecs, &sup);
+		metrics += &format!("metrics\t{}\t{b1}\t{b5}\t{br:?}\t{bm:?}\t{a1}\t{a5}\t{ar:?}\t{am:?}\n", ids[k]);
+	}
+	std::fs::write(format!("{out_dir}/u5-trace.tsv"), format!("{out}{metrics}")).unwrap();
+	let (pq, pp): (Vec<&str>, Vec<&str>) = pairs.iter().map(|(q, p)| (q.as_str(), p.as_str())).unzip();
+	let json = serde_json::json!({ "queries": pq, "passages": pp });
+	std::fs::write(format!("{out_dir}/u5-pairs.json"), json.to_string()).unwrap();
 }
