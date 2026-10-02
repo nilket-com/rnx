@@ -324,6 +324,28 @@ mod tests {
 		assert!(out.contains("zed: i64 = 1"), "{out}");
 	}
 
+	/// Record 0150: a retained const is described as a const, from the kind
+	/// recorded when it was entered, also when its text starts with `pub`;
+	/// and a `pub struct` as a struct.
+	#[test]
+	fn help_names_a_retained_const_by_its_recorded_kind() {
+		let host = host();
+		let mut session = Session::new(context()).unwrap();
+		session.eval("const LIMIT = 10;").unwrap();
+		session.eval("pub const SHOWN = \"x\";").unwrap();
+		session.eval("pub struct Q { a }").unwrap();
+		let limits = InspectLimits::default();
+		let out = help(&session, &host, &COMMANDS, Some("LIMIT"), &limits);
+		assert!(
+			out.contains("LIMIT: const") && out.contains("  const LIMIT = 10;"),
+			"{out}"
+		);
+		let out = help(&session, &host, &COMMANDS, Some("SHOWN"), &limits);
+		assert!(out.contains("SHOWN: const"), "{out}");
+		let out = help(&session, &host, &COMMANDS, Some("Q"), &limits);
+		assert!(out.contains("Q: struct"), "{out}");
+	}
+
 	#[test]
 	fn help_answers_for_each_kind_and_states_the_precedence() {
 		let host = host();
