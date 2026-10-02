@@ -9,6 +9,8 @@
 //! - `twin0133 u3 D2 MODEL`: U3's edges and connected components.
 //! - `twin0133 e4 D2 MODEL`, `twin0133 e5`: record 0137's examples.
 //! - `twin0133 u4 D2 MODEL LABELS`: record 0139's triage table.
+//! - `twin0133 e6 D2 MODEL LABELS`, `twin0133 e6-synth SPEC`: record 0143's
+//!   topic discovery trace (written independently of the Rune script).
 //! - `twin0133 passages D1`, `twin0133 embed PASSAGES MODEL BATCHES OUT`:
 //!   record 0135's passages, and their embedding on a given partition.
 use candle_core::{DType, Device, Tensor};
@@ -825,6 +827,51 @@ fn main() {
 				}
 			}
 		}
+		// record 0143, E6: tickets chunked, embedded and pooled as E4/U4, then
+		// the frozen spherical k-means; the trace as the script writes it
+		"e6" => {
+			let t = twin_load(&a[3]);
+			let v: serde_json::Value =
+				serde_json::from_slice(&std::fs::read(&a[2]).unwrap()).unwrap();
+			let mut passages = Vec::new();
+			let mut owner: Vec<u32> = Vec::new();
+			for (i, issue) in v.as_array().unwrap().iter().enumerate() {
+				let text = format!(
+					"{}\n{}",
+					issue["title"].as_str().unwrap(),
+					issue["body"].as_str().unwrap()
+				);
+				for (s, e) in token_chunks(&t.tok, &text, 256, 0).unwrap() {
+					passages.push(text[s..e].to_owned());
+					owner.push(i as u32);
+				}
+			}
+			let n = v.as_array().unwrap().len();
+			let cpu = &Device::Cpu;
+			let refs: Vec<&str> = passages.iter().map(String::as_str).collect();
+			let flat = twin_embed_sized(&t, &refs, &s1_sizes(&t, &refs, 32));
+			let rows = refs.len();
+			let emb = Tensor::from_vec(flat, (rows, 384), cpu).unwrap();
+			let seg = Tensor::from_vec(owner, rows, cpu).unwrap();
+			let u = e6_unit(&e6_segment_mean(&emb, &seg, n)).unwrap();
+			print!("{}", e6_trace(&e6_kmeans(&u, 6).unwrap()));
+		}
+		"e6-synth" => {
+			let spec: serde_json::Value =
+				serde_json::from_slice(&std::fs::read(&a[2]).unwrap()).unwrap();
+			let k = spec["k"].as_u64().unwrap() as usize;
+			let rows = spec["rows"].as_array().unwrap();
+			let w = rows[0].as_array().unwrap().len();
+			let flat: Vec<f32> = rows
+				.iter()
+				.flat_map(|r| r.as_array().unwrap().iter().map(|x| x.as_f64().unwrap() as f32))
+				.collect();
+			let x = Tensor::from_vec(flat, (rows.len(), w), &Device::Cpu).unwrap();
+			match e6_unit(&x).and_then(|u| e6_kmeans(&u, k)) {
+				Ok(r) => print!("{}", e6_trace(&r)),
+				Err(e) => println!("refused\t{e}"),
+			}
+		}
 		// record 0135: D1's passages, as U1 chunks them, for timing
 		"passages" => {
 			let texts: Vec<String> = load(&a[2]).1.into_iter().map(|p| p.1).collect();
@@ -832,4 +879,121 @@ fn main() {
 		}
 		other => panic!("unknown command {other}"),
 	}
+}
+
+// ---- record 0143, E6: the frozen k-means, independently of the script ----
+
+/// Candle's segment mean by the calls `candle::segment_mean` documents.
+fn e6_segment_mean(v: &Tensor, seg: &Tensor, n: usize) -> Tensor {
+	let cpu = &Device::Cpu;
+	let (rows, w) = v.dims2().unwrap();
+	let sums = Tensor::zeros((n, w), DType::F32, cpu).unwrap().index_add(seg, v, 0).unwrap();
+	let ones = Tensor::ones(rows, DType::F32, cpu).unwrap();
+	let counts = Tensor::zeros(n, DType::F32, cpu).unwrap().index_add(seg, &ones, 0).unwrap();
+	sums.broadcast_div(&counts.unsqueeze(1).unwrap()).unwrap()
+}
+
+/// Rows to unit length; a zero or non-finite norm is refused.
+fn e6_unit(x: &Tensor) -> Result<Tensor, String> {
+	let norms = x.sqr().unwrap().sum_keepdim(1).unwrap().sqrt().unwrap();
+	for z in norms.flatten_all().unwrap().to_vec1::<f32>().unwrap() {
+		if !(z > 0.0 && z.is_finite()) {
+			return Err(format!("norm {z}"));
+		}
+	}
+	Ok(x.broadcast_div(&norms).unwrap())
+}
+
+struct E6 {
+	chosen: Vec<u32>,
+	moves: Vec<(usize, usize, usize)>,
+	history: Vec<Vec<u32>>,
+	it: usize,
+	converged: bool,
+	a: Vec<u32>,
+	centroids: Tensor,
+}
+
+fn e6_kmeans(u: &Tensor, k: usize) -> Result<E6, String> {
+	let cpu = &Device::Cpu;
+	let n = u.dims()[0];
+	let ids = |v: &[u32]| Tensor::from_vec(v.to_vec(), v.len(), cpu).unwrap();
+	let g = e6_unit(&u.mean_keepdim(0).unwrap())?;
+	let first = u.matmul(&g.t().unwrap()).unwrap().argmax(0).unwrap().to_vec1::<u32>().unwrap()[0];
+	let mut chosen = vec![first];
+	while chosen.len() < k {
+		let c = u.index_select(&ids(&chosen), 0).unwrap();
+		let m = u.matmul(&c.t().unwrap()).unwrap().max(1).unwrap();
+		chosen.push(m.argmin(0).unwrap().to_scalar::<u32>().unwrap());
+	}
+	let mut centroids = u.index_select(&ids(&chosen), 0).unwrap();
+	let mut prev: Option<Vec<u32>> = None;
+	let mut moves = Vec::new();
+	let mut history = Vec::new();
+	let (mut it, mut converged) = (0, false);
+	let mut a: Vec<u32> = Vec::new();
+	while it < 50 {
+		it += 1;
+		let st = u.matmul(&centroids.t().unwrap()).unwrap();
+		let s = st.to_vec2::<f32>().unwrap();
+		a = st.argmax(1).unwrap().to_vec1::<u32>().unwrap();
+		let mut sizes = vec![0usize; k];
+		for &x in &a {
+			sizes[x as usize] += 1;
+		}
+		for c in 0..k {
+			if sizes[c] != 0 {
+				continue;
+			}
+			// the eligible ticket (its cluster has two or more members) least
+			// similar to its own centroid; the first such on ties
+			let mut donor: Option<usize> = None;
+			for i in 0..n {
+				let own = a[i] as usize;
+				if sizes[own] < 2 {
+					continue;
+				}
+				if donor.is_none_or(|d| s[i][own] < s[d][a[d] as usize]) {
+					donor = Some(i);
+				}
+			}
+			let d = donor.expect("n > k");
+			sizes[a[d] as usize] -= 1;
+			a[d] = c as u32;
+			sizes[c] = 1;
+			moves.push((it, c, d));
+		}
+		history.push(a.clone());
+		if prev.as_ref() == Some(&a) {
+			converged = true;
+			break;
+		}
+		centroids = e6_unit(&e6_segment_mean(u, &ids(&a), k))?;
+		prev = Some(a.clone());
+	}
+	Ok(E6 { chosen, moves, history, it, converged, a, centroids })
+}
+
+/// The trace, formatted as Rune formats it (f64 as Rust's `{:?}`).
+fn e6_trace(r: &E6) -> String {
+	let mut out = format!(
+		"init\t{}\n",
+		r.chosen.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(",")
+	);
+	for (it, c, d) in &r.moves {
+		out += &format!("move\t{it}\t{c}\t{d}\n");
+	}
+	for (k, h) in r.history.iter().enumerate() {
+		let v: Vec<String> = h.iter().map(|x| x.to_string()).collect();
+		out += &format!("iter\t{}\t{}\n", k + 1, v.join(","));
+	}
+	out += &format!("iterations\t{}\t{}\n", r.it, r.converged);
+	for (i, x) in r.a.iter().enumerate() {
+		out += &format!("assign\t{i}\t{x}\n");
+	}
+	for (c, row) in r.centroids.to_vec2::<f32>().unwrap().iter().enumerate() {
+		let vals: Vec<String> = row.iter().map(|&x| format!("{:?}", x as f64)).collect();
+		out += &format!("centroid\t{c}\t{}\n", vals.join(","));
+	}
+	out
 }

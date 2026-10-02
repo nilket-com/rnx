@@ -122,14 +122,32 @@ fn read_bounded(path: &str) -> Result<Vec<u8>, String> {
 	read_limited(path, MAX_FILE, "Mlp::load")
 }
 
-/// A local file of at most `limit` bytes: refused from its metadata before
-/// any read, then read with `take(limit + 1)` in case it grew meanwhile.
+/// A local regular file of at most `limit` bytes. Record 0143: opened
+/// non-blocking and checked through the same handle (`rnx::fs::regular`'s
+/// behaviour), so a FIFO, directory or device is refused at once rather than
+/// blocked on; then refused from its metadata before any read, and read with
+/// `take(limit + 1)` in case it grew meanwhile.
 pub(crate) fn read_limited(path: &str, limit: u64, op: &str) -> Result<Vec<u8>, String> {
-	let file = std::fs::File::open(path).map_err(|e| format!("{op} {path:?}: {e}"))?;
-	let len = file
-		.metadata()
-		.map_err(|e| format!("{op} {path:?}: {e}"))?
-		.len();
+	let mut options = std::fs::OpenOptions::new();
+	options.read(true);
+	#[cfg(unix)]
+	{
+		use std::os::unix::fs::OpenOptionsExt;
+		options.custom_flags(libc::O_NONBLOCK);
+	}
+	let file = options
+		.open(path)
+		.map_err(|e| format!("{op} {path:?}: {e}"))?;
+	let meta = file.metadata().map_err(|e| format!("{op} {path:?}: {e}"))?;
+	if !meta.is_file() {
+		let kind = if meta.is_dir() {
+			"a directory"
+		} else {
+			"not a regular file"
+		};
+		return Err(format!("{op} {path:?}: it is {kind}"));
+	}
+	let len = meta.len();
 	if len > limit {
 		return Err(format!("{op} {path:?}: {len} bytes, at most {limit}"));
 	}

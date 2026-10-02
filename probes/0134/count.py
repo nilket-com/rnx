@@ -6,11 +6,14 @@ element-wise and broadcast operations (unary_op!, binary_op!, binary_op_scalar!,
 broadcast_binary_op!), deduplicated. Each manifest identity must exist in it;
 the nn and derived rows are counted apart.
 
-  count.py CANDLE_CORE_SRC [MANIFEST...]
+  count.py CANDLE_CORE_SRC [MANIFEST...] [--exclusions FILE]
 
 With no manifests, 0134's own. With several (record 0137: 0134's then
 0137's), they are counted cumulatively, per manifest and in total, and an
-identity in two manifests is a duplicate."""
+identity in two manifests is a duplicate. Record 0143: with --exclusions
+(rows `category\tidentity\treason`), every method is either bound or
+excluded with a reason, never both, and the two together are exactly the
+denominator."""
 import collections, pathlib, re, sys
 
 core = pathlib.Path(sys.argv[1])
@@ -26,8 +29,14 @@ for p in core.rglob("*.rs"):
             i += 1
         methods |= set(re.findall(r'\n    pub fn ([a-z_0-9]+)', s[m.end():i]))
     methods |= set(re.findall(r'(?:unary_op|binary_op|binary_op_scalar|broadcast_binary_op)!\(\s*([a-z_0-9]+)', s))
-CORE = set("ABCDEFGHI")
-paths = [pathlib.Path(p) for p in sys.argv[2:]] or [pathlib.Path(__file__).with_name("manifest.tsv")]
+CORE = set("ABCDEFGHIJK")
+args = sys.argv[2:]
+exclusions = None
+if "--exclusions" in args:
+    i = args.index("--exclusions")
+    exclusions = pathlib.Path(args[i + 1])
+    args = args[:i] + args[i + 2:]
+paths = [pathlib.Path(p) for p in args] or [pathlib.Path(__file__).with_name("manifest.tsv")]
 rows = []
 for p in paths:
     part = [l.split("\t") for l in p.read_text().splitlines()[1:] if l]
@@ -47,4 +56,16 @@ print(f"denominator: {len(methods)} public Tensor methods")
 print("per family:", dict(sorted(fam.items())))
 print(f"core identities: {len(set(names))} ({100 * len(set(names)) / len(methods):.1f}%), missing: {missing}, duplicates: {dupes}")
 print("counted apart:", dict(collections.Counter(r[0] for r in rows if r[0] not in CORE)))
-sys.exit(1 if missing or dupes else 0)
+bad = bool(missing or dupes)
+if exclusions:
+    ex = [l.split("\t") for l in exclusions.read_text().splitlines()[1:] if l]
+    malformed = [r for r in ex if len(r) != 3 or not r[2].strip()]
+    ex_names = [r[1].split("::")[1] for r in ex if len(r) == 3]
+    ex_missing = [n for n in ex_names if n not in methods]
+    ex_dupes = [n for n, c in collections.Counter(ex_names).items() if c > 1]
+    both = sorted(set(ex_names) & set(names))
+    neither = sorted(methods - set(ex_names) - set(names))
+    print(f"excluded: {len(set(ex_names))}, per category:", dict(collections.Counter(r[0] for r in ex)))
+    print(f"bound + excluded = {len(set(names)) + len(set(ex_names))} of {len(methods)}; both: {both}; neither: {neither}; malformed: {malformed[:3]}; unknown: {ex_missing}; duplicates: {ex_dupes}")
+    bad = bad or bool(malformed or ex_missing or ex_dupes or both or neither)
+sys.exit(1 if bad else 0)
