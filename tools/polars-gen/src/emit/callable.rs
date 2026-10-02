@@ -682,6 +682,7 @@ pub(crate) fn emit_method_with(
 		args.push(r.clone());
 	}
 	args.extend(params.iter().map(|(_, a)| a.conv.clone()));
+	let consumes = recv_sig.starts_with("this: ") && !recv_sig.starts_with("this: &");
 	let sig: Vec<String> = std::iter::once(recv_sig)
 		.filter(|s| !s.is_empty())
 		.chain(params.iter().map(|(n, a)| format!("{n}: {}", a.rust_ty)))
@@ -940,6 +941,9 @@ pub(crate) fn emit_method_with(
 	} else {
 		out.registrations
 			.push(format!("m.function_meta({ident})?;"));
+	}
+	if consumes {
+		out.consuming.push(rune.clone());
 	}
 	out.catalogue.push((
 		rune.clone(),

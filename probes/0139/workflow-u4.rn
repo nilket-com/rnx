@@ -15,8 +15,10 @@ fn column_f64(name, values) {
     Ok(polars::Series::from_iter_f64(values)?.with_name(name).into_column())
 }
 
-/// The per-ticket frame. Built afresh for each view: a DataFrame's lazy and
-/// sorting methods take it by value in Rune, and it has no clone.
+/// The per-ticket frame, built afresh for each view. (Corrected by record
+/// 0141: no DataFrame method consumes the frame in Rune, so one frame could
+/// serve every view; `clone()` now gives an independent copy for in-place
+/// methods. The script is kept as 0139 ran it.)
 fn table(numbers, titles, triage, best, second, margins, names, per_label) {
     let cols = [
         column_i64("ticket", numbers)?,

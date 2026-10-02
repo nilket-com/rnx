@@ -523,6 +523,7 @@ pub(crate) fn dtype_owners_self_test() {
 			functions: String::new(),
 			registrations: vec![],
 			catalogue: vec![],
+			consuming: vec![],
 			entries: vec![],
 			taken: Default::default(),
 			fn_index: 0,

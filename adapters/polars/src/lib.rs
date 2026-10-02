@@ -1,4 +1,16 @@
 //! Small, synchronous Polars extension. Engine I/O is joined before returning.
+//!
+//! The value contract (record 0141):
+//! - `DataFrame`, `LazyFrame`, `Series` and `Expr` are never consumed: every
+//!   method takes them by reference, so one value serves any number of views.
+//! - Rune names share one value: after `let b = df;`, an in-place method
+//!   (`&mut`: 22 on `DataFrame`, 1 on `LazyFrame`, 8 on `Series`) changes
+//!   what every name sees. `clone()` first gives an independent wrapper over
+//!   Polars' own clone: columns are shared until either side is written
+//!   (copy-on-write), never a deep copy.
+//! - Builders, readers, writers and expression namespaces are consumed by
+//!   their by-value methods (catalogue text "consumes the receiver"); a
+//!   second use is Rune's access error ("Cannot take, value is …").
 use p::IntoLazy;
 use polars::prelude as p;
 use rnx::rune::{self, runtime::Vec as RuneVec};
@@ -40,6 +52,27 @@ fn expressions(value: rune::Value, operation: &str) -> Result<Vec<p::Expr>, Stri
 				.map_err(|_| format!("polars {operation}: expected an expression"))
 		})
 		.collect()
+}
+// record 0141: an independent wrapper over Polars' shallow, copy-on-write clone
+#[rune::function(instance, path = clone)]
+fn clone_frame(frame: &DataFrame) -> DataFrame {
+	DataFrame(frame.0.clone())
+}
+#[rune::function(instance, path = clone)]
+fn clone_plan(plan: &LazyFrame) -> LazyFrame {
+	LazyFrame(plan.0.clone())
+}
+#[rune::function(instance, path = clone)]
+fn clone_expr(expr: &Expr) -> Expr {
+	Expr(expr.0.clone())
+}
+// `Series` is a generated type, so its clone exists only with `generated`
+#[cfg(feature = "generated")]
+#[rune::function(instance, path = clone)]
+fn clone_series(
+	series: &generated::types::W_polars_core__series__Series,
+) -> generated::types::W_polars_core__series__Series {
+	generated::types::W_polars_core__series__Series(series.0.clone())
 }
 #[rune::function(instance)]
 fn lazy(frame: &DataFrame) -> LazyFrame {
@@ -294,6 +327,11 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.function("version", || String::from(polars::VERSION))
 		.build()
 		.map_err(err)?;
+	m.function_meta(clone_frame).map_err(err)?;
+	m.function_meta(clone_plan).map_err(err)?;
+	m.function_meta(clone_expr).map_err(err)?;
+	#[cfg(feature = "generated")]
+	m.function_meta(clone_series).map_err(err)?;
 	m.function_meta(lazy).map_err(err)?;
 	m.function_meta(filter).map_err(err)?;
 	m.function_meta(group_by).map_err(err)?;
@@ -385,12 +423,250 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 			"polars::DataFrame::write_parquet_new".into(),
 			"write_parquet_new(path) -> Result<()>: uncompressed, create-new; failure may leave a partial file",
 		),
+		(
+			"polars::DataFrame::clone".into(),
+			"clone() -> DataFrame: an independent frame; columns shared copy-on-write, so in-place methods on either side never change the other",
+		),
+		(
+			"polars::LazyFrame::clone".into(),
+			"clone() -> LazyFrame: an independent plan (never needed for views: no LazyFrame method consumes it)",
+		),
+		(
+			"polars::Expr::clone".into(),
+			"clone() -> Expr: an independent expression (never needed for views: no Expr method consumes it)",
+		),
 	];
+	#[cfg(feature = "generated")]
+	catalogue.push((
+		"polars::Series::clone".into(),
+		"clone() -> Series: an independent series; data shared copy-on-write, so in-place methods on either side never change the other",
+	));
 	#[cfg(feature = "generated")]
 	catalogue.extend(
 		generated::catalogue::CATALOGUE
 			.iter()
-			.map(|(k, v)| (k.to_string(), *v)),
+			.map(|(k, v)| (k.to_string(), consuming_text(k).unwrap_or(v))),
 	);
 	Ok(catalogue)
+}
+
+/// Record 0141: a by-value receiver's marked catalogue text (generated,
+/// sorted by path); `None` for every other path.
+#[cfg(feature = "generated")]
+fn consuming_text(path: &str) -> Option<&'static str> {
+	let marked = generated::catalogue::CONSUMING;
+	marked
+		.binary_search_by(|(k, _)| (*k).cmp(path))
+		.ok()
+		.map(|i| marked[i].1)
+}
+
+// Record 0141: `clone()` gives a distinct Rune value, an alias the same
+// one. Two exclusive borrows succeed only on distinct values.
+#[cfg(test)]
+mod clone_identity {
+	use super::*;
+	use rnx::rune::{Context, Module, Source, Sources, Value, Vm};
+	use std::sync::Arc;
+
+	fn pair(value: Value, script: &str) -> (Value, Value) {
+		let mut polars = Module::with_crate("polars").unwrap();
+		build(&mut polars).unwrap();
+		let mut context = Context::with_default_modules().unwrap();
+		context.install(polars).unwrap();
+		let runtime = Arc::new(context.runtime().unwrap());
+		let mut sources = Sources::new();
+		sources.insert(Source::memory(script).unwrap()).unwrap();
+		let unit = rune::prepare(&mut sources)
+			.with_context(&context)
+			.build()
+			.unwrap();
+		let mut vm = Vm::new(runtime, Arc::new(unit));
+		let out = vm.call(["main"], (value,)).unwrap();
+		rune::from_value::<(Value, Value)>(out).unwrap()
+	}
+
+	fn distinct<T: rune::Any + rune::ToValue>(value: T) {
+		let v = rune::to_value(value).unwrap();
+		let (a, b) = pair(v.clone(), "pub fn main(a) { (a, a.clone()) }");
+		let held = a.borrow_mut::<T>().unwrap();
+		assert!(b.borrow_mut::<T>().is_ok(), "a clone is a distinct value");
+		drop(held);
+		let (a, b) = pair(v, "pub fn main(a) { let b = a; (a, b) }");
+		let held = a.borrow_mut::<T>().unwrap();
+		assert!(b.borrow_mut::<T>().is_err(), "an alias is the same value");
+		drop(held);
+	}
+
+	fn frame() -> p::DataFrame {
+		p::df!("x" => [3i64, 1, 2]).unwrap()
+	}
+
+	#[test]
+	fn clone_is_distinct_and_alias_is_shared() {
+		distinct(DataFrame(frame()));
+		distinct(LazyFrame(frame().lazy()));
+		distinct(Expr(p::col("x")));
+		#[cfg(feature = "generated")]
+		distinct(generated::types::W_polars_core__series__Series(
+			<p::Series as p::NamedFrom<_, _>>::new("x".into(), [1i64, 2, 3]),
+		));
+	}
+
+	#[test]
+	fn catalogue_names_the_clones() {
+		let mut m = Module::with_crate("polars").unwrap();
+		let catalogue = build(&mut m).unwrap();
+		let clones: Vec<&str> = catalogue
+			.iter()
+			.map(|(k, _)| k.as_str())
+			.filter(|k| k.ends_with("::clone"))
+			.collect();
+		let mut want = vec![
+			"polars::DataFrame::clone",
+			"polars::LazyFrame::clone",
+			"polars::Expr::clone",
+		];
+		if cfg!(feature = "generated") {
+			want.push("polars::Series::clone");
+		}
+		assert_eq!(clones, want);
+	}
+}
+
+// Record 0141's measures, run explicitly in release:
+// `cargo test --release --lib clone_cost -- --ignored --nocapture`.
+// Each step's time (median) and the live bytes it leaves while its result is
+// held; buffer sharing is read from the first column's data pointer.
+#[cfg(all(test, feature = "generated"))]
+mod clone_cost {
+	use super::*;
+	use rnx::rune::{Context, Module, Source, Sources, Value, Vm};
+	use std::sync::Arc;
+	use std::time::Instant;
+
+	const SCRIPT: &str = r#"
+		pub fn copy(a) { a.clone() }
+		pub fn rename(a) { a.rename("c0", "r0").unwrap() }
+		pub fn sort(a) { a.sort_in_place(["r0"], polars::SortMultipleOptions::default_().with_order_descending(true)).unwrap() }
+	"#;
+
+	fn vm() -> Vm {
+		let mut polars = Module::with_crate("polars").unwrap();
+		build(&mut polars).unwrap();
+		let mut context = Context::with_default_modules().unwrap();
+		context.install(polars).unwrap();
+		let runtime = Arc::new(context.runtime().unwrap());
+		let mut sources = Sources::new();
+		sources.insert(Source::memory(SCRIPT).unwrap()).unwrap();
+		let unit = rune::prepare(&mut sources)
+			.with_context(&context)
+			.build()
+			.unwrap();
+		Vm::new(runtime, Arc::new(unit))
+	}
+
+	fn frame(rows: usize) -> p::DataFrame {
+		let columns: Vec<p::Column> = (0..10)
+			.map(|c| {
+				let v: Vec<i64> = (0..rows as i64)
+					.map(|r| (r * 7919 + c) % 1_000_003)
+					.collect();
+				<p::Series as p::NamedFrom<_, _>>::new(format!("c{c}").into(), v).into()
+			})
+			.collect();
+		p::DataFrame::new(rows, columns).unwrap()
+	}
+
+	fn data(df: &p::DataFrame, i: usize) -> *const i64 {
+		let s = df.columns()[i].as_materialized_series();
+		s.i64()
+			.unwrap()
+			.downcast_iter()
+			.next()
+			.unwrap()
+			.values()
+			.as_ptr()
+	}
+
+	fn deep(df: &p::DataFrame) -> p::DataFrame {
+		let columns: Vec<p::Column> = df
+			.columns()
+			.iter()
+			.map(|c| {
+				let s = c.as_materialized_series();
+				let v: Vec<i64> = s.i64().unwrap().cont_slice().unwrap().to_vec();
+				<p::Series as p::NamedFrom<_, _>>::new(s.name().clone(), v).into()
+			})
+			.collect();
+		p::DataFrame::new(df.height(), columns).unwrap()
+	}
+
+	fn live() -> usize {
+		rnx::allocation::live().unwrap()
+	}
+
+	fn median(mut v: Vec<f64>) -> f64 {
+		v.sort_by(|a, b| a.partial_cmp(b).unwrap());
+		v[v.len() / 2]
+	}
+
+	#[test]
+	#[ignore]
+	fn clone_cost() {
+		let mut vm = vm();
+		println!(
+			"rows | clone µs | clone bytes | shared | rename µs | rename bytes | sort µs | sort bytes | original intact | deep copy µs | deep copy bytes"
+		);
+		for rows in [1usize, 100_000, 1_000_000] {
+			let reps = if rows == 1_000_000 { 7 } else { 15 };
+			let (mut tc, mut tr, mut ts, mut td) = (vec![], vec![], vec![], vec![]);
+			let (mut bc, mut br, mut bs, mut bd) = (0, 0, 0, 0);
+			let (mut shared, mut intact) = (true, true);
+			for _ in 0..reps {
+				let original = frame(rows);
+				let expect = original.clone();
+				let first = data(&original, 0);
+				let a = rune::to_value(DataFrame(original)).unwrap();
+				// clone
+				let before = live();
+				let t = Instant::now();
+				let b: Value = vm.call(["copy"], (a.clone(),)).unwrap();
+				tc.push(t.elapsed().as_secs_f64() * 1e6);
+				bc = live() as isize as i64 - before as i64;
+				shared &= data(&b.borrow_ref::<DataFrame>().unwrap().0, 0) == first;
+				// metadata mutation of the clone
+				let before = live();
+				let t = Instant::now();
+				vm.call(["rename"], (b.clone(),)).unwrap();
+				tr.push(t.elapsed().as_secs_f64() * 1e6);
+				br = live() as i64 - before as i64;
+				// data-changing mutation of the clone
+				let before = live();
+				let t = Instant::now();
+				vm.call(["sort"], (b.clone(),)).unwrap();
+				ts.push(t.elapsed().as_secs_f64() * 1e6);
+				bs = live() as i64 - before as i64;
+				{
+					let a = a.borrow_ref::<DataFrame>().unwrap();
+					intact &= data(&a.0, 0) == first && a.0.equals(&expect);
+				}
+				// the deep-copy baseline, in Rust
+				let a = a.borrow_ref::<DataFrame>().unwrap();
+				let before = live();
+				let t = Instant::now();
+				let d = deep(&a.0);
+				td.push(t.elapsed().as_secs_f64() * 1e6);
+				bd = live() as i64 - before as i64;
+				assert!(d.equals(&a.0) && data(&d, 0) != first);
+			}
+			println!(
+				"{rows} | {:.1} | {bc} | {shared} | {:.1} | {br} | {:.1} | {bs} | {intact} | {:.1} | {bd}",
+				median(tc),
+				median(tr),
+				median(ts),
+				median(td)
+			);
+		}
+	}
 }
