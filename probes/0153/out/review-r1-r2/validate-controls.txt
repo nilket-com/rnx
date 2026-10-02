@@ -1,0 +1,23 @@
+pass: unmodified: BIT-EQUAL (each producer validated first; refusals bound to the pinned tokenizer): 3 tickets, 5 passages, 3 embeddings x 384 and cosines x 5, 20 NLI pairs x 3 logits, in f32 bits; NLI statuses {'nli_refused': 1, 'no_passages': 0, 'ok': 2}; embedding statuses {'no_passages': 0, 'nonfinite_embedding': 0, 'ok': 3, 'zero_norm': 0}
+refused: both, a ticket dropped from the passages: FAIL: TMP/a/t3-passages.json: the tickets are not exactly the split, in order
+refused: both, two tickets reordered: FAIL: TMP/a/t3-passages.json: the tickets are not exactly the split, in order
+refused: both, a passage not in its ticket's text: FAIL: TMP/a: ticket 1 passage 0 does not occur in its text after the previous one
+refused: both, two passages of a ticket reordered: FAIL: TMP/a: ticket 3 passage 1 does not occur in its text after the previous one
+refused: both, a status changed to nli_refused: FAIL: TMP/a: ticket 1 is nli_refused, but its longest pair is within 512 tokens by the pinned tokenizer
+refused: both, an unknown status: FAIL: TMP/a/t3-status.tsv: not one valid status per ticket in order
+refused: both, an embedding row missing: FAIL: TMP/a: embedding or cosine rows are not exactly the tickets whose embedding is ok, in order
+refused: both, an embedding scaled (norm off 1): FAIL: TMP/a: ticket 1's embedding has norm 1.0100002212028454
+refused: both, a non-finite embedding value: FAIL: embedding 1: nan is not finite
+refused: both, a cosine column dropped: FAIL: TMP/a/t3-cosines.tsv: header
+refused: both, an NLI row missing: FAIL: TMP/a/t3-nli.tsv: rows are not exactly each ok ticket's passages x labels, in order
+refused: both, two NLI rows reordered: FAIL: TMP/a/t3-nli.tsv: rows are not exactly each ok ticket's passages x labels, in order
+refused: both, an NLI label renamed: FAIL: TMP/a/t3-nli.tsv: rows are not exactly each ok ticket's passages x labels, in order
+refused: both, a non-finite logit: FAIL: logit 1: inf is not finite
+refused: both, a forged nli_refused with that ticket's NLI rows deleted (review R2): FAIL: TMP/a: ticket 1 is nli_refused, but its longest pair is within 512 tokens by the pinned tokenizer
+refused: both, an unknown embedding status: FAIL: TMP/a/t3-embedding-status.tsv: not one valid embedding status per ticket in order
+refused: both, an embedding marked no_passages for a ticket with passages: FAIL: TMP/a: ticket 1's embedding is no_passages with 1 passages
+refused: both, an embedding marked zero_norm with its rows left in: FAIL: TMP/a: embedding or cosine rows are not exactly the tickets whose embedding is ok, in order
+refused: one side, an embedding value's lowest bit: FAIL: the producers' embeddings differ
+refused: one side, a cosine's lowest bit: FAIL: the producers' cosines differ
+refused: one side, a logit's lowest bit: FAIL: the producers' NLI logits differ
+all validation controls behave

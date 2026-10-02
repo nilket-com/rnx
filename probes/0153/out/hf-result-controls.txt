@@ -1,0 +1,13 @@
+pass: the well-formed PASS artifact: hf-t3: completed, PASS (exit 0); counts {'tickets': 252, 'embeddings': 252, 'cosines': 1260, 'nli_pairs': 2290} verified
+refused: a missing artifact: STOP: hf-t3 exited 0 without a well-formed completion artifact (FileNotFoundError(2, 'No such file or directory'))
+refused: a malformed artifact: STOP: hf-t3 exited 0 without a well-formed completion artifact (JSONDecodeError('Expecting property name enclosed in double quotes: line 1 column 2 (c
+refused: another check's artifact: STOP: hf-t3 exited 0 with an artifact that does not record a completed PASS: {'check': 'hf-pool', 'completed': True, 'result': 'PASS', 'tickets': 252,
+refused: not completed: STOP: hf-t3 exited 0 with an artifact that does not record a completed PASS: {'check': 'hf-t3', 'completed': False, 'result': 'PASS', 'tickets': 252,
+refused: PASS recorded with exit 3: STOP: hf-t3 exited 3 with an artifact that does not record a completed FAIL: {'check': 'hf-t3', 'completed': True, 'result': 'PASS', 'tickets': 252, '
+refused: an exception (exit 1) with a PASS artifact: STOP: hf-t3 exited 1: the check itself did not complete
+refused: a completed FAIL: STOP: hf-t3 completed, FAIL: the record stops here (plans/0153 section 7)
+refused: the wrong ticket count: STOP: hf-t3's artifact records {'tickets': 251, 'embeddings': 252, 'cosines': 1260, 'nli_pairs': 2290}; the validated evidence has {'tickets': 252, 'e
+refused: the wrong NLI pair count: STOP: hf-t3's artifact records {'tickets': 252, 'embeddings': 252, 'cosines': 1260, 'nli_pairs': 2291}; the validated evidence has {'tickets': 252, 'e
+refused: the wrong cosine count: STOP: hf-t3's artifact records {'tickets': 252, 'embeddings': 252, 'cosines': 1255, 'nli_pairs': 2290}; the validated evidence has {'tickets': 252, 'e
+refused: a count missing: STOP: hf-t3's artifact records {'tickets': 252, 'embeddings': None, 'cosines': 1260, 'nli_pairs': 2290}; the validated evidence has {'tickets': 252, '
+all completion-artifact controls behave

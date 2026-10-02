@@ -1,0 +1,6 @@
+s: embedding statuses {'ok': 252}
+t: embedding statuses {'ok': 252}
+SCRATCH/o0153r/d2: unchanged against probes/0153/out/pre-replay/d2: passages and NLI statuses exact; embeddings, cosines and NLI logits identical in f32 bits for both producers
+s: embedding statuses {'ok': 346}
+t: embedding statuses {'ok': 346}
+SCRATCH/o0153r/dev: unchanged against probes/0153/out/pre-replay/dev: passages and NLI statuses exact; embeddings, cosines and NLI logits identical in f32 bits for both producers; selected.json, curves.json, centroids.tsv byte-identical

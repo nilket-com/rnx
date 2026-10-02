@@ -1,0 +1,145 @@
+dev run at 97fb139b23398d1352b7404c8e7015eaddb90232, 0 changes, 2026-10-02T18:52:14-05:00
+provenance: the freeze, D3 (content, labels, snapshot), the split and folds, D2 and 0139's sample and labels, MiniLM and NLI pins all hold
+pass: centroid bug equals numpy's f64 sum / norm rounded to f32, bit for bit
+pass: centroid feature equals numpy's f64 sum / norm rounded to f32, bit for bit
+pass: centroid question equals numpy's f64 sum / norm rounded to f32, bit for bit
+pass: a queue with no training ticket is absent
+pass: a queue whose sum has norm 0 is absent
+pass: fewer than two present queues gives mandatory REVIEW
+pass: a ticket without an embedding gives mandatory REVIEW
+pass: C's prediction and margin match numpy's f64 dot products (to 1e-12): (('feature', 0.10814584853810277), 'feature')
+pass: an exact tie goes to the earlier queue
+pass: folds are the zero-based (hash, number) rank mod 5
+pass: cross-fit scores each ticket with centroids from the other four folds only
+pass: p(entail) is the stable 3-way softmax in f64
+pass: p(entail) is stable for large logits
+pass: confidence == t auto-routes: [1, 2, 5]
+pass: the next lower representable confidence does not
+pass: tie blocks move together (both 0.5 tickets in or out)
+pass: mandatory REVIEW never auto-routes, even at t = 0
+pass: mandatory REVIEW counts in the denominator
+pass: mandatory REVIEW adds no threshold candidate
+pass: candidates are the distinct finite confidences
+pass: zero auto-routes leave E undefined, not 0
+pass: a system with zero auto-routes is ineligible
+pass: the threshold is the lowest candidate with E <= 0.10: (0.5, 0.0)
+pass: K's only candidate is 1
+pass: Wilson interval for 0/10, clamped to [0, 1]: (0.0, 0.2775401687666165)
+pass: K: exactly one match routes; none or several give mandatory REVIEW: {1: ('bug', 1.0), 2: ('question', 1.0), 3: None, 4: ('documentation', 1.0), 5: None}
+all fixtures and boundary controls behave
+control: a short pair scores
+control: an over-512-token pair is the named refusal (None)
+control: one over-limit pair marks the whole ticket
+control: another error is returned, not absorbed: NliModel::score: 2 premises and 1 hypotheses; one pair per index
+all NLI handler controls behave
+session: OK (prompt True, marker True, returned Ok, errors 0)
+t3: 346 tickets, 774 passages
+BIT-EQUAL (each producer validated first): 346 tickets, 774 passages, 346 embeddings x 384 and cosines x 5, 3870 NLI pairs x 3 logits, in f32 bits; statuses {'nli_refused': 0, 'no_passages': 0, 'ok': 346}
+versions: transformers 5.18.0, torch 2.14.1+cpu, tokenizers 0.23.2
+MiniLM: 346 ticket embeddings x 384 and 346 x 5 cosines from 774 validated passages; max |rnx - HF| embedding 2.77e-07, cosine 9.55e-07 (bound 0.0001); 7.9 s
+NLI model-level: 3870 pairs, pinned ids, one at a time; max |rnx - HF| logit 2.3e-05 (bound 0.0001); 222.1 s; native tokenizer differs from the pinned ids on 5 pairs (reported, not gated)
+semantic check: PASS
+hf-t3: completed, PASS (exit 0); counts {'tickets': 346, 'embeddings': 346, 'cosines': 1730, 'nli_pairs': 3870} verified
+SCRATCH/o0153/dev/s: validated (346 D3-dev tickets)
+
+D3-dev reference (Claude's labels, folded to queues): {'bug': 146, 'feature': 101, 'question': 86, 'documentation': 13}; MAJ = bug
+
+| system | mandatory REVIEW | threshold | auto | A | E | misroutes | cost c=2 | cost c=5 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| K | {'rule': 210} | ineligible | | | | | | |
+| Z | {} | 0.18030427396297455 | 33 | 0.095 | 0.091 | 3 | 0.922 | 0.948 |
+| C | {} | 0.09553107383376902 | 74 | 0.214 | 0.095 | 7 | 0.827 | 0.887 |
+| N | {} | ineligible | | | | | | |
+| MAJ (diagnostic only) | {} | 1.0 | 346 | 1.000 | 0.578 | 200 | 1.156 | 2.890 |
+| ALL-HUMAN (fallback) | all | - | 0 | 0.000 | undefined | 0 | 1.000 | 1.000 |
+
+SELECTION (highest dev A at its threshold, ties in the order ['K', 'Z', 'C', 'N']): C, threshold 0.09553107383376902, dev A 0.2139, dev E 0.0946
+
+K at full coverage (136 predicted, reference rows x predicted columns):
+| reference | bug | feature | question | documentation |
+|---|---:|---:|---:|---:|
+| bug | 54 | 1 | 3 | 3 |
+| feature | 2 | 10 | 8 | 1 |
+| question | 1 | 0 | 47 | 0 |
+| documentation | 0 | 0 | 1 | 5 |
+K risk-coverage (every ~1th candidate of 1):
+  t=1  A=0.393  E=0.147
+  t=1  A=0.393  E=0.147
+
+Z at full coverage (346 predicted, reference rows x predicted columns):
+| reference | bug | feature | question | documentation |
+|---|---:|---:|---:|---:|
+| bug | 130 | 14 | 0 | 2 |
+| feature | 27 | 72 | 0 | 2 |
+| question | 22 | 63 | 1 | 0 |
+| documentation | 5 | 7 | 0 | 1 |
+Z misroutes at its threshold, reference -> predicted: {'documentation -> feature': 1, 'feature -> bug': 1, 'question -> bug': 1}
+Z risk-coverage (every ~28th candidate of 346):
+  t=0.000288397  A=1.000  E=0.410
+  t=0.0120307  A=0.919  E=0.390
+  t=0.0235899  A=0.838  E=0.372
+  t=0.0380214  A=0.757  E=0.340
+  t=0.0501882  A=0.676  E=0.303
+  t=0.0596619  A=0.595  E=0.282
+  t=0.0711226  A=0.514  E=0.230
+  t=0.0851886  A=0.434  E=0.200
+  t=0.0977436  A=0.353  E=0.197
+  t=0.118201  A=0.272  E=0.181
+  t=0.139804  A=0.191  E=0.152
+  t=0.178155  A=0.110  E=0.132
+  t=0.243544  A=0.029  E=0.100
+  t=0.351049  A=0.003  E=1.000
+
+C at full coverage (346 predicted, reference rows x predicted columns):
+| reference | bug | feature | question | documentation |
+|---|---:|---:|---:|---:|
+| bug | 126 | 7 | 9 | 4 |
+| feature | 10 | 53 | 28 | 10 |
+| question | 12 | 18 | 50 | 6 |
+| documentation | 2 | 1 | 2 | 8 |
+C misroutes at its threshold, reference -> predicted: {'bug -> documentation': 1, 'feature -> documentation': 3, 'question -> bug': 1, 'question -> documentation': 1, 'question -> feature': 1}
+C risk-coverage (every ~28th candidate of 346):
+  t=0.000176356  A=1.000  E=0.315
+  t=0.00644856  A=0.919  E=0.289
+  t=0.0173746  A=0.838  E=0.269
+  t=0.0254562  A=0.757  E=0.248
+  t=0.0349578  A=0.676  E=0.239
+  t=0.0424266  A=0.595  E=0.228
+  t=0.0514282  A=0.514  E=0.202
+  t=0.060379  A=0.434  E=0.187
+  t=0.0722916  A=0.353  E=0.148
+  t=0.0841144  A=0.272  E=0.117
+  t=0.0984697  A=0.191  E=0.106
+  t=0.117546  A=0.110  E=0.053
+  t=0.152831  A=0.029  E=0.100
+  t=0.214073  A=0.003  E=0.000
+
+N at full coverage (346 predicted, reference rows x predicted columns):
+| reference | bug | feature | question | documentation |
+|---|---:|---:|---:|---:|
+| bug | 32 | 1 | 61 | 52 |
+| feature | 0 | 16 | 71 | 14 |
+| question | 4 | 1 | 78 | 3 |
+| documentation | 1 | 1 | 6 | 5 |
+N risk-coverage (every ~28th candidate of 346):
+  t=0.00175699  A=1.000  E=0.621
+  t=0.0117439  A=0.919  E=0.610
+  t=0.0188777  A=0.838  E=0.583
+  t=0.0297382  A=0.757  E=0.553
+  t=0.0433707  A=0.676  E=0.534
+  t=0.0615151  A=0.595  E=0.524
+  t=0.0745247  A=0.514  E=0.511
+  t=0.10165  A=0.434  E=0.487
+  t=0.135074  A=0.353  E=0.492
+  t=0.181284  A=0.272  E=0.479
+  t=0.27678  A=0.191  E=0.439
+  t=0.422208  A=0.110  E=0.421
+  t=0.728345  A=0.029  E=0.400
+  t=0.831173  A=0.003  E=1.000
+
+wrote SCRATCH/o0153/dev/selected.json and curves.json
+
+D2 diagnostic (seen before; descriptive only): C at t=0.09553107383376902 auto-routes 3 of 40
+  against 0139's claude labels: misroutes 0 of 3
+  against 0139's codex labels: misroutes 0 of 3
+DEV EXIT 0

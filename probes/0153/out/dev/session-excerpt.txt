@@ -1,0 +1,3 @@
+346 tickets, 774 passages; embedding and cosines 12974 ms; 3870 NLI pairs scored per ticket in 259104 ms
+WORKFLOW OK t3
+### run returned to a prompt: True after 273.0 s

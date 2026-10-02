@@ -1,0 +1,6 @@
+control: a zero pooled row is zero_norm, a non-finite row nonfinite_embedding; other rows unaffected
+control: a short pair scores
+control: an over-512-token pair is the named refusal (None)
+control: one over-limit pair marks the whole ticket
+control: another error is returned, not absorbed: NliModel::score: 2 premises and 1 hypotheses; one pair per index
+all NLI handler controls behave

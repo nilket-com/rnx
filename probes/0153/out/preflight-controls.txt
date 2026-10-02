@@ -1,0 +1,23 @@
+pass: unmodified: every step reached (fixtures handler twin-controls session twin validate hf-t3 )
+refused: the design file changed: FAIL: the design file is not the accepted design (SHA-256); no step began
+refused: 0139's rules.md changed: FAIL: 0139's rules.md changed; no step began
+refused: frozen/labels.tsv changed: FAIL: frozen/labels.tsv is not the design's label table; no step began
+refused: frozen/keywords.tsv changed: FAIL: frozen/keywords.tsv is not the design's keyword table; no step began
+refused: frozen/maintainer_map.tsv changed: FAIL: frozen/maintainer_map.tsv is not the design's map; no step began
+refused: frozen/rules.md changed: FAIL: frozen/rules.md changed; no step began
+refused: a holdout annotation row missing: FAIL: annotations-codex-hold.tsv: rows are not exactly d3-hold.tsv in order (missing ['5'], extra []); no step began
+refused: a holdout annotation row duplicated: FAIL: annotations-claude-hold.tsv: duplicate rows; no step began
+refused: two dev annotation rows reordered: FAIL: annotations-claude-dev.tsv: rows are not exactly d3-dev.tsv in order (missing [], extra []); no step began
+refused: a blank annotation row: FAIL: annotations-codex-hold.tsv row 2: blank or malformed; no step began
+refused: an out-of-vocabulary label: FAIL: annotations-claude-hold.tsv row 2: label 'bugs' is not one of the five; no step began
+refused: an extra annotation row: FAIL: annotations-claude-dev.tsv: rows are not exactly d3-dev.tsv in order (missing [], extra ['99999']); no step began
+refused: the D3 manifest changed: FAIL: frozen/d3-manifest.tsv changed; no step began
+refused: the split file changed: FAIL: annotations-claude-hold.tsv: rows are not exactly d3-hold.tsv in order (missing [], extra []); no step began
+refused: D3 text drifted: FAIL: D3 drifted from frozen/d3-manifest.tsv (text, labels or the issue set); no step began
+refused: D3 labels drifted: FAIL: D3 drifted from frozen/d3-manifest.tsv (text, labels or the issue set); no step began
+refused: D3 state drifted: FAIL: D3's snapshot drifted from frozen/d3-meta.json; no step began
+refused: a D2 byte changed: FAIL: D2 changed; no step began
+refused: 0139's sample changed: FAIL: probes/0139/frozen/sample.tsv changed; no step began
+refused: a MiniLM weight byte changed: FAIL: MiniLM: model.safetensors changed; no step began
+refused: an NLI tokenizer byte changed: FAIL: NLI: tokenizer.json changed; no step began
+all provenance and freeze controls behave

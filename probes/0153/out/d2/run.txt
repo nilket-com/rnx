@@ -1,0 +1,53 @@
+replay d2 at a338a9fa8ac221f6cb44c97abd93c299162ee301, 0 changes, 2026-10-02T19:44:04-05:00
+provenance: the freeze, D3 (content, labels, snapshot), the split and folds, D2 and 0139's sample and labels, MiniLM and NLI pins all hold
+pass: centroid bug equals numpy's f64 sum / norm rounded to f32, bit for bit
+pass: centroid feature equals numpy's f64 sum / norm rounded to f32, bit for bit
+pass: centroid question equals numpy's f64 sum / norm rounded to f32, bit for bit
+pass: a queue with no training ticket is absent
+pass: a queue whose sum has norm 0 is absent
+pass: fewer than two present queues gives mandatory REVIEW
+pass: a ticket without an embedding gives mandatory REVIEW
+pass: C's prediction and margin match numpy's f64 dot products (to 1e-12): (('feature', 0.10814584853810277), 'feature')
+pass: an exact tie goes to the earlier queue
+pass: folds are the zero-based (hash, number) rank mod 5
+pass: cross-fit scores each ticket with centroids from the other four folds only
+pass: p(entail) is the stable 3-way softmax in f64
+pass: p(entail) is stable for large logits
+pass: confidence == t auto-routes: [1, 2, 5]
+pass: the next lower representable confidence does not
+pass: tie blocks move together (both 0.5 tickets in or out)
+pass: mandatory REVIEW never auto-routes, even at t = 0
+pass: mandatory REVIEW counts in the denominator
+pass: mandatory REVIEW adds no threshold candidate
+pass: candidates are the distinct finite confidences
+pass: zero auto-routes leave E undefined, not 0
+pass: a system with zero auto-routes is ineligible
+pass: the threshold is the lowest candidate with E <= 0.10: (0.5, 0.0)
+pass: K's only candidate is 1
+pass: Wilson interval for 0/10, clamped to [0, 1]: (0.0, 0.2775401687666165)
+pass: K: exactly one match routes; none or several give mandatory REVIEW: {1: ('bug', 1.0), 2: ('question', 1.0), 3: None, 4: ('documentation', 1.0), 5: None}
+pass: an invalid embedding gives Z mandatory REVIEW
+pass: an invalid embedding gives C mandatory REVIEW
+pass: N is unaffected by an invalid embedding
+pass: K is unaffected by an invalid embedding
+pass: the invalid-embedding ticket stays in every denominator
+pass: it adds no Z or C threshold candidate
+pass: C's centroids are trained without it
+pass: a non-finite derived Z score where an embedding is valid stops (5a)
+all fixtures and boundary controls behave
+control: a zero pooled row is zero_norm, a non-finite row nonfinite_embedding; other rows unaffected
+control: a short pair scores
+control: an over-512-token pair is the named refusal (None)
+control: one over-limit pair marks the whole ticket
+control: another error is returned, not absorbed: NliModel::score: 2 premises and 1 hypotheses; one pair per index
+all NLI handler controls behave
+t3-controls: a zero pooled row is zero_norm, a non-finite row nonfinite_embedding; other rows unaffected
+session: OK (prompt True, marker True, returned Ok, errors 0)
+t3: 252 tickets, 458 passages
+BIT-EQUAL (each producer validated first; refusals bound to the pinned tokenizer): 252 tickets, 458 passages, 252 embeddings x 384 and cosines x 5, 2290 NLI pairs x 3 logits, in f32 bits; NLI statuses {'nli_refused': 0, 'no_passages': 0, 'ok': 252}; embedding statuses {'no_passages': 0, 'nonfinite_embedding': 0, 'ok': 252, 'zero_norm': 0}
+versions: transformers 5.18.0, torch 2.14.1+cpu, tokenizers 0.23.2
+MiniLM: 0 claimed-invalid embeddings confirmed degenerate in HF; 252 ticket embeddings x 384 and 252 x 5 cosines from 458 validated passages; max |rnx - HF| embedding 2.52e-07, cosine 4.43e-07 (bound 0.0001); 4.9 s
+NLI model-level: 2290 pairs, pinned ids, one at a time; max |rnx - HF| logit 1.39e-05 (bound 0.0001); 129.5 s; native tokenizer differs from the pinned ids on 15 pairs (reported, not gated)
+semantic check: PASS
+hf-t3: completed, PASS (exit 0); counts {'tickets': 252, 'embeddings': 252, 'cosines': 1260, 'nli_pairs': 2290} verified
+D2 EXIT 0

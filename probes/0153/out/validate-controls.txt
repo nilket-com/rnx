@@ -1,0 +1,19 @@
+pass: unmodified: BIT-EQUAL (each producer validated first): 252 tickets, 458 passages, 252 embeddings x 384 and cosines x 5, 2290 NLI pairs x 3 logits, in f32 bits; statuses {'nli_refused': 0, 'no_passages': 0, 'ok': 252}
+refused: both, a ticket dropped from the passages: FAIL: TMP/a/t3-passages.json: the tickets are not exactly the split, in order
+refused: both, two tickets reordered: FAIL: TMP/a/t3-passages.json: the tickets are not exactly the split, in order
+refused: both, a passage not in its ticket's text: FAIL: TMP/a: ticket 2 passage 0 does not occur in its text after the previous one
+refused: both, two passages of a ticket reordered: FAIL: TMP/a: ticket 6 passage 1 does not occur in its text after the previous one
+refused: both, a status changed to nli_refused: FAIL: TMP/a/t3-nli.tsv: rows are not exactly each ok ticket's passages x labels, in order
+refused: both, an unknown status: FAIL: TMP/a/t3-status.tsv: not one valid status per ticket in order
+refused: both, an embedding row missing: FAIL: TMP/a: embedding or cosine rows are not exactly the tickets with passages, in order
+refused: both, an embedding scaled (norm off 1): FAIL: TMP/a: ticket 2's embedding has norm 1.0099997753538528
+refused: both, a non-finite embedding value: FAIL: embedding 2: nan is not finite
+refused: both, a cosine column dropped: FAIL: TMP/a/t3-cosines.tsv: header
+refused: both, an NLI row missing: FAIL: TMP/a/t3-nli.tsv: rows are not exactly each ok ticket's passages x labels, in order
+refused: both, two NLI rows reordered: FAIL: TMP/a/t3-nli.tsv: rows are not exactly each ok ticket's passages x labels, in order
+refused: both, an NLI label renamed: FAIL: TMP/a/t3-nli.tsv: rows are not exactly each ok ticket's passages x labels, in order
+refused: both, a non-finite logit: FAIL: logit 2: inf is not finite
+refused: one side, an embedding value's lowest bit: FAIL: the producers' embeddings differ
+refused: one side, a cosine's lowest bit: FAIL: the producers' cosines differ
+refused: one side, a logit's lowest bit: FAIL: the producers' NLI logits differ
+all validation controls behave

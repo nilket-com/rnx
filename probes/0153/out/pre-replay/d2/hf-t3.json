@@ -1,0 +1,13 @@
+{
+ "check": "hf-t3",
+ "completed": true,
+ "result": "PASS",
+ "tickets": 252,
+ "embeddings": 252,
+ "cosines": 1260,
+ "nli_pairs": 2290,
+ "max_diff_embedding": 2.521680199929488e-07,
+ "max_diff_cosine": 4.432311933033617e-07,
+ "max_diff_logit": 1.3947486877441406e-05,
+ "native_tokenizer_differences": 15
+}

@@ -1,0 +1,35 @@
+pass: centroid bug equals numpy's f64 sum / norm rounded to f32, bit for bit
+pass: centroid feature equals numpy's f64 sum / norm rounded to f32, bit for bit
+pass: centroid question equals numpy's f64 sum / norm rounded to f32, bit for bit
+pass: a queue with no training ticket is absent
+pass: a queue whose sum has norm 0 is absent
+pass: fewer than two present queues gives mandatory REVIEW
+pass: a ticket without an embedding gives mandatory REVIEW
+pass: C's prediction and margin match numpy's f64 dot products (to 1e-12): (('feature', 0.10814584853810277), 'feature')
+pass: an exact tie goes to the earlier queue
+pass: folds are the zero-based (hash, number) rank mod 5
+pass: cross-fit scores each ticket with centroids from the other four folds only
+pass: p(entail) is the stable 3-way softmax in f64
+pass: p(entail) is stable for large logits
+pass: confidence == t auto-routes: [1, 2, 5]
+pass: the next lower representable confidence does not
+pass: tie blocks move together (both 0.5 tickets in or out)
+pass: mandatory REVIEW never auto-routes, even at t = 0
+pass: mandatory REVIEW counts in the denominator
+pass: mandatory REVIEW adds no threshold candidate
+pass: candidates are the distinct finite confidences
+pass: zero auto-routes leave E undefined, not 0
+pass: a system with zero auto-routes is ineligible
+pass: the threshold is the lowest candidate with E <= 0.10: (0.5, 0.0)
+pass: K's only candidate is 1
+pass: Wilson interval for 0/10, clamped to [0, 1]: (0.0, 0.2775401687666165)
+pass: K: exactly one match routes; none or several give mandatory REVIEW: {1: ('bug', 1.0), 2: ('question', 1.0), 3: None, 4: ('documentation', 1.0), 5: None}
+pass: an invalid embedding gives Z mandatory REVIEW
+pass: an invalid embedding gives C mandatory REVIEW
+pass: N is unaffected by an invalid embedding
+pass: K is unaffected by an invalid embedding
+pass: the invalid-embedding ticket stays in every denominator
+pass: it adds no Z or C threshold candidate
+pass: C's centroids are trained without it
+pass: a non-finite derived Z score where an embedding is valid stops (5a)
+all fixtures and boundary controls behave

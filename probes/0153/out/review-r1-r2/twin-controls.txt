@@ -1,0 +1,1 @@
+t3-controls: a zero pooled row is zero_norm, a non-finite row nonfinite_embedding; other rows unaffected
