@@ -8,6 +8,7 @@
 //!   `band\ti\tj\tscore` lines (D2 tickets, then D1 documents).
 //! - `twin0133 u3 D2 MODEL`: U3's edges and connected components.
 //! - `twin0133 e4 D2 MODEL`, `twin0133 e5`: record 0137's examples.
+//! - `twin0133 u4 D2 MODEL LABELS`: record 0139's triage table.
 //! - `twin0133 passages D1`, `twin0133 embed PASSAGES MODEL BATCHES OUT`:
 //!   record 0135's passages, and their embedding on a given partition.
 use candle_core::{DType, Device, Tensor};
@@ -611,6 +612,107 @@ fn main() {
 						println!("#{}\t#{}\t{}", numbers[x], numbers[y], sims[x][y]);
 					}
 				}
+			}
+		}
+		// record 0139, U4: whole tickets chunked and pooled (as E4), scored
+		// against the frozen label descriptions; the best (ties to the earlier
+		// label), the second, the f64 margin, review below 0.02; the table as
+		// the script writes it
+		"u4" => {
+			let t = twin_load(&a[3]);
+			let v: serde_json::Value =
+				serde_json::from_slice(&std::fs::read(&a[2]).unwrap()).unwrap();
+			let mut names = Vec::new();
+			let mut descriptions = Vec::new();
+			for line in std::fs::read_to_string(&a[4]).unwrap().lines().skip(1) {
+				if line.is_empty() {
+					continue;
+				}
+				let f: Vec<&str> = line.split('\t').collect();
+				names.push(f[0].to_owned());
+				descriptions.push(f[1].to_owned());
+			}
+			let k = names.len();
+			let mut numbers = Vec::new();
+			let mut passages = Vec::new();
+			let mut owner: Vec<u32> = Vec::new();
+			for (i, issue) in v.as_array().unwrap().iter().enumerate() {
+				numbers.push(issue["number"].as_i64().unwrap());
+				let text = format!(
+					"{}\n{}",
+					issue["title"].as_str().unwrap(),
+					issue["body"].as_str().unwrap()
+				);
+				for (s, e) in token_chunks(&t.tok, &text, 256, 0).unwrap() {
+					passages.push(text[s..e].to_owned());
+					owner.push(i as u32);
+				}
+			}
+			let n = numbers.len();
+			let cpu = &Device::Cpu;
+			let refs: Vec<&str> = passages.iter().map(String::as_str).collect();
+			let flat = twin_embed_sized(&t, &refs, &s1_sizes(&t, &refs, 32));
+			let rows = refs.len();
+			let emb = Tensor::from_vec(flat, (rows, 384), cpu).unwrap();
+			let seg = Tensor::from_vec(owner, rows, cpu).unwrap();
+			let sums = Tensor::zeros((n, 384), DType::F32, cpu)
+				.unwrap()
+				.index_add(&seg, &emb, 0)
+				.unwrap();
+			let counts = Tensor::zeros(n, DType::F32, cpu)
+				.unwrap()
+				.index_add(&seg, &Tensor::ones(rows, DType::F32, cpu).unwrap(), 0)
+				.unwrap();
+			let pooled = sums.broadcast_div(&counts.unsqueeze(1).unwrap()).unwrap();
+			let norms = pooled
+				.sqr()
+				.unwrap()
+				.sum_keepdim(1)
+				.unwrap()
+				.sqrt()
+				.unwrap();
+			let tickets = pooled.broadcast_div(&norms).unwrap();
+			let drefs: Vec<&str> = descriptions.iter().map(String::as_str).collect();
+			let lflat = twin_embed_sized(&t, &drefs, &s1_sizes(&t, &drefs, 32));
+			let labels = Tensor::from_vec(lflat, (k, 384), cpu).unwrap();
+			let scores = tickets
+				.matmul(&labels.t().unwrap())
+				.unwrap()
+				.to_vec2::<f32>()
+				.unwrap();
+			let mut header = "ticket\ttriage\tbest\tsecond\tmargin".to_owned();
+			for name in &names {
+				header.push_str(&format!("\t{name}"));
+			}
+			println!("{header}");
+			for (i, row) in scores.iter().enumerate() {
+				let row: Vec<f64> = row.iter().map(|&x| x as f64).collect();
+				let mut best = 0;
+				for j in 1..k {
+					if row[j] > row[best] {
+						best = j;
+					}
+				}
+				let mut next = if best == 0 { 1 } else { 0 };
+				for j in 0..k {
+					if j != best && row[j] > row[next] {
+						next = j;
+					}
+				}
+				let m = row[best] - row[next];
+				let triage = if m < 0.02 {
+					"review"
+				} else {
+					names[best].as_str()
+				};
+				let mut line = format!(
+					"{}\t{triage}\t{}\t{}\t{m}",
+					numbers[i], names[best], names[next]
+				);
+				for x in &row {
+					line.push_str(&format!("\t{x}"));
+				}
+				println!("{line}");
 			}
 		}
 		// record 0137, E5: the tour's results, by the same Candle calls
