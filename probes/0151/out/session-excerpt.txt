@@ -1,0 +1,4 @@
+321 docs, 3461 passages, 30 queries; retrieval and pool 67930 ms; 3593 pairs scored one at a time in 574181 ms
+WORKFLOW OK u8
+[7] Ok(())
+### run returned to a prompt: True after 642.3 s

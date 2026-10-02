@@ -1,0 +1,7 @@
+{
+ "check": "hf-pool",
+ "completed": true,
+ "result": "PASS",
+ "pairs": 3593,
+ "max_diff": 1.239776611328125e-05
+}

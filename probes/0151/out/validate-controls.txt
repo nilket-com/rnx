@@ -1,0 +1,14 @@
+pass: unmodified: BIT-EQUAL (each producer validated first, its pool recomputed from its retained evidence over D1): 3461 passages and their 30 query scores, 3593 pool pairs (40 candidates x up to 3 passages) with cross-encoder scores in f32 bits
+refused: both, a missing pool row: FAIL: /tmp/tmpj2xov0cx/a/u8-pool.tsv: 3592 rows, the recomputed pool has 3593
+refused: both, an extra pool row: FAIL: /tmp/tmpapltm_th/a/u8-pool.tsv: 3594 rows, the recomputed pool has 3593
+refused: both, a duplicate pool row: FAIL: /tmp/tmprdjdcopw/a/u8-pool.tsv row 3: ('T01', 1, '0004_vars_and_help.md', 2, 47) is not the recomputed ('T01', 1, '0004_vars_and_help.md', 3, 49) (or its retrieval score differs)
+refused: both, two pool rows reordered: FAIL: /tmp/tmpqb62rxfo/a/u8-pool.tsv row 1: ('T01', 1, '0004_vars_and_help.md', 2, 47) is not the recomputed ('T01', 1, '0004_vars_and_help.md', 1, 48) (or its retrieval score differs)
+refused: both, a forged candidate rank: FAIL: /tmp/tmpt9pra4jk/a/u8-pool.tsv row 1: ('T01', 2, '0004_vars_and_help.md', 1, 48) is not the recomputed ('T01', 1, '0004_vars_and_help.md', 1, 48) (or its retrieval score differs)
+refused: both, another passage's pid: FAIL: /tmp/tmp_6a0n3en/a/u8-pool.tsv row 1: ('T01', 1, '0004_vars_and_help.md', 1, 49) is not the recomputed ('T01', 1, '0004_vars_and_help.md', 1, 48) (or its retrieval score differs)
+refused: both, a wrong document path: FAIL: /tmp/tmpfy2dpcln/a/u8-pool.tsv row 1: ('T01', 1, '9999_nonexistent.md', 1, 48) is not the recomputed ('T01', 1, '0004_vars_and_help.md', 1, 48) (or its retrieval score differs)
+refused: both, a retrieval score one f32 step away: FAIL: /tmp/tmps_xqcxso/a/u8-pool.tsv row 1: ('T01', 1, '0004_vars_and_help.md', 1, 48) is not the recomputed ('T01', 1, '0004_vars_and_help.md', 1, 48) (or its retrieval score differs)
+refused: both, a non-finite cross-encoder score: FAIL: ce: nan is not finite
+refused: both, a passage text not in its document: FAIL: /tmp/tmptydtl84l/a: passage 5 does not occur in 0001_the_first_release.md after the previous one
+refused: both, a retained retrieval score changed (the pool no longer recomputes): FAIL: /tmp/tmp526qwmd_/a/u8-pool.tsv row 1: ('T01', 1, '0004_vars_and_help.md', 1, 48) is not the recomputed ('T01', 1, '0004_vars_and_help.md', 1, 48) (or its retrieval score differs)
+refused: one side, a cross-encoder score's lowest bit: FAIL: the producers' cross-encoder scores differ
+all validation controls behave

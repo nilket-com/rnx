@@ -1,0 +1,6 @@
+ordering control: 8,3,5,4,7,2,1,6,0
+ordered 30 queries over 3461 passages
+probes/0151/out/u8-script: the corrected order equals the numeric stable sort for all 30 queries over 3461 passages, and the retained pool (3593 pairs) is exactly the pool it builds; the old text-first order differed in 30 of 30 full query orders (below the pools, which the text-first run produced as above)
+ordering control: 8,3,5,4,7,2,1,6,0
+ordered 30 queries over 3461 passages
+probes/0151/out/u8-twin: the corrected order equals the numeric stable sort for all 30 queries over 3461 passages, and the retained pool (3593 pairs) is exactly the pool it builds; the old text-first order differed in 30 of 30 full query orders (below the pools, which the text-first run produced as above)
