@@ -868,7 +868,12 @@ fn main() {
 			let w = rows[0].as_array().unwrap().len();
 			let flat: Vec<f32> = rows
 				.iter()
-				.flat_map(|r| r.as_array().unwrap().iter().map(|x| x.as_f64().unwrap() as f32))
+				.flat_map(|r| {
+					r.as_array()
+						.unwrap()
+						.iter()
+						.map(|x| x.as_f64().unwrap() as f32)
+				})
 				.collect();
 			let x = Tensor::from_vec(flat, (rows.len(), w), &Device::Cpu).unwrap();
 			match e6_unit(&x).and_then(|u| e6_kmeans(&u, k)) {
@@ -887,12 +892,20 @@ fn main() {
 					cols[ch].push(f.parse::<i64>().unwrap() as f64);
 				}
 			}
-			print!("{}", e7(&cols).unwrap_or_else(|e| format!("refused\t{e}\n")));
+			print!(
+				"{}",
+				e7(&cols).unwrap_or_else(|e| format!("refused\t{e}\n"))
+			);
 		}
 		"e7-synth" => {
 			let spec: serde_json::Value =
 				serde_json::from_slice(&std::fs::read(&a[2]).unwrap()).unwrap();
-			let s: Vec<f64> = spec["series"].as_array().unwrap().iter().map(|v| v.as_f64().unwrap()).collect();
+			let s: Vec<f64> = spec["series"]
+				.as_array()
+				.unwrap()
+				.iter()
+				.map(|v| v.as_f64().unwrap())
+				.collect();
 			print!("{}", e7(&[s]).unwrap_or_else(|e| format!("refused\t{e}\n")));
 		}
 		"u5" => u5(&a[2], &a[3], &a[4], &a[5], &a[6]),
@@ -900,6 +913,8 @@ fn main() {
 		"u6" => u6(&a[2], &a[3], &a[4], &a[5], &a[6]),
 		// record 0149: greedy generation over the tickets
 		"u7" => u7(&a[2], &a[3], &a[4], &a[5], &a[6], &a[7]),
+		// record 0151: the development pool
+		"u8" => u8(&a[2], &a[3], &a[4], &a[5], &a[6]),
 		// record 0135: D1's passages, as U1 chunks them, for timing
 		"passages" => {
 			let texts: Vec<String> = load(&a[2]).1.into_iter().map(|p| p.1).collect();
@@ -915,9 +930,15 @@ fn main() {
 fn e6_segment_mean(v: &Tensor, seg: &Tensor, n: usize) -> Tensor {
 	let cpu = &Device::Cpu;
 	let (rows, w) = v.dims2().unwrap();
-	let sums = Tensor::zeros((n, w), DType::F32, cpu).unwrap().index_add(seg, v, 0).unwrap();
+	let sums = Tensor::zeros((n, w), DType::F32, cpu)
+		.unwrap()
+		.index_add(seg, v, 0)
+		.unwrap();
 	let ones = Tensor::ones(rows, DType::F32, cpu).unwrap();
-	let counts = Tensor::zeros(n, DType::F32, cpu).unwrap().index_add(seg, &ones, 0).unwrap();
+	let counts = Tensor::zeros(n, DType::F32, cpu)
+		.unwrap()
+		.index_add(seg, &ones, 0)
+		.unwrap();
 	sums.broadcast_div(&counts.unsqueeze(1).unwrap()).unwrap()
 }
 
@@ -947,7 +968,13 @@ fn e6_kmeans(u: &Tensor, k: usize) -> Result<E6, String> {
 	let n = u.dims()[0];
 	let ids = |v: &[u32]| Tensor::from_vec(v.to_vec(), v.len(), cpu).unwrap();
 	let g = e6_unit(&u.mean_keepdim(0).unwrap())?;
-	let first = u.matmul(&g.t().unwrap()).unwrap().argmax(0).unwrap().to_vec1::<u32>().unwrap()[0];
+	let first = u
+		.matmul(&g.t().unwrap())
+		.unwrap()
+		.argmax(0)
+		.unwrap()
+		.to_vec1::<u32>()
+		.unwrap()[0];
 	let mut chosen = vec![first];
 	while chosen.len() < k {
 		let c = u.index_select(&ids(&chosen), 0).unwrap();
@@ -999,14 +1026,26 @@ fn e6_kmeans(u: &Tensor, k: usize) -> Result<E6, String> {
 		centroids = e6_unit(&e6_segment_mean(u, &ids(&a), k))?;
 		prev = Some(a.clone());
 	}
-	Ok(E6 { chosen, moves, history, it, converged, a, centroids })
+	Ok(E6 {
+		chosen,
+		moves,
+		history,
+		it,
+		converged,
+		a,
+		centroids,
+	})
 }
 
 /// The trace, formatted as Rune formats it (f64 as Rust's `{:?}`).
 fn e6_trace(r: &E6) -> String {
 	let mut out = format!(
 		"init\t{}\n",
-		r.chosen.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(",")
+		r.chosen
+			.iter()
+			.map(|c| c.to_string())
+			.collect::<Vec<_>>()
+			.join(",")
 	);
 	for (it, c, d) in &r.moves {
 		out += &format!("move\t{it}\t{c}\t{d}\n");
@@ -1053,21 +1092,39 @@ fn e7(cols: &[Vec<f64>]) -> Result<String, String> {
 	let x = views.log().unwrap();
 	let k = Tensor::full(1.0f64 / 29.0, (c, 1, 29), cpu).unwrap();
 	let sums = x.conv1d(&k, 14, 1, 1, c).unwrap();
-	let norm = Tensor::ones((1, c, days), DType::F64, cpu).unwrap().conv1d(&k, 14, 1, 1, c).unwrap();
+	let norm = Tensor::ones((1, c, days), DType::F64, cpu)
+		.unwrap()
+		.conv1d(&k, 14, 1, 1, c)
+		.unwrap();
 	let trend = sums.div(&norm).unwrap();
 	let r = x.sub(&trend).unwrap();
 	let med = e7_median(&r, days);
 	let dev = r.broadcast_sub(&med).unwrap().abs().unwrap();
 	let mad = e7_median(&dev, days).affine(1.4826, 0.0).unwrap();
-	if mad.flatten_all().unwrap().to_vec1::<f64>().unwrap().iter().any(|&v| !(v > 0.0)) {
+	if mad
+		.flatten_all()
+		.unwrap()
+		.to_vec1::<f64>()
+		.unwrap()
+		.iter()
+		.any(|&v| !(v > 0.0))
+	{
 		return Err("zero MAD".into());
 	}
 	let z = r.broadcast_sub(&med).unwrap().broadcast_div(&mad).unwrap();
 	let weeks = days / 7;
 	let whole = weeks * 7;
 	let xw = x.narrow(2, 0, whole).unwrap();
-	let wmean = xw.reshape((1, c, 1, whole)).unwrap().avg_pool2d_with_stride((1, 7), (1, 7)).unwrap();
-	let up = wmean.reshape((1, c, weeks)).unwrap().upsample_nearest1d(whole).unwrap();
+	let wmean = xw
+		.reshape((1, c, 1, whole))
+		.unwrap()
+		.avg_pool2d_with_stride((1, 7), (1, 7))
+		.unwrap();
+	let up = wmean
+		.reshape((1, c, weeks))
+		.unwrap()
+		.upsample_nearest1d(whole)
+		.unwrap();
 	let profile = xw
 		.sub(&up)
 		.unwrap()
@@ -1098,7 +1155,12 @@ fn e7(cols: &[Vec<f64>]) -> Result<String, String> {
 	let rawv = raw.reshape((c, weeks)).unwrap().to_vec2::<f64>().unwrap();
 	let trend = trend.reshape((c, days)).unwrap().to_vec2::<f64>().unwrap();
 	let z = z.reshape((c, days)).unwrap().to_vec2::<f64>().unwrap();
-	let join = |xs: &[f64]| xs.iter().map(|x| format!("{x:?}")).collect::<Vec<_>>().join(",");
+	let join = |xs: &[f64]| {
+		xs.iter()
+			.map(|x| format!("{x:?}"))
+			.collect::<Vec<_>>()
+			.join(",")
+	};
 	let mut out = String::new();
 	for ch in 0..c {
 		out += &format!("trend\t{ch}\t{}\n", join(&trend[ch]));
@@ -1154,7 +1216,12 @@ fn ce_load(dir: &str) -> Ce {
 	tok.with_truncation(None).unwrap();
 	tok.with_padding(None);
 	let vb = unsafe {
-		VarBuilder::from_mmaped_safetensors(&[format!("{dir}/model.safetensors")], DType::F32, &Device::Cpu).unwrap()
+		VarBuilder::from_mmaped_safetensors(
+			&[format!("{dir}/model.safetensors")],
+			DType::F32,
+			&Device::Cpu,
+		)
+		.unwrap()
 	};
 	let h = config.hidden_size;
 	let bert = BertModel::load(vb.clone(), &config).unwrap();
@@ -1185,8 +1252,11 @@ fn ce_partition(ce: &Ce, lens: &[usize]) -> Vec<usize> {
 		let mut b = 32.min(lens.len() - at);
 		loop {
 			let seq = *lens[at..at + b].iter().max().unwrap();
-			let est = 7 * b * seq * ce.hidden + 2 * b * seq * ce.ffn + 6 * b * ce.heads * seq * seq + (1 << 20)
-				+ 3 * b * ce.hidden + b;
+			let est = 7 * b * seq * ce.hidden
+				+ 2 * b * seq * ce.ffn
+				+ 6 * b * ce.heads * seq * seq
+				+ (1 << 20) + 3 * b * ce.hidden
+				+ b;
 			let fits = b * seq * ce.hidden <= 1 << 22
 				&& b * seq * ce.ffn <= 1 << 24
 				&& b * ce.heads * seq * seq <= 1 << 25;
@@ -1221,8 +1291,18 @@ fn ce_score(ce: &Ce, pairs: &[(String, String)]) -> (Vec<f32>, Vec<usize>) {
 		let (mut ids, mut types, mut mask) = (Vec::new(), Vec::new(), Vec::new());
 		for e in &enc[at..at + b] {
 			let n = e.get_ids().len();
-			ids.extend(e.get_ids().iter().copied().chain(std::iter::repeat_n(ce.pad, seq - n)));
-			types.extend(e.get_type_ids().iter().copied().chain(std::iter::repeat_n(0, seq - n)));
+			ids.extend(
+				e.get_ids()
+					.iter()
+					.copied()
+					.chain(std::iter::repeat_n(ce.pad, seq - n)),
+			);
+			types.extend(
+				e.get_type_ids()
+					.iter()
+					.copied()
+					.chain(std::iter::repeat_n(0, seq - n)),
+			);
 			mask.extend(std::iter::repeat_n(1u32, n).chain(std::iter::repeat_n(0, seq - n)));
 		}
 		let ids = Tensor::from_vec(ids, (b, seq), cpu).unwrap();
@@ -1230,7 +1310,10 @@ fn ce_score(ce: &Ce, pairs: &[(String, String)]) -> (Vec<f32>, Vec<usize>) {
 		let mask = Tensor::from_vec(mask, (b, seq), cpu).unwrap();
 		let hidden = ce.bert.forward(&ids, &types, Some(&mask)).unwrap();
 		let cls = hidden.narrow(1, 0, 1).unwrap().squeeze(1).unwrap();
-		let pooled = candle_nn::Module::forward(&ce.pooler, &cls).unwrap().tanh().unwrap();
+		let pooled = candle_nn::Module::forward(&ce.pooler, &cls)
+			.unwrap()
+			.tanh()
+			.unwrap();
 		let logits = candle_nn::Module::forward(&ce.classifier, &pooled).unwrap();
 		out.extend(logits.flatten_all().unwrap().to_vec1::<f32>().unwrap());
 		at += b;
@@ -1246,7 +1329,13 @@ fn u5_measures(records: &[&str], support: &[&str]) -> (bool, bool, f64, f64, Vec
 	let first = ranks.iter().copied().filter(|&k| k > 0).min().unwrap_or(0);
 	let within = ranks.iter().filter(|&&k| k > 0 && k <= 5).count();
 	let mrr = if first == 0 { 0.0 } else { 1.0 / first as f64 };
-	(first == 1, first > 0 && first <= 5, within as f64 / support.len() as f64, mrr, ranks)
+	(
+		first == 1,
+		first > 0 && first <= 5,
+		within as f64 / support.len() as f64,
+		mrr,
+		ranks,
+	)
 }
 
 fn u5(dir: &str, minilm: &str, cross: &str, rubric: &str, out_dir: &str) {
@@ -1327,24 +1416,38 @@ fn u5(dir: &str, minilm: &str, cross: &str, rubric: &str, out_dir: &str) {
 		let sc = &scores[at..at + n];
 		at += n;
 		for (j, &(d, p, r)) in c.iter().enumerate() {
-			out += &format!("cand\t{}\t{}\t{}\t{p}\t{r}\t{:?}\n", ids[k], j + 1, docs[d].path, sc[j] as f64);
+			out += &format!(
+				"cand\t{}\t{}\t{}\t{p}\t{r}\t{:?}\n",
+				ids[k],
+				j + 1,
+				docs[d].path,
+				sc[j] as f64
+			);
 		}
 		let mut order: Vec<usize> = (0..n).collect();
 		order.sort_by(|&a, &b| sc[b].total_cmp(&sc[a]));
 		out += &format!(
 			"rerank\t{}\t{}\n",
 			ids[k],
-			order.iter().map(|o| (o + 1).to_string()).collect::<Vec<_>>().join(",")
+			order
+				.iter()
+				.map(|o| (o + 1).to_string())
+				.collect::<Vec<_>>()
+				.join(",")
 		);
 		let recs: Vec<&str> = c.iter().map(|&(d, _, _)| &docs[d].path[0..4]).collect();
 		let rrecs: Vec<&str> = order.iter().map(|&o| recs[o]).collect();
 		let sup: Vec<&str> = support[k].iter().map(String::as_str).collect();
 		let (b1, b5, br, bm, _) = u5_measures(&recs, &sup);
 		let (a1, a5, ar, am, _) = u5_measures(&rrecs, &sup);
-		metrics += &format!("metrics\t{}\t{b1}\t{b5}\t{br:?}\t{bm:?}\t{a1}\t{a5}\t{ar:?}\t{am:?}\n", ids[k]);
+		metrics += &format!(
+			"metrics\t{}\t{b1}\t{b5}\t{br:?}\t{bm:?}\t{a1}\t{a5}\t{ar:?}\t{am:?}\n",
+			ids[k]
+		);
 	}
 	std::fs::write(format!("{out_dir}/u5-trace.tsv"), format!("{out}{metrics}")).unwrap();
-	let (pq, pp): (Vec<&str>, Vec<&str>) = pairs.iter().map(|(q, p)| (q.as_str(), p.as_str())).unzip();
+	let (pq, pp): (Vec<&str>, Vec<&str>) =
+		pairs.iter().map(|(q, p)| (q.as_str(), p.as_str())).unzip();
 	let json = serde_json::json!({ "queries": pq, "passages": pp });
 	std::fs::write(format!("{out_dir}/u5-pairs.json"), json.to_string()).unwrap();
 }
@@ -1359,15 +1462,21 @@ struct Nli {
 }
 
 fn nli_load(dir: &str) -> Nli {
-	use candle_transformers::models::debertav2::{Config as DConfig, DebertaV2SeqClassificationModel};
+	use candle_transformers::models::debertav2::{
+		Config as DConfig, DebertaV2SeqClassificationModel,
+	};
 	let config: DConfig =
 		serde_json::from_slice(&std::fs::read(format!("{dir}/config.json")).unwrap()).unwrap();
 	let mut tok = Tokenizer::from_file(format!("{dir}/tokenizer.json")).unwrap();
 	tok.with_truncation(None).unwrap();
 	tok.with_padding(None);
 	let vb = unsafe {
-		VarBuilder::from_mmaped_safetensors(&[format!("{dir}/model.safetensors")], DType::F32, &Device::Cpu)
-			.unwrap()
+		VarBuilder::from_mmaped_safetensors(
+			&[format!("{dir}/model.safetensors")],
+			DType::F32,
+			&Device::Cpu,
+		)
+		.unwrap()
 	};
 	let model = DebertaV2SeqClassificationModel::load(vb.pp("deberta"), &config, None).unwrap();
 	Nli { model, tok }
@@ -1377,9 +1486,22 @@ fn nli_load(dir: &str) -> Nli {
 /// values, for the production geometry: H 384, I 1536, 6 heads, P 512.
 fn nli_estimate(b: usize, s: usize) -> usize {
 	let (h, i, heads, p) = (384, 1536, 6, 512);
-	let bytes = 8 * b * s + 168 * s * s + 8 * b * s * s + 8 * p * h + 8 * b * s * h + 12 * b * s * h + 8 * b * s
-		+ 60 * b * s * h + 8 * b * s * i + 66 * b * heads * s * s + 8 * b * heads * s * p + 16 * p * h
-		+ 8 * b * p * h + 32 * s * s + 12 * b * h + 12 * b;
+	let bytes = 8 * b * s
+		+ 168 * s * s
+		+ 8 * b * s * s
+		+ 8 * p * h
+		+ 8 * b * s * h
+		+ 12 * b * s * h
+		+ 8 * b * s
+		+ 60 * b * s * h
+		+ 8 * b * s * i
+		+ 66 * b * heads * s * s
+		+ 8 * b * heads * s * p
+		+ 16 * p * h
+		+ 8 * b * p * h
+		+ 32 * s * s
+		+ 12 * b * h
+		+ 12 * b;
 	bytes.div_ceil(4)
 }
 
@@ -1429,7 +1551,12 @@ fn nli_score(m: &Nli, pairs: &[(String, String)]) -> (Vec<f32>, Vec<usize>) {
 		let (mut ids, mut mask) = (Vec::new(), Vec::new());
 		for e in &enc[at..at + b] {
 			let n = e.get_ids().len();
-			ids.extend(e.get_ids().iter().copied().chain(std::iter::repeat_n(0u32, seq - n)));
+			ids.extend(
+				e.get_ids()
+					.iter()
+					.copied()
+					.chain(std::iter::repeat_n(0u32, seq - n)),
+			);
 			mask.extend(std::iter::repeat_n(1u32, n).chain(std::iter::repeat_n(0, seq - n)));
 		}
 		let ids = Tensor::from_vec(ids, (b, seq), cpu).unwrap();
@@ -1455,9 +1582,16 @@ fn u6(d2: &str, ranges: &str, labels: &str, model: &str, out_dir: &str) {
 	}
 	let k = names.len();
 	let mut texts = std::collections::HashMap::new();
-	let numbers: Vec<i64> = issues.iter().map(|i| i["number"].as_i64().unwrap()).collect();
+	let numbers: Vec<i64> = issues
+		.iter()
+		.map(|i| i["number"].as_i64().unwrap())
+		.collect();
 	for i in issues {
-		let text = format!("{}\n{}", i["title"].as_str().unwrap(), i["body"].as_str().unwrap_or(""));
+		let text = format!(
+			"{}\n{}",
+			i["title"].as_str().unwrap(),
+			i["body"].as_str().unwrap_or("")
+		);
 		texts.insert(format!("d2:#{}", i["number"]), text);
 	}
 	let mut passages: std::collections::HashMap<String, Vec<String>> = Default::default();
@@ -1467,7 +1601,10 @@ fn u6(d2: &str, ranges: &str, labels: &str, model: &str, out_dir: &str) {
 			continue;
 		}
 		let (s, e): (usize, usize) = (f[2].parse().unwrap(), f[3].parse().unwrap());
-		passages.entry(f[0].to_owned()).or_default().push(texts[f[0]][s..e].to_owned());
+		passages
+			.entry(f[0].to_owned())
+			.or_default()
+			.push(texts[f[0]][s..e].to_owned());
 	}
 	let mut pairs = Vec::new();
 	let mut ids = Vec::new();
@@ -1502,7 +1639,10 @@ fn u6(d2: &str, ranges: &str, labels: &str, model: &str, out_dir: &str) {
 		);
 	}
 	std::fs::write(format!("{out_dir}/u6-pairs.tsv"), out).unwrap();
-	let mut table = format!("ticket\ttriage\tbest\tsecond\tbest_score\t{}\n", names.join("\t"));
+	let mut table = format!(
+		"ticket\ttriage\tbest\tsecond\tbest_score\t{}\n",
+		names.join("\t")
+	);
 	for &num in &numbers {
 		let mut s = vec![f64::NEG_INFINITY; k];
 		for (r, &(n2, _, j)) in ids.iter().enumerate() {
@@ -1522,8 +1662,15 @@ fn u6(d2: &str, ranges: &str, labels: &str, model: &str, out_dir: &str) {
 				next = j;
 			}
 		}
-		let triage = if s[best] < 0.5 { "review" } else { names[best].as_str() };
-		table += &format!("{num}\t{triage}\t{}\t{}\t{:?}", names[best], names[next], s[best]);
+		let triage = if s[best] < 0.5 {
+			"review"
+		} else {
+			names[best].as_str()
+		};
+		table += &format!(
+			"{num}\t{triage}\t{}\t{}\t{:?}",
+			names[best], names[next], s[best]
+		);
 		for v in &s {
 			table += &format!("\t{v:?}");
 		}
@@ -1544,24 +1691,48 @@ struct Gen {
 
 fn gen_load(dir: &str) -> Gen {
 	use candle_transformers::models::qwen2::{Config as QConfig, ModelForCausalLM};
-	let config: QConfig = serde_json::from_slice(&std::fs::read(format!("{dir}/config.json")).unwrap()).unwrap();
+	let config: QConfig =
+		serde_json::from_slice(&std::fs::read(format!("{dir}/config.json")).unwrap()).unwrap();
 	let mut tok = Tokenizer::from_file(format!("{dir}/tokenizer.json")).unwrap();
 	tok.with_truncation(None).unwrap();
 	tok.with_padding(None);
 	let vb = unsafe {
-		VarBuilder::from_mmaped_safetensors(&[format!("{dir}/model.safetensors")], DType::F32, &Device::Cpu).unwrap()
+		VarBuilder::from_mmaped_safetensors(
+			&[format!("{dir}/model.safetensors")],
+			DType::F32,
+			&Device::Cpu,
+		)
+		.unwrap()
 	};
-	Gen { model: ModelForCausalLM::new(&config, vb).unwrap(), tok }
+	Gen {
+		model: ModelForCausalLM::new(&config, vb).unwrap(),
+		tok,
+	}
 }
 
 /// (ids including a terminal EOS, stop, prompt length, per-step top 5)
-fn gen_one(g: &Gen, system: &str, user: &str, max_new: usize) -> (Vec<u32>, &'static str, usize, Vec<Vec<(u32, f32)>>) {
-	let text = format!("<|im_start|>system\n{system}<|im_end|>\n<|im_start|>user\n{user}<|im_end|>\n<|im_start|>assistant\n");
+fn gen_one(
+	g: &Gen,
+	system: &str,
+	user: &str,
+	max_new: usize,
+) -> (Vec<u32>, &'static str, usize, Vec<Vec<(u32, f32)>>) {
+	let text = format!(
+		"<|im_start|>system\n{system}<|im_end|>\n<|im_start|>user\n{user}<|im_end|>\n<|im_start|>assistant\n"
+	);
 	let prompt = g.tok.encode(text, false).unwrap().get_ids().to_vec();
 	assert!(prompt.len() <= 1024);
 	let mut model = g.model.clone();
 	let cpu = &Device::Cpu;
-	let mut logits = model.forward(&Tensor::new(prompt.as_slice(), cpu).unwrap().unsqueeze(0).unwrap(), 0).unwrap();
+	let mut logits = model
+		.forward(
+			&Tensor::new(prompt.as_slice(), cpu)
+				.unwrap()
+				.unsqueeze(0)
+				.unwrap(),
+			0,
+		)
+		.unwrap();
 	let (mut ids, mut tops) = (Vec::new(), Vec::new());
 	let mut stop = "length";
 	for k in 0..max_new {
@@ -1580,7 +1751,12 @@ fn gen_one(g: &Gen, system: &str, user: &str, max_new: usize) -> (Vec<u32>, &'st
 		if k + 1 == max_new {
 			break;
 		}
-		logits = model.forward(&Tensor::new(&[tok], cpu).unwrap().unsqueeze(0).unwrap(), prompt.len() + k).unwrap();
+		logits = model
+			.forward(
+				&Tensor::new(&[tok], cpu).unwrap().unsqueeze(0).unwrap(),
+				prompt.len() + k,
+			)
+			.unwrap();
 	}
 	(ids, stop, prompt.len(), tops)
 }
@@ -1590,22 +1766,44 @@ fn u7_parse(text: &str, names: &[String]) -> String {
 	while t.ends_with(['.', ',', ':', ';', '!']) {
 		t.pop();
 	}
-	names.iter().find(|n| **n == t).cloned().unwrap_or_else(|| "review".to_string())
+	names
+		.iter()
+		.find(|n| **n == t)
+		.cloned()
+		.unwrap_or_else(|| "review".to_string())
 }
 
 fn u7(d2: &str, ranges: &str, labels: &str, sample: &str, model: &str, out_dir: &str) {
 	let issues: serde_json::Value = serde_json::from_slice(&std::fs::read(d2).unwrap()).unwrap();
 	let issues = issues.as_array().unwrap();
 	let (mut names, mut descriptions) = (Vec::new(), Vec::new());
-	for line in std::fs::read_to_string(labels).unwrap().lines().skip(1).filter(|l| !l.is_empty()) {
+	for line in std::fs::read_to_string(labels)
+		.unwrap()
+		.lines()
+		.skip(1)
+		.filter(|l| !l.is_empty())
+	{
 		let f: Vec<&str> = line.split('\t').collect();
 		names.push(f[0].to_owned());
 		descriptions.push(f[1].to_owned());
 	}
-	let sample: Vec<String> = std::fs::read_to_string(sample).unwrap().lines().skip(1).filter(|l| !l.is_empty()).map(str::to_owned).collect();
+	let sample: Vec<String> = std::fs::read_to_string(sample)
+		.unwrap()
+		.lines()
+		.skip(1)
+		.filter(|l| !l.is_empty())
+		.map(str::to_owned)
+		.collect();
 	let mut texts = std::collections::HashMap::new();
 	for i in issues {
-		texts.insert(format!("d2:#{}", i["number"]), format!("{}\n{}", i["title"].as_str().unwrap(), i["body"].as_str().unwrap_or("")));
+		texts.insert(
+			format!("d2:#{}", i["number"]),
+			format!(
+				"{}\n{}",
+				i["title"].as_str().unwrap(),
+				i["body"].as_str().unwrap_or("")
+			),
+		);
 	}
 	let mut first = std::collections::HashMap::new();
 	for line in std::fs::read_to_string(ranges).unwrap().lines().skip(1) {
@@ -1616,17 +1814,36 @@ fn u7(d2: &str, ranges: &str, labels: &str, sample: &str, model: &str, out_dir: 
 		}
 	}
 	let g = gen_load(model);
-	let join = |v: &[u32]| v.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+	let join = |v: &[u32]| {
+		v.iter()
+			.map(|x| x.to_string())
+			.collect::<Vec<_>>()
+			.join(",")
+	};
 	let decode = |ids: &[u32], stop: &str| {
-		let body = if stop == "eos" { &ids[..ids.len() - 1] } else { ids };
+		let body = if stop == "eos" {
+			&ids[..ids.len() - 1]
+		} else {
+			ids
+		};
 		g.tok.decode(body, true).unwrap()
 	};
 	let mut steps = String::from("task\tticket\tk\tp\tposition\tid\ttop_ids\ttop_logits\n");
-	let step_rows = |task: &str, n: &str, p: usize, ids: &[u32], tops: &[Vec<(u32, f32)>], steps: &mut String| {
+	let step_rows = |task: &str,
+	                 n: &str,
+	                 p: usize,
+	                 ids: &[u32],
+	                 tops: &[Vec<(u32, f32)>],
+	                 steps: &mut String| {
 		for (k, (id, top)) in ids.iter().zip(tops).enumerate() {
 			let ti: Vec<String> = top.iter().map(|(i, _)| i.to_string()).collect();
 			let tl: Vec<String> = top.iter().map(|(_, x)| format!("{x:?}")).collect();
-			*steps += &format!("{task}\t{n}\t{k}\t{p}\t{}\t{id}\t{}\t{}\n", p + k, ti.join(","), tl.join(","));
+			*steps += &format!(
+				"{task}\t{n}\t{k}\t{p}\t{}\t{id}\t{}\t{}\n",
+				p + k,
+				ti.join(","),
+				tl.join(",")
+			);
 		}
 	};
 	let mut rows = String::from("ticket\tprompt_tokens\tids\tstop\ttext\tclass\n");
@@ -1637,21 +1854,125 @@ fn u7(d2: &str, ranges: &str, labels: &str, sample: &str, model: &str, out_dir: 
 		for (name, desc) in names.iter().zip(&descriptions) {
 			user += &format!("{name}: {desc}\n");
 		}
-		user += &format!("\nTicket:\n{}\n\nAnswer with one word: bug, feature, question, documentation or performance.", first[&format!("d2:#{n}")]);
+		user += &format!(
+			"\nTicket:\n{}\n\nAnswer with one word: bug, feature, question, documentation or performance.",
+			first[&format!("d2:#{n}")]
+		);
 		let (ids, stop, p, tops) = gen_one(&g, system, &user, 8);
 		let text = decode(&ids, stop);
-		rows += &format!("{n}\t{p}\t{}\t{stop}\t{}\t{}\n", join(&ids), serde_json::to_string(&text).unwrap(), u7_parse(&text, &names));
+		rows += &format!(
+			"{n}\t{p}\t{}\t{stop}\t{}\t{}\n",
+			join(&ids),
+			serde_json::to_string(&text).unwrap(),
+			u7_parse(&text, &names)
+		);
 		step_rows("triage", &n, p, &ids, &tops, &mut steps);
 	}
 	std::fs::write(format!("{out_dir}/u7-triage.tsv"), rows).unwrap();
 	let mut rows = String::from("ticket\tprompt_tokens\tids\tstop\ttext\n");
 	for n in &sample {
-		let user = format!("Summarize this ticket in one sentence of at most 20 words.\n\nTicket:\n{}", first[&format!("d2:#{n}")]);
-		let (ids, stop, p, tops) = gen_one(&g, "You are an assistant that summarizes issue tracker tickets.", &user, 48);
+		let user = format!(
+			"Summarize this ticket in one sentence of at most 20 words.\n\nTicket:\n{}",
+			first[&format!("d2:#{n}")]
+		);
+		let (ids, stop, p, tops) = gen_one(
+			&g,
+			"You are an assistant that summarizes issue tracker tickets.",
+			&user,
+			48,
+		);
 		let text = decode(&ids, stop);
-		rows += &format!("{n}\t{p}\t{}\t{stop}\t{}\n", join(&ids), serde_json::to_string(&text).unwrap());
+		rows += &format!(
+			"{n}\t{p}\t{}\t{stop}\t{}\n",
+			join(&ids),
+			serde_json::to_string(&text).unwrap()
+		);
 		step_rows("summary", n, p, &ids, &tops, &mut steps);
 	}
 	std::fs::write(format!("{out_dir}/u7-summaries.tsv"), rows).unwrap();
 	std::fs::write(format!("{out_dir}/u7-steps.tsv"), steps).unwrap();
+}
+
+// Record 0151: the development pool, independently: U5's retrieval (its own
+// chunks, S1 embedding and scores), per query a stable descending sort of
+// passages, the first 40 documents in that order with each one's first 3
+// passages, and every (query, passage) pair scored alone (a batch of one).
+fn u8(dir: &str, minilm: &str, cross: &str, dev: &str, out_dir: &str) {
+	let t = twin_load(minilm);
+	let (docs, passages) = load_with(dir, &|body| {
+		token_chunks(&t.tok, body, 256, 0)
+			.unwrap()
+			.into_iter()
+			.map(|(s, e)| body[s..e].to_owned())
+			.collect()
+	});
+	let texts: Vec<&str> = passages.iter().map(|p| p.1.as_str()).collect();
+	let e = twin_embed_sized(&t, &texts, &s1_sizes(&t, &texts, 32));
+	let (mut ids, mut qs) = (Vec::new(), Vec::new());
+	for line in std::fs::read_to_string(dev)
+		.unwrap()
+		.lines()
+		.skip(1)
+		.filter(|l| !l.is_empty())
+	{
+		let f: Vec<&str> = line.split('\t').collect();
+		ids.push(f[0].to_owned());
+		qs.push(f[2].to_owned());
+	}
+	let qrefs: Vec<&str> = qs.iter().map(|s| s.as_str()).collect();
+	let q = twin_embed_sized(&t, &qrefs, &s1_sizes(&t, &qrefs, 32));
+	let s = twin_scores(&e, &q, 384);
+	let m = ids.len();
+	let ce = ce_load(cross);
+	let mut pool = String::from("query\tcand\tpath\tprank\tpid\tretrieval\tce\n");
+	let mut pairs = 0;
+	for k in 0..m {
+		let mut order: Vec<usize> = (0..passages.len()).collect();
+		order.sort_by(|&a, &b| s[b * m + k].total_cmp(&s[a * m + k]));
+		let mut slots: Vec<(usize, Vec<usize>)> = Vec::new();
+		let mut rank = std::collections::HashMap::new();
+		for p in order {
+			let d = passages[p].0;
+			if !rank.contains_key(&d) {
+				if slots.len() == 40 {
+					continue;
+				}
+				rank.insert(d, slots.len());
+				slots.push((d, Vec::new()));
+			}
+			let slot = &mut slots[rank[&d]].1;
+			if slot.len() < 3 {
+				slot.push(p);
+			}
+		}
+		for (c, (d, ps)) in slots.iter().enumerate() {
+			for (j, &p) in ps.iter().enumerate() {
+				let (score, _) = ce_score(&ce, &[(qs[k].clone(), passages[p].1.clone())]);
+				pairs += 1;
+				pool += &format!(
+					"{}\t{}\t{}\t{}\t{p}\t{}\t{:?}\n",
+					ids[k],
+					c + 1,
+					docs[*d].path,
+					j + 1,
+					s[p * m + k],
+					score[0] as f64
+				);
+			}
+		}
+	}
+	std::fs::write(format!("{out_dir}/u8-pool.tsv"), pool).unwrap();
+	let ppaths: Vec<&str> = passages.iter().map(|p| docs[p.0].path.as_str()).collect();
+	let json = serde_json::json!({ "paths": ppaths, "texts": texts });
+	std::fs::write(format!("{out_dir}/u8-passages.json"), json.to_string()).unwrap();
+	let mut retained = format!("pid\t{}\n", ids.join("\t"));
+	for p in 0..passages.len() {
+		retained += &p.to_string();
+		for k in 0..m {
+			retained += &format!("\t{}", s[p * m + k]);
+		}
+		retained += "\n";
+	}
+	std::fs::write(format!("{out_dir}/u8-retrieval.tsv"), retained).unwrap();
+	eprintln!("u8: {m} queries, {pairs} pairs scored one at a time");
 }
