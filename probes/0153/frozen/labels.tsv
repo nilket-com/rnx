@@ -1,0 +1,6 @@
+label	description
+bug	A defect report: something in Rhai behaves incorrectly, crashes, panics, or produces a wrong result.
+feature	A feature request: a proposal to add new functionality, syntax, or an API to Rhai.
+question	A question asking how to do something with Rhai, or asking for help or clarification.
+documentation	A documentation issue: missing, unclear, or incorrect documentation, examples, or comments.
+performance	A performance issue: Rhai is slow, uses too much memory, or compiles or runs inefficiently.

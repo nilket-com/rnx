@@ -1,0 +1,5 @@
+queue	regex
+bug	\b(panic(s|ked)?|crash(es|ed)?|segfault|errors?|fail(s|ed|ing|ure)?|broken|bug|wrong|incorrect|regression|unexpected(ly)?|doesn'?t work|does not work|overflow|memory leak|slow(er)?|performance)\b
+feature	\b(feature request|support for|add(ing)? support|would be nice|allow(ing)?|proposal|propose|request|implement|new feature|enhancement|ability to)\b
+question	(\?\s*$)|\b(how (do|can|to|should)|is (it|there) (possible|a way)|what is|why (does|is)|question)\b
+documentation	\b(docs?|documentation|readme|typo|book|examples?)\b
