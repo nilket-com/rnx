@@ -1,0 +1,4 @@
+### :dep returned to a prompt: True after 391.3 s
+252 tickets, 458 passages; embedding and scoring 5935 ms
+WORKFLOW OK u4
+### run returned to a prompt: True after 8.5 s

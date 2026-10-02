@@ -1,0 +1,18 @@
+u4: 252 tickets, each table complete and valid: BIT-EQUAL
+u4: refused: /tmp/tmpy0umrh5x/script.tsv: 0 tickets, missing ['2', '5', '6', '7', '8']
+ok: header only, both sides is refused
+u4: refused: /tmp/tmpy0umrh5x/script.tsv: 251 tickets, missing ['1051']
+ok: one ticket missing, both sides is refused
+u4: refused: /tmp/tmpy0umrh5x/script.tsv: header ['ticket\ttriage\tbest\tsecond\tmargin\tbug\tfeature\tquestion\tdocumentation'], want ['ticket', 'triage', 'best', 'second', 'margin', 'bug', 'feature', 'question', 'documentation', 'performance']
+ok: a score column missing, both sides is refused
+u4: refused: /tmp/tmpy0umrh5x/script.tsv: duplicate ticket 2
+ok: a duplicate row is refused
+u4: refused: a non-finite value 'nan'
+ok: a non-finite score is refused
+u4: refused: the tables differ, first at tickets ['2']
+ok: one score bit changed is refused
+u4: refused: /tmp/tmpy0umrh5x/script.tsv: ticket 2: triage 'other'
+ok: an unknown triage label is refused
+u4: refused: /tmp/tmpy0umrh5x/script.tsv: ticket 2: best 'bug', second 'bug'
+ok: best equal to second is refused
+controls: all refused as required

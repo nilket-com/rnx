@@ -1,0 +1,6 @@
+252 tickets, 458 passages: sentence-transformers 6.1.0, torch 2.14.1+cpu CPU (20 threads), batch 32: embedding and scoring 4.78 s
+predicted counts: {'bug': 101, 'feature': 109, 'question': 0, 'documentation': 5, 'performance': 37}
+252 tickets, 458 passages: sentence-transformers 6.1.0, torch 2.14.1+cpu CPU (20 threads), batch 32: embedding and scoring 4.81 s
+predicted counts: {'bug': 101, 'feature': 109, 'question': 0, 'documentation': 5, 'performance': 37}
+252 tickets, 458 passages: sentence-transformers 6.1.0, torch 2.14.1+cpu CPU (20 threads), batch 32: embedding and scoring 4.91 s
+predicted counts: {'bug': 101, 'feature': 109, 'question': 0, 'documentation': 5, 'performance': 37}

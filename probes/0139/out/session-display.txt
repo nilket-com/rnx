@@ -1,0 +1,76 @@
+252 tickets, 458 passages; embedding and scoring 5921 ms
+tickets per label ("review": margin below 0.02):
+DataFrame: 5 rows × 2 columns
+"triage": string | "tickets": u32
+"feature" | 99
+"bug" | 79
+"review" | 52
+"performance" | 19
+"documentation" | 3
+
+the review queue (lowest margins first):
+DataFrame: 10 rows × 5 columns
+"ticket": i64 | "title": string | "best": string | "second": string | "margin": f64
+453 | "0.12.2 release did not get completed" | "bug" | "performance" | 0.00044232606887817383
+456 | "Standard macros should live in the `rune` crate and not `rune-modules`" | "bug" | "performance" | 0.0005652308464050293
+595 | "\"halted for unexpected reason `awaited`\" Error" | "performance" | "bug" | 0.0006636083126068115
+372 | "yanked futures-core 0.3.18" | "performance" | "bug" | 0.0018571019172668457
+897 | "Heads-up: #[start] is being removed" | "bug" | "performance" | 0.0021215081214904785
+10 | "Lines starting with an object literal are hidden by mdbook" | "feature" | "bug" | 0.0028149783611297607
+962 | "Can we get a new version for the successful rust build?" | "performance" | "bug" | 0.002871975302696228
+252 | "OOTB template literal are missing for bool" | "bug" | "feature" | 0.0037190765142440796
+768 | "New 0.13.x release?" | "performance" | "feature" | 0.004139244556427002
+355 | "Move rune benches into rune." | "feature" | "performance" | 0.004172235727310181
+
+DataFrame: 10 rows × 5 columns
+"ticket": i64 | "title": string | "best": string | "second": string | "margin": f64
+984 | "can't use native function in mod" | "bug" | "performance" | 0.004368141293525696
+648 | "Documentation enhancements" | "bug" | "performance" | 0.004559814929962158
+344 | "Passing an interpolated string from Rune script to a Rust function passes garbag"…[truncated] | "bug" | "performance" | 0.0053441524505615234
+750 | "Silly auto-formatting for chained method calls / builder pattern" | "performance" | "feature" | 0.0054960548877716064
+905 | "Can;t construct external struct with nested enum variant containing fields." | "performance" | "bug" | 0.005789637565612793
+547 | "Detect when a VmExecution has finished (using step)" | "bug" | "performance" | 0.006485804915428162
+580 | "Fix quote! parsing of punctuations such as `?;`" | "documentation" | "bug" | 0.006573334336280823
+644 | "Function Pointers" | "performance" | "feature" | 0.007489264011383057
+407 | "Does the VSCode extension work as intended?" | "performance" | "bug" | 0.007491648197174072
+428 | "Using multiple FormatArgs with a FillAllign duplicates content" | "bug" | "performance" | 0.008402019739151001
+
+most bug-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "bug": f64
+527 | "Formatting misfire with anything following item macro call" | 0.6060614585876465
+745 | "Flaky auto-formatting in vscode / Rune LSP crashes" | 0.6039546132087708
+15 | "Conflicts in type hashes" | 0.5968929529190063
+
+most feature-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "feature": f64
+244 | "Auto-formatter" | 0.6426180601119995
+444 | "Project questions " | 0.6215663552284241
+45 | "Community Site for Rune" | 0.6069472432136536
+
+most question-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "question": f64
+45 | "Community Site for Rune" | 0.5236520171165466
+444 | "Project questions " | 0.474761426448822
+165 | "Can you describe the virtual machine design?" | 0.434078574180603
+
+most documentation-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "documentation": f64
+413 | "Collect and expose metadata for struct and variant fields for docstrings" | 0.38279131054878235
+648 | "Documentation enhancements" | 0.3321821391582489
+640 | "Feature request: Support autocomplete for Ace editor" | 0.3204422891139984
+
+most performance-like:
+DataFrame: 3 rows × 3 columns
+"ticket": i64 | "title": string | "performance": f64
+1051 | "Benchmark maintenance." | 0.644972026348114
+273 | "Function Loading Memory Leak" | 0.6076429486274719
+284 | "Rustanalyzer in VsCode not indexing" | 0.5598165392875671
+
+WORKFLOW OK u4
+[6] Ok(())
+[7] >
+### run returned to a prompt: True after 8.4 s

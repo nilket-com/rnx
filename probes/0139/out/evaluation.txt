@@ -1,0 +1,54 @@
+== against claude's labels (agent-labelled)
+coverage: 32 / 40 assigned; accuracy over assigned: 18 / 32 = 0.56
+confusion (assigned only; rows: reference, columns: prediction)
+                  bug  featu  quest  docum  perfo
+bug                 6      1      0      0      1
+feature             2     11      0      0      1
+question            1      6      0      0      1
+documentation       0      1      0      0      0
+performance         0      0      0      0      1
+abstentions by reference label: {'documentation': 3, 'question': 1, 'feature': 3, 'bug': 1}
+errors (14):
+  #25 reference feature, predicted performance (second feature, margin 0.053): feature: a bytecode format for units
+  #150 reference feature, predicted bug (second feature, margin 0.026): Support moving values into closures
+  #279 reference documentation, predicted feature (second bug, margin 0.055): Function and SyncFunction documentation is not available due to type aliasing
+  #290 reference question, predicted bug (second performance, margin 0.112): How to convert the return value into a STRING_DISPLAY string?
+  #424 reference bug, predicted feature (second performance, margin 0.068): Some benchmarks are failing on the main branch
+  #434 reference question, predicted feature (second performance, margin 0.191): Custom state?
+  #444 reference question, predicted feature (second performance, margin 0.094): Project questions
+  #486 reference question, predicted feature (second performance, margin 0.104): Proper way to call Rust from Rune Scripts
+  #566 reference question, predicted feature (second performance, margin 0.076): "Vm::call takes self by value, which means we're forced to clone()" - as per blog of 2020. What is the workaround or status as of year 2023?
+  #629 reference question, predicted feature (second performance, margin 0.138): Modify a vm function
+  #753 reference question, predicted feature (second performance, margin 0.043): Runes `std::collections::HashMap` is not accessible from rust extension types
+  #775 reference bug, predicted performance (second bug, margin 0.048): Rune LSP cargo broken with multi-binary crates
+  #810 reference feature, predicted bug (second performance, margin 0.041): Any::downcast_borrow_ref works with anyhow but not eyre
+  #909 reference question, predicted performance (second bug, margin 0.026): async paramters error
+== against codex's labels (agent-labelled)
+coverage: 32 / 40 assigned; accuracy over assigned: 18 / 32 = 0.56
+confusion (assigned only; rows: reference, columns: prediction)
+                  bug  featu  quest  docum  perfo
+bug                 6      1      0      0      2
+feature             2     11      0      0      1
+question            1      6      0      0      0
+documentation       0      1      0      0      0
+performance         0      0      0      0      1
+abstentions by reference label: {'documentation': 3, 'bug': 3, 'feature': 2}
+errors (14):
+  #25 reference feature, predicted performance (second feature, margin 0.053): feature: a bytecode format for units
+  #150 reference feature, predicted bug (second feature, margin 0.026): Support moving values into closures
+  #279 reference documentation, predicted feature (second bug, margin 0.055): Function and SyncFunction documentation is not available due to type aliasing
+  #290 reference question, predicted bug (second performance, margin 0.112): How to convert the return value into a STRING_DISPLAY string?
+  #424 reference bug, predicted feature (second performance, margin 0.068): Some benchmarks are failing on the main branch
+  #434 reference question, predicted feature (second performance, margin 0.191): Custom state?
+  #444 reference question, predicted feature (second performance, margin 0.094): Project questions
+  #486 reference question, predicted feature (second performance, margin 0.104): Proper way to call Rust from Rune Scripts
+  #566 reference question, predicted feature (second performance, margin 0.076): "Vm::call takes self by value, which means we're forced to clone()" - as per blog of 2020. What is the workaround or status as of year 2023?
+  #629 reference question, predicted feature (second performance, margin 0.138): Modify a vm function
+  #753 reference question, predicted feature (second performance, margin 0.043): Runes `std::collections::HashMap` is not accessible from rust extension types
+  #775 reference bug, predicted performance (second bug, margin 0.048): Rune LSP cargo broken with multi-binary crates
+  #810 reference feature, predicted bug (second performance, margin 0.041): Any::downcast_borrow_ref works with anyhow but not eyre
+  #909 reference bug, predicted performance (second bug, margin 0.026): async paramters error
+== claude and codex: agreement 37 / 40; Cohen's kappa 0.89
+  #400 claude question, codex bug: Can't construct struct with named field
+  #909 claude question, codex bug: async paramters error
+  #962 claude feature, codex bug: Can we get a new version for the successful rust build?
