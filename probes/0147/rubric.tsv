@@ -1,0 +1,35 @@
+query	id	text	supporting_records	kind
+E01	memory	When does a session that has been open a long time refuse to continue because of memory, and what does its memory figure count?	0001 0005	paraphrase
+E02	halt	A long script halts partway with a message about exceeding instructions; how can the person running it let it go further?	0021	paraphrase
+E03	stop	How do I stop a computation that never finishes in the interactive session without killing the session?	0002 0032	direct
+E04	licences	Which third-party licence texts have to be distributed with an rnx binary?	0028 0029	direct
+E05	windows	Do child-process timeouts and cancellation behave the same on Windows as on Linux?	0025	direct
+E06	childenv	How can a script run a command in a different folder with an extra environment variable set only for that command?	0044	direct
+E07	argv	How does a script read the arguments it was launched with and the variables of its environment?	0036	paraphrase
+E08	bigint	Why could a very large positive integer in JSON come back as the wrong number after parsing?	0033	direct
+E09	notebook	How does a Jupyter notebook run rnx code, and what sits between the notebook and the evaluator?	0046 0047 0048	direct
+E10	reports	Which problems in the Rune language runtime itself has the project written up as reports for its maintainers?	0006 0019 0030 0032 0033	paraphrase
+E11	files	How can a script use functions defined in another file next to it?	0050	direct
+E12	declare	Where does a project say which native extensions its executable has to contain?	0057 0062	direct
+E13	launch	Why was starting a verified project slow at first, and what made each launch cheaper?	0059 0065	direct
+E14	cleanup	How can old build output be deleted without removing something still in use?	0066	direct
+E15	fetch	How does a script fetch a URL without risking an unbounded response?	0034	paraphrase
+E16	clocks	Which clocks can a script read, and how does it handle time zones?	0038	direct
+E17	colours	How can a person pick their own colours for the session prompt and results?	0043 0045	direct
+E18	hash	Why did an error name a hexadecimal hash instead of the method that was missing, and how was it fixed?	0014 0041	direct
+E19	bytes	How does a script get a child process's output when it is not valid text?	0016	direct
+E20	late	After a child process times out, why could the call still take a long time to return?	0023	direct
+E21	release	Which Polars release does rnx ship, and why not the 2.0 release candidate?	0128	paraphrase
+E22	generate	How are the Polars bindings produced without writing each one by hand?	0073 0114 0115	direct
+E23	callbacks	Can a script pass its own function into a Polars operation, and what are the rules?	0079 0080	paraphrase
+E24	unsigned	Why did very large unsigned integers read back from a dataframe column come out wrong?	0092 0093	direct
+E25	csv	How does a script load a CSV or JSON file into a dataframe?	0125	direct
+E26	reshape	How can rows of long data be reshaped into a table with one column per category?	0127	paraphrase
+E27	tasks	Which everyday analytics tasks did not work end to end, and how was that measured?	0122	paraphrase
+E28	speed	How was computing embeddings for many passages made faster on the CPU?	0131 0132	direct
+E29	tensor	How does a model's numeric output become columns of a dataframe?	0129 0131	direct
+E30	compile	Why doesn't a second project using the same adapters compile them all over again?	0061 0069	direct
+E31	arrow	How can a script reach the Arrow arrays underneath Polars columns?	0119 0120	direct
+E32	quit	Is there a short way to quit or clear the screen at the prompt?	0042	direct
+E33	tab	What does pressing Tab complete at the prompt?	0003	direct
+E34	stdin	How does a script read data piped into it?	0012	paraphrase
