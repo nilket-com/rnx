@@ -914,6 +914,8 @@ fn main() {
 		// record 0149: greedy generation over the tickets
 		"u7" => u7(&a[2], &a[3], &a[4], &a[5], &a[6], &a[7]),
 		// record 0151: the development pool
+		"t3" => t3(&a[2], &a[3], &a[4], &a[5], &a[6], &a[7]),
+		"t3-controls" => t3_controls(),
 		"u8" => {
 			let retrieval_only = match a.get(7).map(|s| s.as_str()) {
 				None => false,
@@ -1999,4 +2001,230 @@ fn u8(dir: &str, minilm: &str, cross: &str, dev: &str, out_dir: &str, retrieval_
 	}
 	std::fs::write(format!("{out_dir}/u8-retrieval.tsv"), retained).unwrap();
 	eprintln!("u8: {m} queries, {pairs} pairs scored one at a time");
+}
+
+/// Record 0153: the triage producers' twin half. Over a split's tickets, in
+/// the split file's order: passages (MiniLM chunks at overlap 0), unit
+/// ticket embeddings (segment mean over tickets with passages,
+/// renormalized), cosines to each description, and every (passage,
+/// description) pair's NLI logits scored per ticket; a ticket with a pair
+/// over 512 tokens is `nli_refused` (the session's named refusal), one with
+/// no passages `no_passages`.
+fn t3(issues: &str, split: &str, labels: &str, minilm: &str, nli_dir: &str, out_dir: &str) {
+	let v: serde_json::Value = serde_json::from_slice(&std::fs::read(issues).unwrap()).unwrap();
+	let mut by = std::collections::HashMap::new();
+	for i in v.as_array().unwrap() {
+		by.insert(i["number"].as_i64().unwrap(), i.clone());
+	}
+	let split_text = std::fs::read_to_string(split).unwrap();
+	let mut lines = split_text.lines();
+	assert_eq!(lines.next(), Some("number"));
+	let numbers: Vec<i64> = lines
+		.filter(|l| !l.is_empty())
+		.map(|l| l.parse().unwrap())
+		.collect();
+	let (mut names, mut descriptions) = (Vec::new(), Vec::new());
+	for line in std::fs::read_to_string(labels).unwrap().lines().skip(1) {
+		if line.is_empty() {
+			continue;
+		}
+		let f: Vec<&str> = line.split('\t').collect();
+		names.push(f[0].to_owned());
+		descriptions.push(f[1].to_owned());
+	}
+	let k = names.len();
+	let t = twin_load(minilm);
+	let mut per_ticket: Vec<Vec<String>> = Vec::new();
+	let (mut passages, mut owner, mut compact) = (Vec::new(), Vec::<u32>::new(), Vec::new());
+	let mut pooled_n = 0usize;
+	for n in &numbers {
+		let i = &by[n];
+		let text = format!(
+			"{}\n{}",
+			i["title"].as_str().unwrap(),
+			i["body"].as_str().unwrap_or("")
+		);
+		let ps: Vec<String> = token_chunks(&t.tok, &text, 256, 0)
+			.unwrap()
+			.into_iter()
+			.map(|(s, e)| text[s..e].to_owned())
+			.collect();
+		if ps.is_empty() {
+			compact.push(None);
+		} else {
+			compact.push(Some(pooled_n));
+			for p in &ps {
+				passages.push(p.clone());
+				owner.push(pooled_n as u32);
+			}
+			pooled_n += 1;
+		}
+		per_ticket.push(ps);
+	}
+	let cpu = &Device::Cpu;
+	let (mut units, mut cosines, mut estatus) = (Vec::new(), Vec::new(), Vec::new());
+	if pooled_n > 0 {
+		let refs: Vec<&str> = passages.iter().map(String::as_str).collect();
+		let flat = twin_embed_sized(&t, &refs, &s1_sizes(&t, &refs, 32));
+		let rows = refs.len();
+		let emb = Tensor::from_vec(flat, (rows, 384), cpu).unwrap();
+		let seg = Tensor::from_vec(owner.clone(), rows, cpu).unwrap();
+		let sums = Tensor::zeros((pooled_n, 384), DType::F32, cpu)
+			.unwrap()
+			.index_add(&seg, &emb, 0)
+			.unwrap();
+		let counts = Tensor::zeros(pooled_n, DType::F32, cpu)
+			.unwrap()
+			.index_add(&seg, &Tensor::ones(rows, DType::F32, cpu).unwrap(), 0)
+			.unwrap();
+		let pooled = sums.broadcast_div(&counts.unsqueeze(1).unwrap()).unwrap();
+		let drefs: Vec<&str> = descriptions.iter().map(String::as_str).collect();
+		let lflat = twin_embed_sized(&t, &drefs, &s1_sizes(&t, &drefs, 32));
+		let labels_t = Tensor::from_vec(lflat, (k, 384), cpu).unwrap();
+		(estatus, units, cosines) = t3_embed_tickets(&pooled, &labels_t);
+	}
+	let m = nli_load(nli_dir);
+	let mut emb_status = String::from("ticket\tembedding\n");
+	for (ti, n) in numbers.iter().enumerate() {
+		match compact[ti] {
+			None => emb_status += &format!("{n}\tno_passages\n"),
+			Some(c) => emb_status += &format!("{n}\t{}\n", estatus[c]),
+		}
+	}
+	let mut nli_rows = String::from("ticket\tpassage\tlabel\tcontradiction\tentailment\tneutral\n");
+	let mut status = String::from("ticket\tstatus\n");
+	for (ti, n) in numbers.iter().enumerate() {
+		let ps = &per_ticket[ti];
+		if ps.is_empty() {
+			status += &format!("{n}\tno_passages\n");
+			continue;
+		}
+		let mut pairs = Vec::new();
+		for p in ps {
+			for d in &descriptions {
+				pairs.push((p.clone(), d.clone()));
+			}
+		}
+		let over = pairs.iter().any(|(p, h)| {
+			m.tok
+				.encode((p.as_str(), h.as_str()), true)
+				.unwrap()
+				.get_ids()
+				.len() > 512
+		});
+		if over {
+			status += &format!("{n}\tnli_refused\n");
+			continue;
+		}
+		let (logits, _) = nli_score(&m, &pairs);
+		for r in 0..pairs.len() {
+			nli_rows += &format!(
+				"{n}\t{}\t{}\t{:?}\t{:?}\t{:?}\n",
+				r / k,
+				names[r % k],
+				logits[3 * r] as f64,
+				logits[3 * r + 1] as f64,
+				logits[3 * r + 2] as f64
+			);
+		}
+		status += &format!("{n}\tok\n");
+	}
+	let json = serde_json::json!({ "tickets": numbers, "passages": per_ticket });
+	std::fs::write(format!("{out_dir}/t3-passages.json"), json.to_string()).unwrap();
+	let mut emb_rows = String::from("ticket");
+	for c in 0..384 {
+		emb_rows += &format!("\te{c}");
+	}
+	emb_rows += "\n";
+	let mut cos_rows = String::from("ticket");
+	for name in &names {
+		cos_rows += &format!("\t{name}");
+	}
+	cos_rows += "\n";
+	for (ti, n) in numbers.iter().enumerate() {
+		let Some(c) = compact[ti] else { continue };
+		if estatus[c] != "ok" {
+			continue;
+		}
+		emb_rows += &n.to_string();
+		for x in &units[c] {
+			emb_rows += &format!("\t{:?}", *x as f64);
+		}
+		emb_rows += "\n";
+		cos_rows += &n.to_string();
+		for x in &cosines[c] {
+			cos_rows += &format!("\t{:?}", *x as f64);
+		}
+		cos_rows += "\n";
+	}
+	std::fs::write(format!("{out_dir}/t3-embeddings.tsv"), emb_rows).unwrap();
+	std::fs::write(format!("{out_dir}/t3-cosines.tsv"), cos_rows).unwrap();
+	std::fs::write(format!("{out_dir}/t3-nli.tsv"), nli_rows).unwrap();
+	std::fs::write(format!("{out_dir}/t3-status.tsv"), status).unwrap();
+	std::fs::write(format!("{out_dir}/t3-embedding-status.tsv"), emb_status).unwrap();
+	eprintln!("t3: {} tickets, {} passages", numbers.len(), passages.len());
+}
+
+/// Record 0153 (review R1), as the session's `embed_tickets`: the division
+/// and the matmul run batched, so an invalid intermediate row may exist; the
+/// arithmetic is row-independent. Each row is then classified: a zero norm
+/// is `zero_norm`, a non-finite component or norm `nonfinite_embedding`;
+/// invalid rows are excluded before retention, routing and training.
+fn t3_embed_tickets(
+	pooled: &Tensor,
+	labels: &Tensor,
+) -> (Vec<&'static str>, Vec<Vec<f32>>, Vec<Vec<f32>>) {
+	let norms_t = pooled
+		.sqr()
+		.unwrap()
+		.sum_keepdim(1)
+		.unwrap()
+		.sqrt()
+		.unwrap();
+	let norms = norms_t.to_vec2::<f32>().unwrap();
+	let rows = pooled.to_vec2::<f32>().unwrap();
+	let tickets = pooled.broadcast_div(&norms_t).unwrap();
+	let units = tickets.to_vec2::<f32>().unwrap();
+	let cosines = tickets
+		.matmul(&labels.t().unwrap())
+		.unwrap()
+		.to_vec2::<f32>()
+		.unwrap();
+	let statuses = rows
+		.iter()
+		.zip(&norms)
+		.map(|(r, n)| {
+			if !r.iter().all(|x| x.is_finite()) || !n[0].is_finite() {
+				"nonfinite_embedding"
+			} else if n[0] == 0.0 {
+				"zero_norm"
+			} else {
+				"ok"
+			}
+		})
+		.collect();
+	(statuses, units, cosines)
+}
+
+/// Record 0153: `t3_embed_tickets` on synthetic pooled rows (a zero row, a
+/// non-finite row), as the session's controls.
+fn t3_controls() {
+	let cpu = &Device::Cpu;
+	let pooled = Tensor::from_vec(
+		vec![3f32, 4., 0., 0., 0., 0., 1., f32::NAN, 0., 2., 0., 0.],
+		(3, 4),
+		cpu,
+	)
+	.unwrap();
+	let labels = Tensor::from_vec(vec![1f32, 0., 0., 0., 0., 1., 0., 0.], (2, 4), cpu).unwrap();
+	let (st, units, cos) = t3_embed_tickets(&pooled, &labels);
+	assert_eq!(st, ["ok", "nonfinite_embedding", "ok"]);
+	assert!((units[0][0] - 0.6).abs() < 1e-6);
+	assert_eq!(cos[2][1], 1.0);
+	let zero = Tensor::from_vec(vec![0f32, 0., 0., 0., 1., 0., 0., 0.], (2, 4), cpu).unwrap();
+	let (st2, _, _) = t3_embed_tickets(&zero, &labels);
+	assert_eq!(st2, ["zero_norm", "ok"]);
+	println!(
+		"t3-controls: a zero pooled row is zero_norm, a non-finite row nonfinite_embedding; other rows unaffected"
+	);
 }

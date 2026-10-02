@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# Record 0153, gate 0's controls (plans/0153 section 5b). Each case corrupts
+# one input on a copy (frozen files in a scratch worktree of HEAD; D3, D2 and
+# the models by symlink farms with one real corrupted file) and runs run.sh
+# (mode d2) with a sentinel standing in for every downstream step. A case
+# passes when run.sh refuses it by name and no step began; the unmodified
+# inputs must reach every step.
+#
+#   preflight_controls.sh D3_DIR D2_JSON MINILM_DIR NLI_DIR
+set -uo pipefail
+here=$(cd "$(dirname "$0")" && pwd)
+root=$(cd "$here/../.." && pwd)
+d3=$(cd "$1" && pwd) d2=$(realpath "$2") minilm=$(cd "$3" && pwd) nli=$(cd "$4" && pwd)
+work=$(mktemp -d)
+trap 'git -C "$root" worktree remove --force "$work/tree" >/dev/null 2>&1; rm -rf "$work"' EXIT
+git -C "$root" worktree add -q --detach "$work/tree" HEAD
+cat > "$work/stub" <<STUB
+#!/bin/sh
+echo "\$1" >> "$work/began"
+[ "\$1" = hf-t3 ] && printf '{"check": "hf-t3", "completed": true, "result": "PASS"}' > "\$RNX_0153_RESULT"
+exit 0
+STUB
+chmod +x "$work/stub"
+farm() { # farm SRC DST: a tree of symlinks to SRC's files
+	mkdir -p "$2"
+	(cd "$1" && find . -type f -not -path './pages/*') | while read -r f; do
+		mkdir -p "$2/$(dirname "$f")"
+		ln -s "$1/$f" "$2/$f"
+	done
+}
+real() { cp --remove-destination "$(readlink "$1")" "$1"; }
+flip() { real "$1"; printf '\x00' | dd of="$1" bs=1 seek=100 conv=notrunc status=none; }
+frozen() { python3 - "$work/tree/probes/0153/frozen/$1" "$2" <<'PY'
+import sys
+p, how = sys.argv[1:3]
+lines = open(p).read().split("\n")
+if how == "append": open(p, "a").write("x")
+elif how == "drop": del lines[2]
+elif how == "dup": lines.insert(2, lines[1])
+elif how == "swap": lines[1], lines[2] = lines[2], lines[1]
+elif how == "blank": lines[2] = ""
+elif how == "oov": lines[2] = lines[2].split("\t")[0] + "\tbugs"
+if how != "append": open(p, "w").write("\n".join(lines))
+PY
+}
+issue() { real "$work/c/d3/issues.json"; python3 - "$work/c/d3/issues.json" "$1" <<'PY'
+import json, sys
+p, how = sys.argv[1:3]
+v = json.load(open(p))
+if how == "text": v[3]["body"] += " drift"
+elif how == "labels": v[3]["labels"] = sorted(v[3]["labels"] + ["question"])
+elif how == "state": v[3]["state"] = "open" if v[3]["state"] == "closed" else "closed"
+json.dump(v, open(p, "w"))
+PY
+}
+ok=1
+case_() {
+	local name=$1 expect=$2; shift 2
+	rm -rf "$work/c" "$work/began"
+	farm "$d3" "$work/c/d3"; farm "$minilm" "$work/c/minilm"; farm "$nli" "$work/c/nli"
+	mkdir -p "$work/c/d2"; ln -s "$d2" "$work/c/d2/issues.json"
+	(cd "$work/tree" && git checkout -q -- . && git clean -qfd probes/0153)
+	cp "$here"/*.py "$here"/*.sh "$here"/*.rn "$work/tree/probes/0153/"
+	"$@"
+	local log code began=""
+	log=$(RNX_0153_STUB="$work/stub" "$work/tree/probes/0153/run.sh" d2 "$work/c/d3" "$work/c/d2/issues.json" "$work/c/minilm" "$work/c/nli" python3 "$work/c/out" 2>&1)
+	code=$?
+	[ -f "$work/began" ] && began=$(tr '\n' ' ' < "$work/began")
+	if [ -z "$expect" ]; then
+		if [ $code -eq 0 ] && [ "$began" = "fixtures handler twin-controls session twin validate hf-t3 " ]; then
+			echo "pass: $name: every step reached ($began)"
+		else
+			echo "WRONG: $name: exit $code, began '$began': $log"; ok=0
+		fi
+	elif [ $code -ne 0 ] && [ -z "$began" ] && grep -qF "$expect" <<< "$log"; then
+		echo "refused: $name: $(grep -F "$expect" <<< "$log" | head -1); no step began"
+	else
+		echo "ACCEPTED: $name: exit $code, began '$began': $(tail -2 <<< "$log")"; ok=0
+	fi
+}
+case_ "unmodified" ""
+case_ "the design file changed" "the design file is not the accepted design" bash -c "printf x >> '$work/tree/plans/0153_triage_routing.md'"
+case_ "0139's rules.md changed" "0139's rules.md changed" bash -c "printf x >> '$work/tree/probes/0139/frozen/rules.md'"
+case_ "frozen/labels.tsv changed" "labels.tsv" frozen labels.tsv append
+case_ "frozen/keywords.tsv changed" "keywords.tsv" frozen keywords.tsv append
+case_ "frozen/maintainer_map.tsv changed" "maintainer_map.tsv" frozen maintainer_map.tsv append
+case_ "frozen/rules.md changed" "rules.md changed" frozen rules.md append
+case_ "a holdout annotation row missing" "annotations-codex-hold.tsv" frozen annotations-codex-hold.tsv drop
+case_ "a holdout annotation row duplicated" "annotations-claude-hold.tsv" frozen annotations-claude-hold.tsv dup
+case_ "two dev annotation rows reordered" "annotations-claude-dev.tsv" frozen annotations-claude-dev.tsv swap
+case_ "a blank annotation row" "annotations-codex-hold.tsv" frozen annotations-codex-hold.tsv blank
+case_ "an out-of-vocabulary label" "is not one of the five" frozen annotations-claude-hold.tsv oov
+case_ "an extra annotation row" "annotations-claude-dev.tsv" bash -c "printf '99999\tbug\n' >> '$work/tree/probes/0153/frozen/annotations-claude-dev.tsv'"
+case_ "the D3 manifest changed" "d3-manifest.tsv" frozen d3-manifest.tsv append
+case_ "the split file changed" "d3-hold.tsv" frozen d3-hold.tsv swap
+case_ "D3 text drifted" "D3 drifted" issue text
+case_ "D3 labels drifted" "D3 drifted" issue labels
+case_ "D3 state drifted" "snapshot drifted" issue state
+case_ "a D2 byte changed" "D2 changed" bash -c "rm '$work/c/d2/issues.json'; python3 -c \"import json; v=json.load(open('$d2')); v[0]['body']+='x'; json.dump(v, open('$work/c/d2/issues.json','w'))\""
+case_ "0139's sample changed" "sample.tsv changed" bash -c "printf x >> '$work/tree/probes/0139/frozen/sample.tsv'"
+case_ "a MiniLM weight byte changed" "MiniLM: model.safetensors changed" flip "$work/c/minilm/model.safetensors"
+case_ "an NLI tokenizer byte changed" "NLI: tokenizer.json changed" flip "$work/c/nli/tokenizer.json"
+[ $ok -eq 1 ] && echo "all provenance and freeze controls behave" || { echo "CONTROLS FAILED"; exit 1; }
