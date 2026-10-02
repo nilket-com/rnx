@@ -1,0 +1,41 @@
+query	id	text	supporting_records	kind
+T02	closures	Why did a session that keeps closures grow by about half a megabyte per input, and what was decided?	0006	paraphrase
+T05	runline	How does the file runner show where a runtime error happened in the script?	0009	direct
+T06	helpers	Which string helpers were added for scripts, and how was the choice made?	0010	direct
+T07	joincontains	Were join and contains added for sequences, and why or why not?	0011 0015	paraphrase
+T09	evalexit	Why did eval print an error but still exit successfully, and what changed?	0018	paraphrase
+T10	render	How is a returned value shown to a person, and what does JSON output do with values it cannot represent?	0019	direct
+T11	poll	Why did waiting for a child that finished instantly still take several milliseconds?	0020	direct
+T12	childinput	How can a script send text to a child process's standard input?	0022 0044	direct
+T16	versionfast	Why does printing the version no longer build the scripting context?	0030	direct
+T18	await	How does a script that awaits futures run, and what happens to the instruction budget?	0032	direct
+T19	files	How does a script read and write files and list a directory, and how are errors reported?	0035	direct
+T20	paths	Is there a dedicated path type, or how are file paths joined and split?	0037	direct
+T21	nocolor	When does the session turn colour off?	0039	direct
+T22	numbering	What does the number shown on each prompt mean, and how can it be restarted?	0040	direct
+T24	assemble	How is an executable built with native extensions compiled in?	0051	direct
+T26	cancel	When a running asynchronous operation is interrupted, how is the underlying work cancelled?	0053 0055	direct
+T27	server	How does rnx run a long-lived HTTP server, and what does the server own?	0054 0056	direct
+T29	projectprompt	How do you get an interactive prompt that includes a project's own extensions?	0060	direct
+T30	runtime	How does the installed runtime keep working after the source checkout is deleted?	0064	direct
+T34	narrow	How were bindings for 8 and 16 bit integer columns checked?	0081	direct
+T35	slices	How are borrowed slice arguments passed from scripts into Polars?	0082	direct
+T38	chunklens	How can a script see how a column is split into chunks of what lengths?	0087	direct
+T41	peaks	How are the local peak-finding functions exposed, including at the edges?	0090	direct
+T44	cathash	How are categorical hash values handed to scripts without losing precision?	0094	direct
+T45	nullvectors	How does a column containing nulls become a script vector?	0096	direct
+T46	headtail	How are the first or last n values of a typed column taken?	0097	paraphrase
+T47	floatbounds	Which floating point column methods needed their trait requirements checked?	0098	direct
+T48	chunks	How can a script inspect the individual chunks inside a typed Polars column?	0099 0100 0101 0102 0103 0104 0105 0106	direct
+T49	sourceprograms	How can an embedding application run Rune source that is not stored in a file?	0107	direct
+T52	traitdispatch	How do scripts call methods that Polars defines through traits on wrapped values?	0110	direct
+T54	traitimpls	How were Polars' generic trait implementations bound, with and without serde?	0112 0113	direct
+T56	traitargs	How are function arguments that accept any type implementing a trait handled?	0117	direct
+T59	schema	How does a script see a dataframe's column names and types?	0123	paraphrase
+T60	cast	How do you cast a column to another data type?	0123	direct
+T61	model	Which pretrained text model does rnx use for embeddings, and how are its files obtained?	0131	direct
+T62	httpcleanup	When a script stops while HTTP requests are in flight, what happens to them?	0055	direct
+T63	fourthport	Which script was ported fourth, and why could the original not run on its own inputs at first?	0017	direct
+T64	secondport	What did the second ported script need that the language did not have?	0011	direct
+T65	panics	What happens when native extension code panics, and in what order are settings applied?	0051	direct
+T69	nesting	How deeply nested can parsed JSON or a displayed value be before rnx refuses it?	0033 0019	direct

@@ -1,0 +1,31 @@
+query	id	text	supporting_records	kind
+T01	vars	What does the session's variable listing show, and how is the help output kept short?	0004	direct
+T03	prelude	Why did each compiled input grow with the number of names the session had published?	0007	paraphrase
+T04	firstport	What did porting the first Python utility to Rune cost, and what did it expose?	0008	direct
+T08	exitcode	How does a script exit with a chosen status code and print to standard error?	0013	direct
+T13	bare	What happens when rnx is started with no arguments?	0024	paraphrase
+T14	manifest	Which metadata fields does the release package declare, and which does it deliberately leave out?	0026	direct
+T15	runepin	Which Rune release is rnx pinned to, and what moved with the upgrade?	0027	direct
+T17	batteries	What is the overall direction for the standard modules a script gets, and what must each prove before shipping?	0031	direct
+T23	namespaces	What replaced the host prefix on script functions, and where did JSON and streams go?	0049	direct
+T25	postgres	How does a script run a database query through an adapter?	0052	direct
+T28	pipeline	How did a small dataframe pipeline in rnx compare with the same pipeline in Python?	0058	direct
+T31	polarsversion	How can a script find out which Polars version it is using?	0071	direct
+T32	surface	How much of the Polars API was predicted to be bindable automatically?	0072	paraphrase
+T33	rc2	Did the binding generator still work against the Polars 2.0 release candidate, and what differed?	0074	direct
+T36	fngenerics	How were generic Polars functions given concrete types for bindings?	0083 0084	direct
+T37	bitmaps	How do scripts read and supply the null masks of Polars arrays?	0085 0086	paraphrase
+T39	cow	How are Polars results that may borrow or own their data returned to scripts?	0088	direct
+T40	argextrema	How do the positions of the smallest and largest values work for integer columns?	0089	direct
+T42	indexbounds	What happens when a script passes an out-of-range or negative index to a Polars function?	0091	direct
+T43	scalarleft	How does arithmetic with a plain number on the left of a column work, like 5 minus a series?	0092 0095	direct
+T50	v2baseline	How large is the Polars 2 Rust API, and how much of it did rnx cover at the start?	0108	direct
+T51	move	How are Polars values that cannot be cloned moved into script values?	0109	direct
+T53	protocols	Which Rust traits map onto Rune's built-in operations such as display and equality?	0111	direct
+T55	genericmethods	How were methods with generic type parameters bound?	0116	direct
+T57	memoryio	How can a script read or write a dataframe in memory rather than through a file?	0118	direct
+T58	oracle	How were generated bindings that had no tests given reference checks?	0121	direct
+T66	coverage	What did the second and third rounds of Polars coverage add?	0075 0076	direct
+T67	iterators	How are Polars methods that return iterators exposed to scripts?	0077	direct
+T68	operators	Which constructors and compound assignment operators were bound for Polars types?	0078	direct
+T70	fieldnames	Why can't a host easily ask a value for its field names, and how does display cope?	0019	direct
