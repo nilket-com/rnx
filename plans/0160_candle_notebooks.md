@@ -76,6 +76,38 @@ This is 0129's cross-adapter workflow, as a walkthrough:
   - the model directory missing, which must fail with the setup message;
   - a tensor shape changed in the shown text.
 
+## 5a. Folded in from Codex's acceptance (no new review cycle)
+
+1. **Acquisition and verification are distinct.**
+   - `fetch-model.sh` is the only network step.
+   - `check.py` checks the six model files' hashes before 06 runs, in both `--generate` and verification; a missing or drifted file fails by name with the setup command, with no download and no skip.
+   - `--only 05_candle_model` runs 05 without the model, while the full Candle run fails if it's absent.
+   - The README states the model's source, revision, license (Apache-2.0) and size.
+2. **The search reference is pinned and validated.**
+   - The rnx-bench probe (`probes/candle-search-0160`, committed with its frozen `requirements.txt`) records the exact CSV bytes, the six model hashes, the text construction (articles' `text` column, questions as written), pooling, normalization, the 256-token limit and the largest token count seen, the batch size and the environment versions.
+   - The reference validates itself (unique identities, complete rankings, finite scores, no truncation), and `check.py` validates it again, including its provenance, before using it.
+3. **The rank-stability gate covers ranks 1/2, 2/3 and 3/4** for every question, with gaps of more than `1e-4`. Ties order by article id, and numeric scores are sorted before any conversion to text. The shown identities, titles and rows must equal the reference, with scores within `1e-5`. The corpus is labelled an authored showcase, not a held-out benchmark.
+4. **The MLP's exactness is established for these fixed assets only.** Every product and every subset sum is a float32 exactly, so GEMM order and FMA can't change a result; this isn't claimed for models in general.
+   - Displayed f32 text is read back as the f32 it rounds to and compared by value.
+   - The safetensors reader validates names, shapes, dtypes and offsets.
+   - The bundled assets are pinned by hash. Numeric determinism isn't confused with serialization determinism: 0129's writer isn't claimed byte-reproducible.
+5. **Parsing is extended narrowly:**
+   - an `f32` dtype;
+   - a title pattern used only for 06 (04 keeps its simple strings);
+   - an f32 matrix parser for tensor text.
+
+   Every expected result must appear exactly once, in order. Text and HTML must describe the same frame.
+
+   The controls:
+   - `fc2.bias` changed so the checked result changes;
+   - a strictly-more-than-`1e-5` shifted shown reference score;
+   - missing and duplicate ranked rows;
+   - a duplicate article in a reference ranking;
+   - a changed `questions.csv` and a changed model revision in provenance;
+   - plus the listed ones.
+
+6. **After the implementation review (R1):** text and HTML forms of one frame must agree exactly before the agreed frame is compared with an expectation or tolerance.
+
 ## 5. Copy and cost
 
 - **The notebook README:** both notebooks, the model fetch, the worker and kernel setup, and what is checked against what.

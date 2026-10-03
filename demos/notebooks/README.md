@@ -10,6 +10,8 @@ text output and no downloads. A fourth notebook does a short analysis with Polar
 | `02_orders.ipynb` | JSON in, answers out: revenue by region, top customer, what is still open |
 | `03_report.ipynb` | the same orders as an aligned table, built from format strings |
 | `04_polars_sales.ipynb` | Polars on a bundled CSV: filter, derive, group, summarize; needs the Polars kernel (below) |
+| `05_candle_model.ipynb` | Candle: a frame becomes a tensor, a tiny fixed model scores it, the scores come back as a column; needs the Candle kernel |
+| `06_candle_search.ipynb` | Candle: semantic search with a pretrained model over short help articles; needs the Candle kernel and a one-time model download |
 
 Each notebook prints exactly what its terminal demo prints, and `check.py` verifies that
 (below).
@@ -96,6 +98,49 @@ A few Rune spellings in the notebook, as the adapter has them today:
 - group order isn't stable, so every grouped frame is sorted before it's shown;
 - `polars::len()` counts are `u32`.
 
+## The Candle notebooks
+
+`05_candle_model.ipynb` takes 64 rows of three numbers from a frame into an `f32` tensor, runs
+a tiny model (3 inputs, 8 hidden units, 1 output) on the CPU, and puts the scores back in the
+frame. Its weights are **fixed values chosen to show the plumbing, not trained on anything**.
+Nothing is downloaded: the data and the model are in `demos/data`.
+
+`06_candle_search.ipynb` embeds 24 short help articles and 6 questions with
+sentence-transformers' all-MiniLM-L6-v2, and shows the three articles closest in meaning to
+each question. The articles and questions were written for this demo: it's a showcase, not a
+benchmark of search quality, and the notebook points out where the small model ranks a less
+useful article first.
+
+**Their kernel is another worker:** rnx with the Polars and Candle adapters assembled in.
+`demos/candle/` is a small example executable built from this checkout, like `demos/polars/`,
+with its `Cargo.lock` committed. It is a superset of the Polars worker, so all six notebooks run
+on it. From the checkout root:
+
+```sh
+# 6. the Candle worker: one cold build took about 6 minutes on our machine, with the crates
+#    already downloaded
+cargo build --release --locked --manifest-path demos/candle/Cargo.toml
+
+# 7. the model for 06, once: sentence-transformers/all-MiniLM-L6-v2 (Apache-2.0) at a pinned
+#    revision, about 90 MB, every file's SHA-256 checked; it goes to demos/models/ (ignored by git)
+sh demos/candle/fetch-model.sh
+
+# 8. point the Rune (rnx) kernel at the Candle worker
+jupyter/target/release/rnx-jupyter install --rnx "$PWD/demos/candle/target/release/rnx-candle-demo" --replace
+```
+
+rnx itself makes no network call; after step 7 everything runs offline. On our machine each
+notebook runs in under two seconds, kernel start included. The same workflows run in the
+terminal, from the checkout root:
+
+```sh
+demos/candle/target/release/rnx-candle-demo run demos/candle/model.rn demos/data
+demos/candle/target/release/rnx-candle-demo run demos/candle/search.rn demos/data demos/models/all-MiniLM-L6-v2
+```
+
+Tensors show as text (dtype, shape and the first 8 × 8 corner); frames show as tables, in HTML
+in Jupyter.
+
 ## Checking the notebooks (maintainers)
 
 `check.py` runs each notebook in a fresh kernel, twice. For one notebook it also restarts that
@@ -108,6 +153,15 @@ same kernel and runs everything again. Then it requires:
   equal to the checked transcript in `demos/out/`, apart from the data path on its first line.
   For the Polars notebook, stdout equal to `sales.rn` run live by the same worker, and every
   displayed frame and the answer equal to what `check.py` computes from `sales.csv` itself.
+- for `05_candle_model`, every shown frame, tensor and the answer equal to the model run again
+  in plain Python from the bundled weights. Exact equality is established for these fixed
+  weights only, whose every intermediate sum is a float32 exactly; it isn't a claim about
+  models in general;
+- for `06_candle_search`, every ranking equal in order and identity to a committed
+  sentence-transformers (PyTorch) reference, made by rnx-bench's `probes/candle-search-0160`
+  from the same CSVs and model files (both pinned by hash), with scores within `1e-5`. The six
+  model files are checked by hash before the notebook runs, and a missing or changed model fails
+  with the setup command.
 
 It uses a temporary kernelspec, so it never touches your installed kernel, and it never writes
 a committed file unless asked to with `--generate`.
@@ -119,6 +173,8 @@ python3 -m venv /tmp/rnx-nb && /tmp/rnx-nb/bin/pip install -r demos/notebooks/re
 ```
 
 Add `--polars "$PWD/demos/polars/target/release/rnx-polars-demo"` to also check the Polars
-notebook, and the plain three again on the Polars worker. `--controls` runs the comparison's own
-controls, and `--generate` rewrites the committed outputs (with `--polars`, only the Polars
-notebook's).
+notebook, and the plain three again on the Polars worker; add
+`--candle "$PWD/demos/candle/target/release/rnx-candle-demo"` to check the Candle notebooks and
+every other notebook on the Candle worker. `--only 05_candle_model` checks just that notebook,
+without the model download. `--controls` runs the comparison's own controls, and `--generate`
+rewrites the committed outputs (with `--polars` or `--candle`, only that worker's notebooks).

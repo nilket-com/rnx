@@ -1,0 +1,3 @@
+# models fetched by demos/candle/fetch-model.sh; never committed
+*
+!.gitignore

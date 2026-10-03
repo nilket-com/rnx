@@ -1,0 +1,22 @@
+# Record 0160: an example executable for the Candle notebooks, built from this checkout; not a
+# general adapter installer. It registers the Polars and Candle adapters the way `rnx project
+# build`'s generated executable would (Extensions with each builder and presenter), as its own
+# package and without `project-sources`, which it doesn't use. It is a superset of
+# `demos/polars`, so every demo notebook runs on it. Build with `--locked`; the committed
+# Cargo.lock is the tested resolution.
+[package]
+name = "rnx-candle-demo"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[[bin]]
+name = "rnx-candle-demo"
+path = "main.rs"
+
+[dependencies]
+rnx = { path = "../..", default-features = false, features = ["count-allocations"] }
+rnx-polars = { path = "../../adapters/polars" }
+rnx-candle = { path = "../../adapters/candle" }
