@@ -1,0 +1,22 @@
+pass: auto-routed: confidence >= t, mandatory REVIEW never: [1, 2, 3, 6]
+pass: all tickets count: N, A, workload
+pass: possible errors: differ from at least one annotator (2, 3, 6)
+pass: certain errors: match neither annotator (3, 6)
+pass: consensus-only: tickets 1 and 6 agree; 6 is wrong
+pass: either-label-correct = auto - certain
+pass: two separate costs, never added
+pass: misroutes keyed by (Claude, Codex) -> predicted: {'(bug, bug) -> feature': 1, '(bug, feature) -> bug': 1, '(feature, question) -> bug': 1}
+pass: performance folds into bug
+pass: five-label vs four-queue agreement (performance vs bug agrees as queues): {'five_labels': {'agree': 1, 'p': 0.3333333333333333, 'kappa': 0.14285714285714285}, 'four_queues': {'agree': 2, 'p': 0.6666666666666666, 'kappa': 0.39999999999999997}, 'queue_disagreements': {'feature | question': 1}}
+pass: maintainer map: case-insensitive, one queue, multi, none: {1: 'bug', 2: 'feature', 3: 'multi', 4: 'none', 5: 'none', 6: 'multi'}
+pass: Wilson at 0/n: lower 0
+pass: Wilson at n/n: upper 1 (to rounding; 0153's pinned function): 0.9999999999999998
+pass: Wilson with n = 0 is undefined
+pass: upper exactly 0.20 and lower exactly 0.25: target met
+pass: upper just above 0.20: not demonstrated
+pass: lower just below 0.25: not demonstrated
+pass: zero auto-routes: not demonstrated
+pass: zero auto-routes leave E undefined
+pass: the frozen threshold and selection are 0153's
+pass: the frozen centroids decode as 4 queues x 384 f32
+all 0154 measure fixtures behave

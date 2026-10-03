@@ -1,0 +1,12 @@
+
+REHEARSAL (a), 0153's cross-fit predictions, Claude's labels as both annotators: auto 74 of 346, A 0.214 [0.174, 0.260], workload 0.786
+  E_possible 0.095 (7) [0.047, 0.183]; E_certain 0.095 (7) [0.047, 0.183]
+  consensus-only E 0.095 (7 of 74); either-label-correct 67 of 74 (0.905)
+  cost, possible misroutes: c=2 0.827, c=5 0.887; certain misroutes: c=2 0.827, c=5 0.887
+  misroutes by queue, (Claude, Codex) -> predicted: {'(bug, bug) -> documentation': 1, '(feature, feature) -> documentation': 3, '(question, question) -> bug': 1, '(question, question) -> documentation': 1, '(question, question) -> feature': 1}
+
+REHEARSAL (b), the frozen full-dev centroid policy on D3-dev (in-sample; plumbing only): auto 88 of 346, A 0.254 [0.211, 0.303], workload 0.746
+  E_possible 0.080 (7) [0.039, 0.155]; E_certain 0.080 (7) [0.039, 0.155]
+  consensus-only E 0.080 (7 of 88); either-label-correct 81 of 88 (0.920)
+  cost, possible misroutes: c=2 0.786, c=5 0.847; certain misroutes: c=2 0.786, c=5 0.847
+  misroutes by queue, (Claude, Codex) -> predicted: {'(bug, bug) -> documentation': 1, '(feature, feature) -> documentation': 3, '(question, question) -> documentation': 2, '(question, question) -> feature': 1}

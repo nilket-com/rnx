@@ -1,0 +1,10 @@
+pass: unmodified: every step reached (fixtures-0153 fixtures-0154 handler twin-controls session twin validate hf-t3 evaluate )
+refused: the design file changed: FAIL: the design file is not the accepted design (SHA-256); no step began
+refused: a holdout annotation row missing: FAIL: annotations-codex-hold.tsv: rows are not exactly d3-hold.tsv in order (missing ['5'], extra []); no step began
+refused: D3 text drifted: FAIL: D3 drifted from frozen/d3-manifest.tsv (text, labels or the issue set); no step began
+refused: a MiniLM weight byte changed: FAIL: MiniLM: model.safetensors changed; no step began
+refused: the frozen centroids changed: FAIL: 0153/out/dev/centroids.tsv changed since 064aa52; no step began
+refused: selected.json changed: FAIL: 0153/out/dev/selected.json changed since 064aa52; no step began
+refused: 0153's evaluate.py changed: FAIL: 0153/evaluate.py changed since 064aa52; no step began
+refused: 0153's validate.py changed: FAIL: 0153/validate.py changed since 064aa52; no step began
+all provenance and freeze controls behave
