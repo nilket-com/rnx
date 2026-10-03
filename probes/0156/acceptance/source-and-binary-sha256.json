@@ -1,0 +1,58 @@
+{
+  "../rnx/target/release/rnx": {
+    "bytes": 19010824,
+    "sha256": "acddc23cd991054445695a3b3c90f178e90c4aebdcaffc6883c969700331713e"
+  },
+  "../rnx/jupyter/target/release/rnx-jupyter": {
+    "bytes": 2438056,
+    "sha256": "240a42aee9f70592704a12e162437fc4ac594721d069b57dbcd0330eacb0291f"
+  },
+  "../rnx/jupyter/src/main.rs": {
+    "bytes": 1890,
+    "sha256": "9ea335c8fbd2c57f846ee705cf2fbc7406a35aa61deb00bb7d880761921612b9"
+  },
+  "../rnx/jupyter/src/install.rs": {
+    "bytes": 3263,
+    "sha256": "d63e3ad65e4754574c7b3360608d03fbc71b413c2ca58240f82317d30f34217d"
+  },
+  "../rnx/jupyter/src/connection.rs": {
+    "bytes": 5202,
+    "sha256": "1f792caffcd746efa4368c948b0dc0995ced18ffb78ab8f0bb6b2c6e35c23bfd"
+  },
+  "../rnx/jupyter/src/worker.rs": {
+    "bytes": 15969,
+    "sha256": "e87c3b8d77d94f9ca079996b5965450149494fe0d7c805e56e7da4da5c94b181"
+  },
+  "../rnx/jupyter/src/streams.rs": {
+    "bytes": 4604,
+    "sha256": "79c86267f95c024bfe98da9a7082fd630e1cf1bda65a4a042b4c31b4a7256de6"
+  },
+  "../rnx/jupyter/src/transport.rs": {
+    "bytes": 35284,
+    "sha256": "f7df09f4c23b0fdfe3df502b18cdc1d2f87cdacdc0e7cdb206415e5acf8b112a"
+  },
+  "../rnx/jupyter/src/lib.rs": {
+    "bytes": 293,
+    "sha256": "416061981a35a318d200d9cfe7021715f78fcde694a266fa591273564e1567a3"
+  },
+  "../rnx/jupyter/src/containment.rs": {
+    "bytes": 3045,
+    "sha256": "792eee5f5eec71b69c7c5e41654d6a6913c9164256bf84f9ace4c7cfacbc8514"
+  },
+  "../rnx/jupyter/src/wire.rs": {
+    "bytes": 8410,
+    "sha256": "ad0ee3de16a77cbec1b41637f608769ffd5e9a925b7debd20b1b6679c94682ac"
+  },
+  "../rnx/jupyter/src/kernel.rs": {
+    "bytes": 19902,
+    "sha256": "f6e1438459304b2917b014c98762ad6e23a9f7166153d295a04b4aae4f1ebe5e"
+  },
+  "../rnx/jupyter/Cargo.toml": {
+    "bytes": 716,
+    "sha256": "d403ab00643503a70564bfbe415b4955860896fe5913880d22c4c47b164d64b3"
+  },
+  "../rnx/jupyter/Cargo.lock": {
+    "bytes": 12718,
+    "sha256": "f17007b6a853aaa4e1673c2edb5c819c5648bf113d0ed8993b74114d216eff81"
+  }
+}

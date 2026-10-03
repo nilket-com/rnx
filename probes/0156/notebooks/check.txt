@@ -1,0 +1,37 @@
+rnx 4dc1422d413d2ff9aa5d25d1aaecb64387e8af0b (clean: 0 changes), 2026-10-03T02:03:26-05:00
+acddc23cd991054445695a3b3c90f178e90c4aebdcaffc6883c969700331713e  target/release/rnx
+05aedaea48c128b58ef18a2b2bc75a55c748ef1fe92fd82d7f428e050c50f8b5  jupyter/target/release/rnx-jupyter
+$ check.py (verify)
+ok: 01_mortgage: 2 runs match the stored outputs and the terminal demo
+ok: 02_orders: 3 runs match the stored outputs and the terminal demo (one kernel restarted: new pid, earlier state gone)
+ok: 03_report: 2 runs match the stored outputs and the terminal demo
+verify exit 0
+$ check.py --controls
+pass: a harmless same-stream split: accepted
+pass: one byte of an answer changed: cell 7: outputs differ:
+pass: two different results swapped between cells: cell 3: outputs differ:
+pass: stdout turned into stderr (comparison): cell 7: outputs differ:
+pass: stdout turned into stderr (judge): cell 7: unexpected stderr output '12 orders read from ../data/orders.json\nShipped revenue by region:\n  north    245.0
+pass: a cell that raises: cell 8: error output RuntimeError: runtime error at input 5, line 2, column 1: Type `::std::vec::Vec` missing integer index `5`
+pass: a stream line not matching the terminal reference: the stream no longer matches the terminal reference
+controls exit 0
+$ pip freeze (the venv used)
+Python 3.14.4
+attrs==26.1.0
+fastjsonschema==2.22.2
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+jupyter_client==8.10.0
+jupyter_core==5.9.1
+nbclient==0.11.0
+nbformat==5.11.1
+platformdirs==4.12.2
+python-dateutil==2.9.0.post0
+pyzmq==27.2.0
+referencing==0.37.0
+rpds-py==2026.6.3
+six==1.17.0
+tornado==6.5.10
+traitlets==5.16.1
+typing_extensions==4.16.0
+0

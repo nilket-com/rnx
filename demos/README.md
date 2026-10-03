@@ -83,3 +83,8 @@ Either order demo takes another file of the same shape as its first argument:
 `rnx run demos/02_orders.rn path/to/orders.json`. An empty JSON array, a file with a single
 customer, or one with nothing shipped yet is reported plainly. With no shipped revenue the
 shares are undefined, shown as `-`, and there are no bars.
+
+## The same demos as notebooks
+
+[`notebooks/`](notebooks/README.md) has the three demos as short Jupyter walkthroughs on rnx's own
+kernel (Linux only), each checked to print exactly what its terminal demo prints.

@@ -1,0 +1,98 @@
+[
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-supervision/probe.py"
+    ],
+    "run": "probe",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-supervision/extended.py"
+    ],
+    "run": "extended",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-supervision/boundaries.py"
+    ],
+    "run": "boundaries",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-supervision/notebook.py"
+    ],
+    "run": "notebook",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-zmtp/probe.py"
+    ],
+    "run": "wire-probe",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-zmtp/extended.py"
+    ],
+    "run": "wire-extended",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-supervision/probe.py"
+    ],
+    "run": "probe-confirmation",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-supervision/extended.py"
+    ],
+    "run": "extended-confirmation",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-supervision/boundaries.py"
+    ],
+    "run": "boundaries-confirmation",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-supervision/notebook.py"
+    ],
+    "run": "notebook-confirmation",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-zmtp/probe.py"
+    ],
+    "run": "wire-probe-confirmation",
+    "exit": 0
+  },
+  {
+    "command": [
+      "probes/jupyter-transport/.venv/bin/python",
+      "probes/jupyter-zmtp/extended.py"
+    ],
+    "run": "wire-extended-confirmation",
+    "exit": 0
+  }
+]
