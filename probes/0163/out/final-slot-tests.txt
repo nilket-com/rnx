@@ -1,0 +1,16 @@
+   Compiling rnx v0.0.0 (/home/me/work/rnx)
+    Finished `test` profile [unoptimized] target(s) in 1.90s
+     Running unittests src/lib.rs (target/debug/deps/rnx-b575ec1ddb39c3e8)
+
+running 9 tests
+test server::slot_tests::unpolled_polled_completed_and_abandoned_runs_obey_one_shot_lifecycle ... ok
+test server::slot_tests::retired_lifecycle_is_never_returned_and_begin_failure_retires ... ok
+test server::slot_tests::requests_are_fresh_budgets_reset_and_intentional_slot_state_persists ... ok
+test server::slot_tests::escaped_unpolled_and_pending_operations_cannot_resurrect ... ok
+test server::slot_tests::four_interleaved_slots_keep_cancellation_and_retirement_local ... ok
+test server::slot_tests::cleanup_failures_win_and_retire_instead_of_returning_slots ... ok
+test server::slot_tests::slots_match_existing_prepare_results_and_failures ... ok
+test server::slot_tests::four_slots_on_one_localset_interleave_timers_and_http ... ok
+test server::slot_tests::held_http_operations_are_cancelled_before_the_next_generation ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 178 filtered out; finished in 0.11s

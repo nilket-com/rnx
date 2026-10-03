@@ -1,0 +1,128 @@
+cargo test --offline --locked --features server-runtime,test-support: exit 0
+     Running unittests src/lib.rs (target/debug/deps/rnx-0e1b38dc96bfa2d4)
+test result: ok. 187 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.59s
+     Running unittests src/main.rs (target/debug/deps/rnx-dabb9e9bed60c7c3)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/async_execution.rs (target/debug/deps/async_execution-fd3b980962f77e72)
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.61s
+     Running tests/budget.rs (target/debug/deps/budget-d863917913f07a43)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+     Running tests/capture_bound.rs (target/debug/deps/capture_bound-75259d52e42e9e07)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+     Running tests/capture_bound_windows.rs (target/debug/deps/capture_bound_windows-c282ae7f7c4e41c8)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/capture_hold_windows.rs (target/debug/deps/capture_hold_windows-1cb02345efc0d435)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/child_input.rs (target/debug/deps/child_input-38689be785d4d1c8)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.02s
+     Running tests/colour.rs (target/debug/deps/colour-38246ae26d5ac32c)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+     Running tests/commands.rs (target/debug/deps/commands-d506090ef40b870c)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+     Running tests/config.rs (target/debug/deps/config-16947080d965b77b)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+     Running tests/console_interrupt.rs (target/debug/deps/console_interrupt-01de11d040a9c940)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/delivery_deadline_windows.rs (target/debug/deps/delivery_deadline_windows-82e29eafcfbcaee7)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/delivery_exit_windows.rs (target/debug/deps/delivery_exit_windows-0b463e909782ba00)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/delivery_failure.rs (target/debug/deps/delivery_failure-2f763cfbc1e0b90f)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+     Running tests/delivery_failure_windows.rs (target/debug/deps/delivery_failure_windows-54c9707adee24bd3)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/demos.rs (target/debug/deps/demos-10020fd7e6a12aac)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/env.rs (target/debug/deps/env-5dc4e65463ad8e1a)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/eval_outcome.rs (target/debug/deps/eval_outcome-1e94c8ef4ac5de64)
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+     Running tests/exit_status.rs (target/debug/deps/exit_status-698eacbe3277dfd6)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/fs.rs (target/debug/deps/fs-25a3f101542388e2)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s
+     Running tests/history.rs (target/debug/deps/history-7817175868b234b6)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/http.rs (target/debug/deps/http-1ce6800514aa19bb)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+     Running tests/job_assignment_windows.rs (target/debug/deps/job_assignment_windows-f1e78d5b35e9ea70)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/job_breakaway.rs (target/debug/deps/job_breakaway-9020a132f05e03bc)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/json.rs (target/debug/deps/json-dc0ce2009a7de43b)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+     Running tests/json_parse.rs (target/debug/deps/json_parse-697e47c445d458b9)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+     Running tests/method_naming.rs (target/debug/deps/method_naming-3b98b4999f3d8c53)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/modules.rs (target/debug/deps/modules-7822126635cb204d)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/namespaces.rs (target/debug/deps/namespaces-e552a64ef8f8977a)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/numbering.rs (target/debug/deps/numbering-26e175bad2e06fae)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/path.rs (target/debug/deps/path-87ca3c127f73dd42)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+     Running tests/pipe_cancel_windows.rs (target/debug/deps/pipe_cancel_windows-76642b21e3531c80)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/presentation_worker.rs (target/debug/deps/presentation_worker-e60a66e6b91652bb)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/process_bytes.rs (target/debug/deps/process_bytes-ca4ca27cb9356c32)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+     Running tests/process_module.rs (target/debug/deps/process_module-a3fd10e5c2f32134)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+     Running tests/project_sources.rs (target/debug/deps/project_sources-594c01e70e48c517)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/prompt.rs (target/debug/deps/prompt-02484a2babc71c4a)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/reader_panic_windows.rs (target/debug/deps/reader_panic_windows-779e1c98d60d57de)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/release_metadata.rs (target/debug/deps/release_metadata-f3077ea1f1f60db7)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.34s
+     Running tests/repl.rs (target/debug/deps/repl-4bc8d27b66f8084f)
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.81s
+     Running tests/run_diagnostics.rs (target/debug/deps/run_diagnostics-17c303b4aae08429)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/run_output.rs (target/debug/deps/run_output-c60df3490f6dd88c)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/stdin.rs (target/debug/deps/stdin-85c5eeede280649e)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/terminal_safety.rs (target/debug/deps/terminal_safety-c5da03033ba9e009)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/time.rs (target/debug/deps/time-262c96a3a9cd78c1)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.73s
+     Running tests/upstream_isolation.rs (target/debug/deps/upstream_isolation-2470250be85b231f)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/worker.rs (target/debug/deps/worker-c66de0e93061c9e6)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.18s
+   Doc-tests rnx
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+Final focused slot tests:
+   Compiling rnx v0.0.0 (/home/me/work/rnx)
+    Finished `test` profile [unoptimized] target(s) in 1.07s
+     Running unittests src/lib.rs (target/debug/deps/rnx-b575ec1ddb39c3e8)
+
+running 9 tests
+test server::slot_tests::unpolled_polled_completed_and_abandoned_runs_obey_one_shot_lifecycle ... ok
+test server::slot_tests::retired_lifecycle_is_never_returned_and_begin_failure_retires ... ok
+test server::slot_tests::escaped_unpolled_and_pending_operations_cannot_resurrect ... ok
+test server::slot_tests::requests_are_fresh_budgets_reset_and_intentional_slot_state_persists ... ok
+test server::slot_tests::slots_match_existing_prepare_results_and_failures ... ok
+test server::slot_tests::cleanup_failures_win_and_retire_instead_of_returning_slots ... ok
+test server::slot_tests::four_interleaved_slots_keep_cancellation_and_retirement_local ... ok
+test server::slot_tests::four_slots_on_one_localset_interleave_timers_and_http ... ok
+test server::slot_tests::held_http_operations_are_cancelled_before_the_next_generation ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 178 filtered out; finished in 0.11s
+
+
+Additional lifecycle health control:
+   Compiling rnx v0.0.0 (/home/me/work/rnx)
+    Finished `test` profile [unoptimized] target(s) in 1.07s
+     Running unittests src/lib.rs (target/debug/deps/rnx-b575ec1ddb39c3e8)
+
+running 1 test
+test lifecycle::tests::reusable_requires_idle_unretired_unexhausted_state ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 186 filtered out; finished in 0.00s

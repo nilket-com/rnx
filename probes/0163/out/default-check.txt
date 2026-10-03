@@ -1,0 +1,3 @@
+   Compiling rnx v0.0.0 (/home/me/work/rnx)
+    Checking rnx-project v0.0.0 (/home/me/work/rnx/tools/project)
+    Finished `dev` profile [unoptimized] target(s) in 2.96s

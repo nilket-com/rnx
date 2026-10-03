@@ -1,0 +1,22 @@
+   Compiling rnx v0.0.0 (/home/me/work/rnx)
+    Finished `test` profile [unoptimized] target(s) in 1.71s
+     Running unittests src/lib.rs (target/debug/deps/rnx-b575ec1ddb39c3e8)
+
+running 1 test
+test server::slot_tests::escaped_unpolled_and_pending_operations_cannot_resurrect ... FAILED
+
+failures:
+
+---- server::slot_tests::escaped_unpolled_and_pending_operations_cannot_resurrect stdout ----
+
+thread 'server::slot_tests::escaped_unpolled_and_pending_operations_cannot_resurrect' (1552444) panicked at src/server.rs:1135:13:
+revoked future succeeded
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    server::slot_tests::escaped_unpolled_and_pending_operations_cannot_resurrect
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 186 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--lib`

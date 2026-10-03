@@ -292,6 +292,16 @@ impl Lifecycle {
 		}
 		Ok(())
 	}
+	/// A reusable owner must be idle, unretired and able to begin another generation.
+	#[cfg(any(test, feature = "server-runtime"))]
+	pub(crate) fn reusable(&self) -> bool {
+		self.0.as_ref().is_none_or(|s| {
+			!s.active.get()
+				&& !s.retired.get()
+				&& s.generation.get() < u64::MAX
+				&& s.failure.borrow().is_none()
+		})
+	}
 	pub fn failed(&self) -> bool {
 		self.0
 			.as_ref()
@@ -332,6 +342,21 @@ pub(crate) fn close_thread() -> Result<(), String> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn reusable_requires_idle_unretired_unexhausted_state() {
+		let life = Lifecycle::new(true).unwrap();
+		assert!(life.reusable());
+		life.begin().unwrap();
+		assert!(!life.reusable());
+		life.finish(false).unwrap();
+		assert!(life.reusable());
+		life.0.as_ref().unwrap().generation.set(u64::MAX);
+		assert!(!life.reusable());
+		assert_eq!(life.begin().unwrap_err(), "execution generation exhausted");
+		life.close().unwrap();
+		assert!(!life.reusable());
+	}
+
 	use std::task::Waker;
 	struct Pending {
 		live: Rc<Cell<usize>>,

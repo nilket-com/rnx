@@ -1,0 +1,293 @@
+   Compiling rnx v0.0.0 (/home/me/work/rnx)
+warning: using `clone` on type `Kind` which implements the `Copy` trait
+   --> src/complete.rs:161:48
+    |
+161 |             let previous = first.checked_sub(1).map(|p| tokens[p].0.clone());
+    |                                                         ^^^^^^^^^^^^^^^^^^^ help: try removing the `clone` call: `tokens[p].0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#clone_on_copy
+    = note: `#[warn(clippy::clone_on_copy)]` on by default
+
+warning: this `if` statement can be collapsed
+   --> src/complete.rs:181:5
+    |
+181 | /                 if let Some(start) = open.pop() {
+182 | |                     if start < cursor && cursor < range.end {
+183 | |                         return true;
+184 | |                     }
+185 | |                 }
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+    = note: `#[warn(clippy::collapsible_if)]` on by default
+help: collapse nested if block
+    |
+181 ~                 if let Some(start) = open.pop()
+182 ~                     && start < cursor && cursor < range.end {
+183 |                         return true;
+184 ~                     }
+    |
+
+warning: call to `std::mem::drop` with a value that does not implement `Drop`. Dropping such a type only extends its contained lifetimes
+    --> src/host.rs:1130:2
+     |
+1130 |     drop(put);
+     |     ^^^^^^^^^
+     |
+note: argument has type `{closure@src/host.rs:1103:16: 1103:64}`
+    --> src/host.rs:1130:7
+     |
+1130 |     drop(put);
+     |          ^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#drop_non_drop
+     = note: `#[warn(clippy::drop_non_drop)]` on by default
+
+warning: unneeded late initialization
+   --> src/presentation.rs:270:3
+    |
+270 |         let style;
+    |         ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#needless_late_init
+    = note: `#[warn(clippy::needless_late_init)]` on by default
+help: move the declaration `style` here and remove the assignments from the branches
+    |
+270 ~
+271 ~         let style = if rest.starts_with("//") {
+272 |             at += rest.find('\n').unwrap_or(rest.len());
+273 ~             Some(Style::Comment)
+274 |         } else if rest.starts_with("/*") {
+...
+287 |             }
+288 ~             Some(Style::Comment)
+289 |         } else if matches!(c, '"' | '\'' | '`') || rest.starts_with("b\"") || rest.starts_with("b'")
+...
+308 |             }
+309 ~             Some(Style::Literal)
+310 |         } else if c.is_ascii_digit() {
+...
+326 |             }
+327 ~             Some(Style::Number)
+328 |         } else if unicode_ident::is_xid_start(c) || c == '_' {
+...
+336 |             }
+337 ~             match &text[start..at] {
+338 |                 "true" | "false" | "None" | "Some" => Some(Style::Number),
+...
+346 |                 _ => None,
+347 ~             }
+348 |         } else {
+349 |             at += c.len_utf8();
+350 ~             None
+351 ~         };
+    |
+
+warning: this `if` has identical blocks
+   --> src/presentation.rs:314:49
+    |
+314 |                   if ch.is_ascii_alphanumeric() || ch == b'_' {
+    |  _____________________________________________________________^
+315 | |                     at += 1;
+316 | |                 } else if ch == b'.' && text.as_bytes().get(at + 1).is_some_and(u8::is_ascii_digit)
+    | |_________________^
+    |
+note: same as this
+   --> src/presentation.rs:317:5
+    |
+317 | /                 {
+318 | |                     at += 1;
+319 | |                 } else if matches!(ch, b'+' | b'-')
+    | |_________________^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#if_same_then_else
+    = note: `#[warn(clippy::if_same_then_else)]` on by default
+
+warning: this `if` has identical blocks
+   --> src/presentation.rs:317:5
+    |
+317 | /                 {
+318 | |                     at += 1;
+319 | |                 } else if matches!(ch, b'+' | b'-')
+    | |_________________^
+    |
+note: same as this
+   --> src/presentation.rs:321:5
+    |
+321 | /                 {
+322 | |                     at += 1;
+323 | |                 } else {
+    | |_________________^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#if_same_then_else
+
+warning: this `if` statement can be collapsed
+   --> src/session.rs:727:6
+    |
+727 | /                     if let Some(old) = declarations.get(name) {
+728 | |                         if (old.is_type || is_type) && old.source != source {
+729 | |                             return Err(self.refused_at(
+730 | |                                 &format!(
+...   |
+737 | |                     }
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+727 ~                     if let Some(old) = declarations.get(name)
+728 ~                         && (old.is_type || is_type) && old.source != source {
+729 |                             return Err(self.refused_at(
+...
+735 |                             ));
+736 ~                         }
+    |
+
+warning: stripping a prefix manually
+    --> src/session.rs:1706:11
+     |
+1706 |             rest = &after[1..];
+     |                    ^^^^^^^^^^^
+     |
+note: the prefix was tested here
+    --> src/session.rs:1705:3
+     |
+1705 |         if after.starts_with('{') {
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_strip
+     = note: `#[warn(clippy::manual_strip)]` on by default
+help: try using the `strip_prefix` method
+     |
+1705 ~         if let Some(<stripped>) = after.strip_prefix('{') {
+1706 ~             rest = <stripped>;
+     |
+
+warning: this manual char comparison can be written more succinctly
+    --> src/session.rs:1709:24
+     |
+1709 |         let end = after.find(|c| c == '}' || c == ':').unwrap_or(after.len());
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^ help: consider using an array of `char`: `['}', ':']`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_pattern_char_comparison
+     = note: `#[warn(clippy::manual_pattern_char_comparison)]` on by default
+
+warning: manual implementation of `.is_multiple_of()`
+  --> src/text.rs:72:19
+   |
+72 |         if index > 0 && (digits.len() - index) % 3 == 0 {
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace with: `(digits.len() - index).is_multiple_of(3)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_is_multiple_of
+   = note: `#[warn(clippy::manual_is_multiple_of)]` on by default
+
+warning: this `if` statement can be collapsed
+   --> src/time.rs:175:3
+    |
+175 | /         if let Some(offset) = numeric_offset {
+176 | |             if offset != z.offset() {
+177 | |                 return Err(refuse(format!(
+178 | |                     "numeric offset {offset} disagrees with zone offset {}",
+...   |
+182 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+175 ~         if let Some(offset) = numeric_offset
+176 ~             && offset != z.offset() {
+177 |                 return Err(refuse(format!(
+...
+180 |                 )));
+181 ~             }
+    |
+
+warning: this `if` statement can be collapsed
+   --> src/worker.rs:330:2
+    |
+330 | /     if std::env::var("RNX_TEST_WORKER_PAUSE").ok().as_deref() == Some(phase) {
+331 | |         if let Some(path) = std::env::var_os("RNX_TEST_WORKER_PHASE_FILE") {
+332 | |             std::fs::write(path, phase).expect("worker phase fixture");
+333 | |             loop {
+...   |
+337 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+330 ~     if std::env::var("RNX_TEST_WORKER_PAUSE").ok().as_deref() == Some(phase)
+331 ~         && let Some(path) = std::env::var_os("RNX_TEST_WORKER_PHASE_FILE") {
+332 |             std::fs::write(path, phase).expect("worker phase fixture");
+...
+335 |             }
+336 ~         }
+    |
+
+warning: `rnx` (lib) generated 12 warnings (run `cargo clippy --fix --lib -p rnx -- ` to apply 8 suggestions)
+warning: manual implementation of `.is_multiple_of()`
+  --> tests/demos.rs:50:15
+   |
+50 |         if i > 0 && (whole.len() - i) % 3 == 0 {
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace with: `(whole.len() - i).is_multiple_of(3)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_is_multiple_of
+   = note: `#[warn(clippy::manual_is_multiple_of)]` on by default
+
+warning: `rnx` (test "demos") generated 1 warning (run `cargo clippy --fix --test "demos" -p rnx -- ` to apply 1 suggestion)
+warning: manual creation of a dangling pointer
+   --> src/memory.rs:137:17
+    |
+137 |         let pointer = 1usize as *mut u8;
+    |                       ^^^^^^^^^^^^^^^^^ help: use: `std::ptr::dangling_mut::<u8>()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_dangling_ptr
+    = note: `#[warn(clippy::manual_dangling_ptr)]` on by default
+
+error: using a non-octal value to set unix file permissions
+   --> tests/fs.rs:308:77
+    |
+308 |     std::fs::set_permissions(t.path("denied"), std::fs::Permissions::from_mode(0)).unwrap();
+    |                                                                                ^ help: consider using an octal literal instead: `0o0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#non_octal_unix_permissions
+    = note: `#[deny(clippy::non_octal_unix_permissions)]` on by default
+
+error: could not compile `rnx` (test "fs") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+warning: the function `libc::openpty` doesn't need a mutable reference
+  --> tests/repl.rs:41:5
+   |
+41 |                 &mut size,
+   |                 ^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unnecessary_mut_passed
+   = note: `#[warn(clippy::unnecessary_mut_passed)]` on by default
+help: remove this `mut`
+   |
+41 -                 &mut size,
+41 +                 &size,
+   |
+
+error: using a non-octal value to set unix file permissions
+   --> tests/config.rs:318:64
+    |
+318 |         std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0)).unwrap();
+    |                                                                      ^ help: consider using an octal literal instead: `0o0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#non_octal_unix_permissions
+    = note: `#[deny(clippy::non_octal_unix_permissions)]` on by default
+
+error: could not compile `rnx` (test "config") due to 1 previous error
+warning: `rnx` (test "repl") generated 1 warning (run `cargo clippy --fix --test "repl" -p rnx -- ` to apply 1 suggestion)
+warning: items after a test module
+   --> src/worker.rs:300:1
+    |
+300 | mod tests {
+    | ^^^^^^^^^
+...
+329 | fn test_pause(phase: &str) {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#items_after_test_module
+    = note: `#[warn(clippy::items_after_test_module)]` on by default
+    = help: move the items to before the test module was defined
+
+warning: `rnx` (lib test) generated 14 warnings (12 duplicates) (run `cargo clippy --fix --lib -p rnx --tests -- ` to apply 2 suggestions)
