@@ -679,6 +679,38 @@ def parse_tensor(text):
 	return shape, values
 
 
+def parse_tensor_html(form):
+	"""Record 0161: this example's tensor HTML only, read independently of the text: the header in
+	<small>, column indices 0..n in the head, a row index 0..m in each row, f32 values, and a final
+	`…` row when rows were left out. Returns what parse_tensor returns."""
+	if form is None or not html_allowed(form):
+		raise Mismatch(f"no allowed tensor HTML: {form!r}")
+	t = Table()
+	t.feed(form)
+	t.close()
+	m = re.fullmatch(r"Tensor\[f32; (\d+)x(\d+)\]", t.shape or "")
+	if not m:
+		raise Mismatch(f"not an f32 matrix header: {t.shape!r}")
+	shape = (int(m[1]), int(m[2]))
+	if len(t.head) != 1:
+		raise Mismatch(f"tensor HTML head rows: {t.head}")
+	width = min(shape[1], 8)
+	if shape[1] > 8 or t.head[0] != [""] + [str(i) for i in range(width)]:
+		raise Mismatch(f"tensor HTML column indices: {t.head[0]}")
+	body = t.body
+	more = shape[0] > 8
+	if len(body) != min(shape[0], 8) + more:
+		raise Mismatch(f"tensor HTML has {len(body)} rows for shape {shape}")
+	if more and body.pop() != ["…"] * (width + 1):
+		raise Mismatch("tensor HTML has no elided row where rows were left out")
+	values = []
+	for i, row in enumerate(body):
+		if len(row) != width + 1 or row[0] != str(i) or not all(re.fullmatch(r"-?\d+\.\d+", c) for c in row[1:]):
+			raise Mismatch(f"tensor HTML row {i}: {row}")
+		values.append([f32(float(c)) for c in row[1:]])
+	return shape, values
+
+
 def check_model(nb, data=DEMOS / "data", pinned=True):
 	"""Every shown result of 05, in order and exactly once, then its answer line."""
 	expected = model_expected(data, pinned)
@@ -691,9 +723,10 @@ def check_model(nb, data=DEMOS / "data", pinned=True):
 			label, height, schema, rows = expected["frames"][i]
 			check_forms(text, forms[i], label, height, schema, rows)
 		elif i in expected["tensors"]:
-			if forms[i] is not None:
-				raise Mismatch(f"result {i}: a tensor has no HTML form")
+			# record 0161: both forms parsed independently, agreeing exactly before the expectation
 			shape, values = parse_tensor(text)
+			if parse_tensor_html(forms[i]) != (shape, values):
+				raise Mismatch(f"result {i}: the tensor's text/plain and text/html differ")
 			want_shape, want = expected["tensors"][i]
 			if shape != want_shape or values != want[:8]:
 				raise Mismatch(f"result {i}: tensor {shape} {values}, expected {want_shape} {want[:8]}")
@@ -842,6 +875,36 @@ class CandleControls:
 					lambda: check_model(result_text(model, 4, lambda s: s.replace("0.765625  ", "0.765626  ", 1))), False)
 		self.expect("a tensor shape changed (05)",
 					lambda: check_model(result_text(model, 1, lambda s: s.replace("Tensor[f32; 64x3]", "Tensor[f32; 65x3]"))), False)
+		# record 0161: the tensor's HTML form
+		def tensor_html(fn):
+			return result_html(model, 1, fn)
+		x_first = "<th>0</th><td>0.0</td><td>-3.0</td><td>0.0</td>"
+		nudged = repr(struct.unpack("<f", struct.pack("<I", struct.unpack("<I", struct.pack("<f", -3.0))[0] + 1))[0])
+		self.expect("an HTML tensor value changed by one f32 step (05)",
+					lambda: check_model(tensor_html(lambda h: h.replace(x_first, x_first.replace("-3.0", nudged), 1))), False)
+		self.expect("the same tensor value in another valid spelling in HTML (05)",
+					lambda: check_model(tensor_html(lambda h: h.replace(x_first, x_first.replace("-3.0", "-3.00"), 1))), True)
+		self.expect("an HTML tensor row index changed (05)",
+					lambda: check_model(tensor_html(lambda h: h.replace("<tr><th>1</th>", "<tr><th>9</th>", 1))), False)
+		self.expect("an HTML tensor column index changed (05)",
+					lambda: check_model(tensor_html(lambda h: h.replace("<th>2</th></tr></thead>", "<th>3</th></tr></thead>", 1))), False)
+		self.expect("the HTML tensor's elided row removed (05)",
+					lambda: check_model(tensor_html(lambda h: re.sub(r"<tr><th>…</th>(<td>…</td>)+</tr>", "", h))), False)
+		self.expect("an HTML tensor row duplicated (05)",
+					lambda: check_model(tensor_html(lambda h: h.replace("<tr><th>1</th>", "<tr><th>0</th><td>0.0</td><td>-3.0</td><td>0.0</td></tr><tr><th>1</th>", 1))), False)
+		self.expect("an HTML tensor value missing (05)",
+					lambda: check_model(tensor_html(lambda h: h.replace(x_first, "<th>0</th><td>0.0</td><td>-3.0</td>", 1))), False)
+		self.expect("the HTML tensor header shape changed (05)",
+					lambda: check_model(tensor_html(lambda h: h.replace("Tensor[f32; 64x3]", "Tensor[f32; 65x3]", 1))), False)
+		self.expect("an attribute injected into the tensor HTML (05)",
+					lambda: check_model(tensor_html(lambda h: h.replace("<table>", "<table onclick=x>", 1))), False)
+
+		def tensor_without_text(nb):
+			nb = copy.deepcopy(nb)
+			outs = [o for c in nb.cells for o in c.get("outputs", []) if o["output_type"] == "execute_result"]
+			del outs[1]["data"]["text/plain"]
+			return nb
+		self.expect("a tensor's text/html without its text/plain (05)", lambda: check_model(tensor_without_text(model)), False)
 		self.expect("a tensor value changed (05)",
 					lambda: check_model(result_text(model, 3, lambda s: s.replace("0.640625", "0.640626", 1))), False)
 

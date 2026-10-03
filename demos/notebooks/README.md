@@ -138,8 +138,9 @@ demos/candle/target/release/rnx-candle-demo run demos/candle/model.rn demos/data
 demos/candle/target/release/rnx-candle-demo run demos/candle/search.rn demos/data demos/models/all-MiniLM-L6-v2
 ```
 
-Tensors show as text (dtype, shape and the first 8 × 8 corner); frames show as tables, in HTML
-in Jupyter.
+Tensors show their dtype, shape and first 8 × 8 corner: as text at the prompt, and in Jupyter
+also as a small table with row and column indices (record 0161). Frames show as tables, in HTML
+in Jupyter. Both HTML forms carry the same values as the text beside them.
 
 ## Checking the notebooks (maintainers)
 
