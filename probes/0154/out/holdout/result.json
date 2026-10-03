@@ -1,0 +1,145 @@
+{
+ "outcome": "not demonstrated",
+ "threshold": 0.09553107383376902,
+ "C": {
+  "N": 150,
+  "auto": 25,
+  "review": 125,
+  "A": 0.16666666666666666,
+  "W": 0.8333333333333334,
+  "A_wilson": [
+   0.11551351052095789,
+   0.23446724890952125
+  ],
+  "possible": 5,
+  "E_possible": 0.2,
+  "E_possible_wilson": [
+   0.08860454100652486,
+   0.3913133553653824
+  ],
+  "certain": 3,
+  "E_certain": 0.12,
+  "E_certain_wilson": [
+   0.04166741357068093,
+   0.29956192183373487
+  ],
+  "consensus_auto": 22,
+  "consensus_wrong": 2,
+  "E_consensus": 0.09090909090909091,
+  "either_correct": 22,
+  "either_correct_rate": 0.88,
+  "misroutes_by_queue": {
+   "(bug, feature) -> bug": 1,
+   "(feature, documentation) -> documentation": 1,
+   "(feature, question) -> documentation": 1,
+   "(question, question) -> documentation": 2
+  },
+  "cost_possible": {
+   "2": 0.9,
+   "5": 1.0
+  },
+  "cost_certain": {
+   "2": 0.8733333333333334,
+   "5": 0.9333333333333333
+  }
+ },
+ "K": {
+  "N": 150,
+  "auto": 51,
+  "review": 99,
+  "A": 0.34,
+  "W": 0.66,
+  "A_wilson": [
+   0.2690321465825542,
+   0.4189586179440758
+  ],
+  "possible": 14,
+  "E_possible": 0.27450980392156865,
+  "E_possible_wilson": [
+   0.1711412201054317,
+   0.4094691194907873
+  ],
+  "certain": 13,
+  "E_certain": 0.2549019607843137,
+  "E_certain_wilson": [
+   0.1554562324126639,
+   0.38868544106148706
+  ],
+  "consensus_auto": 50,
+  "consensus_wrong": 13,
+  "E_consensus": 0.26,
+  "either_correct": 38,
+  "either_correct_rate": 0.7450980392156863,
+  "misroutes_by_queue": {
+   "(bug, bug) -> question": 2,
+   "(feature, feature) -> bug": 4,
+   "(feature, feature) -> question": 6,
+   "(question, feature) -> question": 1,
+   "(question, question) -> bug": 1
+  },
+  "cost_possible": {
+   "2": 0.8466666666666667,
+   "5": 1.1266666666666667
+  },
+  "cost_certain": {
+   "2": 0.8333333333333334,
+   "5": 1.0933333333333333
+  }
+ },
+ "C_auto_set": [
+  16,
+  20,
+  21,
+  33,
+  37,
+  126,
+  173,
+  244,
+  260,
+  314,
+  366,
+  447,
+  455,
+  473,
+  491,
+  499,
+  528,
+  583,
+  678,
+  732,
+  879,
+  896,
+  943,
+  997,
+  1002
+ ],
+ "mandatory_review": {
+  "C": 0,
+  "K": 99
+ },
+ "agreement": {
+  "five_labels": {
+   "agree": 138,
+   "p": 0.92,
+   "kappa": 0.8875140607424071
+  },
+  "four_queues": {
+   "agree": 140,
+   "p": 0.9333333333333333,
+   "kappa": 0.9022482893450635
+  },
+  "queue_disagreements": {
+   "bug | feature": 1,
+   "bug | question": 1,
+   "feature | documentation": 1,
+   "feature | question": 4,
+   "question | bug": 1,
+   "question | feature": 2
+  }
+ },
+ "maintainer": {
+  "mapped": 87,
+  "none": 59,
+  "multi": 4
+ }
+}
