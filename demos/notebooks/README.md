@@ -58,8 +58,10 @@ notebooks read `../data/orders.json`.
 `04_polars_sales.ipynb` reads `demos/data/sales.csv` (24 orders, money in integer cents),
 leaves out returns, derives each order's revenue, groups by region and by month, and
 summarizes. Frames show as tables in Polars' style, bounded: past 10 rows the first and last 5
-with a `…` row between, past 8 columns the first and last 4. HTML tables are not part of this
-example yet.
+with a `…` row between, past 8 columns the first and last 4. In Jupyter each frame also comes
+as an HTML table (record 0159), built from the same bounded cells, with the text table kept
+beside it as the fallback. rnx sends no styling, classes, attributes or scripts: the table takes
+JupyterLab's own look, in light and dark themes alike.
 
 **Its kernel is a different worker:** rnx with the Polars adapter assembled in. `demos/polars/`
 is a small example executable built from this checkout, not a general adapter installer. It

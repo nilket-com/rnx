@@ -110,6 +110,16 @@ Each scalar is escaped whole, and no entity is ever split.
 
 **Costs:** worker launch and the time to show a frame, before and after, as measured in 0158, against 0068's budget. `cargo test` and the adapter suite stay green.
 
+## 5a. Folded in from Codex's acceptance (no new review cycle)
+
+1. **Budgets:**
+   - each MIME string is at most 16,384 bytes, so the decoded bundle is at most 32,768;
+   - the largest legal settled reply (both forms at their bound, every HTML character one that JSON doubles) is measured against the unchanged 256 KiB worker frame;
+   - HTML exists only beside `text/plain`, on a successful top-level result.
+2. **Handled failures discard only the HTML:** a callback `Err`, a borrow failure, refused markup, oversize, or `Output::truncated()`. The generic marker is never an HTML closing. Controls cover an error after a prefix and an overflowing callback, each followed by a successful evaluation in the same worker. Presenters are trusted Rust, and panics are not contained.
+3. **Every markup phase is budgeted:** the shape, both head rows, `…` rows and columns, the closing and the marker. Room is reserved before each structural unit. The adapter's own omission is a complete fragment within its usable capacity, below `Output`'s generic marker. Controls cover maximal hostile headers and a first-body-row cut. 0124's reader contracts and 0158's text bytes are preserved.
+4. **One accepted and rejected corpus** (`tests/fixtures/html_allowlist.json`) for the worker and kernel allowlists, with bounded nesting. A kernel refusal, including an oversized field, is a text-only result, not a protocol failure. The browser check runs in the light and dark themes, testing the no-style design rather than adding CSS. The untrusted saved-notebook check and the independent CSV content checks stay.
+
 ## 6. Copy
 
 - **The notebook README** says frames show as HTML tables in Jupyter, with the text table as the fallback, and that rnx sends no styling or scripts.

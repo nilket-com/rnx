@@ -2,6 +2,7 @@
 pub mod connection;
 #[cfg(target_os = "linux")]
 pub mod containment;
+pub mod html;
 #[cfg(target_os = "linux")]
 pub mod kernel;
 pub mod streams;

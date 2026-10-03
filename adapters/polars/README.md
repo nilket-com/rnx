@@ -284,6 +284,15 @@ left-aligned, as Polars' default is. The layout is independent of terminal
 width and of Polars' `POLARS_FMT_*` settings. `preview()` borrows the frame,
 does not collect, perform I/O or print, and can be called repeatedly.
 
+In a notebook (record 0159) a frame left as a cell's value also comes as an HTML
+table: the shape in `<small>`, names in `<th>`, the dtype row in the head, built
+from the same bounded cells and never from the text. It carries no attribute,
+class, style or script; every name and cell is escaped as text. It is at most
+16,384 bytes, built from whole rows: a table past that ends closed and marked.
+rnx and the kernel both check it against a strict tag allowlist, and anything
+else is dropped, leaving the text table alone. Printing, `preview()` and the
+prompt are unchanged.
+
 `format!("{frame}")` and `println!("{frame}")` return this same text wherever
 the adapter is installed: the display protocol comes with the module, not with
 the presenter. In a session or notebook whose application also registered the

@@ -20,6 +20,15 @@ fn observe(frame: &p::DataFrame) -> (usize, String) {
 	let text = rnx_polars::preview_text(frame).unwrap();
 	(peak() - base, text)
 }
+/// Record 0159: the same for the HTML form. Its intermediates are the same
+/// cells, one row string at a time, and the form itself, at most 16,384
+/// bytes (twice that in capacity): inside the same bound.
+fn observe_html(frame: &p::DataFrame) -> (usize, String) {
+	reset_peak();
+	let base = peak();
+	let html = rnx_polars::preview_html(frame).unwrap();
+	(peak() - base, html)
+}
 
 #[test]
 fn the_preview_footprint_is_bounded_by_structure() {
@@ -50,6 +59,13 @@ fn the_preview_footprint_is_bounded_by_structure() {
 	);
 	assert!(bytes < BOUND, "{bytes} bytes");
 	assert!(text.starts_with("shape: (1_000_000, 1_000)\n") && !text.contains('\u{202e}'));
+	let (bytes, html) = observe_html(&wide);
+	eprintln!(
+		"hostile 1,000,000 x 1,000 as HTML: peak {bytes} bytes above base, {} bytes shown",
+		html.len()
+	);
+	assert!(bytes < BOUND, "{bytes} bytes");
+	assert!(html.len() <= rnx::present::HTML_BYTES && rnx::present::html_allowed(&html));
 	// A tall numeric frame: the shown cells are short, the footprint small.
 	let tall = p::DataFrame::new(
 		1_000_000,
