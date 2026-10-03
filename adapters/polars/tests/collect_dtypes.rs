@@ -55,7 +55,10 @@ fn a_count_collects_as_uint32_and_previews() {
 	assert!(got.0.contains("UInt32") || got.0.contains("u32"), "{got:?}");
 	// record 0124: the preview shows every dtype (0122 found it refused)
 	assert_eq!(got.1, 2);
-	assert!(got.2.contains("\"n\": u32"), "{got:?}");
+	assert!(
+		got.2.contains("┆ u32 │") && got.2.contains("┆ n   │"),
+		"{got:?}"
+	);
 }
 
 #[test]

@@ -241,58 +241,74 @@ def sales_expected(data):
 
 
 ROWS_SHOWN = 10
+HALF = ROWS_SHOWN // 2
 
 
 def parse_frame(text, whole):
-	"""This example's previews only: string, integer, float and bool cells, at most 8 columns,
-	no truncated scalars. Returns (rows, columns, omitted, schema, cells)."""
+	"""This example's previews only (record 0158's table layout): at most 8 columns; string,
+	integer, float and bool cells; no truncated scalars. Elision is read structurally, from the
+	shape: a frame taller than 10 rows shows its first and last 5 rows with one elided row
+	between, and a `…` anywhere else is refused. Returns (height, width, schema, cells)."""
 	lines = text.split("\n")
 	if lines[-1] != "":
 		raise Mismatch(f"preview does not end in a newline: {text!r}")
 	lines.pop()
-	m = re.fullmatch(r"DataFrame: (\d+) rows × (\d+) columns", lines.pop(0)) if lines else None
+	if "[preview byte limit" in text:
+		raise Mismatch(f"the preview hit its byte limit: {text!r}")
+	m = re.fullmatch(r"shape: \((\d[\d_]*), (\d[\d_]*)\)", lines.pop(0)) if lines else None
 	if not m:
-		raise Mismatch(f"no preview header: {text!r}")
-	height, width = int(m[1]), int(m[2])
-	omitted = None
-	if lines and lines[0].startswith("["):
-		o = re.fullmatch(r"\[(\d+) rows and (\d+) columns omitted by display limits\]", lines.pop(0))
-		if not o:
-			raise Mismatch(f"unexpected marker line: {text!r}")
-		omitted = (int(o[1]), int(o[2]))
-	if "…" in text or "[preview byte limit" in text:
-		raise Mismatch(f"elided or truncated cells: {text!r}")
-	if whole and omitted is not None:
-		raise Mismatch(f"a whole frame was required, but the preview omits {omitted}")
-	if not lines:
-		raise Mismatch(f"no schema line: {text!r}")
+		raise Mismatch(f"no shape line: {text!r}")
+	height, width = int(m[1].replace("_", "")), int(m[2].replace("_", ""))
+	if not 0 < width <= 8:
+		raise Mismatch(f"{width} columns is outside this example")
+	top = re.fullmatch(r"┌((?:─+┬)*─+)┐", lines[0]) if lines else None
+	if not top:
+		raise Mismatch(f"no top border: {text!r}")
+	widths = [len(s) - 2 for s in top[1].split("┬")]
+	if len(widths) != width or min(widths) < 3:
+		raise Mismatch(f"top border has {len(widths)} columns for {width}: {text!r}")
+
+	def rule(left, fill, join, right):
+		return left + join.join(fill * (w + 2) for w in widths) + right
+
+	def row(line):
+		# every cell padded to exactly its column's width; nothing in this example ends in a space
+		if not (line.startswith("│ ") and line.endswith(" │")):
+			raise Mismatch(f"not a table row: {line!r}")
+		parts = line[2:-2].split(" ┆ ")
+		if len(parts) != width or any(len(c) != w for c, w in zip(parts, widths)):
+			raise Mismatch(f"row {line!r} does not fit the borders {widths}")
+		return [c.rstrip(" ") for c in parts]
+	if len(lines) < 6 or lines[4] != rule("╞", "═", "╪", "╡") or lines[-1] != rule("└", "─", "┴", "┘"):
+		raise Mismatch(f"unexpected borders: {text!r}")
+	names, dashes, dtypes = row(lines[1]), row(lines[2]), row(lines[3])
+	if dashes != ["---"] * width:
+		raise Mismatch(f"no --- row: {dashes}")
+	data = [row(line) for line in lines[5:-1]]
+	if len(data) != (height if height <= ROWS_SHOWN else ROWS_SHOWN + 1):
+		raise Mismatch(f"{len(data)} rows shown of {height}")
+	if height > ROWS_SHOWN:
+		if whole:
+			raise Mismatch(f"a whole frame was required, but {height} rows are elided to {ROWS_SHOWN}")
+		if data.pop(HALF) != ["…"] * width:
+			raise Mismatch(f"no elided row after the first {HALF}: {text!r}")
 	schema = []
-	for col in lines.pop(0).split(" | "):
-		c = re.fullmatch(r'"([a-z_]+)": ([a-z0-9]+)', col)
-		if not c:
-			raise Mismatch(f"unexpected schema entry {col!r}")
-		schema.append((c[1], c[2]))
-	if len(schema) != width or len({n for n, _ in schema}) != width:
-		raise Mismatch(f"schema has {len(schema)} entries for {width} columns: {schema}")
-	cells = []
-	for line in lines:
-		parts = line.split(" | ")
-		if len(parts) != width:
-			raise Mismatch(f"row {line!r} has {len(parts)} cells for {width} columns")
-		cells.append([parse_cell(p, t) for p, (_, t) in zip(parts, schema)])
-	if len(cells) != min(height, ROWS_SHOWN):
-		raise Mismatch(f"{len(cells)} rows shown of {height}")
-	expected_omitted = (height - ROWS_SHOWN, 0) if height > ROWS_SHOWN else None
-	if omitted != expected_omitted:
-		raise Mismatch(f"omission line {omitted}, expected {expected_omitted}")
-	return height, width, omitted, schema, cells
+	for name, dtype in zip(names, dtypes):
+		if not re.fullmatch(r"[a-z_]+", name) or not re.fullmatch(r"[a-z0-9]+", dtype):
+			raise Mismatch(f"unexpected schema entry {name!r}: {dtype!r}")
+		schema.append((name, dtype))
+	if len({n for n, _ in schema}) != width:
+		raise Mismatch(f"duplicate column names: {schema}")
+	cells = [[parse_cell(c, d) for c, (_, d) in zip(r, schema)] for r in data]
+	return height, width, schema, cells
 
 
 def parse_cell(text, dtype):
 	if dtype == "string":
-		if not re.fullmatch(r'"[^"\\]*"', text):
+		# unquoted (record 0158); this example's strings are simple, so `…` is refused
+		if not re.fullmatch(r"[A-Za-z0-9_-]+", text):
 			raise Mismatch(f"not a simple string cell: {text!r}")
-		return text[1:-1]
+		return text
 	if dtype in ("i64", "u32"):
 		if not re.fullmatch(r"-?\d+", text):
 			raise Mismatch(f"not an integer cell: {text!r}")
@@ -309,14 +325,16 @@ def parse_cell(text, dtype):
 
 
 def check_frame(text, label, height, schema, rows):
+	"""Whole frames exactly; a taller one by its first and last five rows (record 0158)."""
 	whole = height <= ROWS_SHOWN
-	h, w, _, shown_schema, cells = parse_frame(text, whole)
+	h, w, shown_schema, cells = parse_frame(text, whole)
 	if (h, w) != (height, len(schema)):
 		raise Mismatch(f"{label}: {h} × {w}, expected {height} × {len(schema)}")
 	if shown_schema != schema:
 		raise Mismatch(f"{label}: schema {shown_schema}, expected {schema}")
-	if cells != rows[:ROWS_SHOWN]:
-		raise Mismatch(f"{label}: rows differ:\n  shown    {cells}\n  expected {rows[:ROWS_SHOWN]}")
+	expected = rows if whole else rows[:HALF] + rows[-HALF:]
+	if cells != expected:
+		raise Mismatch(f"{label}: rows differ:\n  shown    {cells}\n  expected {expected}")
 
 
 def results(nb):
@@ -462,7 +480,7 @@ class Controls:
 						lambda: check_sales_answer(polars_terminal(worker, edited), sales_expected(SALES)), False)
 
 		index = next(i for i, c in enumerate(ran.cells) if any(
-			o["output_type"] == "execute_result" and '"orders": u32' in o["data"]["text/plain"]
+			o["output_type"] == "execute_result" and '┆ orders' in o["data"]["text/plain"]
 			for o in c.get("outputs", [])))
 
 		def edited_region(fn):
@@ -471,29 +489,42 @@ class Controls:
 			o["data"]["text/plain"] = fn(o["data"]["text/plain"])
 			return nb
 
+		# lines: shape, top border, names, ---, dtypes, separator, then the data rows
 		def swap_rows(text):
 			lines = text.split("\n")
-			lines[2], lines[3] = lines[3], lines[2]
+			lines[6], lines[7] = lines[7], lines[6]
 			return "\n".join(lines)
 		self.expect("two rows swapped in the region frame", lambda: check_sales(edited_region(swap_rows), SALES), False)
 
-		def truncated(text):
-			head, rest = text.split("\n", 1)
-			return head + "\n[0 rows and 0 columns omitted by display limits]\n" + rest
-		self.expect("an omission line where the region frame must be whole",
-					lambda: check_sales(edited_region(truncated), SALES), False)
+		def elision_row(line):
+			return "│ " + " ┆ ".join("…".ljust(len(c)) for c in line[2:-2].split(" ┆ ")) + " │"
+
+		def elided(text):
+			lines = text.split("\n")
+			return "\n".join(lines[:7] + [elision_row(lines[6])] + lines[7:])
+		self.expect("an elided row where the region frame must be whole",
+					lambda: check_sales(edited_region(elided), SALES), False)
+
+		def ellipsis_cell(text):
+			lines = text.split("\n")
+			cells = lines[6][2:-2].split(" ┆ ")
+			cells[0] = "…".ljust(len(cells[0]))
+			lines[6] = "│ " + " ┆ ".join(cells) + " │"
+			return "\n".join(lines)
+		self.expect("a literal … cell where no row is elided",
+					lambda: check_sales(edited_region(ellipsis_cell), SALES), False)
 
 		def duplicated(text):
 			lines = text.split("\n")
-			return "\n".join(lines[:3] + lines[2:3] + lines[3:])
+			return "\n".join(lines[:7] + lines[6:7] + lines[7:])
 		self.expect("a duplicated row in the region frame", lambda: check_sales(edited_region(duplicated), SALES), False)
 
 		def non_finite(nb):
 			nb = copy.deepcopy(nb)
 			for c in nb.cells:
 				for o in c.get("outputs", []):
-					if o["output_type"] == "execute_result" and '"mean_cents": f64' in o["data"]["text/plain"]:
-						o["data"]["text/plain"] = o["data"]["text/plain"].replace("6137.5", "NaN")
+					if o["output_type"] == "execute_result" and 'mean_cents' in o["data"]["text/plain"]:
+						o["data"]["text/plain"] = o["data"]["text/plain"].replace("6137.5", "NaN   ")
 			return nb
 		self.expect("a non-finite mean", lambda: check_sales(non_finite(ran), SALES), False)
 

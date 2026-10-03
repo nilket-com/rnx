@@ -151,6 +151,12 @@ fn sort(plan: &LazyFrame, names: rune::Value) -> Result<LazyFrame, String> {
 fn preview(frame: &DataFrame) -> Result<String, String> {
 	preview::render(&frame.0)
 }
+/// Record 0158: the preview's text for a Rust frame, for the allocation
+/// control in `tests/preview_alloc.rs` only; not part of the Rune API.
+#[doc(hidden)]
+pub fn preview_text(frame: &p::DataFrame) -> Result<String, String> {
+	preview::render(frame)
+}
 /// Explicit `format!("{frame}")` shows the same bounded preview.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn display_fmt(frame: &DataFrame, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {

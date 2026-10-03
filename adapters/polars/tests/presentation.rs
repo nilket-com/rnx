@@ -295,7 +295,7 @@ fn every_oracle_shape_presents_exactly_the_explicit_preview() {
 			!automatic.chars().any(|c| c.is_control() && c != '\n'),
 			"{name}: raw control"
 		);
-		assert!(automatic.starts_with("DataFrame: "), "{name}: {automatic}");
+		assert!(automatic.starts_with("shape: ("), "{name}: {automatic}");
 		report.push((name, automatic.len(), automatic.ends_with(OMITTED)));
 		// A second presentation is byte-identical and the frame is unchanged.
 		assert_eq!(w.text("f"), automatic, "{name}: not deterministic");
@@ -316,15 +316,16 @@ fn every_oracle_shape_presents_exactly_the_explicit_preview() {
 	w.csv("nulls.csv", "s,n,f,b\n,,,\n");
 	w.text(r#"let f = polars::read_csv("nulls.csv", [("s","string"),("n","i64"),("f","f64"),("b","bool")])?;"#);
 	let text = w.text("f");
-	assert!(text.contains("null | null | null"), "{text}");
+	assert!(text.contains("│ null   ┆ null ┆ null ┆ null │"), "{text}");
 	w.text(r#"let f = polars::read_csv("long-utf8.csv", [("s","string")])?;"#);
 	let text = w.text("f");
 	assert_eq!(text.matches('🦀').count(), 80);
-	assert!(text.contains("…[truncated]"), "{text}");
+	assert!(text.contains("🦀… │"), "{text}");
 	w.text(r#"let f = polars::read_csv("controls.csv", [("s","string")])?;"#);
 	let text = w.text("f");
 	assert!(
-		text.contains("\\u{1b}[2J tab\\t nl\\nend quote\\\""),
+		// record 0158: unquoted, so the quote shows as itself
+		text.contains("\\u{1b}[2J tab\\t nl\\nend quote\""),
 		"{text}"
 	);
 	w.text(r#"let f = polars::read_csv("bidi.csv", [("s","string")])?;"#);
@@ -340,35 +341,33 @@ fn every_oracle_shape_presents_exactly_the_explicit_preview() {
 	w.csv("control-names.csv", "\"a\u{1b}[2Jb\tc\"\n1\n");
 	w.text(r#"let f = polars::read_csv("control-names.csv", [("a\u{1b}[2Jb\tc","i64")])?;"#);
 	let text = w.text("f");
-	assert!(text.contains("\"a\\u{1b}[2Jb\\tc\": i64\n1\n"), "{text}");
+	assert!(text.contains("│ a\\u{1b}[2Jb\\tc │\n"), "{text}");
+	assert!(text.contains("│ i64            │\n"), "{text}");
 	assert!(!text.contains('\u{1b}') && !text.contains('\t'));
 	w.text(r#"let f = polars::read_csv("floats.csv", [("f","f64")])?;"#);
 	let text = w.text("f");
 	for spelled in ["1e308", "-0.0", "5e-324", "0.1", "-1.7976931348623157e308"] {
 		assert!(
-			text.contains(&format!("\n{spelled}\n")),
+			text.contains(&format!("│ {spelled} ")),
 			"{spelled} in {text}"
 		);
 	}
 	w.text(r#"let f = polars::read_csv("wide.csv", [("c0","i64"),("c1","i64"),("c2","i64"),("c3","i64"),("c4","i64"),("c5","i64"),("c6","i64"),("c7","i64"),("c8","i64"),("c9","i64"),("c10","i64"),("c11","i64")])?;"#);
 	let text = w.text("f");
-	assert!(
-		text.contains("[0 rows and 4 columns omitted by display limits]"),
-		"{text}"
-	);
 	// record 0124: the first and the last four columns, the middle marked
+	assert!(text.starts_with("shape: (1, 12)\n"), "{text}");
 	assert!(
-		text.contains("\"c3\": i64 | … | \"c8\": i64")
-			&& text.contains("\"c11\": i64")
-			&& !text.contains("\"c4\"")
-			&& !text.contains("\"c7\""),
+		text.contains("│ c0  ┆ c1  ┆ c2  ┆ c3  ┆ … ┆ c8  ┆ c9  ┆ c10 ┆ c11 │")
+			&& !text.contains("c4")
+			&& !text.contains("c7"),
 		"{text}"
 	);
 	w.text(r#"let f = polars::read_csv("tall.csv", [("n","i64")])?;"#);
 	let text = w.text("f");
+	// record 0158: the first and last five rows with an elided row between:
+	// shape, two borders and a separator, three header rows, eleven rows
 	assert!(
-		text.contains("[5 rows and 0 columns omitted by display limits]")
-			&& text.matches('\n').count() == 13,
+		text.contains("\n│ …   │\n") && text.matches('\n').count() == 18,
 		"{text}"
 	);
 	w.operate("shutdown", None);
@@ -390,10 +389,7 @@ fn lazy_values_stay_opaque_and_unexecuted_and_presentation_runs_no_engine() {
 	};
 	let before = started(&mut w);
 	// Presenting a frame starts no engine thread: presentation is separate from collecting.
-	assert!(
-		w.text("sales")
-			.starts_with("DataFrame: 2 rows × 2 columns\n")
-	);
+	assert!(w.text("sales").starts_with("shape: (2, 2)\n┌"));
 	assert_eq!(started(&mut w), before);
 	// A plan with a missing column, displayed bare, is not executed.
 	assert_eq!(
@@ -423,7 +419,7 @@ fn lazy_values_stay_opaque_and_unexecuted_and_presentation_runs_no_engine() {
 	// Explicit formatting of a lazy value has no display protocol.
 	let reply = w.operate("execute", Some("format!(\"{plan}\")"));
 	assert_ne!(field(&reply, "failure"), Some("null"), "{reply}");
-	assert!(w.text("sales").starts_with("DataFrame: 2 rows"));
+	assert!(w.text("sales").starts_with("shape: (2, 2)\n"));
 	w.operate("shutdown", None);
 	assert_eq!(w.child.wait().unwrap().code(), Some(0));
 }

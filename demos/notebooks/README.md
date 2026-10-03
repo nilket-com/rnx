@@ -57,8 +57,9 @@ notebooks read `../data/orders.json`.
 
 `04_polars_sales.ipynb` reads `demos/data/sales.csv` (24 orders, money in integer cents),
 leaves out returns, derives each order's revenue, groups by region and by month, and
-summarizes. Frames show as Polars' bounded text preview: the first 10 rows and at most 8
-columns, with a line saying what was left out. HTML tables are not part of this example yet.
+summarizes. Frames show as tables in Polars' style, bounded: past 10 rows the first and last 5
+with a `…` row between, past 8 columns the first and last 4. HTML tables are not part of this
+example yet.
 
 **Its kernel is a different worker:** rnx with the Polars adapter assembled in. `demos/polars/`
 is a small example executable built from this checkout, not a general adapter installer. It
