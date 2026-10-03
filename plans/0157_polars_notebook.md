@@ -129,6 +129,28 @@ It then **parses the displayed previews.** The format is: a header line `DataFra
 - **two rows swapped in a displayed region frame** fail (the order is checked);
 - **the preview parser refuses a truncated frame,** where it's asked for a whole one (the omission line).
 
+## 5a. Folded in from Codex's acceptance and one route departure (no new review cycle)
+
+1. **The assembly route changed: a standalone worker crate replaces the project tool** (Codex accepted it over chatd before implementation).
+   - `rnx project lock` refuses a project inside a native package root it fingerprints, and the rnx checkout is one: "project lock would be inside native package root; move the project" (`tools/project/src/workflow/shared.rs`). So section 2's in-repo `rnx.toml` can't work. That is a guard, not something to bypass.
+   - `demos/polars/` is a small crate with its own `[workspace]`, `publish = false`, relative path dependencies on rnx (`default-features = false, features = ["count-allocations"]`) and `adapters/polars`, a committed `Cargo.lock`, and `--locked` builds.
+   - Its `main` registers the adapter the way the project tool's generated executable does (Extensions with `build` and `present`). It isn't the identical assembly: its own package identity, and no `project-sources`, which it doesn't use.
+   - It's an example executable built from the checkout, not a general adapter installer. The tested setup is the checkout revision plus its committed worker lock.
+   - The terminal reference is the same executable: `demos/polars/target/release/rnx-polars-demo run demos/polars/sales.rn <csv>`, from the checkout root. The notebook, the terminal reference and the checks all use the very same worker artifact.
+2. **Dependency pinning, corrected.** The project tool seeds resolution from the runtime's `Cargo.lock` as a preference and resolves without `--locked`; it doesn't import `adapters/polars/Cargo.lock`. The worker's committed lock is instead the resolution itself, built with `--locked`. It was seeded the same way, from the root `Cargo.lock`. The evidence records its digest and compares it with the project tool's generated lock for the same sources. No claim that a fresh resolution on another date gives the same versions.
+3. **Every displayed frame is checked against the CSV,** not only the summaries.
+   - The raw and kept frames are intentionally partial: the exact header, the schema in order with dtypes, the omission count, and the visible first ten rows.
+   - The region, month and summary frames must be whole: exact dimensions, schema and rows in order, and no omission, elision or byte-limit marker.
+   - The parser fails on extra, missing or duplicate rows or columns and on non-finite numbers. It is scoped to this example's simple cells, not a general preview parser.
+4. **The mean is an `f64`.** For this data it is exactly representable (122,750 / 20 = 6137.5), so the displayed value must equal total ÷ count exactly, with no tolerance. Cents become dollars only in the answer, explicitly.
+5. **The scalar read-back is the shipped form:** `frame.column(name)?.i64()?.get(row)?` and `.str()?.get(0)?`. No fallback and no new binding.
+6. **Paths and cwd:** the notebook reads `../data/sales.csv` from `demos/notebooks/`; the checker runs the terminal script with absolute script and data paths, from the checkout root. The script prints no path, so no path-line adjustment is allowed or needed.
+7. **Backward-compatible selection:** without `--polars`, the checker verifies 0156's notebooks on plain rnx exactly as before. With `--polars`, it also verifies the Polars notebook (with the restart check) and the plain three on the Polars worker. Verification writes no committed file; `--generate --polars` writes only the Polars notebook.
+8. **Controls:**
+   - the CSV edit must change a checked region result, and is asserted to;
+   - the omission control is applied to the region frame, where a whole frame is required;
+   - a duplicated region row and a non-finite mean are also refused.
+
 ## 6. Copy
 
 - **`demos/notebooks/README.md`:** a "Polars notebook" section with the setup from section 2, the stated cold build time, the kernel replacement and how to switch back, and the four Rune spellings from section 1.

@@ -87,4 +87,5 @@ shares are undefined, shown as `-`, and there are no bars.
 ## The same demos as notebooks
 
 [`notebooks/`](notebooks/README.md) has the three demos as short Jupyter walkthroughs on rnx's own
-kernel (Linux only), each checked to print exactly what its terminal demo prints.
+kernel (Linux only), each checked to print exactly what its terminal demo prints, plus a Polars
+notebook: a short analysis of a bundled CSV, checked against the data.

@@ -1,0 +1,21 @@
+# Record 0157: an example executable for the Polars notebook, built from this checkout; not a
+# general adapter installer. It registers the adapter the way `rnx project build`'s generated
+# executable does (Extensions with the builder and presenter), as its own package and without
+# `project-sources`, which it doesn't use. `rnx project` can't be used here: it refuses to lock a
+# project inside a native package root it fingerprints, and this checkout is one. Build with
+# `--locked`; the committed Cargo.lock is the tested resolution.
+[package]
+name = "rnx-polars-demo"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[[bin]]
+name = "rnx-polars-demo"
+path = "main.rs"
+
+[dependencies]
+rnx = { path = "../..", default-features = false, features = ["count-allocations"] }
+rnx-polars = { path = "../../adapters/polars" }
