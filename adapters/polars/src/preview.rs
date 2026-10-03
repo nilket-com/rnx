@@ -451,6 +451,67 @@ thread_local! {
 	/// Cells read from the frame by this thread's renders (a test hook).
 	static READS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
+/// `shape: (H, W)`, with Polars' grouping.
+fn shape(frame: &p::DataFrame) -> String {
+	format!(
+		"shape: ({}, {})",
+		grouped(frame.height()),
+		grouped(frame.width())
+	)
+}
+/// The bounded cells both layouts show (record 0158; shared with HTML by
+/// record 0159): at most `COLUMNS` columns and `ROWS` rows read, each cell
+/// bounded and escaped by the 0124 readers. An elided column is `…` in the
+/// name and data rows and blank in the dtype row; an elided row is `…` in
+/// every column. `shown` says which columns are elided, structurally.
+struct Cells {
+	shown: Vec<Option<usize>>,
+	names: Vec<String>,
+	dtypes: Vec<String>,
+	rows: Vec<Vec<String>>,
+}
+fn cells(frame: &p::DataFrame) -> Result<Cells, String> {
+	let shown = shown_columns(frame.width());
+	let columns = frame.columns();
+	let mut names = Vec::with_capacity(shown.len());
+	let mut dtypes = Vec::with_capacity(shown.len());
+	for c in &shown {
+		match c {
+			Some(c) => {
+				names.push(plain(columns[*c].name().as_str()));
+				dtypes.push(dtype(columns[*c].dtype()));
+			}
+			None => {
+				names.push(CUT.to_owned());
+				dtypes.push(String::new());
+			}
+		}
+	}
+	let mut rows = Vec::new();
+	for row in shown_rows(frame.height()) {
+		let mut cells = Vec::with_capacity(shown.len());
+		for c in &shown {
+			cells.push(match (row, c) {
+				(Some(row), Some(c)) => {
+					#[cfg(test)]
+					READS.with(|n| n.set(n.get() + 1));
+					let value = columns[*c]
+						.get(row)
+						.map_err(|e| format!("polars preview: {e}"))?;
+					cell(value, columns[*c].dtype())
+				}
+				_ => CUT.to_owned(),
+			});
+		}
+		rows.push(cells);
+	}
+	Ok(Cells {
+		shown,
+		names,
+		dtypes,
+		rows,
+	})
+}
 /// Render into any sink under the adapter's `BYTES` cap and omission marker.
 /// The sink returns `false` when it is full (the session presenter's outer
 /// budget); rendering then stops and `Ok(false)` says the output is partial.
@@ -473,50 +534,22 @@ pub(crate) fn render_into(
 			}
 		};
 	}
-	append!(&format!(
-		"shape: ({}, {})\n",
-		grouped(frame.height()),
-		grouped(frame.width())
-	));
-	let shown = shown_columns(frame.width());
-	let columns = frame.columns();
+	append!(&shape(frame));
+	append!("\n");
+	let Cells {
+		shown,
+		names,
+		dtypes,
+		rows: data,
+	} = cells(frame)?;
 	// the name, `---` and dtype rows, then the data rows; an elided column
-	// is `…` with blanks under it, an elided row `…` in every column
-	let mut names = Vec::with_capacity(shown.len());
-	let mut dashes = Vec::with_capacity(shown.len());
-	let mut dtypes = Vec::with_capacity(shown.len());
-	for c in &shown {
-		match c {
-			Some(c) => {
-				names.push(plain(columns[*c].name().as_str()));
-				dashes.push("---".to_owned());
-				dtypes.push(dtype(columns[*c].dtype()));
-			}
-			None => {
-				names.push(CUT.to_owned());
-				dashes.push(String::new());
-				dtypes.push(String::new());
-			}
-		}
-	}
+	// has blanks under its `…`
+	let dashes = shown
+		.iter()
+		.map(|c| if c.is_some() { "---" } else { "" }.to_owned())
+		.collect();
 	let mut rows = vec![names, dashes, dtypes];
-	for row in shown_rows(frame.height()) {
-		let mut cells = Vec::with_capacity(shown.len());
-		for c in &shown {
-			cells.push(match (row, c) {
-				(Some(row), Some(c)) => {
-					#[cfg(test)]
-					READS.with(|n| n.set(n.get() + 1));
-					let value = columns[*c]
-						.get(row)
-						.map_err(|e| format!("polars preview: {e}"))?;
-					cell(value, columns[*c].dtype())
-				}
-				_ => CUT.to_owned(),
-			});
-		}
-		rows.push(cells);
-	}
+	rows.extend(data);
 	// each column's content width: its widest text, at least `---` for a
 	// real column; display width in unicode-width's model
 	let widths: Vec<usize> = (0..shown.len())
@@ -563,6 +596,99 @@ pub(crate) fn render_into(
 	}
 	append!(&rule("└", "─", "┴", "┘"));
 	Ok(true)
+}
+
+/// Record 0159: the usable bytes of an HTML form. rnx's `Output` holds
+/// `HTML_BYTES` and reserves its generic marker; the writer stays below that
+/// with its own accounting, so it ends its own fragment and the generic
+/// truncation never fires.
+const HTML_USABLE: usize = rnx::present::HTML_BYTES - 64;
+const HTML_OMITTED: &str = "<small>[preview byte limit; remainder omitted]</small>";
+/// The most any closing needs: an open head or body, the table, the marker.
+const CLOSING: usize =
+	"</thead><tbody></tbody></table>".len() + HTML_OMITTED.len() + "</div>".len();
+/// One cell's text as HTML text: `&`, `<`, `>`, `"` and `'` as entities, a
+/// character at a time, so no entity is ever split. The text is already
+/// bounded and 0124-escaped (controls and bidi controls as `\u{…}`).
+fn html_text(text: &str, out: &mut String) {
+	for ch in text.chars() {
+		match ch {
+			'&' => out.push_str("&amp;"),
+			'<' => out.push_str("&lt;"),
+			'>' => out.push_str("&gt;"),
+			'"' => out.push_str("&quot;"),
+			'\'' => out.push_str("&#39;"),
+			ch => out.push(ch),
+		}
+	}
+}
+fn html_row(tag: &str, cells: &[String]) -> String {
+	let mut row = String::from("<tr>");
+	for cell in cells {
+		row.push('<');
+		row.push_str(tag);
+		row.push('>');
+		html_text(cell, &mut row);
+		row.push_str("</");
+		row.push_str(tag);
+		row.push('>');
+	}
+	row.push_str("</tr>");
+	row
+}
+/// Record 0159: the frame as an HTML table, from the same bounded cells as
+/// the text table (never from its text): the shape in `<small>`, names in
+/// `<th>`, the dtype row in the head, as Polars' own `_repr_html_` shapes it,
+/// with no attribute, class, style or script. Built from whole structural
+/// units (the opening, each head row, each body row); before each, room for
+/// it and for the closing tags and marker is checked, so a cut form is
+/// always well-formed, closed, and marked, and never longer than
+/// `HTML_USABLE`.
+pub(crate) fn render_html(frame: &p::DataFrame) -> Result<String, String> {
+	render_html_within(frame, HTML_USABLE)
+}
+/// [`render_html`] within `usable` bytes; tests use a smaller capacity to
+/// reach every cut (at `HTML_USABLE` the head and first row always fit).
+fn render_html_within(frame: &p::DataFrame, usable: usize) -> Result<String, String> {
+	let Cells {
+		names,
+		dtypes,
+		rows,
+		..
+	} = cells(frame)?;
+	let mut html = String::from("<div><small>");
+	html_text(&shape(frame), &mut html);
+	html.push_str("</small><table><thead>");
+	let fits = |html: &String, unit: &String| html.len() + unit.len() + CLOSING <= usable;
+	let mut head = vec![html_row("th", &names)];
+	if !names.is_empty() {
+		head.push(html_row("td", &dtypes));
+	}
+	for unit in head {
+		if !fits(&html, &unit) {
+			html.push_str("</thead></table>");
+			html.push_str(HTML_OMITTED);
+			html.push_str("</div>");
+			return Ok(html);
+		}
+		html.push_str(&unit);
+	}
+	html.push_str("</thead><tbody>");
+	for row in &rows {
+		if names.is_empty() {
+			break;
+		}
+		let unit = html_row("td", row);
+		if !fits(&html, &unit) {
+			html.push_str("</tbody></table>");
+			html.push_str(HTML_OMITTED);
+			html.push_str("</div>");
+			return Ok(html);
+		}
+		html.push_str(&unit);
+	}
+	html.push_str("</tbody></table></div>");
+	Ok(html)
 }
 
 #[cfg(test)]
@@ -1260,5 +1386,180 @@ mod tests {
 		// the flat dtypes keep Polars' text, the legacy four their spelling
 		assert_eq!(dtype(&p::DataType::UInt32), "u32");
 		assert_eq!(dtype(&p::DataType::String), "string");
+	}
+
+	/// Record 0159: the HTML form of the user's reference frames.
+	#[test]
+	fn the_users_reference_frames_as_html() {
+		let two = p::DataFrame::new(
+			3,
+			vec![
+				p::Series::new("k1".into(), [1i64, 2, 3]).into(),
+				p::Series::new("k2".into(), [4i64, 5, 6]).into(),
+			],
+		)
+		.unwrap();
+		let html = render_html(&two).unwrap();
+		assert_eq!(
+			html,
+			"<div><small>shape: (3, 2)</small><table><thead><tr><th>k1</th><th>k2</th></tr><tr><td>i64</td><td>i64</td></tr></thead><tbody><tr><td>1</td><td>4</td></tr><tr><td>2</td><td>5</td></tr><tr><td>3</td><td>6</td></tr></tbody></table></div>"
+		);
+		assert!(rnx::present::html_allowed(&html));
+	}
+	/// Record 0159: hostile names and cells are text, never markup; the
+	/// result passes the core allowlist and shows every escape whole.
+	#[test]
+	fn hostile_text_is_never_markup() {
+		let hostile = [
+			"<script>alert(1)</script>",
+			"<img src=x onerror=alert(1)>",
+			"</td></tr></table>",
+			"&amp; &lt; &#39;",
+			"\"quoted\" 'single'",
+			"javascript:alert(1)",
+			"\u{1b}[2J\n\u{202e}rev\u{2066}",
+		];
+		let frame = p::DataFrame::new(
+			hostile.len(),
+			hostile
+				.iter()
+				.enumerate()
+				.map(|(i, h)| {
+					p::Series::new(format!("{h}{i}").into(), vec![*h; hostile.len()]).into()
+				})
+				.collect::<Vec<p::Column>>()[..COLUMNS.min(hostile.len())]
+				.to_vec(),
+		)
+		.unwrap();
+		let html = render_html(&frame).unwrap();
+		assert!(rnx::present::html_allowed(&html), "{html}");
+		for raw in [
+			"<script",
+			"<img",
+			"</td></tr></table>",
+			"\u{1b}",
+			"\u{202e}",
+		] {
+			assert!(!html.contains(raw), "{raw:?} in {html}");
+		}
+		assert!(
+			html.contains("&lt;script&gt;alert(1)&lt;/script&gt;"),
+			"{html}"
+		);
+		assert!(html.contains("&amp;amp; &amp;lt; &amp;#39;"), "{html}");
+		assert!(
+			html.contains("&quot;quoted&quot; &#39;single&#39;"),
+			"{html}"
+		);
+		assert!(
+			html.contains("\\u{1b}[2J\\n\\u{202e}rev\\u{2066}"),
+			"{html}"
+		);
+	}
+	/// Record 0159: empty frames, the row and column boundaries, and the same
+	/// cells and reads as the text table.
+	#[test]
+	fn html_shape_and_boundaries_follow_the_text_table() {
+		let html = render_html(&p::DataFrame::empty()).unwrap();
+		assert_eq!(
+			html,
+			"<div><small>shape: (0, 0)</small><table><thead><tr></tr></thead><tbody></tbody></table></div>"
+		);
+		assert!(rnx::present::html_allowed(&html));
+		for (rows, columns) in [(0, 2), (1, 1), (10, 8), (11, 9), (3, 0)] {
+			let frame = strings(rows, columns, "column", "cell");
+			let (text, text_reads) = reads(&frame);
+			READS.with(|n| n.set(0));
+			let html = render_html(&frame).unwrap();
+			assert_eq!(READS.with(|n| n.get()), text_reads, "{rows}x{columns}");
+			assert!(rnx::present::html_allowed(&html), "{html}");
+			assert!(html.starts_with(&format!("<div><small>shape: ({rows}, {columns})</small>")));
+			// the same cells in the same places as the text table
+			let g = grid(&text);
+			let body = html.matches("<tr>").count() - if columns == 0 { 1 } else { 2 };
+			assert_eq!(body, if columns == 0 { 0 } else { g.len() - 3 }, "{html}");
+			assert_eq!(
+				html.matches("<td>cell</td>").count(),
+				text.matches("cell").count() - text.matches("column").count() * 0
+			);
+			assert_eq!(html.contains("…"), rows > ROWS || columns > COLUMNS);
+		}
+	}
+	/// Record 0159: omitted hazardous columns are not read for HTML either.
+	#[test]
+	fn html_never_reads_omitted_columns() {
+		let mut columns: Vec<p::Column> = (0..4)
+			.map(|i| p::Series::new(format!("a{i}").into(), [i as i64]).into())
+			.collect();
+		columns.extend((0..4).map(|i| {
+			p::Series::new(format!("h{i}").into(), ["\u{202e}".repeat(1_000_000)]).into()
+		}));
+		columns.extend((0..4).map(|i| p::Series::new(format!("z{i}").into(), [i as i64]).into()));
+		READS.with(|n| n.set(0));
+		let html = render_html(&p::DataFrame::new(1, columns).unwrap()).unwrap();
+		assert_eq!(READS.with(|n| n.get()), COLUMNS);
+		assert!(
+			!html.contains("h0") && !html.contains("\\u{202e}"),
+			"{html}"
+		);
+	}
+	/// Record 0159: every cut is whole, closed and marked: in the head, at the
+	/// first body row, and at a later row; at the real bound, maximal hostile
+	/// head and rows still give a well-formed fragment within capacity.
+	#[test]
+	fn html_cuts_are_whole_closed_and_marked() {
+		let wide = |rows| {
+			p::DataFrame::new(
+				rows,
+				(0..COLUMNS)
+					.map(|i| {
+						p::Series::new(
+							format!("{}{i}", "\u{202e}".repeat(200)).into(),
+							vec!["\u{2066}".repeat(200); rows],
+						)
+						.into()
+					})
+					.collect(),
+			)
+			.unwrap()
+		};
+		let frame = wide(12);
+		let whole = render_html_within(&frame, usize::MAX).unwrap();
+		assert!(!whole.contains(HTML_OMITTED));
+		for (usable, ends) in [
+			(600, "</thead></table>"),
+			(12_000, "</tbody></table>"),
+			(HTML_USABLE, "</tbody></table>"),
+		] {
+			let html = render_html_within(&frame, usable).unwrap();
+			assert!(html.len() <= usable, "{usable}: {}", html.len());
+			assert!(
+				html.ends_with(&format!("{ends}{HTML_OMITTED}</div>")),
+				"{usable}: {html}"
+			);
+			assert!(rnx::present::html_allowed(&html), "{usable}");
+			// whole rows only: every cut is at a unit boundary of the whole form
+			let prefix = html
+				.strip_suffix(&format!("{ends}{HTML_OMITTED}</div>"))
+				.unwrap();
+			assert!(
+				whole.starts_with(prefix.trim_end_matches("</thead><tbody>")),
+				"{usable}"
+			);
+		}
+		// the first body row cut: the head fits, the first row does not
+		let head = whole.find("</thead>").unwrap() + "</thead><tbody>".len();
+		let html = render_html_within(&frame, head + CLOSING + 10).unwrap();
+		assert!(
+			html.ends_with(&format!(
+				"</thead><tbody></tbody></table>{HTML_OMITTED}</div>"
+			)),
+			"{}",
+			html.len()
+		);
+		assert!(rnx::present::html_allowed(&html));
+		// at the real bound the form fits the core's Output whole
+		let html = render_html(&frame).unwrap();
+		assert!(html.len() <= rnx::present::HTML_BYTES - 64);
 	}
 }

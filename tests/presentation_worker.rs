@@ -91,6 +91,65 @@ impl Drop for Worker {
 	}
 }
 
+/// Record 0159: the optional HTML form. Only a top-level value with an HTML
+/// presenter gets one, always beside its text; a handled failure (an error
+/// after a prefix, overflow, refused markup) discards only the HTML, and the
+/// worker goes on serving.
+#[test]
+fn an_html_form_is_optional_and_discarded_on_failure() {
+	let mut w = Worker::spawn();
+	let settled = w.execute("rnx_test::test_presented(1)");
+	assert_eq!(settled["text_plain"], "Presented with 1 rows\n");
+	assert_eq!(settled["text_html"], "<div>Presented with 1 rows</div>");
+	for rows in [2, 3, 4] {
+		let settled = w.execute(&format!("rnx_test::test_presented({rows})"));
+		assert_eq!(
+			settled["text_plain"],
+			format!("Presented with {rows} rows\n")
+		);
+		assert_eq!(settled["text_html"], Value::Null, "rows {rows}");
+		assert_eq!(settled["failure"], Value::Null);
+		// a successful evaluation right after, in the same worker
+		assert_eq!(w.execute("6 * 7")["text_plain"], "42");
+	}
+	// no HTML for anything else: a plain value, a container, a unit
+	for source in ["42", "[rnx_test::test_presented(1)]", "let q = 1;"] {
+		assert_eq!(w.execute(source)["text_html"], Value::Null, "{source}");
+	}
+	// a failed presenter keeps its text fallback and has no HTML form
+	assert_eq!(
+		w.execute("rnx_test::test_broken()")["text_html"],
+		Value::Null
+	);
+}
+
+/// Record 0159: a near-limit settled reply, both forms at their bound
+/// and every HTML character one JSON doubles, fits the worker frame.
+#[test]
+fn a_near_limit_rich_reply_fits_the_frame() {
+	let mut w = Worker::spawn();
+	let settled = w.execute("rnx_test::test_loud()");
+	let html = settled["text_html"].as_str().unwrap();
+	let text = settled["text_plain"].as_str().unwrap();
+	assert!(
+		html.len() > 16_000 && html.len() <= 16_384,
+		"{}",
+		html.len()
+	);
+	assert!(
+		text.len() > 16_000 && text.len() <= 16_384,
+		"{}",
+		text.len()
+	);
+	let wire = serde_json::to_string(&settled).unwrap().len();
+	eprintln!(
+		"near-limit settled reply: text {} + html {} bytes decoded, {wire} bytes as JSON",
+		text.len(),
+		html.len()
+	);
+	assert!(wire < 256 * 1024 / 3, "{wire}");
+}
+
 #[test]
 fn a_presented_value_reaches_text_plain_bounded_and_escaped() {
 	let mut w = Worker::spawn();

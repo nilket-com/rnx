@@ -25,7 +25,7 @@ from the first cell.
 04_polars_sales has no transcript of its own: its stdout must equal the worker running
 demos/polars/sales.rn on the same CSV, and every frame it displays, and its answer lines, must
 equal expectations computed here from demos/data/sales.csv with the csv module alone."""
-import argparse, copy, csv, json, os, pathlib, re, shutil, subprocess, sys, tempfile
+import argparse, copy, csv, html.parser, json, os, pathlib, re, shutil, subprocess, sys, tempfile
 
 import nbclient
 import nbformat
@@ -347,14 +347,138 @@ def results(nb):
 	return texts
 
 
+def html_results(nb):
+	"""Record 0159: each execute_result's HTML form, which must sit beside its text."""
+	forms = []
+	for cell in nb.cells:
+		for o in cell.get("outputs", []):
+			if o["output_type"] == "execute_result":
+				if "text/plain" not in o["data"]:
+					raise Mismatch("an HTML result without its text/plain fallback")
+				forms.append(o["data"].get("text/html"))
+	return forms
+
+
+HTML_TAGS = ("div", "small", "table", "thead", "tbody", "tr", "th", "td")
+
+
+def html_allowed(form):
+	"""Record 0159: an independent copy of the allowlist rnx and the kernel apply: tags from a
+	fixed list with no attributes, balanced, at most 8 deep; text with no raw < or >, & only in
+	five forms, no control or bidi control except a newline; at most 16,384 bytes."""
+	if len(form.encode()) > 16384:
+		return False
+	stack = []
+	for part in re.split(r"(<[^<>]*>)", form):
+		tag = re.fullmatch(r"<(/?)([a-z]+)>", part)
+		if part.startswith("<"):
+			if not tag or tag[2] not in HTML_TAGS:
+				return False
+			if tag[1]:
+				if not stack or stack.pop() != tag[2]:
+					return False
+			elif len(stack) == 8:
+				return False
+			else:
+				stack.append(tag[2])
+			continue
+		if "<" in part or ">" in part:
+			return False
+		if re.search(r"&(?!(amp|lt|gt|quot|#39);)", part):
+			return False
+		if any((unicode_control(c) and c != "\n") for c in part):
+			return False
+	return not stack
+
+
+def unicode_control(c):
+	return (ord(c) < 0x20 or 0x7f <= ord(c) < 0xa0 or c in "\u2028\u2029"
+			or "\u202a" <= c <= "\u202e" or "\u2066" <= c <= "\u2069")
+
+
+class Table(html.parser.HTMLParser):
+	"""This example's HTML form: <div><small>shape</small><table><thead>two rows</thead>
+	<tbody>rows</tbody></table></div>, cells as text with entities decoded."""
+
+	def __init__(self):
+		super().__init__(convert_charrefs=True)
+		self.path, self.shape, self.head, self.body, self.cell = [], None, [], [], None
+
+	def handle_starttag(self, tag, attrs):
+		if attrs:
+			raise Mismatch(f"an attribute on <{tag}>")
+		self.path.append(tag)
+		if tag == "tr":
+			(self.head if "thead" in self.path else self.body).append([])
+		if tag in ("th", "td"):
+			self.cell = ""
+
+	def handle_endtag(self, tag):
+		if not self.path or self.path.pop() != tag:
+			raise Mismatch(f"misnested </{tag}>")
+		if tag in ("th", "td"):
+			(self.head if "thead" in self.path else self.body)[-1].append(self.cell)
+			self.cell = None
+
+	def handle_data(self, data):
+		if self.path and self.path[-1] == "small" and "table" not in self.path:
+			self.shape = (self.shape or "") + data
+		elif self.cell is not None:
+			self.cell += data
+
+
+def parse_html_frame(form, whole):
+	"""The HTML twin of parse_frame: the same structural reading of elision."""
+	if form is None or not html_allowed(form):
+		raise Mismatch(f"no allowed HTML form: {form!r}")
+	t = Table()
+	t.feed(form)
+	t.close()
+	m = re.fullmatch(r"shape: \((\d[\d_]*), (\d[\d_]*)\)", t.shape or "")
+	if not m:
+		raise Mismatch(f"no HTML shape: {form!r}")
+	if "[preview byte limit" in form:
+		raise Mismatch("the HTML form hit its byte limit")
+	height, width = int(m[1].replace("_", "")), int(m[2].replace("_", ""))
+	if len(t.head) != 2 or any(len(r) != width for r in t.head + t.body):
+		raise Mismatch(f"HTML rows do not have {width} cells: {form!r}")
+	names, dtypes = t.head
+	data = t.body
+	if len(data) != (height if height <= ROWS_SHOWN else ROWS_SHOWN + 1):
+		raise Mismatch(f"{len(data)} HTML rows shown of {height}")
+	if height > ROWS_SHOWN:
+		if whole:
+			raise Mismatch(f"a whole frame was required, but {height} rows are elided")
+		if data.pop(HALF) != ["…"] * width:
+			raise Mismatch("no elided HTML row after the first five")
+	schema = list(zip(names, dtypes))
+	for name, dtype in schema:
+		if not re.fullmatch(r"[a-z_]+", name) or not re.fullmatch(r"[a-z0-9]+", dtype):
+			raise Mismatch(f"unexpected HTML schema entry {name!r}: {dtype!r}")
+	cells = [[parse_cell(c, d) for c, (_, d) in zip(r, schema)] for r in data]
+	return height, width, schema, cells
+
+
+def check_frame_html(form, label, height, schema, rows):
+	whole = height <= ROWS_SHOWN
+	h, w, shown_schema, cells = parse_html_frame(form, whole)
+	if (h, w) != (height, len(schema)) or shown_schema != schema:
+		raise Mismatch(f"{label} (HTML): {h} × {w} {shown_schema}, expected {height} × {len(schema)} {schema}")
+	expected = rows if whole else rows[:HALF] + rows[-HALF:]
+	if cells != expected:
+		raise Mismatch(f"{label} (HTML): rows differ:\n  shown    {cells}\n  expected {expected}")
+
+
 def check_sales(nb, data):
-	"""Every displayed frame, then the printed answer, against the CSV."""
+	"""Every displayed frame, as text and as HTML, then the printed answer, against the CSV."""
 	expected = sales_expected(data)
+	forms = html_results(nb)  # first: it refuses an HTML form without its text fallback
 	texts = results(nb)
 	if len(texts) != len(expected["frames"]):
 		raise Mismatch(f"{len(texts)} results shown, expected {len(expected['frames'])} frames")
-	for text, (label, height, schema, rows) in zip(texts, expected["frames"]):
+	for text, form, (label, height, schema, rows) in zip(texts, forms, expected["frames"]):
 		check_frame(text, label, height, schema, rows)
+		check_frame_html(form, label, height, schema, rows)
 	check_sales_answer(judge(nb), expected)
 
 
@@ -527,6 +651,33 @@ class Controls:
 						o["data"]["text/plain"] = o["data"]["text/plain"].replace("6137.5", "NaN   ")
 			return nb
 		self.expect("a non-finite mean", lambda: check_sales(non_finite(ran), SALES), False)
+
+		# record 0159: the HTML form
+		def edited_region_html(fn):
+			nb = copy.deepcopy(ran)
+			o = next(o for o in nb.cells[index].outputs if o["output_type"] == "execute_result")
+			o["data"]["text/html"] = fn(o["data"]["text/html"])
+			return nb
+		self.expect("one HTML cell changed",
+					lambda: check_sales(edited_region_html(lambda h: h.replace("<td>38750</td>", "<td>38751</td>", 1)), SALES), False)
+
+		def swap_html_rows(h):
+			rows = re.findall(r"<tr>.*?</tr>", h)
+			return h.replace(rows[2], "\0").replace(rows[3], rows[2]).replace("\0", rows[3])
+		self.expect("two HTML rows swapped", lambda: check_sales(edited_region_html(swap_html_rows), SALES), False)
+		self.expect("an injected <script>",
+					lambda: check_sales(edited_region_html(lambda h: h.replace("<td>north</td>", "<td><script>alert(1)</script></td>", 1)), SALES), False)
+		self.expect("an injected onerror attribute",
+					lambda: check_sales(edited_region_html(lambda h: h.replace("<td>north</td>", "<td onerror=alert(1)>north</td>", 1)), SALES), False)
+		self.expect("an HTML row missing",
+					lambda: check_sales(edited_region_html(lambda h: h.replace(re.findall(r"<tr>.*?</tr>", h)[3], "", 1)), SALES), False)
+
+		def no_text(nb):
+			nb = copy.deepcopy(nb)
+			o = next(o for o in nb.cells[index].outputs if o["output_type"] == "execute_result")
+			del o["data"]["text/plain"]
+			return nb
+		self.expect("text/html without its text/plain fallback", lambda: check_sales(no_text(ran), SALES), False)
 
 
 def main():

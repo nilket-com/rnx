@@ -494,12 +494,13 @@ impl App {
 					&metadata,
 					&error_output(&result),
 				)?;
-			} else if let Some(text) = reply["text_plain"].as_str() {
+			} else if let Some(data) = crate::html::result_data(reply) {
+				// record 0159: text/plain, and text/html beside it when allowed
 				self.out.publish(
 					&job.parent.header,
 					"execute_result",
 					&metadata,
-					&json!({"execution_count":count,"data":{"text/plain":text},"metadata":{}}),
+					&json!({"execution_count":count,"data":data,"metadata":{}}),
 				)?;
 			}
 		}

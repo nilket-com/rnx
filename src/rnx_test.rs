@@ -32,7 +32,40 @@ pub(crate) fn present(presenters: &mut crate::present::Presenters) -> crate::Res
 		while out.push(&token) {}
 		Ok(())
 	})?;
+	// Record 0159: HTML forms. `Presented`'s depends on its rows: 1 is valid;
+	// 2 fails after writing a prefix; 3 overflows the bound; 4 is refused by
+	// the allowlist; others have valid HTML too. `Loud`'s is the largest
+	// legal HTML, every character one JSON doubles (`\` and `"`), for the
+	// transport bound.
+	presenters.register_html::<Presented>(|value, out| match value.rows {
+		2 => {
+			out.push("<div>half");
+			Err("failed after a prefix".into())
+		}
+		3 => {
+			while out.push("<div>x</div>") {}
+			Ok(())
+		}
+		4 => {
+			out.push("<div onclick=x>no</div>");
+			Ok(())
+		}
+		rows => {
+			out.push(&format!("<div>Presented with {rows} rows</div>"));
+			Ok(())
+		}
+	})?;
+	presenters.register_html::<Loud>(|_, out| {
+		let room = crate::present::HTML_BYTES - out_marker() - "<div></div>".len();
+		out.push(&format!("<div>{}</div>", "\\\"".repeat(room / 2)));
+		Ok(())
+	})?;
 	Ok(())
+}
+
+/// The bytes `Output` reserves for its marker at the HTML bound.
+fn out_marker() -> usize {
+	"\n[presentation byte limit; remainder omitted]\n".len()
 }
 
 pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::HostFunction>> {

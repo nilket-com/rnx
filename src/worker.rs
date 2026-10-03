@@ -208,7 +208,7 @@ pub fn run(
 				io::Error::other("worker nonce needs 64 lowercase hexadecimal digits")
 			})?;
 		last = id;
-		let mut reply = json!({"type":"settled","id":id,"epoch":epoch,"input":null,"text_plain":null,"failure":null,"state_lost":false});
+		let mut reply = json!({"type":"settled","id":id,"epoch":epoch,"input":null,"text_plain":null,"text_html":null,"failure":null,"state_lost":false});
 		let mut retire = op == "shutdown";
 		let mut cleanup_failed = false;
 		if op == "execute" {
@@ -232,6 +232,11 @@ pub fn run(
 					};
 					reply["text_plain"] = json!(text);
 					reply["render_bounded"] = json!(true);
+					// record 0159: an optional HTML form beside the text, never
+					// instead of it
+					if let Some(html) = session.present_html(&value) {
+						reply["text_html"] = json!(html);
+					}
 				}
 				Ok(_) => {}
 				Err(f) => reply["failure"] = failure(&f, epoch),

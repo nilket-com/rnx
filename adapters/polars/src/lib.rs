@@ -157,6 +157,11 @@ fn preview(frame: &DataFrame) -> Result<String, String> {
 pub fn preview_text(frame: &p::DataFrame) -> Result<String, String> {
 	preview::render(frame)
 }
+/// Record 0159: the HTML form, for the same allocation control only.
+#[doc(hidden)]
+pub fn preview_html(frame: &p::DataFrame) -> Result<String, String> {
+	preview::render_html(frame)
+}
 /// Explicit `format!("{frame}")` shows the same bounded preview.
 #[rune::function(instance, protocol = DISPLAY_FMT)]
 fn display_fmt(frame: &DataFrame, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {
@@ -171,6 +176,12 @@ fn display_fmt(frame: &DataFrame, f: &mut rune::runtime::Formatter) -> rune::run
 pub fn present(presenters: &mut rnx::Presenters) -> Result<(), String> {
 	presenters.register::<DataFrame>(|frame, out| {
 		preview::render_into(&frame.0, &mut |token| out.push(token)).map(|_| ())
+	})?;
+	// record 0159: the notebook's HTML table beside the text, one whole token
+	// within the writer's own bound
+	presenters.register_html::<DataFrame>(|frame, out| {
+		out.push(&preview::render_html(&frame.0)?);
+		Ok(())
 	})
 }
 #[rune::function(instance)]

@@ -405,6 +405,12 @@ impl Session {
 	) -> Option<std::result::Result<String, String>> {
 		self.presenters.present(value, limit)
 	}
+	/// Record 0159: the optional HTML form of a top-level result, asked for
+	/// only by the notebook worker; `None` unless it rendered whole and passed
+	/// the allowlist.
+	pub fn present_html(&self, value: &Value) -> Option<String> {
+		self.presenters.present_html(value)
+	}
 	#[cfg(test)]
 	pub(crate) fn presenter_count(&self) -> usize {
 		self.presenters.len()

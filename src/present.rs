@@ -20,6 +20,11 @@ pub struct Output {
 	truncated: bool,
 }
 const OMITTED: &str = "\n[presentation byte limit; remainder omitted]\n";
+/// Record 0159: the bound of a top-level result's optional HTML form, the
+/// same as its `text/plain` form's (the worker's `render_bytes`). With both at
+/// their bound the decoded bundle is 32,768 bytes, far inside the 256 KiB
+/// worker frame however JSON escapes it (plans/0159 evidence).
+pub const HTML_BYTES: usize = 16_384;
 const SHORT: &str = "…";
 /// The largest omission marker that fits a budget, possibly none.
 fn marker_for(limit: usize) -> &'static str {
@@ -106,12 +111,75 @@ pub(crate) fn finish(outcome: Result<String, String>, label: &str, budget: usize
 	out
 }
 
+/// Record 0159: the only markup an HTML presentation may carry. Tags from a
+/// fixed list with no attributes at all, balanced and at most `DEPTH` deep;
+/// text with no raw `<` or `>`, `&` only in five named or numeric forms, and
+/// no control or bidi control except a newline. Checked iteratively, in one
+/// pass, within [`HTML_BYTES`]. The kernel carries a copy, tested against the
+/// same corpus (`tests/fixtures/html_allowlist.json`).
+pub fn html_allowed(html: &str) -> bool {
+	const TAGS: [&str; 8] = ["div", "small", "table", "thead", "tbody", "tr", "th", "td"];
+	const ENTITIES: [&str; 5] = ["&amp;", "&lt;", "&gt;", "&quot;", "&#39;"];
+	const DEPTH: usize = 8;
+	if html.len() > HTML_BYTES {
+		return false;
+	}
+	let mut open: Vec<&str> = Vec::new();
+	let mut rest = html;
+	while let Some(ch) = rest.chars().next() {
+		match ch {
+			'<' => {
+				let Some(end) = rest.find('>') else {
+					return false;
+				};
+				let inner = &rest[1..end];
+				let (closing, name) = match inner.strip_prefix('/') {
+					Some(name) => (true, name),
+					None => (false, inner),
+				};
+				// an exact name: no attribute, space, slash or comment fits
+				if !TAGS.contains(&name) {
+					return false;
+				}
+				if closing {
+					if open.pop() != Some(name) {
+						return false;
+					}
+				} else {
+					if open.len() == DEPTH {
+						return false;
+					}
+					open.push(name);
+				}
+				rest = &rest[end + 1..];
+			}
+			'>' => return false,
+			'&' => {
+				let Some(entity) = ENTITIES.iter().find(|e| rest.starts_with(**e)) else {
+					return false;
+				};
+				rest = &rest[entity.len()..];
+			}
+			ch if (ch.is_control() && ch != '\n')
+				|| matches!(ch, '\u{2028}' | '\u{2029}' | '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}') =>
+			{
+				return false;
+			}
+			ch => rest = &rest[ch.len_utf8()..],
+		}
+	}
+	open.is_empty()
+}
+
 type Presenter = Box<dyn Fn(&Value, &mut Output) -> Result<(), String>>;
 
 /// Presenters keyed by native type hash, owned by one serving context.
 #[derive(Default)]
 pub struct Presenters {
 	entries: BTreeMap<rune::Hash, (&'static str, Presenter)>,
+	/// Record 0159: optional HTML forms, asked for only by the notebook
+	/// worker for a top-level result; every other path uses `entries`.
+	html: BTreeMap<rune::Hash, (&'static str, Presenter)>,
 	/// The extension currently registering, for diagnostics.
 	owner: &'static str,
 }
@@ -138,6 +206,46 @@ impl Presenters {
 		});
 		self.entries.insert(T::HASH, (owner, presenter));
 		Ok(())
+	}
+	/// Record 0159: register an HTML form for the concrete native type `T`,
+	/// beside its text presenter. It writes into an [`Output`] of
+	/// [`HTML_BYTES`]; the result is used only if the callback returns `Ok`,
+	/// never reached the bound (the generic marker is not an HTML closing),
+	/// and passes [`html_allowed`]. Otherwise it is discarded and the text
+	/// form stands alone. A second registration for a type is refused.
+	pub fn register_html<T>(
+		&mut self,
+		present: impl Fn(&T, &mut Output) -> Result<(), String> + 'static,
+	) -> Result<(), String>
+	where
+		T: rune::Any + rune::TypeHash + 'static,
+	{
+		let owner = self.owner;
+		if let Some((previous, _)) = self.html.get(&T::HASH) {
+			return Err(format!(
+				"HTML presentation for `{}` was already registered by extension `{previous}`",
+				std::any::type_name::<T>()
+			));
+		}
+		let presenter: Presenter = Box::new(move |value, out| {
+			let borrowed = value.borrow_ref::<T>().map_err(|e| e.to_string())?;
+			present(&borrowed, out)
+		});
+		self.html.insert(T::HASH, (owner, presenter));
+		Ok(())
+	}
+	/// Record 0159: the HTML form of a top-level value, or `None`: no HTML
+	/// presenter, a callback or borrow error, output that reached the bound,
+	/// or markup the allowlist refuses. These handled failures only discard
+	/// the HTML; a presenter is trusted Rust and a panic is not contained here.
+	pub(crate) fn present_html(&self, value: &Value) -> Option<String> {
+		let (_, presenter) = self.html.get(&value.type_hash())?;
+		let mut out = Output::new(HTML_BYTES);
+		presenter(value, &mut out).ok()?;
+		if out.truncated() {
+			return None;
+		}
+		Some(out.finish()).filter(|html| html_allowed(html))
 	}
 	pub(crate) fn set_owner(&mut self, owner: &'static str) {
 		self.owner = owner;
@@ -254,6 +362,78 @@ mod tests {
 		assert!(finish(Err("e".into()), "<::polars::DataFrame>", 5).len() <= 5);
 		// Text that fits is untouched.
 		assert_eq!(finish(Ok("ok\n".into()), "<::x>", 100), "ok\n");
+	}
+
+	/// Record 0159: the shared corpus, also run by the kernel's copy.
+	#[test]
+	fn the_html_allowlist_corpus() {
+		let corpus: serde_json::Value =
+			serde_json::from_str(include_str!("../tests/fixtures/html_allowlist.json")).unwrap();
+		for case in corpus["accept"].as_array().unwrap() {
+			assert!(html_allowed(case.as_str().unwrap()), "refused {case}");
+		}
+		for case in corpus["reject"].as_array().unwrap() {
+			assert!(!html_allowed(case.as_str().unwrap()), "accepted {case}");
+		}
+		let deep = "<div>".repeat(100_000);
+		assert!(!html_allowed(&deep));
+		let long = format!("<div>{}</div>", "x".repeat(HTML_BYTES));
+		assert!(!html_allowed(&long));
+	}
+
+	/// Record 0159: a handled failure discards only the HTML: an error after a
+	/// prefix, output past the bound, refused markup. A registered type's text
+	/// form is unaffected, and other types have no HTML.
+	#[test]
+	fn html_forms_are_optional_and_discarded_on_failure() {
+		#[derive(rune::Any)]
+		#[rune(item = ::probe)]
+		struct Mode(i64);
+		let mut p = Presenters::default();
+		p.set_owner("probe");
+		p.register::<Mode>(|m, out| {
+			out.push(&format!("mode {}", m.0));
+			Ok(())
+		})
+		.unwrap();
+		p.register_html::<Mode>(|m, out| match m.0 {
+			0 => {
+				out.push("<div>ok &amp; fine</div>");
+				Ok(())
+			}
+			1 => {
+				out.push("<div>half");
+				Err("failed after a prefix".into())
+			}
+			2 => {
+				while out.push("<div>x</div>") {}
+				Ok(())
+			}
+			_ => {
+				out.push("<div onclick=x>no</div>");
+				Ok(())
+			}
+		})
+		.unwrap();
+		assert!(
+			p.register_html::<Mode>(|_, _| Ok(()))
+				.unwrap_err()
+				.contains("probe")
+		);
+		let value = |n| rune::to_value(Mode(n)).unwrap();
+		assert_eq!(
+			p.present_html(&value(0)).as_deref(),
+			Some("<div>ok &amp; fine</div>")
+		);
+		for n in [1, 2, 3] {
+			assert_eq!(p.present_html(&value(n)), None, "mode {n}");
+			assert_eq!(
+				p.present(&value(n), 200).unwrap().unwrap(),
+				format!("mode {n}")
+			);
+		}
+		assert!(p.present_html(&rune::to_value(Other).unwrap()).is_none());
+		assert!(p.present_html(&rune::to_value(7i64).unwrap()).is_none());
 	}
 }
 
