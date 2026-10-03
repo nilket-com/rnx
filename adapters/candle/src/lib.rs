@@ -343,7 +343,20 @@ pub fn present(presenters: &mut rnx::Presenters) -> Result<(), String> {
 		out.push(&display::render(&t.0));
 		Ok(())
 	})?;
+	// record 0161: the notebook's indexed table beside the text, one whole token within the
+	// writer's own bound
+	presenters.register_html::<Tensor>(|t, out| {
+		out.push(&display::render_html(&t.0));
+		Ok(())
+	})?;
 	text::present(presenters)
+}
+
+/// Record 0161: a Candle tensor's text and HTML displays, for the allocation control in
+/// `tests/display_alloc.rs` only; not part of the Rune API.
+#[doc(hidden)]
+pub fn display_forms(t: &candle_core::Tensor) -> (String, String) {
+	(display::render(t), display::render_html(t))
 }
 
 #[cfg(test)]

@@ -83,6 +83,27 @@ In `adapters/candle`:
 
 **Cost:** the time to show a tensor before and after, and run-all for 05, as before.
 
+## 4a. Folded in from Codex's acceptance (no new review cycle)
+
+1. **The text renderer is preserved as it was,** not refactored. `render` is left untouched, and the HTML is built by a separate `shown` reading that mirrors it.
+   - 26 cases' text output was captured *before* any change into `adapters/candle/tests/data/display_text_0161.json`, and `text_is_unchanged` holds it byte for byte.
+   - The cases: ranks 0–6, an offset view and a transposed view, zero axes at the front, middle and end of rank 3, zero-length rank 1 and 2, bf16 (unsupported), f64, i64, u32, u8, f32 and f64 extremes, and the worst f64 case.
+   - The quirks are kept: a zero leading axis prints only its header and slice note, and an unsupported dtype prints a values-not-shown line.
+   - HTML statuses carry the same header, slice identity and reason, with no table.
+2. **A calculated worst case, from the existing Debug formatting:** a rank-6 header with six 20-digit dimensions and the four-index slice note, 8 × 8 of the longest f64 Debug text (24 bytes), indices, both ellipses and tags: **2,833 bytes** (`WORST`), against a usable 16,320, below `Output`'s marker room. Generic truncation never fires.
+   - The measured fixtures are a rank-2 of 2,688 bytes and a rank-6 of 2,721.
+   - The extremes (finite limits, subnormals, signed zero, NaN, ±inf) keep their spelling and pass the allowlist.
+   - After review (R1): every cut reserves the largest closing any state needs (`<tbody></tbody></table>`, the marker and `</div>`). The head-to-body transition had overrun a requested capacity by seven bytes. Every capacity from the smallest fragment to the whole form is now swept, for five shapes.
+3. **The allocation control uses views,** not dense data: a broadcast 1,000,000 × 1,000 view and an offset, transposed 1,000 × 999,997 view of four stored values. The peak is measured after the input exists, against a computed bound of 64 KiB. Only the corner is read (`narrow`, then a copy of at most 64 values), and the large tensors are never materialized.
+4. **The checker binds the tensor table's structure:** the header and full shape, column indices `0..n`, row indices `0..m`, dimensions, values, and the `…` row in its place. Both forms are parsed independently and their f32 values must agree exactly before the expected corner is compared.
+   - New controls: missing and duplicated values and rows, as well as the listed mutations.
+   - Another valid spelling of the same f32 is accepted.
+   - The 04 and 05 frame checks and 06's Dense-only result are unchanged.
+5. **The browser probe** (`probes/jupyter-html-0161`, adapted from 0159) keeps the non-empty all-untrusted assertion, the light and dark themes, and the saved and run-all checks. Each rendered table's DOM cells must equal the cells of the stored HTML it renders, which the checker verifies independently.
+   - The mixed-worker verifier and controls are rerun after rebuilding the combined worker.
+   - The after-push check uses a clean checkout and the documented setup, covering 05's two tensor bundles and 06 unchanged.
+   - Timings are measurements only.
+
 ## 5. Copy
 
 The notebook README and the Candle adapter's docs say tensors show as small indexed tables in Jupyter, beside the unchanged text form.
