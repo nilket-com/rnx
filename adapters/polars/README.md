@@ -253,23 +253,35 @@ pub fn main(_) {
 
 Run this in a fresh directory: both writes refuse existing paths. Expected rows
 are `("a", 2)` and `("🦀", 7)`, with string and i64 columns. `preview()` returns
-a string starting with the complete dimensions, for example:
+the frame as a table in Polars' default style (record 0158), for example:
 
 ```text
-DataFrame: 2 rows × 2 columns
-"category": string | "total": i64
-"a" | 2
-"🦀" | 7
+shape: (2, 2)
+┌──────────┬───────┐
+│ category ┆ total │
+│ ---      ┆ ---   │
+│ string   ┆ i64   │
+╞══════════╪═══════╡
+│ a        ┆ 2     │
+│ 🦀       ┆ 7     │
+└──────────┴───────┘
 ```
 
-Preview inspects at most ten rows and eight columns. Each name/string cell is
-limited to eighty Unicode scalars; longer values get `…[truncated]` outside
-their quotes. It never formats the whole frame first. Row/column omissions are
-named below the dimensions. The returned string is at most 8192 UTF-8 bytes,
-including a reserved byte-limit marker; it can stop before the row limit.
-Strings are quoted, so `"null"` differs from null. Controls, quotes and backslashes
-are escaped; finite floats use round-tripping spelling. The layout is independent
-of terminal width and Polars formatting settings. `preview()` borrows the frame,
+The layout is rnx's own, drawn around rnx's bounded cells; Polars' `Display` is
+never called. Preview reads at most ten rows and eight columns: past ten rows
+the first and last five with a `…` row between, past eight columns the first and
+last four with a `…` column; omitted cells are never read. Each name and string
+is limited to eighty Unicode scalars, then `…`. It never formats the whole frame
+first. The returned string is at most 8192 UTF-8 bytes, built from whole lines:
+a table that would pass the limit stops at a complete line, then a byte-limit
+marker, with no bottom border. Strings and names are unquoted, as Polars shows
+them, so a string `"null"` and a null both read `null`; strings inside a list
+cell stay quoted. Controls, bidi controls and backslashes are escaped, so a
+newline shows as `\n` and a backslash as `\\`; finite floats use
+round-tripping spelling. Columns are aligned by display width (the
+`unicode-width` model; terminals differ on some emoji), and every cell is
+left-aligned, as Polars' default is. The layout is independent of terminal
+width and of Polars' `POLARS_FMT_*` settings. `preview()` borrows the frame,
 does not collect, perform I/O or print, and can be called repeatedly.
 
 `format!("{frame}")` and `println!("{frame}")` return this same text wherever

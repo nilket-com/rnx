@@ -2815,6 +2815,7 @@ dependencies = [
  "rnx",
  "serde",
  "serde_json",
+ "unicode-width",
 ]
 
 [[package]]

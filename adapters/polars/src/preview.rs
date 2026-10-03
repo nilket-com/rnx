@@ -1,10 +1,20 @@
 //! Inspect bounded slices only. Never format a whole frame or arbitrary AnyValue.
+//!
+//! Record 0158: the bounded cells are laid out as a Polars-style table (the
+//! look of Polars' default `UTF8_FULL_CONDENSED` display) by a writer of our
+//! own. Polars' `Display` is never called: it reads every column and formats
+//! values without these bounds or this escaping (review of 0158).
 use crate::p;
+use unicode_width::UnicodeWidthStr;
 const ROWS: usize = 10;
 const COLUMNS: usize = 8;
 const SCALARS: usize = 80;
 const BYTES: usize = 8192;
 const OMITTED: &str = "\n[preview byte limit; remainder omitted]\n";
+/// The marker after a scalar cut at `SCALARS`, and the text of an elided row
+/// or column: Polars' ellipsis. It is a display convention, not a proof: a
+/// value may itself be `…` (review of 0158).
+const CUT: &str = "…";
 
 /// The adapter's own byte accounting over any sink: at most `BYTES` bytes
 /// of whole tokens, then the omission marker, then nothing. Both the explicit
@@ -44,13 +54,16 @@ impl<'a> Capped<'a> {
 	}
 }
 
-/// One scalar, written whole: quotes, backslashes and the common controls as
-/// their short escapes; every other control and every line, paragraph,
-/// embedding, override or isolate control as `\u{…}`. Names, strings and a
-/// dtype's zone share this policy (review of 0124: a zone is arbitrary text).
-fn escaped_into(ch: char, text: &mut String) {
+/// One scalar, written whole: backslashes and the common controls as their
+/// short escapes; every other control and every line, paragraph, embedding,
+/// override or isolate control as `\u{…}`. Names, strings and a dtype's zone
+/// share this policy (review of 0124: a zone is arbitrary text). Inside
+/// quotes (a list's strings, a zone) a quote is escaped too; unquoted text
+/// (record 0158: a top-level string or name, as Polars shows them) keeps it,
+/// and stays unambiguous because a backslash is always escaped.
+fn escaped_into(ch: char, text: &mut String, quoted: bool) {
 	match ch {
-		'"' => text.push_str("\\\""),
+		'"' if quoted => text.push_str("\\\""),
 		'\\' => text.push_str("\\\\"),
 		'\n' => text.push_str("\\n"),
 		'\r' => text.push_str("\\r"),
@@ -63,17 +76,18 @@ fn escaped_into(ch: char, text: &mut String) {
 		ch => text.push(ch),
 	}
 }
-fn quoted(value: &str) -> String {
-	let mut text = String::from("\"");
+/// A top-level string, category or name: unquoted and escaped a scalar at a
+/// time, at most `SCALARS` of them, then the marker.
+fn plain(value: &str) -> String {
+	let mut text = String::new();
 	let mut end = 0;
 	for (offset, ch) in value.char_indices().take(SCALARS) {
 		end = offset + ch.len_utf8();
-		escaped_into(ch, &mut text);
+		escaped_into(ch, &mut text, false);
 	}
-	text.push('"');
 	// Byte length reveals remaining input without inspecting an 81st scalar.
 	if end < value.len() {
-		text.push_str("…[truncated]");
+		text.push_str(CUT);
 	}
 	text
 }
@@ -133,7 +147,7 @@ impl Bounded {
 			if !self.take("") {
 				return;
 			}
-			escaped_into(ch, &mut self.text);
+			escaped_into(ch, &mut self.text, true);
 		}
 	}
 	/// A string, quoted and escaped a scalar at a time; the closing quote is
@@ -147,7 +161,7 @@ impl Bounded {
 			if !self.take("\"") {
 				return;
 			}
-			escaped_into(ch, &mut self.text);
+			escaped_into(ch, &mut self.text, true);
 		}
 		self.text.push('"');
 	}
@@ -175,7 +189,7 @@ impl Bounded {
 		}
 		if self.budget == 0 {
 			self.text.push_str(close);
-			self.text.push_str("…[truncated]");
+			self.text.push_str(CUT);
 			self.cut = true;
 			return false;
 		}
@@ -285,7 +299,7 @@ fn temporal(value: &p::AnyValue<'_>, kind: &p::DataType) -> Option<String> {
 /// Text cut at `SCALARS` characters, with the truncation marker.
 fn bounded(text: String) -> String {
 	match text.char_indices().nth(SCALARS) {
-		Some((end, _)) => format!("{}…[truncated]", &text[..end]),
+		Some((end, _)) => format!("{}{CUT}", &text[..end]),
 		None => text,
 	}
 }
@@ -297,7 +311,7 @@ fn blob(bytes: &[u8]) -> String {
 	}
 	text.push('"');
 	if bytes.len() > SCALARS {
-		text.push_str("…[truncated]");
+		text.push_str(CUT);
 	}
 	text
 }
@@ -346,14 +360,14 @@ fn list_into(values: &p::Series, text: &mut Bounded) {
 /// One cell, always rendered and always bounded (record 0124): no dtype
 /// refuses the preview. Scalars show their exact text (floats as their
 /// shortest round-trip form, temporal and decimal values as Polars writes
-/// them); strings and categories are quoted and escaped; bytes are escaped;
+/// them); strings and categories are escaped, unquoted (record 0158); bytes are escaped;
 /// a list is visited under the scalar bound. A struct, an array, an object
 /// or any value this cannot bound shows its dtype in angle brackets.
 fn cell(value: p::AnyValue<'_>, kind: &p::DataType) -> String {
 	match value {
 		p::AnyValue::Null => "null".into(),
-		p::AnyValue::String(s) => quoted(s),
-		p::AnyValue::StringOwned(s) => quoted(s.as_str()),
+		p::AnyValue::String(s) => plain(s),
+		p::AnyValue::StringOwned(s) => plain(s.as_str()),
 		p::AnyValue::Int64(v) => v.to_string(),
 		p::AnyValue::Float64(v) => format!("{v:?}"),
 		p::AnyValue::Float32(v) => format!("{v:?}"),
@@ -370,7 +384,7 @@ fn cell(value: p::AnyValue<'_>, kind: &p::DataType) -> String {
 				text
 			} else if let Some(s) = other.get_str() {
 				// a categorical or enum value: its category's string
-				quoted(s)
+				plain(s)
 			} else if fixed_width(kind) {
 				// integers of every width, f16, decimal and duration: Polars'
 				// own fixed-width text, bounded
@@ -406,11 +420,47 @@ pub(crate) fn render(frame: &p::DataFrame) -> Result<String, String> {
 	})?;
 	Ok(text)
 }
+/// The rows a preview shows: all of them up to `ROWS`; beyond that the first
+/// and the last `ROWS / 2`, as Polars shows them (record 0158; 0124 showed
+/// the first `ROWS`). `None` marks where the omitted rows are.
+fn shown_rows(height: usize) -> Vec<Option<usize>> {
+	if height <= ROWS {
+		return (0..height).map(Some).collect();
+	}
+	let half = ROWS / 2;
+	(0..half)
+		.map(Some)
+		.chain(std::iter::once(None))
+		.chain((height - half..height).map(Some))
+		.collect()
+}
+/// A dimension with Polars' `_` thousands grouping: `1_000_000`.
+fn grouped(n: usize) -> String {
+	let digits = n.to_string();
+	let mut text = String::new();
+	for (i, ch) in digits.chars().enumerate() {
+		if i != 0 && (digits.len() - i) % 3 == 0 {
+			text.push('_');
+		}
+		text.push(ch);
+	}
+	text
+}
+#[cfg(test)]
+thread_local! {
+	/// Cells read from the frame by this thread's renders (a test hook).
+	static READS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
 /// Render into any sink under the adapter's `BYTES` cap and omission marker.
 /// The sink returns `false` when it is full (the session presenter's outer
 /// budget); rendering then stops and `Ok(false)` says the output is partial.
 /// Only structurally bounded slices are visited: at most `ROWS` rows and
 /// `COLUMNS` columns, each scalar cut at `SCALARS`.
+///
+/// Record 0158: the cells are computed first (at most `ROWS` + 4 rows of
+/// `COLUMNS` + 1 bounded texts), then laid out one line at a time, each line
+/// one whole token: a line that does not fit ends the output with the
+/// marker, and a cut table never has its bottom border.
 pub(crate) fn render_into(
 	frame: &p::DataFrame,
 	sink: &mut dyn FnMut(&str) -> bool,
@@ -424,51 +474,94 @@ pub(crate) fn render_into(
 		};
 	}
 	append!(&format!(
-		"DataFrame: {} rows × {} columns\n",
-		frame.height(),
-		frame.width()
+		"shape: ({}, {})\n",
+		grouped(frame.height()),
+		grouped(frame.width())
 	));
-	if frame.height() > ROWS || frame.width() > COLUMNS {
-		append!(&format!(
-			"[{} rows and {} columns omitted by display limits]\n",
-			frame.height().saturating_sub(ROWS),
-			frame.width().saturating_sub(COLUMNS)
-		));
-	}
 	let shown = shown_columns(frame.width());
 	let columns = frame.columns();
-	for (i, c) in shown.iter().enumerate() {
-		if i != 0 {
-			append!(" | ");
-		}
+	// the name, `---` and dtype rows, then the data rows; an elided column
+	// is `…` with blanks under it, an elided row `…` in every column
+	let mut names = Vec::with_capacity(shown.len());
+	let mut dashes = Vec::with_capacity(shown.len());
+	let mut dtypes = Vec::with_capacity(shown.len());
+	for c in &shown {
 		match c {
 			Some(c) => {
-				let column = &columns[*c];
-				append!(&quoted(column.name().as_str()));
-				append!(": ");
-				append!(&dtype(column.dtype()));
+				names.push(plain(columns[*c].name().as_str()));
+				dashes.push("---".to_owned());
+				dtypes.push(dtype(columns[*c].dtype()));
 			}
-			None => append!("…"),
+			None => {
+				names.push(CUT.to_owned());
+				dashes.push(String::new());
+				dtypes.push(String::new());
+			}
 		}
 	}
-	append!("\n");
-	for row in 0..frame.height().min(ROWS) {
-		for (i, c) in shown.iter().enumerate() {
-			if i != 0 {
-				append!(" | ");
-			}
-			match c {
-				Some(c) => {
+	let mut rows = vec![names, dashes, dtypes];
+	for row in shown_rows(frame.height()) {
+		let mut cells = Vec::with_capacity(shown.len());
+		for c in &shown {
+			cells.push(match (row, c) {
+				(Some(row), Some(c)) => {
+					#[cfg(test)]
+					READS.with(|n| n.set(n.get() + 1));
 					let value = columns[*c]
 						.get(row)
 						.map_err(|e| format!("polars preview: {e}"))?;
-					append!(&cell(value, columns[*c].dtype()));
+					cell(value, columns[*c].dtype())
 				}
-				None => append!("…"),
+				_ => CUT.to_owned(),
+			});
+		}
+		rows.push(cells);
+	}
+	// each column's content width: its widest text, at least `---` for a
+	// real column; display width in unicode-width's model
+	let widths: Vec<usize> = (0..shown.len())
+		.map(|c| rows.iter().map(|r| r[c].width()).max().unwrap_or(0))
+		.collect();
+	let rule = |left: &str, line: &str, join: &str, right: &str| {
+		let mut text = String::from(left);
+		for (i, w) in widths.iter().enumerate() {
+			if i != 0 {
+				text.push_str(join);
+			}
+			for _ in 0..w + 2 {
+				text.push_str(line);
 			}
 		}
-		append!("\n");
+		text.push_str(right);
+		text.push('\n');
+		text
+	};
+	let line = |cells: &[String]| {
+		let mut text = String::from("│");
+		for (i, (cell, w)) in cells.iter().zip(&widths).enumerate() {
+			text.push_str(if i == 0 { " " } else { " ┆ " });
+			text.push_str(cell);
+			for _ in cell.width()..*w {
+				text.push(' ');
+			}
+		}
+		text.push_str(if cells.is_empty() { "│\n" } else { " │\n" });
+		text
+	};
+	append!(&rule("┌", "─", "┬", "┐"));
+	for (i, cells) in rows.iter().enumerate() {
+		// a frame with no columns has no header rows: `┌┐ ╞╡ └┘`, as Polars
+		if i == 3 {
+			append!(&rule("╞", "═", "╪", "╡"));
+		}
+		if !shown.is_empty() {
+			append!(&line(cells));
+		}
 	}
+	if rows.len() == 3 {
+		append!(&rule("╞", "═", "╪", "╡"));
+	}
+	append!(&rule("└", "─", "┴", "┘"));
 	Ok(true)
 }
 
@@ -485,47 +578,225 @@ mod tests {
 		)
 		.unwrap()
 	}
+	/// The table's cells, row by row: the name, `---` and dtype rows, then
+	/// the data rows; borders, the shape line and padding removed. Only for
+	/// the simple cells these tests build (no `│` or `┆` inside a cell).
+	fn grid(text: &str) -> Vec<Vec<String>> {
+		text.lines()
+			.filter(|l| l.starts_with('│'))
+			.map(|l| {
+				l.trim_start_matches('│')
+					.trim_end_matches('│')
+					.split('┆')
+					.map(|c| c.trim().to_owned())
+					.collect()
+			})
+			.collect()
+	}
+	/// Cells read from the frame by `render`, through the test hook.
+	fn reads(frame: &p::DataFrame) -> (String, usize) {
+		READS.with(|n| n.set(0));
+		let text = render(frame).unwrap();
+		(text, READS.with(|n| n.get()))
+	}
+	/// Every table line has the same display width (unicode-width's model).
+	fn aligned(text: &str) {
+		let widths: Vec<usize> = text.lines().skip(1).map(UnicodeWidthStr::width).collect();
+		assert!(
+			widths.windows(2).all(|w| w[0] == w[1]),
+			"{widths:?}\n{text}"
+		);
+	}
+	/// Record 0158: the user's two ipython frames (Python Polars' default
+	/// display), byte for byte, with the preview's final newline.
+	#[test]
+	fn the_users_reference_frames() {
+		let one =
+			p::DataFrame::new(3, vec![p::Series::new("k1".into(), [1i64, 2, 3]).into()]).unwrap();
+		assert_eq!(
+			render(&one).unwrap(),
+			"shape: (3, 1)\n┌─────┐\n│ k1  │\n│ --- │\n│ i64 │\n╞═════╡\n│ 1   │\n│ 2   │\n│ 3   │\n└─────┘\n"
+		);
+		let two = p::DataFrame::new(
+			3,
+			vec![
+				p::Series::new("k1".into(), [1i64, 2, 3]).into(),
+				p::Series::new("k2".into(), [4i64, 5, 6]).into(),
+			],
+		)
+		.unwrap();
+		assert_eq!(
+			render(&two).unwrap(),
+			"shape: (3, 2)\n┌─────┬─────┐\n│ k1  ┆ k2  │\n│ --- ┆ --- │\n│ i64 ┆ i64 │\n╞═════╪═════╡\n│ 1   ┆ 4   │\n│ 2   ┆ 5   │\n│ 3   ┆ 6   │\n└─────┴─────┘\n"
+		);
+	}
+	/// Review of 0158: empty frames are laid out as Polars lays them out, and
+	/// nothing is read.
+	#[test]
+	fn empty_frames() {
+		let (text, n) = reads(&p::DataFrame::empty());
+		assert_eq!((text.as_str(), n), ("shape: (0, 0)\n┌┐\n╞╡\n└┘\n", 0));
+		let (text, n) = reads(&p::DataFrame::new(3, vec![]).unwrap());
+		assert_eq!((text.as_str(), n), ("shape: (3, 0)\n┌┐\n╞╡\n└┘\n", 0));
+		let no_rows = p::DataFrame::new(
+			0,
+			vec![
+				p::Series::new("a".into(), Vec::<i64>::new()).into(),
+				p::Series::new("bb".into(), Vec::<String>::new()).into(),
+			],
+		)
+		.unwrap();
+		let (text, n) = reads(&no_rows);
+		assert_eq!(n, 0);
+		assert_eq!(
+			text,
+			"shape: (0, 2)\n┌─────┬────────┐\n│ a   ┆ bb     │\n│ --- ┆ ---    │\n│ i64 ┆ string │\n╞═════╪════════╡\n└─────┴────────┘\n"
+		);
+	}
+	/// Rows past `ROWS`: the first and last `ROWS / 2` with an elided row;
+	/// columns past `COLUMNS`: the first and last `COLUMNS / 2` with an
+	/// elided column (record 0124). Only shown cells are read.
 	#[test]
 	fn dimensions_and_row_column_boundaries() {
-		for (rows, columns) in [(0, 1), (9, 7), (10, 8), (11, 9)] {
-			let text = render(&strings(rows, columns, "column", "cell")).unwrap();
-			assert!(text.starts_with(&format!("DataFrame: {rows} rows × {columns} columns\n")));
-			assert_eq!(
-				text.matches("\"cell\"").count(),
-				rows.min(ROWS) * columns.min(COLUMNS)
-			);
-			assert_eq!(
-				text.contains("omitted by display limits"),
-				rows > ROWS || columns > COLUMNS
-			);
-			// record 0124: past COLUMNS the first and last COLUMNS / 2 are shown,
-			// with a marker between them (0058 showed the first COLUMNS)
-			if columns > COLUMNS {
-				assert!(
-					text.contains("\"column0\"")
-						&& text.contains(&format!("\"column{}\"", columns - 1))
-				);
-				assert!(!text.contains(&format!("\"column{}\"", COLUMNS / 2)));
-				assert!(text.contains(" | … | "));
-			} else {
-				assert!(!text.contains('…'));
+		for (rows, columns) in [(0, 1), (1, 1), (9, 7), (10, 8), (11, 9), (10, 9), (11, 8)] {
+			let frame = p::DataFrame::new(
+				rows,
+				(0..columns)
+					.map(|c| {
+						let values: Vec<String> = (0..rows).map(|r| format!("r{r}c{c}")).collect();
+						p::Series::new(format!("column{c}").into(), values).into()
+					})
+					.collect(),
+			)
+			.unwrap();
+			let (text, n) = reads(&frame);
+			assert!(text.starts_with(&format!("shape: ({rows}, {columns})\n")));
+			assert_eq!(n, rows.min(ROWS) * columns.min(COLUMNS), "{text}");
+			let g = grid(&text);
+			let shown_rows: Vec<Option<usize>> = shown_rows(rows);
+			let shown: Vec<Option<usize>> = shown_columns(columns);
+			assert_eq!(g.len(), 3 + shown_rows.len(), "{text}");
+			for (i, c) in shown.iter().enumerate() {
+				match c {
+					Some(c) => assert_eq!(
+						(g[0][i].as_str(), g[1][i].as_str(), g[2][i].as_str()),
+						(format!("column{c}").as_str(), "---", "string")
+					),
+					None => assert_eq!(
+						(g[0][i].as_str(), g[1][i].as_str(), g[2][i].as_str()),
+						("…", "", "")
+					),
+				}
+				for (j, r) in shown_rows.iter().enumerate() {
+					let want = match (r, c) {
+						(Some(r), Some(c)) => format!("r{r}c{c}"),
+						_ => "…".to_owned(),
+					};
+					assert_eq!(g[3 + j][i], want, "{text}");
+				}
 			}
+			assert_eq!(text.contains('…'), rows > ROWS || columns > COLUMNS);
+			if rows > ROWS {
+				assert!(text.contains("r0c0") && text.contains(&format!("r{}c0", rows - 1)));
+				assert!(!text.contains(&format!("r{}c0", ROWS / 2)));
+			}
+			assert!(text.ends_with("┘\n"));
+			aligned(&text);
 		}
+	}
+	/// Review of 0158: hazardous values in omitted columns are never read:
+	/// an out-of-range datetime, a deep list, a huge string and a hostile
+	/// zone, in the four middle columns of twelve.
+	#[test]
+	fn omitted_hazardous_columns_are_never_read() {
+		use p::{IntoSeries, NamedFrom};
+		let mut deep = p::Series::new("".into(), [1i64]);
+		for _ in 0..200 {
+			deep = p::Series::new("".into(), [deep]);
+		}
+		let zone = unsafe { p::TimeZone::new_unchecked("\u{1b}[2J".repeat(1000)) };
+		let hazards: Vec<p::Column> = vec![
+			p::Int64Chunked::new("h0".into(), &[i64::MAX])
+				.into_datetime(p::TimeUnit::Milliseconds, None)
+				.into_series()
+				.into(),
+			deep.with_name("h1".into()).into(),
+			p::Series::new("h2".into(), ["\u{202e}".repeat(1_000_000)]).into(),
+			p::Int64Chunked::new("h3".into(), &[0i64])
+				.into_datetime(p::TimeUnit::Milliseconds, Some(zone))
+				.into_series()
+				.into(),
+		];
+		let mut columns: Vec<p::Column> = (0..4)
+			.map(|i| p::Series::new(format!("a{i}").into(), [i as i64]).into())
+			.collect();
+		columns.extend(hazards);
+		columns.extend((0..4).map(|i| p::Series::new(format!("z{i}").into(), [i as i64]).into()));
+		let (text, n) = reads(&p::DataFrame::new(1, columns).unwrap());
+		assert_eq!(n, COLUMNS, "{text}");
+		for unseen in [
+			"h0",
+			"h1",
+			"h2",
+			"h3",
+			"out of range",
+			"\\u{202e}",
+			"\\u{1b}",
+		] {
+			assert!(!text.contains(unseen), "{unseen} in {text}");
+		}
+		aligned(&text);
+	}
+	/// Display width: wide and combining characters and an emoji ZWJ
+	/// sequence align by unicode-width's model (not every terminal's).
+	#[test]
+	fn cells_align_by_display_width() {
+		let frame = p::DataFrame::new(
+			4,
+			vec![
+				p::Series::new(
+					"漢字".into(),
+					["漢", "e\u{301}", "👩\u{200d}👩\u{200d}👧", "x"],
+				)
+				.into(),
+				p::Series::new("n".into(), [1i64, 22, 333, 4444]).into(),
+			],
+		)
+		.unwrap();
+		let text = render(&frame).unwrap();
+		aligned(&text);
+		assert_eq!(grid(&text)[5][0], "👩\u{200d}👩\u{200d}👧");
+	}
+	/// Review of 0158: `…` is a display convention. A literal `…` name or cell
+	/// renders as itself; elision is known from the shape, not the text.
+	#[test]
+	fn a_literal_ellipsis_is_just_text() {
+		let frame = p::DataFrame::new(1, vec![p::Series::new("…".into(), ["…"]).into()]).unwrap();
+		let text = render(&frame).unwrap();
+		assert!(text.starts_with("shape: (1, 1)\n"));
+		assert_eq!(grid(&text), [["…"], ["---"], ["string"], ["…"]]);
 	}
 	#[test]
 	fn scalar_boundaries_and_escaping() {
 		for n in [79, 80, 81, 1_000_000] {
 			let s = "🦀".repeat(n);
-			let text = quoted(&s);
+			let text = plain(&s);
 			assert_eq!(text.matches('🦀').count(), n.min(SCALARS));
-			assert_eq!(text.ends_with("…[truncated]"), n > SCALARS);
+			assert_eq!(text.ends_with(CUT), n > SCALARS);
 		}
-		assert_eq!(quoted("null"), "\"null\"");
-		assert_eq!(
-			quoted("\u{1b}\t\n\r\0\"\\"),
-			"\"\\u{1b}\\t\\n\\r\\u{0}\\\"\\\\\""
-		);
-		assert_eq!(quoted("e\u{301}🦀"), "\"e\u{301}🦀\"");
+		assert_eq!(plain("null"), "null");
+		assert_eq!(plain("\u{1b}\t\n\r\0\"\\"), "\\u{1b}\\t\\n\\r\\u{0}\"\\\\");
+		assert_eq!(plain("e\u{301}🦀"), "e\u{301}🦀");
+		// review of 0158: unquoted text stays unambiguous, written a scalar at
+		// a time: a backslash and quote, a quote, a backslash and n, a newline
+		let shown: Vec<String> = ["\\\"", "\"", "\\n", "\n"]
+			.iter()
+			.map(|s| plain(s))
+			.collect();
+		assert_eq!(shown, ["\\\\\"", "\"", "\\\\n", "\\n"]);
+		// the cut is whole: 80 escapes, then the marker
+		let cut = plain(&"\u{202e}".repeat(81));
+		assert_eq!(cut, format!("{}{CUT}", "\\u{202e}".repeat(SCALARS)));
 		let text = render(&strings(
 			1,
 			1,
@@ -553,6 +824,18 @@ mod tests {
 		let text = render(&big).unwrap();
 		assert!(text.len() <= BYTES && text.ends_with(OMITTED));
 		assert!(!text.contains('\u{1b}'));
+		// review of 0158: whole lines only, and no bottom border on a cut table
+		let body = text.strip_suffix(OMITTED).unwrap();
+		assert!(
+			body.lines()
+				.all(|l| l.starts_with("shape: ") || l.ends_with(['│', '┐', '╡'])),
+			"{body}"
+		);
+		assert!(!text.contains('└'));
+		// a first border that cannot fit: the shape line, then the marker
+		let wide = strings(1, 8, &"\u{1b}".repeat(80), "x");
+		let text = render(&wide).unwrap();
+		assert_eq!(text, format!("shape: (1, 8)\n{OMITTED}"));
 	}
 	#[test]
 	fn a_presenter_sink_gets_the_same_bounded_text_as_the_explicit_preview() {
@@ -585,40 +868,35 @@ mod tests {
 		assert!(!small.contains(OMITTED));
 	}
 	/// The work behind a presentation is structural, not proportional to
-	/// the frame: the sink sees the same token count for 200,000 rows by 40
-	/// columns as for 10 by 8, exactly ROWS × COLUMNS cells are inspected,
-	/// and each string scalar is cut at SCALARS characters before it is
-	/// pushed. Output bytes are bounded separately by the cap.
+	/// the frame: the sink sees one more line (the elided row) for 200,000
+	/// rows by 40 columns than for 10 by 8, exactly ROWS × COLUMNS cells are
+	/// read, and each string scalar is cut at SCALARS characters before it is
+	/// laid out. Output bytes are bounded separately by the cap.
 	#[test]
 	fn inspection_is_bounded_by_structure_not_frame_size() {
 		fn tokens(frame: &p::DataFrame) -> (usize, usize, usize) {
 			let (mut count, mut cells, mut bytes) = (0, 0, 0);
+			READS.with(|n| n.set(0));
 			render_into(frame, &mut |t| {
 				count += 1;
 				bytes += t.len();
-				if t.starts_with("\"cell") {
-					cells += 1;
-				}
+				cells += t.matches("cell").count();
 				true
 			})
 			.unwrap();
+			assert_eq!(READS.with(|n| n.get()), cells);
 			(count, cells, bytes)
 		}
 		let small = tokens(&strings(10, 8, "column", "cell"));
 		let huge = tokens(&strings(200_000, 40, "column", "cell"));
-		// One more token for the omission line and a longer title, and (record
-		// 0124) the marker column's separator and marker on the header and
-		// each shown row: nothing else grows with the frame.
+		// one line more (the elided row), each line one elided column wider
 		assert_eq!(huge.1, ROWS * COLUMNS);
 		assert_eq!(
 			(huge.0, huge.1),
-			(small.0 + 1 + 2 * (ROWS + 1), small.1),
+			(small.0 + 1, small.1),
 			"{small:?} {huge:?}"
 		);
-		assert!(
-			huge.2 - small.2 < 100 + (ROWS + 1) * (" | ".len() + "…".len()),
-			"{small:?} {huge:?}"
-		);
+		assert!(huge.2 - small.2 < 2_000, "{small:?} {huge:?}");
 		// Long scalars: at most SCALARS characters of each of the ROWS ×
 		// COLUMNS visited cells reach the sink, whatever their length.
 		let long = strings(12, 9, "column", &"🦀".repeat(5_000));
@@ -629,7 +907,8 @@ mod tests {
 			pushed += 1;
 			bytes += t.len();
 			let count = t.matches('🦀').count();
-			assert!(count <= SCALARS, "{count} scalars in one token");
+			// a line holds at most COLUMNS cells of SCALARS each
+			assert!(count <= COLUMNS * SCALARS, "{count} scalars in one token");
 			scalars += count;
 			true
 		})
@@ -661,7 +940,7 @@ mod tests {
 		assert_eq!(cell(p::AnyValue::Null, &p::DataType::Null), "null");
 		assert_eq!(
 			cell(p::AnyValue::String("null"), &p::DataType::String),
-			"\"null\""
+			"null"
 		);
 		for v in [
 			-0.0,
@@ -737,13 +1016,25 @@ mod tests {
 			!text.contains("unsupported") && !text.contains('…'),
 			"{text}"
 		);
-		assert!(
-			text.contains("\"x\": i64")
-				&& text.contains("\"s\": string")
-				&& text.contains("\"b\": bool")
-				&& text.contains("\"c_date\": date"),
-			"{text}"
-		);
+		let headers: Vec<(String, String)> = text
+			.split("shape: ")
+			.skip(1)
+			.flat_map(|t| {
+				let g = grid(t);
+				g[0].clone().into_iter().zip(g[2].clone())
+			})
+			.collect();
+		for want in [
+			("x", "i64"),
+			("s", "string"),
+			("b", "bool"),
+			("c_date", "date"),
+		] {
+			assert!(
+				headers.contains(&(want.0.to_owned(), want.1.to_owned())),
+				"{want:?} {headers:?}"
+			);
+		}
 		assert!(text.contains("b\"\\x00ab\""), "{text}");
 		let frame = p::DataFrame::new(3, columns).unwrap();
 		assert_eq!(cell(lists.get(0).unwrap(), lists.dtype()), "[1, 2]");
@@ -751,10 +1042,7 @@ mod tests {
 		for c in frame.columns() {
 			for row in 0..3 {
 				let t = cell(c.get(row).unwrap(), c.dtype());
-				assert!(
-					t.chars().count() <= SCALARS + "…[truncated]".chars().count(),
-					"{t}"
-				);
+				assert!(t.chars().count() <= SCALARS + CUT.chars().count(), "{t}");
 			}
 		}
 	}
@@ -767,8 +1055,8 @@ mod tests {
 		let big = p::Series::new("".into(), (0..1_000_000i64).collect::<Vec<_>>());
 		let cell_text = list(&big);
 		assert!(cell_text.starts_with("[0, 1, 2"), "{cell_text}");
-		assert!(cell_text.ends_with("…[truncated]"), "{cell_text}");
-		assert!(cell_text.chars().count() <= SCALARS + "…[truncated]".chars().count());
+		assert!(cell_text.ends_with(CUT), "{cell_text}");
+		assert!(cell_text.chars().count() <= SCALARS + CUT.chars().count());
 		// a list of lists nested deeper than the bound (SCALARS levels): the
 		// same cost
 		let mut deep = p::Series::new("".into(), [1i64]);
@@ -777,10 +1065,10 @@ mod tests {
 		}
 		let deep_text = list(&deep);
 		assert!(
-			deep_text.starts_with("[[[[") && deep_text.ends_with("…[truncated]"),
+			deep_text.starts_with("[[[[") && deep_text.ends_with(CUT),
 			"{deep_text}"
 		);
-		assert!(deep_text.chars().count() <= SCALARS + "…[truncated]".chars().count());
+		assert!(deep_text.chars().count() <= SCALARS + CUT.chars().count());
 		// a short list that fits is shown whole, with no marker
 		let small = p::Series::new("".into(), [1i64, 2, 3]);
 		assert_eq!(list(&small), "[1, 2, 3]");
@@ -800,7 +1088,7 @@ mod tests {
 			Some(long),
 		));
 		assert!(name.starts_with("datetime[ms, ZZZ"), "{name}");
-		assert!(name.chars().count() <= SCALARS + "…[truncated]".chars().count());
+		assert!(name.chars().count() <= SCALARS + CUT.chars().count());
 		let zone = p::TimeZone::opt_try_new(Some("Europe/Paris")).unwrap();
 		assert!(zone.is_some());
 		// the logical column built directly: a cast from integers drops the zone
@@ -809,10 +1097,16 @@ mod tests {
 			.into_series();
 		let frame = p::DataFrame::new(3, vec![zoned.into()]).unwrap();
 		let text = render(&frame).unwrap();
-		assert!(text.contains("\"t\": datetime[ms, Europe/Paris]"), "{text}");
-		assert!(
-			text.contains("\n1970-01-01 00:00:00 UTC\nnull\n2023-11-14 22:13:20 UTC"),
+		let g = grid(&text);
+		assert_eq!(
+			(g[0][0].as_str(), g[2][0].as_str()),
+			("t", "datetime[ms, Europe/Paris]"),
 			"{text}"
+		);
+		let cells: Vec<&str> = g[3..].iter().map(|r| r[0].as_str()).collect();
+		assert_eq!(
+			cells,
+			["1970-01-01 00:00:00 UTC", "null", "2023-11-14 22:13:20 UTC"]
 		);
 	}
 
@@ -836,9 +1130,10 @@ mod tests {
 		for raw in ['\u{1b}', '\t', '\r', '\u{202e}', '\u{2066}'] {
 			assert!(!text.contains(raw), "{raw:?} in {text}");
 		}
-		// title, header, one row: the zone's newline did not add a line
-		assert_eq!(text.lines().count(), 3, "{text}");
-		assert!(text.ends_with("\n1970-01-01 00:00:00 UTC\n"), "{text}");
+		// shape, three borders, three header rows, one row: the zone's newline
+		// did not add a line
+		assert_eq!(text.lines().count(), 8, "{text}");
+		assert_eq!(grid(&text)[3][0], "1970-01-01 00:00:00 UTC", "{text}");
 		// a zone of nothing but controls, past the bound: every escape whole,
 		// as many as the budget has scalars left, then the marker once
 		let controls = unsafe { p::TimeZone::new_unchecked("\u{1b}".repeat(10_000)) };
@@ -849,7 +1144,7 @@ mod tests {
 		let prefix = "datetime[ms, ";
 		let escapes = name
 			.strip_prefix(prefix)
-			.and_then(|rest| rest.strip_suffix("…[truncated]"))
+			.and_then(|rest| rest.strip_suffix(CUT))
 			.unwrap_or_else(|| panic!("{name}"));
 		assert_eq!(escapes, "\\u{1b}".repeat(SCALARS - prefix.chars().count()));
 	}
@@ -896,10 +1191,11 @@ mod tests {
 		assert_eq!(noon.as_deref(), Some("12:00:00"));
 		let frame = p::DataFrame::new(1, columns).unwrap();
 		let text = render(&frame).unwrap();
-		assert!(
-			// Polars itself nulls an out-of-range time when the column is
-			// built; a date and a datetime keep theirs and reach the preview
-			text.ends_with("<out of range> | <out of range> | null\n"),
+		// Polars itself nulls an out-of-range time when the column is built;
+		// a date and a datetime keep theirs and reach the preview
+		assert_eq!(
+			grid(&text)[3],
+			["<out of range>", "<out of range>", "null"],
 			"{text}"
 		);
 	}
@@ -910,7 +1206,7 @@ mod tests {
 	#[test]
 	fn a_list_cell_keeps_every_escape_and_token_whole() {
 		use p::NamedFrom;
-		let marker = "…[truncated]";
+		let marker = CUT;
 		// a string element of bidi overrides: `[` and `"` take two scalars
 		let bidi = "\u{202e}".repeat(200);
 		let strings = p::Series::new("".into(), [bidi.as_str()]);
@@ -958,8 +1254,7 @@ mod tests {
 		}
 		let name = dtype(&kind);
 		assert!(
-			name.starts_with("list[list[")
-				&& name.chars().count() <= SCALARS + "…[truncated]".chars().count(),
+			name.starts_with("list[list[") && name.chars().count() <= SCALARS + CUT.chars().count(),
 			"{name}"
 		);
 		// the flat dtypes keep Polars' text, the legacy four their spelling

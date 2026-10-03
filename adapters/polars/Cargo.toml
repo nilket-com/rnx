@@ -58,6 +58,8 @@ polars-time = { version = "=0.55.2", default-features = false }
 polars-dtype = { version = "=0.55.2", default-features = false }
 polars-schema = { version = "=0.55.2", default-features = false }
 polars-error = { version = "=0.55.2", default-features = false }
+# Record 0158: display width for the table layout; already in the lock through Polars.
+unicode-width = "=0.2.2"
 polars-utils = { version = "=0.55.2", default-features = false }
 # record 0078: `TrustedLen` by its home crate; `polars_core::utils::arrow` is not re-exported at rc2
 polars-arrow = { version = "=0.55.2", default-features = false }

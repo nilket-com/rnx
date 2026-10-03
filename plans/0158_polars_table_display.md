@@ -117,6 +117,14 @@ So Polars' formatter isn't used. **No Polars feature, inventory or binding chang
 
 `cargo test`, the oracle and `git diff --check` stay green.
 
+## 3a. Folded in from Codex's acceptance of revision 2 (no new review cycle)
+
+1. **Unquoted text is written at the input-scalar writer** (`plain`, via `escaped_into(…, quoted: false)`), not by stripping a quoted string. A backslash is always escaped, so a backslash and quote (`\\"`), a quote (`"`), a backslash and `n` (`\\n`) and a newline (`\n`) all stay distinct. Lists and bytes keep their quoting, and truncation stays whole-token. Tests cover each ambiguous input.
+2. **All live intermediates are counted,** not just cell payloads: string and vector capacities, names, dtypes, widths, one padded line or border at a time (box-drawing characters are 3 bytes each) and the output. The bound is computed from the code and measured with the allocation peak after the frame exists. The marker-and-no-bottom-border rule also covers the very first border.
+3. **Empty frames are defined:** 0 × 0 and a zero-column frame of any height render `┌┐ ╞╡ └┘`, and zero rows with columns renders the header and both borders, as Polars does. Tests cover 1 column, exactly 10 rows, 11 rows, exactly 8 columns and 9 columns, and none reads a nonexistent cell. The notebook checks expect the head and tail selection.
+4. **One width API:** `UnicodeWidthStr::width` on the exact emitted text. There's a CJK, combining-mark and ZWJ-emoji control. Alignment is claimed for unicode-width's model only, and everything is left-aligned.
+5. **`…` is a display convention.** The checker identifies row elision structurally, from the shape and position, and refuses a `…` anywhere else. A literal `…` name or cell renders as itself, with a control on each side.
+
 ## 4. Copy
 
 - **The notebook README's Polars section** shows the new table and says the display is a Polars-style layout over rnx's bounded preview, not Polars' own formatter, with no `POLARS_FMT_*` configuration.
