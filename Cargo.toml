@@ -31,7 +31,7 @@ publish = false
 exclude = ["tools/project"]
 
 [features]
-default = ["count-allocations", "stock-management"]
+default = ["count-allocations", "stock-management", "http-server"]
 # Stock command only; generated/embedding applications disable defaults.
 stock-management = ["dep:rnx-project"]
 # Allocation accounting. Without it no ceiling is enforced and no figure is
@@ -46,10 +46,15 @@ test-support = ["rnx-project?/test-support", "allocation-peak"]
 allocation-peak = []
 # Record 0056: caller-owned handler execution, without HTTP server dependencies.
 server-runtime = []
+# The stock HTTP/1 host, separate from the dependency-free embedding boundary.
+http-server = ["server-runtime", "dep:axum", "dep:hyper", "dep:hyper-util", "tokio/sync", "tokio/macros", "tokio/signal", "tokio/io-util"]
 # Record 0057: explicit versioned source maps for the file runner.
 project-sources = ["dep:serde"]
 
 [dependencies]
+axum = { version = "=0.8.9", default-features = false, features = ["http1", "tokio"], optional = true }
+hyper = { version = "=1.11.1", default-features = false, features = ["server", "http1"], optional = true }
+hyper-util = { version = "=0.1.20", default-features = false, features = ["server", "http1", "service", "tokio"], optional = true }
 rnx-project = { path = "tools/project", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 rune = { version = "=0.14.2", default-features = false, features = ["std"] }

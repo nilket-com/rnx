@@ -798,3 +798,47 @@ The first external capability is [rnx-postgres](https://github.com/nilket-com/rn
 It builds its own `rnx-pg` executable with `postgres::query`, using typed
 parameters and tracked per-call connections. It is an independent workspace;
 stock rnx's dependency graph and batteries do not include the database driver.
+
+### HTTP handlers
+
+The stock build includes `rnx serve handler.rn`, an HTTP/1 host with an axum
+transport and reusable Rune invocation slots. For example:
+
+```rune
+pub fn main(request) {
+    #{status: 200, headers: #{"content-type": ["text/plain; charset=utf-8"]}, body: "Hello\n"}
+}
+```
+
+Run `rnx serve --help` for binding, worker, budget, timeout, shutdown and logging
+options. The default address is `127.0.0.1:3000`; put a reverse proxy in front for
+public TLS. There is no proxy-header trust, HTTP/2 or application sandbox.
+
+The request has `method`, raw `path`, raw `query` (unit when absent), lowercase
+`headers` with vectors of Bytes, and a Bytes `body`. The handler returns exactly
+`status`, `headers` and `body`. Status is 200–599; header values are vectors of
+String or Bytes; body is String or Bytes. The host sets Content-Length and strips
+HEAD bodies while preserving their length. The handler supplies routes, content
+types, escaping, decoding and method rules. Transport headers cannot be supplied
+by the script; 204 and 304 cannot have a body.
+
+Limits include 1 MiB request/response bodies, 64 header values and 16 KiB headers,
+256 accepted connections, and four active invocations plus sixteen queued jobs
+per worker. Overload is refused rather than put into an unbounded queue. Script
+instruction budgets and async deadlines apply per request; synchronous native
+I/O can delay cancellation and shutdown. SIGINT/SIGTERM drain active requests up
+to the configured grace, then cancel them; a second signal terminates immediately.
+
+Request logs are terminal-safe JSON with a clipped path (no query), status and
+duration. `--log off` suppresses request logs, retaining failure diagnostics.
+Runtime failures log their category and source coordinates, not script-supplied
+panic or native error messages that could contain request data.
+Logging uses a bounded queue and a dedicated writer. All events, including failures
+and slot retirement, are best-effort and can be dropped under load, even with a
+drained sink. An undrained sink may also prevent delivery of the shutdown summary. Shutdown waits at most
+100 ms for that writer before detaching it. Script printing remains synchronous.
+
+`http-server` is a stock default feature, separate from `server-runtime`'s embedding
+API. Serve currently supports stock builds only: extension-bearing executables
+are refused because their one-shot builders cannot be replayed across workers
+and replacement slots. Adapter-enabled serving needs a separate factory contract.
