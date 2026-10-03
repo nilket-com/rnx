@@ -1,0 +1,13 @@
+Loan 300,000.00 at 6.0% a year for 30 years, paid monthly
+(a constant rate; totals exclude fees, taxes and insurance)
+Monthly payment       1,798.65
+(totals use the unrounded payment, shown here to four decimals: 1798.6516)
+Total paid          647,514.57
+Total interest      347,514.57
+
+Balance after each year:
+  year  1    296,315.96
+  year  5    279,163.07
+  year 10    251,057.17
+  year 20    162,010.76
+  year 30          0.00

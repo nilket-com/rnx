@@ -1,0 +1,14 @@
+[
+  {"id": 1,  "customer": "Acme",   "region": "north", "qty": 10, "unit_cents": 1250, "status": "shipped"},
+  {"id": 2,  "customer": "Birch",  "region": "north", "qty": 3,  "unit_cents": 4000, "status": "shipped"},
+  {"id": 3,  "customer": "Cobalt", "region": "south", "qty": 5,  "unit_cents": 1999, "status": "shipped"},
+  {"id": 4,  "customer": "Acme",   "region": "south", "qty": 0,  "unit_cents": 2500, "status": "shipped"},
+  {"id": 5,  "customer": "Delta",  "region": "east",  "qty": 8,  "unit_cents": 1500, "status": "shipped"},
+  {"id": 6,  "customer": "Birch",  "region": "east",  "qty": 2,  "unit_cents": 749,  "status": "shipped"},
+  {"id": 7,  "customer": "Acme",   "region": "east",  "qty": 1,  "unit_cents": 999,  "status": "shipped"},
+  {"id": 8,  "customer": "Cobalt", "region": "south", "qty": 4,  "unit_cents": 1000, "status": "cancelled"},
+  {"id": 9,  "customer": "Elm",    "region": "west",  "qty": 6,  "unit_cents": 1100, "status": "open"},
+  {"id": 10, "customer": "Fern",   "region": "west",  "qty": 2,  "unit_cents": 3000, "status": "open"},
+  {"id": 11, "customer": "Delta",  "region": "north", "qty": 1,  "unit_cents": 500,  "status": "open"},
+  {"id": 12, "customer": "Cobalt", "region": "south", "qty": 2,  "unit_cents": 1250, "status": "open"}
+]

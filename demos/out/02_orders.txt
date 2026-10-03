@@ -1,0 +1,8 @@
+12 orders read from demos/data/orders.json
+Shipped revenue by region:
+  north    245.00
+  east     144.97
+  south     99.95
+  west       0.00
+Largest customer: Acme (134.99), ahead of Birch (134.98)
+Still open: 4 of 12 orders (33.3%)

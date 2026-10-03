@@ -18,6 +18,11 @@ original feasibility spike and its outcome are in
 the published package — record 0026 says why — so these point there, where
 they work from either copy.
 
+## Try it in a terminal
+
+[`demos/`](demos/README.md) has three short scripts that run offline with `rnx run`: a
+mortgage calculation, a JSON summary and an aligned report. Each prints a checked answer.
+
 ## Install and try an adapter
 
 Install the tested Git revision with Cargo. Rust, Git and native build tools
