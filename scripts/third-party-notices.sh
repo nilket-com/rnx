@@ -213,8 +213,8 @@ GAP
 		printf '\n### '
 		grep "^$digest	" "$work/index" | while IFS=$'\t' read -r _ name version _ file; do
 			printf '`%s %s` (%s) ' "$name" "$version" "$file"
-		done
-		printf '\n\n```\n'
+		done | sed 's/ $//'
+		printf '\n```\n'
 		cat "$work/text.$digest"
 		printf '```\n'
 	done

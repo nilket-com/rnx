@@ -32,6 +32,8 @@ mod fs;
 mod fs_platform;
 mod host;
 mod http;
+#[cfg(feature = "http-server")]
+mod http_server;
 mod inspect;
 pub mod interchange;
 /// Record 0129: the allocator's peak of tracked live bytes, and its reset to
@@ -128,6 +130,7 @@ rnx — a Rune scripting environment
   rnx                       a session, the same as `rnx repl`
   rnx repl                  a session: line editing, history, `:help`
   rnx run [flags] FILE ...  run a file's `main`; arguments after FILE are its
+  rnx serve [flags] FILE    serve a Rune HTTP/1 handler; `rnx serve --help`
   rnx eval SOURCE           evaluate one expression and exit
   rnx selfcheck             assert this build's own invariants and report
   rnx version               this build, and the Rune it is pinned to
@@ -222,6 +225,12 @@ fn main_inner(extensions: Extensions, startup: bool) -> Result<()> {
 		presentation::initialize(mode.unwrap_or(presentation::Mode::Auto));
 		println!("{}", presentation::help(USAGE));
 		return Ok(());
+	}
+	if args.first().is_some_and(|s| s == "serve") {
+		#[cfg(feature = "http-server")]
+		return http_server::main(&args[1..], extensions);
+		#[cfg(not(feature = "http-server"))]
+		return Err("serve requires this build's http-server feature".into());
 	}
 	// Take and seal inherited endpoints before constructing a session/context.
 	let worker_transport = if args.first().is_some_and(|s| s == "worker") {
