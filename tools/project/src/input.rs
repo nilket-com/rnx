@@ -47,6 +47,6 @@ pub(crate) fn reserved(text: &str) -> bool {
 			| "fs" | "path"
 			| "time" | "text"
 			| "http" | "env"
-			| "rnx_test"
+			| "web" | "rnx_test"
 	)
 }
