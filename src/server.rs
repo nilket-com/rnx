@@ -192,6 +192,61 @@ impl Program {
 		owner.close()?;
 		built
 	}
+	/// Compiled Rune function metadata for the stock HTTP host; never executes the item.
+	#[cfg(feature = "http-server")]
+	pub(crate) fn http_function(&self, name: &str) -> Result<Option<usize>, Failure> {
+		let hash = rune::Hash::type_hash(name.split("::").collect::<Vec<_>>().as_slice());
+		let Some(debug) = self.0.unit.debug_info() else {
+			return Err(self.http_route_error("compiled function metadata is unavailable"));
+		};
+		let Some(signature) = debug.functions.get(&hash) else {
+			return Ok(None);
+		};
+		let rune::runtime::debug::DebugArgs::Named(args) = &signature.args else {
+			return Err(self.http_route_error(format!("{name} is not a compiled Rune function")));
+		};
+		if !debug.functions_rev.values().any(|h| *h == hash) {
+			return Err(self.http_route_error(format!("{name} has no compiled function entry")));
+		}
+		Vm::without_runtime(self.0.unit.clone())
+			.lookup_function(hash)
+			.map_err(|e| self.http_route_error(format!("cannot resolve {name}: {e}")))?;
+		Ok(Some(args.len()))
+	}
+	/// Dynamic route rows are attributed to the table function, not guessed source literals.
+	#[cfg(feature = "http-server")]
+	pub(crate) fn http_route_error(&self, message: impl ToString) -> Failure {
+		let failure = Failure::new("preparation", message);
+		let hash = rune::Hash::type_hash(["routes"]);
+		let Some(debug) = self.0.unit.debug_info() else {
+			return failure;
+		};
+		let Some((&ip, _)) = debug.functions_rev.iter().find(|(_, h)| **h == hash) else {
+			return failure;
+		};
+		// Rune emits an unannotated Allocate at the function entry. Use the first
+		// annotated instruction within this function, never a later function's source.
+		let end = debug
+			.functions_rev
+			.keys()
+			.copied()
+			.filter(|p| *p > ip)
+			.min()
+			.unwrap_or(usize::MAX);
+		let Some((_, instruction)) = debug
+			.instructions
+			.iter()
+			.filter(|(p, _)| **p >= ip && **p < end)
+			.min_by_key(|(p, _)| **p)
+		else {
+			return failure;
+		};
+		let Some(text) = self.0.loader.get(&self.0.sources, instruction.source_id) else {
+			return failure;
+		};
+		failure.locate(text, instruction.span.range().start)
+	}
+
 	/// Construct one local invocation. `handler` is a `::`-separated item path;
 	/// the function takes one argument. Budgets exclude zero and usize::MAX.
 	pub fn prepare(

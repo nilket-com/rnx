@@ -28,7 +28,7 @@ pub(super) struct Job {
 	pub reply: oneshot::Sender<Output>,
 	pub deadline: Instant,
 }
-struct Catch<F>(Pin<Box<F>>);
+pub(super) struct Catch<F>(pub Pin<Box<F>>);
 impl<F: Future> Future for Catch<F> {
 	type Output = Result<F::Output, ()>;
 	fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
@@ -56,6 +56,14 @@ async fn invoke(slot: Slot, mut job: Job, budget: usize, log: Log) -> Option<Slo
 		let _ = job.reply.send(Output::error(504));
 		return Some(slot);
 	}
+	let handler = job
+		.input
+		.routing
+		.as_ref()
+		.and_then(|r| r.handler.as_deref())
+		.map(str::to_owned);
+	let expected = job.input.routing.as_ref().and_then(|r| r.status);
+	let allow = job.input.routing.as_ref().and_then(|r| r.allow.clone());
 	let args = match job.input.rune() {
 		Ok(v) => vec![v],
 		Err(e) => {
@@ -64,7 +72,7 @@ async fn invoke(slot: Slot, mut job: Job, budget: usize, log: Log) -> Option<Slo
 			return Some(slot);
 		}
 	};
-	let mut call = match slot.prepare("main", args, budget) {
+	let mut call = match slot.prepare(handler.as_deref().unwrap_or("main"), args, budget) {
 		Ok(c) => c,
 		Err((e, slot)) => {
 			log.event("prepare_error", &diagnosis(&e));
@@ -73,7 +81,7 @@ async fn invoke(slot: Slot, mut job: Job, budget: usize, log: Log) -> Option<Slo
 		}
 	};
 	let result = tokio::select! {
-		result = call.run() => result.map_err(|e| diagnosis(&e)).and_then(Output::decode),
+		result = call.run() => result.map_err(|e| diagnosis(&e)).and_then(Output::decode).and_then(|o|o.routed(expected,allow.as_deref())),
 		_ = tokio::time::sleep_until(job.deadline) => Ok(Output::error(504)),
 		_ = job.reply.closed() => Ok(Output::error(499)),
 	}; // The run future is dropped, and returned Values decoded/dropped, before close.
@@ -280,6 +288,7 @@ mod tests {
 		(
 			Job {
 				input: Input {
+					routing: None,
 					method: "GET".into(),
 					path: path.into(),
 					query: None,
@@ -343,6 +352,66 @@ mod tests {
 			assert!(!logger.shutdown().detached);
 		});
 	}
+	#[test]
+	fn named_route_survives_retirement_and_startup_owners_close_on_failure() {
+		let rt = tokio::runtime::Builder::new_current_thread()
+			.enable_all()
+			.build()
+			.unwrap();
+		rt.block_on(async {
+			let source = SOURCE.replace("pub async fn main", "pub async fn handler")
+				+ "\npub fn routes() { [(\"GET\",\"/\",\"handler\"),(\"GET\",\"/{part}\",\"handler\")] }";
+			let program = Program::compile_source("<named>", &source, fixture()).unwrap();
+			let logger = super::super::log::Logger::new(std::io::sink(), false).unwrap();
+			let options =
+				Options::parse(&["--workers".into(), "1".into(), "fixture.rn".into()]).unwrap();
+			let routes = super::super::routes::Routes::load(&program, &options, &logger.log)
+				.await
+				.unwrap()
+				.unwrap();
+			let count = Arc::new(AtomicUsize::new(0));
+			let c = count.clone();
+			let factory: Factory = Arc::new(move || {
+				c.fetch_add(1, Ordering::SeqCst);
+				fixture()
+			});
+			let (stop, rx) = watch::channel(None);
+			let (fatal, _) = watch::channel(None);
+			let workers =
+				Workers::start(program, factory, &options, rx, fatal, logger.log.clone()).unwrap();
+			for (path, status) in [("/cleanup", 500), ("/", 200)] {
+				let (mut j, a) = job(path);
+				j.input.routing = Some(routes.select("GET", path));
+				workers.senders[0].send(j).await.unwrap();
+				assert_eq!(a.await.unwrap().status, status);
+			}
+			assert_eq!(count.load(Ordering::SeqCst), 5);
+			let _ = stop.send(Some(Instant::now()));
+			workers.join();
+			for (body, want) in [
+				("fixture::keep(fixture::bomb()); []", "injected"),
+				("fixture::panic(); []", "panicked"),
+			] {
+				let p = Program::compile_source(
+					"<startup-fault>",
+					&format!("pub fn routes() {{{body}}}"),
+					fixture(),
+				)
+				.unwrap();
+				let e = super::super::routes::Routes::load_with_extensions(
+					&p,
+					&options,
+					&logger.log,
+					fixture(),
+				)
+				.await
+				.unwrap_err();
+				assert!(e.contains(want), "{e}");
+			}
+			assert!(!logger.shutdown().detached);
+		});
+	}
+
 	#[test]
 	fn replacement_failure_is_fatal_instead_of_silent_shrinkage() {
 		let rt = tokio::runtime::Builder::new_current_thread()

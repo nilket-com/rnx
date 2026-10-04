@@ -1,6 +1,6 @@
 use std::{net::SocketAddr, path::PathBuf, time::Duration};
 
-pub(super) const HELP: &str = "rnx serve [--bind IP:PORT] [--workers N] [--budget N]\n          [--request-timeout-ms N] [--grace-ms N] [--log requests|off] PROGRAM.rn\n\nDefaults: 127.0.0.1:3000, 2 workers, 2000000 instructions, 30000 ms request\ntimeout, 5000 ms shutdown grace, request logging. Explicit remote binding is\nfor a reverse proxy; this host speaks HTTP/1 without TLS.\n";
+pub(super) const HELP: &str = "rnx serve [--bind IP:PORT] [--workers N] [--budget N]\n          [--request-timeout-ms N] [--grace-ms N] [--log requests|off] PROGRAM.rn\n\nDefaults: 127.0.0.1:3000, 2 workers, 2000000 instructions, 30000 ms request\ntimeout, 5000 ms shutdown grace, request logging. Explicit remote binding is\nfor a reverse proxy; this host speaks HTTP/1 without TLS.\n\nOptional pub fn routes() returns [(METHOD, PATTERN, HANDLER_NAME)].\nNamed hooks not_found, method_not_allowed, bad_request are reserved.\nSee the HTTP handlers section in README.md for matching and parameter rules.\n";
 #[derive(Debug)]
 pub(super) struct Options {
 	pub program: PathBuf,

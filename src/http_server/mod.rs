@@ -1,6 +1,7 @@
 //! A bounded HTTP/1 transport over the reusable caller-owned Rune invocation boundary.
 mod log;
 mod options;
+mod routes;
 mod value;
 mod worker;
 use crate::{Extensions, server::Program};
@@ -26,6 +27,7 @@ use tokio::{
 use value::{Input, Output};
 use worker::{Job, Workers};
 struct Hub {
+	routes: Option<routes::Routes>,
 	workers: Vec<tokio::sync::mpsc::Sender<Job>>,
 	next: AtomicUsize,
 	admission: Arc<Semaphore>,
@@ -123,7 +125,19 @@ async fn route(State(hub): State<Arc<Hub>>, req: Request) -> Response {
 				.or_default()
 				.push(v.as_bytes().to_vec());
 		}
+		let routing = hub
+			.routes
+			.as_ref()
+			.map(|r| r.select(parts.method.as_str(), parts.uri.path()));
+		if let Some(selection) = &routing
+			&& selection.handler.is_none()
+		{
+			let out = Output::error(selection.status.expect("absent handler is a route error"))
+				.routed(selection.status, selection.allow.as_deref());
+			return (out.unwrap_or_else(|_| Output::error(500)), Some(permit));
+		}
 		let input = Input {
+			routing,
 			method: parts.method.to_string(),
 			path: parts.uri.path().into(),
 			query: parts.uri.query().map(str::to_owned),
@@ -189,6 +203,7 @@ async fn serve(
 	extensions: worker::Factory,
 	log: log::Log,
 ) -> Result<(), String> {
+	let routes = routes::Routes::load(&program, &options, &log).await?;
 	let listener = tokio::net::TcpListener::bind(options.bind)
 		.await
 		.map_err(|e| format!("serve bind {}: {e}", options.bind))?;
@@ -203,6 +218,7 @@ async fn serve(
 		log.clone(),
 	)?;
 	let hub = Arc::new(Hub {
+		routes,
 		workers: workers.senders.clone(),
 		next: AtomicUsize::new(0),
 		admission: Arc::new(Semaphore::new(

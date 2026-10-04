@@ -838,6 +838,45 @@ and slot retirement, are best-effort and can be dropped under load, even with a
 drained sink. An undrained sink may also prevent delivery of the shutdown summary. Shutdown waits at most
 100 ms for that writer before detaching it. Script printing remains synchronous.
 
+A program can instead opt in to a route table, evaluated once before listening:
+
+```rune
+pub fn routes() { [("GET", "/hello/{name}", "hello")] }
+pub fn hello(request) {
+    #{status: 200, headers: #{"content-type": ["text/plain; charset=utf-8"]}, body: request.params.name}
+}
+```
+
+Handlers are compiled Rune function names, taking one request argument; function
+values are not shared across worker VMs. Invalid tables, missing handlers and
+wrong arities fail startup with the table's source location and row number.
+Routes mode adds `request.params` and `request.allow` (normally unit).
+Existing programs with only `main(request)` keep their exact request shape and
+behavior. If both exist, routes wins and a startup event notes unused main.
+
+Patterns are absolute paths with literal segments and nonempty `{name}` segments.
+Paths remain raw and case-sensitive; `/a` and `/a/` differ. Among complete matches,
+a literal beats a parameter at the first differing segment, independently of row
+order; choose the path before choosing its method. Same-shape parameter renamings
+and duplicate method/pattern rows are refused. Parameters are percent-decoded
+once as UTF-8; invalid escapes or UTF-8 give 400. Plus stays plus, and an encoded
+slash stays inside one parameter. Literals are not decoded, query text is not
+matched, and there are no globs or redirects.
+
+GET answers HEAD unless an explicit HEAD route exists. Known paths with an
+unsupported method give 405 and a stable Allow header; unknown paths give 404.
+Optional one-argument `not_found`, `method_not_allowed` and `bad_request` hooks
+can supply error pages, with status 404, 405 and 400 respectively. These names
+are reserved as route-row handlers. The 405 hook receives `request.allow` and
+the host sets that header; other hook parameters are empty. Without hooks these
+error responses have empty bodies. All handlers and hooks use the same budgets,
+timeouts, response bounds and cleanup as main. HTML escaping and form helpers
+remain the application's responsibility.
+
+Tables are capped at 256 rows and 64 KiB of retained text, patterns at 1,024 bytes,
+64 segments and 16 parameters. Startup table execution uses the configured
+instruction budget and timeout; trusted native calls can still delay it.
+
 `http-server` is a stock default feature, separate from `server-runtime`'s embedding
 API. Serve currently supports stock builds only: extension-bearing executables
 are refused because their one-shot builders cannot be replayed across workers
