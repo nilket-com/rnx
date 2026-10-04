@@ -110,6 +110,7 @@ fn context(extensions: Extensions) -> Result<(Context, Owner), Failure> {
 		crate::path::install(&mut context)?;
 		crate::time::install(&mut context)?;
 		crate::text::install(&mut context)?;
+		crate::web::install(&mut context)?;
 		crate::env::install(&mut context, Arc::from([]))?;
 		crate::http::install(&mut context, &owner.http, owner.life.scope("http"))?;
 		#[cfg(feature = "test-support")]

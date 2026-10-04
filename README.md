@@ -881,3 +881,37 @@ instruction budget and timeout; trusted native calls can still delay it.
 API. Serve currently supports stock builds only: extension-bearing executables
 are refused because their one-shot builders cannot be replayed across workers
 and replacement slots. Adapter-enabled serving needs a separate factory contract.
+
+## Pure web helpers
+
+`web::` is built in, including builds without the HTTP server. All six helpers
+borrow their inputs and produce independent owned output. Parsing and response
+helpers return `Result`; `escape_html` returns a String and raises a VM error
+on its size cap:
+
+- `escape_html(text)` escapes HTML text or quoted-attribute values; it does not
+  validate URLs or escape JavaScript/CSS. Already escaped entities escape again.
+  Use it directly inside templates, without `?`.
+- `decode_component(text)` decodes percent escapes once, keeps `+` literal,
+  preserves malformed percent escapes and refuses invalid UTF-8. Route params
+  are already decoded by the stricter route matcher; do not decode them again.
+- `parse_form(String_or_Bytes)` parses URL-encoded forms (or query text), makes
+  `+` a space and keeps the first duplicate name. It validates discarded values
+  too, retains empty names/pairs and refuses invalid UTF-8.
+- `response(status, body, content_type, headers)` builds the standard response
+  object. Extra header values may be String/Bytes or vectors; output values are
+  always vectors; String/Bytes body and values keep their types. Names become lowercase; duplicates, content-type conflicts
+  and transport-owned headers are refused. Empty vectors emit no value.
+- `html(status, body)` and `text(status, body)` supply UTF-8 MIME types and empty
+  extra headers. HTML bodies are already-rendered markup, not auto-escaped.
+
+Inputs/outputs are capped at 1 MiB, forms at 1,024 raw pairs, response headers
+at 64 names/values and 16 KiB including transport reserve and the generated
+content type. Status is 200..599, with empty bodies for 204/304. Calls validate
+before copying payloads and return named errors; see `:help web::response` for details.
+
+The HTTP host accepts a bare response or one outer `Result`: `Ok(response)`
+works, `Err(value)` gives an empty 500 with the value redacted from public logs.
+Error hooks follow the same rule; `routes()` still requires a bare route table.
+Thus a handler can return `web::html(200, markup)` directly, and use `?` for
+fallible intermediate calls. Nested `Ok(Ok(response))` is refused.

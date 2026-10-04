@@ -81,7 +81,7 @@ async fn invoke(slot: Slot, mut job: Job, budget: usize, log: Log) -> Option<Slo
 		}
 	};
 	let result = tokio::select! {
-		result = call.run() => result.map_err(|e| diagnosis(&e)).and_then(Output::decode).and_then(|o|o.routed(expected,allow.as_deref())),
+		result = call.run() => result.map_err(|e| diagnosis(&e)).and_then(|v| Output::handler(v).map_err(|e|e.redacted())).and_then(|o|o.routed(expected,allow.as_deref())),
 		_ = tokio::time::sleep_until(job.deadline) => Ok(Output::error(504)),
 		_ = job.reply.closed() => Ok(Output::error(499)),
 	}; // The run future is dropped, and returned Values decoded/dropped, before close.

@@ -67,6 +67,7 @@ mod session;
 mod terminal;
 mod text;
 mod time;
+mod web;
 mod worker;
 mod worker_transport;
 
@@ -87,6 +88,7 @@ fn install_core(context: &mut Context) -> Result<Vec<host::HostFunction>> {
 	// record 0129: the neutral block adapters exchange numbers through
 	functions.extend(interchange::install(context)?);
 	functions.extend(process::install(context)?);
+	functions.extend(web::install(context)?);
 	#[cfg(feature = "test-support")]
 	functions.extend(rnx_test::install(context)?);
 	Ok(functions)
@@ -605,6 +607,12 @@ mod namespace_tests {
 		let mut names: Vec<_> = functions.iter().map(|f| f.path.as_str()).collect();
 		names.sort();
 		let mut expected = vec![
+			"web::escape_html",
+			"web::decode_component",
+			"web::parse_form",
+			"web::response",
+			"web::html",
+			"web::text",
 			"json::parse",
 			"json::stringify",
 			"io::stdin",

@@ -306,11 +306,11 @@ mod host_source_tests {
 			.map(|f| f.path)
 			.collect();
 		// Seven core functions in domain modules and the four interchange
-		// entries of 0129, plus seven test-support probes (four fixtures and
+		// entries of 0129, six web helpers, plus seven test-support probes (four fixtures and
 		// the three presented values of 0068).
 		assert_eq!(
 			registered.len(),
-			11 + 7 * usize::from(cfg!(feature = "test-support"))
+			17 + 7 * usize::from(cfg!(feature = "test-support"))
 		);
 		let names = super::Names {
 			host: registered.clone(),

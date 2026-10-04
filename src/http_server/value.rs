@@ -1,14 +1,12 @@
 //! Only owned Rust data crosses the worker boundary. Borrow and bound before copying.
 use crate::rune::{self, Value};
+pub(super) use crate::web::{BODY, HEAD, HEADERS};
 use axum::{
 	body::Body,
 	http::{HeaderName, HeaderValue},
 	response::Response,
 };
 use std::collections::BTreeMap;
-pub(super) const BODY: usize = 1 << 20;
-pub(super) const HEAD: usize = 16 << 10;
-pub(super) const HEADERS: usize = 64;
 pub(super) struct Input {
 	pub routing: Option<super::routes::Selection>,
 	pub method: String,
@@ -91,7 +89,42 @@ fn bytes(v: &Value, limit: usize) -> Result<Vec<u8>, String> {
 	}
 	Ok(b.to_vec())
 }
+/// Retain bounded returned-error text privately, never in a public HTTP log/body.
+#[derive(Debug)]
+pub(super) struct HandlerFailure {
+	message: String,
+	returned: bool,
+}
+impl HandlerFailure {
+	pub fn redacted(self) -> String {
+		if self.returned {
+			"handler returned Err (value redacted)".into()
+		} else {
+			self.message
+		}
+	}
+}
 impl Output {
+	pub fn handler(value: Value) -> Result<Self, HandlerFailure> {
+		let bare = if let Ok(result) = value.borrow_ref::<Result<Value, Value>>() {
+			match &*result {
+				Ok(v) => v.clone(),
+				Err(e) => {
+					return Err(HandlerFailure {
+						message: crate::format::error_text(e, None),
+						returned: true,
+					});
+				}
+			}
+		} else {
+			value
+		};
+		Self::decode(bare).map_err(|message| HandlerFailure {
+			message,
+			returned: false,
+		})
+	}
+
 	pub fn error(status: u16) -> Self {
 		Self {
 			status,
@@ -115,13 +148,9 @@ impl Output {
 			.unwrap()
 			.as_integer::<i64>()
 			.map_err(|_| "response status wants an integer".to_owned())?;
-		if !(200..=599).contains(&status) {
-			return Err("response status wants 200 to 599".into());
-		}
+		crate::web::status(status, 0)?;
 		let body = bytes(o.get("body").unwrap(), BODY)?;
-		if matches!(status, 204 | 304) && !body.is_empty() {
-			return Err("response status forbids a body".into());
-		}
+		crate::web::status(status, body.len())?;
 		let h = o
 			.get("headers")
 			.unwrap()
@@ -136,18 +165,7 @@ impl Output {
 			if key.len() > HEAD - total {
 				return Err("response headers exceed 16 KiB".into());
 			}
-			let name = HeaderName::from_bytes(key.as_bytes())
-				.map_err(|_| "invalid response header name".to_owned())?;
-			if matches!(
-				name.as_str(),
-				"content-length"
-					| "transfer-encoding"
-					| "connection" | "keep-alive"
-					| "upgrade" | "trailer"
-					| "te" | "proxy-connection"
-			) {
-				return Err("response header reserved for the transport".into());
-			}
+			let name = crate::web::header_name(key)?;
 			let vs = vs
 				.borrow_ref::<rune::runtime::Vec>()
 				.map_err(|_| "response header values want a vector".to_owned())?;
@@ -160,6 +178,7 @@ impl Output {
 				if total > HEAD {
 					return Err("response headers exceed 16 KiB".into());
 				}
+				crate::web::header_value(&b)?;
 				let value = HeaderValue::from_bytes(&b)
 					.map_err(|_| "invalid response header value".to_owned())?;
 				headers.push((name.clone(), value));
@@ -239,6 +258,34 @@ mod tests {
 		.unwrap();
 		obj
 	}
+	#[test]
+	fn handler_result_is_one_outer_layer_with_private_diagnostics() {
+		let bare = result(
+			201,
+			h("x-a", &["v"]),
+			rune::to_value("body".to_owned()).unwrap(),
+		);
+		let wrapped = rune::to_value(Ok::<_, Value>(bare.clone())).unwrap();
+		let a = Output::handler(bare).unwrap();
+		let b = Output::handler(wrapped).unwrap();
+		assert_eq!(a.status, b.status);
+		assert_eq!(a.headers, b.headers);
+		assert_eq!(a.body, b.body);
+		let err = rune::to_value(Err::<Value, _>("private request secret".to_owned())).unwrap();
+		let e = Output::handler(err).err().unwrap();
+		assert_eq!(e.message, "private request secret");
+		assert!(e.returned);
+		assert_eq!(e.redacted(), "handler returned Err (value redacted)");
+		for v in [
+			rune::to_value(Ok::<_, Value>(42i64)).unwrap(),
+			rune::to_value(Ok::<_, Value>(Ok::<_, Value>(42i64))).unwrap(),
+		] {
+			let e = Output::handler(v).err().unwrap();
+			assert!(!e.returned);
+			assert!(e.message.contains("object"));
+		}
+	}
+
 	#[test]
 	fn routes_fields_and_error_hook_status_allow_are_bounded() {
 		let input = Input {
