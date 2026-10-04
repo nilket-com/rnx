@@ -10,6 +10,7 @@ pub(super) const BODY: usize = 1 << 20;
 pub(super) const HEAD: usize = 16 << 10;
 pub(super) const HEADERS: usize = 64;
 pub(super) struct Input {
+	pub routing: Option<super::routes::Selection>,
 	pub method: String,
 	pub path: String,
 	pub query: Option<String>,
@@ -38,6 +39,21 @@ impl Input {
 				None => rune::to_value(()).map_err(err)?,
 			},
 		)?;
+		if let Some(routing) = self.routing {
+			let mut params = rune::runtime::Object::new();
+			for (k, v) in routing.params {
+				put(&mut params, &k, rune::to_value(v).map_err(err)?)?;
+			}
+			put(&mut o, "params", rune::to_value(params).map_err(err)?)?;
+			put(
+				&mut o,
+				"allow",
+				match routing.allow {
+					Some(a) => rune::to_value(a).map_err(err)?,
+					None => rune::to_value(()).map_err(err)?,
+				},
+			)?;
+		}
 		let mut h = rune::runtime::Object::new();
 		for (k, vs) in self.headers {
 			let mut values = rune::runtime::Vec::new();
@@ -155,6 +171,29 @@ impl Output {
 			body,
 		})
 	}
+	pub fn routed(mut self, status: Option<u16>, allow: Option<&str>) -> Result<Self, String> {
+		if status.is_some_and(|s| s != self.status) {
+			return Err("error hook returned the wrong status".into());
+		}
+		if let Some(allow) = allow {
+			self.headers.retain(|(k, _)| k.as_str() != "allow");
+			let total = 64
+				+ self
+					.headers
+					.iter()
+					.map(|(k, v)| k.as_str().len() + v.as_bytes().len() + 4)
+					.sum::<usize>();
+			if self.headers.len() == HEADERS || total + 5 + allow.len() + 4 > HEAD {
+				return Err("computed Allow exceeds response header limits".into());
+			}
+			self.headers.push((
+				HeaderName::from_static("allow"),
+				HeaderValue::from_bytes(allow.as_bytes())
+					.map_err(|_| "invalid computed Allow".to_owned())?,
+			));
+		}
+		Ok(self)
+	}
 	pub fn response(self, head: bool) -> Response {
 		let mut r = Response::builder().status(self.status);
 		for (k, v) in self.headers {
@@ -200,6 +239,57 @@ mod tests {
 		.unwrap();
 		obj
 	}
+	#[test]
+	fn routes_fields_and_error_hook_status_allow_are_bounded() {
+		let input = Input {
+			routing: Some(super::super::routes::Selection {
+				handler: Some("hello".into()),
+				params: BTreeMap::from([("name".into(), "a/b".into())]),
+				status: None,
+				allow: None,
+			}),
+			method: "GET".into(),
+			path: "/hello/a%2Fb".into(),
+			query: Some("x=1".into()),
+			headers: Default::default(),
+			body: vec![],
+		};
+		let v = input.rune().unwrap();
+		let o = v.borrow_ref::<rune::runtime::Object>().unwrap();
+		assert_eq!(o.len(), 7);
+		assert_eq!(
+			&*o.get("path").unwrap().borrow_string_ref().unwrap(),
+			"/hello/a%2Fb"
+		);
+		let params = o
+			.get("params")
+			.unwrap()
+			.borrow_ref::<rune::runtime::Object>()
+			.unwrap();
+		assert_eq!(
+			&*params.get("name").unwrap().borrow_string_ref().unwrap(),
+			"a/b"
+		);
+		let out = Output::decode(result(
+			405,
+			h("allow", &["FORGED"]),
+			rune::to_value("method".to_owned()).unwrap(),
+		))
+		.unwrap()
+		.routed(Some(405), Some("GET, HEAD"))
+		.unwrap()
+		.response(true);
+		assert_eq!(out.headers()["allow"], "GET, HEAD");
+		assert_eq!(out.headers()["content-length"], "6");
+		assert!(hyper::body::Body::is_end_stream(out.body()));
+		assert!(Output::error(200).routed(Some(404), None).is_err());
+		assert!(
+			Output::error(405)
+				.routed(Some(405), Some(&"GET".repeat(HEAD)))
+				.is_err()
+		);
+	}
+
 	#[test]
 	fn response_is_bounded_and_transport_headers_are_never_accepted() {
 		for name in [
@@ -279,6 +369,7 @@ mod tests {
 	#[test]
 	fn request_preserves_raw_text_duplicates_bytes_and_unit_query() {
 		let input = Input {
+			routing: None,
 			method: "POST".into(),
 			path: "/%E2%9C%93".into(),
 			query: None,
