@@ -36,6 +36,7 @@ mod http;
 mod http_server;
 mod inspect;
 pub mod interchange;
+mod source_fmt;
 /// Record 0129: the allocator's peak of tracked live bytes, and its reset to
 /// the current figure; record 0131 adds the live figure itself (`None`
 /// without `count-allocations`). Only with `allocation-peak`.
@@ -133,6 +134,7 @@ rnx — a Rune scripting environment
   rnx repl                  a session: line editing, history, `:help`
   rnx run [flags] FILE ...  run a file's `main`; arguments after FILE are its
   rnx serve [flags] FILE    serve a Rune HTTP/1 handler; `rnx serve --help`
+  rnx fmt [flags] FILE...   format Rune source with tabs; `rnx fmt --help`
   rnx eval SOURCE           evaluate one expression and exit
   rnx selfcheck             assert this build's own invariants and report
   rnx version               this build, and the Rune it is pinned to
@@ -147,6 +149,9 @@ Flags for `run`, before the file: --budget N, --debug-source.";
 /// across session resets. As with the stock executable, some dispatch paths
 /// exit the process; ordinary returns preserve Rust's `Termination` behavior.
 pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std::error::Error>> {
+	if let Some(status) = source_fmt::dispatch() {
+		std::process::exit(status);
+	}
 	let probe = dep_startup::Probe::take()?;
 	let result = main_inner(extensions, probe.is_some());
 	if let Some(probe) = probe {
@@ -195,9 +200,9 @@ fn main_inner(extensions: Extensions, startup: bool) -> Result<()> {
 	// Answered before a context exists, because neither needs one and the
 	// context is three quarters of what a trivial command costs: record 0030
 	// measured 4.2 ms for `version` against 0.56 ms for a binary that exits
-	// at once, and all of the difference was `with_default_modules`. Only a
-	// command that touches no Rune at all belongs above the context; anything
-	// else goes below, where `context` is in scope.
+	// at once, and all of the difference was `with_default_modules`. Commands
+	// requiring no execution Context belong before setup; source formatting
+	// dispatches even earlier so its worker never builds a runtime or Context.
 
 	#[cfg(feature = "project-sources")]
 	if args.first().is_some_and(|s| s == "project-source-version") {
@@ -282,6 +287,8 @@ fn serve(
 		dep_transition::installed(extensions.names());
 	}
 	let mut extensions = Some(extensions);
+	#[cfg(feature = "test-support")]
+	source_fmt::CONTEXTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 	let mut context = Context::with_default_modules()?;
 	let mut host_functions = install_core(&mut context)?;
 	host_functions.extend(fs::install(&mut context)?);
