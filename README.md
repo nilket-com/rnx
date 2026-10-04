@@ -79,6 +79,18 @@ cargo run --locked -- repl
 own assertions and prints what it saw, which is what the bare command did
 before record 0024.
 
+`rnx fmt file.rn` formats an explicit UTF-8 Rune source file, using tabs for
+indentation and blank lines between functions. It preserves literal contents
+and comments and never executes the source or loads adapters. `rnx fmt --check
+file.rn` leaves files unchanged (exit 1 means a formatting difference, 2 an
+error); `rnx fmt --stdin` reads source on stdin and writes only formatted source
+on stdout. Use `--` before filenames beginning with a dash. The initial bounded
+worker is Linux-only. Limits are 128 files, 1 MiB input per file, 16 MiB total
+input, 4 MiB output per file and 32 MiB total output. All formatting completes
+before writes begin; each file replacement is atomic, while multiple replacements
+are not a transaction. A publication failure reports the completed count.
+Already-formatted files are not rewritten. Run `rnx fmt --help` for the command.
+
 `rnx run <file.rn> [args]` executes a file's `main`. A compile or runtime
 error names the file, the line, the column, the source line, and marks the
 column, including for an error inside a called function; a call to a method
