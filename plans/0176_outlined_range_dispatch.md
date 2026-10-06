@@ -8,6 +8,8 @@
 
 **H1:** moving handler resolution and the guarded range operation out of the VM dispatch arms reduces the candidate's cost on unrelated calls without losing its range improvement. Increased hot-loop code size, inlining/register allocation and extra predicates are competing mechanisms to inspect, not assumed causes. The default-profile startup shift remains a separate code-generation hypothesis. Outlining may fail to solve either.
 
+Pre-edit reviewer observation: the frozen fib and calls inputs invoke named script functions; the compiler is expected to emit plain Call/op_call rather than CallFn/CallAssociated. If confirmed by bytecode or source evidence, their regression cannot be attributed to executing the newly added rejecting predicates on those calls. Code size, inlining, layout and register allocation remain hypotheses. Even perfectly outlining the accepting work leaves some hot classification and can still perturb the enclosing dispatch code. The diagnostic includes symbol-table byte sizes for run (or its enclosing symbol) and op_call across all three binaries, with absent/inlined symbols reported explicitly.
+
 Source identities:
 
 - Development fork main stays `bb8e69372353c50e271c9f115bc771c77aa6b83e`.
