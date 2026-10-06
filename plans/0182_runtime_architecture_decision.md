@@ -8,7 +8,7 @@ options. Existing performance gates remain unchanged.
 
 ## What we ask you to decide
 
-1. **Sequence:** accept, reorder or replace applications → bounded frontend study → isolation/tiering feasibility → architecture choice. We recommend it to replace local-cut churn with decision evidence (§4).
+1. **Sequence:** accept, reorder or replace applications → bounded frontend study → isolation/tiering/fresh-core feasibility → architecture choice (fresh-core scope remains under discussion). We recommend it to replace local-cut churn with decision evidence (§4).
 2. **Targets:** retire launch time as a goal; keep the 2x-PUC kernel figure only as a diagnostic, or choose a different target. We recommend application criteria because kernels alone do not establish competitiveness (§1, §4).
 3. **Gates:** keep existing gates for feasibility cuts, or approve a predeclared application-priority trade-off. We recommend keeping them until a concrete prospective trade-off is reviewed; none is assumed (§4).
 4. **Applications:** confirm data processing, embedded requests/rules, long-running computation and interactive development, or name higher-priority applications. We recommend these to cover rnx’s actual deployment paths (§1).
@@ -271,6 +271,87 @@ error and unwind. This does not promise preemption inside synchronous native Rus
 calls. Compiled execution must remain subject to those lifecycle/resource controls; charging fewer
 operations, omitting checks or abandoning retained state is not a speedup.
 
+### Fresh execution core: Rune language, Lua-inspired design
+
+**Status of candidate C: active discussion with the user.** Their latest direction
+is "I think we need to keep batting this around". Consider a fresh execution
+core as a first-class alternative to evolving the existing VM. This is not a
+commitment to rewrite the whole language implementation or to run Rune on Lua.
+The user’s approximate code-size observation motivates an inventory, not a
+conclusion that line count explains speed or determines replacement cost.
+
+Candidate C would design values, instructions, frames, dispatch and the native
+boundary together, learning from compact dynamic-language VMs. Cheap primitive
+operations and calls, deliberate allocation and a small hot execution footprint
+are design objectives. Fixed-width bytecode, tracing collection and a register
+model are alternatives to evaluate, not decisions already made. Existing fork
+main already has addressed operands in Copy, Return and Arithmetic
+([inst.rs at the pinned base](https://github.com/nilket-com/rune/blob/bb8e69372353c50e271c9f115bc771c77aa6b83e/crates/rune/src/runtime/inst.rs));
+"switch to registers" alone does not specify what changes.
+
+**Scope boundary:** initially investigate reuse of parsing, AST/source handling
+and diagnostics, with a separately specified lowering/IR boundary. Existing VM
+bytecode may encode precisely the costs the fresh core is intended to remove.
+Reusing it, or keeping every value/native ABI unchanged, cannot be a silent
+requirement. Conversely, source compatibility does not imply binary, generated
+binding or embedding compatibility. The inventory must distinguish reusable
+frontend/tooling, replaceable execution state, library/protocol dependencies,
+compiler lowering and host conversion APIs. No reuse percentage or project-size
+estimate is claimed before that inventory.
+
+**Ownership consequence:** an independently maintained core makes the fork
+responsible for its runtime correctness, memory safety, performance, native ABI
+and long-term compatibility. Upstream runtime fixes would need evaluation and
+adaptation rather than automatic adoption. Shared frontend/tooling work and
+selective upstream contributions may still be possible; we cannot assert that
+all upstream exchange ends. The product decision is how much sustained independent
+runtime ownership the user wants, which compatibility contract governs it, and
+how divergence/release/migration is maintained. A finite test suite supplies
+regression evidence; it does not by itself define all Rune semantics or establish
+compatibility on untested programs.
+
+**Memory management is the central contract question, not a slogan.** A tracing
+script heap may permit cheaper value copies, but deferred finalization alone does
+not preserve existing host-resource release, aliasing and borrow rules. A hybrid
+of managed script objects and explicitly owned foreign handles/borrow guards is
+an option, not a proven solution. Specify roots held in Rust, native reentrancy,
+continuations, relocation/pinning, external memory accounting, identity, cycles,
+release timing/order, allocation failure and cleanup after errors/cancellation.
+The current Module/Any API and generated bindings may need a compatibility layer;
+its measured costs and limits must be included.
+
+Lua is inspiration, not an assertion that required capabilities are free or
+absent there. Lua 5.4 supports allocation errors/custom allocators and scoped
+closing variables; these are not automatically Rune’s same contracts
+([official manual](https://www.lua.org/manual/5.4/manual.html), §3.3.8, §4.4 and
+lua_Alloc). Our records do not causally attribute Lua’s speed to missing Rune
+obligations. The question is whether the proposed core remains useful and fast
+when it provides the obligations this product needs.
+
+**Bounded feasibility slice, to be planned separately:** arithmetic and mixed
+values, calls/returns, collections/aliasing and a native Rust-data path, plus
+controls for exclusive/shared borrows, deterministic host-resource release,
+fallible allocation, async suspension/resumption and budget halt. Include useful
+application work and total costs as well as diagnostic kernels. Measure an
+obligation’s cost only with an explicit matched contrast; do not add unrelated
+probe differences into an application forecast. A fast integer-only loop cannot
+settle the fresh-core decision.
+
+Existing logical instruction-budget behavior must have a specified compatibility
+mapping if the IR/bytecode changes; charging a new instruction count is not
+silently the same contract. Any unavoidable observable change in semantics,
+diagnostics, release or budget behavior is listed for a prospective decision,
+not hidden as an implementation detail. Unsupported cases must be refused or
+explicitly excluded; fallback to the old VM also needs a value/ownership boundary.
+
+The study stops its selected design if required ownership/async/budget boundaries
+cannot be represented safely, or if the bounded slice shows no useful benefit
+under its predeclared application/cost criteria. Negative results narrow that
+design, not every possible fresh runtime. Success establishes feasibility of a
+subset, not full Rune compatibility, deployment readiness or permission to discard
+the shipped runtime. Compare the cost of a new core with interpreter isolation
+and specialization/tiering before selecting the architecture.
+
 ## 4. Decision framework and proposed recommendation
 
 **Keep existing gates and historical outcomes.** Records 0171/0172/0175/0176/0179
@@ -301,6 +382,18 @@ A future application-level trade-off proposal must be explicit before results:
    deployment paths. Reuse suitable application artifacts; freeze unmeasured
    scenarios before variants. Its information goal is the application-level gap
    and what fraction is Rune work versus preparation/native kernels.
+   Where feasible, propose a Rust-hosted Lua version using the same native
+   kernels and equivalent useful inputs/outputs as an application reference.
+   Its budget/cancellation, ownership checks, release timing and host-boundary
+   differences must be named, and unsupported cases must remain visible. This
+   can help determine whether changing the scripting runtime would materially
+   affect these applications before designing candidate C. It is not a
+   mathematical performance ceiling, a forecast for a core preserving Rune’s
+   obligations, or an isolated causal contrast for one runtime mechanism. A
+   modest application gap weakens the case for a rewrite for that application;
+   a large gap strengthens motivation but does not prove feasibility. No ratio
+   threshold selects/rejects a core here. This peer is part of the step-1
+   proposal, not approval to implement or measure it.
 2. Run 0183 in parallel under its separately reviewed bounded plan. Its information
    goal is localization and, if feasible, one predeclared causal intervention.
    An unavailable method or failure to identify an admissible region closes that
@@ -316,16 +409,19 @@ A future application-level trade-off proposal must be explicit before results:
    did not measure the switch-penalty event. Counts comparable in magnitude to
    excess cycles would remain a compatibility check, not an additive causal
    decomposition. This proposal authorizes no event selection or measurement.
-3. Review one feasibility study for interpreter compilation isolation and one for
-   specialization/tiering. Freeze each scope, capability subset, cost envelope and
+3. Review bounded feasibility studies for interpreter compilation isolation,
+   specialization/tiering, and a fresh execution core (candidate C above). Freeze each scope, capability subset, cost envelope and
    stop rule before execution. Isolation must establish a stable compilation
    boundary under predefined perturbations and preserve local gains; failure
    closes that method. Tiering must establish correct guard/fallback/budget/owned
    state behavior and a useful total-cost break-even; unsupported required exits
-   or no useful application benefit closes that subset. No second candidate is
-   silently tried after results.
+   or no useful application benefit closes that subset. The fresh-core study
+   must establish the language/lowering/host compatibility boundary and the
+   multi-obligation vertical slice above. No second candidate is silently tried
+   after results. Their order and shared evidence should avoid three overlapping
+   implementation projects; each starts with its own reviewed scope.
 4. Choose the architecture using those results: stronger isolated interpreter,
-   specialization/tiering, or a scoped combination. Record migration/maintenance
+   specialization/tiering, a fresh core, or a scoped combination. Record migration/maintenance
    costs and the product adoption boundary. A feasibility pass alone does not
    switch shipped rnx or waive an existing gate.
 
