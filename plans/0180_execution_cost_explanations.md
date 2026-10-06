@@ -83,3 +83,229 @@ Any proposed net-benefit gate, profile adoption or engine integration is a separ
 All compilation/subject execution/measurement, if subsequently approved, holds `/tmp/rnx-runtime-bench.lock`. Static tooling also uses the lock to avoid competing with the campaign; deadlines begin after admission. Use fixed safe environments, bounded process groups/deadlines/reap and survivor checks, no inherited-environment dump. Preserve failed outputs and commands. Replay existing fake-secret retention controls before a measured stage and scan new tracked/decompressed artifacts in memory with positive controls; credential rotation remains separately unconfirmed. Do not print or retain secret values in the ledger.
 
 Publish generic plan/evidence in rnx and analysis/tooling/receipts in rnx-bench, preserving authors and serial integration. No fork source commit is needed for this record. Send the plan for review now; no Step 0 disassembly or new diagnostic has been run while drafting it.
+
+## 7. Amendment after the accepted Step 0: one paired native-event study
+
+**Status:** protocol for Claude's review, not permission to execute yet. Step 0
+rnx ee2826b / bench 751ab29e is accepted. Documentation research alone has been
+done while drafting this amendment; no local CPU/event discovery, perf open,
+subject execution or new timing. Claude owns the driver after acceptance;
+Codex reviews discovery, controls and rehearsal before the one official run.
+
+### 7a. Exact subjects, host and documentation
+
+Use only the two retained PRIMARY binaries, staged and hash-checked before and
+after every sample by 0179's existing path:
+
+- base SHA-256 af06e8b3b1621b7f763dfb39f967fab1cca0b9b615b145152634463cefbb0c87;
+- candidate SHA-256 e4a5f207c38a8ae59bc311e3611a6bdd3d542fe82665a8e12b201f61eaf9a787.
+
+CPU 4 only. Claude reports an i7-14700 and cpu_core CPU mask 0-15; this is an
+input to verify after acceptance, not a host probe already performed here.
+Discovery must bind vendor/family/model/stepping, core type, cpu_core type/mask,
+CPU 4 online/affinity and SMT sibling topology. Require GenuineIntel family 6
+model 0xB7 and CPU 4 in cpu_core's mask; a mismatch stops for review, not a
+silently selected different Intel table. Record kernel/perf identity, relevant
+PMU formats/aliases, NMI-watchdog state, SMT sibling availability and CPU 4's
+frequency-driver/governor data where readable. No disabling SMT/watchdog,
+locking frequency, changing governor, privileges or perf_event_paranoid.
+
+Primary documentation, pinned independently of the machine's installed perf:
+
+- [Intel processor/event mapping](https://github.com/intel/perfmon/blob/78eb739dafa28c1b296f7b4d5fb7e1a7e81b1537/mapfile.csv), SHA-256 4fbadd7b948634d311b63be6f3da792790cb8f3f5fd225073cb6e5d8c90c51db. Its 6-B7 Core entry maps to the table below, not the Atom table.
+- [Intel Core event definitions](https://github.com/intel/perfmon/blob/78eb739dafa28c1b296f7b4d5fb7e1a7e81b1537/ADL/events/alderlake_goldencove_core.json), SHA-256 d588ba821297c4097705214707b2f7d52ed173ec6a4ad9acf0fc3649e6e43a0f. Fixed instructions/cycles/reference-cycles/slots definitions and programmable event encodings below come from this exact table, including counter restrictions.
+- [Linux perf modifiers/group semantics](https://github.com/torvalds/linux/blob/22430ae5d90ab288b0ee2ad99ae941f4a666b694/tools/perf/Documentation/perf-list.txt), SHA-256 d41c182377abd1088972e6f94563119bb3a06d61022cf8ee8338f7bbe8f40d4b. Strong groups, user filtering and PMU pinning are explicit; weak fallback is forbidden.
+- [Linux Topdown interface](https://github.com/torvalds/linux/blob/22430ae5d90ab288b0ee2ad99ae941f4a666b694/tools/perf/Documentation/topdown.txt), SHA-256 dc323906046c38e8686d0db37442c80b29fc2aa4a51f35ddd6e76f916755b4e8. Its pseudo-events represent slot counts; slots must lead the group. This documents an interface to verify on the installed kernel, not proof of local support.
+
+Retain retrieved documentation hashes and the selected definitions in a source
+receipt. Do not introduce a different event table if the installed perf's names
+or encodings disagree. Driver event semantics come from the pinned definitions,
+not name similarity or an unlabelled generic cache event.
+
+### 7b. Frozen groups and discovery policy
+
+Every hardware group is user-only, explicitly cpu_core, strongly grouped and
+pinned (D modifier), with instructions and cycles as anchors. Use perf stat
+JSON and --no-scale; no weak-group fallback, --metric-no-group, multiplexed
+scaling or auto-selected metric expansion. All collected hardware rows must
+report 100% running and valid runtime/counts. If exact enabled/running times
+are provided, require equality too. Printed 100% alone is rounded evidence;
+pinned strong-group scheduling and no scaling are part of the nonmultiplexing
+contract. A parser cannot invent absent exact timing fields.
+
+Freeze these six groups, in order. R is required. A-E are optional as WHOLE
+groups; one absent/incompatible event makes that group untested, not slimmer.
+The basic anchor remains in every optional group that survives discovery.
+
+| Group | Members beyond instructions/cycles | Meaning / binding |
+| --- | --- | --- |
+| R, reproduction | none | Same user instruction/cycle meanings as 0179, bound explicitly to cpu_core. |
+| A, frequency/host | cpu_core reference cycles | Fixed reference-clock count alongside actual cycles; no APERF/MPERF or MSR substitute. Collect per-task context-switches, cpu-migrations and task-clock outside the hardware group in the same invocation. These software counts are scheduler observations, with their distinct domain labelled. |
+| B, top-level slots | slots (leader), topdown-retiring, topdown-bad-spec, topdown-fe-bound, topdown-be-bound | Four slot-count fractions over the SAME slots count. Kernel aliases must resolve to the documented slots/metric pseudo-event interface; anchors remain members of that slots-led group. |
+| C, branches | BR_INST_RETIRED.ALL_BRANCHES (event 0xc4, umask 0x00); BR_MISP_RETIRED.ALL_BRANCHES (0xc5, 0x00) | Completed branch count and completed mispredicted-branch count. Two programmable counters. |
+| D, frontend delivery | IDQ.DSB_UOPS (0x79, 0x08); IDQ.MITE_UOPS (0x79, 0x04); ICACHE_DATA.STALLS (0x80, 0x04) | Delivery from decoded-uop versus legacy-decode paths, plus code-fetch stall cycles related to the instruction cache. Three programmable counters, each restricted to counters 0-3. The last event is NOT a count of L1 instruction-cache misses. |
+| E, backend loads | MEM_LOAD_RETIRED.L1_MISS (0xd1, 0x08); LD_BLOCKS.STORE_FORWARD (0x03, 0x82) | Completed loads missing L1 data cache; blocked forwarding cases. Two programmable counters restricted to 0-3. Forwarding blocks are not spill counts or all backend stalls. |
+
+Raw programmable spellings are fixed as
+cpu_core/event=EVENT,umask=MASK,name=FROZEN_NAME/u, with no edge/cmask/invert or
+sampling additions. Anchor/reference-cycle aliases and the five B aliases must
+be verified against perf details/sysfs definitions before use; the accepted
+receipt pins their exact resolved encodings and full argv. Alias spelling
+resolution is mechanical only, not a choice between different events. Missing
+B support or inability to group B with its anchors means B is untested. Do not
+compute an approximate Topdown decomposition with replacement raw events.
+
+After amendment acceptance only: capture filtered CPU/PMU identity and perf
+list/details for this shortlist, then perform exactly two bounded open checks
+per group (where names/format are available), using the existing affinity probe
+`/usr/bin/grep Cpus_allowed_list /proc/self/status`, pinned to CPU 4. These are
+availability/format/affinity controls, not trials on the experiment workloads.
+No check's event magnitudes select a group. R failure stops; an optional group
+is eligible only if BOTH checks meet parsing, user domain, grouping/pinning,
+100% running, exit/output and cleanup requirements. Zero diagnostic-event
+counts on this short probe are allowed; they mean neither unavailable nor no
+stalls in an experiment. No repeated open check to get a preferred outcome.
+
+Retain every check, including absent and denied events. Freeze an availability
+manifest before rehearsal/official samples and have Codex review it. A-E
+unavailable is allowed and reported untested. With no optional group available,
+close INCONCLUSIVE at discovery; do not run a new anchor-only study as if it
+could explain the mechanism. Once eligible, any group failure during the
+official run stops; it is not reclassified as optional after seeing outcomes.
+
+### 7c. Workloads, order, anchors and deadlines
+
+Exactly seven unchanged 0179 script windows: numeric, range_signed,
+range_negative (Q1), fib, calls (Q2), while and run-empty (contrasts). Preserve
+their source hashes, arguments, budgets and exact outputs, including empty
+stdout for run-empty. No hot-region instrumentation, source transformation,
+compile-once window, longer loop or new input. All remain complete fresh
+processes on staged retained primary binaries.
+
+One official run. R executes first, then eligible A-E in their frozen order.
+Within each group, five repetitions, workloads in the order above, each as
+base/candidate/candidate/base. This gives ten samples per side per workload
+per group, at most 840 subject invocations over six groups. No warm-up subjects,
+added samples, reruns or adaptive order. Raw records precede parsing/checks;
+check each sample immediately for safety/retention and each completed group
+for its reproduction anchors before interpreting or starting another group.
+
+Expected wall duration is several minutes (approximately 5-10, not a promise)
+including perf startup. Set a reviewed 1,800 s official-phase outer deadline,
+120 s per sample and five-second kill grace; clocks begin after admission to
+the shared lock. Discovery and rehearsal each have their own 600 s outer limit.
+No running limit is extended on expiry. Claude adapts 0179's staged perf/sample
+path, changing group/event handling only; no native timer rewrite or separate
+resident-wall study. Perf's elapsed/task-clock observations are diagnostic and
+are not passed off as 0179's independently clocked wall measurements.
+
+Before new measurements, bind the exact 0179 raw medians and references in a
+manifest, reproduced from static2 arithmetic.json and original raw rows. For
+EVERY collected group and all seven workloads, each side's instruction median
+must lie within 2% of its corresponding 0179 median. For numeric/ranges/fib/
+calls/while, the new instruction change (candidate/base - 1) must also be within
+0.5 percentage points of that workload's 0179 change. This is a reproduction
+criterion, not a modified optimization gate.
+
+For the six nonempty workloads, each side's cycle median must lie within 10%
+of its 0179 median, and the new candidate/base cycle change must be within 3
+percentage points of the corresponding 0179 change. The three Q1 workloads
+must therefore retain a positive excess cycle cost; no disappearance is
+silently called a frontend/backend finding. run-empty's short cycle window is
+descriptive and exempt from these cycle reproduction tolerances, while its
+instruction/hash/output anchors remain required. Its original/new cycle
+ranges are still reported.
+
+Failure of those anchors closes **NONREPRODUCING / STOP** and stops mechanistic
+interpretation (and later groups). Retain the failure and any already collected
+host diagnostics. It is a new observation consistent with time/host variation,
+not automatic proof of a frequency cause or grounds to revise 0179's STOP.
+No tolerances widen and no subsequent group gets a fresh chance to reproduce.
+
+### 7d. Predictions and interpretation, frozen before events open
+
+Report raw per-process counts, same-sample ratios and source-bound per-operation
+views. Summaries use medians of sample ratios (not ratios of unrelated group
+medians). For each group/workload also form five paired contrasts: each ABBA
+repetition's median candidate metric minus median base metric. A directional
+change is called resolved only if all five contrasts have the same strict sign
+AND the pooled median difference exceeds that metric's base p10-p90 width.
+Otherwise report mixed/unresolved. Do not add sample sizes or select another
+statistic. This is a descriptive noise rule, not a causal confidence interval.
+Report raw event counts alongside normalizations so fewer retired instructions
+cannot turn a constant event count into a falsely described absolute increase.
+
+- **Host/frequency:** A yields same-sample actual/reference cycles (effective
+frequency proxy) and reference cycles per instruction, plus task-clock and
+context switches. A resolved frequency-ratio shift or scheduler-time change
+supports a host contribution; similar frequency ratios with reproducible
+excess reference cycles per instruction weakens frequency-only explanation.
+Different frequency can also be a workload consequence; do not assert direction
+of causation. Any cpu migration is an affinity/protocol STOP, not a useful
+frequency datum. Hardware references do not include descheduled time; software
+counts have a different domain, explicitly retained.
+- **Frontend:** B frontend-bound fraction increasing coherently with excess
+cycles supports frontend delivery pressure. D reports raw DSB/MITE deliveries,
+DSB/(DSB+MITE), and instruction-cache stall cycles/cycles. Falling DSB share or
+rising cache stall burden supports a delivery mechanism; neither identifies
+one 32/64-byte boundary, cache conflict, nor all frontend stalls. DSB+MITE is
+not total uops (other delivery paths exist). Zero denominator is undefined,
+reported, never silently zero.
+- **Speculation:** Rising B bad-speculation fraction with rising C branch-miss
+counts/rate (misses/branches), consistently in Q1, supports speculation cost.
+Branches per instruction can move because the instruction denominator moves;
+report both raw counts and misses per source-bound iteration. No event proves
+one particular indirect target mispredicts.
+- **Backend/dependencies:** Rising B backend-bound fraction with stable A and
+no resolved frontend/speculation increase supports backend pressure. E reports
+raw forwarding blocks and L1-miss loads, plus per-iteration/per-instruction
+views. Increased forwarding blocks is compatible with the altered stack/data
+accesses, not proof the changed spill offsets caused them. Stable E cannot
+rule out dependencies, execution-port pressure, other cache levels or all
+backend causes. No store-block count is added to stalled cycles.
+- **Q2 fib/calls:** Compare their fractions/counts separately from Q1. Retiring
+slot fraction can increase while total instructions/cycles worsen. These
+counters do not dynamically bind the +33-per-fib-invocation instruction delta
+to pop_call_frame or its drop target. A dynamic-edge attribution is not added.
+- **Contrasts:** while tests whether a broad interpreter/host shift also
+appears without the Q1 regression; run-empty exposes startup-dominated event
+scope. Their counts cannot be subtracted from fractional metrics or treated
+as identically compiled setup for every script.
+
+B fractions are reconstructed from metric slot counts over its same slots
+count; preserve perf's raw count and displayed metric fields. All fractions
+must be finite in [0,1], sum within 0.02 of one (8-bit metrics/rounding allowed),
+and not be confused with percentages or multiply by cycles as if disjoint
+elapsed-time components. Violation during the run is a measurement STOP,
+never clamped/repaired. Raw negative/non-finite counts or scaled/unsupported
+markers in any eligible group also STOP.
+
+Q1 remains unexplained if no coherent resolved metric shift distinguishes the
+alternatives, if relevant groups are unavailable, or if only correlated
+changes with contradictory controls remain. Report multiple supported costs
+when mechanisms coexist. This study can discriminate broad execution-cost
+categories and host variation; it CANNOT explain why the compiler emitted
+different VM code after a context.rs-only source change. Build/CGU causality
+and the user's gate question require a separate record. No name such as
+"DSB" converts a correlation into a proven compiler/layout explanation.
+
+### 7e. Driver controls, security and approval sequence
+
+Claude commits the exact driver, availability receipt, parser/event definitions
+and untimed rehearsal for Codex review before the official run. Rehearsal
+executes affinity and synthetic-output/retention checks, not trial Q1/Q2
+workloads; any required exception returns to review first. Controls require:
+wrong primary/role hash; changed source/count; mixed cpu_atom event; absent,
+extra, duplicate or non-finite counter; missing eligible group; incomplete
+ABBA; 99.9% running; weak/pinned-group configuration drift; percentage/slot-unit
+confusion; bad B sum; zero denominators; both reproduction tolerance sides and
+exact boundaries; scientific nonreproduction versus infrastructure failure;
+and fake-secret success/failure/archive retention. Preserve all partial runs.
+
+After accepted discovery and controls, one official run. Source/build/profile/
+subject changes remain forbidden. Any plumbing repair/replay needs prior
+review and disclosure; a semantic/event failure cannot be relabelled a
+completed explanation. Existing safe environments, process groups, deadlines,
+kill/reap/survivor/affinity controls and credential scans are retained. No full
+machine or inherited-environment dump, secret-bearing paths/values or active
+credential rotation claim. No push/adoption precedes joint review of results.
