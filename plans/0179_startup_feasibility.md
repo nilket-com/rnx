@@ -1,0 +1,79 @@
+# rnx 0179: read-only startup feasibility checkpoint
+
+**Status:** proposed checkpoint for Claude's review, before engine edits or builds. Source audited: fork main `bb8e69372353c50e271c9f115bc771c77aa6b83e`. Plan amended to add trait-entry preparation as the fourth shape. Revision 2 replaces the rejected handler-sharing proposal using retained base-only attribution. This report does not claim measured savings or a candidate WIN.
+
+## 1. What the source actually does
+
+Paths and line numbers below refer to that pinned Rune revision.
+
+- `crates/rune/src/compile/context.rs:344–387`: `with_config` creates an empty context and installs 34 factories in a fixed dependency order, then marks defaults present. A module descriptor is not an already installed registry. Stdio selects an io factory variant; it does not remove the rest of the library.
+- `context.rs:428–484`: installation order is module, types, traits, items, associated functions, trait implementations, reexports, constructors. Unique-module suppression and crate insertion happen before these stages. Delaying one stage can change what a later module observes or which error wins.
+- `context.rs:948–982`: trait implementations require a type and trait already installed, invoke the registered trait callback synchronously, then append doc implementation metadata. Callbacks are arbitrary host closures, not declarations that the compiler can safely reorder.
+- `context.rs:85–224`: trait callbacks resolve protocol handlers from the current context. `find` can also register a named alias; `find_or_define` prefers an existing handler. `function` creates a typed FunctionHandler and `function_inner` constructs an associated descriptor, which immediately traverses `install_associated`.
+- `context.rs:1104–1219`: each associated install clones the container information, builds named item/hash aliases, inserts type-name constants, checks duplicate function hashes, clones handler handles, and installs metadata. The 0172 borrow removes the container clone but does not remove the other work. Repeating that change is not this proposed candidate.
+- `context.rs:639–668`, `compile/names.rs:30–47`: metadata installation updates names, item-to-hash sets, metadata vectors and hash-to-metadata indexes in order. Name components are owned B-tree keys. A list of function hashes alone cannot replace this structure.
+- `context.rs:413–419`, `runtime/runtime_context.rs:19–70`: `runtime()` clones function/constant/constructor/deprecation maps. Runtime lookup reads those maps. A changed registry representation would touch execution lookup, not just startup.
+
+The 0172 inventory covers every Context field: unique modules, default-prelude flag, metadata, hash-to-meta and item-to-hash indexes, functions, deprecations, doc associated and implemented-trait vectors, macros, traits, attribute macros, types, names, crates, constants and constructors. A shared immutable base would need an overlay policy for every field. Metadata indexes reference vector positions; doc enumeration and names prefix lookup are observable compilation tools, not optional baggage.
+
+## 2. Historical cost versus current structure
+
+0030 lazily created the *host* Context only after help/version dispatch. It left eval essentially unchanged. Its context cost includes construction/drop and is not a cold-library optimization.
+
+The September 0.14.2 stage/trait tables in `rnx-bench/probes/context-registration/results/` attributed 0.4247 ms to 12 iter Iterator implementations and 0.2941 ms to 9 ops Iterator implementations, with 793+594 function entries and 409+306 metadata entries. These are historical measurements under different engine code, not a prediction for main.
+
+On main, `modules/ops.rs:32–68` still installs typed range implementations, and `modules/iter.rs:204–608` still expands Iterator defaults through the trait callback. Thus the expansion mechanism remains. Main's FunctionHandler representation differs: `internal_macros.rs:105–236` stores a pointer plus static vtable, with the closure owned by an allocated Arc; clone/drop operate through that vtable. September's fresh-handler-allocation observation still has a source basis, but historical timings/counts cannot simply be transferred.
+
+0169's 1.503 ms trait stage includes eager protocol resolution, type-dependent closures, map insertion, item and constant construction, metadata and names. No read-only audit can assign a measured fraction of it to Arc creation alone. The complete native registration attempts and metadata-site counts are not counts of removable handler allocations. This checkpoint states the removable operation subset, not an invented millisecond estimate.
+
+## 3. Four-shape feasibility table
+
+| Shape | Capability/ownership result | Fresh cost and shared-hot-path exposure | Disposition in 0179 |
+| --- | --- | --- | --- |
+| Lazy whole modules | Not a drop-in constructor change. Compile name/prefix/macro/trait lookup is eager; inter-module callbacks depend on prior installations. Deferral needs dependency closure, interior resolution and preserved extension/conflict timing. A context that appears empty before first lookup fails the inventory contract. | Full module touch must charge all delayed installation. Changes compilation and runtime registry boundaries; names, hashes and metadata indexes are involved. | Do not select. A broader lazy-registry design needs a separate architecture proof. |
+| Static/compile-time tables | Static hashes and descriptors are possible, but the present owned maps/ItemBuf/ConstValueBuf and Arc-backed captured callbacks are not const Context data. A native-address dump is not a portable table. A generated immutable base plus mutable overlay could be designed; it is not available by switching constructors. | Must materialize any remaining state on cold use, preserve doc/feature/stdio layouts and module extensions. Changing FunctionHandler or runtime map layout touches VM-facing code. | Do not select. Feasible as an architectural research direction, not established as a bounded implementation here. |
+| Shared prepared Context | Context is Send+Sync but has no ordinary Clone; lookup tables are mutable on install. Sharing a read-only context is useful for repeated compilation; user extensions need independent ownership or overlays, and callbacks can capture host state. | First process still pays all default preparation. Deep-copying mutable tables retains allocation work. A warm cache cannot satisfy this record's fresh-process objective. | Do not select. This alone has no structurally demonstrated cold-start saving. |
+| Trait-entry expansion, deferred | A missing function could be synthesized, but compilation metadata/name iteration, runtime maps, doc enumeration and later conflict detection must see it before a miss. Arbitrary trait callbacks can inspect earlier entries. Recording only (trait,type) loses eager error/override timing. | Miss paths and every-module first use charged. Requires registry and resolution changes shared with execution. | Do not select the deferred branch. |
+| Trait-entry expansion, eager handler sharing | Existing default methods with no captures can share one prepared typed handler **within one freshly constructed module**, while type-dependent methods retain their own captured handlers. Keep per-type descriptors, names, constants, hashes and every insertion in the original order. No global or cross-context cache required. | Removes repeated creation of those handler Arcs; map/metadata work and captured handlers remain. No FunctionHandler representation, Value, hash, B-tree or VM edits. Compiler perturbation remains possible despite source confinement. | Rejected before edits: retained profile locates too little cost in handler creation to justify the 10% gate. |
+| Trait-entry expansion, eager type-name construction | Build only the existing associated-function type-name string directly from textual components; retain its exact bytes and all insertion/lookup behavior. | Removes generic formatting at one registration call site, retaining necessary string allocation/copying. No public Display or runtime representation changes. | Select this bounded replacement for checkpoint review. |
+
+This is not proof that the unselected architectural shapes are impossible. They require a substantially different registry design. The selected eager shape has a source-level preservation argument and a small edit surface; it does not promise the sub-ms target or claim to remove the whole trait stage.
+
+## 4. Retained evidence rejects handler sharing and supports a replacement
+
+Claude challenged the original eighteen-handler proposal before any edit or build. The retained base profile shows the large Iterator callback cost is predominantly its descent into `install_associated`, not handler creation. That candidate is dropped; no handler-sharing, visibility or iterator-module edit is part of revision 2.
+
+Independent read-only reconstruction is committed in rnx-bench `0e416308`, `probes/startup-0179/retained_costs.py` and `results/startup-0179/feasibility/retained-costs.json`. It runs the previously reviewed parser's seven fixtures, binds input/parser hashes and reconstructs edges from the compressed 0178 P0-base context profile. No subject executes. All following diagnostic counts are Callgrind Ir, not native instructions.
+
+- Context total: 27,355,056 Ir.
+- Item Display: 5,078,623 inclusive Ir over 1,900 calls. This is **not** all removable at the proposed site: it also serves type/item registration.
+- The actual selected edge, `install_associated -> core::fmt::write`: 1,785 calls, 4,929,893 inclusive Ir (18.02% of context). The other callers of this formatting node are install_type_info (90 calls) and install_item (25); those sites remain untouched.
+- The selected edge includes necessary string construction/copying that will remain. It is not a removable-cost estimate. Descendant Display/write costs cannot be added to this inclusive total.
+- `install_associated -> ContextType::try_clone`: 2,277 calls, 761,664 inclusive Ir. This is left unchanged; borrowing would combine an already stopped change with the new mechanism before establishing the new cut's result.
+
+Actual retained native instructions from the first frozen 0178 P0 pair are context 26,868,541.5 and run-answer 29,905,482.5: ratio 1.1130, not the 1.35 inferred from percentages of unequal absolute shifts. The 10% legs require 2,686,854.15 and 2,990,548.25 fewer native instructions respectively. There is no retained Callgrind run-answer profile establishing identical instruction density or an exact edge fraction there.
+
+For transparent sizing **only**, assuming proportional instrumented/native costs would put the selected formatting edge at 18.02% of context and 16.19% of run-answer. Meeting the two legs would require removing about 55.5% and 61.8% of that edge respectively. The assumption is not a native bound, forecast or permission to waive the gates. Direct appending avoids several layers of generic formatting but still traverses/copies components; therefore both legs are plausible but unproven, and run-answer is the more demanding leg. No additional clone/hash/names/handler cut is selected to pad the expected gain. Measured failure closes failure.
+
+## 5. Fixed replacement candidate: private associated type-name builder
+
+Production edit surface: **only `crates/rune/src/compile/context.rs`**. One private helper plus replacement of `item.try_to_string()` in the Function arm of `install_associated`, specifically the INTO_TYPE_NAME constant at the named instance-function alias hash. No changes to other type-name sites, Item's public Display, ContextType cloning, item construction, hashes, names, metadata, conflict checks, Handler/Value representations, B-trees, VM dispatch or public APIs.
+
+Helper input is `&Item`; output is `alloc::Result<String>`:
+
+1. Walk components to identify an empty root or any non-text component and compute checked byte length. An empty item or any `Id` component returns the original whole-item `try_to_string()` result. No partial string is built before falling back.
+2. `Str(s)` contributes the UTF-8 bytes of s. `Crate(s)` contributes `::` and s. **Crate must be supported**, since default qualified names start with it; falling back on every Crate would eliminate the proposed default-library benefit. Between any pair of components add `::`, exactly as Item Display does. This deliberately reproduces unusual crate components in later positions (e.g. `a::::b`), empty text components and arbitrary UTF-8 bytes; do not impose a new identifier policy.
+3. Compute the sum with checked additions, refuse overflow with existing alloc::Error::CapacityOverflow, allocate one String with that capacity, then append the same separators/prefixes/component bytes in a second pass. No unsafe code, formatter call, infallible allocation or new maximum length.
+4. Return that String to the **existing** ConstValueBuf conversion and map insertion. Alias/function hash computation, function/constant/metadata values and insertion order remain byte-identical. Public diagnostics/formatting remain untouched.
+
+Use Item's existing component iterator and alloc String; no rune-core or rune-alloc source edits. New helper changes only registration string preparation, although allocations and generic code generation still share infrastructure with other workloads. The 0172 perturbation hazard remains and is judged by the unchanged gates. Capacity/preparation may move allocation-failure points or alter allocation count, as explicitly allowed; semantic errors, successful results and resource ownership must remain unchanged.
+
+## 6. Tests-first and complete-first-use requirements
+
+Before production edits, add tests on the base that freeze Item Display's expected string bytes and associated-registration constants. Cover empty root, one/multiple Str components, initial/mid/final Crate components, empty strings, mixed Crate/Str, Unicode/multibyte, long names, Id at beginning/middle/end, mixed Id/Crate and deeply nested items. Candidate tests additionally compare the new helper to that unchanged oracle for every fixture. Explicitly assert default qualified names take the direct path and Id/root cases take fallback; helper output equality alone must not hide an always-fallback implementation.
+
+Use 0172's exhaustive inventory **including constant values**, not just hashes; freeze/compare every Context field and deterministic registration order for stdio true/false and production/test configurations. Include custom methods and traits installed after defaults, duplicate/conflicting function errors, missing containers, multiple independent contexts and unchanged runtime results. Corrupt a constant's value while retaining its key and require inventory rejection. Any fixture adaptation stays tests-only until the base contract is reviewed; existing goldens are never regenerated on the candidate.
+
+The first-use fixture must compile and execute a deterministic suite touching all 34 default module factories, including private collections through public types, trait defaults, aliases, builtin macros, futures/streams/generators and both stdio variants. Freeze an explicit module-to-probe mapping and outputs on the base. A factory without a distinct executable operation gets a compilation capability probe; remaining coverage gaps must be resolved before declaring complete first use. It remains a deciding workload even though this candidate is eager.
+
+No engine edit, candidate build or new measurement has occurred. Please review this fixed one-helper/one-site replacement and tests-first scope. The 10% context AND run-answer improvement requirement and all unrelated 0.5%/wall-band/STOP gates remain unchanged. If the implementation needs an extra site or mechanism, return to review before editing it.
