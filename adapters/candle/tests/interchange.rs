@@ -2,9 +2,9 @@
 //! own readers and writers as the parity oracle, NumPy-written fixtures
 //! (`tests/data/0143`, from `probes/0143/fixtures.py`), and every refusal.
 use candle_core::{Device, Tensor as CTensor};
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 
 fn data(name: &str) -> PathBuf {
 	Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -28,7 +28,7 @@ fn eval(body: &str) -> Result<Value, String> {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(candle).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	let script = format!("pub fn main() {{ {body} }}");
 	sources.insert(Source::memory(script).unwrap()).unwrap();
@@ -38,7 +38,7 @@ fn eval(body: &str) -> Result<Value, String> {
 		.with_diagnostics(&mut diagnostics)
 		.build();
 	let unit = unit.unwrap_or_else(|_| panic!("{:?}", diagnostics.diagnostics()));
-	let mut vm = Vm::new(runtime, Arc::new(unit));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(unit).unwrap());
 	let v = vm.call(["main"], ()).map_err(|e| e.to_string())?;
 	match rune::from_value::<Result<Value, Value>>(v.clone()) {
 		Ok(Ok(v)) => Ok(v),

@@ -25,7 +25,7 @@ fn evaluated(source: &str) -> Ran {
 	}
 }
 
-/// A depth far past the 256 bound that the platform can still build and drop
+/// A depth far past the shared value bound that the platform can still build and drop
 /// for itself; see `tests/eval_outcome.rs` for the measurements behind both
 /// numbers. This script never renders the value, so it clears its platform's
 /// ceiling by more than the figure there — the same depth is used so that one
@@ -67,13 +67,13 @@ fn repeated_shared_data_is_not_a_cycle() {
 
 #[test]
 fn the_depth_bound_is_shared_with_the_renderer() {
-	let inside = evaluated(&format!("{} json::stringify(v)", nested(256)));
+	let inside = evaluated(&format!("{} json::stringify(v)", nested(64)));
 	assert_eq!(inside.code, 0, "at the bound: {}", inside.stderr);
-	let past = evaluated(&format!("{} json::stringify(v)", nested(257)));
+	let past = evaluated(&format!("{} json::stringify(v)", nested(65)));
 	assert!(!past.signalled, "the process died on a signal");
 	assert_eq!(past.code, 1, "{}", past.stderr);
 	assert!(
-		past.stderr.contains("nested deeper than 256 levels"),
+		past.stderr.contains("nested deeper than 64 levels"),
 		"{}",
 		past.stderr
 	);
@@ -274,15 +274,15 @@ fn the_depth_bound_covers_a_path_with_no_container_on_it() {
 	// so 257 of them serialized and 8,192 of them aborted the process. The
 	// bound is now enforced on entry to every value, at the same threshold
 	// the renderer uses, which is why the two agree case for case below.
-	let inside = evaluated(&format!("{} json::stringify(v)", options(256)));
+	let inside = evaluated(&format!("{} json::stringify(v)", options(63)));
 	assert_eq!(inside.code, 0, "at the bound: {}", inside.stderr);
 	assert_eq!(inside.stdout, "\"1\"\n");
 
-	let past = evaluated(&format!("{} json::stringify(v)", options(257)));
+	let past = evaluated(&format!("{} json::stringify(v)", options(64)));
 	assert!(!past.signalled, "the process died on a signal");
 	assert_eq!(past.code, 1, "{}", past.stdout);
 	assert!(
-		past.stderr.contains("nested deeper than 256 levels"),
+		past.stderr.contains("nested deeper than 64 levels"),
 		"{}",
 		past.stderr
 	);
@@ -292,7 +292,7 @@ fn the_depth_bound_covers_a_path_with_no_container_on_it() {
 	assert!(!mixed.signalled, "the process died on a signal");
 	assert_eq!(mixed.code, 1, "{}", mixed.stdout);
 	assert!(
-		mixed.stderr.contains("nested deeper than 256 levels"),
+		mixed.stderr.contains("nested deeper than 64 levels"),
 		"{}",
 		mixed.stderr
 	);
@@ -302,7 +302,7 @@ fn the_depth_bound_covers_a_path_with_no_container_on_it() {
 fn the_two_walks_agree_on_what_is_too_deep() {
 	// One constant, one threshold, whichever path reaches it: a rendering and
 	// a serialization refuse the same chains at the same depth.
-	for deep in [256, 257] {
+	for deep in [63, 64] {
 		let rendered = evaluated(&format!("{} v", options(deep)));
 		let serialized = evaluated(&format!("{} json::stringify(v)", options(deep)));
 		assert_eq!(
@@ -344,4 +344,30 @@ fn a_deep_option_chain_is_catchable_and_cleans_up() {
 		String::from_utf8_lossy(&output.stdout),
 		"refused: true\nstill running\n"
 	);
+}
+
+#[test]
+fn recursive_shapes_share_the_fork_value_limit() {
+	assert_eq!(rnx::rune::runtime::MAX_VALUE_DEPTH, 64);
+	for wrap in ["[v]", "Some(v)", "(v,)", "#{child: v}"] {
+		for (nesting, expected) in [(63, 0), (64, 1)] {
+			let prefix = format!("let v = 1; for _ in 0..{nesting} {{ v = {wrap}; }}");
+			let rendered = evaluated(&format!("{prefix} v"));
+			let serialized = evaluated(&format!("{prefix} json::stringify(v)"));
+			assert_eq!(
+				rendered.code, expected,
+				"render {wrap}: {}",
+				rendered.stderr
+			);
+			assert_eq!(
+				serialized.code, expected,
+				"stringify {wrap}: {}",
+				serialized.stderr
+			);
+		}
+	}
+	// An empty container at level 64 adds no child at level 65.
+	let prefix = "let v = []; for _ in 0..63 { v = [v]; }";
+	assert_eq!(evaluated(&format!("{prefix} v")).code, 0);
+	assert_eq!(evaluated(&format!("{prefix} json::stringify(v)")).code, 0);
 }

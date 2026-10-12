@@ -2,8 +2,8 @@
 //! Each conversion policy is tested at its boundary, as a policy; every
 //! refusal names the column and row; the frame, the block and the column
 //! list stay usable after every call.
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-use std::sync::Arc;
 
 fn run(script: &str) -> Result<rune::Value, String> {
 	let mut polars = Module::with_crate("polars").unwrap();
@@ -13,7 +13,7 @@ fn run(script: &str) -> Result<rune::Value, String> {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(polars).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -24,7 +24,7 @@ fn run(script: &str) -> Result<rune::Value, String> {
 	if built.is_err() {
 		panic!("diagnostics: {:?}", diagnostics.diagnostics());
 	}
-	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(built.unwrap()).unwrap());
 	vm.call(["main"], ()).map_err(|e| e.to_string())
 }
 

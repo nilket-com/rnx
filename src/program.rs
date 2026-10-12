@@ -136,7 +136,13 @@ impl Loader {
 }
 
 impl SourceLoader for Loader {
-	fn load(&mut self, root: &Path, item: &Item, span: &dyn Spanned) -> compile::Result<Source> {
+	fn load(
+		&mut self,
+		sources: &Sources,
+		id: SourceId,
+		item: &Item,
+		span: &dyn Spanned,
+	) -> compile::Result<Source> {
 		// Do not even resolve further candidates once a read crossed the bound.
 		if self.exhausted {
 			return Err(compile::Error::msg(span, self.limit_error()));
@@ -151,6 +157,14 @@ impl SourceLoader for Loader {
 		if let Some((base, at_root)) = self.mounts.resolve(item) {
 			return self.candidate(&base, at_root, span);
 		}
+		// The fork passes the root source's id where 0.14.2 passed its path;
+		// a root without a path was refused before the call there.
+		let Some(root) = sources.get(id).and_then(|source| source.path()) else {
+			return Err(compile::Error::msg(
+				span,
+				"Cannot load modules using a source without an associated URL",
+			));
+		};
 		let mut base = PathBuf::from(root);
 		if !base.pop() {
 			return Err(compile::Error::msg(
@@ -226,8 +240,8 @@ impl Loader {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use rune::sync::Arc;
 	use rune::{Context, Diagnostics, Vm};
-	use std::sync::Arc;
 
 	fn fixture(name: &str) -> PathBuf {
 		Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -258,8 +272,7 @@ mod tests {
 			.iter()
 			.filter_map(|d| {
 				if let rune::diagnostics::Diagnostic::Fatal(fatal) = d
-					&& let rune::diagnostics::FatalDiagnosticKind::CompileError(error) =
-						fatal.kind()
+					&& let Some(error) = fatal.as_compile_error()
 				{
 					return Some((
 						error.span().range().start,
@@ -297,8 +310,8 @@ mod tests {
 			if name == "mixed" {
 				let context = Context::with_default_modules().unwrap();
 				let mut vm = Vm::new(
-					Arc::new(context.runtime().unwrap()),
-					Arc::new(built.unwrap()),
+					Arc::try_new(context.runtime().unwrap()).unwrap(),
+					Arc::try_new(built.unwrap()).unwrap(),
 				);
 				assert_eq!(
 					rune::from_value::<i64>(vm.call(["main"], ((),)).unwrap()).unwrap(),
@@ -324,7 +337,10 @@ mod tests {
 			.with_source_loader(&mut exact)
 			.build()
 			.unwrap();
-		let mut vm = Vm::new(Arc::new(context.runtime().unwrap()), Arc::new(unit));
+		let mut vm = Vm::new(
+			Arc::try_new(context.runtime().unwrap()).unwrap(),
+			Arc::try_new(unit).unwrap(),
+		);
 		assert_eq!(
 			rune::from_value::<i64>(vm.call(["main"], ((),)).unwrap()).unwrap(),
 			21111
@@ -352,7 +368,12 @@ mod tests {
 		let item = rune::ItemBuf::with_item(["a"]).unwrap();
 		assert!(
 			short
-				.load(&entry, &item, &rune::ast::Span::empty())
+				.load(
+					&sources,
+					SourceId::try_from(0usize).unwrap(),
+					&item,
+					&rune::ast::Span::empty()
+				)
 				.is_err()
 		);
 		assert!(short.entry(&entry).is_err());

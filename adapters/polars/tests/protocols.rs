@@ -1,7 +1,7 @@
 //! Record 0111: Rust traits at the Rune protocol boundary. A `Hash` + `Eq` type is a working `HashMap` key (HASH with EQ from the Rust `==`); a `PartialEq`-only type is not; `PartialOrd` and `FromStr` match direct Rust; an owned Rune value runs its Rust destructor exactly once, moved or not, which is why `Drop` is a marker.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Any, Context, Module, Source, Sources, Vm};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 fn run_with(script: &str, extra: Option<Module>) -> Result<rune::Value, String> {
@@ -15,7 +15,7 @@ fn run_with(script: &str, extra: Option<Module>) -> Result<rune::Value, String> 
 	if let Some(m) = extra {
 		context.install(m).unwrap();
 	}
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -26,7 +26,7 @@ fn run_with(script: &str, extra: Option<Module>) -> Result<rune::Value, String> 
 	if built.is_err() {
 		panic!("diagnostics: {:?}", diagnostics.diagnostics());
 	}
-	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(built.unwrap()).unwrap());
 	vm.call(["main"], ()).map_err(|e| e.to_string())
 }
 fn run(script: &str) -> Result<rune::Value, String> {

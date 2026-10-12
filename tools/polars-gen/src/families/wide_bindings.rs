@@ -128,7 +128,7 @@ pub(crate) fn slot(i: usize, rust_ty: &str) -> Option<(String, String)> {
 /// (`function/mod.rs` `access_memory!`, `impl_function_traits!`): the count
 /// first; every slot taken (replaced with `Value::empty()`); each converted
 /// in order; the guards alive through the call and dropped before
-/// `ToReturn::to_return`; then the store. (The typed path also tags a
+/// `IntoReturn::into_return`; then the store. (The typed path also tags a
 /// conversion failure with `BadArgument { arg }`, through a `pub(crate)`
 /// API; the shim reports the conversion's own error.)
 pub(crate) fn shim(ident: &str, types: &[String]) -> Option<String> {
@@ -151,13 +151,13 @@ pub(crate) fn shim_named(name: &str, callee: &str, types: &[String]) -> Option<S
 		.map(|i| format!("let __v{i} = std::mem::replace(__s{i}, rune::Value::empty()); "))
 		.collect();
 	Some(format!(
-		"fn {name}(stack: &mut dyn rune::runtime::Memory, addr: rune::runtime::InstAddress, len: usize, out: rune::runtime::Output) -> rune::runtime::VmResult<()> {{ \
-		 if len != {n} {{ return rune::runtime::VmResult::err(rune::runtime::RuntimeError::bad_argument_count(len, {n})); }} \
+		"fn {name}(stack: &mut dyn rune::runtime::Memory, addr: rune::runtime::Address, len: usize, out: rune::runtime::Output) -> rune::runtime::VmResult<()> {{ \
+		 if len != {n} {{ return Err(rune::runtime::RuntimeError::bad_argument_count(len, {n}).into()); }} \
 		 let [{slots}] = rune::vm_try!(stack.slice_at_mut(addr, len)) else {{ unreachable!() }}; \
 		 {takes}\
 		 let __r = {{ {convs}{callee}({pass}) }}; \
-		 let __value = rune::vm_try!(rune::runtime::ToReturn::to_return(__r)); \
-		 rune::vm_try!(out.store(stack, __value)); rune::runtime::VmResult::Ok(()) }}",
+		 let __value = rune::vm_try!(rune::runtime::IntoReturn::into_return(__r)); \
+		 rune::vm_try!(stack.store(out, __value)); rune::runtime::VmResult::Ok(()) }}",
 		slots = slots.join(", "),
 		pass = pass.join(", ")
 	))
@@ -263,8 +263,8 @@ pub(crate) fn wide_bindings_self_test() {
 		at("borrow_ref::<W>()"),
 		at("rune::from_value(__v1)"),
 		at("f(&*__g0, __g1)"),
-		at("ToReturn::to_return(__r)"),
-		at("out.store(stack, __value)"),
+		at("IntoReturn::into_return(__r)"),
+		at("stack.store(out, __value)"),
 	];
 	assert!(order.windows(2).all(|w| w[0] < w[1]), "{order:?} in {s}");
 	println!("wide bindings self-test: ok");

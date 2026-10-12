@@ -338,9 +338,9 @@ impl Worker {
 		if ready["type"] != "ready"
 			|| ready["protocol"] != 1
 			|| ready["rnx"] != "0.0.0"
-			|| ready["rune"] != "0.14.2"
+			|| ready["rune"] != "0.15.0 (git 03b1aa4dc29e4125392d0e03dab12bc408bf701d)"
 		{
-			return Err(format!("incompatible worker: expected protocol 1, rnx 0.0.0, Rune 0.14.2; received protocol {}, rnx {}, Rune {}",ready["protocol"],ready["rnx"],ready["rune"]).into());
+			return Err(format!("incompatible worker: expected protocol 1, rnx 0.0.0, Rune 0.15.0 (git 03b1aa4dc29e4125392d0e03dab12bc408bf701d); received protocol {}, rnx {}, Rune {}",ready["protocol"],ready["rnx"],ready["rune"]).into());
 		}
 		Ok(worker)
 	}

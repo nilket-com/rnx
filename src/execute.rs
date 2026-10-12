@@ -29,10 +29,17 @@
 //! The record's evidence has the probe; the number it produced was `()` for
 //! a loop that sums to 1,999,000. A synchronous execution nests nothing —
 //! a synchronous call is a frame in the same execution — so its slices are
-//! resumable, and Rune 0.14.2 offers no other per-instruction hook. Hence
+//! resumable, and Rune 0.14.2 offered no other per-instruction hook. Hence
 //! the property, and the three paths.
+//!
+//! Record 0185 (the Rune fork): a slice is resumed only when the machine
+//! reports `VmOutcome::Limited` between its own instructions. A soft slice
+//! yields the outer machine while a hard total also charges native loops and
+//! nested executions. A native call may overrun the soft slice, but never the
+//! total. Errors terminate execution without retry. Cancellation is checked
+//! between slices; a single native call can delay it for the remaining total.
 use rune::Vm;
-use rune::runtime::{GeneratorState, Value, VmError, budget};
+use rune::runtime::{Value, VmError, VmOutcome, budget};
 use std::cell::Cell;
 use std::future::Future;
 use std::pin::Pin;
@@ -104,36 +111,38 @@ pub fn slice_sync(
 			};
 		}
 	};
-	let mut spent = 0usize;
+	let mut remaining = budget_n.min(usize::MAX - 1);
 	loop {
-		let (outcome, exhausted) = budget::with(SLICE, || {
-			let outcome = execution.resume().into_result();
-			let exhausted = !budget::acquire().take();
-			(outcome, exhausted)
+		let (outcome, left) = budget::with_slice(remaining, SLICE, || {
+			let outcome = execution.resume().complete();
+			(outcome, budget::remaining().expect("finite sliced budget"))
 		})
 		.call();
+		remaining = left;
 		match outcome {
 			// Completion is a slice boundary too: an interrupt that arrived
 			// during a blocking host call is observed here.
-			Ok(GeneratorState::Complete(_)) if crate::host::interrupted() => {
+			Ok(VmOutcome::Complete(_)) if crate::host::interrupted() => {
 				return Outcome::Interrupted;
 			}
-			Ok(GeneratorState::Complete(value)) => return Outcome::Complete(value),
-			Ok(GeneratorState::Yielded(_)) => return Outcome::Yielded,
-			Err(error) if error.first_location().is_none() && exhausted => {
-				spent += SLICE;
+			Ok(VmOutcome::Complete(value)) => return Outcome::Complete(value),
+			Ok(VmOutcome::Yielded(_)) => return Outcome::Yielded,
+			// The machine stopped between two of its own instructions: the
+			// only outcome that may be resumed. Every `Err` below ends the
+			// execution, so no work is ever run twice.
+			Ok(VmOutcome::Limited) => {
 				if crate::host::interrupted() {
 					return Outcome::Interrupted;
 				}
-				if spent >= budget_n {
+				if remaining == 0 {
 					return Outcome::Budget;
 				}
 			}
+			Ok(_) => return unrecognised(),
 			Err(error) => {
-				// The guard says this slice was spent, not that the input's
-				// budget was. Only the whole budget is worth naming beside an
-				// error, and only the last slice can have spent it.
-				let exhausted = exhausted && spent + SLICE >= budget_n;
+				// Native work draws from the hard total, so exhaustion here
+				// means the complete allowance was spent, even with a location.
+				let exhausted = remaining == 0;
 				return Outcome::Failed { error, exhausted };
 			}
 		}
@@ -209,7 +218,7 @@ pub fn drive_async(
 	let settled = Settled {
 		inner: Box::pin(async move {
 			let mut execution = execution;
-			execution.async_resume().await
+			execution.resume().await
 		}),
 		exhausted: exhausted.clone(),
 	};
@@ -228,15 +237,19 @@ pub fn drive_async(
 		// tracked request and connection tasks before returning to the prompt.
 		return Outcome::Interrupted;
 	};
-	match outcome.into_result() {
-		Ok(GeneratorState::Complete(_))
+	match outcome {
+		Ok(VmOutcome::Complete(_))
 			if matches!(when_interrupted, WhenInterrupted::Abandon)
 				&& crate::host::interrupted() =>
 		{
 			Outcome::Interrupted
 		}
-		Ok(GeneratorState::Complete(value)) => Outcome::Complete(value),
-		Ok(GeneratorState::Yielded(_)) => Outcome::Yielded,
+		Ok(VmOutcome::Complete(value)) => Outcome::Complete(value),
+		Ok(VmOutcome::Yielded(_)) => Outcome::Yielded,
+		// The whole budget ran out between two of the machine's own
+		// instructions. Nothing resumes it.
+		Ok(VmOutcome::Limited) => Outcome::Budget,
+		Ok(_) => unrecognised(),
 		// A halt for want of budget, recognised as it is on both synchronous
 		// paths: no location, and the guard exhausted when the execution
 		// settled. The guard alone would not do, because a failure on the
@@ -252,6 +265,15 @@ pub fn drive_async(
 			error,
 			exhausted: exhausted.get(),
 		},
+	}
+}
+
+/// An outcome the fork may add later (`VmOutcome` is non-exhaustive) is an
+/// error, never a value and never a reason to resume.
+fn unrecognised() -> Outcome {
+	Outcome::Failed {
+		error: VmError::panic("unrecognised execution outcome"),
+		exhausted: false,
 	}
 }
 
@@ -340,5 +362,76 @@ mod shutdown_tests {
 		task.abort();
 		runtime.drain_shutdown().unwrap();
 		assert_eq!(runtime.inner().metrics().num_alive_tasks(), 0);
+	}
+}
+
+#[cfg(test)]
+mod budget_tests {
+	use super::*;
+	use rune::sync::Arc;
+
+	fn vm(body: &str) -> Vm {
+		let context = rune::Context::with_default_modules().unwrap();
+		let mut sources = rune::Sources::new();
+		sources
+			.insert(rune::Source::memory(format!("pub fn main() {{ {body} }}")).unwrap())
+			.unwrap();
+		let unit = rune::prepare(&mut sources)
+			.with_context(&context)
+			.build()
+			.unwrap();
+		Vm::new(
+			Arc::try_new(context.runtime().unwrap()).unwrap(),
+			Arc::try_new(unit).unwrap(),
+		)
+	}
+
+	#[test]
+	fn slices_enforce_the_exact_hard_total_even_below_one_slice() {
+		for body in [
+			"42",
+			"let n = 0; for i in 0..5000 { n += i; } n",
+			"(0..30000).iter().count()",
+		] {
+			let mut machine = vm(body);
+			let (expected, left) = budget::with(100000, || {
+				let value: i64 = rune::from_value(machine.call(["main"], ()).unwrap()).unwrap();
+				(value, budget::remaining().unwrap())
+			})
+			.call();
+			let required = 100000 - left;
+			let mut machine = vm(body);
+			let Outcome::Complete(value) = slice_sync(&mut machine, ["main"], (), required) else {
+				panic!("exact budget failed: {body}")
+			};
+			assert_eq!(rune::from_value::<i64>(value).unwrap(), expected);
+			let mut machine = vm(body);
+			assert!(!matches!(
+				slice_sync(&mut machine, ["main"], (), required - 1),
+				Outcome::Complete(_)
+			));
+		}
+		for total in [0, 1] {
+			assert!(!matches!(
+				slice_sync(&mut vm("42"), ["main"], (), total),
+				Outcome::Complete(_)
+			));
+		}
+	}
+
+	#[test]
+	fn native_work_can_cross_a_soft_slice_but_not_the_total() {
+		let Outcome::Complete(value) =
+			slice_sync(&mut vm("(0..100000).iter().count()"), ["main"], (), 2000000)
+		else {
+			panic!("native count failed")
+		};
+		assert_eq!(rune::from_value::<i64>(value).unwrap(), 100000);
+		let Outcome::Failed { exhausted, .. } =
+			slice_sync(&mut vm("(0..).iter().count()"), ["main"], (), 50000)
+		else {
+			panic!("infinite count must fail hard")
+		};
+		assert!(exhausted);
 	}
 }

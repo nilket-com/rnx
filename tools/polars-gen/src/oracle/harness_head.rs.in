@@ -11,7 +11,7 @@ use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
 use rnx_polars::generated::fixtures::values::*;
 use rnx_polars::oracle as crate_oracle;
 use rnx_polars::oracle::{Outcome, Setup, Side, Staged};
-use std::sync::Arc;
+use rnx::rune::sync::Arc;
 
 struct Case {
     id: &'static str,

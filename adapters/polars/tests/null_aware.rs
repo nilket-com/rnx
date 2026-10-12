@@ -1,7 +1,7 @@
 //! Record 0096: `to_vec_null_aware` on the ten numeric wrappers returns one owned vector of options, compared with the direct Rust `Either`, and is bounded before the Polars call.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-use std::sync::Arc;
 static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 fn run(script: &str) -> String {
@@ -12,7 +12,7 @@ fn run(script: &str) -> String {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(polars).unwrap();
 	context.install(fixtures).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -23,7 +23,7 @@ fn run(script: &str) -> String {
 	if built.is_err() {
 		eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
 	}
-	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(built.unwrap()).unwrap());
 	rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
 }
 

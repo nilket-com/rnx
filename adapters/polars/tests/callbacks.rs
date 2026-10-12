@@ -1,7 +1,7 @@
 //! Callback boundary and borrowed-vector integration controls.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-use std::sync::Arc;
 static SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 fn run(script: &str) -> String {
@@ -12,7 +12,7 @@ fn run(script: &str) -> String {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(polars).unwrap();
 	context.install(fixtures).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -24,7 +24,7 @@ fn run(script: &str) -> String {
 		eprintln!("diagnostics: {:?}", diagnostics.diagnostics());
 	}
 	let unit = built.unwrap();
-	let mut vm = Vm::new(runtime, Arc::new(unit));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(unit).unwrap());
 	rune::from_value(vm.call(["main"], ()).unwrap()).unwrap()
 }
 
@@ -80,16 +80,17 @@ fn stored_callback_fails_at_later_collect() {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(polars).unwrap();
 	context.install(fixtures).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let compile = |script: &str| {
 		let mut sources = Sources::new();
 		sources.insert(Source::memory(script).unwrap()).unwrap();
-		Arc::new(
+		RuneArc::try_new(
 			rune::prepare(&mut sources)
 				.with_context(&context)
 				.build()
 				.unwrap(),
 		)
+		.unwrap()
 	};
 	let make = compile(
 		r#"
@@ -235,16 +236,17 @@ fn stored_callback_fails_at_later_compute_schema() {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(polars).unwrap();
 	context.install(fixtures).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let compile = |script: &str| {
 		let mut sources = Sources::new();
 		sources.insert(Source::memory(script).unwrap()).unwrap();
-		Arc::new(
+		RuneArc::try_new(
 			rune::prepare(&mut sources)
 				.with_context(&context)
 				.build()
 				.unwrap(),
 		)
+		.unwrap()
 	};
 	let make = compile(
 		r#"

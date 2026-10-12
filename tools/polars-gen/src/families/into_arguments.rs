@@ -94,7 +94,7 @@ pub(crate) fn arg(
 	}
 	let accepted = accepted.join(" or ");
 	check.push_str(&format!(
-		"return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!(\"__OP__: `{name}` must be {accepted}, found {{}}\", {name}.type_info())))"
+		"return Err(rune::runtime::VmError::panic(format!(\"__OP__: `{name}` must be {accepted}, found {{}}\", {name}.type_info())))"
 	));
 	check.push_str(&close);
 	check.push_str(" }; ");

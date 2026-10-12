@@ -222,7 +222,7 @@ fn sessions_eval_and_config_gain_no_module_loading() {
 			2
 		);
 		assert!(
-			stderr(&out).contains("Cannot load modules using a source without an associated URL"),
+			stderr(&out).contains("Source loading is not supported"),
 			"{}",
 			stderr(&out)
 		);

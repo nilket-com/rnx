@@ -383,6 +383,25 @@ fn a_synchronous_session_input_in_a_loop_is_still_interrupted_within_a_slice() {
 	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
 }
 
+#[test]
+fn native_heavy_session_work_is_interrupted_and_the_next_input_works() {
+	let ran = interrupted(
+		&["repl"],
+		Some("for _ in 0..100000 { (0..5000).iter().count(); }\n1 + 1\n"),
+		Duration::from_millis(400),
+	);
+	assert_eq!(
+		ran.code,
+		Some(0),
+		"stdout: {}\nstderr: {}",
+		ran.stdout,
+		ran.stderr
+	);
+	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
+	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
+	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
+}
+
 // Classification: which wrapper and which path an input gets is the
 // compiler's answer, not a reading of the text.
 

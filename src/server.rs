@@ -18,6 +18,7 @@
 //! fn category(failure: rnx::server::Failure) { let _ = failure.category; }
 //! ```
 use crate::{Extensions, http, lifecycle::Lifecycle, program::Loader};
+use rune::sync::Arc as RuneArc;
 use rune::{
 	Context, Diagnostics, Sources, Vm,
 	runtime::{RuntimeContext, Value, VmError},
@@ -127,7 +128,7 @@ fn context(extensions: Extensions) -> Result<(Context, Owner), Failure> {
 	}
 }
 struct Compiled {
-	unit: Arc<rune::Unit>,
+	unit: RuneArc<rune::Unit>,
 	sources: Sources,
 	loader: Loader,
 }
@@ -170,8 +171,7 @@ impl Program {
 			let unit = result.map_err(|e| {
 				for diagnostic in diagnostics.diagnostics() {
 					if let rune::diagnostics::Diagnostic::Fatal(fatal) = diagnostic
-						&& let rune::diagnostics::FatalDiagnosticKind::CompileError(error) =
-							fatal.kind()
+						&& let Some(error) = fatal.as_compile_error()
 					{
 						use rune::ast::Spanned;
 						let failure = Failure::new("preparation", error);
@@ -183,8 +183,9 @@ impl Program {
 				}
 				Failure::new("preparation", e)
 			})?;
+			let unit = RuneArc::try_new(unit).map_err(|e| Failure::new("preparation", e))?;
 			Ok(Self(Arc::new(Compiled {
-				unit: Arc::new(unit),
+				unit,
 				sources,
 				loader,
 			})))
@@ -210,6 +211,7 @@ impl Program {
 			return Err(self.http_route_error(format!("{name} has no compiled function entry")));
 		}
 		Vm::without_runtime(self.0.unit.clone())
+			.map_err(|e| self.http_route_error(format!("cannot resolve {name}: {e}")))?
 			.lookup_function(hash)
 			.map_err(|e| self.http_route_error(format!("cannot resolve {name}: {e}")))?;
 		Ok(Some(args.len()))
@@ -274,8 +276,12 @@ impl Program {
 			));
 		}
 		let (context, owner) = context(extensions)?;
-		let runtime = match context.runtime() {
-			Ok(runtime) => Arc::new(runtime),
+		let runtime = match context
+			.runtime()
+			.map_err(|e| e.to_string())
+			.and_then(|runtime| RuneArc::try_new(runtime).map_err(|e| e.to_string()))
+		{
+			Ok(runtime) => runtime,
 			Err(error) => {
 				owner.close()?;
 				return Err(Failure::new("preparation", error));
@@ -295,7 +301,7 @@ impl Program {
 	fn fault(&self, error: VmError) -> Failure {
 		let mut failure = Failure::new("vm", &error);
 		if let Some(location) = error.first_location()
-			&& Arc::ptr_eq(&location.unit, &self.0.unit)
+			&& RuneArc::ptr_eq(&location.unit, &self.0.unit)
 			&& let Some(instruction) = location
 				.unit
 				.debug_info()
@@ -315,7 +321,7 @@ impl Program {
 /// is spent is reported as the budget itself, as the CLI reads it (record 0107).
 async fn execute(
 	program: &Program,
-	runtime: Arc<RuntimeContext>,
+	runtime: RuneArc<RuntimeContext>,
 	handler: &str,
 	arguments: Vec<Value>,
 	budget: usize,
@@ -330,16 +336,20 @@ async fn execute(
 			let settled = crate::execute::Settled {
 				inner: Box::pin(async move {
 					let mut execution = execution;
-					execution.async_resume().await
+					execution.resume().await
 				}),
 				exhausted: exhausted.clone(),
 			};
-			match rune::runtime::budget::with(budget, settled)
-				.await
-				.into_result()
-			{
-				Ok(rune::runtime::GeneratorState::Complete(value)) => Ok(value),
-				Ok(_) => Err(Failure::new("vm", "handler yielded instead of completing")),
+			match rune::runtime::budget::with(budget, settled).await {
+				Ok(rune::runtime::VmOutcome::Complete(value)) => Ok(value),
+				Ok(rune::runtime::VmOutcome::Yielded(_)) => {
+					Err(Failure::new("vm", "handler yielded instead of completing"))
+				}
+				Ok(rune::runtime::VmOutcome::Limited) => Err(Failure::new(
+					"vm",
+					format!("the budget of {budget} instructions was exhausted"),
+				)),
+				Ok(_) => Err(Failure::new("vm", "unrecognised execution outcome")),
 				Err(error) if error.first_location().is_none() && exhausted.get() => {
 					Err(Failure::new(
 						"vm",
@@ -372,7 +382,7 @@ async fn execute(
 #[must_use = "explicit close observes cleanup and cancelled execution failures"]
 pub struct Invocation {
 	program: Program,
-	runtime: Arc<RuntimeContext>,
+	runtime: RuneArc<RuntimeContext>,
 	owner: Owner,
 	arguments: Option<Vec<Value>>,
 	handler: String,
@@ -475,15 +485,19 @@ impl Invocation {
 /// ```
 pub struct Slot {
 	program: Program,
-	runtime: Arc<RuntimeContext>,
+	runtime: RuneArc<RuntimeContext>,
 	owner: Owner,
 }
 impl Program {
 	/// Build a reusable slot: the whole context and its runtime, once.
 	pub fn slot(&self, extensions: Extensions) -> Result<Slot, Failure> {
 		let (context, owner) = context(extensions)?;
-		let runtime = match context.runtime() {
-			Ok(runtime) => Arc::new(runtime),
+		let runtime = match context
+			.runtime()
+			.map_err(|e| e.to_string())
+			.and_then(|runtime| RuneArc::try_new(runtime).map_err(|e| e.to_string()))
+		{
+			Ok(runtime) => runtime,
 			Err(error) => {
 				owner.close()?;
 				return Err(Failure::new("preparation", error));
@@ -1217,7 +1231,7 @@ mod slot_tests {
 		let Poll::Ready(value) = poll(&mut f) else {
 			panic!("revoked future remained pending");
 		};
-		let value = value.into_result().unwrap();
+		let value = value.unwrap();
 		let result = value.borrow_ref::<Result<Value, Value>>().unwrap();
 		let Err(error) = &*result else {
 			panic!("revoked future succeeded");

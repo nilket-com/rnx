@@ -108,7 +108,7 @@ pub(crate) fn arg(world: &World, op: &str, name: &str) -> Option<Arg> {
 		     Ok(s) => support::local_path(&s), \
 		     Err(_) => Err(format!(\"must be {accepted}, found {{}}\", {name}.type_info())) }} }}; \
 		 let {local} = match {local} {{ Ok(p) => p, \
-		   Err(why) => return rune::runtime::VmResult::err(rune::runtime::VmError::panic(format!(\"{op}: `{name}` {{why}}\"))) }}; ",
+		   Err(why) => return Err(rune::runtime::VmError::panic(format!(\"{op}: `{name}` {{why}}\"))) }}; ",
 		rust = wt.rust
 	);
 	Some(Arg {

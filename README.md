@@ -1,7 +1,7 @@
 # rnx: a scripting environment for Rune
 
 A runner for `.rn` files, an expression evaluator, and an interactive
-session, on upstream Rune with no compiler fork.
+session, on Rune.
 
 **This is not a release.** The version is `0.0.0`, the package is not
 published, and it carries no license yet — record 0026 explains what each of
@@ -63,9 +63,10 @@ for declarations, verification, cache removal and explicit runtime overrides.
 
 ## Reproduce
 
-This is an independent, unpublished Cargo package pinned to Rune 0.14.2, with
-its own lockfile. It uses the compiler/VM APIs directly and does not yet wrap
-upstream `rune::cli::Entry`. `rnx version` reports this build and the Rune it
+This is an independent, unpublished Cargo package pinned to a Rune fork at an
+exact Git revision (crate version 0.15.0; record 0185), with its own
+lockfile. It uses the compiler/VM APIs directly and does not yet wrap
+`rune::cli::Entry`. `rnx version` reports this build and the Rune it
 is pinned to. It is built and tested with Rust 1.95; 1.88 is measured not to
 work, in a dependency.
 
@@ -256,9 +257,10 @@ escaped characters. Repeated object keys keep the last value; key order is
 not preserved. Parse errors identify a position in the JSON document.
 
 The reader accepts 127 nested arrays or objects and refuses the 128th under
-serde_json's recursion guard. The writer retains its 256-level bound shared
-with the value renderer, so deeply nested JSON can be written but not read
-back. Neither bound is disabled by parsing or serialization.
+serde_json's recursion guard. The writer and value renderer share Rune’s
+64-level bound for recursive value walks, counting the root and scalar leaves.
+This keeps recursive work bounded on worker stacks too. A deeply nested parsed
+document can therefore exceed the writing limit. Neither bound is disabled.
 
 HTTP is available as `http::get(url).await?` and `http::get_bytes(url).await?`.
 Both return an object with `status`, `headers`, `body`, and the final `url`.

@@ -69,7 +69,7 @@ spdx_of() {
 : >"$work/index"
 : >"$work/textless"
 : >"$work/provenance"
-while read -r name version; do
+while read -r name version source; do
 	version=${version#v}
 	manifest=$(jq -r --arg n "$name" --arg v "$version" \
 		'.packages[] | select(.name==$n and .version==$v) | .manifest_path' "$work/meta.json" | head -1)
@@ -158,7 +158,7 @@ review of that distribution. This file is an input to it.
 HEAD
 	printf '## The packages\n\n%s packages, %s distinct licence texts.\n\n' "$crates" "$texts"
 	printf '| Package | Version | Declared |\n| --- | --- | --- |\n'
-	while read -r name version; do
+	while read -r name version source; do
 		version=${version#v}
 		printf '| `%s` | %s | %s |\n' "$name" "$version" "$(spdx_of "$name" "$version")"
 	done <"$work/union"
@@ -171,7 +171,7 @@ HEAD
 These packages declare a licence and include no copy of it in what they
 publish. The text below each of them is **not from the package**: it is the
 file that stood in the project at the exact revision the package was published
-from, which `.cargo_vcs_info.json` records. That is a weaker claim than a
+from, which `.cargo_vcs_info.json` records (or the pinned Git revision for a Git dependency). That is a weaker claim than a
 bundled text and is made explicitly rather than silently.
 
 The copies are checked in under `third-party/licenses/`, with their revision,

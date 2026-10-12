@@ -2,6 +2,7 @@
 //! binary, because the engine counters are process-wide and the other
 //! integration tests would race them.
 #![cfg(feature = "test-support")]
+use rnx::rune::sync::Arc as RuneArc;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -15,12 +16,11 @@ static ENGINE: std::sync::Mutex<()> = std::sync::Mutex::new(());
 fn eager_frame_work_runs_on_the_engine_thread() {
 	let _engine = ENGINE.lock().unwrap_or_else(|e| e.into_inner());
 	use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-	use std::sync::Arc;
 	let mut m = Module::with_crate("polars").unwrap();
 	rnx_polars::build(&mut m).unwrap();
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(m).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let run = |src: &str| -> (i64, i64) {
 		let mut sources = Sources::new();
 		sources.insert(Source::memory(src).unwrap()).unwrap();
@@ -28,7 +28,7 @@ fn eager_frame_work_runs_on_the_engine_thread() {
 			.with_context(&context)
 			.build()
 			.unwrap();
-		let mut vm = Vm::new(runtime.clone(), Arc::new(unit));
+		let mut vm = Vm::new(runtime.clone(), RuneArc::try_new(unit).unwrap());
 		rune::from_value::<(i64, i64)>(vm.call(["main"], ()).unwrap()).unwrap()
 	};
 	// engine_counts() = (started, finished, joined, active, max_active, no_context)
@@ -68,7 +68,6 @@ fn eager_frame_work_runs_on_the_engine_thread() {
 fn generated_bindings_run() {
 	let _engine = ENGINE.lock().unwrap_or_else(|e| e.into_inner());
 	use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-	use std::sync::Arc;
 	let t0 = std::time::Instant::now();
 	let mut m = Module::with_crate("polars").unwrap();
 	rnx_polars::build(&mut m).unwrap();
@@ -76,7 +75,7 @@ fn generated_bindings_run() {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(m).unwrap();
 	let t2 = std::time::Instant::now();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let t3 = std::time::Instant::now();
 	eprintln!(
 		"module build {} µs, context install {} µs, runtime {} µs",
@@ -91,7 +90,7 @@ fn generated_bindings_run() {
 			.with_context(&context)
 			.build()
 			.unwrap();
-		let mut vm = Vm::new(runtime.clone(), Arc::new(unit));
+		let mut vm = Vm::new(runtime.clone(), RuneArc::try_new(unit).unwrap());
 		let out = vm.call(["main"], ()).unwrap();
 		rune::from_value::<String>(out).unwrap()
 	};

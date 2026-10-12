@@ -1,8 +1,8 @@
 //! Record 0137, review round 1: `slice_assign` borrows the script's range
 //! containers; it never takes them. A script reads its ranges after a
 //! success and after each kind of refusal, in both accepted forms.
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
-use std::sync::Arc;
 
 fn vm() -> Vm {
 	let mut candle = Module::with_crate("candle").unwrap();
@@ -12,7 +12,7 @@ fn vm() -> Vm {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(candle).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	let script = r#"
 		fn t() { candle::Tensor::zeros([3, 4], "f32") }
@@ -34,7 +34,7 @@ fn vm() -> Vm {
 		.with_context(&context)
 		.build()
 		.unwrap();
-	Vm::new(runtime, Arc::new(unit))
+	Vm::new(runtime, RuneArc::try_new(unit).unwrap())
 }
 
 fn call(vm: &mut Vm, f: &str) -> (bool, i64, i64, i64, i64, i64) {

@@ -11,7 +11,7 @@ use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
 use rnx_polars::generated::fixtures::values::*;
 use rnx_polars::oracle as crate_oracle;
 use rnx_polars::oracle::{Outcome, Setup, Side, Staged};
-use std::sync::Arc;
+use rnx::rune::sync::Arc;
 
 struct Case {
     id: &'static str,
@@ -12047,7 +12047,7 @@ impl Harness {
         let mut context = Context::with_default_modules().unwrap();
         context.install(m).unwrap();
         context.install(f).unwrap();
-        let runtime = Arc::new(context.runtime().unwrap());
+        let runtime = Arc::try_new(context.runtime().unwrap()).unwrap();
         Harness { context, runtime }
     }
 
@@ -12062,7 +12062,7 @@ impl Harness {
         let mut sources = Sources::new();
         sources.insert(Source::memory(case.script).unwrap()).unwrap();
         let unit = match rune::prepare(&mut sources).with_context(&self.context).build() {
-            Ok(u) => Arc::new(u),
+            Ok(u) => Arc::try_new(u).unwrap(),
             Err(e) => return crate_oracle::classify(policy, &Setup::NotRun, &Setup::NotRun, &Side::Broken(format!("compile: {e}")), None, &unrun(), &unrun()),
         };
         let mut vm = Vm::new(self.runtime.clone(), unit);
@@ -12218,7 +12218,7 @@ fn oracle_runner_fails_closed() {
         let mut sources = Sources::new();
         sources.insert(Source::memory(script).unwrap()).unwrap();
         let unit = rune::prepare(&mut sources).with_context(&h.context).build().unwrap();
-        let mut vm = Vm::new(h.runtime.clone(), Arc::new(unit));
+        let mut vm = Vm::new(h.runtime.clone(), Arc::try_new(unit).unwrap());
         rune::from_value::<(i64, rune::Value)>(vm.call(["main"], ()).unwrap()).unwrap().0
     };
     fn setup_fails() -> Staged { Staged::SetupFailed("control setup failed".into()) }
@@ -12399,7 +12399,7 @@ fn oracle_runner_fails_closed() {
         let script = "pub fn setup() { [match polars::StatisticsFlags::from_bits_retain(3) { Ok(v) => v, Err(e) => panic(`${e}`) }] } pub fn aliased(__fx) { let a = __fx[0]; a |= a; a } pub fn rebound(__fx) { let a = __fx[0]; let b = a; a |= b; a } pub fn after(__fx) { __fx[0] }";
         let mut sources = Sources::new();
         sources.insert(Source::memory(script).unwrap()).unwrap();
-        let unit = Arc::new(rune::prepare(&mut sources).with_context(&h.context).build().unwrap());
+        let unit = Arc::try_new(rune::prepare(&mut sources).with_context(&h.context).build().unwrap()).unwrap();
         let mut vm = Vm::new(h.runtime.clone(), unit);
         let fx = vm.call(["setup"], ()).unwrap();
         for name in ["aliased", "rebound"] {

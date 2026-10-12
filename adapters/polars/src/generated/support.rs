@@ -1853,7 +1853,7 @@ pub(crate) mod callback {
 	};
 
 	pub(super) static BUDGET: AtomicUsize = AtomicUsize::new(0);
-	const HALT_LIMITED: &str = "Halted for unexpected reason `limited`";
+	const HALT_LIMITED: &str = "Exhausted the budget it was given";
 
 	#[rune::function(path = set_callback_budget)]
 	pub(crate) fn set_callback_budget(n: i64) {
@@ -2544,7 +2544,7 @@ mod callback_tests {
 		probe.function_meta(typed_unwind).unwrap();
 		let mut context = rune::Context::with_default_modules().unwrap();
 		context.install(probe).unwrap();
-		let runtime = Arc::new(context.runtime().unwrap());
+		let runtime = rune::sync::Arc::try_new(context.runtime().unwrap()).unwrap();
 		let mut sources = rune::Sources::new();
 		sources
 			.insert(rune::Source::memory(format!("pub fn main() {{ {body} }}")).unwrap())
@@ -2553,7 +2553,7 @@ mod callback_tests {
 			.with_context(&context)
 			.build()
 			.unwrap();
-		let mut vm = rune::Vm::new(runtime, Arc::new(unit));
+		let mut vm = rune::Vm::new(runtime, rune::sync::Arc::try_new(unit).unwrap());
 		let f: Function = rune::from_value(vm.call(["main"], ()).unwrap()).unwrap();
 		f.into_sync().unwrap()
 	}
@@ -4036,9 +4036,7 @@ pub(crate) fn wide_control_vm(
 ) -> rune::runtime::VmResult<i64> {
 	drop(e);
 	if n < 0 {
-		return rune::runtime::VmResult::err(rune::runtime::VmError::panic(
-			"wide control: negative",
-		));
+		return Err(rune::runtime::VmError::panic("wide control: negative"));
 	}
 	rune::runtime::VmResult::Ok(this.0.height() as i64 + name.len() as i64 + n)
 }

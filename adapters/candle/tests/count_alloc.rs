@@ -6,10 +6,10 @@ use candle_core::{DType, Device};
 use candle_nn::{VarBuilder, VarMap};
 use candle_transformers::models::bert::{BertModel, Config};
 use rnx::allocation::{peak, reset_peak};
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
 use serde_json::json;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 
 /// A list that large, refused, may cost a few small allocations only.
 const SMALL: usize = 64 << 10;
@@ -82,7 +82,7 @@ fn vm() -> Vm {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(candle).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	let script = r#"
 		pub fn load(d) { candle::TextEncoder::load(d) }
@@ -94,7 +94,7 @@ fn vm() -> Vm {
 		.with_context(&context)
 		.build()
 		.unwrap();
-	Vm::new(runtime, Arc::new(unit))
+	Vm::new(runtime, RuneArc::try_new(unit).unwrap())
 }
 
 fn result(v: Value) -> Result<Value, String> {

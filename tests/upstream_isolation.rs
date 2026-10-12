@@ -25,8 +25,8 @@
 //! `plans/0006_what_a_retained_value_pins.md`, so the session builds a
 //! runtime context per input instead.
 use rune::runtime::{RuntimeContext, Value};
+use rune::sync::Arc;
 use rune::{Context, Diagnostics, Source, Sources, Unit, Vm};
-use std::sync::Arc;
 
 fn compile(context: &Context, source: &str) -> Arc<Unit> {
 	let mut sources = Sources::new();
@@ -37,7 +37,7 @@ fn compile(context: &Context, source: &str) -> Arc<Unit> {
 		.with_diagnostics(&mut diagnostics)
 		.build()
 		.expect("the sources compile");
-	Arc::new(unit)
+	Arc::try_new(unit).unwrap()
 }
 
 /// Make a function value in one unit and call it from another. `share` says
@@ -47,11 +47,11 @@ fn call_across_units(share: bool) -> Result<i64, String> {
 	let maker = compile(&context, "pub fn main() { || 41 + 1 }");
 	let caller = compile(&context, "pub fn main(f) { f() }");
 
-	let first = Arc::new(context.runtime().unwrap());
+	let first = Arc::try_new(context.runtime().unwrap()).unwrap();
 	let second: Arc<RuntimeContext> = if share {
 		first.clone()
 	} else {
-		Arc::new(context.runtime().unwrap())
+		Arc::try_new(context.runtime().unwrap()).unwrap()
 	};
 
 	let mut vm = Vm::new(first, maker);

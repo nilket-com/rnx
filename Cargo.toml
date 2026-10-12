@@ -8,11 +8,10 @@ edition = "2024"
 # 1.88 is measured to fail — in `rustyline`, on the unstable `file_lock` — and
 # nothing between 1.89 and 1.94 has a toolchain here to try.
 #
-# Rune states its own minimum as 1.88 from 0.14.2 (`lib.rs`, raised from 1.87),
-# which is a floor for one dependency and not for rnx: what has to compile is
-# the whole set, and that is what fails at 1.88.
+# The Rune fork (record 0185) states its own minimum as 1.95, which is a floor
+# for one dependency and not for rnx: what has to compile is the whole set.
 rust-version = "1.95"
-description = "A scripting environment for Rune: a file runner, an expression evaluator, and an interactive session, on upstream Rune with no compiler fork."
+description = "A scripting environment for Rune: a file runner, an expression evaluator, and an interactive session."
 repository = "https://github.com/nilket-com/rnx"
 readme = "README.md"
 keywords = ["rune", "scripting", "repl", "interpreter", "cli"]
@@ -57,7 +56,7 @@ hyper = { version = "=1.11.1", default-features = false, features = ["server", "
 hyper-util = { version = "=0.1.20", default-features = false, features = ["server", "http1", "service", "tokio"], optional = true }
 rnx-project = { path = "tools/project", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
-rune = { version = "=0.14.2", default-features = false, features = ["std", "fmt"] }
+rune = { git = "https://github.com/nilket-com/rune", rev = "03b1aa4dc29e4125392d0e03dab12bc408bf701d", default-features = false, features = ["std", "fmt"] }
 serde_json = "1.0.149"
 jiff = { version = "=0.2.24", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo"] }
 libc = "0.2.177"

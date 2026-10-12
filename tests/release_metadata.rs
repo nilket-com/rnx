@@ -73,26 +73,35 @@ fn field(manifest: &str, key: &str) -> Option<String> {
 	)
 }
 
-/// The exact Rune version, from either spelling: the inline table the
+/// The exact Rune revision, from either spelling: the inline table the
 /// repository's manifest writes, or the section the generated one does.
+/// Since record 0185 Rune is the fork, pinned by Git `rev` rather than by an
+/// `=` version.
 fn rune_pin(manifest: &str) -> Option<String> {
-	let pinned = |text: &str| {
-		text.split_once("\"=")
-			.and_then(|(_, rest)| rest.split('"').next())
-			.map(str::to_owned)
-	};
-	if let Some(section) = table(manifest, "[dependencies.rune]")
-		&& let Some(version) = value(&section, "version")
-		&& let Some(exact) = version.strip_prefix('=')
-	{
-		return Some(exact.to_owned());
+	if let Some(section) = table(manifest, "[dependencies.rune]") {
+		return value(&section, "rev");
 	}
 	let dependencies = table(manifest, "[dependencies]")?;
 	let inline = dependencies
 		.lines()
 		.map(str::trim)
 		.find(|line| line.starts_with("rune ") || line.starts_with("rune="))?;
-	pinned(inline)
+	inline
+		.split_once("rev = \"")
+		.and_then(|(_, rest)| rest.split('"').next())
+		.map(str::to_owned)
+}
+
+/// The version the lockfile resolved for `rune` at that revision.
+fn locked_rune_version(rev: &str) -> Option<String> {
+	let lock = include_str!("../Cargo.lock");
+	lock.split("[[package]]").find_map(|package| {
+		let name = value(package, "name")?;
+		let source = value(package, "source")?;
+		(name == "rune" && source.ends_with(&format!("#{rev}")))
+			.then(|| value(package, "version"))
+			.flatten()
+	})
 }
 
 /// Everything this record claims about a manifest, wherever that manifest
@@ -149,7 +158,7 @@ fn the_claims_hold(manifest: &str, whose: &str) {
 	);
 	assert_eq!(
 		rune_pin(manifest).as_deref(),
-		Some("0.14.2"),
+		Some("03b1aa4dc29e4125392d0e03dab12bc408bf701d"),
 		"{whose}: the rune pin"
 	);
 }
@@ -172,11 +181,12 @@ fn the_rune_it_reports_is_the_rune_it_pins() {
 	// and the pin is in the manifest, so a version bump that changes one
 	// without the other fails here.
 	let pinned = rune_pin(MANIFEST).expect("an exact rune pin");
+	let version = locked_rune_version(&pinned).expect("rune locked at the pinned revision");
 	let (out, code) = rnx(&["version"]);
 	assert_eq!(code, Some(0), "{out}");
 	assert!(
-		out.contains(&format!("rune {pinned}\n")),
-		"the binary reports {out:?} and the manifest pins {pinned}"
+		out.contains(&format!("rune {version} (git {pinned})\n")),
+		"the binary reports {out:?}; the manifest pins {pinned} and the lockfile resolves {version}"
 	);
 }
 
@@ -657,7 +667,7 @@ fn a_failed_request_is_not_an_absent_licence() {
 	ran.stdin
 		.take()
 		.unwrap()
-		.write_all(b"rune\t0.14.2\n")
+		.write_all(b"clipboard-win\t5.4.1\n")
 		.unwrap();
 	let done = ran.wait_with_output().expect("the fetcher");
 	let said = String::from_utf8_lossy(&done.stderr).into_owned();
@@ -862,7 +872,7 @@ fn a_failed_publication_keeps_the_previous_licences() {
 	ran.stdin
 		.take()
 		.unwrap()
-		.write_all(b"rune\t0.14.2\n")
+		.write_all(b"clipboard-win\t5.4.1\n")
 		.unwrap();
 	let done = ran.wait_with_output().expect("the fetcher");
 	let said = String::from_utf8_lossy(&done.stderr).into_owned();
@@ -944,7 +954,7 @@ fn a_retry_does_not_delete_what_the_first_attempt_salvaged() {
 		ran.stdin
 			.take()
 			.unwrap()
-			.write_all(b"rune\t0.14.2\n")
+			.write_all(b"clipboard-win\t5.4.1\n")
 			.unwrap();
 		let done = ran.wait_with_output().expect("the fetcher");
 		assert!(

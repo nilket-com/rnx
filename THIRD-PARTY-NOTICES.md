@@ -36,7 +36,7 @@ review of that distribution. This file is an input to it.
 
 ## The packages
 
-149 packages, 114 distinct licence texts.
+141 packages, 113 distinct licence texts.
 
 | Package | Version | Declared |
 | --- | --- | --- |
@@ -107,17 +107,9 @@ review of that distribution. This file is an input to it.
 | `mime` | 0.3.17 | MIT OR Apache-2.0 |
 | `miniz_oxide` | 0.9.1 | MIT OR Zlib OR Apache-2.0 |
 | `mio` | 1.2.3 | MIT |
-| `musli` | 0.0.124 | MIT OR Apache-2.0 |
-| `musli-core` | 0.0.124 | MIT OR Apache-2.0 |
+| `musli-core` | 0.1.9 | MIT OR Apache-2.0 |
 | `nibble_vec` | 0.1.0 | MIT |
 | `nix` | 0.31.3 | MIT |
-| `num` | 0.4.3 | MIT OR Apache-2.0 |
-| `num-bigint` | 0.4.8 | MIT OR Apache-2.0 |
-| `num-complex` | 0.4.6 | MIT OR Apache-2.0 |
-| `num-integer` | 0.1.47 | MIT OR Apache-2.0 |
-| `num-iter` | 0.1.46 | MIT OR Apache-2.0 |
-| `num-rational` | 0.4.2 | MIT OR Apache-2.0 |
-| `num-traits` | 0.2.19 | MIT OR Apache-2.0 |
 | `once_cell` | 1.21.4 | MIT OR Apache-2.0 |
 | `percent-encoding` | 2.3.2 | MIT OR Apache-2.0 |
 | `pin-project` | 1.1.13 | Apache-2.0 OR MIT |
@@ -127,10 +119,10 @@ review of that distribution. This file is an input to it.
 | `radix_trie` | 0.3.0 | MIT |
 | `reqwest` | 0.12.28 | MIT OR Apache-2.0 |
 | `ring` | 0.17.14 | Apache-2.0 AND ISC |
-| `rune` | 0.14.2 | MIT OR Apache-2.0 |
-| `rune-alloc` | 0.14.2 | MIT OR Apache-2.0 |
-| `rune-core` | 0.14.2 | MIT OR Apache-2.0 |
-| `rune-tracing` | 0.14.2 | MIT OR Apache-2.0 |
+| `rune` | 0.15.0 | MIT OR Apache-2.0 |
+| `rune-alloc` | 0.15.0 | MIT OR Apache-2.0 |
+| `rune-core` | 0.15.0 | MIT OR Apache-2.0 |
+| `rune-tracing` | 0.15.0 | MIT OR Apache-2.0 |
 | `rustls` | 0.23.44 | Apache-2.0 OR ISC OR MIT |
 | `rustls-pki-types` | 1.15.1 | MIT OR Apache-2.0 |
 | `rustls-webpki` | 0.103.15 | ISC |
@@ -195,7 +187,7 @@ review of that distribution. This file is an input to it.
 These packages declare a licence and include no copy of it in what they
 publish. The text below each of them is **not from the package**: it is the
 file that stood in the project at the exact revision the package was published
-from, which `.cargo_vcs_info.json` records. That is a weaker claim than a
+from, which `.cargo_vcs_info.json` records (or the pinned Git revision for a Git dependency). That is a weaker claim than a
 bundled text and is made explicitly rather than silently.
 
 The copies are checked in under `third-party/licenses/`, with their revision,
@@ -206,18 +198,14 @@ produced them.
 | Package | File | Revision | Path |
 | --- | --- | --- | --- |
 | `clipboard-win 5.4.1` | LICENSE | `3b27cf2bfd1adcfa6e0264eb51c1025ddaf0f342` | `LICENSE` |
-| `musli 0.0.124` | LICENSE-APACHE | `9d2aabe2f44cafd6cc36fbfeeeae314693902fe8` | `LICENSE-APACHE` |
-| `musli 0.0.124` | LICENSE-MIT | `9d2aabe2f44cafd6cc36fbfeeeae314693902fe8` | `LICENSE-MIT` |
-| `musli-core 0.0.124` | LICENSE-APACHE | `9d2aabe2f44cafd6cc36fbfeeeae314693902fe8` | `LICENSE-APACHE` |
-| `musli-core 0.0.124` | LICENSE-MIT | `9d2aabe2f44cafd6cc36fbfeeeae314693902fe8` | `LICENSE-MIT` |
-| `rune 0.14.2` | LICENSE-APACHE | `971350fde49f3ee8ee05f0e8f4416919f298738c` | `LICENSE-APACHE` |
-| `rune 0.14.2` | LICENSE-MIT | `971350fde49f3ee8ee05f0e8f4416919f298738c` | `LICENSE-MIT` |
-| `rune-alloc 0.14.2` | LICENSE-APACHE | `971350fde49f3ee8ee05f0e8f4416919f298738c` | `LICENSE-APACHE` |
-| `rune-alloc 0.14.2` | LICENSE-MIT | `971350fde49f3ee8ee05f0e8f4416919f298738c` | `LICENSE-MIT` |
-| `rune-core 0.14.2` | LICENSE-APACHE | `971350fde49f3ee8ee05f0e8f4416919f298738c` | `LICENSE-APACHE` |
-| `rune-core 0.14.2` | LICENSE-MIT | `971350fde49f3ee8ee05f0e8f4416919f298738c` | `LICENSE-MIT` |
-| `rune-tracing 0.14.2` | LICENSE-APACHE | `971350fde49f3ee8ee05f0e8f4416919f298738c` | `LICENSE-APACHE` |
-| `rune-tracing 0.14.2` | LICENSE-MIT | `971350fde49f3ee8ee05f0e8f4416919f298738c` | `LICENSE-MIT` |
+| `rune 0.15.0` | LICENSE-APACHE | `03b1aa4dc29e4125392d0e03dab12bc408bf701d` | `LICENSE-APACHE` |
+| `rune 0.15.0` | LICENSE-MIT | `03b1aa4dc29e4125392d0e03dab12bc408bf701d` | `LICENSE-MIT` |
+| `rune-alloc 0.15.0` | LICENSE-APACHE | `03b1aa4dc29e4125392d0e03dab12bc408bf701d` | `LICENSE-APACHE` |
+| `rune-alloc 0.15.0` | LICENSE-MIT | `03b1aa4dc29e4125392d0e03dab12bc408bf701d` | `LICENSE-MIT` |
+| `rune-core 0.15.0` | LICENSE-APACHE | `03b1aa4dc29e4125392d0e03dab12bc408bf701d` | `LICENSE-APACHE` |
+| `rune-core 0.15.0` | LICENSE-MIT | `03b1aa4dc29e4125392d0e03dab12bc408bf701d` | `LICENSE-MIT` |
+| `rune-tracing 0.15.0` | LICENSE-APACHE | `03b1aa4dc29e4125392d0e03dab12bc408bf701d` | `LICENSE-APACHE` |
+| `rune-tracing 0.15.0` | LICENSE-MIT | `03b1aa4dc29e4125392d0e03dab12bc408bf701d` | `LICENSE-MIT` |
 
 ## Packages with no licence text anywhere
 
@@ -233,6 +221,7 @@ build step.
 
 | Package | Version | Declared |
 | --- | --- | --- |
+| `musli-core` | 0.1.9 | MIT OR Apache-2.0 |
 | `syntree` | 0.18.0 | MIT OR Apache-2.0 |
 
 ## The texts
@@ -2572,35 +2561,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.```
 
-### `musli 0.0.124` (LICENSE-MIT) `musli-core 0.0.124` (LICENSE-MIT)
-```
-Copyright (c) 2022 John-John Tedro
-
-Permission is hereby granted, free of charge, to any
-person obtaining a copy of this software and associated
-documentation files (the "Software"), to deal in the
-Software without restriction, including without
-limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software
-is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice
-shall be included in all copies or substantial portions
-of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-```
-
 ### `rustls-webpki 0.103.15` (LICENSE)
 ```
 Except as otherwise noted, this project is licensed under the following
@@ -2906,7 +2866,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 END OF TERMS AND CONDITIONS
 ```
 
-### `bitflags 2.13.1` (LICENSE-MIT) `log 0.4.34` (LICENSE-MIT) `num 0.4.3` (LICENSE-MIT) `num-bigint 0.4.8` (LICENSE-MIT) `num-complex 0.4.6` (LICENSE-MIT) `num-integer 0.1.47` (LICENSE-MIT) `num-iter 0.1.46` (LICENSE-MIT) `num-rational 0.4.2` (LICENSE-MIT) `num-traits 0.2.19` (LICENSE-MIT)
+### `bitflags 2.13.1` (LICENSE-MIT) `log 0.4.34` (LICENSE-MIT)
 ```
 Copyright (c) 2014 The Rust Project Developers
 
@@ -2990,7 +2950,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-### `rune 0.14.2` (LICENSE-MIT) `rune-alloc 0.14.2` (LICENSE-MIT) `rune-core 0.14.2` (LICENSE-MIT) `rune-tracing 0.14.2` (LICENSE-MIT)
+### `rune 0.15.0` (LICENSE-MIT) `rune-alloc 0.15.0` (LICENSE-MIT) `rune-core 0.15.0` (LICENSE-MIT) `rune-tracing 0.15.0` (LICENSE-MIT)
 ```
 Copyright (c) 2020 John-John Tedro
 
@@ -4932,7 +4892,7 @@ Software.
 
 ```
 
-### `ahash 0.8.12` (LICENSE-APACHE) `arrayvec 0.7.8` (LICENSE-APACHE) `async-compression 0.4.46` (LICENSE-APACHE) `atomic-waker 1.1.2` (LICENSE-APACHE) `base64 0.22.1` (LICENSE-APACHE) `bitflags 2.13.1` (LICENSE-APACHE) `cfg-if 1.0.4` (LICENSE-APACHE) `compression-codecs 0.4.41` (LICENSE-APACHE) `compression-core 0.4.33` (LICENSE-APACHE) `critical-section 1.2.0` (LICENSE-APACHE) `errno 0.3.14` (LICENSE-APACHE) `flate2 1.1.10` (LICENSE-APACHE) `form_urlencoded 1.2.2` (LICENSE-APACHE) `httparse 1.10.1` (LICENSE-APACHE) `hyper-rustls 0.27.9` (LICENSE-APACHE) `idna 1.1.0` (LICENSE-APACHE) `idna_adapter 1.2.2` (LICENSE-APACHE) `log 0.4.34` (LICENSE-APACHE) `mime 0.3.17` (LICENSE-APACHE) `num 0.4.3` (LICENSE-APACHE) `num-bigint 0.4.8` (LICENSE-APACHE) `num-complex 0.4.6` (LICENSE-APACHE) `num-integer 0.1.47` (LICENSE-APACHE) `num-iter 0.1.46` (LICENSE-APACHE) `num-rational 0.4.2` (LICENSE-APACHE) `num-traits 0.2.19` (LICENSE-APACHE) `once_cell 1.21.4` (LICENSE-APACHE) `percent-encoding 2.3.2` (LICENSE-APACHE) `rustls 0.23.44` (LICENSE-APACHE) `signal-hook-registry 1.4.8` (LICENSE-APACHE) `smallvec 1.16.0` (LICENSE-APACHE) `socket2 0.6.5` (LICENSE-APACHE) `stable_deref_trait 1.2.1` (LICENSE-APACHE) `unicode-segmentation 1.13.3` (LICENSE-APACHE) `unicode-width 0.2.2` (LICENSE-APACHE) `url 2.5.8` (LICENSE-APACHE)
+### `ahash 0.8.12` (LICENSE-APACHE) `arrayvec 0.7.8` (LICENSE-APACHE) `async-compression 0.4.46` (LICENSE-APACHE) `atomic-waker 1.1.2` (LICENSE-APACHE) `base64 0.22.1` (LICENSE-APACHE) `bitflags 2.13.1` (LICENSE-APACHE) `cfg-if 1.0.4` (LICENSE-APACHE) `compression-codecs 0.4.41` (LICENSE-APACHE) `compression-core 0.4.33` (LICENSE-APACHE) `critical-section 1.2.0` (LICENSE-APACHE) `errno 0.3.14` (LICENSE-APACHE) `flate2 1.1.10` (LICENSE-APACHE) `form_urlencoded 1.2.2` (LICENSE-APACHE) `httparse 1.10.1` (LICENSE-APACHE) `hyper-rustls 0.27.9` (LICENSE-APACHE) `idna 1.1.0` (LICENSE-APACHE) `idna_adapter 1.2.2` (LICENSE-APACHE) `log 0.4.34` (LICENSE-APACHE) `mime 0.3.17` (LICENSE-APACHE) `once_cell 1.21.4` (LICENSE-APACHE) `percent-encoding 2.3.2` (LICENSE-APACHE) `rustls 0.23.44` (LICENSE-APACHE) `signal-hook-registry 1.4.8` (LICENSE-APACHE) `smallvec 1.16.0` (LICENSE-APACHE) `socket2 0.6.5` (LICENSE-APACHE) `stable_deref_trait 1.2.1` (LICENSE-APACHE) `unicode-segmentation 1.13.3` (LICENSE-APACHE) `unicode-width 0.2.2` (LICENSE-APACHE) `url 2.5.8` (LICENSE-APACHE)
 ```
                               Apache License
                         Version 2.0, January 2004
@@ -6538,7 +6498,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-### `musli 0.0.124` (LICENSE-APACHE) `musli-core 0.0.124` (LICENSE-APACHE) `rune 0.14.2` (LICENSE-APACHE) `rune-alloc 0.14.2` (LICENSE-APACHE) `rune-core 0.14.2` (LICENSE-APACHE) `rune-tracing 0.14.2` (LICENSE-APACHE) `utf8_iter 1.0.4` (LICENSE-APACHE) `zeroize 1.9.0` (LICENSE-APACHE)
+### `rune 0.15.0` (LICENSE-APACHE) `rune-alloc 0.15.0` (LICENSE-APACHE) `rune-core 0.15.0` (LICENSE-APACHE) `rune-tracing 0.15.0` (LICENSE-APACHE) `utf8_iter 1.0.4` (LICENSE-APACHE) `zeroize 1.9.0` (LICENSE-APACHE)
 ```
 
                                  Apache License
