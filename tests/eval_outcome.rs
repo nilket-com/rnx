@@ -280,27 +280,26 @@ fn nested(containers: usize) -> String {
 
 #[test]
 fn the_depth_bound_is_a_boundary() {
-	// 256 is the bound the renderer's own recursion sets, measured rather
-	// than guessed: with the limits lifted a debug build renders 2048 deep
-	// and dies by 3072.
+	// Rune and the host share a 64-level bound, including the root. The
+	// innermost empty array consumes one level without adding a child.
 	for entry in ["eval", "run"] {
 		let at = if entry == "eval" {
-			evaluated(&nested(256))
+			evaluated(&nested(64))
 		} else {
-			ran(&nested(256))
+			ran(&nested(64))
 		};
 		assert_eq!(at.code, 0, "{entry} at the bound: {}", at.stderr);
 		assert!(at.stdout.starts_with("[[["), "{entry}: {}", at.stdout);
 
 		let past = if entry == "eval" {
-			evaluated(&nested(257))
+			evaluated(&nested(65))
 		} else {
-			ran(&nested(257))
+			ran(&nested(65))
 		};
 		assert_eq!(past.code, 1, "{entry} past the bound reported success");
 		assert_eq!(past.stdout, "", "{entry} printed part of the value");
 		assert!(
-			past.stderr.contains("nested deeper than 256"),
+			past.stderr.contains("nested deeper than 64"),
 			"{entry}: {}",
 			past.stderr
 		);
@@ -318,7 +317,7 @@ fn a_deep_value_is_refused_with_a_status_and_never_a_signal() {
 	let r = ran(&nested(FAR_PAST_THE_BOUND));
 	assert_eq!(r.code, 1, "expected a refusal, got {}", r.code);
 	assert_eq!(r.stdout, "");
-	assert!(r.stderr.contains("nested deeper than 256"), "{}", r.stderr);
+	assert!(r.stderr.contains("nested deeper than 64"), "{}", r.stderr);
 }
 
 #[test]
@@ -331,7 +330,7 @@ fn a_failed_rendering_leaves_a_scripts_own_output_alone() {
 		ran("println!(\"first\"); println!(\"second\"); let v = []; for i in 0..300 { v = [v] } v");
 	assert_eq!(r.code, 1);
 	assert_eq!(r.stdout, "first\nsecond\n", "output was added or lost");
-	assert!(r.stderr.contains("nested deeper than 256"), "{}", r.stderr);
+	assert!(r.stderr.contains("nested deeper than 64"), "{}", r.stderr);
 }
 
 #[test]

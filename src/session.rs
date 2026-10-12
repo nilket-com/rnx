@@ -7,9 +7,9 @@
 use super::Result;
 use rune::ast::Spanned;
 use rune::runtime::{Unit, VmError};
+use rune::sync::{Arc, Weak};
 use rune::{Context, Source, SourceId, Sources, Vm, ast, runtime::Value};
 use std::collections::{BTreeMap, BTreeSet};
-use std::sync::{Arc, Weak};
 
 /// Instructions per input before the session halts it: a safety net of about
 /// ten seconds of pure Rune execution, not the way to stop an input; Ctrl-C
@@ -850,7 +850,7 @@ impl Session {
 			}
 		};
 		self.last_generated = generated.text.clone();
-		let unit = Arc::new(compiled);
+		let unit = Arc::try_new(compiled).map_err(|e| Failure::Refused(e.to_string()))?;
 		// Entries whose unit nothing can call any more go before this input's
 		// entry is registered, so the bookkeeping stays proportional to the
 		// units still reachable rather than to the number of inputs.
@@ -916,12 +916,9 @@ impl Session {
 			Ok(unit) => Ok(unit),
 			Err(error) => {
 				let first = diagnostics.diagnostics().iter().find_map(|d| match d {
-					rune::diagnostics::Diagnostic::Fatal(fatal) => match fatal.kind() {
-						rune::diagnostics::FatalDiagnosticKind::CompileError(e) => {
-							Some((e.to_string(), e.span().range().start))
-						}
-						_ => None,
-					},
+					rune::diagnostics::Diagnostic::Fatal(fatal) => fatal
+						.as_compile_error()
+						.map(|e| (e.to_string(), e.span().range().start)),
 					_ => None,
 				});
 				match first {
@@ -966,11 +963,12 @@ impl Session {
 	) -> std::result::Result<Value, Failure> {
 		// A runtime per input. Sharing one across units is what this cut set
 		// out to do and cannot: see the record.
-		let runtime = Arc::new(
+		let runtime = Arc::try_new(
 			self.context
 				.runtime()
 				.map_err(|e| Failure::Refused(e.to_string()))?,
-		);
+		)
+		.map_err(|e| Failure::Refused(e.to_string()))?;
 		let mut vm = Vm::new(runtime, unit.clone());
 		self.lifecycle.begin().map_err(|message| Failure::Runtime {
 			message,
@@ -2283,5 +2281,39 @@ mod const_tests {
 				"{item}: {e}"
 			);
 		}
+	}
+}
+
+#[cfg(test)]
+mod native_budget_tests {
+	use super::Session;
+	#[test]
+	fn a_sliced_session_never_retries_a_failed_native_iterator() {
+		let calls = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+		let observed = calls.clone();
+		let mut module = rune::Module::new();
+		module
+			.function("mark", move || {
+				observed.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+			})
+			.build()
+			.unwrap();
+		let mut context = rune::Context::with_default_modules().unwrap();
+		context.install(module).unwrap();
+		let mut session = Session::new(context).unwrap();
+		session.set_budget(50_000);
+		let error = session
+			.eval("mark(); (0..).iter().count()")
+			.unwrap_err()
+			.to_string();
+		assert_eq!(
+			calls.load(std::sync::atomic::Ordering::SeqCst),
+			1,
+			"side effect was repeated"
+		);
+		assert!(error.contains("50000"), "{error}");
+		assert!(error.contains("budget"), "{error}");
+		session.eval("1 + 1").unwrap();
+		assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 1);
 	}
 }

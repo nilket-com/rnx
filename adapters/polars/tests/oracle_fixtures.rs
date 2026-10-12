@@ -7,8 +7,8 @@
 //! hold valid values of their types. The typed producers and pin types
 //! exist at v2 only.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-use std::sync::Arc;
 
 fn run(script: &str) -> Result<rune::Value, String> {
 	let mut polars = Module::with_crate("polars").unwrap();
@@ -18,7 +18,7 @@ fn run(script: &str) -> Result<rune::Value, String> {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(polars).unwrap();
 	context.install(fixtures).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -29,7 +29,7 @@ fn run(script: &str) -> Result<rune::Value, String> {
 	if built.is_err() {
 		panic!("diagnostics: {:?}", diagnostics.diagnostics());
 	}
-	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(built.unwrap()).unwrap());
 	vm.call(["main"], ()).map_err(|e| e.to_string())
 }
 

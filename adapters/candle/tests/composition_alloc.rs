@@ -2,8 +2,8 @@
 //! before Candle allocates, observed through the allocator's peak from
 //! after the inputs exist. One test, so no parallel test moves the peak.
 use rnx::allocation::{peak, reset_peak};
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
-use std::sync::Arc;
 
 /// A refusal's whole footprint stays far under the refused allocation.
 const SMALL: usize = 256 << 10;
@@ -16,7 +16,7 @@ fn vm() -> Vm {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(candle).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	let script = r#"
 		pub fn zeros(shape) { candle::Tensor::zeros(shape, "f32") }
@@ -38,7 +38,7 @@ fn vm() -> Vm {
 		.with_context(&context)
 		.build()
 		.unwrap();
-	Vm::new(runtime, Arc::new(unit))
+	Vm::new(runtime, RuneArc::try_new(unit).unwrap())
 }
 
 fn result(v: Value) -> Result<Value, String> {

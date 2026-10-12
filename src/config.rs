@@ -1,10 +1,10 @@
 //! One bounded, in-memory Rune evaluation for presentation settings.
 use crate::presentation::{Colour, Mode};
 use rune::runtime::{Object, Value};
+use rune::sync::Arc;
 use rune::{Context, Source, Sources, Vm};
 use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 const SOURCE_CAP: usize = 64 * 1024;
 const BUDGET: usize = 100_000;
 pub const ROLES: [&str; 8] = [
@@ -171,29 +171,26 @@ pub(crate) fn evaluate(source: &str) -> Result<(Settings, Vec<String>), String> 
 				.diagnostics()
 				.iter()
 				.find_map(|d| match d {
-					rune::diagnostics::Diagnostic::Fatal(f) => match f.kind() {
-						rune::diagnostics::FatalDiagnosticKind::CompileError(e) => {
-							let offset = e
-								.span()
-								.range()
-								.start
-								.saturating_sub("pub fn main() {\n".len())
-								.min(source.len());
-							let line = source.as_bytes()[..offset]
-								.iter()
-								.filter(|&&b| b == b'\n')
-								.count() + 1;
-							Some(format!("cannot compile config at line {line}: {e}"))
-						}
-						_ => None,
-					},
+					rune::diagnostics::Diagnostic::Fatal(f) => f.as_compile_error().map(|e| {
+						let offset = e
+							.span()
+							.range()
+							.start
+							.saturating_sub("pub fn main() {\n".len())
+							.min(source.len());
+						let line = source.as_bytes()[..offset]
+							.iter()
+							.filter(|&&b| b == b'\n')
+							.count() + 1;
+						format!("cannot compile config at line {line}: {e}")
+					}),
 					_ => None,
 				})
 				.unwrap_or_else(|| format!("cannot compile config: {error}"))
 		})?;
 	let mut vm = Vm::new(
-		Arc::new(context.runtime().map_err(|e| e.to_string())?),
-		Arc::new(unit),
+		Arc::try_new(context.runtime().map_err(|e| e.to_string())?).map_err(|e| e.to_string())?,
+		Arc::try_new(unit).map_err(|e| e.to_string())?,
 	);
 	let value = rune::runtime::budget::with(BUDGET, || vm.call(["main"], ()))
 		.call()

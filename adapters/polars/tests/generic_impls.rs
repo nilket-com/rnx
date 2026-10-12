@@ -1,7 +1,7 @@
 //! Record 0113: generic trait impls through their family rules. Operators return a `Result` (`(a + b)?` in a script): faithful where the Rust impl is fallible, and a foreign right-hand side is catchable. They preserve nulls and Polars' own division semantics (frame arithmetic is v2-only, behind `dataframe_arithmetic`, and covered by the v2 oracle), keep their receiver usable and refuse a foreign right-hand side catchably; FromIterator converts script vectors with the existing narrow and null rules; DataFrame indexing clones the column out and panics exactly where Rust's `Index` panics.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-use std::sync::Arc;
 
 fn run(script: &str) -> Result<rune::Value, String> {
 	let mut polars = Module::with_crate("polars").unwrap();
@@ -11,7 +11,7 @@ fn run(script: &str) -> Result<rune::Value, String> {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(polars).unwrap();
 	context.install(fixtures).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -22,7 +22,7 @@ fn run(script: &str) -> Result<rune::Value, String> {
 	if built.is_err() {
 		panic!("diagnostics: {:?}", diagnostics.diagnostics());
 	}
-	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(built.unwrap()).unwrap());
 	vm.call(["main"], ()).map_err(|e| e.to_string())
 }
 

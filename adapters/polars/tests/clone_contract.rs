@@ -1,8 +1,8 @@
 //! Record 0141: the value contract. `DataFrame`, `LazyFrame`, `Series` and `Expr` are never consumed; Rune names alias one value, so an in-place method changes every name; `clone()` gives an independent value; builders are consumed by their by-value methods. Configuration: default features (`generated`) plus `test-support`; the no-`generated` build is covered by the library's `clone_identity` unit tests.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 use std::collections::BTreeMap;
-use std::sync::Arc;
 
 fn run(script: &str) -> Result<rune::Value, String> {
 	let mut polars = Module::with_crate("polars").unwrap();
@@ -12,7 +12,7 @@ fn run(script: &str) -> Result<rune::Value, String> {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(polars).unwrap();
 	context.install(fixtures).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -23,7 +23,7 @@ fn run(script: &str) -> Result<rune::Value, String> {
 	if built.is_err() {
 		panic!("diagnostics: {:?}", diagnostics.diagnostics());
 	}
-	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(built.unwrap()).unwrap());
 	vm.call(["main"], ()).map_err(|e| e.to_string())
 }
 

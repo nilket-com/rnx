@@ -3,8 +3,8 @@
 //! strided, transposed and offset views of inputs and kernels; refusals by
 //! name; the receiver and kernel stay the script's.
 use candle_core::{DType, Device, Tensor as CTensor};
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
-use std::sync::Arc;
 
 fn eval(body: &str) -> Result<Value, String> {
 	let mut candle = Module::with_crate("candle").unwrap();
@@ -14,7 +14,7 @@ fn eval(body: &str) -> Result<Value, String> {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(candle).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	let script = format!(
 		"fn seq(shape, dt) {{ let n = 1; for d in shape {{ n *= d; }} candle::Tensor::arange(0, n, \"f64\")?.affine(0.37, -1.5)?.sin()?.to_dtype(dt)?.reshape(shape) }}\n\
@@ -27,7 +27,7 @@ fn eval(body: &str) -> Result<Value, String> {
 		.with_diagnostics(&mut diagnostics)
 		.build();
 	let unit = unit.unwrap_or_else(|_| panic!("{:?}", diagnostics.diagnostics()));
-	let mut vm = Vm::new(runtime, Arc::new(unit));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(unit).unwrap());
 	let v = vm.call(["main"], ()).map_err(|e| e.to_string())?;
 	match rune::from_value::<Result<Value, Value>>(v.clone()) {
 		Ok(Ok(v)) => Ok(v),

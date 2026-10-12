@@ -1,7 +1,7 @@
 # rnx 0185: migrate to the Rune fork, stock execution only
 
 **Status:** plan. Authority: Codex GO seq 8593, after the read-only integration study (seq 8545). Local only:
-nothing is pushed and `main` does not move. Claude implements, Codex reviews.
+nothing is pushed and `main` does not move. Codex implements; Claude authors plans and reviews code; Codex reviews plans.
 
 ## 1. Scope
 
@@ -11,8 +11,8 @@ on the stock Vm. The record is an API port: behaviour is kept, apart from the up
 each of which is tested rather than assumed.
 
 Not in this record: the `fresh-core` and `fresh-core-native` features, any routing between engines, the
-fork-side convergence records (F1–F3), and any semantic change. A semantic change or an unsafe finding met
-during the port stops the work and is reported; it is not decided here.
+fork-side convergence records (F1–F3), and any unreviewed semantic change. Findings during the port are reported
+and resolved jointly before implementation. The amendments in §8 record the reviewed exceptions.
 
 ## 2. Dependency
 
@@ -87,3 +87,37 @@ directory, with a free-disk floor of 30 GiB watched throughout:
 
 One plan commit (this file) and one impl commit; gates, docs and fixes amend the impl commit. Evidence
 goes in `0185_rune_fork_migration_evidence.md` in the impl commit.
+
+## 8. Reviewed amendments during implementation
+
+The initial migration reproduced three fork differences that required source corrections,
+reviewed jointly with Claude (chatd 8648–8689):
+
+- Native iterator work must charge the exact total without aborting at a soft
+  session slice. A std-only synchronous `budget::with_slice` separates the outer
+  VM yield from hard exhaustion. Native work may delay cancellation until it
+  returns or spends the remaining total; errors are never retried. The no-std ABI
+  stays unchanged. rnx clamps the unlimited sentinel to a finite total.
+- Empty parser recovery nodes must point at the next significant token rather
+  than dropped whitespace. The fork corrects the span; rnx caret tests stay intact.
+- Recursive value walks use the fork’s public `MAX_VALUE_DEPTH` bound, counting
+  the root and scalar leaves. rnx adopts its 64-level contract, with exact
+  acceptance/refusal checks for arrays, tuples, objects, options and mixed values.
+  Raising the limit requires stack-safety evidence or iterative walks.
+
+The fork corrections live in an isolated local branch off the pinned revision,
+receive Claude’s code review, and are pinned in rnx after local validation.
+No main update or push is included. The original 55d50133 probe and every failed
+validation attempt remain in local evidence.
+
+The API port also updates the notices generator for Git source annotations and
+records the fork’s licence texts from the exact resolved revision. Network-failure
+controls use the already locked registry package clipboard-win 5.4.1 because Git
+Rune has no published-package `.cargo_vcs_info.json`.
+
+Final reviewed fork revision: `03b1aa4dc29e4125392d0e03dab12bc408bf701d`
+(parent `55d501332c0b8f9aa04695453e7a567b83819a6c`). All current
+workspace lockfiles resolve that revision; historical probes remain unchanged.
+Interactive preview retains its previous visible depth: its presentation limit
+moves from 8 to 9 to compensate for counting the root at level 1. This does not
+change the shared complete-output bound of 64.

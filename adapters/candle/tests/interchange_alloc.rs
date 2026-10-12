@@ -4,9 +4,9 @@
 //! size); everything after it must stay under `SMALL`. One test, so no
 //! parallel test moves the peak.
 use rnx::allocation::{peak, reset_peak};
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
 use std::io::Write;
-use std::sync::Arc;
 
 /// Everything after the file buffer stays far under a refused allocation.
 const SMALL: usize = 256 << 10;
@@ -19,7 +19,7 @@ fn vm() -> Vm {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(candle).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	let script = r#"
 		pub fn npy(p) { candle::Tensor::read_npy(p) }
@@ -32,7 +32,7 @@ fn vm() -> Vm {
 		.with_context(&context)
 		.build()
 		.unwrap();
-	Vm::new(runtime, Arc::new(unit))
+	Vm::new(runtime, RuneArc::try_new(unit).unwrap())
 }
 
 fn result(v: Value) -> Result<Value, String> {

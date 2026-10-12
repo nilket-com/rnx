@@ -7,13 +7,10 @@ use crate::declared::Fields;
 use crate::presentation::{self, Span, Style};
 use rune::runtime::{Function, Object, OwnedTuple, TypeValue, Value, Vec as RuneVec};
 
-/// The deepest a value is opened where the output is the product rather than
-/// a preview. Measured: the renderer recurses, and with the limits lifted a
-/// debug build renders a value nested 2048 deep and dies by 3072, so this
-/// leaves an eightfold margin under what works and is twice serde_json's own
-/// default parse limit. A value that reaches it is pathological, not large.
-/// The JSON walk shares this number rather than having one of its own.
-pub const MAX_DEPTH: usize = 256;
+/// Maximum active levels in recursive value walks, counting the root and
+/// scalar leaves. Shared with Rune and the JSON prewalk; the fork keeps this
+/// conservative bound for smaller worker stacks as well as the CLI thread.
+pub const MAX_DEPTH: usize = rune::runtime::MAX_VALUE_DEPTH;
 
 /// What to do about a value too deep to open.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -39,7 +36,8 @@ impl Limits {
 	/// cut. Record 0005's ceiling is what this protects.
 	pub fn preview() -> Self {
 		Self {
-			depth: 8,
+			// Root counting includes the presentation wrapper; preserve eight opened levels.
+			depth: 9,
 			length: 64,
 			string_bytes: 4096,
 			total_bytes: 16 * 1024,
@@ -121,7 +119,7 @@ pub fn render_complete_styled(
 		work: Work::default(),
 		failure: None,
 	};
-	r.value(value, 0);
+	r.value(value, 1);
 	match r.failure {
 		Some(reason) => Err(reason),
 		None if styled => Ok(presentation::paint(&r.out, &r.spans, true).into_owned()),
@@ -181,7 +179,7 @@ pub fn render_document(
 		work: Work::default(),
 		failure: None,
 	};
-	r.value(value, 0);
+	r.value(value, 1);
 	if r.truncated {
 		r.out.push_str(&format!(
 			" …(output truncated at {} bytes)",
@@ -272,7 +270,9 @@ impl Renderer<'_> {
 			self.push("<cycle>");
 			return false;
 		}
-		if depth >= self.limits.depth {
+		if depth > self.limits.depth
+			|| (depth == self.limits.depth && self.limits.on_excess == OnExcess::Elide)
+		{
 			self.excess(cut);
 			return false;
 		}

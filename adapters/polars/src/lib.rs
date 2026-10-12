@@ -13,6 +13,7 @@
 //!   second use is Rune's access error ("Cannot take, value is …").
 use p::IntoLazy;
 use polars::prelude as p;
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, runtime::Vec as RuneVec};
 mod dense;
 mod engine;
@@ -213,7 +214,7 @@ fn read_csv_inferred(path: &str) -> Result<DataFrame, String> {
 /// argument infers the schema, two are the strict `(name, dtype)` schema.
 fn read_csv_either(
 	stack: &mut dyn rune::runtime::Memory,
-	addr: rune::runtime::InstAddress,
+	addr: rune::runtime::Address,
 	len: usize,
 	out: rune::runtime::Output,
 ) -> rune::runtime::VmResult<()> {
@@ -231,12 +232,12 @@ fn read_csv_either(
 			read_csv(&path, schema.clone())
 		}
 		_ => {
-			return VmResult::panic(format!(
+			return Err(rune::runtime::VmError::panic(format!(
 				"read_csv takes (path) or (path, schema), found {len} arguments"
-			));
+			)));
 		}
 	};
-	rune::vm_try!(out.store(stack, || rune::to_value(result)));
+	rune::vm_try!(stack.store(out, || rune::to_value(result)));
 	VmResult::Ok(())
 }
 /// Record 0125: a local JSON file, beside `read_csv` and `read_parquet`.
@@ -484,21 +485,20 @@ fn consuming_text(path: &str) -> Option<&'static str> {
 mod clone_identity {
 	use super::*;
 	use rnx::rune::{Context, Module, Source, Sources, Value, Vm};
-	use std::sync::Arc;
 
 	fn pair(value: Value, script: &str) -> (Value, Value) {
 		let mut polars = Module::with_crate("polars").unwrap();
 		build(&mut polars).unwrap();
 		let mut context = Context::with_default_modules().unwrap();
 		context.install(polars).unwrap();
-		let runtime = Arc::new(context.runtime().unwrap());
+		let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 		let mut sources = Sources::new();
 		sources.insert(Source::memory(script).unwrap()).unwrap();
 		let unit = rune::prepare(&mut sources)
 			.with_context(&context)
 			.build()
 			.unwrap();
-		let mut vm = Vm::new(runtime, Arc::new(unit));
+		let mut vm = Vm::new(runtime, RuneArc::try_new(unit).unwrap());
 		let out = vm.call(["main"], (value,)).unwrap();
 		rune::from_value::<(Value, Value)>(out).unwrap()
 	}
@@ -559,7 +559,6 @@ mod clone_identity {
 mod clone_cost {
 	use super::*;
 	use rnx::rune::{Context, Module, Source, Sources, Value, Vm};
-	use std::sync::Arc;
 	use std::time::Instant;
 
 	const SCRIPT: &str = r#"
@@ -573,14 +572,14 @@ mod clone_cost {
 		build(&mut polars).unwrap();
 		let mut context = Context::with_default_modules().unwrap();
 		context.install(polars).unwrap();
-		let runtime = Arc::new(context.runtime().unwrap());
+		let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 		let mut sources = Sources::new();
 		sources.insert(Source::memory(SCRIPT).unwrap()).unwrap();
 		let unit = rune::prepare(&mut sources)
 			.with_context(&context)
 			.build()
 			.unwrap();
-		Vm::new(runtime, Arc::new(unit))
+		Vm::new(runtime, RuneArc::try_new(unit).unwrap())
 	}
 
 	fn frame(rows: usize) -> p::DataFrame {

@@ -61,11 +61,8 @@ fn escape_html_checked(s: &str) -> Result<String, String> {
 }
 // Escaping is an inline template operation. Its data-dependent failure is a cap;
 // abort the VM rather than requiring Result plumbing in every interpolation.
-fn escape_html(s: &str) -> rune::runtime::VmResult<String> {
-	match escape_html_checked(s) {
-		Ok(value) => rune::runtime::VmResult::Ok(value),
-		Err(error) => rune::runtime::VmResult::panic(error),
-	}
+fn escape_html(s: &str) -> Result<String, rune::runtime::VmError> {
+	escape_html_checked(s).map_err(rune::runtime::VmError::panic)
 }
 fn hex(b: u8) -> Option<u8> {
 	match b {

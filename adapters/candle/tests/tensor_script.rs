@@ -1,6 +1,6 @@
 //! Record 0134: the tensor surface from a Rune script, as a user writes it.
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-use std::sync::Arc;
 
 fn run(script: &str) -> Result<String, String> {
 	let mut candle = Module::with_crate("candle").unwrap();
@@ -10,7 +10,7 @@ fn run(script: &str) -> Result<String, String> {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(candle).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -21,7 +21,7 @@ fn run(script: &str) -> Result<String, String> {
 	if unit.is_err() {
 		panic!("{:?}", diagnostics.diagnostics());
 	}
-	let mut vm = Vm::new(runtime, Arc::new(unit.unwrap()));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(unit.unwrap()).unwrap());
 	let v = vm.call(["main"], ()).map_err(|e| e.to_string())?;
 	match rune::from_value::<Result<String, rune::Value>>(v).unwrap() {
 		Ok(s) => Ok(s),

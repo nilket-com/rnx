@@ -764,18 +764,13 @@ fn upsample_bilinear2d_with_scale(
 // the count first, every slot taken and replaced with an empty value, the
 // receiver at index 0, tensors and strings borrowed (never taken), integers
 // and flags converted, the guards alive through the call, then
-// `ToReturn::to_return` and `out.store`.
+// `IntoReturn::into_return` and `out.store`.
 
-use rnx::rune::runtime::{InstAddress, Memory, Output, RuntimeError, ToReturn, VmResult};
+use rnx::rune::runtime::{Address, IntoReturn, Memory, Output, RuntimeError, VmResult};
 
-fn slots(
-	stack: &mut dyn Memory,
-	addr: InstAddress,
-	len: usize,
-	want: usize,
-) -> VmResult<Vec<Value>> {
+fn slots(stack: &mut dyn Memory, addr: Address, len: usize, want: usize) -> VmResult<Vec<Value>> {
 	if len != want {
-		return VmResult::err(RuntimeError::bad_argument_count(len, want));
+		return Err(RuntimeError::bad_argument_count(len, want).into());
 	}
 	let slice = rnx::rune::vm_try!(stack.slice_at_mut(addr, len));
 	VmResult::Ok(
@@ -788,7 +783,7 @@ fn slots(
 
 macro_rules! shim {
 	($shim:ident, $f:ident, $n:expr, ints: $ints:expr, algo: $algo:expr) => {
-		fn $shim(stack: &mut dyn Memory, addr: InstAddress, len: usize, out: Output) -> VmResult<()> {
+		fn $shim(stack: &mut dyn Memory, addr: Address, len: usize, out: Output) -> VmResult<()> {
 			let v = rnx::rune::vm_try!(slots(stack, addr, len, $n));
 			let r = {
 				let t = rnx::rune::vm_try!(v[0].borrow_ref::<Tensor>());
@@ -804,8 +799,8 @@ macro_rules! shim {
 					shim!(@call $f, &t, &k, n, $ints, None)
 				}
 			};
-			let value = rnx::rune::vm_try!(ToReturn::to_return(r));
-			rnx::rune::vm_try!(out.store(stack, value));
+			let value = rnx::rune::vm_try!(IntoReturn::into_return(r));
+			rnx::rune::vm_try!(stack.store(out, value));
 			VmResult::Ok(())
 		}
 	};

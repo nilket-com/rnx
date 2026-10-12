@@ -391,7 +391,7 @@ impl Handler for App {
 				}
 				"kernel_info_request" => {
 					let p = Parent::from_request(route, &request);
-					let content = json!({"status":"ok","protocol_version":"5.4","implementation":"rnx","implementation_version":"0.0.0","language_info":{"name":"rune","version":"0.14.2","mimetype":"text/plain","file_extension":".rn"},"banner":"Rune 0.14.2 on rnx","help_links":[]});
+					let content = json!({"status":"ok","protocol_version":"5.4","implementation":"rnx","implementation_version":"0.0.0","language_info":{"name":"rune","version":"0.15.0","mimetype":"text/plain","file_extension":".rn"},"banner":"Rune 0.15.0 (git 03b1aa4dc29e4125392d0e03dab12bc408bf701d) on rnx","help_links":[]});
 					if channel == "shell" {
 						self.out.shell_info(&p, &content).await
 					} else {

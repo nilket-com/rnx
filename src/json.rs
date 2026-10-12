@@ -1,18 +1,9 @@
 //! The JSON reader, guarded serializer, and the walk that bounds writing.
 //!
-//! Rune's `Serialize` for `Value` recurses with no cycle guard and no depth
-//! bound, so a cyclic value aborts the process with a stack overflow rather
-//! than returning an error. Bounding it is this module's job: a value is
-//! walked here first and refused before serde is ever handed it, so nothing
-//! reaches serde that this walk has not already accepted.
-//!
-//! The walk is not a guess at what serde does. It is read off
-//! `rune-0.14.1/src/runtime/value/serde.rs`, arm for arm — that file is
-//! byte-identical in 0.14.2, which record 0027 re-verified when the pin
-//! moved: four shapes descend
-//! (an option, a sequence, a tuple, an object) and everything else is a leaf
-//! that is either serialized as it stands or refused. A `Result` is refused,
-//! which is easy to get wrong by assuming it behaves like an option.
+//! Rune bounds recursive serialization with its value-walk limit. This module
+//! first walks the same graph to give cycle and depth errors a useful path,
+//! using the same bound and counting the root as level one. Arrays, tuples,
+//! objects and options descend; unsupported values are refused before serde.
 //!
 //! Nothing here runs script code: no formatting protocol is invoked through
 //! the virtual machine, which is the rule `format.rs` has followed since it
@@ -134,7 +125,7 @@ fn refuse(what: &str, path: &[Step]) -> String {
 
 /// Serialize a value to JSON, or say what could not be serialized and where.
 pub fn stringify(value: &Value) -> Result<String, String> {
-	walk(value, 0, &mut Vec::new(), &mut Vec::new())?;
+	walk(value, 1, &mut Vec::new(), &mut Vec::new())?;
 	// The walk has accepted every leaf serde will reach, so a failure here
 	// would mean the walk and the serializer disagree. Report it as itself
 	// rather than pretending it was refused on purpose.
@@ -264,7 +255,7 @@ fn descend(
 	if active.contains(&address) {
 		return Err(refuse("a cycle", path));
 	}
-	if depth >= MAX_DEPTH {
+	if depth >= MAX_DEPTH && !items.is_empty() {
 		return Err(too_deep(path));
 	}
 	active.push(address);

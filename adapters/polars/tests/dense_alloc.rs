@@ -2,8 +2,8 @@
 //! before the row-major buffer exists, observed through the allocator's
 //! peak. One test, so no parallel test moves the peak.
 use rnx::allocation::{peak, reset_peak};
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
-use std::sync::Arc;
 
 const ROWS: usize = 1 << 18;
 /// A refusal's whole footprint stays far under one f64 column (2 MiB).
@@ -17,7 +17,7 @@ fn vm() -> Vm {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(polars).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	let script = r#"
 		pub fn load(path) { polars::read_csv(path, [("a", "i64"), ("s", "string")]) }
@@ -28,7 +28,7 @@ fn vm() -> Vm {
 		.with_context(&context)
 		.build()
 		.unwrap();
-	Vm::new(runtime, Arc::new(unit))
+	Vm::new(runtime, RuneArc::try_new(unit).unwrap())
 }
 
 fn result(v: Value) -> Result<Value, String> {

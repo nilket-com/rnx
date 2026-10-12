@@ -14,8 +14,8 @@ use crate::presentation;
 use crate::program::{Loader, Text};
 use crate::session::position;
 use rune::runtime::{Unit, Value, VmError};
+use rune::sync::Arc;
 use rune::{Context, Diagnostics, Sources, Vm};
-use std::sync::Arc;
 
 /// Instructions one script may spend unless the command line says otherwise.
 /// This is the limit `run` has always had; the session's is far larger
@@ -127,13 +127,10 @@ fn compile(context: &Context, sources: &mut Sources, loader: &mut Loader) -> Opt
 		Ok(unit) => Some(unit),
 		Err(error) => {
 			let first = diagnostics.diagnostics().iter().find_map(|d| match d {
-				rune::diagnostics::Diagnostic::Fatal(fatal) => match fatal.kind() {
-					rune::diagnostics::FatalDiagnosticKind::CompileError(e) => {
-						use rune::ast::Spanned;
-						Some((e.to_string(), fatal.source_id(), e.span().range().start))
-					}
-					_ => None,
-				},
+				rune::diagnostics::Diagnostic::Fatal(fatal) => fatal.as_compile_error().map(|e| {
+					use rune::ast::Spanned;
+					(e.to_string(), fatal.source_id(), e.span().range().start)
+				}),
 				_ => None,
 			});
 			match first {
@@ -285,11 +282,21 @@ pub(crate) fn run_loaded(
 	let Some(unit) = compiled else {
 		return 1;
 	};
-	let unit = Arc::new(unit);
-	let runtime = match context.runtime() {
-		Ok(runtime) => Arc::new(runtime),
+	let unit = match Arc::try_new(unit) {
+		Ok(unit) => unit,
 		Err(error) => {
 			unplaced("error", &error.to_string());
+			return 1;
+		}
+	};
+	let runtime = match context
+		.runtime()
+		.map_err(|e| e.to_string())
+		.and_then(|runtime| Arc::try_new(runtime).map_err(|e| e.to_string()))
+	{
+		Ok(runtime) => runtime,
+		Err(error) => {
+			unplaced("error", &error);
 			return 1;
 		}
 	};
@@ -433,8 +440,11 @@ mod module_tests {
 		let mut sources = Sources::new();
 		sources.insert(loader.entry(&path).unwrap()).unwrap();
 		let context = Context::with_default_modules().unwrap();
-		let unit = Arc::new(compile(&context, &mut sources, &mut loader).unwrap());
-		let mut vm = Vm::new(Arc::new(context.runtime().unwrap()), unit.clone());
+		let unit = Arc::try_new(compile(&context, &mut sources, &mut loader).unwrap()).unwrap();
+		let mut vm = Vm::new(
+			Arc::try_new(context.runtime().unwrap()).unwrap(),
+			unit.clone(),
+		);
 		let error = vm.call(["main"], ((),)).unwrap_err();
 		let original = error.to_string();
 		assert!(original.contains("Missing instance function"));
@@ -450,12 +460,13 @@ mod module_tests {
 			),
 			original
 		);
-		let different = Arc::new(
+		let different = Arc::try_new(
 			rune::prepare(&mut Sources::new())
 				.with_context(&context)
 				.build()
 				.unwrap(),
-		);
+		)
+		.unwrap();
 		assert!(fault_source(&error, &different, &sources, &loader).is_none());
 	}
 }

@@ -222,16 +222,9 @@ fn collection_caps_precede_any_formatter_attempt() {
 #[cfg(target_os = "linux")]
 fn known_upstream_corruptions_are_refused_before_publication() {
 	let d = Dir::new();
-	for (i, source) in [
-		"pub fn main(){let x=`a { b`;}",
-		"pub fn main(){let x=`a } b`;}",
-		"pub fn main(){let x=`a \\` b`;}",
-		"a\nb",
-		"pub fn main(){let x=a\n// c\nb;}",
-		"# !",
-	]
-	.into_iter()
-	.enumerate()
+	for (i, source) in ["a\nb", "pub fn main(){let x=a\n// c\nb;}", "# !"]
+		.into_iter()
+		.enumerate()
 	{
 		let path = d.0.join(format!("corruption-{i}.rn"));
 		fs::write(&path, source).unwrap();
@@ -241,5 +234,36 @@ fn known_upstream_corruptions_are_refused_before_publication() {
 		assert!(String::from_utf8_lossy(&result.stderr).contains("formatter worker"));
 		assert_eq!(fs::read_to_string(path).unwrap(), source);
 	}
-	assert_eq!(fs::read_dir(&d.0).unwrap().count(), 6);
+	assert_eq!(fs::read_dir(&d.0).unwrap().count(), 3);
+}
+
+#[test]
+#[cfg(target_os = "linux")]
+fn fork_formatter_preserves_literal_braces_and_escaped_backticks() {
+	for literal in ["`a { b`", "`a } b`", "`a \\` b`"] {
+		let source = format!("pub fn main(){{let x={literal};}}");
+		let mut child = command()
+			.arg("--stdin")
+			.stdin(Stdio::piped())
+			.stdout(Stdio::piped())
+			.stderr(Stdio::piped())
+			.spawn()
+			.unwrap();
+		child
+			.stdin
+			.take()
+			.unwrap()
+			.write_all(source.as_bytes())
+			.unwrap();
+		let result = child.wait_with_output().unwrap();
+		assert!(
+			result.status.success(),
+			"{}",
+			String::from_utf8_lossy(&result.stderr)
+		);
+		assert_eq!(
+			String::from_utf8(result.stdout).unwrap(),
+			format!("pub fn main() {{\n\tlet x = {literal};\n}}\n")
+		);
+	}
 }

@@ -1,5 +1,6 @@
 //! Record 0112: the serde JSON boundary. `to_json`/`from_json` round-trip frame-free values exactly as serde_json does; frames and series, which Polars serializes through an unbounded IPC buffer, have no JSON binding; the byte bound is inclusive and counts UTF-8 bytes in both directions; invalid text and an over-bound text are catchable errors; a refused conversion leaves its receiver usable.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 use std::sync::{Arc, Mutex};
 
@@ -14,7 +15,7 @@ fn run(script: &str, arg: &str) -> Result<rune::Value, String> {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(polars).unwrap();
 	context.install(fixtures).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -25,7 +26,7 @@ fn run(script: &str, arg: &str) -> Result<rune::Value, String> {
 	if built.is_err() {
 		panic!("diagnostics: {:?}", diagnostics.diagnostics());
 	}
-	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(built.unwrap()).unwrap());
 	vm.call(["main"], (arg.to_string(),))
 		.map_err(|e| e.to_string())
 }

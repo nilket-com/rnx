@@ -244,3 +244,22 @@ fn the_halt_names_the_flag_of_the_path_that_ran() {
 		assert_eq!(ran.stdout, "");
 	}
 }
+
+#[test]
+fn exhausting_a_native_iterator_reports_once_without_repeating_output() {
+	let ran = run_with(
+		"pub fn main(_) { println!(\"start\"); (0..).iter().count() }",
+		&["--budget", "50000"],
+		&[],
+	);
+	assert_eq!(ran.code, 1, "{}", ran.stderr);
+	assert_eq!(ran.stdout, "start\n", "output was lost or repeated");
+	assert_eq!(
+		ran.stderr
+			.matches("halted: the budget of 50000 instructions was exhausted at that point")
+			.count(),
+		1,
+		"{}",
+		ran.stderr
+	);
+}

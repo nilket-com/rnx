@@ -1,7 +1,7 @@
 //! Record 0110: trait methods dispatched to receivers proven from the trait's impl records (recovered by trait identity). A list, a binary, a generic chunked trait on two dtypes, and a frame join trait match direct Polars; a method whose trait has no proven wrapped receiver stays refused with its reason.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-use std::sync::Arc;
 
 fn run(script: &str) -> rune::Value {
 	let mut polars = Module::with_crate("polars").unwrap();
@@ -11,7 +11,7 @@ fn run(script: &str) -> rune::Value {
 	let mut context = Context::with_default_modules().unwrap();
 	context.install(polars).unwrap();
 	context.install(fixtures).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let mut sources = Sources::new();
 	sources.insert(Source::memory(script).unwrap()).unwrap();
 	let mut diagnostics = rune::Diagnostics::new();
@@ -22,7 +22,7 @@ fn run(script: &str) -> rune::Value {
 	if built.is_err() {
 		panic!("diagnostics: {:?}", diagnostics.diagnostics());
 	}
-	let mut vm = Vm::new(runtime, Arc::new(built.unwrap()));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(built.unwrap()).unwrap());
 	vm.call(["main"], ()).unwrap()
 }
 

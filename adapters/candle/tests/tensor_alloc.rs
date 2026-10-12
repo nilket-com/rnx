@@ -2,8 +2,8 @@
 //! allocates, observed through the allocator's peak. One test, so no
 //! parallel test moves the peak.
 use rnx::allocation::{peak, reset_peak};
+use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
-use std::sync::Arc;
 
 const SMALL: usize = 1 << 20;
 
@@ -16,7 +16,7 @@ fn oversized_results_are_refused_before_any_proportional_allocation() {
 		.install(rnx::interchange::module().unwrap())
 		.unwrap();
 	context.install(candle).unwrap();
-	let runtime = Arc::new(context.runtime().unwrap());
+	let runtime = RuneArc::try_new(context.runtime().unwrap()).unwrap();
 	let script = r#"
 		pub fn broadcast() { let a = candle::Tensor::zeros([4097, 1], "f32")?; let b = candle::Tensor::zeros([1, 4097], "f32")?; a.broadcast_mul(b) }
 		pub fn expanded() { let a = candle::Tensor::zeros([2048, 2048], "f32")?; let b = candle::Tensor::zeros([5, 2048, 1], "f32")?; a.broadcast_matmul(b) }
@@ -33,7 +33,7 @@ fn oversized_results_are_refused_before_any_proportional_allocation() {
 		.with_context(&context)
 		.build()
 		.unwrap();
-	let mut vm = Vm::new(runtime, Arc::new(unit));
+	let mut vm = Vm::new(runtime, RuneArc::try_new(unit).unwrap());
 	// topk validates k before any copy or scan: the input is built first,
 	// then each bad k is measured on its own (review round 1, R4)
 	let input = vm.call(["input"], ()).unwrap();
