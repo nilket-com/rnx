@@ -516,7 +516,9 @@ mod tests {
 		.err()
 		.unwrap();
 		assert!(
-			error.to_string().contains("::std::string::String"),
+			error
+				.to_string()
+				.contains("Expected type `std::string::String`"),
 			"{error}"
 		);
 		check(

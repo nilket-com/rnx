@@ -632,6 +632,26 @@ pub fn terminal_safe(text: &str) -> String {
 	out
 }
 
+/// A diagnostic source line: tabs advance to four-column stops; other
+/// controls keep the ordinary terminal escaping. The caret prefix uses this
+/// same rendering. Each escaped chunk is measured once, so tab-heavy input
+/// does not repeatedly rescan the whole line.
+pub fn source_line(text: &str) -> String {
+	let mut out = String::new();
+	let mut column = 0;
+	for (index, chunk) in text.split('\t').enumerate() {
+		if index != 0 {
+			let spaces = 4 - column % 4;
+			out.extend(std::iter::repeat_n(' ', spaces));
+			column += spaces;
+		}
+		let safe = terminal_safe(chunk);
+		column += display_width(&safe);
+		out.push_str(&safe);
+	}
+	out
+}
+
 /// How many terminal columns a piece of already-escaped text occupies. A
 /// caret is placed with this rather than by counting characters, because an
 /// East Asian wide character occupies two columns and a combining mark none.
@@ -652,6 +672,13 @@ mod tests {
 	use super::*;
 	use crate::session::Session;
 	use rune::Context;
+
+	#[test]
+	fn source_tabs_follow_rendered_width_and_other_controls_stay_escaped() {
+		assert_eq!(source_line("\t \u{1b}界\tX"), "     \\u{1b}界   X");
+		assert_eq!(source_line("a\t\tX"), "a       X");
+		assert_eq!(source_line("e\u{301}\tX"), "e\u{301}   X");
+	}
 
 	fn context() -> Context {
 		let mut context = Context::with_default_modules().unwrap();

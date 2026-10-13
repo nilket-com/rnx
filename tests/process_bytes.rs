@@ -198,7 +198,7 @@ fn a_missing_method_on_bytes_is_named_rather_than_hashed() {
 	assert_eq!(ran.code, 1);
 	assert!(
 		ran.stderr
-			.contains("no method `frobnicate` on `::std::bytes::Bytes`"),
+			.contains("no method `frobnicate` on `std::bytes::Bytes`"),
 		"{}",
 		ran.stderr
 	);

@@ -305,7 +305,7 @@ fn links_nonunicode_fifo_and_permission_refusals() {
 	}
 	assert!(!t.path("not-created").exists());
 	std::fs::create_dir(t.path("denied")).unwrap();
-	std::fs::set_permissions(t.path("denied"), std::fs::Permissions::from_mode(0)).unwrap();
+	std::fs::set_permissions(t.path("denied"), std::fs::Permissions::from_mode(0o000)).unwrap();
 	if unsafe { libc::geteuid() } != 0 {
 		t.err("fs::exists(\"denied/child\")", "denied/child");
 	}

@@ -1,63 +1,13 @@
-//! Naming the method in a missing-instance-function diagnostic.
+//! Prove a missing method's name from structured Rune error identity.
 //!
-//! Rune's error carries a hash and the instance type and no name, and
-//! `VmErrorKind` is crate-private in 0.14.1 — still `pub(crate)` in 0.14.2,
-//! from a byte-identical `vm_error.rs` — so the two are read out of the
-//! rendered message. The name is then recovered by proof rather than by
-//! reading: every identifier the script uses in method position is hashed
-//! against the instance type, and one is printed only when its hash is the
-//! one the error carries.
-//!
-//! Reading is not enough because the fault position points at the receiver.
-//! For `counts.values().sum()` the span starts at `counts`, so taking the
-//! first method name in the line would confidently name `values` when the
-//! missing one is `sum`.
-use rune::Hash;
-use rune::SourceId;
-use rune::ast;
+//! Fault spans identify the receiver, so a chain cannot be named by taking its
+//! first method. Hash the source's method candidates against the receiver's
+//! type hash; use the linked runtime's receiver display name only after proof.
 use rune::parse::Parser;
-#[cfg(test)]
-use rune::runtime::{TypeHash, TypeOf};
+use rune::runtime::{TypeHash, VmError};
+use rune::{Hash, SourceId, ast};
 
-const OPENING: &str = "Missing instance function `";
-const BETWEEN: &str = "` for `";
-
-/// The displayed name and type hash of each type a script commonly calls a
-/// method on, taken from the linked Rune rather than written down, so the two
-/// cannot disagree with the version in use. Record 0140: `named` no longer
-/// looks types up here (it computes a type's hash from its printed path, for
-/// every type); the table remains the equivalence test's reference.
-#[cfg(test)]
-pub fn known_types() -> Vec<(String, Hash)> {
-	macro_rules! entry {
-		($t:ty) => {
-			(
-				format!("{}", <$t as TypeOf>::type_info()),
-				<$t as TypeHash>::HASH,
-			)
-		};
-	}
-	std::vec![
-		entry!(rune::runtime::Vec),
-		entry!(rune::runtime::Object),
-		entry!(rune::alloc::String),
-		entry!(rune::runtime::Tuple),
-		entry!(rune::runtime::Bytes),
-		entry!(rune::runtime::Range),
-		entry!(i64),
-		entry!(f64),
-		entry!(bool),
-		entry!(char),
-	]
-}
-
-/// The identifiers the source uses in method position, in the order they
-/// appear and without repeats.
-///
-/// This reads Rune's own tokens rather than the text, so whitespace and a
-/// comment between the dot and the name are handled the way the compiler
-/// handles them, an identifier inside a string literal is not a candidate,
-/// and a tuple index or a range is not one either.
+/// Distinct method-position identifiers read with Rune's own lexer.
 pub fn method_candidates(source: &str) -> Vec<String> {
 	let mut parser = Parser::new(source, SourceId::EMPTY, false);
 	let mut found: Vec<String> = Vec::new();
@@ -83,61 +33,15 @@ pub fn method_candidates(source: &str) -> Vec<String> {
 	found
 }
 
-/// The type hash of a printed type path such as `::polars::DataFrame`, as
-/// Rune derives it (`Hash::type_hash` of the item with the first segment as
-/// its crate), or `None` when the path isn't one: it must start with `::`,
-/// have at least two segments, and each segment must be exactly one
-/// identifier as Rune's own lexer reads it. So empty segments, a trailing
-/// `::`, whitespace or control characters, generic or tuple syntax and a
-/// segment beginning with a digit are all refused, and an identifier Rune
-/// accepts (Unicode included) is accepted.
-pub fn type_hash_of(path: &str) -> Option<Hash> {
-	let parts: Vec<&str> = path.strip_prefix("::")?.split("::").collect();
-	if parts.len() < 2 || !parts.iter().all(|p| is_identifier(p)) {
-		return None;
-	}
-	let item = rune::ItemBuf::with_crate_item(parts[0], parts[1..].iter().copied()).ok()?;
-	Some(Hash::type_hash(&item))
-}
-
-/// Exactly one identifier token spanning the whole text, by Rune's lexer.
-fn is_identifier(text: &str) -> bool {
-	if text.is_empty() {
-		return false;
-	}
-	let mut parser = Parser::new(text, SourceId::EMPTY, false);
-	let Ok(token) = parser.parse::<ast::Token>() else {
-		return false;
-	};
-	matches!(token.kind, ast::Kind::Ident(..))
-		&& token.span.range() == (0..text.len())
-		&& parser.is_eof().unwrap_or(false)
-}
-
-/// The receiver a fallible chain leaves when `?` is missing.
-const RESULT: &str = "::std::result::Result";
-
-/// A sentence naming the method, or `None` to leave the message alone.
-///
-/// Every step can fail: a message that no longer parses, a type rnx has no
-/// entry for, a name the source never spells. Each falls back to the message
-/// Rune produced, which is a poor answer and still a true one.
-pub fn named(message: &str, source: &str) -> Option<String> {
-	// The whole message must be this diagnostic, beginning and end. Matching
-	// the pattern anywhere would rewrite any error that quotes it, and a
-	// panic carrying the text of one is still a panic: the hash would match a
-	// candidate and name a method that was never called.
-	let rest = message.strip_prefix(OPENING)?;
-	let end = rest.find(BETWEEN)?;
-	let hash = &rest[..end];
-	let instance = rest[end + BETWEEN.len()..].strip_suffix('`')?;
-	let type_hash = type_hash_of(instance)?;
+/// Name a root missing-instance-function error, or preserve Rune's diagnostic.
+/// Panics quoting a diagnostic and absent source candidates cannot acquire a name.
+pub fn named(error: &VmError, source: &str) -> Option<String> {
+	let missing = error.missing_instance_function()?;
 	let name = method_candidates(source).into_iter().find(|candidate| {
-		Hash::associated_function(type_hash, candidate.as_str()).to_string() == hash
+		Hash::associated_function(missing.instance, candidate.as_str()) == missing.hash
 	})?;
-	// Proven receiver and proven name: an unwrapped `Result` is the usual
-	// cause, so say so, without guessing which call produced it.
-	if instance == RESULT {
+	let instance = missing.instance_name();
+	if missing.instance == <std::result::Result<rune::Value, rune::Value> as TypeHash>::HASH {
 		return Some(format!(
 			"no method `{name}` on `{instance}` (this value is a `Result`; did you mean to unwrap it with `?` first?)"
 		));
@@ -149,31 +53,21 @@ pub fn named(message: &str, source: &str) -> Option<String> {
 mod tests {
 	use super::*;
 
-	#[test]
-	fn the_map_comes_from_the_linked_rune_and_reproduces_a_reported_hash() {
-		let types = known_types();
-		let (_, sequence) = types
-			.iter()
-			.find(|(name, _)| name == "::std::vec::Vec")
-			.expect("the sequence type is in the map");
-		// The hash the second port's diagnostic actually reported, and the
-		// pair it stands for. A Rune that hashes differently fails here rather
-		// than silently naming nothing.
-		assert_eq!(
-			Hash::associated_function(*sequence, "join").to_string(),
-			"0xf77d93259f11131a"
+	fn failure(expression: &str) -> VmError {
+		let context = rune::Context::with_default_modules().unwrap();
+		let mut sources = rune::Sources::new();
+		sources
+			.insert(rune::Source::memory(format!("pub fn main() {{ {expression} }}")).unwrap())
+			.unwrap();
+		let unit = rune::prepare(&mut sources)
+			.with_context(&context)
+			.build()
+			.unwrap();
+		let mut vm = rune::Vm::new(
+			rune::alloc::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+			rune::alloc::sync::Arc::try_new(unit).unwrap(),
 		);
-		assert_eq!(
-			Hash::associated_function(*sequence, "contains").to_string(),
-			"0x7514a9c8fb463f51"
-		);
-		// The displayed names come from the same types, not from this file.
-		for expected in ["::std::object::Object", "::std::string::String"] {
-			assert!(
-				types.iter().any(|(name, _)| name == expected),
-				"{expected} is missing from {types:?}"
-			);
-		}
+		vm.call(["main"], ()).unwrap_err()
 	}
 
 	#[test]
@@ -216,141 +110,45 @@ mod tests {
 	}
 
 	#[test]
-	fn a_message_that_does_not_parse_is_left_alone() {
-		assert_eq!(named("something else entirely", "a.join(b)"), None);
-		// A panic that quotes the diagnostic is still a panic. The candidate's
-		// hash would match; the fault is not a missing method, so the whole
-		// message has to be this diagnostic and not merely contain it.
+	fn receiver_and_method_identity_come_from_the_linked_error() {
+		let error = failure("[1].missing()");
+		let missing = error.missing_instance_function().unwrap();
+		assert_eq!(missing.instance, <rune::runtime::Vec as TypeHash>::HASH);
 		assert_eq!(
-			named(
-				"Panicked: Missing instance function `0xf77d93259f11131a` for `::std::vec::Vec`",
-				"a.join(b)"
-			),
-			None
+			missing.hash,
+			Hash::associated_function(missing.instance, "missing")
 		);
-		// Trailing text means the message is something else too.
 		assert_eq!(
-			named(
-				"Missing instance function `0xf77d93259f11131a` for `::std::vec::Vec` while resolving",
-				"a.join(b)"
-			),
-			None
+			named(&error, "parts.iter().missing()"),
+			Some("no method `missing` on `std::vec::Vec`".into())
 		);
-		// A type with no entry falls back rather than guessing.
+		assert_eq!(named(&error, "parts.copy()"), None);
+	}
+
+	#[test]
+	fn chains_name_the_missing_call_on_an_iterator_type() {
+		let source = "#{a: 1}.values().sum()";
+		let error = failure(source);
 		assert_eq!(
-			named(
-				"Missing instance function `0x1` for `::std::object::Values`",
-				"a.sum()"
-			),
-			None
-		);
-		// A name the source never spells falls back too.
-		assert_eq!(
-			named(
-				"Missing instance function `0xf77d93259f11131a` for `::std::vec::Vec`",
-				"a.push(1)"
-			),
-			None
+			named(&error, source),
+			Some("no method `sum` on `std::object::Values`".into())
 		);
 	}
 
 	#[test]
-	fn a_name_is_proved_before_it_is_printed() {
-		let message = "Missing instance function `0xf77d93259f11131a` for `::std::vec::Vec`";
-		assert_eq!(
-			named(message, "let joined = parts.join(UNIT);").unwrap(),
-			"no method `join` on `::std::vec::Vec`"
-		);
-		// The proof is what makes a chain right: `join` is not the first name
-		// in this source, and it is still the one named.
-		assert_eq!(
-			named(message, "parts.iter().map(f).join(UNIT)").unwrap(),
-			"no method `join` on `::std::vec::Vec`"
-		);
-	}
-
-	// ---- record 0140: every type, by its printed path ----
-
-	#[test]
-	fn computed_hashes_equal_the_linked_types_and_result() {
-		for (name, hash) in known_types() {
-			assert_eq!(type_hash_of(&name), Some(hash), "{name}");
-		}
-		let result = <std::result::Result<rune::Value, rune::Value> as TypeHash>::HASH;
-		assert_eq!(type_hash_of(RESULT), Some(result));
+	fn result_hint_uses_receiver_identity() {
+		let source = "Ok(1).missing()";
+		let error = failure(source);
+		assert_eq!(named(&error, source), Some("no method `missing` on `std::result::Result` (this value is a `Result`; did you mean to unwrap it with `?` first?)".into()));
+		assert_eq!(named(&error, "x.other()"), None);
 	}
 
 	#[test]
-	fn malformed_paths_are_refused() {
-		for path in [
-			"",
-			"::",
-			"polars::DataFrame",
-			"::polars",
-			"::polars::",
-			"::polars::::DataFrame",
-			"::polars:: DataFrame",
-			"::polars::Data Frame",
-			"::polars::DataFrame\n",
-			"::polars::Data\u{7}Frame",
-			"::std::vec::Vec<i64>",
-			"::std::(i64, i64)",
-			"::polars::2DataFrame",
-			"::polars::fn",
-		] {
-			assert_eq!(type_hash_of(path), None, "{path:?}");
-		}
-		// an identifier Rune's lexer accepts, Unicode included
-		assert!(type_hash_of("::polars::DataFrame").is_some());
-		assert!(
-			type_hash_of("::crate_\u{e9}::Tabl\u{e9}").is_some() == is_identifier("Tabl\u{e9}")
-		);
-	}
-
-	fn diagnostic(path: &str, method: &str) -> String {
-		let hash = Hash::associated_function(type_hash_of(path).unwrap(), method);
-		format!("Missing instance function `{hash}` for `{path}`")
-	}
-
-	#[test]
-	fn adapter_types_are_named_and_a_result_gets_the_hint() {
-		let m = diagnostic("::polars::DataFrame", "clone");
-		assert_eq!(
-			named(&m, "let t = frame.clone();").as_deref(),
-			Some("no method `clone` on `::polars::DataFrame`")
-		);
-		let m = diagnostic("::candle::Tensor", "frobnicate");
-		assert_eq!(
-			named(&m, "t.frobnicate()").as_deref(),
-			Some("no method `frobnicate` on `::candle::Tensor`")
-		);
-		let m = diagnostic(RESULT, "sort");
-		let got = named(&m, "opts.with_order_descending_multi([true]).sort([])").unwrap();
-		assert!(
-			got.starts_with(
-				"no method `sort` on `::std::result::Result` (this value is a `Result`"
-			),
-			"{got}"
-		);
-		assert!(got.contains("`?`"), "{got}");
-	}
-
-	#[test]
-	fn unprovable_cases_keep_the_hash() {
-		// no candidate in the source spells the method
-		let m = diagnostic("::polars::DataFrame", "clone");
-		assert_eq!(named(&m, "let t = frame.copy();"), None);
-		// a Result receiver with no proven name gets no hint either
-		let m = diagnostic(RESULT, "sort");
-		assert_eq!(named(&m, "x.select_()"), None);
-		// the diagnostic quoted inside other text
-		let quoted = format!("Panicked: {}", diagnostic("::polars::DataFrame", "clone"));
-		assert_eq!(named(&quoted, "frame.clone()"), None);
-		// a malformed path in an otherwise well-formed diagnostic
-		let m = format!(
-			"Missing instance function `{}` for `::std::vec::Vec<i64>`",
-			Hash::associated_function(type_hash_of("::std::vec::Vec").unwrap(), "clone")
-		);
-		assert_eq!(named(&m, "v.clone()"), None);
+	fn quoted_and_unrelated_errors_are_never_rewritten() {
+		let error =
+			VmError::panic("Missing instance function `0xf77d93259f11131a` for `::std::vec::Vec`");
+		assert!(error.missing_instance_function().is_none());
+		assert_eq!(named(&error, "parts.join(())"), None);
+		assert_eq!(named(&VmError::panic("unrelated"), "x.missing()"), None);
 	}
 }

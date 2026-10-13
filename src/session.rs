@@ -1035,7 +1035,7 @@ impl Session {
 			.as_ref()
 			.and_then(|o| o.input.checked_sub(1))
 			.and_then(|index| self.inputs.get(index))
-			.and_then(|source| crate::method::named(&message, source));
+			.and_then(|source| crate::method::named(&error, source));
 		let message = named.unwrap_or(message);
 		Failure::Runtime { message, origin }
 	}
@@ -2161,7 +2161,13 @@ mod method_naming_tests {
 					"{message}"
 				);
 				assert!(
-					crate::method::named(&message, "if false { 1.missing(); } old(1)").is_some()
+					message.contains(
+						&rune::Hash::associated_function(
+							<i64 as rune::runtime::TypeHash>::HASH,
+							"missing",
+						)
+						.to_string()
+					)
 				);
 			}
 			other => panic!("{other:?}"),
@@ -2180,7 +2186,7 @@ mod method_naming_tests {
 				.unwrap_err()
 				.to_string();
 			if failure.contains("was exhausted at that point") && failure.contains("no method") {
-				assert!(failure.contains(&format!("no method `missing` on `::std::i64`; the budget of {budget} instructions was exhausted at that point")), "{failure}");
+				assert!(failure.contains(&format!("no method `missing` on `std::i64`; the budget of {budget} instructions was exhausted at that point")), "{failure}");
 				found = true;
 				break;
 			}

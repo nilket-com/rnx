@@ -1,9 +1,6 @@
 use super::*;
-use rune::{Context, Diagnostics, Vm};
-use std::sync::{
-	Arc,
-	atomic::{AtomicUsize, Ordering},
-};
+use rune::{Context, Diagnostics, Vm, sync::Arc};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct Tree(PathBuf);
 impl Tree {
@@ -66,8 +63,8 @@ fn value(entry: &Path, loader: &mut Loader) -> rune::Value {
 	let (_, unit, diagnostics) = compile(entry, loader);
 	let context = Context::with_default_modules().unwrap();
 	Vm::new(
-		Arc::new(context.runtime().unwrap()),
-		Arc::new(unit.unwrap_or_else(|e| panic!("{e}: {diagnostics:?}"))),
+		Arc::try_new(context.runtime().unwrap()).unwrap(),
+		Arc::try_new(unit.unwrap_or_else(|e| panic!("{e}: {diagnostics:?}"))).unwrap(),
 	)
 	.call(["main"], ())
 	.unwrap()
@@ -177,11 +174,16 @@ fn diamonds_have_distinct_types_and_charge_both_reads() {
 	short.limit = total - 1;
 	assert!(compile(&entry, &mut short).1.is_err());
 	assert!(short.exhausted);
+	let mut sources = Sources::new();
+	let source_id = sources
+		.insert(rune::Source::with_path(entry.to_string_lossy(), "", &entry).unwrap())
+		.unwrap();
 	let opens = short.opens;
 	assert!(
 		short
 			.load(
-				&entry,
+				&sources,
+				source_id,
 				&rune::ItemBuf::with_item(["right", "shared"]).unwrap(),
 				&rune::ast::Span::empty()
 			)
@@ -219,9 +221,9 @@ fn faults_and_named_fields_keep_the_dependency_source() {
 	let fault = t.write("pkg/nested.rn", "pub fn value() {\n  1.missing()\n}");
 	let mut loader = t.loader(&[("pkg", "pkg")]);
 	let (sources, unit, errors) = compile(&entry, &mut loader);
-	let unit = Arc::new(unit.unwrap_or_else(|e| panic!("{e}: {errors:?}")));
+	let unit = Arc::try_new(unit.unwrap_or_else(|e| panic!("{e}: {errors:?}"))).unwrap();
 	let context = Context::with_default_modules().unwrap();
-	let error = Vm::new(Arc::new(context.runtime().unwrap()), unit)
+	let error = Vm::new(Arc::try_new(context.runtime().unwrap()).unwrap(), unit)
 		.call(["main"], ())
 		.unwrap_err();
 	let location = error.first_location().unwrap();
@@ -237,7 +239,7 @@ fn faults_and_named_fields_keep_the_dependency_source() {
 		crate::session::position(&text.text, inst.span.range().start).0,
 		2
 	);
-	let named = crate::method::named(&error.to_string(), &text.text).unwrap();
+	let named = crate::method::named(&error, &text.text).unwrap();
 	assert!(named.contains("missing"), "{named}");
 	t.write("pkg/nested.rn", "pub fn value() {\n let x = ;\n}");
 	let mut loader = t.loader(&[("pkg", "pkg")]);
@@ -312,11 +314,16 @@ fn real_allowance_counts_each_alias_and_stops_before_a_later_open() {
 	assert!(loader.exhausted);
 	assert!(format!("{errors:?}").contains("8388608 bytes"));
 	assert_eq!(loader.opens, 3);
+	let mut sources = Sources::new();
+	let source_id = sources
+		.insert(rune::Source::with_path(entry.to_string_lossy(), "", &entry).unwrap())
+		.unwrap();
 	let opens = loader.opens;
 	assert!(
 		loader
 			.load(
-				&entry,
+				&sources,
+				source_id,
 				&rune::ItemBuf::with_item(["left"]).unwrap(),
 				&rune::ast::Span::empty()
 			)

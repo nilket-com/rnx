@@ -9,7 +9,7 @@
 //! to standard output, which is a guarantee this module preserves rather
 //! than introduces.
 use crate::declared::Fields;
-use crate::format::{display_width, render_complete_styled, terminal_safe};
+use crate::format::{display_width, render_complete_styled, source_line, terminal_safe};
 use crate::presentation;
 use crate::program::{Loader, Text};
 use crate::session::position;
@@ -79,16 +79,16 @@ fn located(kind: &str, path: &str, text: &str, offset: usize, message: &str) {
 			terminal_safe(message)
 		))
 	);
-	eprintln!("  {}", terminal_safe(&line_text));
-	// Placed by the display width of the escaped prefix that was actually
-	// printed above: an escape, a tab and a wide character each occupy
+	eprintln!("  {}", source_line(&line_text));
+	// Placed by the display width of the rendered prefix that was actually
+	// printed above: escaped controls, four-column tabs and wide text occupy
 	// something other than the one column a character count assumes.
 	let prefix: String = line_text.chars().take(column.saturating_sub(1)).collect();
 	eprintln!(
 		"{}",
 		presentation::caret(&format!(
 			"  {}^",
-			" ".repeat(display_width(&terminal_safe(&prefix)))
+			" ".repeat(display_width(&source_line(&prefix)))
 		))
 	);
 }
@@ -364,9 +364,8 @@ pub(crate) fn run_loaded(
 			// Rune reports a missing method by hash. Record 0014 recovers
 			// the name when it can be proved, and leaves the message alone
 			// when it cannot.
-			let message = error.to_string();
 			let origin = fault_source(&error, &unit, &sources, &loader);
-			let message = named_fault(message, origin);
+			let message = named_fault(&error, origin);
 			match origin {
 				Some((source, offset)) => located(
 					"runtime error",
@@ -423,10 +422,10 @@ pub fn returned(value: &Value) -> std::result::Result<Value, Value> {
 }
 
 // The origin is the only candidate source, including when attribution fails.
-fn named_fault(message: String, origin: Option<(&Text, usize)>) -> String {
+fn named_fault(error: &rune::runtime::VmError, origin: Option<(&Text, usize)>) -> String {
 	origin
-		.and_then(|(source, _)| crate::method::named(&message, &source.text))
-		.unwrap_or(message)
+		.and_then(|(source, _)| crate::method::named(error, &source.text))
+		.unwrap_or_else(|| error.to_string())
 }
 
 #[cfg(test)]
@@ -448,16 +447,13 @@ mod module_tests {
 		let error = vm.call(["main"], ((),)).unwrap_err();
 		let original = error.to_string();
 		assert!(original.contains("Missing instance function"));
-		assert!(crate::method::named(&original, &loader.texts[0].text).is_some());
+		assert!(crate::method::named(&error, &loader.texts[0].text).is_some());
 		let origin = fault_source(&error, &unit, &sources, &loader).unwrap();
 		assert!(origin.0.path.ends_with("broken.rn"));
-		assert!(named_fault(original.clone(), Some(origin)).contains("no method `missing`"));
+		assert!(named_fault(&error, Some(origin)).contains("no method `missing`"));
 		let empty = Sources::new();
 		assert_eq!(
-			named_fault(
-				original.clone(),
-				fault_source(&error, &unit, &empty, &loader)
-			),
+			named_fault(&error, fault_source(&error, &unit, &empty, &loader)),
 			original
 		);
 		let different = Arc::try_new(
