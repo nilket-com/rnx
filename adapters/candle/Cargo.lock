@@ -482,7 +482,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1083,7 +1083,7 @@ dependencies = [
  "portable-atomic",
  "portable-atomic-util",
  "serde_core",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1570,7 +1570,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1840,7 +1840,7 @@ dependencies = [
 [[package]]
 name = "rune"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=03b1aa4dc29e4125392d0e03dab12bc408bf701d#03b1aa4dc29e4125392d0e03dab12bc408bf701d"
+source = "git+https://github.com/nilket-com/rune?rev=f98eb825934d4994478a1759cf340e90d8c5f12f#f98eb825934d4994478a1759cf340e90d8c5f12f"
 dependencies = [
  "anyhow",
  "futures-core",
@@ -1864,7 +1864,7 @@ dependencies = [
 [[package]]
 name = "rune-alloc"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=03b1aa4dc29e4125392d0e03dab12bc408bf701d#03b1aa4dc29e4125392d0e03dab12bc408bf701d"
+source = "git+https://github.com/nilket-com/rune?rev=f98eb825934d4994478a1759cf340e90d8c5f12f#f98eb825934d4994478a1759cf340e90d8c5f12f"
 dependencies = [
  "ahash",
  "musli-core",
@@ -1876,7 +1876,7 @@ dependencies = [
 [[package]]
 name = "rune-alloc-macros"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=03b1aa4dc29e4125392d0e03dab12bc408bf701d#03b1aa4dc29e4125392d0e03dab12bc408bf701d"
+source = "git+https://github.com/nilket-com/rune?rev=f98eb825934d4994478a1759cf340e90d8c5f12f#f98eb825934d4994478a1759cf340e90d8c5f12f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1886,7 +1886,7 @@ dependencies = [
 [[package]]
 name = "rune-core"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=03b1aa4dc29e4125392d0e03dab12bc408bf701d#03b1aa4dc29e4125392d0e03dab12bc408bf701d"
+source = "git+https://github.com/nilket-com/rune?rev=f98eb825934d4994478a1759cf340e90d8c5f12f#f98eb825934d4994478a1759cf340e90d8c5f12f"
 dependencies = [
  "rune-alloc",
  "serde",
@@ -1896,7 +1896,7 @@ dependencies = [
 [[package]]
 name = "rune-macros"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=03b1aa4dc29e4125392d0e03dab12bc408bf701d#03b1aa4dc29e4125392d0e03dab12bc408bf701d"
+source = "git+https://github.com/nilket-com/rune?rev=f98eb825934d4994478a1759cf340e90d8c5f12f#f98eb825934d4994478a1759cf340e90d8c5f12f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1907,7 +1907,7 @@ dependencies = [
 [[package]]
 name = "rune-tracing"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=03b1aa4dc29e4125392d0e03dab12bc408bf701d#03b1aa4dc29e4125392d0e03dab12bc408bf701d"
+source = "git+https://github.com/nilket-com/rune?rev=f98eb825934d4994478a1759cf340e90d8c5f12f#f98eb825934d4994478a1759cf340e90d8c5f12f"
 dependencies = [
  "rune-tracing-macros",
 ]
@@ -1915,7 +1915,7 @@ dependencies = [
 [[package]]
 name = "rune-tracing-macros"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=03b1aa4dc29e4125392d0e03dab12bc408bf701d#03b1aa4dc29e4125392d0e03dab12bc408bf701d"
+source = "git+https://github.com/nilket-com/rune?rev=f98eb825934d4994478a1759cf340e90d8c5f12f#f98eb825934d4994478a1759cf340e90d8c5f12f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1938,7 +1938,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2276,7 +2276,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2755,7 +2755,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]

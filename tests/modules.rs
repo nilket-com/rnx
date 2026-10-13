@@ -89,7 +89,7 @@ fn nested_compile_and_runtime_errors_keep_their_source_and_caret() {
 	assert_eq!(out.status.code(), Some(1));
 	assert!(
 		error.contains(&format!(
-			"runtime error at {}, line 2, column 5: no method `only_in_module` on `::std::i64`",
+			"runtime error at {}, line 2, column 5: no method `only_in_module` on `std::i64`",
 			app.0.join("a/b.rn").display()
 		)),
 		"{error}"

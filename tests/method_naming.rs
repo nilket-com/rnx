@@ -36,7 +36,7 @@ fn all_entry_points_name_the_same_fault_without_moving_its_caret() {
 		invoke(&[], "1.missing()\n:quit\n"),
 	] {
 		assert!(
-			text.contains("column 1: no method `missing` on `::std::i64`\n  1.missing()\n  ^"),
+			text.contains("column 1: no method `missing` on `std::i64`\n  1.missing()\n  ^"),
 			"{text}"
 		);
 		assert!(!text.contains("0x"));
@@ -69,7 +69,7 @@ fn retained_sources_supply_the_name_across_renumber_and_redefinition() {
 fn chains_are_named_on_every_type_and_quoted_errors_are_unchanged() {
 	let text = invoke(&[], "\"abc\".to_uppercase().frobnicate()\n:quit\n");
 	assert!(
-		text.contains("no method `frobnicate` on `::std::string::String`"),
+		text.contains("no method `frobnicate` on `std::string::String`"),
 		"{text}"
 	);
 	// Record 0140: a type outside 0040's ten-entry table (here an iterator
@@ -78,7 +78,7 @@ fn chains_are_named_on_every_type_and_quoted_errors_are_unchanged() {
 	for args in [vec!["eval", "#{a: 1}.values().frobnicate()"], vec![]] {
 		let text = invoke(&args, "#{a: 1}.values().frobnicate()\n:quit\n");
 		assert!(
-			text.contains("no method `frobnicate` on `::std::object::Values`"),
+			text.contains("no method `frobnicate` on `std::object::Values`"),
 			"{text}"
 		);
 		assert!(!text.contains("Missing instance function `0x"), "{text}");
@@ -92,4 +92,25 @@ fn chains_are_named_on_every_type_and_quoted_errors_are_unchanged() {
 		"{text}"
 	);
 	assert!(!text.contains("no method"));
+}
+
+#[test]
+fn values_sum_chain_keeps_its_friendly_method_name() {
+	let source = "let counts = #{a: 1}; counts.values().sum()";
+	let dir = harness::scratch("values-sum");
+	let file = dir.join("fault.rn");
+	std::fs::write(&file, format!("pub fn main(_) {{ {source} }}")).unwrap();
+	for text in [
+		invoke(&["run", file.to_str().unwrap()], ""),
+		invoke(&["eval", source], ""),
+		invoke(&[], &format!("{source}\n:quit\n")),
+	] {
+		assert!(
+			text.contains("no method `sum` on `std::object::Values`"),
+			"{text}"
+		);
+		assert!(!text.contains("no method `values`"), "{text}");
+		assert!(!text.contains("Missing instance function `0x"), "{text}");
+	}
+	std::fs::remove_dir_all(dir).unwrap();
 }

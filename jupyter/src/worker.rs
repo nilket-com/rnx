@@ -23,6 +23,15 @@ use tokio::{
 	time::{Duration, Instant, timeout},
 };
 
+pub(crate) const RUNE_VERSION: &str = "0.15.0 (git f98eb825934d4994478a1759cf340e90d8c5f12f)";
+
+fn identity_matches(ready: &Value) -> bool {
+	ready["type"] == "ready"
+		&& ready["protocol"] == 1
+		&& ready["rnx"] == "0.0.0"
+		&& ready["rune"] == RUNE_VERSION
+}
+
 #[derive(Default)]
 struct SignalState {
 	active: bool,
@@ -335,12 +344,8 @@ impl Worker {
 			.await?
 			.ok_or("worker died before ready")?
 			.value;
-		if ready["type"] != "ready"
-			|| ready["protocol"] != 1
-			|| ready["rnx"] != "0.0.0"
-			|| ready["rune"] != "0.15.0 (git 03b1aa4dc29e4125392d0e03dab12bc408bf701d)"
-		{
-			return Err(format!("incompatible worker: expected protocol 1, rnx 0.0.0, Rune 0.15.0 (git 03b1aa4dc29e4125392d0e03dab12bc408bf701d); received protocol {}, rnx {}, Rune {}",ready["protocol"],ready["rnx"],ready["rune"]).into());
+		if !identity_matches(&ready) {
+			return Err(format!("incompatible worker: expected protocol 1, rnx 0.0.0, Rune {RUNE_VERSION}; received protocol {}, rnx {}, Rune {}",ready["protocol"],ready["rnx"],ready["rune"]).into());
 		}
 		Ok(worker)
 	}
@@ -577,5 +582,46 @@ impl Drop for Worker {
 	fn drop(&mut self) {
 		self.interrupt.disable();
 		self.tasks.abort_all();
+	}
+}
+
+#[cfg(test)]
+mod identity_tests {
+	use super::*;
+
+	#[test]
+	fn the_worker_requirement_tracks_the_root_rune_pin() {
+		let manifest = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../Cargo.toml"));
+		let dependency = manifest
+			.lines()
+			.find(|line| line.starts_with("rune = "))
+			.unwrap();
+		let revision = dependency
+			.split("rev = \"")
+			.nth(1)
+			.unwrap()
+			.split('"')
+			.next()
+			.unwrap();
+		assert_eq!(RUNE_VERSION, format!("0.15.0 (git {revision})"));
+	}
+
+	#[test]
+	fn only_the_exact_worker_identity_is_accepted() {
+		let ready = json!({"type":"ready","protocol":1,"rnx":"0.0.0","rune":RUNE_VERSION});
+		assert!(identity_matches(&ready));
+		for (key, bad) in [
+			("type", json!("other")),
+			("protocol", json!(2)),
+			("rnx", json!("0.0.1")),
+			(
+				"rune",
+				json!("0.15.0 (git 03b1aa4dc29e4125392d0e03dab12bc408bf701d)"),
+			),
+		] {
+			let mut wrong = ready.clone();
+			wrong[key] = bad;
+			assert!(!identity_matches(&wrong), "{wrong}");
+		}
 	}
 }

@@ -204,3 +204,12 @@ fn the_reported_column_is_a_source_position_not_a_display_column() {
 		"the caret used the source position instead of the display width"
 	);
 }
+
+#[test]
+fn mixed_source_tabs_spaces_and_wide_text_have_an_aligned_caret() {
+	let ran = run("pub fn main(_) {\n\t  let s = \"漢\";\tlet x = ;\n}\n");
+	let (column, excerpt) = caret_and_excerpt(&ran.stderr);
+	assert_eq!(excerpt, "      let s = \"漢\"; let x = ;");
+	assert_eq!(column, 28, "{}", ran.stderr);
+	assert!(!ran.stderr.contains("\\u{9}"), "{}", ran.stderr);
+}

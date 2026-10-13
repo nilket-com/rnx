@@ -244,7 +244,7 @@ fn a_missing_method_is_named_rather_than_hashed() {
 	let ran = run("pub fn main(args) {\n\tlet parts = [\"a\", \"b\"];\n\tparts.join(\"-\")\n}\n");
 	assert_eq!(ran.code, 1);
 	assert!(
-		ran.stderr.contains("no method `join` on `::std::vec::Vec`"),
+		ran.stderr.contains("no method `join` on `std::vec::Vec`"),
 		"{}",
 		ran.stderr
 	);
@@ -271,7 +271,7 @@ fn a_chain_names_the_method_that_failed_not_the_first_one() {
 	assert_eq!(ran.code, 1);
 	assert!(
 		ran.stderr
-			.contains("no method `frobnicate` on `::std::string::String`"),
+			.contains("no method `frobnicate` on `std::string::String`"),
 		"{}",
 		ran.stderr
 	);
@@ -283,7 +283,7 @@ fn a_chain_names_the_method_that_failed_not_the_first_one() {
 }
 
 #[test]
-fn a_type_outside_the_old_map_is_named_by_its_printed_path() {
+fn a_type_outside_the_old_map_is_named_by_structured_identity() {
 	// `::std::object::Values` is an iterator type outside 0040's ten-entry
 	// table. Record 0140 computes a type's hash from the path the diagnostic
 	// prints, so it is named by the same proof. This still pins the upstream
@@ -294,7 +294,7 @@ fn a_type_outside_the_old_map_is_named_by_its_printed_path() {
 	assert_eq!(ran.code, 1);
 	assert!(
 		ran.stderr
-			.contains("no method `frobnicate` on `::std::object::Values`"),
+			.contains("no method `frobnicate` on `std::object::Values`"),
 		"the upstream message shape changed: {}",
 		ran.stderr
 	);
@@ -310,8 +310,8 @@ fn a_type_outside_the_old_map_is_named_by_its_printed_path() {
 
 #[test]
 fn a_panic_that_quotes_the_diagnostic_is_still_a_panic() {
-	// The rewrite recognises the fault by the whole message, not by finding
-	// the pattern inside one. The candidate here is a real call in real code,
+	// The rewrite recognises the root fault by structured identity, not by
+	// finding diagnostic text inside a panic. The candidate here is a real call in real code,
 	// not a name in a comment, so its hash does match: what stops the rewrite
 	// is that a panic is not a missing method.
 	let ran = run(
@@ -329,7 +329,7 @@ fn a_panic_that_quotes_the_diagnostic_is_still_a_panic() {
 	// script with nothing to find.
 	let ran = run("pub fn main(_) {\n\tlet parts = [\"a\"];\n\tparts.join(\"-\")\n}\n");
 	assert!(
-		ran.stderr.contains("no method `join` on `::std::vec::Vec`"),
+		ran.stderr.contains("no method `join` on `std::vec::Vec`"),
 		"{}",
 		ran.stderr
 	);
@@ -346,7 +346,7 @@ fn a_comment_between_the_dot_and_the_name_does_not_hide_the_method() {
 		let ran = run(source);
 		assert_eq!(ran.code, 1);
 		assert!(
-			ran.stderr.contains("no method `join` on `::std::vec::Vec`"),
+			ran.stderr.contains("no method `join` on `std::vec::Vec`"),
 			"{}",
 			ran.stderr
 		);
@@ -355,8 +355,7 @@ fn a_comment_between_the_dot_and_the_name_does_not_hide_the_method() {
 	// An identifier beyond ASCII is an identifier.
 	let ran = run("pub fn main(_) {\n\tlet café = [];\n\tcafé.método(\"x\")\n}\n");
 	assert!(
-		ran.stderr
-			.contains("no method `método` on `::std::vec::Vec`"),
+		ran.stderr.contains("no method `método` on `std::vec::Vec`"),
 		"{}",
 		ran.stderr
 	);

@@ -308,7 +308,7 @@ impl Program {
 				.and_then(|d| d.instruction_at(location.ip))
 			&& let Some(text) = self.0.loader.get(&self.0.sources, instruction.source_id)
 		{
-			if let Some(named) = crate::method::named(&failure.message, &text.text) {
+			if let Some(named) = crate::method::named(&error, &text.text) {
 				failure.message = named;
 			}
 			failure = failure.locate(text, instruction.span.range().start);
@@ -1003,7 +1003,7 @@ mod source_tests {
 			.unwrap();
 		assert!(
 			failure.message().starts_with(
-				"no method `frobnicate` on `::std::result::Result` (this value is a `Result`"
+				"no method `frobnicate` on `std::result::Result` (this value is a `Result`"
 			),
 			"{}",
 			failure.message()

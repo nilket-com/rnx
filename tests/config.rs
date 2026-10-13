@@ -315,7 +315,7 @@ fn non_unicode_override_warns_and_permission_refusal_recovers() {
 			.contains("not Unicode")
 	);
 	if unsafe { libc::geteuid() } != 0 {
-		std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0)).unwrap();
+		std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o000)).unwrap();
 		let out = run(&p, &[], ":q\n", &[]);
 		assert!(out.status.success());
 		assert_eq!(

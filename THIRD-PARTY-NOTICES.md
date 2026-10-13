@@ -36,7 +36,7 @@ review of that distribution. This file is an input to it.
 
 ## The packages
 
-141 packages, 113 distinct licence texts.
+144 packages, 113 distinct licence texts.
 
 | Package | Version | Declared |
 | --- | --- | --- |
@@ -170,7 +170,10 @@ review of that distribution. This file is an input to it.
 | `want` | 0.3.1 | MIT |
 | `webpki-roots` | 1.0.9 | CDLA-Permissive-2.0 |
 | `windows-link` | 0.2.1 | MIT OR Apache-2.0 |
+| `windows-sys` | 0.52.0 | MIT OR Apache-2.0 |
 | `windows-sys` | 0.61.2 | MIT OR Apache-2.0 |
+| `windows-targets` | 0.52.6 | MIT OR Apache-2.0 |
+| `windows_x86_64_msvc` | 0.52.6 | MIT OR Apache-2.0 |
 | `winnow` | 0.7.15 | MIT |
 | `winnow` | 1.0.4 | MIT |
 | `writeable` | 0.6.4 | Unicode-3.0 |
@@ -5711,7 +5714,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.```
 
-### `windows-link 0.2.1` (license-apache-2.0) `windows-sys 0.61.2` (license-apache-2.0)
+### `windows-link 0.2.1` (license-apache-2.0) `windows-sys 0.52.0` (license-apache-2.0) `windows-sys 0.61.2` (license-apache-2.0) `windows-targets 0.52.6` (license-apache-2.0) `windows_x86_64_msvc 0.52.6` (license-apache-2.0)
 ```
                                  Apache License
                            Version 2.0, January 2004
@@ -5916,7 +5919,7 @@ SOFTWARE.```
    limitations under the License.
 ```
 
-### `windows-link 0.2.1` (license-mit) `windows-sys 0.61.2` (license-mit)
+### `windows-link 0.2.1` (license-mit) `windows-sys 0.52.0` (license-mit) `windows-sys 0.61.2` (license-mit) `windows-targets 0.52.6` (license-mit) `windows_x86_64_msvc 0.52.6` (license-mit)
 ```
     MIT License
 
