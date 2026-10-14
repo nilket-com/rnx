@@ -345,8 +345,15 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("web")?;
 	let mut registered = Vec::new();
 	macro_rules! register {
-		($name:literal,$function:expr,$doc:literal) => {
+		(fresh $name:literal, $function:expr, $doc:literal) => {
+			module.fresh_host_function($name, $function)?;
+			register!(@record $name, $doc);
+		};
+		($name:literal, $function:expr, $doc:literal) => {
 			module.function($name, $function).build()?;
+			register!(@record $name, $doc);
+		};
+		(@record $name:literal, $doc:literal) => {
 			registered.push(HostFunction {
 				path: concat!("web::", $name).into(),
 				doc: $doc,
@@ -359,7 +366,7 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"escape_html(text) -> String: HTML text/quoted-attribute escaping; &, <, >, quotes escaped again; not JS/CSS/URL validation; input/output <=1 MiB; overflow raises a VM error; borrowed"
 	);
 	register!(
-		"decode_component",
+		fresh "decode_component",
 		decode_component,
 		"decode_component(text) -> Result<String>: one percent decode, + literal, malformed % literal, invalid UTF-8 refused; input <=1 MiB; do not decode route params twice; borrowed"
 	);

@@ -336,8 +336,15 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("fs")?;
 	let mut names = Vec::new();
 	macro_rules! reg {
+		(fresh $name:ident, $doc:literal) => {{
+			module.fresh_host_function(stringify!($name), $name)?;
+			reg!(@record $name, $doc);
+		}};
 		($name:ident, $doc:literal) => {{
 			module.function(stringify!($name), $name).build()?;
+			reg!(@record $name, $doc);
+		}};
+		(@record $name:ident, $doc:literal) => {{
 			names.push(HostFunction {
 				path: concat!("fs::", stringify!($name)).into(),
 				doc: $doc,
@@ -345,7 +352,7 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		}};
 	}
 	reg!(
-		read,
+		fresh read,
 		"read(path) -> Result<String>: a regular file as UTF-8, up to 8 MiB; use read_bytes for other bytes"
 	);
 	reg!(
@@ -365,7 +372,7 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"append(path, data) -> Result<()>: create or append String or Bytes"
 	);
 	reg!(
-		exists,
+		fresh exists,
 		"exists(path) -> Result<bool>: false for missing or dangling; errors remain errors"
 	);
 	reg!(
@@ -377,40 +384,40 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"read_dir(path) -> Result<Vec<String>>: Unicode entry names, byte-sorted, up to 100000"
 	);
 	reg!(
-		absolute,
+		fresh absolute,
 		"absolute(path) -> Result<String>: canonicalize an existing path"
 	);
 	reg!(
-		cwd,
+		fresh cwd,
 		"cwd() -> Result<String>: the working directory, without lossy conversion"
 	);
 	reg!(
-		temp_dir,
+		fresh temp_dir,
 		"temp_dir() -> Result<String>: the temporary directory, without lossy conversion"
 	);
-	reg!(mkdir, "mkdir(path) -> Result<()>: create one directory");
+	reg!(fresh mkdir, "mkdir(path) -> Result<()>: create one directory");
 	reg!(
-		mkdir_all,
+		fresh mkdir_all,
 		"mkdir_all(path) -> Result<()>: create all missing parent directories"
 	);
 	reg!(
-		copy,
+		fresh copy,
 		"copy(from, to) -> Result<()>: copy bytes and permissions to an exclusively created file; failure can leave a partial destination"
 	);
 	reg!(
-		rename,
+		fresh rename,
 		"rename(from, to) -> Result<()>: atomically rename without replacing a destination; no fallback"
 	);
 	reg!(
-		remove_file,
+		fresh remove_file,
 		"remove_file(path) -> Result<()>: remove a file or a symlink, not its target"
 	);
 	reg!(
-		remove_dir,
+		fresh remove_dir,
 		"remove_dir(path) -> Result<()>: remove an empty directory"
 	);
 	reg!(
-		remove_dir_all,
+		fresh remove_dir_all,
 		"remove_dir_all(path) -> Result<()>: remove a tree without following symlinks; refuse root, cwd and ancestors"
 	);
 	context.install(module)?;
