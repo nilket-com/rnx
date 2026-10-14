@@ -56,7 +56,7 @@ hyper = { version = "=1.11.1", default-features = false, features = ["server", "
 hyper-util = { version = "=0.1.20", default-features = false, features = ["server", "http1", "service", "tokio"], optional = true }
 rnx-project = { path = "tools/project", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
-rune = { git = "https://github.com/nilket-com/rune", rev = "f98eb825934d4994478a1759cf340e90d8c5f12f", default-features = false, features = ["std", "fmt"] }
+rune = { git = "https://github.com/nilket-com/rune", rev = "27d8b6711fa15a20726ebefe4c6ed3934a56190b", default-features = false, features = ["std", "fmt", "fresh-core"] }
 serde_json = "1.0.149"
 jiff = { version = "=0.2.24", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo"] }
 libc = "0.2.177"

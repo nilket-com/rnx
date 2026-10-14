@@ -84,8 +84,15 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("text")?;
 	let mut registered = Vec::new();
 	macro_rules! register {
+		(fresh $name:literal, $function:expr, $doc:literal) => {
+			module.fresh_host_function($name, $function)?;
+			register!(@record $name, $doc);
+		};
 		($name:literal, $function:expr, $doc:literal) => {
 			module.function($name, $function).build()?;
+			register!(@record $name, $doc);
+		};
+		(@record $name:literal, $doc:literal) => {
 			registered.push(HostFunction {
 				path: format!("text::{}", $name),
 				doc: $doc,
@@ -93,7 +100,7 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		};
 	}
 	register!(
-		"find",
+		fresh "find",
 		find,
 		"find(haystack, needle) -> Option<int>: the byte index of the first occurrence, or None"
 	);
@@ -103,7 +110,7 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		"split_max(text, count) -> Result<Vec<String>>: split on whitespace into at most count fields, the last keeping the rest verbatim; Err on a negative count"
 	);
 	register!(
-		"group_digits",
+		fresh "group_digits",
 		group_digits,
 		"group_digits(value) -> String: an integer with a comma every three digits"
 	);

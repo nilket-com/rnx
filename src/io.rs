@@ -3,8 +3,8 @@ use rune::{Context, Module};
 
 pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = Module::with_crate("io")?;
-	module.function("stdin", crate::host::stdin_read).build()?;
-	module.function("eprint", crate::host::eprint).build()?;
+	module.fresh_host_function("stdin", crate::host::stdin_read)?;
+	module.fresh_host_function("eprint", crate::host::eprint)?;
 	context.install(module)?;
 	Ok(vec![
 		crate::host::HostFunction {

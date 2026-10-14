@@ -294,11 +294,11 @@ async fn sleep(ms: i64) -> Result<(), String> {
 }
 pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("time")?;
-	module.function("now_ms", now_ms).build()?;
-	module.function("monotonic_ms", monotonic_ms).build()?;
-	module.function("format", format).build()?;
-	module.function("rfc3339", rfc3339).build()?;
-	module.function("parse", parse).build()?;
+	module.fresh_host_function("now_ms", now_ms)?;
+	module.fresh_host_function("monotonic_ms", monotonic_ms)?;
+	module.fresh_host_function("format", format)?;
+	module.fresh_host_function("rfc3339", rfc3339)?;
+	module.fresh_host_function("parse", parse)?;
 	module.function("parts", parts).build()?;
 	module.function("from_parts", from_parts).build()?;
 	module.function("sleep", sleep).build()?;
