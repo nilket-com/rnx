@@ -8,7 +8,7 @@ publish = false
 [dependencies]
 sha2 = "=0.10.9" # Legacy installation verification only.
 blake3 = "=1.8.7"
-rune = { git = "https://github.com/nilket-com/rune", rev = "27d8b6711fa15a20726ebefe4c6ed3934a56190b", default-features = false, features = ["std", "anyhow"] }
+rune = { git = "https://github.com/nilket-com/rune", rev = "0dcbba74c8430e09befa768429f6342f337d5219", default-features = false, features = ["std", "anyhow"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "=0.9.12"

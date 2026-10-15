@@ -280,7 +280,7 @@ pub(crate) fn install(
 	context: &mut rune::Context,
 ) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = rune::Module::with_crate("json")?;
-	module.function("parse", parse).build()?;
+	module.fresh_host_function("parse", parse)?;
 	module
 		.function("stringify", |value: Value| stringify(&value))
 		.build()?;
