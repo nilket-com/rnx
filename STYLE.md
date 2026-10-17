@@ -22,9 +22,11 @@ Use American spelling everywhere in prose.
 
 If a word isn't in the table, use Merriam-Webster's first spelling.
 
-**Identifiers are exempt.** Names in code, APIs, file names, CLI flags and data keys follow the API they belong to (Rust std, upstream Rune, crate metadata). Never rename an existing identifier just to change its spelling. New identifiers use American spelling.
+**Public identifiers follow their API.** Public names in code and APIs, file names, CLI flags and data keys follow the API they belong to (Rust std, upstream Rune, crate metadata). Don't rename a public identifier only to change its spelling; that is an API change and needs its own record. Private and local identifiers follow the touch rule below. New identifiers use American spelling.
 
-**History is never rewritten for spelling.** Existing commits, frozen oracle data and receipts stay as they are. The policy applies from now on. When you touch a file anyway, you may fix prose spelling in the lines you change. Don't make spelling-only sweeps.
+**If you touch it, you refactor it.** When a task modifies a file, it brings that whole file up to this policy as part of the same change: prose, comments, diagnostics and private identifiers, not just the changed lines. Don't go after untouched files: no spelling-only sweeps.
+
+**Never rewritten:** git history, frozen oracle data, receipts and anything pinned by hash. Those stay as they are.
 
 ## 2. One name per concept
 
