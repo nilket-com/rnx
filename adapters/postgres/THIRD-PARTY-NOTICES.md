@@ -18,7 +18,6 @@ and remains unpublished; its dependency texts are included here.
 | async-compression | 0.4.46 | MIT OR Apache-2.0 |
 | async-trait | 0.1.92 | MIT OR Apache-2.0 |
 | atomic-waker | 1.1.2 | Apache-2.0 OR MIT |
-| autocfg | 1.5.1 | Apache-2.0 OR MIT |
 | base64 | 0.22.1 | MIT OR Apache-2.0 |
 | bitflags | 2.13.1 | MIT OR Apache-2.0 |
 | block-buffer | 0.12.1 | MIT OR Apache-2.0 |
@@ -86,18 +85,10 @@ and remains unpublished; its dependency texts are included here.
 | memchr | 2.8.3 | Unlicense OR MIT |
 | miniz_oxide | 0.9.1 | MIT OR Zlib OR Apache-2.0 |
 | mio | 1.2.3 | MIT |
-| musli | 0.0.124 | MIT OR Apache-2.0 |
-| musli-core | 0.0.124 | MIT OR Apache-2.0 |
-| musli-macros | 0.0.124 | MIT OR Apache-2.0 |
+| musli-core | 0.1.9 | MIT OR Apache-2.0 |
+| musli-macros | 0.1.9 | MIT OR Apache-2.0 |
 | nibble_vec | 0.1.0 | MIT |
 | nix | 0.31.3 | MIT |
-| num | 0.4.3 | MIT OR Apache-2.0 |
-| num-bigint | 0.4.8 | MIT OR Apache-2.0 |
-| num-complex | 0.4.6 | MIT OR Apache-2.0 |
-| num-integer | 0.1.47 | MIT OR Apache-2.0 |
-| num-iter | 0.1.46 | MIT OR Apache-2.0 |
-| num-rational | 0.4.2 | MIT OR Apache-2.0 |
-| num-traits | 0.2.19 | MIT OR Apache-2.0 |
 | once_cell | 1.21.4 | MIT OR Apache-2.0 |
 | parking_lot | 0.12.5 | MIT OR Apache-2.0 |
 | parking_lot_core | 0.9.12 | MIT OR Apache-2.0 |
@@ -118,13 +109,13 @@ and remains unpublished; its dependency texts are included here.
 | rand_core | 0.10.1 | MIT OR Apache-2.0 |
 | reqwest | 0.12.28 | MIT OR Apache-2.0 |
 | ring | 0.17.14 | Apache-2.0 AND ISC |
-| rune | 0.14.2 | MIT OR Apache-2.0 |
-| rune-alloc | 0.14.2 | MIT OR Apache-2.0 |
-| rune-alloc-macros | 0.14.2 | MIT OR Apache-2.0 |
-| rune-core | 0.14.2 | MIT OR Apache-2.0 |
-| rune-macros | 0.14.2 | MIT OR Apache-2.0 |
-| rune-tracing | 0.14.2 | MIT OR Apache-2.0 |
-| rune-tracing-macros | 0.14.2 | MIT OR Apache-2.0 |
+| rune | 0.15.0 | MIT OR Apache-2.0 |
+| rune-alloc | 0.15.0 | MIT OR Apache-2.0 |
+| rune-alloc-macros | 0.15.0 | MIT OR Apache-2.0 |
+| rune-core | 0.15.0 | MIT OR Apache-2.0 |
+| rune-macros | 0.15.0 | MIT OR Apache-2.0 |
+| rune-tracing | 0.15.0 | MIT OR Apache-2.0 |
+| rune-tracing-macros | 0.15.0 | MIT OR Apache-2.0 |
 | rustls | 0.23.44 | Apache-2.0 OR ISC OR MIT |
 | rustls-pki-types | 1.15.1 | MIT OR Apache-2.0 |
 | rustls-webpki | 0.103.15 | ISC |
@@ -181,10 +172,13 @@ and remains unpublished; its dependency texts are included here.
 | utf8parse | 0.2.2 | Apache-2.0 OR MIT |
 | version_check | 0.9.5 | MIT/Apache-2.0 |
 | want | 0.3.1 | MIT |
-| webpki-roots | 1.0.9 | CDLA-Permissive-2.0 |
+| webpki-roots | 1.0.10 | CDLA-Permissive-2.0 |
 | whoami | 2.1.3 | Apache-2.0 OR BSL-1.0 OR MIT |
 | windows-link | 0.2.1 | MIT OR Apache-2.0 |
+| windows-sys | 0.52.0 | MIT OR Apache-2.0 |
 | windows-sys | 0.61.2 | MIT OR Apache-2.0 |
+| windows-targets | 0.52.6 | MIT OR Apache-2.0 |
+| windows_x86_64_msvc | 0.52.6 | MIT OR Apache-2.0 |
 | writeable | 0.6.4 | Unicode-3.0 |
 | yoke | 0.8.3 | Unicode-3.0 |
 | yoke-derive | 0.8.2 | Unicode-3.0 |
@@ -199,6 +193,8 @@ and remains unpublished; its dependency texts are included here.
 
 ## Texts not available
 
+musli-core 0.1.9: MIT OR Apache-2.0
+musli-macros 0.1.9: MIT OR Apache-2.0
 syntree 0.18.0: MIT OR Apache-2.0
 
 ## ring 0.17.14 (LICENSE-BoringSSL)
@@ -1470,38 +1466,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-```
-
-## autocfg 1.5.1 (LICENSE-MIT)
-
-SHA-256: `27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac`
-
-```text
-Copyright (c) 2018 Josh Stone
-
-Permission is hereby granted, free of charge, to any
-person obtaining a copy of this software and associated
-documentation files (the "Software"), to deal in the
-Software without restriction, including without
-limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software
-is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice
-shall be included in all copies or substantial portions
-of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
 ```
 
 ## endian-type 0.2.0 (LICENSE)
@@ -2808,38 +2772,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-## musli 0.0.124 (LICENSE-MIT), musli-core 0.0.124 (LICENSE-MIT), musli-macros 0.0.124 (LICENSE-MIT)
-
-SHA-256: `51ee5b704d031d646ddbfa65caf9a947ff426431be60ec54f1c76d5b78cb889d`
-
-```text
-Copyright (c) 2022 John-John Tedro
-
-Permission is hereby granted, free of charge, to any
-person obtaining a copy of this software and associated
-documentation files (the "Software"), to deal in the
-Software without restriction, including without
-limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software
-is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice
-shall be included in all copies or substantial portions
-of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-```
-
 ## getrandom 0.4.3 (LICENSE-MIT)
 
 SHA-256: `523a42c25d245dde9c015f882cec7f4555aad883382a6cf19b4b7d9b2cd5419b`
@@ -3214,7 +3146,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 END OF TERMS AND CONDITIONS
 ```
 
-## bitflags 2.13.1 (LICENSE-MIT), log 0.4.34 (LICENSE-MIT), num 0.4.3 (LICENSE-MIT), num-bigint 0.4.8 (LICENSE-MIT), num-complex 0.4.6 (LICENSE-MIT), num-integer 0.1.47 (LICENSE-MIT), num-iter 0.1.46 (LICENSE-MIT), num-rational 0.4.2 (LICENSE-MIT), num-traits 0.2.19 (LICENSE-MIT)
+## bitflags 2.13.1 (LICENSE-MIT), log 0.4.34 (LICENSE-MIT)
 
 SHA-256: `6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb`
 
@@ -3307,7 +3239,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-## rune 0.14.2 (LICENSE-MIT), rune-alloc 0.14.2 (LICENSE-MIT), rune-alloc-macros 0.14.2 (LICENSE-MIT), rune-core 0.14.2 (LICENSE-MIT), rune-macros 0.14.2 (LICENSE-MIT), rune-tracing 0.14.2 (LICENSE-MIT), rune-tracing-macros 0.14.2 (LICENSE-MIT)
+## rune 0.15.0 (LICENSE-MIT), rune-alloc 0.15.0 (LICENSE-MIT), rune-alloc-macros 0.15.0 (LICENSE-MIT), rune-core 0.15.0 (LICENSE-MIT), rune-macros 0.15.0 (LICENSE-MIT), rune-tracing 0.15.0 (LICENSE-MIT), rune-tracing-macros 0.15.0 (LICENSE-MIT)
 
 SHA-256: `69f4c49c53b3798ea665d464784ede97b4826e59d15a1bac74cbb268789c8b14`
 
@@ -5280,7 +5212,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## ahash 0.8.12 (LICENSE-APACHE), async-compression 0.4.46 (LICENSE-APACHE), atomic-waker 1.1.2 (LICENSE-APACHE), autocfg 1.5.1 (LICENSE-APACHE), base64 0.22.1 (LICENSE-APACHE), bitflags 2.13.1 (LICENSE-APACHE), cc 1.4.5 (LICENSE-APACHE), cfg-if 1.0.4 (LICENSE-APACHE), compression-codecs 0.4.41 (LICENSE-APACHE), compression-core 0.4.33 (LICENSE-APACHE), critical-section 1.2.0 (LICENSE-APACHE), displaydoc 0.2.7 (LICENSE-APACHE), find-msvc-tools 0.1.12 (LICENSE-APACHE), flate2 1.1.10 (LICENSE-APACHE), form_urlencoded 1.2.2 (LICENSE-APACHE), httparse 1.10.1 (LICENSE-APACHE), hyper-rustls 0.27.9 (LICENSE-APACHE), idna 1.1.0 (LICENSE-APACHE), idna_adapter 1.2.2 (LICENSE-APACHE), lock_api 0.4.14 (LICENSE-APACHE), log 0.4.34 (LICENSE-APACHE), num 0.4.3 (LICENSE-APACHE), num-bigint 0.4.8 (LICENSE-APACHE), num-complex 0.4.6 (LICENSE-APACHE), num-integer 0.1.47 (LICENSE-APACHE), num-iter 0.1.46 (LICENSE-APACHE), num-rational 0.4.2 (LICENSE-APACHE), num-traits 0.2.19 (LICENSE-APACHE), once_cell 1.21.4 (LICENSE-APACHE), parking_lot 0.12.5 (LICENSE-APACHE), parking_lot_core 0.9.12 (LICENSE-APACHE), percent-encoding 2.3.2 (LICENSE-APACHE), postgres-protocol 0.6.12 (LICENSE-APACHE), postgres-types 0.2.14 (LICENSE-APACHE), rustls 0.23.44 (LICENSE-APACHE), scopeguard 1.2.0 (LICENSE-APACHE), smallvec 1.16.0 (LICENSE-APACHE), socket2 0.6.5 (LICENSE-APACHE), stable_deref_trait 1.2.1 (LICENSE-APACHE), tokio-postgres 0.7.18 (LICENSE-APACHE), unicode-bidi 0.3.18 (LICENSE-APACHE), unicode-normalization 0.1.25 (LICENSE-APACHE), unicode-properties 0.1.4 (LICENSE-APACHE), unicode-segmentation 1.13.3 (LICENSE-APACHE), unicode-width 0.2.2 (LICENSE-APACHE), url 2.5.8 (LICENSE-APACHE), version_check 0.9.5 (LICENSE-APACHE)
+## ahash 0.8.12 (LICENSE-APACHE), async-compression 0.4.46 (LICENSE-APACHE), atomic-waker 1.1.2 (LICENSE-APACHE), base64 0.22.1 (LICENSE-APACHE), bitflags 2.13.1 (LICENSE-APACHE), cc 1.4.5 (LICENSE-APACHE), cfg-if 1.0.4 (LICENSE-APACHE), compression-codecs 0.4.41 (LICENSE-APACHE), compression-core 0.4.33 (LICENSE-APACHE), critical-section 1.2.0 (LICENSE-APACHE), displaydoc 0.2.7 (LICENSE-APACHE), find-msvc-tools 0.1.12 (LICENSE-APACHE), flate2 1.1.10 (LICENSE-APACHE), form_urlencoded 1.2.2 (LICENSE-APACHE), httparse 1.10.1 (LICENSE-APACHE), hyper-rustls 0.27.9 (LICENSE-APACHE), idna 1.1.0 (LICENSE-APACHE), idna_adapter 1.2.2 (LICENSE-APACHE), lock_api 0.4.14 (LICENSE-APACHE), log 0.4.34 (LICENSE-APACHE), once_cell 1.21.4 (LICENSE-APACHE), parking_lot 0.12.5 (LICENSE-APACHE), parking_lot_core 0.9.12 (LICENSE-APACHE), percent-encoding 2.3.2 (LICENSE-APACHE), postgres-protocol 0.6.12 (LICENSE-APACHE), postgres-types 0.2.14 (LICENSE-APACHE), rustls 0.23.44 (LICENSE-APACHE), scopeguard 1.2.0 (LICENSE-APACHE), smallvec 1.16.0 (LICENSE-APACHE), socket2 0.6.5 (LICENSE-APACHE), stable_deref_trait 1.2.1 (LICENSE-APACHE), tokio-postgres 0.7.18 (LICENSE-APACHE), unicode-bidi 0.3.18 (LICENSE-APACHE), unicode-normalization 0.1.25 (LICENSE-APACHE), unicode-properties 0.1.4 (LICENSE-APACHE), unicode-segmentation 1.13.3 (LICENSE-APACHE), unicode-width 0.2.2 (LICENSE-APACHE), url 2.5.8 (LICENSE-APACHE), version_check 0.9.5 (LICENSE-APACHE)
 
 SHA-256: `a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2`
 
@@ -6129,7 +6061,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-## windows-link 0.2.1 (license-apache-2.0), windows-sys 0.61.2 (license-apache-2.0)
+## windows-link 0.2.1 (license-apache-2.0), windows-sys 0.52.0 (license-apache-2.0), windows-sys 0.61.2 (license-apache-2.0), windows-targets 0.52.6 (license-apache-2.0), windows_x86_64_msvc 0.52.6 (license-apache-2.0)
 
 SHA-256: `c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b`
 
@@ -6337,7 +6269,7 @@ SHA-256: `c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b`
    limitations under the License.
 ```
 
-## windows-link 0.2.1 (license-mit), windows-sys 0.61.2 (license-mit)
+## windows-link 0.2.1 (license-mit), windows-sys 0.52.0 (license-mit), windows-sys 0.61.2 (license-mit), windows-targets 0.52.6 (license-mit), windows_x86_64_msvc 0.52.6 (license-mit)
 
 SHA-256: `c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383`
 
@@ -6961,7 +6893,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-## cmov 0.5.4 (LICENSE-APACHE), ctutils 0.4.2 (LICENSE-APACHE), musli 0.0.124 (LICENSE-APACHE), musli-core 0.0.124 (LICENSE-APACHE), musli-macros 0.0.124 (LICENSE-APACHE), rune 0.14.2 (LICENSE-APACHE), rune-alloc 0.14.2 (LICENSE-APACHE), rune-alloc-macros 0.14.2 (LICENSE-APACHE), rune-core 0.14.2 (LICENSE-APACHE), rune-macros 0.14.2 (LICENSE-APACHE), rune-tracing 0.14.2 (LICENSE-APACHE), rune-tracing-macros 0.14.2 (LICENSE-APACHE), tinyvec 1.13.2 (LICENSE-APACHE.md), utf8_iter 1.0.4 (LICENSE-APACHE), zeroize 1.9.0 (LICENSE-APACHE)
+## cmov 0.5.4 (LICENSE-APACHE), ctutils 0.4.2 (LICENSE-APACHE), rune 0.15.0 (LICENSE-APACHE), rune-alloc 0.15.0 (LICENSE-APACHE), rune-alloc-macros 0.15.0 (LICENSE-APACHE), rune-core 0.15.0 (LICENSE-APACHE), rune-macros 0.15.0 (LICENSE-APACHE), rune-tracing 0.15.0 (LICENSE-APACHE), rune-tracing-macros 0.15.0 (LICENSE-APACHE), tinyvec 1.13.2 (LICENSE-APACHE.md), utf8_iter 1.0.4 (LICENSE-APACHE), zeroize 1.9.0 (LICENSE-APACHE)
 
 SHA-256: `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`
 
@@ -7310,7 +7242,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-## webpki-roots 1.0.9 (LICENSE)
+## webpki-roots 1.0.10 (LICENSE)
 
 SHA-256: `e271993808fec50ab29350b39539cdec611a9103f827e0aa26d61da70e2d33f8`
 
