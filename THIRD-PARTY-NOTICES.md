@@ -36,7 +36,7 @@ review of that distribution. This file is an input to it.
 
 ## The packages
 
-144 packages, 113 distinct licence texts.
+141 packages, 113 distinct licence texts.
 
 | Package | Version | Declared |
 | --- | --- | --- |
@@ -123,9 +123,9 @@ review of that distribution. This file is an input to it.
 | `rune-alloc` | 0.15.0 | MIT OR Apache-2.0 |
 | `rune-core` | 0.15.0 | MIT OR Apache-2.0 |
 | `rune-tracing` | 0.15.0 | MIT OR Apache-2.0 |
-| `rustls` | 0.23.44 | Apache-2.0 OR ISC OR MIT |
+| `rustls` | 0.23.46 | Apache-2.0 OR ISC OR MIT |
 | `rustls-pki-types` | 1.15.1 | MIT OR Apache-2.0 |
-| `rustls-webpki` | 0.103.15 | ISC |
+| `rustls-webpki` | 0.103.16 | ISC |
 | `rustyline` | 18.0.1 | MIT |
 | `ryu` | 1.0.23 | Apache-2.0 OR BSL-1.0 |
 | `serde` | 1.0.229 | MIT OR Apache-2.0 |
@@ -170,10 +170,7 @@ review of that distribution. This file is an input to it.
 | `want` | 0.3.1 | MIT |
 | `webpki-roots` | 1.0.10 | CDLA-Permissive-2.0 |
 | `windows-link` | 0.2.1 | MIT OR Apache-2.0 |
-| `windows-sys` | 0.52.0 | MIT OR Apache-2.0 |
 | `windows-sys` | 0.61.2 | MIT OR Apache-2.0 |
-| `windows-targets` | 0.52.6 | MIT OR Apache-2.0 |
-| `windows_x86_64_msvc` | 0.52.6 | MIT OR Apache-2.0 |
 | `winnow` | 0.7.15 | MIT |
 | `winnow` | 1.0.4 | MIT |
 | `writeable` | 0.6.4 | Unicode-3.0 |
@@ -2564,7 +2561,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.```
 
-### `rustls-webpki 0.103.15` (LICENSE)
+### `rustls-webpki 0.103.16` (LICENSE)
 ```
 Except as otherwise noted, this project is licensed under the following
 (ISC-style) terms:
@@ -3034,7 +3031,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### `hyper-rustls 0.27.9` (LICENSE-MIT) `rustls 0.23.44` (LICENSE-MIT)
+### `hyper-rustls 0.27.9` (LICENSE-MIT) `rustls 0.23.46` (LICENSE-MIT)
 ```
 Copyright (c) 2016 Joseph Birr-Pixton <jpixton@gmail.com>
 
@@ -3371,7 +3368,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### `hyper-rustls 0.27.9` (LICENSE-ISC) `rustls 0.23.44` (LICENSE-ISC)
+### `hyper-rustls 0.27.9` (LICENSE-ISC) `rustls 0.23.46` (LICENSE-ISC)
 ```
 ISC License (ISC)
 Copyright (c) 2016, Joseph Birr-Pixton <jpixton@gmail.com>
@@ -4895,7 +4892,7 @@ Software.
 
 ```
 
-### `ahash 0.8.12` (LICENSE-APACHE) `arrayvec 0.7.8` (LICENSE-APACHE) `async-compression 0.4.46` (LICENSE-APACHE) `atomic-waker 1.1.2` (LICENSE-APACHE) `base64 0.22.1` (LICENSE-APACHE) `bitflags 2.13.1` (LICENSE-APACHE) `cfg-if 1.0.4` (LICENSE-APACHE) `compression-codecs 0.4.41` (LICENSE-APACHE) `compression-core 0.4.33` (LICENSE-APACHE) `critical-section 1.2.0` (LICENSE-APACHE) `errno 0.3.14` (LICENSE-APACHE) `flate2 1.1.10` (LICENSE-APACHE) `form_urlencoded 1.2.2` (LICENSE-APACHE) `httparse 1.10.1` (LICENSE-APACHE) `hyper-rustls 0.27.9` (LICENSE-APACHE) `idna 1.1.0` (LICENSE-APACHE) `idna_adapter 1.2.2` (LICENSE-APACHE) `log 0.4.34` (LICENSE-APACHE) `mime 0.3.17` (LICENSE-APACHE) `once_cell 1.21.4` (LICENSE-APACHE) `percent-encoding 2.3.2` (LICENSE-APACHE) `rustls 0.23.44` (LICENSE-APACHE) `signal-hook-registry 1.4.8` (LICENSE-APACHE) `smallvec 1.16.0` (LICENSE-APACHE) `socket2 0.6.5` (LICENSE-APACHE) `stable_deref_trait 1.2.1` (LICENSE-APACHE) `unicode-segmentation 1.13.3` (LICENSE-APACHE) `unicode-width 0.2.2` (LICENSE-APACHE) `url 2.5.8` (LICENSE-APACHE)
+### `ahash 0.8.12` (LICENSE-APACHE) `arrayvec 0.7.8` (LICENSE-APACHE) `async-compression 0.4.46` (LICENSE-APACHE) `atomic-waker 1.1.2` (LICENSE-APACHE) `base64 0.22.1` (LICENSE-APACHE) `bitflags 2.13.1` (LICENSE-APACHE) `cfg-if 1.0.4` (LICENSE-APACHE) `compression-codecs 0.4.41` (LICENSE-APACHE) `compression-core 0.4.33` (LICENSE-APACHE) `critical-section 1.2.0` (LICENSE-APACHE) `errno 0.3.14` (LICENSE-APACHE) `flate2 1.1.10` (LICENSE-APACHE) `form_urlencoded 1.2.2` (LICENSE-APACHE) `httparse 1.10.1` (LICENSE-APACHE) `hyper-rustls 0.27.9` (LICENSE-APACHE) `idna 1.1.0` (LICENSE-APACHE) `idna_adapter 1.2.2` (LICENSE-APACHE) `log 0.4.34` (LICENSE-APACHE) `mime 0.3.17` (LICENSE-APACHE) `once_cell 1.21.4` (LICENSE-APACHE) `percent-encoding 2.3.2` (LICENSE-APACHE) `rustls 0.23.46` (LICENSE-APACHE) `signal-hook-registry 1.4.8` (LICENSE-APACHE) `smallvec 1.16.0` (LICENSE-APACHE) `socket2 0.6.5` (LICENSE-APACHE) `stable_deref_trait 1.2.1` (LICENSE-APACHE) `unicode-segmentation 1.13.3` (LICENSE-APACHE) `unicode-width 0.2.2` (LICENSE-APACHE) `url 2.5.8` (LICENSE-APACHE)
 ```
                               Apache License
                         Version 2.0, January 2004
@@ -5714,7 +5711,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.```
 
-### `windows-link 0.2.1` (license-apache-2.0) `windows-sys 0.52.0` (license-apache-2.0) `windows-sys 0.61.2` (license-apache-2.0) `windows-targets 0.52.6` (license-apache-2.0) `windows_x86_64_msvc 0.52.6` (license-apache-2.0)
+### `windows-link 0.2.1` (license-apache-2.0) `windows-sys 0.61.2` (license-apache-2.0)
 ```
                                  Apache License
                            Version 2.0, January 2004
@@ -5919,7 +5916,7 @@ SOFTWARE.```
    limitations under the License.
 ```
 
-### `windows-link 0.2.1` (license-mit) `windows-sys 0.52.0` (license-mit) `windows-sys 0.61.2` (license-mit) `windows-targets 0.52.6` (license-mit) `windows_x86_64_msvc 0.52.6` (license-mit)
+### `windows-link 0.2.1` (license-mit) `windows-sys 0.61.2` (license-mit)
 ```
     MIT License
 
