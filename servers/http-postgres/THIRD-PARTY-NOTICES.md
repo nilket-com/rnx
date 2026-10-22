@@ -112,9 +112,9 @@ and remains unpublished; its dependency texts are included here.
 | rune-macros | 0.15.0 | MIT OR Apache-2.0 |
 | rune-tracing | 0.15.0 | MIT OR Apache-2.0 |
 | rune-tracing-macros | 0.15.0 | MIT OR Apache-2.0 |
-| rustls | 0.23.44 | Apache-2.0 OR ISC OR MIT |
+| rustls | 0.23.46 | Apache-2.0 OR ISC OR MIT |
 | rustls-pki-types | 1.15.1 | MIT OR Apache-2.0 |
-| rustls-webpki | 0.103.15 | ISC |
+| rustls-webpki | 0.103.16 | ISC |
 | rustyline | 18.0.1 | MIT |
 | rustyline-derive | 0.12.0 | MIT |
 | ryu | 1.0.23 | Apache-2.0 OR BSL-1.0 |
@@ -3024,7 +3024,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-## rustls-webpki 0.103.15 (LICENSE)
+## rustls-webpki 0.103.16 (LICENSE)
 
 SHA-256: `5b698ca13897be3afdb7174256fa1574f8c6892b8bea1a66dd6469d3fe27885a`
 
@@ -3664,7 +3664,7 @@ APPENDIX: How to apply the Apache License to your work.
    identification within third-party archives.
 ```
 
-## hyper-rustls 0.27.9 (LICENSE-MIT), rustls 0.23.44 (LICENSE-MIT)
+## hyper-rustls 0.27.9 (LICENSE-MIT), rustls 0.23.46 (LICENSE-MIT)
 
 SHA-256: `709e3175b4212f7b13aa93971c9f62ff8c69ec45ad8c6532a7e0c41d7a7d6f8c`
 
@@ -4051,7 +4051,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-## hyper-rustls 0.27.9 (LICENSE-ISC), rustls 0.23.44 (LICENSE-ISC)
+## hyper-rustls 0.27.9 (LICENSE-ISC), rustls 0.23.46 (LICENSE-ISC)
 
 SHA-256: `7cfafc877eccc46c0e346ccbaa5c51bb6b894d2b818e617d970211e232785ad4`
 
@@ -5437,7 +5437,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## ahash 0.8.12 (LICENSE-APACHE), async-compression 0.4.46 (LICENSE-APACHE), atomic-waker 1.1.2 (LICENSE-APACHE), base64 0.22.1 (LICENSE-APACHE), bitflags 2.13.1 (LICENSE-APACHE), cc 1.4.5 (LICENSE-APACHE), cfg-if 1.0.4 (LICENSE-APACHE), compression-codecs 0.4.41 (LICENSE-APACHE), compression-core 0.4.33 (LICENSE-APACHE), critical-section 1.2.0 (LICENSE-APACHE), displaydoc 0.2.7 (LICENSE-APACHE), find-msvc-tools 0.1.12 (LICENSE-APACHE), flate2 1.1.10 (LICENSE-APACHE), form_urlencoded 1.2.2 (LICENSE-APACHE), httparse 1.10.1 (LICENSE-APACHE), hyper-rustls 0.27.9 (LICENSE-APACHE), idna 1.1.0 (LICENSE-APACHE), idna_adapter 1.2.2 (LICENSE-APACHE), lock_api 0.4.14 (LICENSE-APACHE), log 0.4.34 (LICENSE-APACHE), once_cell 1.21.4 (LICENSE-APACHE), parking_lot 0.12.5 (LICENSE-APACHE), parking_lot_core 0.9.12 (LICENSE-APACHE), percent-encoding 2.3.2 (LICENSE-APACHE), postgres-protocol 0.6.12 (LICENSE-APACHE), postgres-types 0.2.14 (LICENSE-APACHE), rustls 0.23.44 (LICENSE-APACHE), scopeguard 1.2.0 (LICENSE-APACHE), smallvec 1.16.0 (LICENSE-APACHE), socket2 0.6.5 (LICENSE-APACHE), stable_deref_trait 1.2.1 (LICENSE-APACHE), tokio-postgres 0.7.18 (LICENSE-APACHE), unicode-bidi 0.3.18 (LICENSE-APACHE), unicode-normalization 0.1.25 (LICENSE-APACHE), unicode-properties 0.1.4 (LICENSE-APACHE), unicode-segmentation 1.13.3 (LICENSE-APACHE), unicode-width 0.2.2 (LICENSE-APACHE), url 2.5.8 (LICENSE-APACHE), version_check 0.9.5 (LICENSE-APACHE)
+## ahash 0.8.12 (LICENSE-APACHE), async-compression 0.4.46 (LICENSE-APACHE), atomic-waker 1.1.2 (LICENSE-APACHE), base64 0.22.1 (LICENSE-APACHE), bitflags 2.13.1 (LICENSE-APACHE), cc 1.4.5 (LICENSE-APACHE), cfg-if 1.0.4 (LICENSE-APACHE), compression-codecs 0.4.41 (LICENSE-APACHE), compression-core 0.4.33 (LICENSE-APACHE), critical-section 1.2.0 (LICENSE-APACHE), displaydoc 0.2.7 (LICENSE-APACHE), find-msvc-tools 0.1.12 (LICENSE-APACHE), flate2 1.1.10 (LICENSE-APACHE), form_urlencoded 1.2.2 (LICENSE-APACHE), httparse 1.10.1 (LICENSE-APACHE), hyper-rustls 0.27.9 (LICENSE-APACHE), idna 1.1.0 (LICENSE-APACHE), idna_adapter 1.2.2 (LICENSE-APACHE), lock_api 0.4.14 (LICENSE-APACHE), log 0.4.34 (LICENSE-APACHE), once_cell 1.21.4 (LICENSE-APACHE), parking_lot 0.12.5 (LICENSE-APACHE), parking_lot_core 0.9.12 (LICENSE-APACHE), percent-encoding 2.3.2 (LICENSE-APACHE), postgres-protocol 0.6.12 (LICENSE-APACHE), postgres-types 0.2.14 (LICENSE-APACHE), rustls 0.23.46 (LICENSE-APACHE), scopeguard 1.2.0 (LICENSE-APACHE), smallvec 1.16.0 (LICENSE-APACHE), socket2 0.6.5 (LICENSE-APACHE), stable_deref_trait 1.2.1 (LICENSE-APACHE), tokio-postgres 0.7.18 (LICENSE-APACHE), unicode-bidi 0.3.18 (LICENSE-APACHE), unicode-normalization 0.1.25 (LICENSE-APACHE), unicode-properties 0.1.4 (LICENSE-APACHE), unicode-segmentation 1.13.3 (LICENSE-APACHE), unicode-width 0.2.2 (LICENSE-APACHE), url 2.5.8 (LICENSE-APACHE), version_check 0.9.5 (LICENSE-APACHE)
 
 SHA-256: `a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2`
 
