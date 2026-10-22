@@ -84,6 +84,7 @@ and remains unpublished; its dependency texts are included here.
 | fastrand | 2.5.0 | Apache-2.0 OR MIT |
 | find-msvc-tools | 0.1.12 | MIT OR Apache-2.0 |
 | flate2 | 1.1.10 | MIT OR Apache-2.0 |
+| float-cmp | 0.10.0 | MIT |
 | fnv | 1.0.7 | Apache-2.0 / MIT |
 | foldhash | 0.1.5 | Zlib |
 | foldhash | 0.2.0 | Zlib |
@@ -99,11 +100,14 @@ and remains unpublished; its dependency texts are included here.
 | futures-task | 0.3.34 | MIT OR Apache-2.0 |
 | futures-util | 0.3.34 | MIT OR Apache-2.0 |
 | getrandom | 0.2.17 | MIT OR Apache-2.0 |
+| getrandom | 0.3.4 | MIT OR Apache-2.0 |
 | getrandom | 0.4.3 | MIT OR Apache-2.0 |
 | glob | 0.3.4 | MIT OR Apache-2.0 |
 | h2 | 0.4.19 | MIT |
 | half | 2.7.1 | MIT OR Apache-2.0 |
+| halfbrown | 0.4.0 | Apache-2.0/MIT |
 | hashbrown | 0.15.5 | MIT OR Apache-2.0 |
+| hashbrown | 0.16.1 | MIT OR Apache-2.0 |
 | hashbrown | 0.17.1 | MIT OR Apache-2.0 |
 | heck | 0.5.0 | MIT OR Apache-2.0 |
 | hex | 0.4.3 | MIT OR Apache-2.0 |
@@ -147,20 +151,13 @@ and remains unpublished; its dependency texts are included here.
 | memmap2 | 0.9.11 | MIT OR Apache-2.0 |
 | miniz_oxide | 0.9.1 | MIT OR Zlib OR Apache-2.0 |
 | mio | 1.2.3 | MIT |
-| musli | 0.0.124 | MIT OR Apache-2.0 |
-| musli-core | 0.0.124 | MIT OR Apache-2.0 |
-| musli-macros | 0.0.124 | MIT OR Apache-2.0 |
+| musli-core | 0.1.9 | MIT OR Apache-2.0 |
+| musli-macros | 0.1.9 | MIT OR Apache-2.0 |
 | nibble_vec | 0.1.0 | MIT |
 | nix | 0.31.3 | MIT |
 | now | 0.1.3 | MIT |
 | ntapi | 0.4.3 | Apache-2.0 OR MIT |
-| num | 0.4.3 | MIT OR Apache-2.0 |
-| num-bigint | 0.4.8 | MIT OR Apache-2.0 |
-| num-complex | 0.4.6 | MIT OR Apache-2.0 |
 | num-derive | 0.4.2 | MIT OR Apache-2.0 |
-| num-integer | 0.1.47 | MIT OR Apache-2.0 |
-| num-iter | 0.1.46 | MIT OR Apache-2.0 |
-| num-rational | 0.4.2 | MIT OR Apache-2.0 |
 | num-traits | 0.2.19 | MIT OR Apache-2.0 |
 | object | 0.39.1 | Apache-2.0 OR MIT |
 | object_store | 0.13.2 | MIT/Apache-2.0 |
@@ -189,6 +186,7 @@ and remains unpublished; its dependency texts are included here.
 | polars-error | 0.55.2 | MIT |
 | polars-expr | 0.55.2 | MIT |
 | polars-io | 0.55.2 | MIT |
+| polars-json | 0.55.2 | MIT |
 | polars-lazy | 0.55.2 | MIT |
 | polars-mem-engine | 0.55.2 | MIT |
 | polars-ooc | 0.55.2 | MIT |
@@ -216,6 +214,8 @@ and remains unpublished; its dependency texts are included here.
 | rayon-core | 1.13.0 | MIT OR Apache-2.0 |
 | recursive | 0.1.1 | MIT |
 | recursive-proc-macro-impl | 0.1.1 | MIT |
+| ref-cast | 1.0.27 | MIT OR Apache-2.0 |
+| ref-cast-impl | 1.0.27 | MIT OR Apache-2.0 |
 | regex | 1.13.1 | MIT OR Apache-2.0 |
 | regex-automata | 0.4.18 | MIT OR Apache-2.0 |
 | regex-syntax | 0.8.11 | MIT OR Apache-2.0 |
@@ -223,13 +223,13 @@ and remains unpublished; its dependency texts are included here.
 | ring | 0.17.14 | Apache-2.0 AND ISC |
 | rmp | 0.8.15 | MIT |
 | rmp-serde | 1.3.1 | MIT |
-| rune | 0.14.2 | MIT OR Apache-2.0 |
-| rune-alloc | 0.14.2 | MIT OR Apache-2.0 |
-| rune-alloc-macros | 0.14.2 | MIT OR Apache-2.0 |
-| rune-core | 0.14.2 | MIT OR Apache-2.0 |
-| rune-macros | 0.14.2 | MIT OR Apache-2.0 |
-| rune-tracing | 0.14.2 | MIT OR Apache-2.0 |
-| rune-tracing-macros | 0.14.2 | MIT OR Apache-2.0 |
+| rune | 0.15.0 | MIT OR Apache-2.0 |
+| rune-alloc | 0.15.0 | MIT OR Apache-2.0 |
+| rune-alloc-macros | 0.15.0 | MIT OR Apache-2.0 |
+| rune-core | 0.15.0 | MIT OR Apache-2.0 |
+| rune-macros | 0.15.0 | MIT OR Apache-2.0 |
+| rune-tracing | 0.15.0 | MIT OR Apache-2.0 |
+| rune-tracing-macros | 0.15.0 | MIT OR Apache-2.0 |
 | rustix | 1.1.5 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT |
 | rustls | 0.23.45 | Apache-2.0 OR ISC OR MIT |
 | rustls-native-certs | 0.8.4 | Apache-2.0 OR ISC OR MIT |
@@ -253,6 +253,7 @@ and remains unpublished; its dependency texts are included here.
 | signal-hook | 0.4.4 | MIT OR Apache-2.0 |
 | signal-hook-registry | 1.4.8 | MIT OR Apache-2.0 |
 | simd-adler32 | 0.3.10 | MIT |
+| simd-json | 0.17.3 | Apache-2.0 OR MIT |
 | simdutf8 | 0.1.5 | MIT OR Apache-2.0 |
 | siphasher | 1.0.3 | MIT/Apache-2.0 |
 | slab | 0.4.12 | MIT |
@@ -301,11 +302,12 @@ and remains unpublished; its dependency texts are included here.
 | utf8_iter | 1.0.4 | Apache-2.0 OR MIT |
 | utf8parse | 0.2.2 | Apache-2.0 OR MIT |
 | uuid | 1.26.1 | Apache-2.0 OR MIT |
+| value-trait | 0.12.2 | Apache-2.0/MIT |
 | version_check | 0.9.5 | MIT/Apache-2.0 |
 | virtue | 0.0.18 | MIT |
 | walkdir | 2.5.0 | Unlicense/MIT |
 | want | 0.3.1 | MIT |
-| webpki-roots | 1.0.9 | CDLA-Permissive-2.0 |
+| webpki-roots | 1.0.10 | CDLA-Permissive-2.0 |
 | winapi | 0.3.9 | MIT/Apache-2.0 |
 | winapi-util | 0.1.11 | Unlicense OR MIT |
 | windows | 0.62.2 | MIT OR Apache-2.0 |
@@ -318,8 +320,11 @@ and remains unpublished; its dependency texts are included here.
 | windows-numerics | 0.3.1 | MIT OR Apache-2.0 |
 | windows-result | 0.4.1 | MIT OR Apache-2.0 |
 | windows-strings | 0.5.1 | MIT OR Apache-2.0 |
+| windows-sys | 0.52.0 | MIT OR Apache-2.0 |
 | windows-sys | 0.61.2 | MIT OR Apache-2.0 |
+| windows-targets | 0.52.6 | MIT OR Apache-2.0 |
 | windows-threading | 0.2.1 | MIT OR Apache-2.0 |
+| windows_x86_64_msvc | 0.52.6 | MIT OR Apache-2.0 |
 | writeable | 0.6.4 | Unicode-3.0 |
 | xxhash-rust | 0.8.18 | BSL-1.0 |
 | yoke | 0.8.3 | Unicode-3.0 |
@@ -340,8 +345,38 @@ and remains unpublished; its dependency texts are included here.
 
 ## Texts not available
 
+musli-core 0.1.9: MIT OR Apache-2.0
+musli-macros 0.1.9: MIT OR Apache-2.0
 polars-parquet-format 0.1.0: MIT AND Apache-2.0
 syntree 0.18.0: MIT OR Apache-2.0
+
+## halfbrown 0.4.0 (LICENSE-MIT), simd-json 0.17.3 (LICENSE-MIT), value-trait 0.12.2 (LICENSE-MIT)
+
+SHA-256: `002c2696d92b5c8cf956c11072baa58eaf9f6ade995c031ea635c6a1ee342ad1`
+
+```text
+MIT License
+
+Copyright (c) [year] [fullname]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ## ring 0.17.14 (LICENSE-BoringSSL)
 
@@ -2953,7 +2988,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## adler2 2.0.1 (LICENSE-MIT), anyhow 1.0.104 (LICENSE-MIT), async-channel 2.5.0 (LICENSE-MIT), async-trait 0.1.92 (LICENSE-MIT), atomic-waker 1.1.2 (LICENSE-MIT), concurrent-queue 2.5.0 (LICENSE-MIT), displaydoc 0.2.7 (LICENSE-MIT), dyn-clone 1.0.20 (LICENSE-MIT), event-listener 5.4.2 (LICENSE-MIT), event-listener-strategy 0.5.4 (LICENSE-MIT), fast-float2 0.2.4 (LICENSE-MIT), fastrand 2.5.0 (LICENSE-MIT), home 0.5.12 (LICENSE-MIT), itoa 1.0.18 (LICENSE-MIT), linux-raw-sys 0.12.1 (LICENSE-MIT), once_cell 1.21.4 (LICENSE-MIT), parking 2.2.1 (LICENSE-MIT), pin-project 1.1.13 (LICENSE-MIT), pin-project-internal 1.1.13 (LICENSE-MIT), pin-project-lite 0.2.17 (LICENSE-MIT), portable-atomic 1.15.0 (LICENSE-MIT), proc-macro2 1.0.107 (LICENSE-MIT), quote 1.0.47 (LICENSE-MIT), rustix 1.1.5 (LICENSE-MIT), rustversion 1.0.23 (LICENSE-MIT), serde 1.0.229 (LICENSE-MIT), serde_core 1.0.229 (LICENSE-MIT), serde_derive 1.0.229 (LICENSE-MIT), serde_json 1.0.151 (LICENSE-MIT), serde_stacker 0.1.14 (LICENSE-MIT), syn 2.0.119 (LICENSE-MIT), syn 3.0.6 (LICENSE-MIT), thiserror 2.0.20 (LICENSE-MIT), thiserror-impl 2.0.20 (LICENSE-MIT), unicode-ident 1.0.26 (LICENSE-MIT), zmij 1.0.23 (LICENSE-MIT)
+## adler2 2.0.1 (LICENSE-MIT), anyhow 1.0.104 (LICENSE-MIT), async-channel 2.5.0 (LICENSE-MIT), async-trait 0.1.92 (LICENSE-MIT), atomic-waker 1.1.2 (LICENSE-MIT), concurrent-queue 2.5.0 (LICENSE-MIT), displaydoc 0.2.7 (LICENSE-MIT), dyn-clone 1.0.20 (LICENSE-MIT), event-listener 5.4.2 (LICENSE-MIT), event-listener-strategy 0.5.4 (LICENSE-MIT), fast-float2 0.2.4 (LICENSE-MIT), fastrand 2.5.0 (LICENSE-MIT), home 0.5.12 (LICENSE-MIT), itoa 1.0.18 (LICENSE-MIT), linux-raw-sys 0.12.1 (LICENSE-MIT), once_cell 1.21.4 (LICENSE-MIT), parking 2.2.1 (LICENSE-MIT), pin-project 1.1.13 (LICENSE-MIT), pin-project-internal 1.1.13 (LICENSE-MIT), pin-project-lite 0.2.17 (LICENSE-MIT), portable-atomic 1.15.0 (LICENSE-MIT), proc-macro2 1.0.107 (LICENSE-MIT), quote 1.0.47 (LICENSE-MIT), ref-cast 1.0.27 (LICENSE-MIT), ref-cast-impl 1.0.27 (LICENSE-MIT), rustix 1.1.5 (LICENSE-MIT), rustversion 1.0.23 (LICENSE-MIT), serde 1.0.229 (LICENSE-MIT), serde_core 1.0.229 (LICENSE-MIT), serde_derive 1.0.229 (LICENSE-MIT), serde_json 1.0.151 (LICENSE-MIT), serde_stacker 0.1.14 (LICENSE-MIT), syn 2.0.119 (LICENSE-MIT), syn 3.0.6 (LICENSE-MIT), thiserror 2.0.20 (LICENSE-MIT), thiserror-impl 2.0.20 (LICENSE-MIT), unicode-ident 1.0.26 (LICENSE-MIT), zmij 1.0.23 (LICENSE-MIT)
 
 SHA-256: `23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3`
 
@@ -3693,6 +3728,39 @@ SHA-256: `27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac`
 
 ```text
 Copyright (c) 2018 Josh Stone
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
+## getrandom 0.3.4 (LICENSE-MIT)
+
+SHA-256: `29e9fe5074bd27e0e5d5d110394fbbcd841baee2651a3c4b4560a632702cede4`
+
+```text
+Copyright (c) 2018-2025 The rust-random Project Developers
+Copyright (c) 2014 The Rust Project Developers
 
 Permission is hereby granted, free of charge, to any
 person obtaining a copy of this software and associated
@@ -5332,6 +5400,32 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
+## float-cmp 0.10.0 (LICENSE)
+
+SHA-256: `40be1e77825d7e49485a2e43d89bed29dfff29f8f529e71d3c683656021f0d08`
+
+```text
+Copyright (c) 2014-2020 Optimal Computing (NZ) Ltd
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+```
+
 ## miniz_oxide 0.9.1 (LICENSE)
 
 SHA-256: `4108245a1f2df9d4e94df8abed5b4ba0759bb2f9b40a6b939f1be141077ae50b`
@@ -6363,38 +6457,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-## musli 0.0.124 (LICENSE-MIT), musli-core 0.0.124 (LICENSE-MIT), musli-macros 0.0.124 (LICENSE-MIT)
-
-SHA-256: `51ee5b704d031d646ddbfa65caf9a947ff426431be60ec54f1c76d5b78cb889d`
-
-```text
-Copyright (c) 2022 John-John Tedro
-
-Permission is hereby granted, free of charge, to any
-person obtaining a copy of this software and associated
-documentation files (the "Software"), to deal in the
-Software without restriction, including without
-limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software
-is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice
-shall be included in all copies or substantial portions
-of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-```
-
 ## getrandom 0.4.3 (LICENSE-MIT)
 
 SHA-256: `523a42c25d245dde9c015f882cec7f4555aad883382a6cf19b4b7d9b2cd5419b`
@@ -6650,7 +6712,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-## anyhow 1.0.104 (LICENSE-APACHE), async-trait 0.1.92 (LICENSE-APACHE), constant_time_eq 0.4.2 (LICENSE-APACHE), dyn-clone 1.0.20 (LICENSE-APACHE), itoa 1.0.18 (LICENSE-APACHE), libc 0.2.189 (LICENSE-APACHE), proc-macro2 1.0.107 (LICENSE-APACHE), quote 1.0.47 (LICENSE-APACHE), rustversion 1.0.23 (LICENSE-APACHE), ryu 1.0.23 (LICENSE-APACHE), serde 1.0.229 (LICENSE-APACHE), serde_core 1.0.229 (LICENSE-APACHE), serde_derive 1.0.229 (LICENSE-APACHE), serde_json 1.0.151 (LICENSE-APACHE), serde_stacker 0.1.14 (LICENSE-APACHE), serde_urlencoded 0.7.1 (LICENSE-APACHE), syn 2.0.119 (LICENSE-APACHE), syn 3.0.6 (LICENSE-APACHE), thiserror 2.0.20 (LICENSE-APACHE), thiserror-impl 2.0.20 (LICENSE-APACHE), unicode-ident 1.0.26 (LICENSE-APACHE), utf8parse 0.2.2 (LICENSE-APACHE)
+## anyhow 1.0.104 (LICENSE-APACHE), async-trait 0.1.92 (LICENSE-APACHE), constant_time_eq 0.4.2 (LICENSE-APACHE), dyn-clone 1.0.20 (LICENSE-APACHE), itoa 1.0.18 (LICENSE-APACHE), libc 0.2.189 (LICENSE-APACHE), proc-macro2 1.0.107 (LICENSE-APACHE), quote 1.0.47 (LICENSE-APACHE), ref-cast 1.0.27 (LICENSE-APACHE), ref-cast-impl 1.0.27 (LICENSE-APACHE), rustversion 1.0.23 (LICENSE-APACHE), ryu 1.0.23 (LICENSE-APACHE), serde 1.0.229 (LICENSE-APACHE), serde_core 1.0.229 (LICENSE-APACHE), serde_derive 1.0.229 (LICENSE-APACHE), serde_json 1.0.151 (LICENSE-APACHE), serde_stacker 0.1.14 (LICENSE-APACHE), serde_urlencoded 0.7.1 (LICENSE-APACHE), syn 2.0.119 (LICENSE-APACHE), syn 3.0.6 (LICENSE-APACHE), thiserror 2.0.20 (LICENSE-APACHE), thiserror-impl 2.0.20 (LICENSE-APACHE), unicode-ident 1.0.26 (LICENSE-APACHE), utf8parse 0.2.2 (LICENSE-APACHE)
 
 SHA-256: `62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a`
 
@@ -6833,7 +6895,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 END OF TERMS AND CONDITIONS
 ```
 
-## bitflags 2.13.2 (LICENSE-MIT), glob 0.3.4 (LICENSE-MIT), log 0.4.34 (LICENSE-MIT), num 0.4.3 (LICENSE-MIT), num-bigint 0.4.8 (LICENSE-MIT), num-complex 0.4.6 (LICENSE-MIT), num-derive 0.4.2 (LICENSE-MIT), num-integer 0.1.47 (LICENSE-MIT), num-iter 0.1.46 (LICENSE-MIT), num-rational 0.4.2 (LICENSE-MIT), num-traits 0.2.19 (LICENSE-MIT), regex 1.13.1 (LICENSE-MIT), regex-automata 0.4.18 (LICENSE-MIT), regex-syntax 0.8.11 (LICENSE-MIT)
+## bitflags 2.13.2 (LICENSE-MIT), glob 0.3.4 (LICENSE-MIT), log 0.4.34 (LICENSE-MIT), num-derive 0.4.2 (LICENSE-MIT), num-traits 0.2.19 (LICENSE-MIT), regex 1.13.1 (LICENSE-MIT), regex-automata 0.4.18 (LICENSE-MIT), regex-syntax 0.8.11 (LICENSE-MIT)
 
 SHA-256: `6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb`
 
@@ -7166,7 +7228,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-## rune 0.14.2 (LICENSE-MIT), rune-alloc 0.14.2 (LICENSE-MIT), rune-alloc-macros 0.14.2 (LICENSE-MIT), rune-core 0.14.2 (LICENSE-MIT), rune-macros 0.14.2 (LICENSE-MIT), rune-tracing 0.14.2 (LICENSE-MIT), rune-tracing-macros 0.14.2 (LICENSE-MIT)
+## rune 0.15.0 (LICENSE-MIT), rune-alloc 0.15.0 (LICENSE-MIT), rune-alloc-macros 0.15.0 (LICENSE-MIT), rune-core 0.15.0 (LICENSE-MIT), rune-macros 0.15.0 (LICENSE-MIT), rune-tracing 0.15.0 (LICENSE-MIT), rune-tracing-macros 0.15.0 (LICENSE-MIT)
 
 SHA-256: `69f4c49c53b3798ea665d464784ede97b4826e59d15a1bac74cbb268789c8b14`
 
@@ -8225,7 +8287,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-## polars 0.55.2 (LICENSE), polars-async 0.55.2 (LICENSE), polars-buffer 0.55.2 (LICENSE), polars-compute 0.55.2 (LICENSE), polars-config 0.55.2 (LICENSE), polars-core 0.55.2 (LICENSE), polars-dtype 0.55.2 (LICENSE), polars-error 0.55.2 (LICENSE), polars-expr 0.55.2 (LICENSE), polars-io 0.55.2 (LICENSE), polars-lazy 0.55.2 (LICENSE), polars-mem-engine 0.55.2 (LICENSE), polars-ooc 0.55.2 (LICENSE), polars-ops 0.55.2 (LICENSE), polars-plan 0.55.2 (LICENSE), polars-row 0.55.2 (LICENSE), polars-schema 0.55.2 (LICENSE), polars-stream 0.55.2 (LICENSE), polars-time 0.55.2 (LICENSE), polars-utils 0.55.2 (LICENSE)
+## polars 0.55.2 (LICENSE), polars-async 0.55.2 (LICENSE), polars-buffer 0.55.2 (LICENSE), polars-compute 0.55.2 (LICENSE), polars-config 0.55.2 (LICENSE), polars-core 0.55.2 (LICENSE), polars-dtype 0.55.2 (LICENSE), polars-error 0.55.2 (LICENSE), polars-expr 0.55.2 (LICENSE), polars-io 0.55.2 (LICENSE), polars-json 0.55.2 (LICENSE), polars-lazy 0.55.2 (LICENSE), polars-mem-engine 0.55.2 (LICENSE), polars-ooc 0.55.2 (LICENSE), polars-ops 0.55.2 (LICENSE), polars-plan 0.55.2 (LICENSE), polars-row 0.55.2 (LICENSE), polars-schema 0.55.2 (LICENSE), polars-stream 0.55.2 (LICENSE), polars-time 0.55.2 (LICENSE), polars-utils 0.55.2 (LICENSE)
 
 SHA-256: `8296022372dc83cc8ef234b3d4889ef8f8b1779754a78bebf13d2c5178a6b4c4`
 
@@ -10585,7 +10647,7 @@ the License, but only in their entirety and only with respect to the Combined
 Software.
 ```
 
-## ahash 0.8.12 (LICENSE-APACHE), arrayvec 0.7.8 (LICENSE-APACHE), async-channel 2.5.0 (LICENSE-APACHE), async-compression 0.4.48 (LICENSE-APACHE), atomic-waker 1.1.2 (LICENSE-APACHE), autocfg 1.5.1 (LICENSE-APACHE), base64 0.22.1 (LICENSE-APACHE), bitflags 2.13.2 (LICENSE-APACHE), cc 1.4.6 (LICENSE-APACHE), cfg-if 1.0.5 (LICENSE-APACHE), compression-codecs 0.4.43 (LICENSE-APACHE), compression-core 0.4.33 (LICENSE-APACHE), concurrent-queue 2.5.0 (LICENSE-APACHE), critical-section 1.2.0 (LICENSE-APACHE), crossbeam-channel 0.5.17 (LICENSE-APACHE), crossbeam-deque 0.8.8 (LICENSE-APACHE), crossbeam-epoch 0.9.21 (LICENSE-APACHE), crossbeam-queue 0.3.14 (LICENSE-APACHE), crossbeam-utils 0.8.23 (LICENSE-APACHE), displaydoc 0.2.7 (LICENSE-APACHE), either 1.18.0 (LICENSE-APACHE), equivalent 1.0.2 (LICENSE-APACHE), errno 0.3.14 (LICENSE-APACHE), event-listener 5.4.2 (LICENSE-APACHE), event-listener-strategy 0.5.4 (LICENSE-APACHE), fastrand 2.5.0 (LICENSE-APACHE), find-msvc-tools 0.1.12 (LICENSE-APACHE), flate2 1.1.10 (LICENSE-APACHE), fnv 1.0.7 (LICENSE-APACHE), form_urlencoded 1.2.2 (LICENSE-APACHE), fs4 1.1.0 (LICENSE-APACHE), glob 0.3.4 (LICENSE-APACHE), hashbrown 0.15.5 (LICENSE-APACHE), hashbrown 0.17.1 (LICENSE-APACHE), heck 0.5.0 (LICENSE-APACHE), httparse 1.10.1 (LICENSE-APACHE), hyper-rustls 0.27.9 (LICENSE-APACHE), idna 1.1.0 (LICENSE-APACHE), idna_adapter 1.2.2 (LICENSE-APACHE), indexmap 2.14.2 (LICENSE-APACHE), itertools 0.14.0 (LICENSE-APACHE), jobserver 0.1.35 (LICENSE-APACHE), linux-raw-sys 0.12.1 (LICENSE-APACHE), lock_api 0.4.14 (LICENSE-APACHE), log 0.4.34 (LICENSE-APACHE), num 0.4.3 (LICENSE-APACHE), num-bigint 0.4.8 (LICENSE-APACHE), num-complex 0.4.6 (LICENSE-APACHE), num-derive 0.4.2 (LICENSE-APACHE), num-integer 0.1.47 (LICENSE-APACHE), num-iter 0.1.46 (LICENSE-APACHE), num-rational 0.4.2 (LICENSE-APACHE), num-traits 0.2.19 (LICENSE-APACHE), object 0.39.1 (LICENSE-APACHE), once_cell 1.21.4 (LICENSE-APACHE), openssl-probe 0.2.1 (LICENSE-APACHE), parking 2.2.1 (LICENSE-APACHE), parking_lot 0.12.5 (LICENSE-APACHE), parking_lot_core 0.9.12 (LICENSE-APACHE), percent-encoding 2.3.2 (LICENSE-APACHE), pkg-config 0.3.34 (LICENSE-APACHE), rayon 1.12.0 (LICENSE-APACHE), rayon-core 1.13.0 (LICENSE-APACHE), regex 1.13.1 (LICENSE-APACHE), regex-automata 0.4.18 (LICENSE-APACHE), regex-syntax 0.8.11 (LICENSE-APACHE), rustix 1.1.5 (LICENSE-APACHE), rustls 0.23.45 (LICENSE-APACHE), rustls-native-certs 0.8.4 (LICENSE-APACHE), scopeguard 1.2.0 (LICENSE-APACHE), signal-hook 0.4.4 (LICENSE-APACHE), signal-hook-registry 1.4.8 (LICENSE-APACHE), smallvec 1.16.1 (LICENSE-APACHE), socket2 0.6.5 (LICENSE-APACHE), stable_deref_trait 1.2.1 (LICENSE-APACHE), stacker 0.1.25 (LICENSE-APACHE), thread_local 1.1.10 (LICENSE-APACHE), unicode-segmentation 1.13.3 (LICENSE-APACHE), unicode-width 0.2.2 (LICENSE-APACHE), url 2.5.8 (LICENSE-APACHE), uuid 1.26.1 (LICENSE-APACHE), version_check 0.9.5 (LICENSE-APACHE)
+## ahash 0.8.12 (LICENSE-APACHE), arrayvec 0.7.8 (LICENSE-APACHE), async-channel 2.5.0 (LICENSE-APACHE), async-compression 0.4.48 (LICENSE-APACHE), atomic-waker 1.1.2 (LICENSE-APACHE), autocfg 1.5.1 (LICENSE-APACHE), base64 0.22.1 (LICENSE-APACHE), bitflags 2.13.2 (LICENSE-APACHE), cc 1.4.6 (LICENSE-APACHE), cfg-if 1.0.5 (LICENSE-APACHE), compression-codecs 0.4.43 (LICENSE-APACHE), compression-core 0.4.33 (LICENSE-APACHE), concurrent-queue 2.5.0 (LICENSE-APACHE), critical-section 1.2.0 (LICENSE-APACHE), crossbeam-channel 0.5.17 (LICENSE-APACHE), crossbeam-deque 0.8.8 (LICENSE-APACHE), crossbeam-epoch 0.9.21 (LICENSE-APACHE), crossbeam-queue 0.3.14 (LICENSE-APACHE), crossbeam-utils 0.8.23 (LICENSE-APACHE), displaydoc 0.2.7 (LICENSE-APACHE), either 1.18.0 (LICENSE-APACHE), equivalent 1.0.2 (LICENSE-APACHE), errno 0.3.14 (LICENSE-APACHE), event-listener 5.4.2 (LICENSE-APACHE), event-listener-strategy 0.5.4 (LICENSE-APACHE), fastrand 2.5.0 (LICENSE-APACHE), find-msvc-tools 0.1.12 (LICENSE-APACHE), flate2 1.1.10 (LICENSE-APACHE), fnv 1.0.7 (LICENSE-APACHE), form_urlencoded 1.2.2 (LICENSE-APACHE), fs4 1.1.0 (LICENSE-APACHE), glob 0.3.4 (LICENSE-APACHE), hashbrown 0.15.5 (LICENSE-APACHE), hashbrown 0.16.1 (LICENSE-APACHE), hashbrown 0.17.1 (LICENSE-APACHE), heck 0.5.0 (LICENSE-APACHE), httparse 1.10.1 (LICENSE-APACHE), hyper-rustls 0.27.9 (LICENSE-APACHE), idna 1.1.0 (LICENSE-APACHE), idna_adapter 1.2.2 (LICENSE-APACHE), indexmap 2.14.2 (LICENSE-APACHE), itertools 0.14.0 (LICENSE-APACHE), jobserver 0.1.35 (LICENSE-APACHE), linux-raw-sys 0.12.1 (LICENSE-APACHE), lock_api 0.4.14 (LICENSE-APACHE), log 0.4.34 (LICENSE-APACHE), num-derive 0.4.2 (LICENSE-APACHE), num-traits 0.2.19 (LICENSE-APACHE), object 0.39.1 (LICENSE-APACHE), once_cell 1.21.4 (LICENSE-APACHE), openssl-probe 0.2.1 (LICENSE-APACHE), parking 2.2.1 (LICENSE-APACHE), parking_lot 0.12.5 (LICENSE-APACHE), parking_lot_core 0.9.12 (LICENSE-APACHE), percent-encoding 2.3.2 (LICENSE-APACHE), pkg-config 0.3.34 (LICENSE-APACHE), rayon 1.12.0 (LICENSE-APACHE), rayon-core 1.13.0 (LICENSE-APACHE), regex 1.13.1 (LICENSE-APACHE), regex-automata 0.4.18 (LICENSE-APACHE), regex-syntax 0.8.11 (LICENSE-APACHE), rustix 1.1.5 (LICENSE-APACHE), rustls 0.23.45 (LICENSE-APACHE), rustls-native-certs 0.8.4 (LICENSE-APACHE), scopeguard 1.2.0 (LICENSE-APACHE), signal-hook 0.4.4 (LICENSE-APACHE), signal-hook-registry 1.4.8 (LICENSE-APACHE), smallvec 1.16.1 (LICENSE-APACHE), socket2 0.6.5 (LICENSE-APACHE), stable_deref_trait 1.2.1 (LICENSE-APACHE), stacker 0.1.25 (LICENSE-APACHE), thread_local 1.1.10 (LICENSE-APACHE), unicode-segmentation 1.13.3 (LICENSE-APACHE), unicode-width 0.2.2 (LICENSE-APACHE), url 2.5.8 (LICENSE-APACHE), uuid 1.26.1 (LICENSE-APACHE), version_check 0.9.5 (LICENSE-APACHE)
 
 SHA-256: `a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2`
 
@@ -11284,7 +11346,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-## getrandom 0.2.17 (LICENSE-APACHE), getrandom 0.4.3 (LICENSE-APACHE)
+## getrandom 0.2.17 (LICENSE-APACHE), getrandom 0.3.4 (LICENSE-APACHE), getrandom 0.4.3 (LICENSE-APACHE)
 
 SHA-256: `aaff376532ea30a0cd5330b9502ad4a4c8bf769c539c87ffe78819d188a18ebf`
 
@@ -12672,7 +12734,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-## windows 0.62.2 (license-apache-2.0), windows-collections 0.3.2 (license-apache-2.0), windows-core 0.62.2 (license-apache-2.0), windows-future 0.3.2 (license-apache-2.0), windows-implement 0.60.2 (license-apache-2.0), windows-interface 0.59.3 (license-apache-2.0), windows-link 0.2.1 (license-apache-2.0), windows-numerics 0.3.1 (license-apache-2.0), windows-result 0.4.1 (license-apache-2.0), windows-strings 0.5.1 (license-apache-2.0), windows-sys 0.61.2 (license-apache-2.0), windows-threading 0.2.1 (license-apache-2.0)
+## windows 0.62.2 (license-apache-2.0), windows-collections 0.3.2 (license-apache-2.0), windows-core 0.62.2 (license-apache-2.0), windows-future 0.3.2 (license-apache-2.0), windows-implement 0.60.2 (license-apache-2.0), windows-interface 0.59.3 (license-apache-2.0), windows-link 0.2.1 (license-apache-2.0), windows-numerics 0.3.1 (license-apache-2.0), windows-result 0.4.1 (license-apache-2.0), windows-strings 0.5.1 (license-apache-2.0), windows-sys 0.52.0 (license-apache-2.0), windows-sys 0.61.2 (license-apache-2.0), windows-targets 0.52.6 (license-apache-2.0), windows-threading 0.2.1 (license-apache-2.0), windows_x86_64_msvc 0.52.6 (license-apache-2.0)
 
 SHA-256: `c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b`
 
@@ -12880,7 +12942,7 @@ SHA-256: `c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b`
    limitations under the License.
 ```
 
-## windows 0.62.2 (license-mit), windows-collections 0.3.2 (license-mit), windows-core 0.62.2 (license-mit), windows-future 0.3.2 (license-mit), windows-implement 0.60.2 (license-mit), windows-interface 0.59.3 (license-mit), windows-link 0.2.1 (license-mit), windows-numerics 0.3.1 (license-mit), windows-result 0.4.1 (license-mit), windows-strings 0.5.1 (license-mit), windows-sys 0.61.2 (license-mit), windows-threading 0.2.1 (license-mit)
+## windows 0.62.2 (license-mit), windows-collections 0.3.2 (license-mit), windows-core 0.62.2 (license-mit), windows-future 0.3.2 (license-mit), windows-implement 0.60.2 (license-mit), windows-interface 0.59.3 (license-mit), windows-link 0.2.1 (license-mit), windows-numerics 0.3.1 (license-mit), windows-result 0.4.1 (license-mit), windows-strings 0.5.1 (license-mit), windows-sys 0.52.0 (license-mit), windows-sys 0.61.2 (license-mit), windows-targets 0.52.6 (license-mit), windows-threading 0.2.1 (license-mit), windows_x86_64_msvc 0.52.6 (license-mit)
 
 SHA-256: `c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383`
 
@@ -13841,7 +13903,7 @@ SHA-256: `cf90d659de5c1e6418267ab8043b756e65508ee5d8d50b29eb2d2fe444c2c3eb`
    limitations under the License.
 ```
 
-## musli 0.0.124 (LICENSE-APACHE), musli-core 0.0.124 (LICENSE-APACHE), musli-macros 0.0.124 (LICENSE-APACHE), rune 0.14.2 (LICENSE-APACHE), rune-alloc 0.14.2 (LICENSE-APACHE), rune-alloc-macros 0.14.2 (LICENSE-APACHE), rune-core 0.14.2 (LICENSE-APACHE), rune-macros 0.14.2 (LICENSE-APACHE), rune-tracing 0.14.2 (LICENSE-APACHE), rune-tracing-macros 0.14.2 (LICENSE-APACHE), static_assertions 1.1.0 (LICENSE-APACHE), utf8_iter 1.0.4 (LICENSE-APACHE), zeroize 1.9.0 (LICENSE-APACHE)
+## halfbrown 0.4.0 (LICENSE-APACHE), rune 0.15.0 (LICENSE-APACHE), rune-alloc 0.15.0 (LICENSE-APACHE), rune-alloc-macros 0.15.0 (LICENSE-APACHE), rune-core 0.15.0 (LICENSE-APACHE), rune-macros 0.15.0 (LICENSE-APACHE), rune-tracing 0.15.0 (LICENSE-APACHE), rune-tracing-macros 0.15.0 (LICENSE-APACHE), simd-json 0.17.3 (LICENSE-APACHE), static_assertions 1.1.0 (LICENSE-APACHE), utf8_iter 1.0.4 (LICENSE-APACHE), value-trait 0.12.2 (LICENSE-APACHE), zeroize 1.9.0 (LICENSE-APACHE)
 
 SHA-256: `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`
 
@@ -14294,7 +14356,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-## webpki-roots 1.0.9 (LICENSE)
+## webpki-roots 1.0.10 (LICENSE)
 
 SHA-256: `e271993808fec50ab29350b39539cdec611a9103f827e0aa26d61da70e2d33f8`
 
@@ -15524,7 +15586,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-## hashbrown 0.15.5 (LICENSE-MIT), hashbrown 0.17.1 (LICENSE-MIT)
+## hashbrown 0.15.5 (LICENSE-MIT), hashbrown 0.16.1 (LICENSE-MIT), hashbrown 0.17.1 (LICENSE-MIT)
 
 SHA-256: `ff8f68cb076caf8cefe7a6430d4ac086ce6af2ca8ce2c4e5a2004d4552ef52a2`
 

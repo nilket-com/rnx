@@ -168,7 +168,7 @@ review of that distribution. This file is an input to it.
 | `utf8_iter` | 1.0.4 | Apache-2.0 OR MIT |
 | `utf8parse` | 0.2.2 | Apache-2.0 OR MIT |
 | `want` | 0.3.1 | MIT |
-| `webpki-roots` | 1.0.9 | CDLA-Permissive-2.0 |
+| `webpki-roots` | 1.0.10 | CDLA-Permissive-2.0 |
 | `windows-link` | 0.2.1 | MIT OR Apache-2.0 |
 | `windows-sys` | 0.52.0 | MIT OR Apache-2.0 |
 | `windows-sys` | 0.61.2 | MIT OR Apache-2.0 |
@@ -6880,7 +6880,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
 
-### `webpki-roots 1.0.9` (LICENSE)
+### `webpki-roots 1.0.10` (LICENSE)
 ```
 # Community Data License Agreement - Permissive - Version 2.0
 
