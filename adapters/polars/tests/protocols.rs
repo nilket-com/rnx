@@ -67,10 +67,7 @@ fn a_hash_and_eq_type_is_a_working_map_key() {
 fn a_partial_eq_only_type_is_not_a_map_key() {
 	// JoinType derives PartialEq and Hash but not Eq at 0.55.2: its Hash is refused, so it cannot key a map
 	let e = run(r#"pub fn main() { let m = std::collections::HashMap::new(); m.insert(polars::JoinType::Left(), 1); m.len() }"#).unwrap_err();
-	assert!(
-		e.contains("Unsupported unary operation `HASH`"),
-		"the refusal is the missing HASH, not a later EQ failure: {e}"
-	);
+	assert_eq!(e, "Cannot apply `HASH` to `polars::JoinType`");
 	// while `==` (PARTIAL_EQ) still works on it
 	assert!(
 		rune::from_value::<bool>(

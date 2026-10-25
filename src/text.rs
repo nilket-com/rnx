@@ -4,7 +4,7 @@
 //! the I/O modules rather than inside them: a reader can tell at a glance which calls
 //! can fail because of the world and which cannot. They exist only because
 //! upstream Rune does not have them, and each goes when upstream offers the
-//! same behaviour, not merely the same name.
+//! same behavior, not merely the same name.
 use crate::host::HostFunction;
 use rune::{Context, Module};
 
@@ -84,8 +84,8 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("text")?;
 	let mut registered = Vec::new();
 	macro_rules! register {
-		(fresh $name:literal, $function:expr, $doc:literal) => {
-			module.fresh_host_function($name, $function)?;
+		(execution $name:literal, $function:expr, $doc:literal) => {
+			module.host_function($name, $function)?;
 			register!(@record $name, $doc);
 		};
 		($name:literal, $function:expr, $doc:literal) => {
@@ -100,7 +100,7 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		};
 	}
 	register!(
-		fresh "find",
+		execution "find",
 		find,
 		"find(haystack, needle) -> Option<int>: the byte index of the first occurrence, or None"
 	);
@@ -110,7 +110,7 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		"split_max(text, count) -> Result<Vec<String>>: split on whitespace into at most count fields, the last keeping the rest verbatim; Err on a negative count"
 	);
 	register!(
-		fresh "group_digits",
+		execution "group_digits",
 		group_digits,
 		"group_digits(value) -> String: an integer with a comma every three digits"
 	);

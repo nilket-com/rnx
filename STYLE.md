@@ -34,10 +34,10 @@ Pick the established term and keep it. Don't rotate synonyms for variety: a new 
 
 | Term | Meaning | Don't say |
 |---|---|---|
-| fresh core | the new execution engine (`experimental_core`) | new VM, v2 engine |
+| execution engine | Rune's opt-in execution engine (`experimental_core`) | engine generation labels |
 | stock VM | the reference Rune VM | old engine, legacy VM (until removal) |
-| admit / admission | fresh compiles and runs a construct | support, enable |
-| refuse / refusal | fresh declines at compile time | reject, fail, bail |
+| admit / admission | the execution engine compiles and runs a construct | support, enable |
+| refuse / refusal | the execution engine declines at compile time | reject, fail, bail |
 | oracle | frozen stock observations a record is checked against | baseline (that word is for measurements) |
 | record | one numbered unit of work (plan + impl) | ticket, task, PR |
 | gate | a required check with a pass/fail rule | test step, CI |

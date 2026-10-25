@@ -336,8 +336,8 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("fs")?;
 	let mut names = Vec::new();
 	macro_rules! reg {
-		(fresh $name:ident, $doc:literal) => {{
-			module.fresh_host_function(stringify!($name), $name)?;
+		(execution $name:ident, $doc:literal) => {{
+			module.host_function(stringify!($name), $name)?;
 			reg!(@record $name, $doc);
 		}};
 		($name:ident, $doc:literal) => {{
@@ -352,7 +352,7 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		}};
 	}
 	reg!(
-		fresh read,
+		execution read,
 		"read(path) -> Result<String>: a regular file as UTF-8, up to 8 MiB; use read_bytes for other bytes"
 	);
 	reg!(
@@ -372,7 +372,7 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"append(path, data) -> Result<()>: create or append String or Bytes"
 	);
 	reg!(
-		fresh exists,
+		execution exists,
 		"exists(path) -> Result<bool>: false for missing or dangling; errors remain errors"
 	);
 	reg!(
@@ -384,40 +384,40 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"read_dir(path) -> Result<Vec<String>>: Unicode entry names, byte-sorted, up to 100000"
 	);
 	reg!(
-		fresh absolute,
+		execution absolute,
 		"absolute(path) -> Result<String>: canonicalize an existing path"
 	);
 	reg!(
-		fresh cwd,
+		execution cwd,
 		"cwd() -> Result<String>: the working directory, without lossy conversion"
 	);
 	reg!(
-		fresh temp_dir,
+		execution temp_dir,
 		"temp_dir() -> Result<String>: the temporary directory, without lossy conversion"
 	);
-	reg!(fresh mkdir, "mkdir(path) -> Result<()>: create one directory");
+	reg!(execution mkdir, "mkdir(path) -> Result<()>: create one directory");
 	reg!(
-		fresh mkdir_all,
+		execution mkdir_all,
 		"mkdir_all(path) -> Result<()>: create all missing parent directories"
 	);
 	reg!(
-		fresh copy,
+		execution copy,
 		"copy(from, to) -> Result<()>: copy bytes and permissions to an exclusively created file; failure can leave a partial destination"
 	);
 	reg!(
-		fresh rename,
+		execution rename,
 		"rename(from, to) -> Result<()>: atomically rename without replacing a destination; no fallback"
 	);
 	reg!(
-		fresh remove_file,
+		execution remove_file,
 		"remove_file(path) -> Result<()>: remove a file or a symlink, not its target"
 	);
 	reg!(
-		fresh remove_dir,
+		execution remove_dir,
 		"remove_dir(path) -> Result<()>: remove an empty directory"
 	);
 	reg!(
-		fresh remove_dir_all,
+		execution remove_dir_all,
 		"remove_dir_all(path) -> Result<()>: remove a tree without following symlinks; refuse root, cwd and ancestors"
 	);
 	context.install(module)?;

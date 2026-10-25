@@ -156,9 +156,6 @@ fn a_borrow_conflict_fails_alike() {
 	// the same frame as the borrowed receiver and the taken argument
 	let (t, r) = both("Ok(`${df.METHOD(\"a\", 1, df)?}`)");
 	eprintln!("conflict: typed: {t}\n          raw:   {r}");
-	assert!(
-		t.starts_with("vm error") && r.starts_with("vm error"),
-		"{t} / {r}"
-	);
-	assert_eq!(t, r);
+	assert_eq!(t, "vm error Cannot take argument 3: it is being read");
+	assert_eq!(r, "vm error Cannot take the value: it is being read");
 }

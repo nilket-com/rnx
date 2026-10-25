@@ -19,7 +19,7 @@ use std::process::{Command, Stdio};
 
 const MANIFEST: &str = include_str!("../Cargo.toml");
 
-/// The first line Cargo writes into a manifest it has normalised. Its
+/// The first line Cargo writes into a manifest it has normalized. Its
 /// presence says this copy **is** the packaged one. Only the packaging gate
 /// reads it, and that gate is Unix-only.
 #[cfg(unix)]
@@ -158,7 +158,7 @@ fn the_claims_hold(manifest: &str, whose: &str) {
 	);
 	assert_eq!(
 		rune_pin(manifest).as_deref(),
-		Some("0dcbba74c8430e09befa768429f6342f337d5219"),
+		Some("f736a56bd2999bed1eb9fefd74e0ce9672f89c68"),
 		"{whose}: the rune pin"
 	);
 }
@@ -340,7 +340,7 @@ fn the_notices_are_selected_for_distribution_and_match_any_available_archive() {
 				.unwrap_or_else(|e| panic!("the packaged copy is missing {file}: {e}"));
 			assert!(!body.is_empty(), "the packaged {file} is empty");
 		}
-		for fetched in fetched_licences(root) {
+		for fetched in fetched_licenses(root) {
 			assert!(
 				fetched.is_file(),
 				"the packaged copy is missing {fetched:?}, which its notices quote"
@@ -371,7 +371,7 @@ fn the_notices_are_selected_for_distribution_and_match_any_available_archive() {
 			"the package does not ship {wanted}"
 		);
 	}
-	for fetched in fetched_licences(root) {
+	for fetched in fetched_licenses(root) {
 		let named = fetched
 			.strip_prefix(root)
 			.expect("a path under the root")
@@ -405,9 +405,9 @@ fn the_notices_are_selected_for_distribution_and_match_any_available_archive() {
 	);
 }
 
-/// Every licence file recorded in `SOURCES.tsv`, as paths under `root`.
+/// Every license file recorded in `SOURCES.tsv`, as paths under `root`.
 #[cfg(unix)]
-fn fetched_licences(root: &std::path::Path) -> Vec<std::path::PathBuf> {
+fn fetched_licenses(root: &std::path::Path) -> Vec<std::path::PathBuf> {
 	let recorded = std::fs::read_to_string(root.join("third-party/licenses/SOURCES.tsv"))
 		.expect("SOURCES.tsv");
 	recorded
@@ -507,7 +507,7 @@ fn a_failed_dependency_query_writes_nothing() {
 	std::fs::remove_dir_all(root).ok();
 }
 
-/// A checked-in licence text must match what was recorded when it was fetched.
+/// A checked-in license text must match what was recorded when it was fetched.
 ///
 /// These copies did not come from the packages that declare them, so the only
 /// thing tying one to its origin is the revision, path and digest in
@@ -515,7 +515,7 @@ fn a_failed_dependency_query_writes_nothing() {
 /// can vouch for, and the generator refuses it rather than quoting it.
 #[cfg(unix)]
 #[test]
-fn every_fetched_licence_matches_its_recorded_digest() {
+fn every_fetched_license_matches_its_recorded_digest() {
 	let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
 	let sources = root.join("third-party/licenses/SOURCES.tsv");
 	let recorded = std::fs::read_to_string(&sources).expect("SOURCES.tsv");
@@ -550,7 +550,7 @@ fn every_fetched_licence_matches_its_recorded_digest() {
 		assert!(!body.is_empty(), "{name} {version} {file} is empty");
 		checked += 1;
 	}
-	assert!(checked > 0, "no fetched licences are recorded");
+	assert!(checked > 0, "no fetched licenses are recorded");
 }
 
 /// Build the package and unpack it, answering where it landed.
@@ -619,7 +619,7 @@ fn unpack_the_package(root: &std::path::Path, tag: &str) -> Option<std::path::Pa
 /// A request that fails is not a file that is absent.
 ///
 /// The defect this gates: the fetcher treated every non-200 the same, so a run
-/// against a server answering 503 reported "no licence found" for every
+/// against a server answering 503 reported "no license found" for every
 /// package and replaced `SOURCES.tsv` with its header alone — turning an
 /// outage into the claim that no text exists anywhere. Only 404 says a
 /// candidate path is not there.
@@ -628,17 +628,17 @@ fn unpack_the_package(root: &std::path::Path, tag: &str) -> Option<std::path::Pa
 /// run at all.
 #[cfg(unix)]
 #[test]
-fn a_failed_request_is_not_an_absent_licence() {
+fn a_failed_request_is_not_an_absent_license() {
 	if MANIFEST.starts_with(GENERATED) {
 		return;
 	}
 	// A scratch copy, for the same reason as the gate above: a fetcher that
-	// mishandles this rewrites — and at one point deleted — the licences, and
+	// mishandles this rewrites — and at one point deleted — the licenses, and
 	// the repository's copy is being read by other tests at the same time.
 	let root = &scratch_repository("request");
-	let licences = root.join("third-party/licenses");
-	let sources = licences.join("SOURCES.tsv");
-	let before = listing(&licences);
+	let licenses = root.join("third-party/licenses");
+	let sources = licenses.join("SOURCES.tsv");
+	let before = listing(&licenses);
 	let bin = std::env::temp_dir().join(format!("rnx-curl-stub-{}", std::process::id()));
 	std::fs::create_dir_all(&bin).unwrap();
 	let stub = bin.join("curl");
@@ -675,7 +675,7 @@ fn a_failed_request_is_not_an_absent_licence() {
 	// Every file, not just the record: the fetcher republishes the whole
 	// directory, so a loss shows up as an absence beside `SOURCES.tsv` rather
 	// than as a change to it.
-	let after = listing(&licences);
+	let after = listing(&licenses);
 	std::fs::remove_dir_all(&bin).ok();
 
 	assert!(
@@ -688,7 +688,7 @@ fn a_failed_request_is_not_an_absent_licence() {
 	);
 	assert_eq!(
 		after, before,
-		"a run that failed changed the licences it was meant to leave alone"
+		"a run that failed changed the licenses it was meant to leave alone"
 	);
 	assert!(
 		sources.is_file(),
@@ -765,7 +765,7 @@ fn listing(dir: &std::path::Path) -> String {
 /// does destructive things: that is what they are testing. Run against the
 /// repository they damage tracked files, and — worse — they do it while other
 /// tests are reading the same directory in parallel, which was reproduced as
-/// `every_fetched_licence_matches_its_recorded_digest` failing because its
+/// `every_fetched_license_matches_its_recorded_digest` failing because its
 /// input had briefly vanished. So each control gets its own copy and the
 /// repository is never written to.
 #[cfg(unix)]
@@ -808,13 +808,13 @@ fn scratch_repository(tag: &str) -> std::path::PathBuf {
 	into
 }
 
-/// A publication that fails must leave the previous licences where they are.
+/// A publication that fails must leave the previous licenses where they are.
 ///
 /// The gate a stub server cannot reach: the fetch succeeds, and the switch
 /// that puts the new set in place is what goes wrong. The first version
 /// removed the destination and copied into it, so an injected failure during
 /// that copy left **none** of the fourteen files — a fetcher that deletes the
-/// licences it exists to keep.
+/// licenses it exists to keep.
 ///
 /// The replacement is now assembled beside the destination and switched in,
 /// with the previous set kept until the switch succeeds and put back if it
@@ -826,16 +826,16 @@ fn scratch_repository(tag: &str) -> std::path::PathBuf {
 /// network.
 #[cfg(unix)]
 #[test]
-fn a_failed_publication_keeps_the_previous_licences() {
+fn a_failed_publication_keeps_the_previous_licenses() {
 	if MANIFEST.starts_with(GENERATED) {
 		return;
 	}
 	let root = &scratch_repository("publication");
-	let licences = root.join("third-party/licenses");
-	let before = listing(&licences);
+	let licenses = root.join("third-party/licenses");
+	let before = listing(&licenses);
 	assert!(
 		before.lines().count() >= 14,
-		"the scratch copy has {} licence files, so this would prove little",
+		"the scratch copy has {} license files, so this would prove little",
 		before.lines().count()
 	);
 
@@ -846,7 +846,7 @@ fn a_failed_publication_keeps_the_previous_licences() {
 	let stub = bin.join("curl");
 	std::fs::write(
 		&stub,
-		"#!/usr/bin/env bash\nfor a in \"$@\"; do [ \"$prev\" = \"-o\" ] && printf 'a licence text\\n' > \"$a\"; prev=$a; done\nprintf '200'\n",
+		"#!/usr/bin/env bash\nfor a in \"$@\"; do [ \"$prev\" = \"-o\" ] && printf 'a license text\\n' > \"$a\"; prev=$a; done\nprintf '200'\n",
 	)
 	.unwrap();
 	std::fs::set_permissions(&stub, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
@@ -877,15 +877,15 @@ fn a_failed_publication_keeps_the_previous_licences() {
 	let done = ran.wait_with_output().expect("the fetcher");
 	let said = String::from_utf8_lossy(&done.stderr).into_owned();
 
-	let after = listing(&licences);
+	let after = listing(&licenses);
 	std::fs::remove_dir_all(&bin).ok();
 
 	// The loss first: it is what this gate is about, and a run that destroys
-	// the licences while printing the wrong message is worse news than one
+	// the licenses while printing the wrong message is worse news than one
 	// that keeps them while printing it.
 	assert_eq!(
 		after, before,
-		"a publication that failed did not leave the previous licences alone"
+		"a publication that failed did not leave the previous licenses alone"
 	);
 	assert!(
 		!done.status.success(),
@@ -904,7 +904,7 @@ fn a_failed_publication_keeps_the_previous_licences() {
 /// the fourteen files survive in `licenses.previous` — correctly reported. Then
 /// the script is run again, its startup removes that directory
 /// unconditionally, and a second failure leaves **neither** directory while
-/// still saying the previous licences are unchanged. The salvage was the only
+/// still saying the previous licenses are unchanged. The salvage was the only
 /// remaining copy.
 ///
 /// So a recovery directory is now put back rather than removed, and refused
@@ -917,16 +917,16 @@ fn a_retry_does_not_delete_what_the_first_attempt_salvaged() {
 		return;
 	}
 	let root = &scratch_repository("retry");
-	let licences = root.join("third-party/licenses");
+	let licenses = root.join("third-party/licenses");
 	let salvage = root.join("third-party/licenses.previous");
-	let before = listing(&licences);
+	let before = listing(&licenses);
 
 	let bin = std::env::temp_dir().join(format!("rnx-curl-retry-{}", std::process::id()));
 	std::fs::create_dir_all(&bin).unwrap();
 	let stub = bin.join("curl");
 	std::fs::write(
 		&stub,
-		"#!/usr/bin/env bash\nfor a in \"$@\"; do [ \"$prev\" = \"-o\" ] && printf 'a licence text\\n' > \"$a\"; prev=$a; done\nprintf '200'\n",
+		"#!/usr/bin/env bash\nfor a in \"$@\"; do [ \"$prev\" = \"-o\" ] && printf 'a license text\\n' > \"$a\"; prev=$a; done\nprintf '200'\n",
 	)
 	.unwrap();
 	std::fs::set_permissions(&stub, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
@@ -964,7 +964,7 @@ fn a_retry_does_not_delete_what_the_first_attempt_salvaged() {
 		String::from_utf8_lossy(&done.stderr).into_owned()
 	};
 
-	// One: publication and rollback both fail, so the licences end up in the
+	// One: publication and rollback both fail, so the licenses end up in the
 	// recovery directory and the destination is gone.
 	let first = attempt(true);
 	assert!(
@@ -974,7 +974,7 @@ fn a_retry_does_not_delete_what_the_first_attempt_salvaged() {
 	assert_eq!(
 		listing(&salvage),
 		before.replace("/licenses/", "/licenses.previous/"),
-		"the recovery copy is not the licences that were there"
+		"the recovery copy is not the licenses that were there"
 	);
 
 	// Two: the retry. It must find the salvage and put it back, not remove it.
@@ -982,11 +982,11 @@ fn a_retry_does_not_delete_what_the_first_attempt_salvaged() {
 	std::fs::remove_dir_all(&bin).ok();
 
 	assert!(
-		licences.is_dir(),
-		"after the retry there are no licences at all: {second}"
+		licenses.is_dir(),
+		"after the retry there are no licenses at all: {second}"
 	);
 	assert_eq!(
-		listing(&licences),
+		listing(&licenses),
 		before,
 		"the retry did not restore what the first attempt salvaged"
 	);

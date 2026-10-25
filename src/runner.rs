@@ -181,8 +181,8 @@ fn fault_source<'a>(
 }
 
 /// Print the value a script returned, and report whether it could be shown.
-/// Unit is recognised by its own type, not by what it serialises to, because
-/// `None` serialises the same way and is not unit.
+/// Unit is recognized by its own type, not by what it serializes to, because
+/// `None` serializes the same way and is not unit.
 ///
 /// A value this cannot render is a failure of the run rather than a value:
 /// the reason goes to standard error and the status is 1. Printed on standard
@@ -324,7 +324,7 @@ pub(crate) fn run_loaded(
 		(arguments,),
 		budget,
 		// A script that ran to its own end has ended, whatever arrived while
-		// it ran; record 0023 leaves a cancelled child to the script.
+		// it ran; record 0023 leaves a canceled child to the script.
 		crate::execute::WhenInterrupted::Finish,
 	);
 	drop(vm);
@@ -432,7 +432,7 @@ fn named_fault(error: &rune::runtime::VmError, origin: Option<(&Text, usize)>) -
 mod module_tests {
 	use super::*;
 	#[test]
-	fn unavailable_origin_keeps_the_hash_despite_a_matching_entry_candidate() {
+	fn unavailable_origin_preserves_the_linked_diagnostic_despite_a_matching_entry_candidate() {
 		let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
 			.join("tests/fixtures/modules/fault/main.rn");
 		let mut loader = Loader::new();
@@ -446,7 +446,12 @@ mod module_tests {
 		);
 		let error = vm.call(["main"], ((),)).unwrap_err();
 		let original = error.to_string();
-		assert!(original.contains("Missing instance function"));
+		assert_eq!(original, "Type `std::i64` has no method named `missing`");
+		let missing = error.missing_instance_function().unwrap();
+		assert_eq!(
+			missing.hash,
+			rune::Hash::associated_function(<i64 as rune::runtime::TypeHash>::HASH, "missing",)
+		);
 		assert!(crate::method::named(&error, &loader.texts[0].text).is_some());
 		let origin = fault_source(&error, &unit, &sources, &loader).unwrap();
 		assert!(origin.0.path.ends_with("broken.rn"));

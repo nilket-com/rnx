@@ -128,7 +128,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Git revision the manifest pins. Written here rather than read from the
 /// crate, which exposes no such constant, so a gate reads the manifest's `rev`
 /// and the lockfile's version and refuses to let them drift apart.
-const RUNE_VERSION: &str = "0.15.0 (git 0dcbba74c8430e09befa768429f6342f337d5219)";
+const RUNE_VERSION: &str = "0.15.0 (git f736a56bd2999bed1eb9fefd74e0ce9672f89c68)";
 
 /// What rnx does, for someone who asked or who mistyped.
 const USAGE: &str = "\
@@ -419,7 +419,7 @@ fn serve(
 	if args.first().is_some_and(|s| s == "run") {
 		// Flags are read only before the script path. Everything after the
 		// path is the script's, verbatim, so an argument that happens to read
-		// like a flag reaches the script instead of changing rnx's behaviour.
+		// like a flag reaches the script instead of changing rnx's behavior.
 		let mut rest = &args[1..];
 		let mut debug_source = false;
 		#[cfg(feature = "project-sources")]
