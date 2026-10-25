@@ -143,11 +143,21 @@ fn a_refused_conversion_leaves_the_receiver_usable() {
 fn frames_and_series_have_no_json_binding() {
 	// review of 0112: their Serialize encodes IPC into an unbounded buffer first
 	let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
-	for script in [
-		"pub fn main(_s) { fx::df().to_json() }",
-		"pub fn main(_s) { fx::series().to_json() }",
+	for (script, receiver) in [
+		(
+			"pub fn main(_s) { fx::df().to_json() }",
+			"polars::DataFrame",
+		),
+		(
+			"pub fn main(_s) { fx::series().to_json() }",
+			"polars::Series",
+		),
 	] {
 		let e = run(script, "").unwrap_err();
-		assert!(e.contains("Missing instance function"), "{script}: {e}");
+		assert_eq!(
+			e,
+			format!("Type `{receiver}` has no method named `to_json`"),
+			"{script}"
+		);
 	}
 }

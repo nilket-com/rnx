@@ -187,10 +187,7 @@ fn the_array_is_moved_into_from_arrow() {
 		"pub fn main() { let a = polars::Series::from_iter_option_i64([Some(1)])?.to_arrow(0, polars::CompatLevel::newest())?; let s = polars::Series::from_arrow(\"x\", a)?; a.len() }",
 	)
 	.unwrap_err();
-	assert!(
-		err.contains("Cannot read, value is M"),
-		"reusing a moved array is an access error: {err}"
-	);
+	assert_eq!(err, "Cannot read the value: it has been moved");
 }
 
 /// Review of 0119: the string reader bounds UTF-8 bytes, not only the count.

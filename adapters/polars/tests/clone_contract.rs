@@ -100,8 +100,7 @@ fn every_consuming_receiver_is_marked_and_nothing_else_is() {
 	named.sort();
 	assert_eq!(by_value, named);
 	let mut m = Module::with_crate("polars").unwrap();
-	let catalogue: BTreeMap<String, &str> =
-		rnx_polars::build(&mut m).unwrap().into_iter().collect();
+	let catalog: BTreeMap<String, &str> = rnx_polars::build(&mut m).unwrap().into_iter().collect();
 	let marker = "(consumes the receiver";
 	assert!(
 		CONSUMING.windows(2).all(|w| w[0].0 < w[1].0),
@@ -111,17 +110,17 @@ fn every_consuming_receiver_is_marked_and_nothing_else_is() {
 		let (_, text) = CATALOGUE
 			.iter()
 			.find(|(c, _)| c == k)
-			.expect("a catalogue entry");
+			.expect("a catalog entry");
 		assert_eq!(
 			*marked,
 			format!("{text} {marker}: a later use of it is an access error)")
 		);
-		assert_eq!(catalogue[*k], *marked, "{k} is marked in the catalogue");
+		assert_eq!(catalog[*k], *marked, "{k} is marked in the catalog");
 	}
-	let marked = catalogue.values().filter(|v| v.contains(marker)).count();
+	let marked = catalog.values().filter(|v| v.contains(marker)).count();
 	assert_eq!(marked, CONSUMING.len());
 	// `&mut`, not by value: mutated, never consumed
-	assert!(!catalogue["polars::SeriesBuilder::freeze_reset"].contains(marker));
+	assert!(!catalog["polars::SeriesBuilder::freeze_reset"].contains(marker));
 }
 
 const DESC: &str = "polars::SortMultipleOptions::default_().with_order_descending(true)";
@@ -205,7 +204,7 @@ fn a_consumed_builder_is_an_access_error_on_second_use() {
 	.unwrap_err();
 	eprintln!("second use: {second}");
 	// Rune's own access error for a taken value, shown and not changed
-	assert!(second.starts_with("Cannot take, value is"), "{second}");
+	assert_eq!(second, "Cannot take the value: it has been moved");
 }
 
 #[test]

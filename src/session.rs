@@ -168,7 +168,7 @@ pub enum Completeness {
 	Complete,
 	Incomplete,
 }
-/// The closed list of incomplete inputs, each recognised by the shape of the
+/// The closed list of incomplete inputs, each recognized by the shape of the
 /// first parse error on the original text, never by its message:
 /// - an expected-token error whose actual token is end of input, and a bare
 ///   unexpected end of input: a zero-width span at the input's end;
@@ -1615,7 +1615,7 @@ fn mentioned<'a>(input: &str, published: &'a BTreeSet<String>) -> BTreeSet<&'a s
 					// arrive as identifier tokens instead, already covered.
 					ast::Kind::Str(_) => {
 						// The formatter reads the decoded string, so the scan must
-						// too. An escape this decoder does not recognise means the
+						// too. An escape this decoder does not recognize means the
 						// contents are unknown, and an unknown string could name
 						// anything: restore everything rather than miss a capture.
 						let Some(decoded) = decode(text) else {
@@ -1638,7 +1638,7 @@ fn mentioned<'a>(input: &str, published: &'a BTreeSet<String>) -> BTreeSet<&'a s
 	found
 }
 /// A string literal decoded far enough to find its format captures, or
-/// `None` when an escape appears that this decoder does not recognise. Rune
+/// `None` when an escape appears that this decoder does not recognize. Rune
 /// decodes the literal before the formatter reads it, so `"\\u{7b}x}"` is
 /// `{x}` and captures `x`; scanning the raw text would miss it. Rune's own
 /// decoder is crate-private, so this one mirrors the escapes its lexer
@@ -1909,7 +1909,7 @@ mod escape_tests {
 	}
 
 	#[test]
-	fn an_unrecognised_escape_restores_everything() {
+	fn an_unrecognized_escape_restores_everything() {
 		let published = published();
 		// `\q` is not an escape Rune's lexer accepts, so what the string holds
 		// is unknown; the scan restores every published name rather than risk
@@ -2146,29 +2146,18 @@ mod method_naming_tests {
 		Session::new(Context::with_default_modules().unwrap()).unwrap()
 	}
 	#[test]
-	fn an_unmapped_retained_error_never_uses_the_callers_matching_candidate() {
+	fn an_unmapped_retained_error_preserves_the_linked_diagnostic_despite_a_caller_decoy() {
 		let mut s = session();
 		s.eval("let old = |v| v.missing();").unwrap();
 		s.units.clear();
-		let failure = s.eval("if false { 1.missing(); } old(1)").unwrap_err();
+		let failure = s.eval("if false { 1.decoy(); } old(1)").unwrap_err();
 		match failure {
 			Failure::Runtime {
 				message,
 				origin: None,
 			} => {
-				assert!(
-					message.starts_with("Missing instance function `0x"),
-					"{message}"
-				);
-				assert!(
-					message.contains(
-						&rune::Hash::associated_function(
-							<i64 as rune::runtime::TypeHash>::HASH,
-							"missing",
-						)
-						.to_string()
-					)
-				);
+				assert_eq!(message, "Type `std::i64` has no method named `missing`");
+				assert!(!message.contains("decoy"));
 			}
 			other => panic!("{other:?}"),
 		}

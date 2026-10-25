@@ -43,14 +43,14 @@ fn separator() -> String {
 }
 pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("path")?;
-	module.fresh_host_function("join", join)?;
-	module.fresh_host_function("parent", parent)?;
-	module.fresh_host_function("file_name", file_name)?;
-	module.fresh_host_function("file_stem", file_stem)?;
-	module.fresh_host_function("extension", extension)?;
-	module.fresh_host_function("with_extension", with_extension)?;
-	module.fresh_host_function("is_absolute", is_absolute)?;
-	module.fresh_host_function("separator", separator)?;
+	module.host_function("join", join)?;
+	module.host_function("parent", parent)?;
+	module.host_function("file_name", file_name)?;
+	module.host_function("file_stem", file_stem)?;
+	module.host_function("extension", extension)?;
+	module.host_function("with_extension", with_extension)?;
+	module.host_function("is_absolute", is_absolute)?;
+	module.host_function("separator", separator)?;
 	context.install(module)?;
 	Ok([
 		("join", "join(base, part) -> String: lexical join; an absolute part replaces the base; Windows verbatim bases normalize . and .. for nonempty parts"),

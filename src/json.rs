@@ -217,7 +217,7 @@ fn walk(
 		}
 		Ok(TypeValue::Struct(s)) => Err(refuse(&format!("struct {}", s.rtti().item()), path)),
 		Ok(TypeValue::NotTypedInline(_)) => inline(value, path),
-		// An unrecognised type is what the serializer calls an external
+		// An unrecognized type is what the serializer calls an external
 		// reference. It is refused rather than passed through, because the
 		// walk's promise is that serde sees nothing it has not accepted.
 		Ok(_) | Err(_) => Err(refuse(
@@ -280,7 +280,7 @@ pub(crate) fn install(
 	context: &mut rune::Context,
 ) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = rune::Module::with_crate("json")?;
-	module.fresh_host_function("parse", parse)?;
+	module.host_function_with_output("parse", parse, rune::host::OutputCertificate::JSON_RESULT)?;
 	module
 		.function("stringify", |value: Value| stringify(&value))
 		.build()?;
