@@ -2,6 +2,7 @@
 #![deny(clippy::all)]
 mod binding;
 mod census;
+mod census_execution;
 mod enrollment;
 
 use serde_json::{Value, json};
@@ -82,6 +83,12 @@ pub(crate) fn main() -> Result<()> {
 			let value = census::child(rest)?;
 			serde_json::to_writer(std::io::stdout().lock(), &value)?;
 			Ok(())
+		}
+		[mode, suite, input, engine, clock, output]
+			if mode == "--child" && suite == "census-exec" =>
+		{
+			let value = census_execution::child(Path::new(input), engine, clock)?;
+			write_new(Path::new(output), &value)
 		}
 		[mode, config, output] if mode == "enrollment-child" => {
 			let value = enrollment::child(&[config.clone(), output.clone()])?;

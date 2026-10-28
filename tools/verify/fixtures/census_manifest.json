@@ -2,1965 +2,1472 @@
   "schema": 1,
   "baseline_rnx": "9bb28ebbde9abee7fbc83912df851cba0dacfc9c",
   "baseline_rune": "f0baf933382039f2b8c44b84a04532ba5703b459",
-  "cases_path": "census/CASES.json",
-  "cases_sha256": "1f7fced31b652f2f1fa363ace9bc432053b3ac186505beff86ec8ada967a370b",
   "count": 244,
   "registry_rows": 62,
-  "aggregate_bytes": 6293836,
-  "aggregate_sha256": "f5dccd6009e68ea051a33a74c5c674d8a821d776f8c79a4c23af1399dd530886",
-  "reference": "0185-s7b2-final35-census actual records, byte-identical per-case split; aggregate canonical serializer bound to published EXPECTED/OBSERVATIONS SHA",
   "rows": [
     {
       "id": "0000",
       "input": "census/inputs/0000.rn",
       "input_sha256": "dc09654969c967777d03f1b9afd34818eeffea874b17914f3bbf28a5f16d8766",
-      "source_bytes": 793,
-      "expected": "census/expected/0000.json",
-      "expected_sha256": "310508a2ac5a2d10313b6d430a424a52f3187abdf0bf417a5546c707d16213ef"
+      "source_bytes": 793
     },
     {
       "id": "0001",
       "input": "census/inputs/0001.rn",
       "input_sha256": "8e03ab3cf1f1b8c7e77b32a3b631b17b8489e6543e3c7dc20c0557a8f4ed54d7",
-      "source_bytes": 1627,
-      "expected": "census/expected/0001.json",
-      "expected_sha256": "665cc6e368f5b902183ec5925d0b8f661c69f723e7415c76568793be515c4387"
+      "source_bytes": 1627
     },
     {
       "id": "0002",
       "input": "census/inputs/0002.rn",
       "input_sha256": "97fa752c6ad5c2da4c638d18108048ce58dd36dcec5c28a9ee82cbef6c97236e",
-      "source_bytes": 1901,
-      "expected": "census/expected/0002.json",
-      "expected_sha256": "4fd3afd5757c7fb8665bb846778902f18c1a44883d9cc6e884a38e07403973f2"
+      "source_bytes": 1901
     },
     {
       "id": "0003",
       "input": "census/inputs/0003.rn",
       "input_sha256": "2ab9e5f64115efa5f06c5481659ee4215d9ad13ee2c85a73c88315b8d7ba9b46",
-      "source_bytes": 1933,
-      "expected": "census/expected/0003.json",
-      "expected_sha256": "221fa6d9a315ff08de455324b59e046b7779185b9decc9555aa725dbe699fa62"
+      "source_bytes": 1933
     },
     {
       "id": "0004",
       "input": "census/inputs/0004.rn",
       "input_sha256": "fe220e826940f64ede4fdca2860ee6100566e1211c5258ba14ccacb03c731064",
-      "source_bytes": 975,
-      "expected": "census/expected/0004.json",
-      "expected_sha256": "127a1b593266842e118482fb8b0dfc1ed5407025d9b0a833bc14a903a809f79e"
+      "source_bytes": 975
     },
     {
       "id": "0005",
       "input": "census/inputs/0005.rn",
       "input_sha256": "e3a1e4215f864e2e56057420ac807338f7aff2a9a7c46f6490127e7ddfa0317d",
-      "source_bytes": 1308,
-      "expected": "census/expected/0005.json",
-      "expected_sha256": "71241b97b529176ad44fd0b4331ea0d94f80572e2f891ea82c5e5c856c208ccc"
+      "source_bytes": 1308
     },
     {
       "id": "0006",
       "input": "census/inputs/0006.rn",
       "input_sha256": "201f4d1c565d3f76383edbd4d97da81858bc2550733d43cab328cbb67c385149",
-      "source_bytes": 1843,
-      "expected": "census/expected/0006.json",
-      "expected_sha256": "f4c2bd85c0ee9aca11a2fa1388a727b047cdf9067a7829df04db56e4c4be4cfa"
+      "source_bytes": 1843
     },
     {
       "id": "0007",
       "input": "census/inputs/0007.rn",
       "input_sha256": "bc1133a41e03afcc13d781bd50f914835c492dfcc6674dc29e8b9bb752f458a3",
-      "source_bytes": 4047,
-      "expected": "census/expected/0007.json",
-      "expected_sha256": "ab65d6aa1252265b148da284ec40f5c5487de77e49dc9672dc1c5f393f5bf963"
+      "source_bytes": 4047
     },
     {
       "id": "0008",
       "input": "census/inputs/0008.rn",
       "input_sha256": "601bc73131cdb8d0a5e152c0b31e8071a2102af245646712e79f7aaa72d4243a",
-      "source_bytes": 634,
-      "expected": "census/expected/0008.json",
-      "expected_sha256": "e875ab7a21cbf8388e24392a4285691ee3ea32d5141b1282afab06005730666e"
+      "source_bytes": 634
     },
     {
       "id": "0009",
       "input": "census/inputs/0009.rn",
       "input_sha256": "c8c51156cfca174754f6344a325936e760313b72106b12a958160add275d8c76",
-      "source_bytes": 466,
-      "expected": "census/expected/0009.json",
-      "expected_sha256": "043686d3f2a6a468a5cfab080d41295f4245ad484031d9869e919fc06404f3b8"
+      "source_bytes": 466
     },
     {
       "id": "0010",
       "input": "census/inputs/0010.rn",
       "input_sha256": "259f02e0f89922c8979fc515240ded198c15e149111509a47aca49b43e7a937e",
-      "source_bytes": 3825,
-      "expected": "census/expected/0010.json",
-      "expected_sha256": "4efdaddad1642f77073f1cc9d2dfe9b509b2634e2f56fb381350f7ee0f313d1b"
+      "source_bytes": 3825
     },
     {
       "id": "0011",
       "input": "census/inputs/0011.rn",
       "input_sha256": "dd72e6569ca821076c35e138c85d959f211ecf91bca1af84120b47de8c371261",
-      "source_bytes": 798,
-      "expected": "census/expected/0011.json",
-      "expected_sha256": "1b6d429363b98ed3489f7659ccb9d85a19797ae788105844b4962b67bb891065"
+      "source_bytes": 798
     },
     {
       "id": "0012",
       "input": "census/inputs/0012.rn",
       "input_sha256": "dd01ac5fdacd8a933f560e5851a711ab07f8f8e9be823ba8004c5234d5ae34c9",
-      "source_bytes": 501,
-      "expected": "census/expected/0012.json",
-      "expected_sha256": "bc2dd8985f0ce20614853bdfec80fa1b4f98e1b8b87753ade5512e58978b0a13"
+      "source_bytes": 501
     },
     {
       "id": "0013",
       "input": "census/inputs/0013.rn",
       "input_sha256": "4e826b8653441bb543f8e5c0c38e362a8f9ca65f131185adabb427adaf839a0a",
-      "source_bytes": 559,
-      "expected": "census/expected/0013.json",
-      "expected_sha256": "45e7e44c53f2dfe62bedbd54018197b8579d7a2c342f6a4e04544b365489e19f"
+      "source_bytes": 559
     },
     {
       "id": "0014",
       "input": "census/inputs/0014.rn",
       "input_sha256": "090496acd6b9ef5359409f315b24e9800b01d52b99daab993f72c402f6417642",
-      "source_bytes": 723,
-      "expected": "census/expected/0014.json",
-      "expected_sha256": "61a9b6a20adf846324e340b54222d401cd6d5da269e981a054101904b4f2a2dc"
+      "source_bytes": 723
     },
     {
       "id": "0015",
       "input": "census/inputs/0015.rn",
       "input_sha256": "f458ee3f76463fb1ac2be88b1bba45fd3394c4f9a8c49d090fed4929cd611c16",
-      "source_bytes": 1133,
-      "expected": "census/expected/0015.json",
-      "expected_sha256": "892b2219bbf8aee3a133dc0a3b3e633fe5498685a5141460a446c7e68db93171"
+      "source_bytes": 1133
     },
     {
       "id": "0016",
       "input": "census/inputs/0016.rn",
       "input_sha256": "ca926ec4b31a9498c7170ce064c89743bf0b2220b881e03a84c96759e9d70ef1",
-      "source_bytes": 5133,
-      "expected": "census/expected/0016.json",
-      "expected_sha256": "80132d18f51f48d56d913d92dd3ae75ef18c6c1391a2ad60b027fbf86e37f2c7"
+      "source_bytes": 5133
     },
     {
       "id": "0017",
       "input": "census/inputs/0017.rn",
       "input_sha256": "a5892bb368c5743c24165958af8e0001ef03fd118a970ec16c88a5bdf2003715",
-      "source_bytes": 7609,
-      "expected": "census/expected/0017.json",
-      "expected_sha256": "6983743aa8c2578b98f41852132f533cdea156d947f61f8f282cbda1c9eba7ea"
+      "source_bytes": 7609
     },
     {
       "id": "0018",
       "input": "census/inputs/0018.rn",
       "input_sha256": "cc3dd16e0cfbf970bdc1c880907aa927865d8b60c83dd75d867d92449e2a7e95",
-      "source_bytes": 7750,
-      "expected": "census/expected/0018.json",
-      "expected_sha256": "4b520bd549fc363c81742161a453ad51d60fca4b595922e7012387be16702cf0"
+      "source_bytes": 7750
     },
     {
       "id": "0019",
       "input": "census/inputs/0019.rn",
       "input_sha256": "febf66a4fd51b4d43ba3d8eb4d92babca3c71e33fc6fcbf7252fdf9a96a744f7",
-      "source_bytes": 3661,
-      "expected": "census/expected/0019.json",
-      "expected_sha256": "354e0609164a3473135d90066772ecacc095f00733caaafd1c4f65fa990efdf9"
+      "source_bytes": 3661
     },
     {
       "id": "0020",
       "input": "census/inputs/0020.rn",
       "input_sha256": "07f323207777cb40cd31ce6c66258ba9a07a56ecec771a21977e8fc2d58d8ab9",
-      "source_bytes": 3624,
-      "expected": "census/expected/0020.json",
-      "expected_sha256": "24a0b9d9f43ab4a1349f0ce6036055b89f8ca96199b47f7efa6cdeeb98d4fb56"
+      "source_bytes": 3624
     },
     {
       "id": "0021",
       "input": "census/inputs/0021.rn",
       "input_sha256": "19d6894a946e9e75cbd57c27a82b2046c0d43f61274f92de08a4b21078b50a52",
-      "source_bytes": 4713,
-      "expected": "census/expected/0021.json",
-      "expected_sha256": "884cd4dce37c2a603d331106c7bd25524628a3700de75e8157587c0028f60a93"
+      "source_bytes": 4713
     },
     {
       "id": "0022",
       "input": "census/inputs/0022.rn",
       "input_sha256": "2edaa079a63d21542cbc38312f333a1e7730841e36654063f06f4e27152a1a1b",
-      "source_bytes": 5544,
-      "expected": "census/expected/0022.json",
-      "expected_sha256": "a403407f0d59889e7421943958cbe7b08bc706708fd462a287ed3a63fcb015d1"
+      "source_bytes": 5544
     },
     {
       "id": "0023",
       "input": "census/inputs/0023.rn",
       "input_sha256": "dd7da7bcb0a3fccb33a08d9c8cc4454f0ea711b7de1edc11b92e4786171024ba",
-      "source_bytes": 2222,
-      "expected": "census/expected/0023.json",
-      "expected_sha256": "9a3b8dd206f2c0d66678cbf7e83c5f88474f273e1ea0a073f648af374a970e18"
+      "source_bytes": 2222
     },
     {
       "id": "0024",
       "input": "census/inputs/0024.rn",
       "input_sha256": "eb1ab9738e3254adda584f48e7ea2e62624b43d08910f5637a25b9b8c70c59c3",
-      "source_bytes": 2661,
-      "expected": "census/expected/0024.json",
-      "expected_sha256": "1ab4559c02b4488f6780e61409e2a11984d9a2e6c874044230f54a18a2e52812"
+      "source_bytes": 2661
     },
     {
       "id": "0025",
       "input": "census/inputs/0025.rn",
       "input_sha256": "8353d3df77b651218da75e329e59fc5596e8c8d1345299f856d17074a7735536",
-      "source_bytes": 5700,
-      "expected": "census/expected/0025.json",
-      "expected_sha256": "388d6354d8f100e09ed1109991956a421b0ea9703e03292a013a7f679556dc92"
+      "source_bytes": 5700
     },
     {
       "id": "0026",
       "input": "census/inputs/0026.rn",
       "input_sha256": "f6c566af45c3d552468f0c3c5a5357dde32e99e6928b0b760d756df85120580b",
-      "source_bytes": 9232,
-      "expected": "census/expected/0026.json",
-      "expected_sha256": "ca66bb8f29156f1bb00891a10817feb4066d625beb6af6145b94b058af4dc74f"
+      "source_bytes": 9232
     },
     {
       "id": "0027",
       "input": "census/inputs/0027.rn",
       "input_sha256": "86bdb86049ee485d0fd335fd9ec0409e2044379802f67d0dc83ded997b0437f3",
-      "source_bytes": 108,
-      "expected": "census/expected/0027.json",
-      "expected_sha256": "a9a5755cabd29f9bfc532248f3d2cfc7b707f4620317997874f72d63eb38d373"
+      "source_bytes": 108
     },
     {
       "id": "0028",
       "input": "census/inputs/0028.rn",
       "input_sha256": "fe7b29a869c579a50614172ec3c2504217befd94a2887a6d46ce0346d089792a",
-      "source_bytes": 110,
-      "expected": "census/expected/0028.json",
-      "expected_sha256": "71da83bcfcb96f4de668361a22b14a216585dde25a8c04273e7febb9bfd68ed6"
+      "source_bytes": 110
     },
     {
       "id": "0029",
       "input": "census/inputs/0029.rn",
       "input_sha256": "704aafca1544a0629f771c177f045d204511da628ca2d209a1b7ac3958cb2d56",
-      "source_bytes": 9398,
-      "expected": "census/expected/0029.json",
-      "expected_sha256": "9353f2abfea8ea316e068f46d6112751f30051b1aa7af33850e314877b454d6c"
+      "source_bytes": 9398
     },
     {
       "id": "0030",
       "input": "census/inputs/0030.rn",
       "input_sha256": "d90b1314eae9885ac1a4efd0a5d5706f0729f2791f53334981e1a3c6735a7ebb",
-      "source_bytes": 137,
-      "expected": "census/expected/0030.json",
-      "expected_sha256": "5858e09840670a5b83573cf6df67de16de6d598795b8be570333cf985648a317"
+      "source_bytes": 137
     },
     {
       "id": "0031",
       "input": "census/inputs/0031.rn",
       "input_sha256": "2c67874f209cd8e01d5ba192b107bfb2058660c34e6fac4311ca405d35e8bdd8",
-      "source_bytes": 110,
-      "expected": "census/expected/0031.json",
-      "expected_sha256": "71da83bcfcb96f4de668361a22b14a216585dde25a8c04273e7febb9bfd68ed6"
+      "source_bytes": 110
     },
     {
       "id": "0032",
       "input": "census/inputs/0032.rn",
       "input_sha256": "a86d1da3aa77799d85c70b57f627b12ca4230e3ffa75de2abdbe142de73026d3",
-      "source_bytes": 9231,
-      "expected": "census/expected/0032.json",
-      "expected_sha256": "bafbedb93a3426c7e81cdef0637defb5ca91fc1b79c4038461c963e2f96f6169"
+      "source_bytes": 9231
     },
     {
       "id": "0033",
       "input": "census/inputs/0033.rn",
       "input_sha256": "786f15968b1a11e0601541959daad1ddd1911769b000b3b9bb9fc6275645e085",
-      "source_bytes": 687,
-      "expected": "census/expected/0033.json",
-      "expected_sha256": "d7e96b97abee9085b37496fdba25fa5aa8beb285859bfc5e3834dcca3d348236"
+      "source_bytes": 687
     },
     {
       "id": "0034",
       "input": "census/inputs/0034.rn",
       "input_sha256": "8ee44854a9c35bb3b978bf07b3b7e0ccf806d77f6c1c3b87e3aaf8d13fea23a2",
-      "source_bytes": 10359,
-      "expected": "census/expected/0034.json",
-      "expected_sha256": "41eaa3a06d402367b3a53fa07b322112abe1be45b69059963e9b7a9f3b3b3003"
+      "source_bytes": 10359
     },
     {
       "id": "0035",
       "input": "census/inputs/0035.rn",
       "input_sha256": "cb8a3fa097d1e4f260762d46d7f2eb4ad03d0fa9ee05f21650bdd8f9f7425c12",
-      "source_bytes": 812,
-      "expected": "census/expected/0035.json",
-      "expected_sha256": "015978925e6119d3a9f4dbef1d1e3315932b5fb2310fd16798536305ab2e9f03"
+      "source_bytes": 812
     },
     {
       "id": "0036",
       "input": "census/inputs/0036.rn",
       "input_sha256": "33d67381fe2f91639ecb37d6a66f2024f29871c91eb64d188871213033a57391",
-      "source_bytes": 7262,
-      "expected": "census/expected/0036.json",
-      "expected_sha256": "75d6e59ff3291bec48250b0924334f76c4b5ab8d9733db7e2989a8fd73a51ff9"
+      "source_bytes": 7262
     },
     {
       "id": "0037",
       "input": "census/inputs/0037.rn",
       "input_sha256": "70ba94d8e24ee03f825c1db605b8aaccaf5408e4dc7435478e3bf59006cc82d5",
-      "source_bytes": 816,
-      "expected": "census/expected/0037.json",
-      "expected_sha256": "4f0d35d5c5f0c4ea88e6dd54d240c8ee929de9462915e333b18fcdff56cfc5a6"
+      "source_bytes": 816
     },
     {
       "id": "0038",
       "input": "census/inputs/0038.rn",
       "input_sha256": "2ccd1f11229857dec3e329ddc015aa64eae4cfecf889882f605801335d81bedc",
-      "source_bytes": 6936,
-      "expected": "census/expected/0038.json",
-      "expected_sha256": "ab28d85d1d35d6c65d9d398102b39b4fb8395a9c8471debda03d5a2361a85d2e"
+      "source_bytes": 6936
     },
     {
       "id": "0039",
       "input": "census/inputs/0039.rn",
       "input_sha256": "ce84fbabcf03cc30221069feb9755e7f06dbaf2f477f1031d885be5f359d55bb",
-      "source_bytes": 134,
-      "expected": "census/expected/0039.json",
-      "expected_sha256": "e022ad882626592287d7245fd11050ce518c5109cc67fa2c5db32bbcd8193360"
+      "source_bytes": 134
     },
     {
       "id": "0040",
       "input": "census/inputs/0040.rn",
       "input_sha256": "c6fe0071fad390b1450b9bf877d4dc4835d5b7bbc8661d3e58c2384154fe6f18",
-      "source_bytes": 181,
-      "expected": "census/expected/0040.json",
-      "expected_sha256": "d6bba324f87a534ba83306ee2e657e9d0e4546d537475f7df720d88144913820"
+      "source_bytes": 181
     },
     {
       "id": "0041",
       "input": "census/inputs/0041.rn",
       "input_sha256": "1a349658d718399ee8572c4e6d7e8ed2f76ae90cfe9f6e928d65b71338eeda03",
-      "source_bytes": 143,
-      "expected": "census/expected/0041.json",
-      "expected_sha256": "c89825de34c0f0778fcb2e675bbff0052b50b1a81743b967c9aa4eb1477d2951"
+      "source_bytes": 143
     },
     {
       "id": "0042",
       "input": "census/inputs/0042.rn",
       "input_sha256": "e453c83c060820bb8d74cffab7f30d33447839c8602a43adbb6ee586faee7b10",
-      "source_bytes": 136,
-      "expected": "census/expected/0042.json",
-      "expected_sha256": "9f05ce9b70729a6bbc3270592a0f93ea328d2fc805ffe1c7c358aa53b0c10863"
+      "source_bytes": 136
     },
     {
       "id": "0043",
       "input": "census/inputs/0043.rn",
       "input_sha256": "4843ea668f5b7a0512c59c38773b25e8dfa1dabe99f7ecc8c576c4d4850eb800",
-      "source_bytes": 2232,
-      "expected": "census/expected/0043.json",
-      "expected_sha256": "e817feb1c835f076e826a0841a8f7e17fcdd4dab1bd68b68e6b6d8a3448f56d4"
+      "source_bytes": 2232
     },
     {
       "id": "0044",
       "input": "census/inputs/0044.rn",
       "input_sha256": "a7aa2fe83f7e71eaa7d5fd7a423236733eb0facc32114d041036833c239b1469",
-      "source_bytes": 7033,
-      "expected": "census/expected/0044.json",
-      "expected_sha256": "d49096263e4f0a248ec84b0732eebcb6a1acf41c7ac8d4f7658c629678960924"
+      "source_bytes": 7033
     },
     {
       "id": "0045",
       "input": "census/inputs/0045.rn",
       "input_sha256": "5de379e01418b3a7294d432009f9b04560c0a23f18363a1abb2b100b0993095a",
-      "source_bytes": 143,
-      "expected": "census/expected/0045.json",
-      "expected_sha256": "525070cdd55767899b9393ec5218184caf05cadd8761f846f97ba8d9c3d79822"
+      "source_bytes": 143
     },
     {
       "id": "0046",
       "input": "census/inputs/0046.rn",
       "input_sha256": "5dd61184cd7b654537d7d685bd54e8ae5bc9e426ba261bffd7135370b79384c8",
-      "source_bytes": 9646,
-      "expected": "census/expected/0046.json",
-      "expected_sha256": "6129669eed700f5ac5d936fc707ebbf30e4686bff196509fc43ba966fb45abb2"
+      "source_bytes": 9646
     },
     {
       "id": "0047",
       "input": "census/inputs/0047.rn",
       "input_sha256": "eb167e46c60cf8c1c4115ab5c6d798c044e3f8af17157aadd25cd5f4d170e2d8",
-      "source_bytes": 9610,
-      "expected": "census/expected/0047.json",
-      "expected_sha256": "33aad8774ba34bfb41eaa128d5a05217335b556fdd28e111d9150e2d32f6e181"
+      "source_bytes": 9610
     },
     {
       "id": "0048",
       "input": "census/inputs/0048.rn",
       "input_sha256": "8868a951ace7043c404218d4ed4aefd744201cdfbb5836d7c797f0687e5914d4",
-      "source_bytes": 399,
-      "expected": "census/expected/0048.json",
-      "expected_sha256": "ae304b6b1833bd75425806128997978b00070808f7e4d2612b0ce8d042c72cbe"
+      "source_bytes": 399
     },
     {
       "id": "0049",
       "input": "census/inputs/0049.rn",
       "input_sha256": "2186ecfa8adbe9f0a995293812fa003aba38ce4abc8067f160ad6efb8f715be1",
-      "source_bytes": 1749,
-      "expected": "census/expected/0049.json",
-      "expected_sha256": "ae304b6b1833bd75425806128997978b00070808f7e4d2612b0ce8d042c72cbe"
+      "source_bytes": 1749
     },
     {
       "id": "0050",
       "input": "census/inputs/0050.rn",
       "input_sha256": "707d8cd11e9ffe7d42d9dbd50b2a66fc1a656b0e05f97e6ae9c19fea71638695",
-      "source_bytes": 22,
-      "expected": "census/expected/0050.json",
-      "expected_sha256": "b76250782ce8e52934310fa1b6bf554f0ca71397dfdfb39b1f2bd4a6df21cc7a"
+      "source_bytes": 22
     },
     {
       "id": "0051",
       "input": "census/inputs/0051.rn",
       "input_sha256": "a8020dc7657598c9571e18e50f3cb78d215cf6ff5af09027771ca79f0a4d38db",
-      "source_bytes": 36,
-      "expected": "census/expected/0051.json",
-      "expected_sha256": "35cc958b61f56a3d3572960ffb1a0024b345b23b7b61ad5a368c38797975622e"
+      "source_bytes": 36
     },
     {
       "id": "0052",
       "input": "census/inputs/0052.rn",
       "input_sha256": "55e830d7e14c95ab9a678ec8ffe24999bf229bb436ed63ef57dd9dc5fe0d059f",
-      "source_bytes": 31,
-      "expected": "census/expected/0052.json",
-      "expected_sha256": "b76250782ce8e52934310fa1b6bf554f0ca71397dfdfb39b1f2bd4a6df21cc7a"
+      "source_bytes": 31
     },
     {
       "id": "0053",
       "input": "census/inputs/0053.rn",
       "input_sha256": "6a26accfb44728a34053ba1923135cbc54ac05af76a7bb00c2bbae69302b3d14",
-      "source_bytes": 78,
-      "expected": "census/expected/0053.json",
-      "expected_sha256": "3c12cf3a67d3dc3400da02fd1b740d303f499f9ee47b54ef0304fea147badc09"
+      "source_bytes": 78
     },
     {
       "id": "0054",
       "input": "census/inputs/0054.rn",
       "input_sha256": "02bc38d21193287c03117110b6b27f95625acfdfc00b13a542cdda2c84555655",
-      "source_bytes": 11,
-      "expected": "census/expected/0054.json",
-      "expected_sha256": "c10be4347fcc8ac5fc40584c2915e1dca5c5895cb97177808ab18ff4c48fd097"
+      "source_bytes": 11
     },
     {
       "id": "0055",
       "input": "census/inputs/0055.rn",
       "input_sha256": "5ced0a6734ff8d67903c5475352d40d9747f38be18bf76f438b7c506bf4d7093",
-      "source_bytes": 21,
-      "expected": "census/expected/0055.json",
-      "expected_sha256": "b76250782ce8e52934310fa1b6bf554f0ca71397dfdfb39b1f2bd4a6df21cc7a"
+      "source_bytes": 21
     },
     {
       "id": "0056",
       "input": "census/inputs/0056.rn",
       "input_sha256": "88c2619c7c9ea3c3dd8009de5afd3fe6beed3b42cc96efc64b2715bf55e1afdd",
-      "source_bytes": 40,
-      "expected": "census/expected/0056.json",
-      "expected_sha256": "3fc026da29bea7c09a438178763eddcf42a68b0a9c18874579a39bc0701e9eec"
+      "source_bytes": 40
     },
     {
       "id": "0057",
       "input": "census/inputs/0057.rn",
       "input_sha256": "910cdf95549cf0fc86e54c8b03716586aa36145e87fbc4e54955bd5f4937e8b1",
-      "source_bytes": 34,
-      "expected": "census/expected/0057.json",
-      "expected_sha256": "3c12cf3a67d3dc3400da02fd1b740d303f499f9ee47b54ef0304fea147badc09"
+      "source_bytes": 34
     },
     {
       "id": "0058",
       "input": "census/inputs/0058.rn",
       "input_sha256": "0404244da19f97cb513c286a61ba894814141130db7478abeb68e359901ce0ea",
-      "source_bytes": 22,
-      "expected": "census/expected/0058.json",
-      "expected_sha256": "b76250782ce8e52934310fa1b6bf554f0ca71397dfdfb39b1f2bd4a6df21cc7a"
+      "source_bytes": 22
     },
     {
       "id": "0059",
       "input": "census/inputs/0059.rn",
       "input_sha256": "622caecc2318b914d796c0dd692175581e24586bc42f9a50bb055ba9394d1e49",
-      "source_bytes": 45,
-      "expected": "census/expected/0059.json",
-      "expected_sha256": "c10be4347fcc8ac5fc40584c2915e1dca5c5895cb97177808ab18ff4c48fd097"
+      "source_bytes": 45
     },
     {
       "id": "0060",
       "input": "census/inputs/0060.rn",
       "input_sha256": "1079eba7f0bc102e781474a2bb792bb3edba3ae9dc589177bab5d4898e0266db",
-      "source_bytes": 25,
-      "expected": "census/expected/0060.json",
-      "expected_sha256": "b76250782ce8e52934310fa1b6bf554f0ca71397dfdfb39b1f2bd4a6df21cc7a"
+      "source_bytes": 25
     },
     {
       "id": "0061",
       "input": "census/inputs/0061.rn",
       "input_sha256": "0eb2c48f3eaaef834889b8b4423eb1c06bba9f5241d02519783f15eb7c50d777",
-      "source_bytes": 25,
-      "expected": "census/expected/0061.json",
-      "expected_sha256": "b76250782ce8e52934310fa1b6bf554f0ca71397dfdfb39b1f2bd4a6df21cc7a"
+      "source_bytes": 25
     },
     {
       "id": "0062",
       "input": "census/inputs/0062.rn",
       "input_sha256": "5f10062c395c5fb71bef76ea771df9a7f33b0c02d3f75c7cced0c7120b9c9498",
-      "source_bytes": 24,
-      "expected": "census/expected/0062.json",
-      "expected_sha256": "b76250782ce8e52934310fa1b6bf554f0ca71397dfdfb39b1f2bd4a6df21cc7a"
+      "source_bytes": 24
     },
     {
       "id": "0063",
       "input": "census/inputs/0063.rn",
       "input_sha256": "b3d3331b7d0ad4db7a6461415bce26a8e62f11260fe37a310fdc0c2386e2c728",
-      "source_bytes": 53,
-      "expected": "census/expected/0063.json",
-      "expected_sha256": "10890aebfc6e02c79abea162ec77d9c9611a812b90a17e229ed55656705bd92e"
+      "source_bytes": 53
     },
     {
       "id": "0064",
       "input": "census/inputs/0064.rn",
       "input_sha256": "615054f9fda27ddc04c38662d19485a25293974ab3562b74d377a41bfbe9944b",
-      "source_bytes": 110,
-      "expected": "census/expected/0064.json",
-      "expected_sha256": "ad53ce1eaf01eb4ab2725628755b2051ba4ed79f93eaece4932b88495156cf54"
+      "source_bytes": 110
     },
     {
       "id": "0065",
       "input": "census/inputs/0065.rn",
       "input_sha256": "605e39808f4a42887db190495b5dd4fff790f7708d3cd6a9b55bd692b764b774",
-      "source_bytes": 811,
-      "expected": "census/expected/0065.json",
-      "expected_sha256": "f88f5a4d8751e71adcdd4db277dfef3f8765828bd3ae8c1a414052b5a811d4ab"
+      "source_bytes": 811
     },
     {
       "id": "0066",
       "input": "census/inputs/0066.rn",
       "input_sha256": "4c9b29f9019775bb8628ac6ca0afd09feb6a058fbddff34da77185d1cd134b8a",
-      "source_bytes": 1645,
-      "expected": "census/expected/0066.json",
-      "expected_sha256": "8d8912561372c8bf56552d172d1b6e97d78af67bde4069d23f0fb4a5e508298a"
+      "source_bytes": 1645
     },
     {
       "id": "0067",
       "input": "census/inputs/0067.rn",
       "input_sha256": "1920d1c1fdf3ce75875fa776976d5ec368a150bfc01a54ce97c99f76e32303dc",
-      "source_bytes": 1919,
-      "expected": "census/expected/0067.json",
-      "expected_sha256": "b98fc903b0fe9688fb7c689d896bf4e326084227c7c3a9c62576086b236cf762"
+      "source_bytes": 1919
     },
     {
       "id": "0068",
       "input": "census/inputs/0068.rn",
       "input_sha256": "e854f0d5184f58b3f7f5e61f5a26acee7cc0b658d844dc2cf472ffa86018a8d8",
-      "source_bytes": 1951,
-      "expected": "census/expected/0068.json",
-      "expected_sha256": "82d8e7b96ff30ddddd707c32e5d5a8b17816178709062168ed745fb822cf3215"
+      "source_bytes": 1951
     },
     {
       "id": "0069",
       "input": "census/inputs/0069.rn",
       "input_sha256": "eb3cc66d60388321a020460b0b3f9e93432140de0e029d350af327b67cf5456b",
-      "source_bytes": 993,
-      "expected": "census/expected/0069.json",
-      "expected_sha256": "c3e158f874c2f8465fd3c6526e607692825f6830bb4f29a01b6db76f3257c95b"
+      "source_bytes": 993
     },
     {
       "id": "0070",
       "input": "census/inputs/0070.rn",
       "input_sha256": "57101ddb0e6c1332bcd8a25bb53c2e7e5bc451937dd433a81226091153519bdc",
-      "source_bytes": 1326,
-      "expected": "census/expected/0070.json",
-      "expected_sha256": "05a07878ef0bc0aee0c162a0b788b12b4fafc17647d4d72ed425454f4afe1934"
+      "source_bytes": 1326
     },
     {
       "id": "0071",
       "input": "census/inputs/0071.rn",
       "input_sha256": "7776eb34f600923cff2cd7a02c2210b1d17c2ca73ed6d9ab4c3ecfc29f636009",
-      "source_bytes": 1861,
-      "expected": "census/expected/0071.json",
-      "expected_sha256": "427e7bff30fb017110db6e073be6c9f92bb6437109a205a1f68cdd6e84ece7b0"
+      "source_bytes": 1861
     },
     {
       "id": "0072",
       "input": "census/inputs/0072.rn",
       "input_sha256": "b5a176c80b85ccecdca3b4f964021e3c2c7b15f69d7fac7157a44f8c3d33b9d7",
-      "source_bytes": 4065,
-      "expected": "census/expected/0072.json",
-      "expected_sha256": "b14fe4e4d892fdbb218ef85b2ca555aac5baba8e4c829146fac07ac23540d60e"
+      "source_bytes": 4065
     },
     {
       "id": "0073",
       "input": "census/inputs/0073.rn",
       "input_sha256": "1bf2bcf9d931a4aab0deae6ba1dd80387fc64536f120f42deba6e544e1739acc",
-      "source_bytes": 652,
-      "expected": "census/expected/0073.json",
-      "expected_sha256": "76007784f539d63b84939b7f20c17c6d4f8e170d73569524000891ec06c2759f"
+      "source_bytes": 652
     },
     {
       "id": "0074",
       "input": "census/inputs/0074.rn",
       "input_sha256": "b81767f75bda38f1cd48751c8be829ae09f5cf3c2d4424dd4a372ad15bbd26b2",
-      "source_bytes": 484,
-      "expected": "census/expected/0074.json",
-      "expected_sha256": "094a3da13809afea7e4d29261a931d55a7e4ca525f3994e5c1e7aaabbf374ee9"
+      "source_bytes": 484
     },
     {
       "id": "0075",
       "input": "census/inputs/0075.rn",
       "input_sha256": "be811ada39bf1f842f39ffeeb2aa97b2249a8e871e592b69681e3d7115567ba1",
-      "source_bytes": 3843,
-      "expected": "census/expected/0075.json",
-      "expected_sha256": "06827959f09c5cc14db54dc71401d15699e672e8935cad8a8e6f88e5e729253d"
+      "source_bytes": 3843
     },
     {
       "id": "0076",
       "input": "census/inputs/0076.rn",
       "input_sha256": "c56d5ec239b3805e3560d0e621b7a72569166db9ded2438e25eb2085f87ee92d",
-      "source_bytes": 816,
-      "expected": "census/expected/0076.json",
-      "expected_sha256": "246e39de3a8e1924b05e085fe8e9c08e38f6eb66fca718466a1bcd5e6b9b3ab8"
+      "source_bytes": 816
     },
     {
       "id": "0077",
       "input": "census/inputs/0077.rn",
       "input_sha256": "2a2635d56e3dd8af455c943f2eede7b4a56e194e9a8ebb9e2fe06f0b85fc6925",
-      "source_bytes": 519,
-      "expected": "census/expected/0077.json",
-      "expected_sha256": "48ef244b20c718f1c3fbca91488b9df6b149f4e77910a775e89e578dd533dc70"
+      "source_bytes": 519
     },
     {
       "id": "0078",
       "input": "census/inputs/0078.rn",
       "input_sha256": "88aa65c9ef2b655c6f078971dce65a29e5eda1578c4cf386f0be008bcffa24e2",
-      "source_bytes": 577,
-      "expected": "census/expected/0078.json",
-      "expected_sha256": "7f091a3aa1fa206db1cc9f700b13f85ba26f1f9084cb2509f698b59201ae158f"
+      "source_bytes": 577
     },
     {
       "id": "0079",
       "input": "census/inputs/0079.rn",
       "input_sha256": "22832e0b05dd07995a57a4817603798150ff1bd6cc85ad8f4f703e06a33a2c3e",
-      "source_bytes": 741,
-      "expected": "census/expected/0079.json",
-      "expected_sha256": "4416c4ad8e0b1317a495c1b75704d76aa91fb997f101bf630d38ae95ad8d0351"
+      "source_bytes": 741
     },
     {
       "id": "0080",
       "input": "census/inputs/0080.rn",
       "input_sha256": "3e0cb0c86d4281f55a64cacea82aa45c503c0b0d3028d19f22f50f4897686243",
-      "source_bytes": 1151,
-      "expected": "census/expected/0080.json",
-      "expected_sha256": "a3b04b4dddcd2f38c2bd058319cf4639064127ef1843efd6e3ac658d4a04325a"
+      "source_bytes": 1151
     },
     {
       "id": "0081",
       "input": "census/inputs/0081.rn",
       "input_sha256": "4ab637c744f1cd1d5ff2c4a136496f8da4fac42ecaf11e174aa99381dd83df0f",
-      "source_bytes": 5151,
-      "expected": "census/expected/0081.json",
-      "expected_sha256": "a51c1794e2b407322f87bde4370feb0c6e997783f59c5f331e6279fc923df86b"
+      "source_bytes": 5151
     },
     {
       "id": "0082",
       "input": "census/inputs/0082.rn",
       "input_sha256": "5715f2f04d7c1559038f0f86ecfdfc30f7a34d3b5bde221c894aa9be876e83b3",
-      "source_bytes": 7627,
-      "expected": "census/expected/0082.json",
-      "expected_sha256": "0d0b1b4a7fc7d1f4773f075e0f170dcf00dae4fe7fcc8cb38c51ace58217d377"
+      "source_bytes": 7627
     },
     {
       "id": "0083",
       "input": "census/inputs/0083.rn",
       "input_sha256": "31d26475861162323eba207e284c0d4766a5ebfcb3476c26cb4400278a0b37f2",
-      "source_bytes": 7768,
-      "expected": "census/expected/0083.json",
-      "expected_sha256": "b3b0fc555ab7979a7eb8d63799c8a7a68787f9737363e91c22a9bab4d4683f45"
+      "source_bytes": 7768
     },
     {
       "id": "0084",
       "input": "census/inputs/0084.rn",
       "input_sha256": "4482ed645d1d8bb158ae948a4ca77d64f14696d96cf9277d68732c80b6602b95",
-      "source_bytes": 3679,
-      "expected": "census/expected/0084.json",
-      "expected_sha256": "358f357fb7db34a7da38188eafff518b0eced1965debfde68f30fd49da650364"
+      "source_bytes": 3679
     },
     {
       "id": "0085",
       "input": "census/inputs/0085.rn",
       "input_sha256": "3484699a7850522698e17bb3e7412827621a80061ba4ce4299e68a81ee7ca25e",
-      "source_bytes": 3642,
-      "expected": "census/expected/0085.json",
-      "expected_sha256": "00304b8b5a6e6c50e6be74df2461e486bd00454e76edf9959de226febe654882"
+      "source_bytes": 3642
     },
     {
       "id": "0086",
       "input": "census/inputs/0086.rn",
       "input_sha256": "88e864a69405c9c858e1587006cf440c2b42055ab85ac171bd038365e021324d",
-      "source_bytes": 4731,
-      "expected": "census/expected/0086.json",
-      "expected_sha256": "79d0d9c510f5c359f21fc6759900e588ae64a03934c55863abfed4e6c1fb8d17"
+      "source_bytes": 4731
     },
     {
       "id": "0087",
       "input": "census/inputs/0087.rn",
       "input_sha256": "2a1d4006724c4bb3b8bc7866b04a4518176345ee81144bd764461456e7661dec",
-      "source_bytes": 5562,
-      "expected": "census/expected/0087.json",
-      "expected_sha256": "ea41a859ef94691fe45063e651e3625c6467524f3b013100e95db4261f907a88"
+      "source_bytes": 5562
     },
     {
       "id": "0088",
       "input": "census/inputs/0088.rn",
       "input_sha256": "48571160aad7a49a58b7e2671f90efd3c232821535a418778d16ee58f2b15e60",
-      "source_bytes": 2240,
-      "expected": "census/expected/0088.json",
-      "expected_sha256": "e42fea2da3dd480580d4d32eea8066c9fbeebeb8eca0a7c05317e90480f369a5"
+      "source_bytes": 2240
     },
     {
       "id": "0089",
       "input": "census/inputs/0089.rn",
       "input_sha256": "99f0f020838b2e33c9e9a223385de0b48418a1ec2d4b8b3b625f4861dffc85b4",
-      "source_bytes": 2679,
-      "expected": "census/expected/0089.json",
-      "expected_sha256": "9f88531f1e49f7c89870b241716899c066e5e15fe1c3cf1dc27f696b75d68e42"
+      "source_bytes": 2679
     },
     {
       "id": "0090",
       "input": "census/inputs/0090.rn",
       "input_sha256": "0cbbce50cdecf5e4cbd7073b233569c4c2c7a7540306cfa13657b671b7c963eb",
-      "source_bytes": 5718,
-      "expected": "census/expected/0090.json",
-      "expected_sha256": "361770d919a4a5ec2a565edfb9838ee718df2a392862a793e52e7c15c3ee480b"
+      "source_bytes": 5718
     },
     {
       "id": "0091",
       "input": "census/inputs/0091.rn",
       "input_sha256": "07813b69488fa0559d5827ebd282c16e08c998bdfb27cd5472b00bbc220ae875",
-      "source_bytes": 9250,
-      "expected": "census/expected/0091.json",
-      "expected_sha256": "f33c308ffcb9fc32fafb8af0fea6141ae68790c52d7fb96e1adca32630e8289d"
+      "source_bytes": 9250
     },
     {
       "id": "0092",
       "input": "census/inputs/0092.rn",
       "input_sha256": "c2eec532e40381766f2811e36f609457884934a45819f467f7d14b3a05ea33f5",
-      "source_bytes": 126,
-      "expected": "census/expected/0092.json",
-      "expected_sha256": "6ae404a147b8913aed519af6fdfe38a8c07259fa0195badb30e1a6e0d9cb6c0a"
+      "source_bytes": 126
     },
     {
       "id": "0093",
       "input": "census/inputs/0093.rn",
       "input_sha256": "9a6e6c3bb0f350e2a09c1c87146d0270763cc3479dcc15712a2c70fe84b35488",
-      "source_bytes": 128,
-      "expected": "census/expected/0093.json",
-      "expected_sha256": "9688fa441053832ff19b2e8d513f80becdc3de08e38771ceca00a566fcfd09e4"
+      "source_bytes": 128
     },
     {
       "id": "0094",
       "input": "census/inputs/0094.rn",
       "input_sha256": "f78d2278d7dee75427d99d47ff8b7123d938e6a72860398f0bc4bb6dece4b2ae",
-      "source_bytes": 9416,
-      "expected": "census/expected/0094.json",
-      "expected_sha256": "5aeaf31e18f066cc3a79a055e6a9f62c65b2cdde0c9d7af8649566c9fba18fa1"
+      "source_bytes": 9416
     },
     {
       "id": "0095",
       "input": "census/inputs/0095.rn",
       "input_sha256": "cb208b2d5318d1452713ea75b4c69dc7ca0250f2c77419fe99e1e99f5cd22031",
-      "source_bytes": 155,
-      "expected": "census/expected/0095.json",
-      "expected_sha256": "85df92a22cd45f21b744b5431d386690e217f8d23d7a1cb0546210af75aaa8e2"
+      "source_bytes": 155
     },
     {
       "id": "0096",
       "input": "census/inputs/0096.rn",
       "input_sha256": "8db15e66323e0cc5892acd22add7eeabe513ecaa1f3cf963d2336f519f6b6b0c",
-      "source_bytes": 128,
-      "expected": "census/expected/0096.json",
-      "expected_sha256": "9688fa441053832ff19b2e8d513f80becdc3de08e38771ceca00a566fcfd09e4"
+      "source_bytes": 128
     },
     {
       "id": "0097",
       "input": "census/inputs/0097.rn",
       "input_sha256": "7916b5874f289bd236b1f1cead8d3923a9fd27846d489f8013fb728e72bb369a",
-      "source_bytes": 9249,
-      "expected": "census/expected/0097.json",
-      "expected_sha256": "65e98d9bc639b229999499381bdf7d642f8fabd8afac25a968d4c6e15f9578dd"
+      "source_bytes": 9249
     },
     {
       "id": "0098",
       "input": "census/inputs/0098.rn",
       "input_sha256": "5bbfa2bd9b54c801a59dddd4478f1710205989b355e3374b17c9491436de4773",
-      "source_bytes": 705,
-      "expected": "census/expected/0098.json",
-      "expected_sha256": "387d2a33d7837dde760dfee9006c2947b8713a4ef81587aa9cb28d4003dc0b8a"
+      "source_bytes": 705
     },
     {
       "id": "0099",
       "input": "census/inputs/0099.rn",
       "input_sha256": "238cc921055a45a583125c1b0265241e286f87caf1679b0613b81db7ec3eef27",
-      "source_bytes": 10377,
-      "expected": "census/expected/0099.json",
-      "expected_sha256": "b89066794a3bec3700df3529f373cc8232a66a32a57663093fe179b3fff3c1d1"
+      "source_bytes": 10377
     },
     {
       "id": "0100",
       "input": "census/inputs/0100.rn",
       "input_sha256": "d1d672683d60d0d8a2b3baff2625a6637df64cca1d0cdeb8b05211e47420e7dc",
-      "source_bytes": 830,
-      "expected": "census/expected/0100.json",
-      "expected_sha256": "051f70e8e10512effa998554e4ca83ae107b648d092eea6765fa8cdffdc0e24a"
+      "source_bytes": 830
     },
     {
       "id": "0101",
       "input": "census/inputs/0101.rn",
       "input_sha256": "bc59943c6f57a6b85caebad0faa5535099372bfa120d844cbb5d646b7d89c3a1",
-      "source_bytes": 7280,
-      "expected": "census/expected/0101.json",
-      "expected_sha256": "ec7ed0dbc1a8bb46a8c4e81d085d0bdb5699190797086c4816fffb5094f0e20e"
+      "source_bytes": 7280
     },
     {
       "id": "0102",
       "input": "census/inputs/0102.rn",
       "input_sha256": "f0cbc74648926731c6b2d13579b5060c4fe104c79064ba0f8135861a63a8364b",
-      "source_bytes": 834,
-      "expected": "census/expected/0102.json",
-      "expected_sha256": "622a482d431d08a38560b6df7a44e2819fe7a9c4284d16b1cdcef46607bba59b"
+      "source_bytes": 834
     },
     {
       "id": "0103",
       "input": "census/inputs/0103.rn",
       "input_sha256": "eaa756804d3430105679a2f6e9eb0d77780ce292ba4f946e099a0023084fab63",
-      "source_bytes": 6954,
-      "expected": "census/expected/0103.json",
-      "expected_sha256": "b956148c6ec8836da548ae05dfc2bdc590454b4f5d121d00f28b67b74c7506bb"
+      "source_bytes": 6954
     },
     {
       "id": "0104",
       "input": "census/inputs/0104.rn",
       "input_sha256": "81061b706835664dd219470000127ae33d17bacd5d7bcb68388aadb14c93e439",
-      "source_bytes": 152,
-      "expected": "census/expected/0104.json",
-      "expected_sha256": "79a934e920f27a43a190d6371f337d39bc9b3fda19c6125a2ad2c6ad55a05e8e"
+      "source_bytes": 152
     },
     {
       "id": "0105",
       "input": "census/inputs/0105.rn",
       "input_sha256": "bd14aa38b2d56f380d951151f9680918f1ce75189e330f1993f4b296055b1371",
-      "source_bytes": 199,
-      "expected": "census/expected/0105.json",
-      "expected_sha256": "6cb02d300259433f301537da3ecd79f1f4a578423c4757d11488ecc8e4a38760"
+      "source_bytes": 199
     },
     {
       "id": "0106",
       "input": "census/inputs/0106.rn",
       "input_sha256": "4c294ba8a7f79c797af8c60ed133afa5c323d19373aa2de9b30eaf0452b6e77f",
-      "source_bytes": 161,
-      "expected": "census/expected/0106.json",
-      "expected_sha256": "70ba1dbe69048700065101abe7b163ace1d044c9fdec3b04a3ac742274c63d24"
+      "source_bytes": 161
     },
     {
       "id": "0107",
       "input": "census/inputs/0107.rn",
       "input_sha256": "98b218676e3af35307c84b416e47a06fbb676d92590c0172e6dd38bdf067d724",
-      "source_bytes": 154,
-      "expected": "census/expected/0107.json",
-      "expected_sha256": "f44aac195b96b0b2fefffa7617dc3b8726ee9b6e0d381b1f6e8b3335e34a3967"
+      "source_bytes": 154
     },
     {
       "id": "0108",
       "input": "census/inputs/0108.rn",
       "input_sha256": "68afca2633b11cf1ee94c45e7f7445405642b631e6ded63a1fe369111e871f1a",
-      "source_bytes": 2250,
-      "expected": "census/expected/0108.json",
-      "expected_sha256": "8e52162a26d96a2bc8dc64b2b70153faf1001678f032095374ea6b5eb28b6ab7"
+      "source_bytes": 2250
     },
     {
       "id": "0109",
       "input": "census/inputs/0109.rn",
       "input_sha256": "a50bb8bb3930e2a34f76fd998106bc67523bf503a43e85b38d5f7427ac924131",
-      "source_bytes": 7051,
-      "expected": "census/expected/0109.json",
-      "expected_sha256": "bd7cc64919ee849b06798577016b80df2c200e3d343d1480f64c6193a0020792"
+      "source_bytes": 7051
     },
     {
       "id": "0110",
       "input": "census/inputs/0110.rn",
       "input_sha256": "f1595a4b9be3e534cc39474dcfd70a13bf29ea1e0fd6763d681baf5c062d1082",
-      "source_bytes": 161,
-      "expected": "census/expected/0110.json",
-      "expected_sha256": "f3d1223886144accc835ef691b827d74b8ac5b5d53c1c3e18e5424749e7ab27b"
+      "source_bytes": 161
     },
     {
       "id": "0111",
       "input": "census/inputs/0111.rn",
       "input_sha256": "349c3364b9a4990aba08090ec9070b3ae9ca45050e30e843de3237df555a54ec",
-      "source_bytes": 9664,
-      "expected": "census/expected/0111.json",
-      "expected_sha256": "0b72cb3db213e95e495d3e6f7ea52defce279a4562d3cf7b3d2165dee8f98acc"
+      "source_bytes": 9664
     },
     {
       "id": "0112",
       "input": "census/inputs/0112.rn",
       "input_sha256": "851a54b6f0de08a848fbaa320676f0b4620bd14ac67670a6ac15117930fcfbd2",
-      "source_bytes": 9628,
-      "expected": "census/expected/0112.json",
-      "expected_sha256": "7d200bc0496fc939d2bfb5c9be303be7c05c643ac5d0d07bcfe0630cff809071"
+      "source_bytes": 9628
     },
     {
       "id": "0113",
       "input": "census/inputs/0113.rn",
       "input_sha256": "f8236f71d8c3a57acdea9f4e0be5fdaf7486c1fcc5021cba0bf079437671fe15",
-      "source_bytes": 417,
-      "expected": "census/expected/0113.json",
-      "expected_sha256": "35aa40a2f28770a17104e2a7cb85782708ca4f1c99ab0e3ae46054188c1a5db1"
+      "source_bytes": 417
     },
     {
       "id": "0114",
       "input": "census/inputs/0114.rn",
       "input_sha256": "707430f459b1a7092477203423d8d4ad37ab3c25f6b8e8a68b2e498ac3238564",
-      "source_bytes": 1767,
-      "expected": "census/expected/0114.json",
-      "expected_sha256": "35aa40a2f28770a17104e2a7cb85782708ca4f1c99ab0e3ae46054188c1a5db1"
+      "source_bytes": 1767
     },
     {
       "id": "0115",
       "input": "census/inputs/0115.rn",
       "input_sha256": "7ff8e4ffba38258311be74d9916eee378455bce9a4a3a6ad9c1333f183bcbe8b",
-      "source_bytes": 40,
-      "expected": "census/expected/0115.json",
-      "expected_sha256": "3cbdee7635d3800f1c3c6077b4c4b42d1ff8d5d90e714fa27f70e023038ef802"
+      "source_bytes": 40
     },
     {
       "id": "0116",
       "input": "census/inputs/0116.rn",
       "input_sha256": "9f9085227b88373284fde70910789e77bd41dec1a73113181d4df1235f3f837a",
-      "source_bytes": 54,
-      "expected": "census/expected/0116.json",
-      "expected_sha256": "f2c50b4fbc738cd1b8f9f725670aff02aa5915a52e84b2267e99f2111b25632a"
+      "source_bytes": 54
     },
     {
       "id": "0117",
       "input": "census/inputs/0117.rn",
       "input_sha256": "ab4d4da5e71673e6dcefadfdc67261db6f70f43a15825689a926ae8f07e6c4c2",
-      "source_bytes": 49,
-      "expected": "census/expected/0117.json",
-      "expected_sha256": "ea6a270eb5f1c0aa2eb29ae90ba4ff5df7dea0512cf7ae49a99da9b17e3cb607"
+      "source_bytes": 49
     },
     {
       "id": "0118",
       "input": "census/inputs/0118.rn",
       "input_sha256": "680d8ae7d0d8e59a248ab6dac77ec823323df992966271a5c2bf4aa932f5ecd7",
-      "source_bytes": 96,
-      "expected": "census/expected/0118.json",
-      "expected_sha256": "aee91f40e4498d85029a701726ee564a07a2fcff14ad8e4be9e229123a83a85d"
+      "source_bytes": 96
     },
     {
       "id": "0119",
       "input": "census/inputs/0119.rn",
       "input_sha256": "4d28b95f4515016f4f4846e38066fe5e3b7e9d5c0b224bc82c08fec6e06f799f",
-      "source_bytes": 29,
-      "expected": "census/expected/0119.json",
-      "expected_sha256": "7021f8ac7007ad986eda70ced218eff0f84bf172b126a076157ac1ad76f64187"
+      "source_bytes": 29
     },
     {
       "id": "0120",
       "input": "census/inputs/0120.rn",
       "input_sha256": "7142b5d58828cce9fd7560964e7d4f0da73c386b23cfcb75d9846dba41996e07",
-      "source_bytes": 39,
-      "expected": "census/expected/0120.json",
-      "expected_sha256": "0e0a11242afdcddb499568be5d958a92a779d2e5f4d1bffd9ef27a49611e1500"
+      "source_bytes": 39
     },
     {
       "id": "0121",
       "input": "census/inputs/0121.rn",
       "input_sha256": "ca34da1bd12d03b22d8ea82ec8b7a8448bd459bdf284953ccd079d576be129c8",
-      "source_bytes": 58,
-      "expected": "census/expected/0121.json",
-      "expected_sha256": "a73810efda37846efbea4ba7a6d32c9408f1237c0927c3af9bc9a29383198ed5"
+      "source_bytes": 58
     },
     {
       "id": "0122",
       "input": "census/inputs/0122.rn",
       "input_sha256": "019365150f7f0712d62abaa42edb53f60c88efe7d5bdcce8dd0caf3a676c6eeb",
-      "source_bytes": 52,
-      "expected": "census/expected/0122.json",
-      "expected_sha256": "aee91f40e4498d85029a701726ee564a07a2fcff14ad8e4be9e229123a83a85d"
+      "source_bytes": 52
     },
     {
       "id": "0123",
       "input": "census/inputs/0123.rn",
       "input_sha256": "5dd364be871596993204d2a9d050c020833516ed1962c05a740e107e3df26336",
-      "source_bytes": 63,
-      "expected": "census/expected/0123.json",
-      "expected_sha256": "7021f8ac7007ad986eda70ced218eff0f84bf172b126a076157ac1ad76f64187"
+      "source_bytes": 63
     },
     {
       "id": "0124",
       "input": "census/inputs/0124.rn",
       "input_sha256": "08bdb325e4dafadd8be2e1dd48c7377f734ac02f799f0030b502f0c44f8de06e",
-      "source_bytes": 40,
-      "expected": "census/expected/0124.json",
-      "expected_sha256": "3cbdee7635d3800f1c3c6077b4c4b42d1ff8d5d90e714fa27f70e023038ef802"
+      "source_bytes": 40
     },
     {
       "id": "0125",
       "input": "census/inputs/0125.rn",
       "input_sha256": "8987c5ffe44661c8759e30642ff96bf73f9c048b267165d0bb0bc827a0b00bab",
-      "source_bytes": 43,
-      "expected": "census/expected/0125.json",
-      "expected_sha256": "923babc7cecfafde51ffdc7dcb6041a61999cdd3a595e14b8257449ac3628017"
+      "source_bytes": 43
     },
     {
       "id": "0126",
       "input": "census/inputs/0126.rn",
       "input_sha256": "da5788f6e09199e009eba506562fb7d87c2a2aa77bd9e81a9ee428c9378dbc27",
-      "source_bytes": 43,
-      "expected": "census/expected/0126.json",
-      "expected_sha256": "923babc7cecfafde51ffdc7dcb6041a61999cdd3a595e14b8257449ac3628017"
+      "source_bytes": 43
     },
     {
       "id": "0127",
       "input": "census/inputs/0127.rn",
       "input_sha256": "768ba398d9ee1eb0569c2d2dfc7b29616b5e290575b638eab65e43477a982d2d",
-      "source_bytes": 71,
-      "expected": "census/expected/0127.json",
-      "expected_sha256": "e4e3e1eb4201afd266a35721f05787c95786487895573782cff750051de0b43b"
+      "source_bytes": 71
     },
     {
       "id": "0128",
       "input": "census/inputs/0128.rn",
       "input_sha256": "ed638bd5097934d712905c8c3d3b58d4bef5e4536589e0d30e32e08ee8573a5c",
-      "source_bytes": 42,
-      "expected": "census/expected/0128.json",
-      "expected_sha256": "a1d120707f286c7a9cf42e08258f78d86572bd9a7833b5d70f324d26f1c975d9"
+      "source_bytes": 42
     },
     {
       "id": "0129",
       "input": "census/inputs/0129.rn",
       "input_sha256": "0255a2ec81d83c4573df8903475e96691a05e143b9f9b7bcd293e9399ee42275",
-      "source_bytes": 128,
-      "expected": "census/expected/0129.json",
-      "expected_sha256": "d96168912efe3d11138febc9702a40817062c3b9d792551cfeea370c3fe5c4a9"
+      "source_bytes": 128
     },
     {
       "id": "0130",
       "input": "census/inputs/0130.rn",
       "input_sha256": "5386e69554c5c8c96caaa82858af3bb02ebad95fc7e1d63b053fe803c0fa9488",
-      "source_bytes": 175,
-      "expected": "census/expected/0130.json",
-      "expected_sha256": "2f41aedc71a1efa0dcb3f84ba4a8fff9a0a8303e34230d9a93eb57aa422a64f0"
+      "source_bytes": 175
     },
     {
       "id": "0131",
       "input": "census/inputs/0131.rn",
       "input_sha256": "f9275506f040664de541f19973c70ebd63c31ddcb8dea37c6c0b0825404b2946",
-      "source_bytes": 176,
-      "expected": "census/expected/0131.json",
-      "expected_sha256": "2f41aedc71a1efa0dcb3f84ba4a8fff9a0a8303e34230d9a93eb57aa422a64f0"
+      "source_bytes": 176
     },
     {
       "id": "0132",
       "input": "census/inputs/0132.rn",
       "input_sha256": "a2086859703a38b58eb232810c7285183ad354b2b38e965b921779eb14c4e7d1",
-      "source_bytes": 302,
-      "expected": "census/expected/0132.json",
-      "expected_sha256": "72d875e524415429d2cc81038bd2989a3219c2cb1edd65e4c6e5b99b57c3043b"
+      "source_bytes": 302
     },
     {
       "id": "0133",
       "input": "census/inputs/0133.rn",
       "input_sha256": "0a5b7d72826429525459db8d3ab0426a4bbdd56bb3d3d2aba0e86914b0a986ff",
-      "source_bytes": 461,
-      "expected": "census/expected/0133.json",
-      "expected_sha256": "00088458f6c868df6b35a344fbc8e8c4bfe05e5a8fac350cf314e6b408cb911d"
+      "source_bytes": 461
     },
     {
       "id": "0134",
       "input": "census/inputs/0134.rn",
       "input_sha256": "c0024aede30ac67113cc53c36437452d581ded63747d01525e94873a0b895a2f",
-      "source_bytes": 117,
-      "expected": "census/expected/0134.json",
-      "expected_sha256": "36695ac899bfe79ecbadadd0753696e2c0ee1a45988c5e0d9094c910937b7a70"
+      "source_bytes": 117
     },
     {
       "id": "0135",
       "input": "census/inputs/0135.rn",
       "input_sha256": "8692206eb813c2e1e819bade4525166d6e7ef2dfe0d3ec102bdc9281098a94a6",
-      "source_bytes": 561,
-      "expected": "census/expected/0135.json",
-      "expected_sha256": "9fdb9f40b78a8dddd78f4489658b65f04dd1f5cc34016709175e0e10af772efb"
+      "source_bytes": 561
     },
     {
       "id": "0136",
       "input": "census/inputs/0136.rn",
       "input_sha256": "67cb8b5d41fcae673fbf23431539953500312818b5933c9a24b444aaf2e86f8b",
-      "source_bytes": 475,
-      "expected": "census/expected/0136.json",
-      "expected_sha256": "3b54eb06d725bb37cfeb142fb4413e8826a1471203c2d8f346c27b362fff6c90"
+      "source_bytes": 475
     },
     {
       "id": "0137",
       "input": "census/inputs/0137.rn",
       "input_sha256": "a7e3ecc004da8096d8949d4a76c3777fa7d0acfd1d82d851a52681865354bd95",
-      "source_bytes": 1019,
-      "expected": "census/expected/0137.json",
-      "expected_sha256": "d1fd5ff64063891b5e484f8aaaccf9aa6379edfb22939abaadb009f5175fb0ec"
+      "source_bytes": 1019
     },
     {
       "id": "0138",
       "input": "census/inputs/0138.rn",
       "input_sha256": "c98a6f8222f26c3c084f592812d2b75bd8b4f3be0f9f544cf56cf6d0eedbf60b",
-      "source_bytes": 395,
-      "expected": "census/expected/0138.json",
-      "expected_sha256": "23f5014a240ecaa59c68e68e1bd9ee6eded59d0a250896fc946a6f45a7e9ffd0"
+      "source_bytes": 395
     },
     {
       "id": "0139",
       "input": "census/inputs/0139.rn",
       "input_sha256": "7faf8a228054833f5ea4a9d7722f268ae80c4fa7e7981790a9a1a8a09652fa2f",
-      "source_bytes": 1397,
-      "expected": "census/expected/0139.json",
-      "expected_sha256": "d1fd5ff64063891b5e484f8aaaccf9aa6379edfb22939abaadb009f5175fb0ec"
+      "source_bytes": 1397
     },
     {
       "id": "0140",
       "input": "census/inputs/0140.rn",
       "input_sha256": "fe10848c0ff2a97a8677e98f0aadfc7ce5673ed370a2294f05241142ccc9fbd5",
-      "source_bytes": 426,
-      "expected": "census/expected/0140.json",
-      "expected_sha256": "cb20cbece3221ed3e5af939caf8ebfa8cc5706cb3e7b422502e7dded8d54367c"
+      "source_bytes": 426
     },
     {
       "id": "0141",
       "input": "census/inputs/0141.rn",
       "input_sha256": "dd0b823a899203763a028ce503e879952a26ab459f68ee41b2a570c9638fb38a",
-      "source_bytes": 427,
-      "expected": "census/expected/0141.json",
-      "expected_sha256": "cb20cbece3221ed3e5af939caf8ebfa8cc5706cb3e7b422502e7dded8d54367c"
+      "source_bytes": 427
     },
     {
       "id": "0142",
       "input": "census/inputs/0142.rn",
       "input_sha256": "5d2cce14509eb6d55ef68ae44ff4c6f2aedb09aefcd08a238b918d4cffa6daff",
-      "source_bytes": 108,
-      "expected": "census/expected/0142.json",
-      "expected_sha256": "1d83b66377c16804075cae287a617d2dfe7a515f75be4334d9673e877e5a8f88"
+      "source_bytes": 108
     },
     {
       "id": "0143",
       "input": "census/inputs/0143.rn",
       "input_sha256": "42b21417b64b386499e285f616bdb57ed321568d1bd91b764013f4efabb0077c",
-      "source_bytes": 518,
-      "expected": "census/expected/0143.json",
-      "expected_sha256": "56ea1e6551b8c0dcba6147b3ad57bca1759c0cbbae580f173dd9ef053f1c0c20"
+      "source_bytes": 518
     },
     {
       "id": "0144",
       "input": "census/inputs/0144.rn",
       "input_sha256": "91bd66ae149c007eb3f5d9eab2dcfc9d42a57206c4ae3f217f3bc4910e2c483f",
-      "source_bytes": 287,
-      "expected": "census/expected/0144.json",
-      "expected_sha256": "96d20d2f67c97d69f1eea3da007d88e2f62dbd87145f1a8ac66867df67111881"
+      "source_bytes": 287
     },
     {
       "id": "0145",
       "input": "census/inputs/0145.rn",
       "input_sha256": "d1b8c53863b812a50f8cb1bf662e3e75258971b2b0e320fa1bca717be6be88d8",
-      "source_bytes": 788,
-      "expected": "census/expected/0145.json",
-      "expected_sha256": "5c3e9a48def112ce22555a74aaf13f85d00b996b2a8ce08829878bd124607cd0"
+      "source_bytes": 788
     },
     {
       "id": "0146",
       "input": "census/inputs/0146.rn",
       "input_sha256": "93d3b1f10ab45b87464c0848d862c3291c62e08f04c289a214f4a6684e1038d8",
-      "source_bytes": 498,
-      "expected": "census/expected/0146.json",
-      "expected_sha256": "835ee09e48c7732b140905ef0373708b174541f9584eeb89a2429052ea054382"
+      "source_bytes": 498
     },
     {
       "id": "0147",
       "input": "census/inputs/0147.rn",
       "input_sha256": "217b08dfeec11ea1fc07d598e42c9c62c89e6e14146e6dfcc3dbf12fa5b368d0",
-      "source_bytes": 1269,
-      "expected": "census/expected/0147.json",
-      "expected_sha256": "f24de0baceafcbb680ccc3285ca443c004e72b4320be1bfb743be05853741821"
+      "source_bytes": 1269
     },
     {
       "id": "0148",
       "input": "census/inputs/0148.rn",
       "input_sha256": "ea6d0f4e6d71782d89b468dfba3e5eeacd0729f90577f6c408e2f7d454850e15",
-      "source_bytes": 154,
-      "expected": "census/expected/0148.json",
-      "expected_sha256": "23a0c8ffe1bc6ce3fd814520f7302a796d8110fb64863fbb0c72c345f367dfd0"
+      "source_bytes": 154
     },
     {
       "id": "0149",
       "input": "census/inputs/0149.rn",
       "input_sha256": "4501b92530f94613a7190bdd91d0ab92c3a4af17344c9e83286fecfaddad13a3",
-      "source_bytes": 155,
-      "expected": "census/expected/0149.json",
-      "expected_sha256": "23a0c8ffe1bc6ce3fd814520f7302a796d8110fb64863fbb0c72c345f367dfd0"
+      "source_bytes": 155
     },
     {
       "id": "0150",
       "input": "census/inputs/0150.rn",
       "input_sha256": "d1cf90a414c5f81424bc4abeb8991cbd82f68f6cb97bf1be72b07c0b00e0a7bd",
-      "source_bytes": 459,
-      "expected": "census/expected/0150.json",
-      "expected_sha256": "916b90dcfb15c8cfcb6507f76940c9287a3da4263b573a2e348f27d266ed7f62"
+      "source_bytes": 459
     },
     {
       "id": "0151",
       "input": "census/inputs/0151.rn",
       "input_sha256": "8dde1d447e209fe2f797002c04033d21173d4736479ae314bca57b8366167aa5",
-      "source_bytes": 597,
-      "expected": "census/expected/0151.json",
-      "expected_sha256": "69be00284b92f83eca3389239602b7b698f2e3871baf16b6a81c5b1b04cf5449"
+      "source_bytes": 597
     },
     {
       "id": "0152",
       "input": "census/inputs/0152.rn",
       "input_sha256": "b0ab6474a6ac88a53096a8028980f561eaadb41bef37e2170378fb75581c39c7",
-      "source_bytes": 295,
-      "expected": "census/expected/0152.json",
-      "expected_sha256": "b8b72cbcc90d1fd996b96af73148fc00ba56c29ae911e6fd37dca5a107ac2d27"
+      "source_bytes": 295
     },
     {
       "id": "0153",
       "input": "census/inputs/0153.rn",
       "input_sha256": "a39d9398d66a1785564da91adb19128bcc334ea717d1d48927403ef112640bd4",
-      "source_bytes": 875,
-      "expected": "census/expected/0153.json",
-      "expected_sha256": "4b92a928216a08b718701c8354c48a5c7f9ce2930fe7c4967a35997e06522c72"
+      "source_bytes": 875
     },
     {
       "id": "0154",
       "input": "census/inputs/0154.rn",
       "input_sha256": "900999d0546695073310d4f7d4601d04431b30f33bbb22c4d132198c3e879933",
-      "source_bytes": 633,
-      "expected": "census/expected/0154.json",
-      "expected_sha256": "185482ead892ec971bfdd9bcfcb8ea9b5d8fcb799e2518b1edafa91eb44c574b"
+      "source_bytes": 633
     },
     {
       "id": "0155",
       "input": "census/inputs/0155.rn",
       "input_sha256": "afd699b782c36e451e1636f637d7905a98bbfe38a47a98529cd963851d6a0ebd",
-      "source_bytes": 1491,
-      "expected": "census/expected/0155.json",
-      "expected_sha256": "1e69e953f5806cfb29a2453faec708892ee3bf5f6fe9349777044c1d4e194ed5"
+      "source_bytes": 1491
     },
     {
       "id": "0156",
       "input": "census/inputs/0156.rn",
       "input_sha256": "c79041f42eb84ba03b1329b88b2b52d61b8dc956edd124ebcfebd1b5690ee49a",
-      "source_bytes": 168,
-      "expected": "census/expected/0156.json",
-      "expected_sha256": "48d49259d7fdbfb69b0bdd9789109f568100bacd325dc3f4c06f7cc0f12943d8"
+      "source_bytes": 168
     },
     {
       "id": "0157",
       "input": "census/inputs/0157.rn",
       "input_sha256": "7a8ba74fee982378f2c8e2b980f490e7f680789f15b92a645984cf857913a4a8",
-      "source_bytes": 169,
-      "expected": "census/expected/0157.json",
-      "expected_sha256": "48d49259d7fdbfb69b0bdd9789109f568100bacd325dc3f4c06f7cc0f12943d8"
+      "source_bytes": 169
     },
     {
       "id": "0158",
       "input": "census/inputs/0158.rn",
       "input_sha256": "5a287bdb5c352d47e4fe4479a436fdb3c0dc2a5d28c10ce85acd21d2fc942ac1",
-      "source_bytes": 208,
-      "expected": "census/expected/0158.json",
-      "expected_sha256": "131474fe371a8bc3c84ba84e52656b90be58f3b4ccb96d79e509c979d13f779a"
+      "source_bytes": 208
     },
     {
       "id": "0159",
       "input": "census/inputs/0159.rn",
       "input_sha256": "6523354b03c1137d7a433dd33bb8902b786e96a8863f7910332d53fbb4bb551f",
-      "source_bytes": 360,
-      "expected": "census/expected/0159.json",
-      "expected_sha256": "b3dae00f64ae4c9fdf68e52c02e5a70854903984523b5903e993e5f557b308bd"
+      "source_bytes": 360
     },
     {
       "id": "0160",
       "input": "census/inputs/0160.rn",
       "input_sha256": "807f307e12f0a511739b0655e64324f21799ea2fa74907f56813fba78cf37eb9",
-      "source_bytes": 213,
-      "expected": "census/expected/0160.json",
-      "expected_sha256": "2c70ba52fa33e9d91f7e41201f6517dcb78e51c0131263688165798303195905"
+      "source_bytes": 213
     },
     {
       "id": "0161",
       "input": "census/inputs/0161.rn",
       "input_sha256": "1e9bcb700bbd486582801d5d30db1e1d6d4324e97ca300458f668e28ff11ad8a",
-      "source_bytes": 556,
-      "expected": "census/expected/0161.json",
-      "expected_sha256": "b3dae00f64ae4c9fdf68e52c02e5a70854903984523b5903e993e5f557b308bd"
+      "source_bytes": 556
     },
     {
       "id": "0162",
       "input": "census/inputs/0162.rn",
       "input_sha256": "b70d3a96dc244bc465353b22a0e1401dde9e222a09861d7c0db0cbe932369bdf",
-      "source_bytes": 365,
-      "expected": "census/expected/0162.json",
-      "expected_sha256": "ac580708360f25cf35f12ec0465b71ec1623a230fc466d3ea547965ecc4a1908"
+      "source_bytes": 365
     },
     {
       "id": "0163",
       "input": "census/inputs/0163.rn",
       "input_sha256": "70a16441dffb48cbc64f3fe9e333cd819e6cb7824b959adb540954e51cfeee0c",
-      "source_bytes": 904,
-      "expected": "census/expected/0163.json",
-      "expected_sha256": "b3dae00f64ae4c9fdf68e52c02e5a70854903984523b5903e993e5f557b308bd"
+      "source_bytes": 904
     },
     {
       "id": "0164",
       "input": "census/inputs/0164.rn",
       "input_sha256": "6465baee51842b70c6ceb91b548c6d148003a0ccadd4a0010caee77bd299f8dd",
-      "source_bytes": 246,
-      "expected": "census/expected/0164.json",
-      "expected_sha256": "333b6c107d24859c7e413812d71cbeedd5e1f37f6dc9e52cb4e1d0ff58fb916e"
+      "source_bytes": 246
     },
     {
       "id": "0165",
       "input": "census/inputs/0165.rn",
       "input_sha256": "4c5710023df0bf7a1801ad5ed1355c34f0dcc62556ea9859c1ebdda39f3ab8a5",
-      "source_bytes": 1133,
-      "expected": "census/expected/0165.json",
-      "expected_sha256": "b3dae00f64ae4c9fdf68e52c02e5a70854903984523b5903e993e5f557b308bd"
+      "source_bytes": 1133
     },
     {
       "id": "0166",
       "input": "census/inputs/0166.rn",
       "input_sha256": "0fe0e00342c704958245f08b3366e092df1847fd97abda3d2e4e2b79af88802b",
-      "source_bytes": 189,
-      "expected": "census/expected/0166.json",
-      "expected_sha256": "fcf95098af55651eb211ac7849094ad8a20cd44b8610ae6073f9941f088b86a7"
+      "source_bytes": 189
     },
     {
       "id": "0167",
       "input": "census/inputs/0167.rn",
       "input_sha256": "fc5118b043e0b78637b00dea997191048b173f37f123bee51f65f1bf33cf69a4",
-      "source_bytes": 1305,
-      "expected": "census/expected/0167.json",
-      "expected_sha256": "b3dae00f64ae4c9fdf68e52c02e5a70854903984523b5903e993e5f557b308bd"
+      "source_bytes": 1305
     },
     {
       "id": "0168",
       "input": "census/inputs/0168.rn",
       "input_sha256": "7c634939018d739395d746f3c830a1e67333a12c72738a614d9d268bb6dd0010",
-      "source_bytes": 519,
-      "expected": "census/expected/0168.json",
-      "expected_sha256": "03af4bb4e219261992e2a56d6073834de593d28868d213e047a3a24feb379a55"
+      "source_bytes": 519
     },
     {
       "id": "0169",
       "input": "census/inputs/0169.rn",
       "input_sha256": "e8ecb2e84ccbcbd339d9aa03fb73dfaa450389fdaa1860a2c881c8b543ce7233",
-      "source_bytes": 1807,
-      "expected": "census/expected/0169.json",
-      "expected_sha256": "b3dae00f64ae4c9fdf68e52c02e5a70854903984523b5903e993e5f557b308bd"
+      "source_bytes": 1807
     },
     {
       "id": "0170",
       "input": "census/inputs/0170.rn",
       "input_sha256": "eae6517c8204d68f3944d57ac507b3e80510d2591d9f0854fa37d51dd4eec79d",
-      "source_bytes": 131,
-      "expected": "census/expected/0170.json",
-      "expected_sha256": "cfdc1af9dfa3967564d36728c227b2a69b6b060454323e18b3d9d6f4ca8e5010"
+      "source_bytes": 131
     },
     {
       "id": "0171",
       "input": "census/inputs/0171.rn",
       "input_sha256": "864b6d6def5fffc7685d7cc2dc4b2c18466b60b3066120259fb2e68aeb57ce82",
-      "source_bytes": 132,
-      "expected": "census/expected/0171.json",
-      "expected_sha256": "cfdc1af9dfa3967564d36728c227b2a69b6b060454323e18b3d9d6f4ca8e5010"
+      "source_bytes": 132
     },
     {
       "id": "0172",
       "input": "census/inputs/0172.rn",
       "input_sha256": "4bba24c2c2a62b1c998e74437e1baad155d68cf795ef36b5f91f6efce2cdc828",
-      "source_bytes": 94,
-      "expected": "census/expected/0172.json",
-      "expected_sha256": "d6429d6b9caa14cce83a10d381fe5e3231bda13389bd674b49b9d075c019b692"
+      "source_bytes": 94
     },
     {
       "id": "0173",
       "input": "census/inputs/0173.rn",
       "input_sha256": "b4f099687c3972c5381e6c232aabf914da24d1d6f7b037025acec7b03a2630b4",
-      "source_bytes": 209,
-      "expected": "census/expected/0173.json",
-      "expected_sha256": "cfdc1af9dfa3967564d36728c227b2a69b6b060454323e18b3d9d6f4ca8e5010"
+      "source_bytes": 209
     },
     {
       "id": "0174",
       "input": "census/inputs/0174.rn",
       "input_sha256": "d3a438e3e668ee976eb59937498d5465394688c79289db4505531e85a231e78c",
-      "source_bytes": 89,
-      "expected": "census/expected/0174.json",
-      "expected_sha256": "ce051cd53682bba0b3eadcda32f6bfe94b74fa87e31b3bad19c0ba8e7719db1e"
+      "source_bytes": 89
     },
     {
       "id": "0175",
       "input": "census/inputs/0175.rn",
       "input_sha256": "1e0e4a666358ae3155f10708851b21f8038a275fd37e8be708d6983047c1de97",
-      "source_bytes": 281,
-      "expected": "census/expected/0175.json",
-      "expected_sha256": "cfdc1af9dfa3967564d36728c227b2a69b6b060454323e18b3d9d6f4ca8e5010"
+      "source_bytes": 281
     },
     {
       "id": "0176",
       "input": "census/inputs/0176.rn",
       "input_sha256": "d441785ac108a66845e941e7490580b067cf422df9d25846fe79c25980eff5bd",
-      "source_bytes": 46,
-      "expected": "census/expected/0176.json",
-      "expected_sha256": "aee977ab04282784b8d84708c1de0e853ce6df785ad160484ab3ba8d0ad1349f"
+      "source_bytes": 46
     },
     {
       "id": "0177",
       "input": "census/inputs/0177.rn",
       "input_sha256": "c242d2845aa358c8c22205e006de8b3e21ed5db5f8ad78de4e2c7731d4b905d5",
-      "source_bytes": 310,
-      "expected": "census/expected/0177.json",
-      "expected_sha256": "cfdc1af9dfa3967564d36728c227b2a69b6b060454323e18b3d9d6f4ca8e5010"
+      "source_bytes": 310
     },
     {
       "id": "0178",
       "input": "census/inputs/0178.rn",
       "input_sha256": "73ae7e6012f599d1229960a0fa78997de621ed1f2429b433b5d55bfd2513be31",
-      "source_bytes": 77,
-      "expected": "census/expected/0178.json",
-      "expected_sha256": "1bf34bf873230c9c6581ba0d64de4ddcf700048d6eb677711185c84ea152d99e"
+      "source_bytes": 77
     },
     {
       "id": "0179",
       "input": "census/inputs/0179.rn",
       "input_sha256": "6098506fbfe29717d9f94e1cb308b0b2370d9aa80ab8f00275a8d8aab1fa23ca",
-      "source_bytes": 370,
-      "expected": "census/expected/0179.json",
-      "expected_sha256": "cfdc1af9dfa3967564d36728c227b2a69b6b060454323e18b3d9d6f4ca8e5010"
+      "source_bytes": 370
     },
     {
       "id": "0180",
       "input": "census/inputs/0180.rn",
       "input_sha256": "fee016a233bf5c60451e0e4bc01e6fbaeed99d85d1e9031347bf75d4cd7bbf80",
-      "source_bytes": 135,
-      "expected": "census/expected/0180.json",
-      "expected_sha256": "e909c1fb10bea64c54d2373536c5bdb6c1950c6f91c262a9fc684775dfc9c5ed"
+      "source_bytes": 135
     },
     {
       "id": "0181",
       "input": "census/inputs/0181.rn",
       "input_sha256": "a7b406ff9b67f528c6a556655567f55d2a7195862be876565bb3dc2109caf585",
-      "source_bytes": 488,
-      "expected": "census/expected/0181.json",
-      "expected_sha256": "cfdc1af9dfa3967564d36728c227b2a69b6b060454323e18b3d9d6f4ca8e5010"
+      "source_bytes": 488
     },
     {
       "id": "0182",
       "input": "census/inputs/0182.rn",
       "input_sha256": "066d01d61ed2b88194351e25f97ed0f2ddb074afdd7950b42a6dc33726ee4586",
-      "source_bytes": 218,
-      "expected": "census/expected/0182.json",
-      "expected_sha256": "be064208f4c04482e27a3a2d8edf0aa7c128ed014ac97dae891725973c465cf4"
+      "source_bytes": 218
     },
     {
       "id": "0183",
       "input": "census/inputs/0183.rn",
       "input_sha256": "d821381cc2cbf20ac4bb92a369c08506d7adbea76d712189a7b420540bf5aa77",
-      "source_bytes": 689,
-      "expected": "census/expected/0183.json",
-      "expected_sha256": "cfdc1af9dfa3967564d36728c227b2a69b6b060454323e18b3d9d6f4ca8e5010"
+      "source_bytes": 689
     },
     {
       "id": "0184",
       "input": "census/inputs/0184.rn",
       "input_sha256": "5a05a641ec95794b4cb6ae0a19c30c8866d62ec82b4b0128aef3cf491ecca87d",
-      "source_bytes": 303,
-      "expected": "census/expected/0184.json",
-      "expected_sha256": "5b2dc1e7b6ab65135d53aaddc82fc9ef49cb0ee6ba8a32e029443afcb3c7eac3"
+      "source_bytes": 303
     },
     {
       "id": "0185",
       "input": "census/inputs/0185.rn",
       "input_sha256": "f079e89ec99ca59bc8afc07ab3861b666582dfc488567acd17b40359ebb3a84c",
-      "source_bytes": 304,
-      "expected": "census/expected/0185.json",
-      "expected_sha256": "5b2dc1e7b6ab65135d53aaddc82fc9ef49cb0ee6ba8a32e029443afcb3c7eac3"
+      "source_bytes": 304
     },
     {
       "id": "0186",
       "input": "census/inputs/0186.rn",
       "input_sha256": "e5b34e598acf59900649a0c47a169adb342d9fcf0dab78601ff01ff6d9e8d26c",
-      "source_bytes": 313,
-      "expected": "census/expected/0186.json",
-      "expected_sha256": "36ef21c2a467174213ad405847c435e8262f1c9eee2f9109d2d1bb24d61aacbc"
+      "source_bytes": 313
     },
     {
       "id": "0187",
       "input": "census/inputs/0187.rn",
       "input_sha256": "acd91f289e8d1fdaa38277b629e2f2dbb3c04d218beb8dc638c4ea60c5534a67",
-      "source_bytes": 600,
-      "expected": "census/expected/0187.json",
-      "expected_sha256": "8e5553ba46a18e43087ae2557502179ea1586bd486e0142f62fd1a272776e488"
+      "source_bytes": 600
     },
     {
       "id": "0188",
       "input": "census/inputs/0188.rn",
       "input_sha256": "0e478269b3d13057066fbdd586379af365bf4b3915c8c4d550ade419baff265a",
-      "source_bytes": 97,
-      "expected": "census/expected/0188.json",
-      "expected_sha256": "939505ee06c61a4b88f67524ca203000e7197afc335c88fd5372fc078a6a8781"
+      "source_bytes": 97
     },
     {
       "id": "0189",
       "input": "census/inputs/0189.rn",
       "input_sha256": "3d1fbf9303683beaa2cf1ef6ef6cb1518e7e75ed9870e141dc866110a43bd701",
-      "source_bytes": 680,
-      "expected": "census/expected/0189.json",
-      "expected_sha256": "8e5553ba46a18e43087ae2557502179ea1586bd486e0142f62fd1a272776e488"
+      "source_bytes": 680
     },
     {
       "id": "0190",
       "input": "census/inputs/0190.rn",
       "input_sha256": "9431e8f36b29cfaab3cb5a58c5c66ca60b47407e2c5b32f6137cdf4e1caf9cb6",
-      "source_bytes": 76,
-      "expected": "census/expected/0190.json",
-      "expected_sha256": "4bafb45c60eb983f1b75eb092c48b06f20e6b2bb2c60e802e154c6a3ba3f29e1"
+      "source_bytes": 76
     },
     {
       "id": "0191",
       "input": "census/inputs/0191.rn",
       "input_sha256": "26210b8f000a2c988e1956e85963caaad4dc8f43066e1e8f7ca5df1fceeec92c",
-      "source_bytes": 739,
-      "expected": "census/expected/0191.json",
-      "expected_sha256": "8e5553ba46a18e43087ae2557502179ea1586bd486e0142f62fd1a272776e488"
+      "source_bytes": 739
     },
     {
       "id": "0192",
       "input": "census/inputs/0192.rn",
       "input_sha256": "fd4987ef5c9c982b49f9d729f2cc9a8f173b1140b2880bd585c69ef182bb71d8",
-      "source_bytes": 84,
-      "expected": "census/expected/0192.json",
-      "expected_sha256": "580bca8ca71d3b1c0cd0b2ceed72f2d24e7a8071ca783b5b425783bd5fe9cf98"
+      "source_bytes": 84
     },
     {
       "id": "0193",
       "input": "census/inputs/0193.rn",
       "input_sha256": "ef373e74102fee9bfa2e37bcae89d5d1896af7deb68513ffb7ac19f12099be09",
-      "source_bytes": 806,
-      "expected": "census/expected/0193.json",
-      "expected_sha256": "dcaf84ffe84b040c0eb45525b73d1e14b1d283f692a14a7cb717b835c55abd5d"
+      "source_bytes": 806
     },
     {
       "id": "0194",
       "input": "census/inputs/0194.rn",
       "input_sha256": "ee67c2d36658ef24b2e9d69b27b7b334bf272e5df277eb168b6681621042f2e7",
-      "source_bytes": 84,
-      "expected": "census/expected/0194.json",
-      "expected_sha256": "580bca8ca71d3b1c0cd0b2ceed72f2d24e7a8071ca783b5b425783bd5fe9cf98"
+      "source_bytes": 84
     },
     {
       "id": "0195",
       "input": "census/inputs/0195.rn",
       "input_sha256": "96bc63c71aca7c25e1b40aee2336cc4eb947fff4873681b24a33ace9f02869e4",
-      "source_bytes": 873,
-      "expected": "census/expected/0195.json",
-      "expected_sha256": "dcaf84ffe84b040c0eb45525b73d1e14b1d283f692a14a7cb717b835c55abd5d"
+      "source_bytes": 873
     },
     {
       "id": "0196",
       "input": "census/inputs/0196.rn",
       "input_sha256": "364d962b10746faeaad188672530a1bf6a0e23438237cc660b4bc94f65f977a8",
-      "source_bytes": 84,
-      "expected": "census/expected/0196.json",
-      "expected_sha256": "580bca8ca71d3b1c0cd0b2ceed72f2d24e7a8071ca783b5b425783bd5fe9cf98"
+      "source_bytes": 84
     },
     {
       "id": "0197",
       "input": "census/inputs/0197.rn",
       "input_sha256": "ad96a5a321449e1d03be5359274b9f759123a3a1c5462c8f35d385f77ea76138",
-      "source_bytes": 940,
-      "expected": "census/expected/0197.json",
-      "expected_sha256": "dcaf84ffe84b040c0eb45525b73d1e14b1d283f692a14a7cb717b835c55abd5d"
+      "source_bytes": 940
     },
     {
       "id": "0198",
       "input": "census/inputs/0198.rn",
       "input_sha256": "0d7174ee52c798f8075d7ec0432e8ab979fa2fc0d73d54175cbd1f2660a99cf3",
-      "source_bytes": 84,
-      "expected": "census/expected/0198.json",
-      "expected_sha256": "580bca8ca71d3b1c0cd0b2ceed72f2d24e7a8071ca783b5b425783bd5fe9cf98"
+      "source_bytes": 84
     },
     {
       "id": "0199",
       "input": "census/inputs/0199.rn",
       "input_sha256": "7c801d47706a45e749de8c378f8900ca6578b13d5477d48feac9be6bc0ad69ee",
-      "source_bytes": 1007,
-      "expected": "census/expected/0199.json",
-      "expected_sha256": "dcaf84ffe84b040c0eb45525b73d1e14b1d283f692a14a7cb717b835c55abd5d"
+      "source_bytes": 1007
     },
     {
       "id": "0200",
       "input": "census/inputs/0200.rn",
       "input_sha256": "669cc3938b4d00ade66e7181a63c16085a0bbc4d1a079994d4ce776656c95f59",
-      "source_bytes": 84,
-      "expected": "census/expected/0200.json",
-      "expected_sha256": "580bca8ca71d3b1c0cd0b2ceed72f2d24e7a8071ca783b5b425783bd5fe9cf98"
+      "source_bytes": 84
     },
     {
       "id": "0201",
       "input": "census/inputs/0201.rn",
       "input_sha256": "3fdf168739319ab9cbae83ccfcc1ed4d047cf81f9398fe55cdd1023f5b2ff0a3",
-      "source_bytes": 1074,
-      "expected": "census/expected/0201.json",
-      "expected_sha256": "dcaf84ffe84b040c0eb45525b73d1e14b1d283f692a14a7cb717b835c55abd5d"
+      "source_bytes": 1074
     },
     {
       "id": "0202",
       "input": "census/inputs/0202.rn",
       "input_sha256": "b04ee960533cde5a70e1a69e556e0948f625941ae111daab773d29f125595885",
-      "source_bytes": 84,
-      "expected": "census/expected/0202.json",
-      "expected_sha256": "580bca8ca71d3b1c0cd0b2ceed72f2d24e7a8071ca783b5b425783bd5fe9cf98"
+      "source_bytes": 84
     },
     {
       "id": "0203",
       "input": "census/inputs/0203.rn",
       "input_sha256": "787de85ab0deaf204cb71c14e1082d5c0d4e69caae9f4c22e8bc3ac9ce0ddf17",
-      "source_bytes": 1141,
-      "expected": "census/expected/0203.json",
-      "expected_sha256": "dcaf84ffe84b040c0eb45525b73d1e14b1d283f692a14a7cb717b835c55abd5d"
+      "source_bytes": 1141
     },
     {
       "id": "0204",
       "input": "census/inputs/0204.rn",
       "input_sha256": "edb1527dc9d073c9d3d05c7c24cc586607227664477eee51ea88818330360af3",
-      "source_bytes": 177,
-      "expected": "census/expected/0204.json",
-      "expected_sha256": "51d734aefc9fe33d2a26224d4d201c00ede5dcf93a352ee454cc26df811afd17"
+      "source_bytes": 177
     },
     {
       "id": "0205",
       "input": "census/inputs/0205.rn",
       "input_sha256": "99ac455460a45e9ef2485f7cae2d945ad48b9d7bfd261d8c155b32be5a33b832",
-      "source_bytes": 1301,
-      "expected": "census/expected/0205.json",
-      "expected_sha256": "dcaf84ffe84b040c0eb45525b73d1e14b1d283f692a14a7cb717b835c55abd5d"
+      "source_bytes": 1301
     },
     {
       "id": "0206",
       "input": "census/inputs/0206.rn",
       "input_sha256": "b2971b5d55d43e9cfd096ee702aca26bff4643a6fa31a84345e279a4631ff929",
-      "source_bytes": 19,
-      "expected": "census/expected/0206.json",
-      "expected_sha256": "b76250782ce8e52934310fa1b6bf554f0ca71397dfdfb39b1f2bd4a6df21cc7a"
+      "source_bytes": 19
     },
     {
       "id": "0207",
       "input": "census/inputs/0207.rn",
       "input_sha256": "2f45e3449adf4c23c482dcdaf590a5ead4fa899777870994540cd489cb7f05dc",
-      "source_bytes": 37,
-      "expected": "census/expected/0207.json",
-      "expected_sha256": "7366f66c18208c7f4ba86df1b6b351b3d63070a20c82dd3f6c528b28116bf840"
+      "source_bytes": 37
     },
     {
       "id": "0208",
       "input": "census/inputs/0208.rn",
       "input_sha256": "4c22e5b16d3be5af71a6f123388b7a1f838cc3b5cb61e1413277c850652e4156",
-      "source_bytes": 38,
-      "expected": "census/expected/0208.json",
-      "expected_sha256": "43af6a07aa29d1c6929b5c17ca62abe94be703782a0152b8ddeaacf6c801ab26"
+      "source_bytes": 38
     },
     {
       "id": "0209",
       "input": "census/inputs/0209.rn",
       "input_sha256": "dc9ae3a3b2fca0b18ecc0c519ea6e49d8cdb57a7db6e0cde0f098c08c590fa76",
-      "source_bytes": 67,
-      "expected": "census/expected/0209.json",
-      "expected_sha256": "1000b384cde617577f8fba755a75b7b208d074a595fd5694b655336e770ef979"
+      "source_bytes": 67
     },
     {
       "id": "0210",
       "input": "census/inputs/0210.rn",
       "input_sha256": "c51df032ee4554adb6828eba680cad7ba1935f4c1b571cd12bcfca31e4f06c9c",
-      "source_bytes": 35,
-      "expected": "census/expected/0210.json",
-      "expected_sha256": "b76250782ce8e52934310fa1b6bf554f0ca71397dfdfb39b1f2bd4a6df21cc7a"
+      "source_bytes": 35
     },
     {
       "id": "0211",
       "input": "census/inputs/0211.rn",
       "input_sha256": "9725e20f177dfdceeb6119566258c195362b77839dd6fbcea1ff071609d7f252",
-      "source_bytes": 34,
-      "expected": "census/expected/0211.json",
-      "expected_sha256": "a425f7ba57e577efbcb58287f375c19e7c9233285b56b4e0ce9b309d942ccb4d"
+      "source_bytes": 34
     },
     {
       "id": "0212",
       "input": "census/inputs/0212.rn",
       "input_sha256": "ea466e4ac79629e6b1b8da4aab6d8d4564ad88b1b9dcf1ab54198ee03b13cb63",
-      "source_bytes": 44,
-      "expected": "census/expected/0212.json",
-      "expected_sha256": "aabf902db69b8606b9e7e1a18f042f3a6f507f8d4710b2f17c47d45882d88056"
+      "source_bytes": 44
     },
     {
       "id": "0213",
       "input": "census/inputs/0213.rn",
       "input_sha256": "f6122112a495a84af89a780312aa560fc360829f0a656034f4338c31e8370fb1",
-      "source_bytes": 35,
-      "expected": "census/expected/0213.json",
-      "expected_sha256": "4c2899d61be59bac18d1eda0dc06e9f6e0125969ed1fe9ace663321285a62e72"
+      "source_bytes": 35
     },
     {
       "id": "allow-00",
       "input": "census/inputs/allow-00.rn",
       "input_sha256": "607270f2b9de4e2f0809a10b08306bacb54593d08501b209ebb85056fed2e1e2",
-      "source_bytes": 30,
-      "expected": "census/expected/allow-00.json",
-      "expected_sha256": "65175ca3caeed85f33645cf068ea20a4312b27e88ab5932943629640184c5392"
+      "source_bytes": 30
     },
     {
       "id": "allow-01",
       "input": "census/inputs/allow-01.rn",
       "input_sha256": "2f82000674224eecf34d04711ee9ef806a2f39d103231266a931196ec606508d",
-      "source_bytes": 33,
-      "expected": "census/expected/allow-01.json",
-      "expected_sha256": "d7b0b3c0b687d8b05338220883cfabdb8b3d3a299cc0f02dda17610b771a404b"
+      "source_bytes": 33
     },
     {
       "id": "allow-02",
       "input": "census/inputs/allow-02.rn",
       "input_sha256": "16edc8c0bd622e1e05cbe0483cb597662a0f3e8887c10a11bd1abba80d528ad2",
-      "source_bytes": 44,
-      "expected": "census/expected/allow-02.json",
-      "expected_sha256": "deeb6c4ac7b307423742bb052132f150035aca6e8aaed4cf7a9ace1c16018c49"
+      "source_bytes": 44
     },
     {
       "id": "allow-03",
       "input": "census/inputs/allow-03.rn",
       "input_sha256": "52d0029c449ec80bc9ce7caae005ea5666f73670379dddedf878005828eb3339",
-      "source_bytes": 31,
-      "expected": "census/expected/allow-03.json",
-      "expected_sha256": "946448894eacfc79f227f50ffd1058fa8fde67ed9895597875be3d81f4bad0ee"
+      "source_bytes": 31
     },
     {
       "id": "allow-04",
       "input": "census/inputs/allow-04.rn",
       "input_sha256": "a44d4e951f0a5b9c57b2888e57e31a746991a74ec11610b48dbfdeef3b3af89c",
-      "source_bytes": 33,
-      "expected": "census/expected/allow-04.json",
-      "expected_sha256": "a5a22b8c06b1d9dbb425296b37875e98a1b9978ee7443425a8c640dcae2958e7"
+      "source_bytes": 33
     },
     {
       "id": "allow-05",
       "input": "census/inputs/allow-05.rn",
       "input_sha256": "cc3cc36665bd6bc368c8e100375d11dba05018d57085fbb541b0914e6d5f4f03",
-      "source_bytes": 35,
-      "expected": "census/expected/allow-05.json",
-      "expected_sha256": "bb09ce57303b89ab99c272c50af2b02ab630f3d4318ae6c8dbde30ce3a1816c4"
+      "source_bytes": 35
     },
     {
       "id": "allow-06",
       "input": "census/inputs/allow-06.rn",
       "input_sha256": "85a6f2aec267186bef78857057395c10ce9102f12a9993d8b87b650ca02fe721",
-      "source_bytes": 28,
-      "expected": "census/expected/allow-06.json",
-      "expected_sha256": "7ffe84d04cb10f121e1013baa22e61c49a55a70ab6e1efbae23306fbe18f1075"
+      "source_bytes": 28
     },
     {
       "id": "allow-07",
       "input": "census/inputs/allow-07.rn",
       "input_sha256": "1b8cef1282da98702f29c45b5cba817f1c66133840f0bab6ada4500ea9b08489",
-      "source_bytes": 33,
-      "expected": "census/expected/allow-07.json",
-      "expected_sha256": "624f6eaabc1d9d7eb1183c69c1857913ee865e2b892d87fd95966996fb3b6b4a"
+      "source_bytes": 33
     },
     {
       "id": "allow-08",
       "input": "census/inputs/allow-08.rn",
       "input_sha256": "57a50f4e3d6b88d0a15852474cc8b6433abaadee3eecba7f0b51b2c4006f5506",
-      "source_bytes": 32,
-      "expected": "census/expected/allow-08.json",
-      "expected_sha256": "8b45ab61ae61cc8332409af1f3554219038b47e1829659a9a797dfbdf497d1b8"
+      "source_bytes": 32
     },
     {
       "id": "allow-09",
       "input": "census/inputs/allow-09.rn",
       "input_sha256": "fa3b1c274fd375e20d6910e6c49626b2fc310cd24ab21c3fbc325c5e9c5f6901",
-      "source_bytes": 36,
-      "expected": "census/expected/allow-09.json",
-      "expected_sha256": "1c3b17ffa3860cdff4c5e76cee6b56c184284876a515e24daf3b1aa854bd6e36"
+      "source_bytes": 36
     },
     {
       "id": "allow-10",
       "input": "census/inputs/allow-10.rn",
       "input_sha256": "25cbb51c9faf35900461a5be4e38bb53aae19e224734e037e4f9bd5b407378b7",
-      "source_bytes": 35,
-      "expected": "census/expected/allow-10.json",
-      "expected_sha256": "f09c54f2329c37e4241be6f91a9a662139e78315ec6abc2d46aecd3aa0c415a6"
+      "source_bytes": 35
     },
     {
       "id": "allow-11",
       "input": "census/inputs/allow-11.rn",
       "input_sha256": "95223f2fb01b1f193063251bea1623f98887de234522c5eaed0faf01ce9a8fef",
-      "source_bytes": 37,
-      "expected": "census/expected/allow-11.json",
-      "expected_sha256": "eb6d4be55892c479f65203bee89be3e81ffde93bb6a289e9b88ace841b3502c0"
+      "source_bytes": 37
     },
     {
       "id": "allow-12",
       "input": "census/inputs/allow-12.rn",
       "input_sha256": "37da09e779710e44eda8dadd6209a333162ac63fd55165f9e424ba4a40716ec9",
-      "source_bytes": 38,
-      "expected": "census/expected/allow-12.json",
-      "expected_sha256": "1abe75b0f88c576186bedc02ef657d8b4e81b8040aa44c621f4e79e94cb2ab1a"
+      "source_bytes": 38
     },
     {
       "id": "allow-13",
       "input": "census/inputs/allow-13.rn",
       "input_sha256": "f4f87a2f0f8ab3dd645e3902b56c5f3c288cc4516e94342f9ee3ad2c3ac9bbbf",
-      "source_bytes": 37,
-      "expected": "census/expected/allow-13.json",
-      "expected_sha256": "57eb85b5b91c62a16068e8c65f5812ef4c45cd52b6c91341e485662ff4fe436e"
+      "source_bytes": 37
     },
     {
       "id": "allow-14",
       "input": "census/inputs/allow-14.rn",
       "input_sha256": "a0661d443d4cd0ebaa601ee505a2a721f2cc3b2e302053ef7afbfa6868301236",
-      "source_bytes": 41,
-      "expected": "census/expected/allow-14.json",
-      "expected_sha256": "24a67e167f5c82ea361f803eb7387c0d28826038bee79bde919b041f6531e0cb"
+      "source_bytes": 41
     },
     {
       "id": "allow-15",
       "input": "census/inputs/allow-15.rn",
       "input_sha256": "6cf817360b158b3d86d3296ab356f6965d7be0fb8634079a025b4591ba70dce6",
-      "source_bytes": 37,
-      "expected": "census/expected/allow-15.json",
-      "expected_sha256": "43af6a07aa29d1c6929b5c17ca62abe94be703782a0152b8ddeaacf6c801ab26"
+      "source_bytes": 37
     },
     {
       "id": "allow-16",
       "input": "census/inputs/allow-16.rn",
       "input_sha256": "68a69bc8aaa5b22691e9d824e9f69387cb307bceadfda8578d2c142d474b4917",
-      "source_bytes": 35,
-      "expected": "census/expected/allow-16.json",
-      "expected_sha256": "1150ca449f9ee955080ab4ac5d89492b1a148df449ea238a039126e95e1bb8f6"
+      "source_bytes": 35
     },
     {
       "id": "allow-17",
       "input": "census/inputs/allow-17.rn",
       "input_sha256": "20675b2ccf173131216c70a900c875d84f92ffd63669df60dd55ce1ddd2769a1",
-      "source_bytes": 38,
-      "expected": "census/expected/allow-17.json",
-      "expected_sha256": "334ee1b5d4f85289928ea58c12894da8c93c5ccbb4d876d7465c96e1b72ea51c"
+      "source_bytes": 38
     },
     {
       "id": "allow-18",
       "input": "census/inputs/allow-18.rn",
       "input_sha256": "25e4775564c0240e80e8e34553f8dc10fe2dc72f96719310d7c3611dfc6a8909",
-      "source_bytes": 38,
-      "expected": "census/expected/allow-18.json",
-      "expected_sha256": "47626bdfa6460857bbcc51311a25284e798afc9cbe30dd642c4b202ba60d3700"
+      "source_bytes": 38
     },
     {
       "id": "allow-19",
       "input": "census/inputs/allow-19.rn",
       "input_sha256": "eb991adf2d35042e5d83471aaa9ca210ea280efd4c32a6a1ca3f6a75ae4a4ecd",
-      "source_bytes": 38,
-      "expected": "census/expected/allow-19.json",
-      "expected_sha256": "436eb1076aef5292841e4fb2a2452ddf5aff5fd5f58872d05c6bef78fc727046"
+      "source_bytes": 38
     },
     {
       "id": "allow-20",
       "input": "census/inputs/allow-20.rn",
       "input_sha256": "831a6d7dc8b633dff211d66f9088a8223c657f608e93e4b7745ffba5bec88c0a",
-      "source_bytes": 47,
-      "expected": "census/expected/allow-20.json",
-      "expected_sha256": "5e5e173ff2167bfc75a94fb6c3d2473f9c1d338f09d913faac4c616d926ed3d4"
+      "source_bytes": 47
     },
     {
       "id": "allow-21",
       "input": "census/inputs/allow-21.rn",
       "input_sha256": "20d504d480701243b2431a2500e7430e9fcedd023adb6f4ae74bd42d4f5b7cd4",
-      "source_bytes": 40,
-      "expected": "census/expected/allow-21.json",
-      "expected_sha256": "a792e50bfa6d3668db9fe07c9e93f74ed83da594c911ef58b736e4ad7a5ee86d"
+      "source_bytes": 40
     },
     {
       "id": "allow-22",
       "input": "census/inputs/allow-22.rn",
       "input_sha256": "656c5fb6348241de3ddb90b995139614e785121126e243e769c36bc5d4b8016a",
-      "source_bytes": 36,
-      "expected": "census/expected/allow-22.json",
-      "expected_sha256": "d726e20380f3973b1833371ee4e7a5c9e61c54138e12a49990dfb5f7b692c15b"
+      "source_bytes": 36
     },
     {
       "id": "allow-23",
       "input": "census/inputs/allow-23.rn",
       "input_sha256": "73d6bc1f5f283d64df9acb9dd28d298e7374c776d960bb75975b2c4d65354470",
-      "source_bytes": 33,
-      "expected": "census/expected/allow-23.json",
-      "expected_sha256": "09ce5a5c710c55f60339c0dd4f7d7dc3e19bb542aa6edd3fcd3fec8ba5ef558f"
+      "source_bytes": 33
     },
     {
       "id": "allow-24",
       "input": "census/inputs/allow-24.rn",
       "input_sha256": "7274e7b6bd88bd418c6a48f0f728c54fcf7ab269f5b13cce40e6d078bbfa7359",
-      "source_bytes": 39,
-      "expected": "census/expected/allow-24.json",
-      "expected_sha256": "b37ad57fe0970b7601c473cbb52ea447c1bcc55bfc9778aafc5ef2f05dd56efa"
+      "source_bytes": 39
     },
     {
       "id": "allow-25",
       "input": "census/inputs/allow-25.rn",
       "input_sha256": "606ca0783712bcd4b9c4ebf22ae10254562b4ff8db7e4f69908d4c552fb297fa",
-      "source_bytes": 42,
-      "expected": "census/expected/allow-25.json",
-      "expected_sha256": "1f1419324074297431cbceb01f62894834f780ee6a69150bf16d2c4430f0b2bd"
+      "source_bytes": 42
     },
     {
       "id": "allow-26",
       "input": "census/inputs/allow-26.rn",
       "input_sha256": "904f91d401678d6ee36ac6d3b3fc5192b57e7f206b2af78a4c1fb62b3b734b45",
-      "source_bytes": 39,
-      "expected": "census/expected/allow-26.json",
-      "expected_sha256": "185f9d99f6527028b2be5423168cca78b3c26794c6fa3bb03c6534ce665bcd1c"
+      "source_bytes": 39
     },
     {
       "id": "allow-27",
       "input": "census/inputs/allow-27.rn",
       "input_sha256": "06e977fb212bbc5225ea71a291152a23f001573fa7a3debf2a2741a310737154",
-      "source_bytes": 34,
-      "expected": "census/expected/allow-27.json",
-      "expected_sha256": "c86327043267d447a54bab5e2a135e0b92811c51769a68bc46725ee44f0ba091"
+      "source_bytes": 34
     },
     {
       "id": "allow-28",
       "input": "census/inputs/allow-28.rn",
       "input_sha256": "0d9212be7249f748d0af478532e3d63441b16918fa48b29e7d6d06ecba154e2c",
-      "source_bytes": 37,
-      "expected": "census/expected/allow-28.json",
-      "expected_sha256": "6729f500b1fa66e8f9270848bdf256d4aa718b9f7d17b9117b61693f39753eec"
+      "source_bytes": 37
     },
     {
       "id": "allow-29",
       "input": "census/inputs/allow-29.rn",
       "input_sha256": "7637e28d8d8f9acd505da894758ed4b42461920612145d4ecdd9c3f82de4bcfa",
-      "source_bytes": 40,
-      "expected": "census/expected/allow-29.json",
-      "expected_sha256": "06ee73e36cad2dfacaa68ae29fe7230849dc2c689495cf56c0e16ec381e03b85"
+      "source_bytes": 40
     }
   ],
   "historical_registration": {

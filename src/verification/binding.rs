@@ -614,11 +614,25 @@ pub fn before(request: &Value) -> Result<Value> {
 	let registration = registration(request)?;
 	let rnx = fs::canonicalize(field(request, "rnx_root")?)?;
 	let rune = fs::canonicalize(field(request, "rune_root")?)?;
-	let out = Path::new(field(request, "out")?);
+	let out = fs::canonicalize(field(request, "out")?)?;
 	need(
-		!out.starts_with(&rnx) && !out.starts_with(&rune),
-		"output must be outside both source trees",
+		!out.starts_with(&rune),
+		"output must be outside the Rune source tree",
 	)?;
+	if out.starts_with(&rnx) {
+		need(
+			out.starts_with(rnx.join("target/rnx-verify")),
+			"in-tree output must be under target/rnx-verify",
+		)?;
+		let relative = out.strip_prefix(&rnx)?;
+		let ignored = Command::new("git")
+			.arg("-C")
+			.arg(&rnx)
+			.args(["check-ignore", "-q", "--"])
+			.arg(relative)
+			.status()?;
+		need(ignored.success(), "in-tree scratch must be ignored by Git")?;
+	}
 	let revision = revision(request)?;
 	let dependencies = dependencies(request)?;
 	let executable = std::env::current_exe()?;

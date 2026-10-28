@@ -682,7 +682,7 @@ causal ownership: between operations it is unassociated, but an old writer
 running during the next operation cannot be identified from a shared pipe.
 
 The bounded parent fixture is in `tests/worker_parent.py`; the integration gate
-requires Python 3 in addition to Rust. Unix transport has executed on nano.
+requires Python 3 in addition to Rust. Unix transport has been exercised on Linux.
 Windows transport type-checks in the standalone probe and awaits execution.
 The full wire contract, bounds and failure policy are in record 0046.
 

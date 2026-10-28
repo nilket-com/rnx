@@ -3344,7 +3344,7 @@ dependencies = [
 [[package]]
 name = "rune"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=f736a56bd2999bed1eb9fefd74e0ce9672f89c68#f736a56bd2999bed1eb9fefd74e0ce9672f89c68"
+source = "git+https://github.com/nilket-com/rune?rev=9001a1d0e2dff71fd1122297750ec0fb14217ba2#9001a1d0e2dff71fd1122297750ec0fb14217ba2"
 dependencies = [
  "anyhow",
  "futures-core",
@@ -3368,7 +3368,7 @@ dependencies = [
 [[package]]
 name = "rune-alloc"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=f736a56bd2999bed1eb9fefd74e0ce9672f89c68#f736a56bd2999bed1eb9fefd74e0ce9672f89c68"
+source = "git+https://github.com/nilket-com/rune?rev=9001a1d0e2dff71fd1122297750ec0fb14217ba2#9001a1d0e2dff71fd1122297750ec0fb14217ba2"
 dependencies = [
  "ahash",
  "musli-core",
@@ -3380,7 +3380,7 @@ dependencies = [
 [[package]]
 name = "rune-alloc-macros"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=f736a56bd2999bed1eb9fefd74e0ce9672f89c68#f736a56bd2999bed1eb9fefd74e0ce9672f89c68"
+source = "git+https://github.com/nilket-com/rune?rev=9001a1d0e2dff71fd1122297750ec0fb14217ba2#9001a1d0e2dff71fd1122297750ec0fb14217ba2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3390,7 +3390,7 @@ dependencies = [
 [[package]]
 name = "rune-core"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=f736a56bd2999bed1eb9fefd74e0ce9672f89c68#f736a56bd2999bed1eb9fefd74e0ce9672f89c68"
+source = "git+https://github.com/nilket-com/rune?rev=9001a1d0e2dff71fd1122297750ec0fb14217ba2#9001a1d0e2dff71fd1122297750ec0fb14217ba2"
 dependencies = [
  "rune-alloc",
  "serde",
@@ -3400,7 +3400,7 @@ dependencies = [
 [[package]]
 name = "rune-macros"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=f736a56bd2999bed1eb9fefd74e0ce9672f89c68#f736a56bd2999bed1eb9fefd74e0ce9672f89c68"
+source = "git+https://github.com/nilket-com/rune?rev=9001a1d0e2dff71fd1122297750ec0fb14217ba2#9001a1d0e2dff71fd1122297750ec0fb14217ba2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3411,7 +3411,7 @@ dependencies = [
 [[package]]
 name = "rune-tracing"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=f736a56bd2999bed1eb9fefd74e0ce9672f89c68#f736a56bd2999bed1eb9fefd74e0ce9672f89c68"
+source = "git+https://github.com/nilket-com/rune?rev=9001a1d0e2dff71fd1122297750ec0fb14217ba2#9001a1d0e2dff71fd1122297750ec0fb14217ba2"
 dependencies = [
  "rune-tracing-macros",
 ]
@@ -3419,7 +3419,7 @@ dependencies = [
 [[package]]
 name = "rune-tracing-macros"
 version = "0.15.0"
-source = "git+https://github.com/nilket-com/rune?rev=f736a56bd2999bed1eb9fefd74e0ce9672f89c68#f736a56bd2999bed1eb9fefd74e0ce9672f89c68"
+source = "git+https://github.com/nilket-com/rune?rev=9001a1d0e2dff71fd1122297750ec0fb14217ba2#9001a1d0e2dff71fd1122297750ec0fb14217ba2"
 dependencies = [
  "proc-macro2",
  "quote",
