@@ -1,0 +1,11 @@
+pub fn main() {
+println!("{:<8}{:>7}{:>7}{:>10}{:>8}", "region", "orders", "units", "revenue", "share");
+println!("{}", "--------------------------------------------------------------");
+for r in rows {
+    let width = if top == 0 { 0 } else { (r[3] * 20 + top / 2) / top };
+    let line = format!("{:<8}{:>7}{:>7}{:>10}{:>8}", r[0], r[1], r[2], dollars(r[3]), share(r[3]));
+    println!("{}", if width > 0 { line + "  " + bar(width) } else { line });
+}
+println!("{}", "--------------------------------------------------------------");
+println!("{:<8}{:>7}{:>7}{:>10}{:>8}", "total", orders_n, units, dollars(total), share(total));
+}

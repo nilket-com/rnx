@@ -1,0 +1,1 @@
+mod absent_h0; pub fn main() { 1 }

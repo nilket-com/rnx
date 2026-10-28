@@ -1,0 +1,4 @@
+pub fn main() { time::parse("2023-11-14T22:13:20.123+00:00") }
+
+pub fn r0187_result(v) { match v { Ok(x) => (true, x), Err(x) => (false, x) } }
+pub fn r0187_option(v) { match v { Some(x) => (true, x), None => (false, ()) } }

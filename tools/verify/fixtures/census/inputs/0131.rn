@@ -1,0 +1,8 @@
+pub fn main() {
+fn payment(principal, yearly_rate, years) {
+    let r = yearly_rate / 12.0;
+    let n = years * 12;
+    principal * r / (1.0 - (1.0 + r).powf(-(n as f64)))
+}
+
+}

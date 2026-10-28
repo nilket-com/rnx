@@ -1,0 +1,4 @@
+pub fn main() {
+let x = candle::Tensor::from_dense(df.to_dense(["a", "b", "c"], "f32")?)?;
+x
+}

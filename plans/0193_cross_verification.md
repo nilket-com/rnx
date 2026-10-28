@@ -118,7 +118,9 @@ mapping; physical reads never depend on a developer's historical workspace.
    published Rune head. Compare all counts, complete observations, policies,
    source/binary identities and frozen bytes with the reference. Test both
    rev and path inputs and relocation; do not substitute receipt replay.
-6. Run formatting, strict linting and relevant rnx tests. Validate ordinary
+6. Run formatting, strict Clippy on new verification code, and relevant rnx
+   tests; existing product lints remain unchanged and are compared exactly
+   (Claude seq 23174). Validate ordinary
    product build/CLI and unchanged production source, defaults and active locks.
    Record completed wall times, build/cache/resource details and failures;
    the full before/after critical-path acceptance belongs to V1c.

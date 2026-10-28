@@ -1,0 +1,7 @@
+pub fn main() {
+let by_month = kept.lazy().group_by([polars::col("month")])?
+	.agg([polars::col("revenue_cents").sum().alias("revenue_cents")])?
+	.sort_by_exprs([polars::col("month")], polars::SortMultipleOptions::new())?
+	.collect()?;
+by_month
+}

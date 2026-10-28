@@ -1,0 +1,12 @@
+pub fn main() {
+fn money(x) {
+    let cents = (x * 100.0).round() as i64;
+    let whole = `${cents / 100}`;
+    let out = "";
+    for i in 0..whole.len() {
+        if i > 0 && (whole.len() - i) % 3 == 0 { out += ","; }
+        out += whole[i..i + 1];
+    }
+    format!("{}.{:02}", out, cents % 100)
+}
+}

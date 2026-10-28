@@ -1,0 +1,6 @@
+pub fn main() {
+let articles = polars::read_csv("../data/articles.csv", [("id", "i64"), ("title", "string"), ("text", "string")])?;
+let questions = polars::read_csv("../data/questions.csv", [("id", "i64"), ("question", "string")])?;
+let asked = questions.strings("question")?;
+articles.select_(["id", "title"])?
+}

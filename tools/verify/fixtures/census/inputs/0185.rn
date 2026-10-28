@@ -1,0 +1,10 @@
+pub fn main() {
+fn top3(articles, docs, encoder, question) {
+	let q = encoder.embed([question])?;
+	articles.with_dense(candle::similarity(docs, q, ["score"])?)?
+		.select_(["id", "title", "score"])?
+		.sort(["score"], polars::SortMultipleOptions::new().with_order_descending(true))?
+		.head(Some(3))
+}
+
+}

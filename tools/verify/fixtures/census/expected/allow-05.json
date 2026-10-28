@@ -1,0 +1,523 @@
+{
+  "execution": "not run; compile-only",
+  "fresh": {
+    "compiled": true,
+    "diagnostics": []
+  },
+  "lifecycle_closed": true,
+  "registry": [
+    {
+      "doc": "parse(text) -> Result<value>: read JSON with exact signed/unsigned integers in range and document-position refusals",
+      "hash": "0xc0019b413278d244",
+      "item": "::json::parse",
+      "kind": "function",
+      "path": "json::parse",
+      "path_hash": "0xc0019b413278d244"
+    },
+    {
+      "doc": "stringify(value) -> Result<String>: render JSON with cycle and depth guards; refuse unrepresentable values",
+      "hash": "0x2d116dc75e23e830",
+      "item": "::json::stringify",
+      "kind": "function",
+      "path": "json::stringify",
+      "path_hash": "0x2d116dc75e23e830"
+    },
+    {
+      "doc": "stdin() -> Result<String>: the whole of standard input as UTF-8, up to 8 MiB; Err on a terminal or a second read; not notebook input_request",
+      "hash": "0xd7601ba31b50c9c5",
+      "item": "::io::stdin",
+      "kind": "function",
+      "path": "io::stdin",
+      "path_hash": "0xd7601ba31b50c9c5"
+    },
+    {
+      "doc": "eprint(text) -> Result<()>: write text to standard error, adding nothing, then flush",
+      "hash": "0xb338a15c80c2103f",
+      "item": "::io::eprint",
+      "kind": "function",
+      "path": "io::eprint",
+      "path_hash": "0xb338a15c80c2103f"
+    },
+    {
+      "doc": "Dense: a finite f32/f64 row-major matrix with named columns, at most 2^24 values; adapters exchange numbers through it",
+      "hash": "0x6a7bae11ad4e2c0d",
+      "item": "::interchange::Dense",
+      "kind": "type",
+      "path": "interchange::Dense",
+      "path_hash": "0x6a7bae11ad4e2c0d"
+    },
+    {
+      "doc": "shape() -> (rows, columns)",
+      "hash": "0x4fd14a3a493cf0b3",
+      "item": "::interchange::Dense::shape",
+      "kind": "associated-function",
+      "path": "interchange::Dense::shape",
+      "path_hash": "0xaf0e4332e956688b"
+    },
+    {
+      "doc": "names() -> Vec<String>: the column names",
+      "hash": "0x83adfa00cd7dcd5c",
+      "item": "::interchange::Dense::names",
+      "kind": "associated-function",
+      "path": "interchange::Dense::names",
+      "path_hash": "0x1abad49c46285f1c"
+    },
+    {
+      "doc": "dtype() -> String: \"f32\" or \"f64\"",
+      "hash": "0x56327eae5b011c66",
+      "item": "::interchange::Dense::dtype",
+      "kind": "associated-function",
+      "path": "interchange::Dense::dtype",
+      "path_hash": "0x2e2c9b57e6d6005f"
+    },
+    {
+      "doc": "exit(code) -> Result<()>: end the script with this status, which must be 0 to 255; a status outside that ends the script with 1 rather than being truncated; in run or eval it never returns, and in a session or worker it is refused with Err",
+      "hash": "0x65eafb4061b3480c",
+      "item": "::process::exit",
+      "kind": "function",
+      "path": "process::exit",
+      "path_hash": "0x65eafb4061b3480c"
+    },
+    {
+      "doc": "run(program, args, options) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: synchronous supervised child; run returns strict UTF-8 stdout/stderr, run_bytes returns Bytes; options: timeout_ms (default 30000, 1..=90000), input (String or Bytes), cwd, env (String values set, None removes), env_clear (default false). Explicit relative program paths always resolve against rnx's directory, even without cwd; bare names use platform lookup, whose PATH-override behaviour is platform-specific. The deadline starts after spawn. Check timed_out/cancelled before code, then truncated/cut_short/unreadable before trusting capture completeness. Killed children have no code on Unix and code 1 on Windows. Nonzero exit is Ok; launch/validation failures are Err. Input delivery does not certify consumption. No global environment or directory changes.",
+      "hash": "0xdb3a93f50eb00d7",
+      "item": "::process::run",
+      "kind": "function",
+      "path": "process::run",
+      "path_hash": "0xdb3a93f50eb00d7"
+    },
+    {
+      "doc": "run_bytes(program, args, options) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: synchronous supervised child; run returns strict UTF-8 stdout/stderr, run_bytes returns Bytes; options: timeout_ms (default 30000, 1..=90000), input (String or Bytes), cwd, env (String values set, None removes), env_clear (default false). Explicit relative program paths always resolve against rnx's directory, even without cwd; bare names use platform lookup, whose PATH-override behaviour is platform-specific. The deadline starts after spawn. Check timed_out/cancelled before code, then truncated/cut_short/unreadable before trusting capture completeness. Killed children have no code on Unix and code 1 on Windows. Nonzero exit is Ok; launch/validation failures are Err. Input delivery does not certify consumption. No global environment or directory changes.",
+      "hash": "0x20b52c2a62fd46ea",
+      "item": "::process::run_bytes",
+      "kind": "function",
+      "path": "process::run_bytes",
+      "path_hash": "0x20b52c2a62fd46ea"
+    },
+    {
+      "doc": "escape_html(text) -> String: HTML text/quoted-attribute escaping; &, <, >, quotes escaped again; not JS/CSS/URL validation; input/output <=1 MiB; overflow raises a VM error; borrowed",
+      "hash": "0x5ae7ceb78668cce3",
+      "item": "::web::escape_html",
+      "kind": "function",
+      "path": "web::escape_html",
+      "path_hash": "0x5ae7ceb78668cce3"
+    },
+    {
+      "doc": "decode_component(text) -> Result<String>: one percent decode, + literal, malformed % literal, invalid UTF-8 refused; input <=1 MiB; do not decode route params twice; borrowed",
+      "hash": "0xf966cfdbbfa8f4a2",
+      "item": "::web::decode_component",
+      "kind": "function",
+      "path": "web::decode_component",
+      "path_hash": "0xf966cfdbbfa8f4a2"
+    },
+    {
+      "doc": "parse_form(String|Bytes) -> Result<Object>: URL-encoded form, + is space, first duplicate wins; empty pairs/names retained; invalid UTF-8 refused including duplicates; <=1 MiB, <=1024 raw pairs; borrowed",
+      "hash": "0x750645ec49d19222",
+      "item": "::web::parse_form",
+      "kind": "function",
+      "path": "web::parse_form",
+      "path_hash": "0x750645ec49d19222"
+    },
+    {
+      "doc": "response(status, String|Bytes body, content_type, headers) -> Result<Object>: canonical response; scalar/vector String|Bytes headers; empty vectors accepted; lowercase names, duplicates/reserved names refused; 200..599; 204/304 empty; body <=1 MiB; <=64 names/values and 16 KiB headers; all inputs borrowed, output independent",
+      "hash": "0x53f1946f7882a1ab",
+      "item": "::web::response",
+      "kind": "function",
+      "path": "web::response",
+      "path_hash": "0x53f1946f7882a1ab"
+    },
+    {
+      "doc": "html(status, String|Bytes body) -> Result<Object>: response with text/html; charset=utf-8, no extra headers; body not escaped; response limits; borrowed",
+      "hash": "0xbc3426f95535973e",
+      "item": "::web::html",
+      "kind": "function",
+      "path": "web::html",
+      "path_hash": "0xbc3426f95535973e"
+    },
+    {
+      "doc": "text(status, String|Bytes body) -> Result<Object>: response with text/plain; charset=utf-8, no extra headers; response limits; borrowed",
+      "hash": "0x9ed761028a308c4f",
+      "item": "::web::text",
+      "kind": "function",
+      "path": "web::text",
+      "path_hash": "0x9ed761028a308c4f"
+    },
+    {
+      "doc": "read(path) -> Result<String>: a regular file as UTF-8, up to 8 MiB; use read_bytes for other bytes",
+      "hash": "0xb0e9467cce9a9acb",
+      "item": "::fs::read",
+      "kind": "function",
+      "path": "fs::read",
+      "path_hash": "0xb0e9467cce9a9acb"
+    },
+    {
+      "doc": "read_bytes(path) -> Result<Bytes>: a regular file's bytes, up to 8 MiB",
+      "hash": "0x7194607e16af5975",
+      "item": "::fs::read_bytes",
+      "kind": "function",
+      "path": "fs::read_bytes",
+      "path_hash": "0x7194607e16af5975"
+    },
+    {
+      "doc": "write_new(path, data) -> Result<()>: write String or Bytes, refusing to overwrite an existing file atomically",
+      "hash": "0x9367a030e58a1e46",
+      "item": "::fs::write_new",
+      "kind": "function",
+      "path": "fs::write_new",
+      "path_hash": "0x9367a030e58a1e46"
+    },
+    {
+      "doc": "write(path, data) -> Result<()>: create or truncate in place and write String or Bytes",
+      "hash": "0xe075d28966e50d68",
+      "item": "::fs::write",
+      "kind": "function",
+      "path": "fs::write",
+      "path_hash": "0xe075d28966e50d68"
+    },
+    {
+      "doc": "append(path, data) -> Result<()>: create or append String or Bytes",
+      "hash": "0x18693bf411936b8c",
+      "item": "::fs::append",
+      "kind": "function",
+      "path": "fs::append",
+      "path_hash": "0x18693bf411936b8c"
+    },
+    {
+      "doc": "exists(path) -> Result<bool>: false for missing or dangling; errors remain errors",
+      "hash": "0x602fb2b90448085c",
+      "item": "::fs::exists",
+      "kind": "function",
+      "path": "fs::exists",
+      "path_hash": "0x602fb2b90448085c"
+    },
+    {
+      "doc": "metadata(path) -> Result<object>: kind, size, modified_ms since epoch, readonly, symlink; follows the target",
+      "hash": "0xb9b5d90542f8199b",
+      "item": "::fs::metadata",
+      "kind": "function",
+      "path": "fs::metadata",
+      "path_hash": "0xb9b5d90542f8199b"
+    },
+    {
+      "doc": "read_dir(path) -> Result<Vec<String>>: Unicode entry names, byte-sorted, up to 100000",
+      "hash": "0x7475b164a29eba9a",
+      "item": "::fs::read_dir",
+      "kind": "function",
+      "path": "fs::read_dir",
+      "path_hash": "0x7475b164a29eba9a"
+    },
+    {
+      "doc": "absolute(path) -> Result<String>: canonicalize an existing path",
+      "hash": "0x1e2b1d1cf719294",
+      "item": "::fs::absolute",
+      "kind": "function",
+      "path": "fs::absolute",
+      "path_hash": "0x1e2b1d1cf719294"
+    },
+    {
+      "doc": "cwd() -> Result<String>: the working directory, without lossy conversion",
+      "hash": "0xb97fc9cb88aab7e9",
+      "item": "::fs::cwd",
+      "kind": "function",
+      "path": "fs::cwd",
+      "path_hash": "0xb97fc9cb88aab7e9"
+    },
+    {
+      "doc": "temp_dir() -> Result<String>: the temporary directory, without lossy conversion",
+      "hash": "0x9ff75969c309e433",
+      "item": "::fs::temp_dir",
+      "kind": "function",
+      "path": "fs::temp_dir",
+      "path_hash": "0x9ff75969c309e433"
+    },
+    {
+      "doc": "mkdir(path) -> Result<()>: create one directory",
+      "hash": "0xfaaf841902a886c8",
+      "item": "::fs::mkdir",
+      "kind": "function",
+      "path": "fs::mkdir",
+      "path_hash": "0xfaaf841902a886c8"
+    },
+    {
+      "doc": "mkdir_all(path) -> Result<()>: create all missing parent directories",
+      "hash": "0xbf64a0a5ac30d4b1",
+      "item": "::fs::mkdir_all",
+      "kind": "function",
+      "path": "fs::mkdir_all",
+      "path_hash": "0xbf64a0a5ac30d4b1"
+    },
+    {
+      "doc": "copy(from, to) -> Result<()>: copy bytes and permissions to an exclusively created file; failure can leave a partial destination",
+      "hash": "0x859db4d0c75fcc8d",
+      "item": "::fs::copy",
+      "kind": "function",
+      "path": "fs::copy",
+      "path_hash": "0x859db4d0c75fcc8d"
+    },
+    {
+      "doc": "rename(from, to) -> Result<()>: atomically rename without replacing a destination; no fallback",
+      "hash": "0x52f8630662051298",
+      "item": "::fs::rename",
+      "kind": "function",
+      "path": "fs::rename",
+      "path_hash": "0x52f8630662051298"
+    },
+    {
+      "doc": "remove_file(path) -> Result<()>: remove a file or a symlink, not its target",
+      "hash": "0x7a8ef19347dff758",
+      "item": "::fs::remove_file",
+      "kind": "function",
+      "path": "fs::remove_file",
+      "path_hash": "0x7a8ef19347dff758"
+    },
+    {
+      "doc": "remove_dir(path) -> Result<()>: remove an empty directory",
+      "hash": "0x60b4d9695d839c86",
+      "item": "::fs::remove_dir",
+      "kind": "function",
+      "path": "fs::remove_dir",
+      "path_hash": "0x60b4d9695d839c86"
+    },
+    {
+      "doc": "remove_dir_all(path) -> Result<()>: remove a tree without following symlinks; refuse root, cwd and ancestors",
+      "hash": "0xac0fa2eb3be36e0b",
+      "item": "::fs::remove_dir_all",
+      "kind": "function",
+      "path": "fs::remove_dir_all",
+      "path_hash": "0xac0fa2eb3be36e0b"
+    },
+    {
+      "doc": "join(base, part) -> String: lexical join; an absolute part replaces the base; Windows verbatim bases normalize . and .. for nonempty parts",
+      "hash": "0x6c00a484b9201824",
+      "item": "::path::join",
+      "kind": "function",
+      "path": "path::join",
+      "path_hash": "0x6c00a484b9201824"
+    },
+    {
+      "doc": "parent(p) -> Option<String>: lexical parent; parent(\"a\") is Some(\"\"), parent(\"\") is None",
+      "hash": "0xe21044ec5ce37f5",
+      "item": "::path::parent",
+      "kind": "function",
+      "path": "path::parent",
+      "path_hash": "0xe21044ec5ce37f5"
+    },
+    {
+      "doc": "file_name(p) -> Option<String>: final name, ignoring trailing separators; .. has no name",
+      "hash": "0x503dbe4218e1c9d5",
+      "item": "::path::file_name",
+      "kind": "function",
+      "path": "path::file_name",
+      "path_hash": "0x503dbe4218e1c9d5"
+    },
+    {
+      "doc": "file_stem(p) -> Option<String>: name without its last extension; a leading dot alone is not an extension",
+      "hash": "0x4f38c0bbd21fb380",
+      "item": "::path::file_stem",
+      "kind": "function",
+      "path": "path::file_stem",
+      "path_hash": "0x4f38c0bbd21fb380"
+    },
+    {
+      "doc": "extension(p) -> Option<String>: last extension, without its dot; a trailing dot gives Some(\"\")",
+      "hash": "0xd03932d20328c0ae",
+      "item": "::path::extension",
+      "kind": "function",
+      "path": "path::extension",
+      "path_hash": "0xd03932d20328c0ae"
+    },
+    {
+      "doc": "with_extension(p, ext) -> Result<String>: replace the last extension; empty removes only the last; separators in ext are refused",
+      "hash": "0x56a74016f6a0a4e4",
+      "item": "::path::with_extension",
+      "kind": "function",
+      "path": "path::with_extension",
+      "path_hash": "0x56a74016f6a0a4e4"
+    },
+    {
+      "doc": "is_absolute(p) -> bool: the running platform's rules; Windows requires a prefix and a root",
+      "hash": "0x1b49366f2a1e82c0",
+      "item": "::path::is_absolute",
+      "kind": "function",
+      "path": "path::is_absolute",
+      "path_hash": "0x1b49366f2a1e82c0"
+    },
+    {
+      "doc": "separator() -> String: the running platform's main path separator",
+      "hash": "0x930a04593802773",
+      "item": "::path::separator",
+      "kind": "function",
+      "path": "path::separator",
+      "path_hash": "0x930a04593802773"
+    },
+    {
+      "doc": "now_ms() -> i64: wall-clock milliseconds since Unix epoch, floored; not an elapsed-time clock",
+      "hash": "0x229ae0e4608b2de7",
+      "item": "::time::now_ms",
+      "kind": "function",
+      "path": "time::now_ms",
+      "path_hash": "0x229ae0e4608b2de7"
+    },
+    {
+      "doc": "monotonic_ms() -> i64: milliseconds since first call in this process; never decreases; not an epoch timestamp",
+      "hash": "0x1572c2ba0ecbe999",
+      "item": "::time::monotonic_ms",
+      "kind": "function",
+      "path": "time::monotonic_ms",
+      "path_hash": "0x1572c2ba0ecbe999"
+    },
+    {
+      "doc": "format(ms, pattern, zone) -> Result<String>: Jiff strftime dialect; fallible, precision chosen by the pattern",
+      "hash": "0x853859dcabae9d8",
+      "item": "::time::format",
+      "kind": "function",
+      "path": "time::format",
+      "path_hash": "0x853859dcabae9d8"
+    },
+    {
+      "doc": "rfc3339(ms, zone) -> Result<String>: three fractional digits; refuses negative years and offsets outside whole minutes in ±23:59",
+      "hash": "0x3ab081391f83e1f6",
+      "item": "::time::rfc3339",
+      "kind": "function",
+      "path": "time::rfc3339",
+      "path_hash": "0x3ab081391f83e1f6"
+    },
+    {
+      "doc": "parse(text) -> Result<i64>: floor milliseconds; offset or Z required; leap seconds refused, zone annotations checked (Z preserves the instant)",
+      "hash": "0xc4d58ee95af2ebfe",
+      "item": "::time::parse",
+      "kind": "function",
+      "path": "time::parse",
+      "path_hash": "0xc4d58ee95af2ebfe"
+    },
+    {
+      "doc": "parts(ms, zone) -> Result<Object>: calendar fields, ISO weekday, offset_seconds and resolved zone",
+      "hash": "0x470368889c23792",
+      "item": "::time::parts",
+      "kind": "function",
+      "path": "time::parts",
+      "path_hash": "0x470368889c23792"
+    },
+    {
+      "doc": "from_parts(object, zone) -> Result<i64>: year/month/day required; clock fields default to zero; gaps refused, folds require a valid offset_seconds; weekday and zone fields are informational",
+      "hash": "0xbd48235fe2b1d83f",
+      "item": "::time::from_parts",
+      "kind": "function",
+      "path": "time::from_parts",
+      "path_hash": "0xbd48235fe2b1d83f"
+    },
+    {
+      "doc": "sleep(ms).await -> Result<()>: 0..68719476735 ms; inert until awaited, interruptible while pending",
+      "hash": "0x67394af22d12d2a4",
+      "item": "::time::sleep",
+      "kind": "function",
+      "path": "time::sleep",
+      "path_hash": "0x67394af22d12d2a4"
+    },
+    {
+      "doc": "find(haystack, needle) -> Option<int>: the byte index of the first occurrence, or None",
+      "hash": "0x5535cd5ed1958446",
+      "item": "::text::find",
+      "kind": "function",
+      "path": "text::find",
+      "path_hash": "0x5535cd5ed1958446"
+    },
+    {
+      "doc": "split_max(text, count) -> Result<Vec<String>>: split on whitespace into at most count fields, the last keeping the rest verbatim; Err on a negative count",
+      "hash": "0xafaf932b5893cabc",
+      "item": "::text::split_max",
+      "kind": "function",
+      "path": "text::split_max",
+      "path_hash": "0xafaf932b5893cabc"
+    },
+    {
+      "doc": "group_digits(value) -> String: an integer with a comma every three digits",
+      "hash": "0x6bd9758f7bce4634",
+      "item": "::text::group_digits",
+      "kind": "function",
+      "path": "text::group_digits",
+      "path_hash": "0x6bd9758f7bce4634"
+    },
+    {
+      "doc": "get(url).await -> Result<object>: bounded HTTP GET",
+      "hash": "0xc693fee0e8cb5a38",
+      "item": "::http::get",
+      "kind": "function",
+      "path": "http::get",
+      "path_hash": "0xc693fee0e8cb5a38"
+    },
+    {
+      "doc": "get_bytes(url).await -> Result<object>: bounded HTTP GET",
+      "hash": "0x38e35f0ddad766ee",
+      "item": "::http::get_bytes",
+      "kind": "function",
+      "path": "http::get_bytes",
+      "path_hash": "0x38e35f0ddad766ee"
+    },
+    {
+      "doc": "request(method, url, options).await -> Result<object>: bounded HTTP request",
+      "hash": "0x6615b6ad4cce3a22",
+      "item": "::http::request",
+      "kind": "function",
+      "path": "http::request",
+      "path_hash": "0x6615b6ad4cce3a22"
+    },
+    {
+      "doc": "request_bytes(method, url, options).await -> Result<object>: bounded HTTP request",
+      "hash": "0x15bda3ff6ebaa1ec",
+      "item": "::http::request_bytes",
+      "kind": "function",
+      "path": "http::request_bytes",
+      "path_hash": "0x15bda3ff6ebaa1ec"
+    },
+    {
+      "doc": "args() -> Vec<String>: independent copies of the script's arguments; empty in eval and the session",
+      "hash": "0x1b23b7dd773429d9",
+      "item": "::env::args",
+      "kind": "function",
+      "path": "env::args",
+      "path_hash": "0x1b23b7dd773429d9"
+    },
+    {
+      "doc": "var(name) -> Result<Option<String>>: missing is None, empty is Some(\"\"); invalid names and non-Unicode values are refused",
+      "hash": "0xef6df8e54249d71f",
+      "item": "::env::var",
+      "kind": "function",
+      "path": "env::var",
+      "path_hash": "0xef6df8e54249d71f"
+    },
+    {
+      "doc": "vars() -> Result<Object>: the environment, first duplicate retained; any non-Unicode entry refuses the whole value",
+      "hash": "0x4a488c7224662051",
+      "item": "::env::vars",
+      "kind": "function",
+      "path": "env::vars",
+      "path_hash": "0x4a488c7224662051"
+    },
+    {
+      "doc": "home_dir() -> Result<Option<String>>: the platform's home directory; account/profile fallback can block, non-Unicode paths are refused",
+      "hash": "0x68d713d1ac3c4226",
+      "item": "::env::home_dir",
+      "kind": "function",
+      "path": "env::home_dir",
+      "path_hash": "0x68d713d1ac3c4226"
+    }
+  ],
+  "resolved_items": [
+    {
+      "context": true,
+      "end": 28,
+      "evidence": "compiler-resolved item mention, not runtime invocation",
+      "hash": "0x1e2b1d1cf719294",
+      "kind": "Function { associated: None, trait_hash: None, signature: Signature, is_test: false, is_bench: false, parameters: 0x0 }",
+      "path": "::fs::absolute",
+      "source": 0,
+      "start": 16
+    }
+  ],
+  "stock": {
+    "compiled": true,
+    "diagnostics": [],
+    "error": null
+  }
+}

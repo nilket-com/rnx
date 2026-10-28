@@ -1,0 +1,6 @@
+pub fn main() {
+fn dollars(cents) { format!("{}.{:02}", cents / 100, cents % 100) }
+
+fn int_at(frame, name, row) { Ok(frame.column(name)?.i64()?.get(row)?.unwrap()) }
+
+}

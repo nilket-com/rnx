@@ -1,0 +1,7 @@
+pub fn main() {
+mod a;
+mod inline { pub mod deep; }
+mod c;
+pub fn main(_) { a::value() + inline::deep::value() + c::value() }
+
+}

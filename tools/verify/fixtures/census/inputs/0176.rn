@@ -1,0 +1,4 @@
+pub fn main() {
+let y = model.forward(x)?;
+y
+}

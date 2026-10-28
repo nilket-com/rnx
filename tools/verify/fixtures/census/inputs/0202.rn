@@ -1,0 +1,4 @@
+pub fn main() {
+println!("{}", asked[5]);
+top3(articles, docs, encoder, asked[5])?
+}

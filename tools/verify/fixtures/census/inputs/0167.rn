@@ -1,0 +1,28 @@
+pub fn main() {
+fn dollars(cents) { format!("{}.{:02}", cents / 100, cents % 100) }
+
+fn int_at(frame, name, row) { Ok(frame.column(name)?.i64()?.get(row)?.unwrap()) }
+let sales = polars::read_csv("../data/sales.csv", [("month", "string"), ("region", "string"),
+	("product", "string"), ("units", "i64"), ("price_cents", "i64"), ("returned", "bool")])?;
+sales
+let revenue = (polars::col("units") * polars::col("price_cents"))?.alias("revenue_cents");
+let kept = sales.lazy().filter(polars::col("returned").not_()).with_columns([revenue])?.collect()?;
+kept
+let by_region = kept.lazy().group_by([polars::col("region")])?
+	.agg([polars::col("units").sum().alias("units"),
+		polars::col("revenue_cents").sum().alias("revenue_cents"),
+		polars::len().alias("orders")])?
+	.sort_by_exprs([polars::col("revenue_cents")],
+		polars::SortMultipleOptions::new().with_order_descending(true))?
+	.collect()?;
+by_region
+let by_month = kept.lazy().group_by([polars::col("month")])?
+	.agg([polars::col("revenue_cents").sum().alias("revenue_cents")])?
+	.sort_by_exprs([polars::col("month")], polars::SortMultipleOptions::new())?
+	.collect()?;
+by_month
+let summary = kept.lazy().select_([polars::col("revenue_cents").sum().alias("total_cents"),
+	polars::col("revenue_cents").mean().alias("mean_cents")])?.collect()?;
+summary
+
+}

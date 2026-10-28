@@ -1,0 +1,5 @@
+pub fn main() {
+let revenue = (polars::col("units") * polars::col("price_cents"))?.alias("revenue_cents");
+let kept = sales.lazy().filter(polars::col("returned").not_()).with_columns([revenue])?.collect()?;
+kept
+}

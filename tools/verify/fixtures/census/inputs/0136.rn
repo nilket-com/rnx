@@ -1,0 +1,9 @@
+pub fn main() {
+println!("Loan {} at {:.1}% a year for {} years, paid monthly", money(principal), rate * 100.0, years);
+println!("(a constant rate; totals exclude fees, taxes and insurance)");
+println!("Monthly payment   {:>12}", money(pay));
+println!("(totals use the unrounded payment, shown here to four decimals: {:.4})", pay);
+println!("Total paid        {:>12}", money(pay * 360.0));
+println!("Total interest    {:>12}", money(pay * 360.0 - principal));
+println!("");
+}

@@ -1,0 +1,13 @@
+pub fn main() {
+fn dollars(cents) { format!("{}.{:02}", cents / 100, cents % 100) }
+
+// add `cents` to the [name, total] row for `name`, making the row if new
+fn add(rows, name, cents) {
+    for row in rows { if row[0] == name { row[1] = row[1] + cents; return; } }
+    rows.push([name, cents]);
+}
+
+// largest total first; equal totals by name
+fn by_total(a, b) { if a[1] != b[1] { b[1].cmp(a[1]) } else { a[0].cmp(b[0]) } }
+
+}

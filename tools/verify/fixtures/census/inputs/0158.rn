@@ -1,0 +1,5 @@
+pub fn main() {
+let sales = polars::read_csv("../data/sales.csv", [("month", "string"), ("region", "string"),
+	("product", "string"), ("units", "i64"), ("price_cents", "i64"), ("returned", "bool")])?;
+sales
+}

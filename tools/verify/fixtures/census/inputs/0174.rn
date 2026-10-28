@@ -1,0 +1,4 @@
+pub fn main() {
+let model = candle::Mlp::load("../data/mlp.safetensors")?;
+model.dims()
+}

@@ -1,0 +1,4 @@
+pub fn main() {
+let df = polars::read_csv("../data/features.csv", [("id", "i64"), ("a", "f64"), ("b", "f64"), ("c", "f64")])?;
+df
+}

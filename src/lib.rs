@@ -5,6 +5,17 @@
 //! REPL and worker behavior is retained; only serving contexts load extensions.
 //! With the default `count-allocations` feature this library supplies the
 //! process's global allocator. The executable must not supply a second one.
+#[cfg(all(test, feature = "cross-verification"))]
+mod verification;
+
+#[cfg(all(test, feature = "cross-verification"))]
+fn main() {
+	if let Err(error) = verification::main() {
+		eprintln!("cross verification: {error}");
+		std::process::exit(1);
+	}
+}
+
 pub use rune;
 mod dep_startup;
 mod dep_transition;

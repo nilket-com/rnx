@@ -1,0 +1,10 @@
+pub fn main() {
+regions.sort_by(by_total);
+customers.sort_by(by_total);
+println!("{} orders read from {}", orders.len(), path);
+println!("Shipped revenue by region:");
+for r in regions { println!("  {:<6} {:>8}", r[0], dollars(r[1])); }
+println!("Largest customer: {} ({}), ahead of {} ({})",
+    customers[0][0], dollars(customers[0][1]), customers[1][0], dollars(customers[1][1]));
+println!("Still open: {} of {} orders ({:.1}%)", open, orders.len(), open as f64 * 100.0 / orders.len() as f64);
+}

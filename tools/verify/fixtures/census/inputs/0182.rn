@@ -1,0 +1,5 @@
+pub fn main() {
+let id = top.column("id")?.i64()?.get(0)?.unwrap();
+let score = top.column("score")?.f32()?.get(0)?.unwrap();
+println!("Highest score: row {} with {}, of {} rows scored", id, score, scored.height()?);
+}

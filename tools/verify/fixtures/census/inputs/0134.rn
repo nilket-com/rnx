@@ -1,0 +1,5 @@
+pub fn main() {
+let (principal, rate, years) = (300000.0, 0.06, 30);
+let pay = payment(principal, rate, years);
+pay
+}

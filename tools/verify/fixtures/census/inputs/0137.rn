@@ -1,0 +1,28 @@
+pub fn main() {
+fn payment(principal, yearly_rate, years) {
+    let r = yearly_rate / 12.0;
+    let n = years * 12;
+    principal * r / (1.0 - (1.0 + r).powf(-(n as f64)))
+}
+fn money(x) {
+    let cents = (x * 100.0).round() as i64;
+    let whole = `${cents / 100}`;
+    let out = "";
+    for i in 0..whole.len() {
+        if i > 0 && (whole.len() - i) % 3 == 0 { out += ","; }
+        out += whole[i..i + 1];
+    }
+    format!("{}.{:02}", out, cents % 100)
+}
+let (principal, rate, years) = (300000.0, 0.06, 30);
+let pay = payment(principal, rate, years);
+pay
+println!("Loan {} at {:.1}% a year for {} years, paid monthly", money(principal), rate * 100.0, years);
+println!("(a constant rate; totals exclude fees, taxes and insurance)");
+println!("Monthly payment   {:>12}", money(pay));
+println!("(totals use the unrounded payment, shown here to four decimals: {:.4})", pay);
+println!("Total paid        {:>12}", money(pay * 360.0));
+println!("Total interest    {:>12}", money(pay * 360.0 - principal));
+println!("");
+
+}

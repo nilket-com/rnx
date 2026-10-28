@@ -1,0 +1,4 @@
+pub fn main() {
+pub fn value() { 20000 }
+
+}

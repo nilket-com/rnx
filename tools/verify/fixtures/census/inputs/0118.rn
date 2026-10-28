@@ -1,0 +1,6 @@
+pub fn main() {
+mod broken;
+fn candidate(v) { v.missing() }
+pub fn main(_) { broken::fail() }
+
+}

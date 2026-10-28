@@ -1,0 +1,5 @@
+pub fn main() {
+let path = "../data/orders.json";
+let orders = json::parse(fs::read(path)?)?;
+orders.len()
+}
