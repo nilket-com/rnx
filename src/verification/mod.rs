@@ -60,6 +60,14 @@ fn controller(path: &str) -> Result<()> {
 		}
 		_ => return Err("unknown suite; expected census, enrollment, or all".into()),
 	}
+	if suite == "all" {
+		let inventory = crate::routing_inventory::run(
+			Path::new(request["rnx_root"].as_str().ok_or("missing rnx root")?),
+			Path::new(request["rune_root"].as_str().ok_or("missing Rune root")?),
+		)?;
+		write_new(&output.join("R1B-INVENTORY.json"), &inventory)?;
+		results.insert("embedding_inventory".into(), inventory);
+	}
 	binding::after(&request, &before)?;
 	write_new(
 		&output.join("RESULT.json"),

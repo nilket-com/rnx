@@ -60,3 +60,32 @@ controller runs outside it and validates Cargo's complete artifact stream before
 observing anything. Each enrollment child then uses one bubblewrap namespace;
 the runner does not require nested user namespaces. Final acceptance is the
 Rust-written `COMPLETE.json`, after suite, source, binary and host-file checks.
+
+`--suite all` also runs the R1b embedding inventory and writes
+`R1B-INVENTORY.json`. It enumerates production Rust syntax, live host handlers,
+closed host argument/output policies, the 17 prospective entry policies and VM
+construction boundaries. It asserts the session mutation-before-failure witness,
+HTTP Bytes and async/runtime blockers, and the synchronous executor API.
+All product routes remain legacy in this record. The future switch is confined
+to one-shot paths with whole-program compile-time fallback; runtime failure is
+never retried. Sessions, Jupyter, servers and retained-Unit selfchecks stay blocked.
+
+Source weights are computed from the checked-in L1 and census inputs, demos and
+notebook cells. Compiler-resolved context references and ambiguous lexical method
+names are reported separately. Raw notebook cells use the base context; their
+counts do not claim admission of an assembled notebook with earlier cell bindings
+or adapter modules. Function/method admission is conditional on the recorded
+source forms, including inline versus stored iterator chains.
+
+The Rune `native` suite runs the registry inventory with typed crate-private
+metadata under its doc/execution profile. To run only the rnx controls:
+
+```
+cargo test --locked --lib routing_inventory
+RNX_VERIFY_RUNE_ROOT=/absolute/rune cargo test --locked --lib routing_inventory -- --include-ignored
+```
+
+The second command needs the Rune checkout used to build the test. Fresh-clone
+acceptance uses the bound cross-repository controller instead of that standalone
+convenience test. These are correctness checks; R1b adds no engine certificates
+or routing changes, and the routing product record carries M8.

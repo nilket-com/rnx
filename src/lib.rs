@@ -24,6 +24,8 @@ mod dep_wire;
 mod extensions;
 mod lifecycle;
 pub mod present;
+#[cfg(test)]
+mod routing_inventory;
 pub use extensions::Extensions;
 pub use lifecycle::Scope;
 pub use present::{Output, Presenters};
@@ -139,7 +141,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Git revision the manifest pins. Written here rather than read from the
 /// crate, which exposes no such constant, so a gate reads the manifest's `rev`
 /// and the lockfile's version and refuses to let them drift apart.
-const RUNE_VERSION: &str = "0.15.0 (git 9fe99043f3594c50ce453625decd7b3092384d4e)";
+const RUNE_VERSION: &str = "0.15.0 (git 33df28715f8f6643e807c4a188cc6cea391687d0)";
 
 /// What rnx does, for someone who asked or who mistyped.
 const USAGE: &str = "\
