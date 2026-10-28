@@ -8,12 +8,70 @@ Rust controller. This launcher never changes the product manifest or lock.
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
 import tarfile
 import time
 import tomllib
+
+
+
+def check_rune_pins(root):
+    """Check every live graph; probes/ records historical, independently pinned work."""
+    root = Path(root)
+    dependency = tomllib.loads((root / "Cargo.toml").read_text())["dependencies"]["rune"]
+    revision, url = dependency["rev"], dependency["git"]
+    if re.fullmatch(r"[0-9a-f]{40}", revision) is None:
+        raise ValueError("the Rune pin must be a full Git revision")
+    expected = f"git+{url}?rev={revision}#{revision}"
+    checked = {"revision": revision, "locks": [], "manifests": [], "versions": []}
+
+    def dependencies(value):
+        if isinstance(value, dict):
+            if value.get("git") == url:
+                yield value
+            for child in value.values():
+                yield from dependencies(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from dependencies(child)
+
+    for directory, folders, files in os.walk(root, followlinks=False):
+        here = Path(directory)
+        folders[:] = sorted(name for name in folders
+                            if name not in {".git", "target", "__pycache__"}
+                            and not (here == root and name == "probes")
+                            and not (here / name).is_symlink())
+        for name in sorted(set(files) & {"Cargo.lock", "Cargo.toml"}):
+            path = here / name
+            relative = path.relative_to(root).as_posix()
+            document = tomllib.loads(path.read_text())
+            if name == "Cargo.toml":
+                pins = list(dependencies(document))
+                if any(pin.get("rev") != revision for pin in pins):
+                    raise ValueError(f"{relative}: Rune manifest revision differs from {revision}")
+                if pins:
+                    checked["manifests"].append(relative)
+            else:
+                packages = [package for package in document.get("package", [])
+                            if package["name"] == "rune" or package["name"].startswith("rune-")]
+                for package in packages:
+                    if package.get("source") != expected:
+                        raise ValueError(f"{relative}: {package['name']} source differs from {expected}")
+                if packages:
+                    checked["locks"].append(relative)
+    for relative in ("Cargo.lock", "tools/project/Cargo.lock"):
+        if relative not in checked["locks"]:
+            raise ValueError(f"{relative}: missing Rune lock entry")
+    for relative in ("src/lib.rs", "jupyter/src/worker.rs"):
+        text = (root / relative).read_text()
+        versions = re.findall(r'const RUNE_VERSION:\s*&str\s*=\s*"[^"\n]*\(git ([0-9a-f]{40})\)"', text)
+        if versions != [revision]:
+            raise ValueError(f"{relative}: RUNE_VERSION differs from {revision}")
+        checked["versions"].append(relative)
+    return checked
 
 
 def main():
@@ -39,6 +97,10 @@ def main():
     if not 1 <= args.jobs <= available_cpus:
         parser.error(f"--jobs must be between 1 and the {available_cpus} CPUs in the current affinity")
     controller_root = Path(__file__).resolve().parents[1]
+    try:
+        pin_consistency = check_rune_pins(controller_root)
+    except (ValueError, KeyError, OSError) as error:
+        parser.error(str(error))
     root = (args.registration_fixture.resolve(strict=True)
             if args.registration_fixture else controller_root)
     args.fixtures_root = (args.fixtures_root or root / "tools/verify/fixtures").resolve(strict=True)
@@ -57,6 +119,9 @@ def main():
     if args.rune_path and output.is_relative_to(args.rune_path):
         parser.error("--out must be outside the Rune source tree")
     output.mkdir(parents=True, exist_ok=False)
+    with (output / "PIN-CONSISTENCY.json").open("x") as stream:
+        json.dump(pin_consistency, stream, indent=2)
+        stream.write("\n")
     manifest = output / "Cargo.toml"
     lock = output / "Cargo.lock"
     original_manifest = output / "original-Cargo.toml"

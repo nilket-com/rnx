@@ -39,6 +39,51 @@ fn diagnostics(d: &rune::Diagnostics) -> Vec<Value> {
 		.collect()
 }
 
+/// Full warning payloads, sorted without deduplicating repeated diagnostics.
+fn warning_multiset(diagnostics: &rune::Diagnostics) -> Vec<Value> {
+	let mut warnings: Vec<_> = diagnostics.diagnostics().iter().filter_map(|d| {
+		let rune::diagnostics::Diagnostic::Warning(warning) = d else { return None; };
+		let span = warning.span();
+		Some(json!({"source": warning.source_id().into_index(), "start": span.start.0,
+			"end": span.end.0, "message": warning.to_string(), "kind_and_auxiliary": format!("{warning:?}")}))
+	}).collect();
+	warnings.sort_unstable_by_key(Value::to_string);
+	warnings
+}
+
+fn check_warning_multisets(actual: &Value) -> CensusResult<()> {
+	if actual["stock"]["compiled"] == true && actual["fresh"]["compiled"] == true {
+		let stock = actual["stock"]["warnings"]
+			.as_array()
+			.ok_or("missing legacy warning multiset")?;
+		let execution = actual["fresh"]["warnings"]
+			.as_array()
+			.ok_or("missing execution warning multiset")?;
+		if stock != execution {
+			return Err("compile warning multisets differ".into());
+		}
+	}
+	Ok(())
+}
+
+fn warning_self_check() -> CensusResult<usize> {
+	let warning = json!({"source":0,"start":1,"end":2,"message":"Not used","kind_and_auxiliary":"NotUsed context 0:3"});
+	let value = json!({"stock":{"compiled":true,"warnings":[warning.clone(), warning.clone()]},"fresh":{"compiled":true,"warnings":[warning.clone(), warning.clone()]}});
+	check_warning_multisets(&value).unwrap();
+	let mut missing = value.clone();
+	missing["fresh"]["warnings"].as_array_mut().unwrap().pop();
+	assert!(check_warning_multisets(&missing).is_err());
+	for field in ["source", "start", "end", "message", "kind_and_auxiliary"] {
+		let mut changed = value.clone();
+		changed["fresh"]["warnings"][0][field] = json!("changed");
+		assert!(check_warning_multisets(&changed).is_err(), "{field}");
+	}
+	let mut absent = value;
+	absent["fresh"].as_object_mut().unwrap().remove("warnings");
+	assert!(check_warning_multisets(&absent).is_err());
+	Ok(8)
+}
+
 use std::{
 	fs,
 	io::Write,
@@ -166,7 +211,7 @@ pub(super) fn child(args: &[String]) -> CensusResult<Value> {
 		.build();
 	let mut result = json!({"stock": {"compiled": stock.is_ok(),
 		"error": stock.as_ref().err().map(|e| format!("{e:?}")),
-		"diagnostics": diagnostics(&stock_diagnostics)}, "resolved_items": visitor.0,
+		"diagnostics": diagnostics(&stock_diagnostics), "warnings": warning_multiset(&stock_diagnostics)}, "resolved_items": visitor.0,
 		"registry": registry, "execution": "not run; compile-only"});
 	if stock.is_ok() {
 		let mut fresh_sources = rune::Sources::new();
@@ -181,7 +226,9 @@ pub(super) fn child(args: &[String]) -> CensusResult<Value> {
 			1,
 		);
 		result["fresh"] = match fresh {
-			Ok(_) => json!({"compiled": true, "diagnostics": diagnostics(&fresh_diagnostics)}),
+			Ok(_) => {
+				json!({"compiled": true, "diagnostics": diagnostics(&fresh_diagnostics), "warnings": warning_multiset(&fresh_diagnostics)})
+			}
 			Err(e) => json!({"compiled": false, "kind": format!("{:?}", e.kind),
 				"refusal": e.refusal.map(|r| format!("{r:?}")), "operation": e.operation,
 				"error": format!("{e:?}"), "location": e.location.map(|l| json!({
@@ -191,6 +238,7 @@ pub(super) fn child(args: &[String]) -> CensusResult<Value> {
 	} else {
 		result["fresh"] = json!({"compiled": null, "not_run": "stock compile failed"});
 	}
+	check_warning_multisets(&result)?;
 	drop(stock);
 	drop(runtime);
 	drop(context);
@@ -541,6 +589,7 @@ pub(super) fn run(args: &[String]) -> CensusResult<Value> {
 			)));
 		}
 		let actual = read_json(&stdout)?;
+		check_warning_multisets(&actual)?;
 		let expected_admission = admissions
 			.get(id)
 			.ok_or("missing census admission policy")?;
@@ -613,8 +662,9 @@ pub(super) fn self_check() -> CensusResult<Value> {
 		return Err("unsafe fixture selector was accepted".into());
 	}
 	let equivalence_cases = super::census_execution::equivalence_self_check()?;
+	let warning_cases = warning_self_check()?;
 	Ok(
-		json!({"status":"PASS","equivalence_cases":equivalence_cases,"canonical_order_ascii":true,"unknown_metadata_refused":true,
+		json!({"status":"PASS","equivalence_cases":equivalence_cases,"warning_cases":warning_cases,"canonical_order_ascii":true,"unknown_metadata_refused":true,
         "float_metadata_refused":true,"invalid_child_selections_refused":2,
         "invalid_controller_selections_refused":3,"unsafe_fixture_paths_refused":2}),
 	)
@@ -662,6 +712,11 @@ mod tests {
 	fn plain_controller_checks_pass() {
 		self_check().unwrap();
 	}
+	#[test]
+	fn warning_comparison_preserves_payload_and_multiplicity() {
+		warning_self_check().unwrap();
+	}
+
 	#[test]
 	fn child_requires_one_input() {
 		assert!(child(&[]).is_err());
