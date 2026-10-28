@@ -8,6 +8,16 @@ and execution observations, classifications, comparisons and source/binary check
 python3 tools/verify.py cross --suite all
 ```
 
+Before launching, the runner checks every live product Cargo.lock, fork-Git
+manifest pin, and both RUNE_VERSION constants against the root Rune revision.
+It records the checked paths in `PIN-CONSISTENCY.json`. Historical `probes/`
+graphs keep their independent source pins; generated `target/` files are excluded.
+Run the guard's live-tree and drift controls with:
+
+```
+python3 -I -B tools/test_verify_pins.py
+```
+
 By default Cargo resolves the pinned Rune Git dependency, checked-in fixtures are
 used, and output goes to a new directory under `target/rnx-verify`. For an explicit
 cross-revision check, use `--rune-rev REV --rune-repo /absolute/rune-git`, or use
@@ -32,7 +42,9 @@ It never falls back to the host's historical tree.
 
 The checked-in `tools/verify/fixtures` tree contains the census and enrollment
 inputs and policy data; no external stock-observation archive is required. The
-controller runs stock and execution children for each enrollment row. It generates
+controller compares full compile-warning multisets for every admitted census
+program, preserving source identity, spans, messages, auxiliary context and
+multiplicity. It runs stock and execution children for each enrollment row. It generates
 large repeat-byte stdin and filesystem content from checked-in specifications and
 verifies their digests.
 
