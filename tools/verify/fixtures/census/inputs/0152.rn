@@ -1,0 +1,6 @@
+pub fn main() {
+let (orders_n, units, total, top) = (0, 0, 0, 0);
+for r in rows { orders_n += r[1]; units += r[2]; total += r[3]; if r[3] > top { top = r[3]; } }
+let share = |cents| if total == 0 { "-" } else { format!("{:.1}%", cents as f64 * 100.0 / total as f64) };
+[orders_n, units, total]
+}

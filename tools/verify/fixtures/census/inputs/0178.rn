@@ -1,0 +1,4 @@
+pub fn main() {
+let scored = df.with_dense(y.to_dense(["score"])?)?;
+scored
+}

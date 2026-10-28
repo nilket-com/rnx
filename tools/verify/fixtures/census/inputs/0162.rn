@@ -1,0 +1,10 @@
+pub fn main() {
+let by_region = kept.lazy().group_by([polars::col("region")])?
+	.agg([polars::col("units").sum().alias("units"),
+		polars::col("revenue_cents").sum().alias("revenue_cents"),
+		polars::len().alias("orders")])?
+	.sort_by_exprs([polars::col("revenue_cents")],
+		polars::SortMultipleOptions::new().with_order_descending(true))?
+	.collect()?;
+by_region
+}

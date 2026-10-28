@@ -1,0 +1,41 @@
+{
+  "files": {
+    "a.txt": {
+      "text": "hello\n"
+    },
+    "empty.txt": {
+      "text": ""
+    },
+    "bad.bin": {
+      "hex": "fffe41"
+    },
+    "big.txt": {
+      "repeat": "a",
+      "bytes": 8388609
+    },
+    "limit.txt": {
+      "repeat": "a",
+      "bytes": 8388608
+    },
+    "mb.txt": {
+      "repeat": "a",
+      "bytes": 1048577
+    },
+    "dir/b.txt": {
+      "text": "b"
+    },
+    "sub/nested/c.txt": {
+      "text": "c"
+    }
+  },
+  "dirs": [
+    "empty_dir",
+    "tmp"
+  ],
+  "symlinks": {
+    "link": "a.txt",
+    "dangling": "missing"
+  },
+  "file_mode": 384,
+  "dir_mode": 448
+}

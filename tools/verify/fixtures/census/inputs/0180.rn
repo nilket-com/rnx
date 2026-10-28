@@ -1,0 +1,4 @@
+pub fn main() {
+let top = scored.sort(["score"], polars::SortMultipleOptions::new().with_order_descending(true))?;
+top.head(Some(5))?
+}

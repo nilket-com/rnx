@@ -1,0 +1,4 @@
+pub fn main() { path::parent("") }
+
+pub fn r0187_result(v) { match v { Ok(x) => (true, x), Err(x) => (false, x) } }
+pub fn r0187_option(v) { match v { Some(x) => (true, x), None => (false, ()) } }

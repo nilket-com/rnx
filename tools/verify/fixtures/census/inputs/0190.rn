@@ -1,0 +1,4 @@
+pub fn main() {
+let docs = encoder.embed(articles.strings("text")?)?;
+docs
+}

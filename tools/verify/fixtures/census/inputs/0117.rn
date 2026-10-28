@@ -1,0 +1,4 @@
+pub fn main() {
+pub fn fail() { 42.missing() }
+
+}

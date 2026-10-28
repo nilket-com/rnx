@@ -1,0 +1,22 @@
+pub fn main() {
+fn top3(articles, docs, encoder, question) {
+	let q = encoder.embed([question])?;
+	articles.with_dense(candle::similarity(docs, q, ["score"])?)?
+		.select_(["id", "title", "score"])?
+		.sort(["score"], polars::SortMultipleOptions::new().with_order_descending(true))?
+		.head(Some(3))
+}
+let articles = polars::read_csv("../data/articles.csv", [("id", "i64"), ("title", "string"), ("text", "string")])?;
+let questions = polars::read_csv("../data/questions.csv", [("id", "i64"), ("question", "string")])?;
+let asked = questions.strings("question")?;
+articles.select_(["id", "title"])?
+let encoder = candle::TextEncoder::load("../models/all-MiniLM-L6-v2")?;
+encoder
+let docs = encoder.embed(articles.strings("text")?)?;
+docs
+println!("{}", asked[0]);
+top3(articles, docs, encoder, asked[0])?
+println!("{}", asked[1]);
+top3(articles, docs, encoder, asked[1])?
+
+}

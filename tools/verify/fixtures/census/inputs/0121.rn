@@ -1,0 +1,5 @@
+pub fn main() {
+mod a;
+pub fn main(_) { a::b::value() }
+
+}

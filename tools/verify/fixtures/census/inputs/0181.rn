@@ -1,0 +1,15 @@
+pub fn main() {
+let df = polars::read_csv("../data/features.csv", [("id", "i64"), ("a", "f64"), ("b", "f64"), ("c", "f64")])?;
+df
+let x = candle::Tensor::from_dense(df.to_dense(["a", "b", "c"], "f32")?)?;
+x
+let model = candle::Mlp::load("../data/mlp.safetensors")?;
+model.dims()
+let y = model.forward(x)?;
+y
+let scored = df.with_dense(y.to_dense(["score"])?)?;
+scored
+let top = scored.sort(["score"], polars::SortMultipleOptions::new().with_order_descending(true))?;
+top.head(Some(5))?
+
+}

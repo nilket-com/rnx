@@ -1,0 +1,6 @@
+pub fn main() {
+for question in asked {
+	let best = top3(articles, docs, encoder, question)?.column("title")?.str()?.get(0)?.unwrap();
+	println!("{} -> {}", question, best);
+}
+}

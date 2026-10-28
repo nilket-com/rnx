@@ -1,0 +1,13 @@
+pub fn main() {
+let orders = json::parse(fs::read("../data/orders.json")?)?;
+let rows = [];
+for o in orders {
+    let row = None;
+    for r in rows { if r[0] == o.region { row = Some(r); } }
+    let row = match row { Some(r) => r, None => { let r = [o.region, 0, 0, 0]; rows.push(r); r } };
+    row[1] = row[1] + 1;
+    if o.status == "shipped" { row[2] = row[2] + o.qty; row[3] = row[3] + o.qty * o.unit_cents; }
+}
+rows.sort_by(|a, b| a[0].cmp(b[0]));
+rows
+}

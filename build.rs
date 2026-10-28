@@ -197,7 +197,98 @@ fn acquired(root: &Path, rev: &str, url: &str) -> bool {
 	}
 	false
 }
+// Verification uses actual source files, so bind their bytes at compilation as
+// well as at runtime. This branch is absent from ordinary product builds.
+#[deny(clippy::all)]
+fn verification_pins(root: &Path, out: &Path) -> Result<(), Box<dyn std::error::Error>> {
+	fn walk(root: &Path, dir: &Path, names: &mut Vec<PathBuf>) -> std::io::Result<()> {
+		for entry in fs::read_dir(dir)? {
+			let path = entry?.path();
+			if matches!(
+				path.file_name().and_then(|s| s.to_str()),
+				Some(".git" | "target")
+			) {
+				continue;
+			}
+			let meta = fs::symlink_metadata(&path)?;
+			if meta.is_dir() {
+				walk(root, &path, names)?;
+			} else if meta.is_file() {
+				names.push(path.strip_prefix(root).unwrap().to_owned());
+			} else {
+				return Err(std::io::Error::other("verification source must be regular"));
+			}
+		}
+		Ok(())
+	}
+	let rune = PathBuf::from(
+		std::env::var_os("RNX_VERIFY_RUNE_ROOT").ok_or("missing verifier Rune root")?,
+	);
+	let mut pins = String::new();
+	for (kind, dir) in [("rnx", root), ("rune", rune.as_path())] {
+		let mut names = Vec::new();
+		if dir.join(".git").exists() {
+			let bytes = git(
+				dir,
+				&[
+					"ls-files",
+					"--cached",
+					"--others",
+					"--exclude-standard",
+					"-z",
+				],
+			)?;
+			for name in bytes.split(|b| *b == 0).filter(|b| !b.is_empty()) {
+				names.push(PathBuf::from(std::str::from_utf8(name)?));
+			}
+			if dir.join("Cargo.lock").is_file()
+				&& !names.iter().any(|p| p == Path::new("Cargo.lock"))
+			{
+				names.push("Cargo.lock".into());
+			}
+		} else {
+			walk(dir, dir, &mut names)?;
+		}
+		names.sort();
+		names.dedup();
+		for name in names {
+			let text = name.to_str().ok_or("non-UTF8 source path")?;
+			if text.contains(['\n', '\r', '\t'])
+				|| name.is_absolute()
+				|| !name
+					.components()
+					.all(|p| matches!(p, std::path::Component::Normal(_)))
+			{
+				return Err("invalid verifier source path".into());
+			}
+			let path = dir.join(&name);
+			if !fs::symlink_metadata(&path)?.is_file() {
+				return Err("verification source must be regular".into());
+			}
+			let output = Command::new("sha256sum").arg("--").arg(&path).output()?;
+			if !output.status.success() {
+				return Err("verification source hashing failed".into());
+			}
+			let hash = std::str::from_utf8(&output.stdout)?
+				.get(..64)
+				.ok_or("invalid source hash")?;
+			pins.push_str(&format!("{kind}\t{hash}\t{text}\n"));
+			println!("cargo:rerun-if-changed={}", path.display());
+		}
+	}
+	println!("cargo:rerun-if-env-changed=RNX_VERIFY_RUNE_ROOT");
+	fs::write(out.join("verification-source-pins.tsv"), pins)?;
+	Ok(())
+}
+
 fn main() {
+	// The verifier declares this feature only in its private dev manifest.
+	println!("cargo:rustc-check-cfg=cfg(feature, values(\"cross-verification\"))");
+	if std::env::var_os("CARGO_FEATURE_CROSS_VERIFICATION").is_some() {
+		let root = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
+		let out = PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
+		verification_pins(&root, &out).expect("verification compile-time source binding");
+	}
 	println!("cargo:rerun-if-env-changed=CARGO_FEATURE_STOCK_MANAGEMENT");
 	if std::env::var_os("CARGO_FEATURE_STOCK_MANAGEMENT").is_none() {
 		return;

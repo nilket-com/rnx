@@ -1,0 +1,6 @@
+pub fn main() {
+mod a;
+mod a;
+pub fn main(_) { 42 }
+
+}

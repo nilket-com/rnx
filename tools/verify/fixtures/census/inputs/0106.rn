@@ -1,0 +1,10 @@
+pub fn main() {
+pub fn run(args) {
+    for r in [1] { r; }
+    println!("{} after a for ({} ok)",
+        1, 2);
+    println!("WORKFLOW OK for");
+    Ok(())
+}
+
+}

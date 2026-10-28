@@ -1,0 +1,10 @@
+pub fn main() {
+let orders = kept.height()?;
+let returned = sales.height()? - orders;
+let total = int_at(summary, "total_cents", 0)?;
+let top = by_region.column("region")?.str()?.get(0)?.unwrap();
+let top_cents = int_at(by_region, "revenue_cents", 0)?;
+let tenths = (top_cents * 2000 + total) / (2 * total);
+println!("Net revenue: ${} from {} orders ({} returned, left out)", dollars(total), orders, returned);
+println!("Top region: {}, ${}, {}.{}% of net revenue", top, dollars(top_cents), tenths / 10, tenths % 10);
+}

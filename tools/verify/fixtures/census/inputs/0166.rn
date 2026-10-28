@@ -1,0 +1,5 @@
+pub fn main() {
+let summary = kept.lazy().select_([polars::col("revenue_cents").sum().alias("total_cents"),
+	polars::col("revenue_cents").mean().alias("mean_cents")])?.collect()?;
+summary
+}

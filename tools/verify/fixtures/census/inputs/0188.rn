@@ -1,0 +1,4 @@
+pub fn main() {
+let encoder = candle::TextEncoder::load("../models/all-MiniLM-L6-v2")?;
+encoder
+}

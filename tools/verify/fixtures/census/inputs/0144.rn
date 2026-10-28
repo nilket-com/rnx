@@ -1,0 +1,12 @@
+pub fn main() {
+let regions = [];
+let customers = [];
+let open = 0;
+for o in orders {
+    let cents = if o.status == "shipped" { o.qty * o.unit_cents } else { 0 };
+    if o.status == "open" { open += 1; }
+    add(regions, o.region, cents);
+    add(customers, o.customer, cents);
+}
+open
+}

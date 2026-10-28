@@ -1,0 +1,12 @@
+pub fn main() {
+println!("Balance after each year:");
+let balance = principal;
+for month in 1..=years * 12 {
+    balance -= pay - balance * rate / 12.0;
+    let year = month / 12;
+    if month % 12 == 0 && [1, 5, 10, 20, 30].iter().any(|y| y == year) {
+        let shown = if balance.abs() < 0.005 { 0.0 } else { balance };
+        println!("  year {:>2}  {:>12}", year, money(shown));
+    }
+}
+}
