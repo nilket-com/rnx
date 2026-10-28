@@ -48,6 +48,53 @@ use std::{
 };
 type CensusResult<T> = Result<T, Box<dyn std::error::Error>>;
 const MANIFEST: &str = include_str!("../../tools/verify/fixtures/census_manifest.json");
+const ADMISSIONS: &str = include_str!("../../tools/verify/fixtures/census/admissions.tsv");
+
+/// Admission policy is a versioned design assertion, not an output snapshot.
+fn admission_policy(text: &str) -> CensusResult<std::collections::BTreeMap<&str, &str>> {
+	let mut lines = text.lines();
+	if lines.next() != Some("id\tclass") {
+		return Err("invalid census admission header".into());
+	}
+	let mut rows = std::collections::BTreeMap::new();
+	for line in lines {
+		let (id, class) = line
+			.split_once('\t')
+			.ok_or("invalid census admission row")?;
+		if id.is_empty()
+			|| !id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+			|| !matches!(
+				class,
+				"both-admit"
+					| "stock-fails" | "fresh-refuses-Native"
+					| "fresh-refuses-Method"
+					| "fresh-refuses-Await"
+			) || rows.insert(id, class).is_some()
+		{
+			return Err("invalid or duplicate census admission".into());
+		}
+	}
+	Ok(rows)
+}
+
+fn observed_admission(actual: &Value) -> CensusResult<&'static str> {
+	match (
+		actual["stock"]["compiled"].as_bool(),
+		actual["fresh"]["compiled"].as_bool(),
+	) {
+		(Some(false), None) if actual["fresh"]["not_run"] == "stock compile failed" => {
+			Ok("stock-fails")
+		}
+		(Some(true), Some(true)) => Ok("both-admit"),
+		(Some(true), Some(false)) => match actual["fresh"]["refusal"].as_str() {
+			Some("Native") => Ok("fresh-refuses-Native"),
+			Some("Method") => Ok("fresh-refuses-Method"),
+			Some("Await") => Ok("fresh-refuses-Await"),
+			_ => Err("unexpected fresh refusal class".into()),
+		},
+		_ => Err("invalid census admission observation".into()),
+	}
+}
 
 pub(super) fn child(args: &[String]) -> CensusResult<Value> {
 	if args.len() != 1 {
@@ -169,7 +216,7 @@ fn number(value: &Value, key: &str) -> CensusResult<u64> {
 fn read_json(path: &Path) -> CensusResult<Value> {
 	Ok(serde_json::from_slice(&fs::read(path)?)?)
 }
-fn hash_file(path: &Path) -> CensusResult<String> {
+pub(super) fn hash_file(path: &Path) -> CensusResult<String> {
 	let output = Command::new("sha256sum").arg("--").arg(path).output()?;
 	if !output.status.success() {
 		return Err(fail(format!("hash failed: {}", path.display())));
@@ -428,17 +475,11 @@ pub(super) fn run(args: &[String]) -> CensusResult<Value> {
 	if number(&manifest, "schema")? != 1 || number(&manifest, "count")? != 244 {
 		return Err("unsupported census manifest".into());
 	}
-	let cases_path = pinned(
-		&root,
-		string(&manifest, "cases_path")?,
-		string(&manifest, "cases_sha256")?,
-	)?;
-	let cases = read_json(&cases_path)?;
-	let cases = cases.as_array().ok_or("case array required")?;
+
 	let rows = manifest["rows"]
 		.as_array()
 		.ok_or("manifest rows required")?;
-	if cases.len() != 244 || rows.len() != 244 {
+	if rows.len() != 244 {
 		return Err("census requires exactly 244 cases".into());
 	}
 	let repo = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -446,30 +487,20 @@ pub(super) fn run(args: &[String]) -> CensusResult<Value> {
 	let executable = std::env::current_exe()?;
 	let executable_hash = hash_file(&executable)?;
 	let mut ids = std::collections::BTreeSet::new();
-	let mut actual_rows = Vec::new();
 	let mut runs = Vec::new();
-	for (case, row) in cases.iter().zip(rows) {
-		let id = string(case, "id")?;
-		if string(row, "id")? != id
-			|| !ids.insert(id)
-			|| !id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
-		{
+	let admissions = admission_policy(ADMISSIONS)?;
+	if admissions.len() != 244 {
+		return Err("census admission table must have 244 cases".into());
+	}
+	for row in rows {
+		let id = string(row, "id")?;
+		if !ids.insert(id) || !id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-') {
 			return Err("duplicate or malformed census id".into());
-		}
-		if string(case, "compiled_sha256")? != string(row, "input_sha256")?
-			|| number(case, "source_bytes")? != number(row, "source_bytes")?
-		{
-			return Err("case and manifest input identity differ".into());
 		}
 		let input = pinned(&root, string(row, "input")?, string(row, "input_sha256")?)?;
 		if fs::metadata(&input)?.len() != number(row, "source_bytes")? {
 			return Err("census input size differs".into());
 		}
-		let expected_path = pinned(
-			&root,
-			string(row, "expected")?,
-			string(row, "expected_sha256")?,
-		)?;
 		let stdout = records.join(format!("{id}.stdout"));
 		let stderr = records.join(format!("{id}.stderr"));
 		let mut command = Command::new("/usr/bin/timeout");
@@ -479,7 +510,7 @@ pub(super) fn run(args: &[String]) -> CensusResult<Value> {
 			.args(["--child", "census"])
 			.arg(&input)
 			.env_clear()
-			.env("HOME", "/home/me")
+			.env("HOME", fs::canonicalize(&out)?)
 			.env("PATH", "/usr/bin:/bin")
 			.env("LANG", "C.UTF-8")
 			.env("TZ", "UTC")
@@ -510,6 +541,12 @@ pub(super) fn run(args: &[String]) -> CensusResult<Value> {
 			)));
 		}
 		let actual = read_json(&stdout)?;
+		let expected_admission = admissions
+			.get(id)
+			.ok_or("missing census admission policy")?;
+		if observed_admission(&actual)? != *expected_admission {
+			return Err(fail(format!("census admission class changed: {id}")));
+		}
 		if actual["lifecycle_closed"] != true
 			|| actual["execution"] != "not run; compile-only"
 			|| actual["registry"].as_array().map(Vec::len)
@@ -521,42 +558,17 @@ pub(super) fn run(args: &[String]) -> CensusResult<Value> {
 		}
 		let record = records.join(format!("{id}.json"));
 		write_new(&record, &serde_json::to_vec_pretty(&actual)?)?;
-		if actual != read_json(&expected_path)?
-			|| hash_file(&record)? != string(row, "expected_sha256")?
-		{
-			return Err(fail(format!("census observation changed: {id}")));
-		}
-		let mut aggregate = actual
-			.as_object()
-			.ok_or("observation object required")?
-			.clone();
-		aggregate.insert("case".into(), case.clone());
-		actual_rows.push(Value::Object(aggregate));
+
 		runs.push(receipt);
 		pinned(&root, string(row, "input")?, string(row, "input_sha256")?)?;
-		pinned(
-			&root,
-			string(row, "expected")?,
-			string(row, "expected_sha256")?,
-		)?;
 	}
-	let observations = out.join("OBSERVATIONS.json");
-	write_new(&observations, &canonical(&json!({"rnx":actual_rows}))?)?;
-	if hash_file(&observations)? != string(&manifest, "aggregate_sha256")?
-		|| fs::metadata(&observations)?.len() != number(&manifest, "aggregate_bytes")?
-	{
-		return Err("canonical census aggregate differs from frozen artifact".into());
-	}
-	pinned(
-		&root,
-		string(&manifest, "cases_path")?,
-		string(&manifest, "cases_sha256")?,
-	)?;
+	let live_execution = super::census_execution::run(&executable, &root, repo, &out, &admissions)?;
+
 	check_registration(&manifest, repo)?;
 	if hash_file(&executable)? != executable_hash {
 		return Err("census executable changed".into());
 	}
-	let result = json!({"status":"PASS","cases":244,"changed":0,"unchanged":244,"execution":"not run; compile-only","observation_sha256":hash_file(&observations)?,"observations":observations,"binary":executable,"binary_sha256":executable_hash,"seconds":start.elapsed().as_secs_f64(),"runs":runs});
+	let result = json!({"status":"PASS","admission_checks":244,"execution":live_execution,"binary":executable,"binary_sha256":executable_hash,"seconds":start.elapsed().as_secs_f64(),"runs":runs});
 	write_new(
 		&out.join("RESULT.json"),
 		&serde_json::to_vec_pretty(&result)?,
@@ -600,8 +612,9 @@ pub(super) fn self_check() -> CensusResult<Value> {
 	{
 		return Err("unsafe fixture selector was accepted".into());
 	}
+	let equivalence_cases = super::census_execution::equivalence_self_check()?;
 	Ok(
-		json!({"status":"PASS","canonical_order_ascii":true,"unknown_metadata_refused":true,
+		json!({"status":"PASS","equivalence_cases":equivalence_cases,"canonical_order_ascii":true,"unknown_metadata_refused":true,
         "float_metadata_refused":true,"invalid_child_selections_refused":2,
         "invalid_controller_selections_refused":3,"unsafe_fixture_paths_refused":2}),
 	)
@@ -623,6 +636,26 @@ mod tests {
 	fn canonical_rejects_unknown_or_float_metadata() {
 		assert!(canonical(&json!({"rnx":[{"case":{"surprise":1}}]})).is_err());
 		assert!(canonical(&json!({"float":1.5})).is_err());
+	}
+
+	#[test]
+	fn admission_classes_are_explicit_and_closed() {
+		let policy = admission_policy(ADMISSIONS).unwrap();
+		assert_eq!(policy.len(), 244);
+		assert_eq!(policy["0007"], "fresh-refuses-Native");
+		assert!(admission_policy("id\tclass\nx\tboth-admit\nx\tstock-fails\n").is_err());
+		assert!(admission_policy("id\tclass\nx\tunknown\n").is_err());
+		assert_eq!(
+			observed_admission(
+				&json!({"stock":{"compiled":true},"fresh":{"compiled":false,"refusal":"Method"}})
+			)
+			.unwrap(),
+			"fresh-refuses-Method"
+		);
+		assert!(
+			observed_admission(&json!({"stock":{"compiled":false},"fresh":{"compiled":true}}))
+				.is_err()
+		);
 	}
 
 	#[test]

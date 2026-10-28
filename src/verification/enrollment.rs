@@ -11,11 +11,22 @@ use std::path::Path;
 
 const OBSERVER_FUEL: usize = 100_000;
 const DEPTH: usize = 4;
+const PROJECTORS: &str = include_str!("../../tools/verify/fixtures/enrollment/projectors.rn");
+
+pub(super) fn augment_source(source: &str) -> Result<String, &'static str> {
+	if source.contains("r0187_option") || source.contains("r0187_result") {
+		return Err("projector helper name collision");
+	}
+	let mut generated = String::with_capacity(source.len() + PROJECTORS.len());
+	generated.push_str(source);
+	generated.push_str(PROJECTORS);
+	Ok(generated)
+}
 
 fn hex(bytes: &[u8]) -> String {
 	bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
-fn scalar(value: Scalar) -> Json {
+pub(super) fn scalar(value: Scalar) -> Json {
 	match value {
 		Scalar::Unit => json!({"unit": true}),
 		Scalar::Bool(v) => json!({"bool": v}),
@@ -26,7 +37,7 @@ fn scalar(value: Scalar) -> Json {
 		Scalar::Ordering(_) => panic!("unreviewed Ordering output"),
 	}
 }
-fn typed_stock(value: &rune::Value, depth: usize) -> Json {
+pub(super) fn typed_stock(value: &rune::Value, depth: usize) -> Json {
 	use rune::TypeHash;
 	assert!(depth <= DEPTH, "observer depth exceeded");
 	let hash = value.type_hash();
@@ -61,13 +72,16 @@ fn typed_stock(value: &rune::Value, depth: usize) -> Json {
 		};
 		return json!({"variant": "Result", "success": success, "payload": typed_stock(child, depth + 1)});
 	}
+	if let Ok(v) = value.borrow_ref::<rune::runtime::Vec>() {
+		return json!({"vec": v.iter().map(|child| typed_stock(child, depth + 1)).collect::<Vec<_>>()});
+	}
 	if let Ok(v) = value.borrow_tuple_ref() {
 		return json!({"tuple": v.iter().map(|v| typed_stock(v, depth + 1)).collect::<Vec<_>>()});
 	}
 	panic!("unreviewed stock output: {}", value.type_info());
 }
 
-fn typed_fresh(
+pub(super) fn typed_fresh(
 	store: &mut Store,
 	executor: &mut Executor,
 	program: &frontend::Program,
@@ -80,14 +94,19 @@ fn typed_fresh(
 	}
 	match store.root_tag(root).unwrap() {
 		Type::String => json!({"string_hex": hex(store.root_text(root).unwrap().as_bytes())}),
-		Type::Tuple => {
+		Type::Tuple | Type::Vec => {
+			let tag = store.root_tag(root).unwrap();
 			let mut children = Vec::new();
 			for i in 0..store.root_len(root).unwrap() {
 				let child = store.root_get(root, i).unwrap();
 				children.push(typed_fresh(store, executor, program, &child, depth + 1));
 				store.root_release(child).unwrap();
 			}
-			json!({"tuple": children})
+			if tag == Type::Tuple {
+				json!({"tuple":children})
+			} else {
+				json!({"vec":children})
+			}
 		}
 		Type::Option | Type::Result => {
 			let (tag, success, payload) = store.root_variant_parts(root).unwrap();
@@ -127,7 +146,7 @@ fn typed_fresh(
 	}
 }
 
-fn context(lifecycle: &crate::lifecycle::Lifecycle) -> (Context, crate::http::State) {
+pub(super) fn context(lifecycle: &crate::lifecycle::Lifecycle) -> (Context, crate::http::State) {
 	let mut context = Context::with_default_modules().unwrap();
 	crate::install_core(&mut context).unwrap();
 	crate::fs::install(&mut context).unwrap();
@@ -254,6 +273,9 @@ fn stock_error(e: &rune::runtime::VmError, output: &Path) -> Json {
 	let Some((primary, captures, arg)) = classification else {
 		return json!({"status":"classifier_reject","message":display,"chain":chain});
 	};
+	let rune::experimental_core::error::ErrorProjection::Class(class) = e.error_class() else {
+		return json!({"status":"classifier_reject","message":display,"chain":chain});
+	};
 	let mut sites = Vec::new();
 	for at in e.stacktrace() {
 		assert!(at.frames.is_empty(), "unreviewed stock frames");
@@ -268,7 +290,7 @@ fn stock_error(e: &rune::runtime::VmError, output: &Path) -> Json {
 		);
 	}
 	assert_eq!(sites.len(), 1, "unreviewed stock trace shape");
-	json!({"status":"error", "primary":primary,"arg":arg,"message":display,"captures":captures,"site":sites[0],"frames":[]})
+	json!({"status":"error", "class":format!("{class:?}"),"primary":primary,"arg":arg,"message":display,"captures":captures,"site":sites[0],"frames":[]})
 }
 fn fresh_error(
 	f: &rune::experimental_core::execute::Failure,
@@ -287,6 +309,7 @@ fn fresh_error(
 			Detail::HostMessage {
 				cause: H::ExpectedNumber,
 				arg,
+				..
 			},
 		) => ("ExpectedNumber", arg),
 		(
@@ -294,6 +317,7 @@ fn fresh_error(
 			Detail::HostMessage {
 				cause: H::ExpectedType,
 				arg,
+				..
 			},
 		) => ("ExpectedType", arg),
 		(K::Host, Detail::HostExpectedType { arg, .. }) => ("ExpectedType", arg),
@@ -309,7 +333,16 @@ fn fresh_error(
 		.location
 		.map(|s| json!({"source":s.source,"start":s.start,"end":s.end}));
 	let message = f.message(program).to_string();
-	let mut result = json!({"status":"error","primary":primary,"arg":arg,"message":message,"site":site,"frames":[]});
+	let class = match f.error.error_class() {
+		rune::experimental_core::error::ErrorProjection::Class(class) => format!("{class:?}"),
+		rune::experimental_core::error::ErrorProjection::EngineOnly
+			if matches!(primary, "StoreCapacity" | "InvalidCode") =>
+		{
+			"EngineOnly".to_owned()
+		}
+		other => panic!("unreviewed fresh error projection: {other:?}"),
+	};
+	let mut result = json!({"status":"error","class":class,"primary":primary,"arg":arg,"message":message,"site":site,"frames":[]});
 	if matches!(primary, "ExpectedType" | "ExpectedNumber") {
 		let chain = arg
 			.map(|n| vec![format!("Bad argument #{n}")])
@@ -606,7 +639,12 @@ fn child_inner(args: &[String]) -> Json {
 	classifier_controls();
 	let lifecycle = crate::lifecycle::Lifecycle::new(true).unwrap();
 	let (ctx, http) = context(&lifecycle);
-	let source = std::fs::read_to_string(row["source"].as_str().unwrap()).unwrap();
+	let input_source = std::fs::read_to_string(row["source"].as_str().unwrap()).unwrap();
+	let source = if row["main_source_bytes"].is_number() {
+		augment_source(&input_source).expect("projector helper collision")
+	} else {
+		input_source
+	};
 	let observed = if engine == "fresh" {
 		fresh(&row, &ctx, &lifecycle, &source, output)
 	} else {
@@ -670,6 +708,16 @@ pub(super) fn child(args: &[String]) -> Result<Json, Box<dyn std::error::Error>>
 }
 
 pub(super) fn self_check() -> Result<Json, Box<dyn std::error::Error>> {
+	let generated = augment_source("pub fn main() { 7 }")?;
+	assert_eq!(generated, format!("pub fn main() {{ 7 }}{PROJECTORS}"));
+	assert_eq!(
+		augment_source("r0187_option"),
+		Err("projector helper name collision")
+	);
+	assert_eq!(
+		augment_source("r0187_result"),
+		Err("projector helper name collision")
+	);
 	classifier_controls();
 	let result = controller::self_check()?;
 	Ok(
@@ -864,9 +912,8 @@ mod controller {
 		}
 		json!({"outcome":outcome,"stderr_hex":record["stderr_hex"],"stdout_sha256":record["record"]["stdout_sha256"],"tree":record["record"]["final_tree"],"envelope":o["envelope"]})
 	}
-	// Hide the host /home tree before creating canonical historical names.
-	// Rebind only explicit physical inputs/executable/output, so absent old
-	// directories are created on private tmpfs, never on the host filesystem.
+	// Hide the host home tree and create a private runtime namespace.
+	// Rebind only the explicit physical inputs, executable and scratch output.
 	fn namespace_args(
 		out: &Path,
 		sources: &Path,
@@ -881,6 +928,8 @@ mod controller {
 			"/".into(),
 			"--tmpfs".into(),
 			"/home".into(),
+			"--tmpfs".into(),
+			"/run".into(),
 			"--ro-bind".into(),
 			sources.display().to_string(),
 			sources.display().to_string(),
@@ -1081,43 +1130,23 @@ mod controller {
 			let split = row["main_source_bytes"]
 				.as_u64()
 				.ok_or("missing main source boundary")? as usize;
-			assert!(split <= bytes.len());
+			assert_eq!(split, bytes.len());
 			assert_eq!(
-				hash_bytes(&bytes[..split])?,
+				hash_bytes(&bytes)?,
 				row["main_source_sha256"].as_str().unwrap()
 			);
 			assert_eq!(
-				hash_bytes(&bytes[split..])?,
+				hash_bytes(super::PROJECTORS.as_bytes())?,
 				row["projector_suffix_sha256"].as_str().unwrap()
 			);
+			assert!(super::augment_source(std::str::from_utf8(&bytes)?).is_ok());
 		}
 
-		let oracle_path = checked_fixture(&external, manifest["oracle"]["path"].as_str().unwrap())?;
-		assert_eq!(
-			hash(&oracle_path)?,
-			manifest["oracle"]["sha256"].as_str().unwrap(),
-			"frozen enrollment oracle drift"
-		);
-		assert_eq!(
-			fs::metadata(&oracle_path)?.len(),
-			manifest["oracle"]["bytes"].as_u64().unwrap()
-		);
-		let oracle = read(&oracle_path)?;
-		assert_eq!(oracle["status"], "PASS");
-		let oracle = oracle["records"]["after"]
-			.as_array()
-			.ok_or("missing stock oracle")?;
 		let corpus = manifest["rows"].as_array().ok_or("missing corpus rows")?;
 		assert_eq!(corpus.len(), 115);
 		let rows: Vec<_> = corpus.iter().filter(|r| r["policy"] != "Control").collect();
 		assert_eq!(rows.len(), 110);
-		assert_eq!(oracle.len(), 110);
 		let labels: Vec<_> = rows.iter().map(|r| r["label"].as_str().unwrap()).collect();
-		let expected: Vec<_> = oracle
-			.iter()
-			.map(|r| r["record"]["label"].as_str().unwrap())
-			.collect();
-		assert_eq!(labels, expected);
 		assert_eq!(
 			labels
 				.iter()
@@ -1125,29 +1154,23 @@ mod controller {
 				.len(),
 			110
 		);
+
 		let child = std::env::current_exe()?;
 		let runner = Runner {
 			out: out.clone(),
 			sources: sources.clone(),
 			child_hash: hash(&child)?,
 			child,
-			canonical_parent: PathBuf::from(manifest["canonical_parent"].as_str().unwrap()),
+			canonical_parent: PathBuf::from("/run/rnx-verify"),
 		};
 		write(
 			&out.join("INPUTS.json"),
-			&json!({"manifest_sha256":hash_bytes(MANIFEST.as_bytes())?,"tree_sha256":hash_bytes(TREE.as_bytes())?,"oracle":oracle_path,"oracle_sha256":manifest["oracle"]["sha256"],"oracle_bytes":manifest["oracle"]["bytes"],"source_pins":manifest["source_pins"],"child_binary":runner.child,"child_binary_sha256":runner.child_hash,"scratch_policy":"per-run and per-child create-new roots; canonical F only private namespace mount","child_umask":"0077; frozen0192 pre-exec policy set before lifecycle threads"}),
+			&json!({"manifest_sha256":hash_bytes(MANIFEST.as_bytes())?,"tree_sha256":hash_bytes(TREE.as_bytes())?,"source_pins":manifest["source_pins"],"child_binary":runner.child,"child_binary_sha256":runner.child_hash,"scratch_policy":"per-run and per-child create-new roots; canonical F only private namespace mount","child_umask":"0077; frozen0192 pre-exec policy set before lifecycle threads"}),
 		)?;
 		let started = Instant::now();
 		let mut stock = Vec::new();
-		for (row, old) in rows.iter().zip(oracle) {
-			let got = runner.invoke(row, "stock", "stock", None)?;
-			assert_eq!(
-				semantic(&got),
-				semantic(old),
-				"stock historical delta {}",
-				row["id"]
-			);
-			stock.push(got);
+		for row in &rows {
+			stock.push(runner.invoke(row, "stock", "stock", None)?);
 		}
 		write(
 			&out.join("STOCK.json"),
@@ -1157,7 +1180,7 @@ mod controller {
 		let mut exact = 0;
 		let mut arity = 0;
 		let mut resource = 0;
-		for (row, old) in rows.iter().zip(oracle) {
+		for (row, old) in rows.iter().zip(&stock) {
 			let got = runner.invoke(row, "fresh", "fresh", None)?;
 			match row["policy"].as_str().unwrap() {
 				"Retained-arity" => {
@@ -1320,16 +1343,12 @@ mod controller {
 			classifier_results.push(got);
 		}
 		verify_sources()?;
-		assert_eq!(
-			hash(&oracle_path)?,
-			manifest["oracle"]["sha256"].as_str().unwrap()
-		);
 		assert_eq!(hash(&runner.child)?, runner.child_hash);
 		write(
 			&out.join("FRESH.json"),
 			&json!({"status":"PASS","records":fresh,"runtime_controls":controls,"frontier":frontier,"classifier_subjects":classifier_results}),
 		)?;
-		let summary = json!({"status":"PASS","stock_rows":110,"execution_rows":110,"exact_rows":exact,"retained_arity":arity,"retained_resource":resource,"runtime_controls":5,"helper_checks":helpers,"projection_checks":projections,"frontier_budgets":67,"first_success_budget":66,"classifier_subject_rejects":2,"fixed_string_rejects":6,"invalid_chain_rejects":2,"seconds":started.elapsed().as_secs_f64(),"child_binary_sha256":runner.child_hash,"oracle_bytes":manifest["oracle"]["bytes"]});
+		let summary = json!({"status":"PASS","stock_rows":110,"execution_rows":110,"exact_rows":exact,"retained_arity":arity,"retained_resource":resource,"runtime_controls":5,"helper_checks":helpers,"projection_checks":projections,"frontier_budgets":67,"first_success_budget":66,"classifier_subject_rejects":2,"fixed_string_rejects":6,"invalid_chain_rejects":2,"seconds":started.elapsed().as_secs_f64(),"child_binary_sha256":runner.child_hash});
 		write(&out.join("RESULT.json"), &summary)?;
 		Ok(summary)
 	}

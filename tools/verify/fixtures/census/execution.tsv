@@ -1,0 +1,245 @@
+id	mode	reason	fixture	clock
+0000	admission-only	stock-fails		
+0001	admission-only	main-requires-arguments		
+0002	admission-only	main-requires-arguments		
+0003	admission-only	main-requires-arguments		
+0004	admission-only	stock-fails		
+0005	admission-only	stock-fails		
+0006	admission-only	stock-fails		
+0007	admission-only	fresh-refuses-Native		
+0008	admission-only	stock-fails		
+0009	admission-only	stock-fails		
+0010	admission-only	stock-fails		
+0011	admission-only	stock-fails		
+0012	admission-only	stock-fails		
+0013	admission-only	stock-fails		
+0014	admission-only	stock-fails		
+0015	admission-only	stock-fails		
+0016	admission-only	stock-fails		
+0017	admission-only	stock-fails		
+0018	admission-only	stock-fails		
+0019	admission-only	stock-fails		
+0020	admission-only	stock-fails		
+0021	admission-only	stock-fails		
+0022	admission-only	stock-fails		
+0023	admission-only	stock-fails		
+0024	admission-only	stock-fails		
+0025	admission-only	stock-fails		
+0026	admission-only	stock-fails		
+0027	admission-only	no-main		
+0028	admission-only	no-main		
+0029	admission-only	stock-fails		
+0030	admission-only	no-main		
+0031	admission-only	no-main		
+0032	admission-only	stock-fails		
+0033	admission-only	stock-fails		
+0034	admission-only	stock-fails		
+0035	admission-only	stock-fails		
+0036	admission-only	stock-fails		
+0037	admission-only	stock-fails		
+0038	admission-only	stock-fails		
+0039	admission-only	no-main		
+0040	admission-only	no-main		
+0041	admission-only	no-main		
+0042	admission-only	no-main		
+0043	admission-only	stock-fails		
+0044	admission-only	stock-fails		
+0045	admission-only	no-main		
+0046	admission-only	stock-fails		
+0047	admission-only	stock-fails		
+0048	admission-only	stock-fails		
+0049	admission-only	stock-fails		
+0050	admission-only	no-main		
+0051	admission-only	stock-fails		
+0052	admission-only	no-main		
+0053	admission-only	stock-fails		
+0054	admission-only	stock-fails		
+0055	admission-only	no-main		
+0056	admission-only	stock-fails		
+0057	admission-only	stock-fails		
+0058	admission-only	no-main		
+0059	admission-only	stock-fails		
+0060	admission-only	no-main		
+0061	admission-only	no-main		
+0062	admission-only	no-main		
+0063	admission-only	stock-fails		
+0064	admission-only	stock-fails		
+0065	admission-only	stock-fails		
+0066	execute			
+0067	execute		orders	
+0068	execute		orders	
+0069	admission-only	stock-fails		
+0070	admission-only	stock-fails		
+0071	admission-only	stock-fails		
+0072	admission-only	fresh-refuses-Native		
+0073	admission-only	stock-fails		
+0074	admission-only	stock-fails		
+0075	admission-only	stock-fails		
+0076	admission-only	stock-fails		
+0077	admission-only	stock-fails		
+0078	admission-only	stock-fails		
+0079	admission-only	stock-fails		
+0080	admission-only	stock-fails		
+0081	admission-only	stock-fails		
+0082	admission-only	stock-fails		
+0083	admission-only	stock-fails		
+0084	admission-only	stock-fails		
+0085	admission-only	stock-fails		
+0086	admission-only	stock-fails		
+0087	admission-only	stock-fails		
+0088	admission-only	stock-fails		
+0089	admission-only	stock-fails		
+0090	admission-only	stock-fails		
+0091	admission-only	stock-fails		
+0092	execute			
+0093	execute			
+0094	admission-only	stock-fails		
+0095	execute			
+0096	execute			
+0097	admission-only	stock-fails		
+0098	admission-only	stock-fails		
+0099	admission-only	stock-fails		
+0100	admission-only	stock-fails		
+0101	admission-only	stock-fails		
+0102	admission-only	stock-fails		
+0103	admission-only	stock-fails		
+0104	execute			
+0105	execute			
+0106	execute			
+0107	execute			
+0108	admission-only	stock-fails		
+0109	admission-only	stock-fails		
+0110	execute			
+0111	admission-only	stock-fails		
+0112	admission-only	stock-fails		
+0113	admission-only	stock-fails		
+0114	admission-only	stock-fails		
+0115	execute			
+0116	admission-only	stock-fails		
+0117	execute			
+0118	admission-only	stock-fails		
+0119	admission-only	stock-fails		
+0120	execute			
+0121	admission-only	stock-fails		
+0122	admission-only	stock-fails		
+0123	admission-only	stock-fails		
+0124	execute			
+0125	execute			
+0126	execute			
+0127	admission-only	stock-fails		
+0128	execute			
+0129	admission-only	stock-fails		
+0130	execute			
+0131	execute			
+0132	execute			
+0133	execute			
+0134	admission-only	stock-fails		
+0135	execute			
+0136	admission-only	stock-fails		
+0137	admission-only	stock-fails		
+0138	admission-only	stock-fails		
+0139	admission-only	stock-fails		
+0140	execute			
+0141	execute			
+0142	execute		orders	
+0143	execute		orders	
+0144	admission-only	stock-fails		
+0145	admission-only	stock-fails		
+0146	admission-only	stock-fails		
+0147	admission-only	stock-fails		
+0148	execute			
+0149	execute			
+0150	execute		orders	
+0151	execute		orders	
+0152	admission-only	stock-fails		
+0153	admission-only	stock-fails		
+0154	admission-only	stock-fails		
+0155	admission-only	stock-fails		
+0156	admission-only	fresh-refuses-Method		
+0157	admission-only	fresh-refuses-Method		
+0158	admission-only	stock-fails		
+0159	admission-only	stock-fails		
+0160	admission-only	stock-fails		
+0161	admission-only	stock-fails		
+0162	admission-only	stock-fails		
+0163	admission-only	stock-fails		
+0164	admission-only	stock-fails		
+0165	admission-only	stock-fails		
+0166	admission-only	stock-fails		
+0167	admission-only	stock-fails		
+0168	admission-only	stock-fails		
+0169	admission-only	stock-fails		
+0170	admission-only	stock-fails		
+0171	admission-only	stock-fails		
+0172	admission-only	stock-fails		
+0173	admission-only	stock-fails		
+0174	admission-only	stock-fails		
+0175	admission-only	stock-fails		
+0176	admission-only	stock-fails		
+0177	admission-only	stock-fails		
+0178	admission-only	stock-fails		
+0179	admission-only	stock-fails		
+0180	admission-only	stock-fails		
+0181	admission-only	stock-fails		
+0182	admission-only	stock-fails		
+0183	admission-only	stock-fails		
+0184	admission-only	stock-fails		
+0185	admission-only	stock-fails		
+0186	admission-only	stock-fails		
+0187	admission-only	stock-fails		
+0188	admission-only	stock-fails		
+0189	admission-only	stock-fails		
+0190	admission-only	stock-fails		
+0191	admission-only	stock-fails		
+0192	admission-only	stock-fails		
+0193	admission-only	stock-fails		
+0194	admission-only	stock-fails		
+0195	admission-only	stock-fails		
+0196	admission-only	stock-fails		
+0197	admission-only	stock-fails		
+0198	admission-only	stock-fails		
+0199	admission-only	stock-fails		
+0200	admission-only	stock-fails		
+0201	admission-only	stock-fails		
+0202	admission-only	stock-fails		
+0203	admission-only	stock-fails		
+0204	admission-only	stock-fails		
+0205	admission-only	stock-fails		
+0206	execute			
+0207	execute			
+0208	execute			
+0209	execute			
+0210	admission-only	main-requires-arguments		
+0211	admission-only	stock-fails		
+0212	admission-only	fresh-refuses-Await		
+0213	execute			
+allow-00	execute			
+allow-01	execute			
+allow-02	execute			
+allow-03	execute			
+allow-04	execute			
+allow-05	execute			
+allow-06	execute			
+allow-07	execute			
+allow-08	execute			
+allow-09	execute			
+allow-10	execute			
+allow-11	execute			
+allow-12	execute			
+allow-13	execute			
+allow-14	execute			
+allow-15	execute			
+allow-16	execute			
+allow-17	execute			
+allow-18	execute			
+allow-19	execute			
+allow-20	execute			
+allow-21	execute			
+allow-22	execute			
+allow-23	execute			wall
+allow-24	execute			monotonic
+allow-25	execute			
+allow-26	execute			
+allow-27	execute			
+allow-28	execute			
+allow-29	execute			
