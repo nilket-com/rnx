@@ -57,9 +57,10 @@ five-repeat cycle soft rule from the exact pinned source. Counter data must be
 unscaled and fully scheduled. Reports include medians, full samples, spreads
 and ratios to LuaJIT, plus native-on versus native-off cycle flags. The soft
 threshold is 1 + max(2*reference spread, 0.02). A performance difference does
-not fail correctness; unavailable evidence or violated calibration does. The
-native runtime default remains a user decision after review of these results
-and the separate exact-source size/build-cost controls.
+not fail correctness; unavailable evidence or violated calibration does. The native runtime default is requested on as of 0198; this controller sets
+off/on explicitly for each measured invocation. Its route evidence records
+requested policy, not proof that a region was entered. Region coverage needs
+separate operational evidence.
 
 The controller's fail-closed protocol controls run with
 `python3 -B -m unittest discover -s tools/routing-bench -p test_protocol.py`.

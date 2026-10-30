@@ -465,7 +465,8 @@ fn compare(case: &Case, dir: &Path, native: bool) -> Result<Value> {
 			|| old.files != new.files
 			|| !selected[0].starts_with("rnx: engine=execution ")
 			|| evidence.stderr
-				!= format!("rnx: engine=execution native={mode}\nrnx: result=Unit\n").as_bytes()
+				!= format!("rnx: engine=execution native-requested={mode}\nrnx: result=Unit\n")
+					.as_bytes()
 		{
 			return Err(format!(
 				"unit-clone row no longer meets its exact typed policy: {}",
@@ -747,7 +748,7 @@ fn entry_reexports_fall_back_before_effects_and_missing_entry_is_terminal() -> R
 				&format!("{mode}-route"),
 			)?;
 			let route = if matches!(id, "missing" | "direct") {
-				format!("rnx: engine=execution native={mode}\n")
+				format!("rnx: engine=execution native-requested={mode}\n")
 			} else {
 				"rnx: engine=legacy refusal=Import\n".to_owned()
 			};

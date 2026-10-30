@@ -157,7 +157,7 @@ fn actual_project_cli_routes_overrides_and_generated_assemblies_without_rebuildi
 			assert_eq!(
 				routes,
 				[format!(
-					"rnx: engine=execution native={}",
+					"rnx: engine=execution native-requested={}",
 					native.strip_prefix("--native=").unwrap()
 				)
 				.as_str()]

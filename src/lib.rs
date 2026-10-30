@@ -158,7 +158,7 @@ rnx — a Rune scripting environment
   rnx version               this build, and the Rune it is pinned to
   rnx help                  this
 
-Flags for `run`, before the file: --budget N (work units), --debug-source, --engine=legacy, --native=on|off, --debug-engine.";
+Flags for `run`, before the file: --budget N (work units), --debug-source, --engine=legacy, --native=on|off (default: on), --debug-engine (requested policy).";
 
 /// Run rnx's normal CLI with the supplied trusted native extensions.
 ///

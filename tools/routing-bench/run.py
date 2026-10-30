@@ -70,7 +70,7 @@ def validate_child(mode, done, debug, label):
 	require(done.returncode == 0, f'child failed: {label}')
 	if debug:
 		require(mode in ('execution-off', 'execution-on'), 'route proof requires execution mode')
-		expected = f'rnx: engine=execution native={"on" if mode == "execution-on" else "off"}\n'.encode()
+		expected = f'rnx: engine=execution native-requested={"on" if mode == "execution-on" else "off"}\n'.encode()
 		require(done.stderr == expected, f'kernel refused or emitted diagnostics: {label}')
 	else:
 		require(not done.stderr, f'child emitted diagnostics: {label}')
@@ -227,7 +227,7 @@ def measure(args):
 		require(dependencies==measurement_runtime.dependency_snapshot([args.rnx,args.luajit,'/usr/bin/perf','/usr/bin/timeout']),'dynamic dependencies changed')
 		document(args.out/'RESULT.json',dict(status='PASS',source=source,results=results,startup_medians=startup_median,readiness_after=readiness_after,
 				 minimum_repeats=5,cycle_soft_rule='ratio > 1 + max(2*LuaJIT spread, 0.02)',
-				 native_default='pending user decision',size_and_build_cost='separate exact-source build receipts'))
+				 native_default='requested on; explicit off/on per capture',size_and_build_cost='separate exact-source build receipts'))
 		print(f'PASS routing benchmark; receipt {args.out / "RESULT.json"}',flush=True)
 
 

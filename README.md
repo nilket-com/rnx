@@ -5,7 +5,7 @@ session, on Rune.
 
 **This is not a release.** The version is `0.0.0`, the package is not
 published, and it carries no license yet — record 0026 explains what each of
-those is waiting for. The behaviour below is what runs on Linux; macOS
+those is waiting for. The behavior below is what runs on Linux; macOS
 type-checks and Windows compiles, and neither has been run (records 0025 and
 0001's gate 4).
 
@@ -98,8 +98,10 @@ A runtime failure is terminal and is never retried. Eval, interactive sessions,
 Jupyter and servers continue to use the legacy engine.
 
 Use `rnx run --engine=legacy FILE` to force legacy execution. `--debug-engine`
-reports engine selection on stderr. Native code is built in and initially off;
-`--native=on` and `--native=off` select it for a run. These options go before FILE
+reports engine selection and the requested native policy on stderr; it does
+not claim that a native region was entered. Native code is built in and
+requested on by default; `--native=off` disables it for a run and
+`--native=on` requests it explicitly. These options go before FILE
 and are also forwarded by `rnx project run`.
 
 `rnx run <file.rn> [args]` executes a file's `main`. A compile or runtime
@@ -305,7 +307,7 @@ or retirement; repoll observes its original deadline rather than starting over.
 All four calls borrow their arguments and snapshot options at creation; network
 I/O and the deadline start only when the returned future is first polled.
 Name lookup uses the system resolver. A lookup already running there cannot
-be cancelled and may continue after the request times out or is interrupted.
+be canceled and may continue after the request times out or is interrupted.
 Session reset does not wait for it, and runtime shutdown does not delay
 process exit for it. Its OS resources remain until it returns or the process
 exits; rnx does not impose a separate deadline on that background lookup.
@@ -335,8 +337,8 @@ selfcheck` asserts this build's own invariants and reports what it saw; it is
 what the bare command did before record 0024.
 
 Colour follows each output stream: a terminal gets a bold prompt, syntax
-highlighting, coloured values and diagnostic markers; a pipe stays plain.
-`NO_COLOR` with a nonempty value or `TERM=dumb` disables automatic colour.
+highlighting, colored values and diagnostic markers; a pipe stays plain.
+`NO_COLOR` with a nonempty value or `TERM=dumb` disables automatic color.
 Use `rnx --color=always eval 'Some(42)'` to force it, or `--color=never`
 to disable it. The flag goes before the command; after a script path it
 belongs to the script. Styling preserves rendered text and its bounds;
@@ -586,7 +588,7 @@ API. A missing answer is None; a non-Unicode answer is an error naming its
 source. The account lookup can block; use `env::var("HOME")` when that
 fallback is unwanted.
 
-Variables read directly by rnx are `TERM` and `NO_COLOR` (automatic colour),
+Variables read directly by rnx are `TERM` and `NO_COLOR` (automatic color),
 `RNX_CONFIG` (config file), `XDG_CONFIG_HOME`, `APPDATA`,
 `RNX_HISTORY` (history path),
 `RNX_MEMORY_CEILING` (session allocation ceiling), and `HOME`,
@@ -604,7 +606,7 @@ Record 0042 adds `:q` as an alias for `:quit`, `:clear` to clear the visible
 screen without clearing bindings or numbering, and `--no-splash` before the
 command to omit the session greeting. Global flags can appear in either order.
 The compact `[n] > ` prompt and result marker share an accent. Clearing and
-window titles require a supported terminal on stdout independently of colour;
+window titles require a supported terminal on stdout independently of color;
 `--color=never` still permits them and `always` never sends them into a pipe.
 Titles are restored on return and explicit exit where the terminal supports a
 title stack; unsupported stacks and abnormal termination may leave the title set.
@@ -628,14 +630,14 @@ queried to find HOME. Missing or blank files are silent.
 }
 ```
 
-Every key is optional. Six-digit hex colours send RGB requests; the sixteen ANSI
+Every key is optional. Six-digit hex colors send RGB requests; the sixteen ANSI
 names (`black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`,
 with optional `bright-`) use the terminal palette. Foreground changes preserve
-bold/dim attributes; the error colour also applies to its caret. Terminal support
+bold/dim attributes; the error color also applies to its caret. Terminal support
 and display settings still affect appearance. Without configuration, the prompt
 digits are bold green, result digits bold blue, and their brackets and the
 prompt arrow use dim default foreground. Value numbers remain cyan.
-`prompt_number` now colours only input digits; existing configs keep working,
+`prompt_number` now colors only input digits; existing configs keep working,
 with the new `result_number` and `prompt_frame` keys defaulted independently.
 Choose `bright-blue` if your terminal’s blue is too dark. Faint intensity is
 a terminal request, not a guaranteed shade of grey.
@@ -644,7 +646,7 @@ Flags override saved settings. `--color=never` wins over saved `always`,
 `NO_COLOR` disables `auto` when nonempty, and `--no-splash` overrides `splash: true`.
 Config is read only for session entry points (bare `rnx` and `rnx repl`),
 including piped sessions. `run`, `eval`, `version`, `help` and `selfcheck` never
-read it; run and eval take colour from flags and defaults only.
+read it; run and eval take color from flags and defaults only.
 An invalid field warns and keeps its default; valid neighbours still apply.
 A parse, compile, evaluation or top-level shape failure warns and uses defaults.
 Warnings name the file and are escaped plain text, before palette initialization.
@@ -663,7 +665,7 @@ that owns two inherited one-way control pipes and captures stdout/stderr
 concurrently. It is the foundation for a future notebook kernel, not a Jupyter
 kernel or a command to type into the REPL. Stdin must be the null device.
 Worker startup never reads personal config/history or emits a prompt, splash,
-title or presentation colour. Script printing remains raw.
+title or presentation color. Script printing remains raw.
 
 Control is UTF-8 JSON lines (256 KiB maximum), starting with `ready` protocol 1.
 An operation has an increasing positive `id` (at most 2^53−1), `op` (`execute`,
@@ -720,7 +722,7 @@ remembered execution failure (`cancelled` or `vm`), with `cleanup` taking
 precedence for state loss. Success means execution and retirement succeeded;
 it does not certify that the runtime's network tasks have finished. Zero and
 `usize::MAX` budgets are refused. This entry installs no signal handler, reads
-no colour config and always refuses script `process::exit` catchably. Native
+no color config and always refuses script `process::exit` catchably. Native
 extensions remain trusted. No listener, pool, worker threads or process-kill
 policy is supplied by this feature. The separate Linux example application in
 [servers/http-postgres](https://github.com/nilket-com/rnx/blob/main/servers/http-postgres/README.md) assembles that policy
@@ -758,7 +760,7 @@ An assembled application works with `rnx-jupyter install --rnx /absolute/path/to
 Adapters are trusted Rust code. Each owns its declared namespace. rnx checks
 the declared name against reserved and earlier extension names, checks help
 paths under `name::`, and reports Rune's installation errors. These checks
-catch mistakes, not misbehaviour. They cannot verify that help describes a
+catch mistakes, not misbehavior. They cannot verify that help describes a
 registered function or that a builder kept its module in that namespace.
 An adapter can replace the lent module, and the fixture demonstrates that
 replacing it with a module named `fs` adds a function to `fs`. Do not do that.
@@ -805,7 +807,7 @@ errors without polling the supplied future.
 A failed execution revokes pending tracked operations it polled, even if an
 older binding retains the future. Revocation drops the inner future synchronously,
 without another runtime turn. A retained wrapper subsequently returns
-`Err("operation cancelled")`; this does not change Rune's consuming `await`
+a cancellation error; this does not change Rune's consuming `await`
 semantics. Use `select` when the Rune future must remain available. Successful
 selection keeps the losing operation, and failures leave unrelated operations
 alone. Reset and normal teardown revoke all tracked operations. Renumber does

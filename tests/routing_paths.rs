@@ -132,5 +132,69 @@ fn explicit_source_map_preserves_admission_and_argument_boundaries() {
 		.unwrap(),
 	)
 	.unwrap();
-	verify(&root, &[&map], "rnx: engine=execution native=");
+	verify(&root, &[&map], "rnx: engine=execution native-requested=");
+}
+
+#[test]
+fn default_native_request_matches_on_and_off_stays_explicit_even_under_perf_environment() {
+	let root = scratch("native-default");
+	let input = root.join("main.rn");
+	fs::write(
+		&input,
+		"pub fn main(args){println!(\"once\");let n=0;while n<10000{n+=1;}n}",
+	)
+	.unwrap();
+	for environment in [false, true] {
+		for (label, option, requested) in [
+			("default", None, "on"),
+			("on", Some("--native=on"), "on"),
+			("off", Some("--native=off"), "off"),
+		] {
+			let mut command = Command::new("/usr/bin/timeout");
+			command.args([
+				"--kill-after=2s",
+				"60s",
+				env!("CARGO_BIN_EXE_rnx"),
+				"--color=never",
+				"run",
+				"--debug-engine",
+			]);
+			if let Some(option) = option {
+				command.arg(option);
+			}
+			command
+				.arg(&input)
+				.current_dir(&root)
+				.stdin(Stdio::null())
+				.env("RNX_CONFIG", "");
+			if environment {
+				command.env("PERF_BUILDID_DIR", root.join("perf"));
+			} else {
+				command.env_remove("PERF_BUILDID_DIR");
+			}
+			let out = command.output().unwrap();
+			let label = format!("{label}-perf-env-{environment}");
+			fs::write(root.join(format!("{label}.stdout")), &out.stdout).unwrap();
+			fs::write(root.join(format!("{label}.stderr")), &out.stderr).unwrap();
+			fs::write(
+				root.join(format!("{label}.status")),
+				format!("{:?}\n", out.status.code()),
+			)
+			.unwrap();
+			assert_eq!(
+				out.status.code(),
+				Some(0),
+				"{label}: {}",
+				String::from_utf8_lossy(&out.stderr)
+			);
+			assert_eq!(out.stdout, b"once\n10000\n", "{label}");
+			// This is a request report, including when the environment disables loading.
+			assert_eq!(
+				out.stderr,
+				format!("rnx: engine=execution native-requested={requested}\n").as_bytes(),
+				"{label}"
+			);
+		}
+	}
+	fs::write(root.join("RESULT.json"), b"{\"status\":\"PASS\"}\n").unwrap();
 }
