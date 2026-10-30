@@ -7,6 +7,10 @@ use crate::declared::Fields;
 use crate::presentation::{self, Span, Style};
 use rune::runtime::{Function, Object, OwnedTuple, TypeValue, Value, Vec as RuneVec};
 
+pub(crate) mod execution;
+mod node;
+use node::{Container, Identity, Node, Shape};
+
 /// Maximum active levels in recursive value walks, counting the root and
 /// scalar leaves. Shared with Rune and the JSON prewalk; the fork keeps this
 /// conservative bound for smaller worker stacks as well as the CLI thread.
@@ -196,7 +200,7 @@ struct Renderer<'a> {
 	fields: Option<&'a Fields>,
 	limits: &'a Limits,
 	/// Addresses of shared allocations on the current render path.
-	path: Vec<usize>,
+	path: Vec<Identity>,
 	truncated: bool,
 	work: Work,
 	/// Why the value could not be rendered whole, in `Refuse` mode. The first
@@ -265,7 +269,7 @@ impl Renderer<'_> {
 	/// Whether to descend into a container at `address` and `depth`. Prints
 	/// the cycle or depth marker and answers no when not; the caller has
 	/// copied nothing yet.
-	fn enter(&mut self, address: usize, depth: usize, cut: &str) -> bool {
+	fn enter(&mut self, address: Identity, depth: usize, cut: &str) -> bool {
 		if self.path.contains(&address) {
 			self.push("<cycle>");
 			return false;
@@ -300,189 +304,92 @@ impl Renderer<'_> {
 		self.path.pop();
 	}
 	fn value(&mut self, value: &Value, depth: usize) {
-		if self.full() {
-			return;
+		if let Err(reason) = self.node(Node::Legacy(value.clone()), depth)
+			&& self.failure.is_none()
+		{
+			self.failure = Some(reason);
 		}
-		// Wrapper types descend too; past the depth nothing is opened.
+	}
+	fn node(&mut self, node: Node<'_, '_>, depth: usize) -> Result<(), String> {
+		if self.full() {
+			return Ok(());
+		}
 		if depth > self.limits.depth {
 			self.excess("…");
-			return;
+			return Ok(());
 		}
-		if let Ok(s) = value.borrow_string_ref() {
-			self.marked(Style::Literal, |r| r.string(&s, s.len()));
-			return;
-		}
-		if let Ok(v) = value.borrow_ref::<RuneVec>() {
-			let address = &*v as *const RuneVec as usize;
-			let total = v.len();
-			if !self.enter(address, depth, &format!("[…({total} items)]")) {
-				return;
-			}
-			let items: Vec<Value> = v.iter().take(self.limits.length).cloned().collect();
-			self.work.items_copied += items.len();
-			drop(v);
-			self.items("[", "]", &items, total, depth, false);
-			self.leave();
-			return;
-		}
-		if let Ok(f) = value.borrow_ref::<Function>() {
-			let _ = &*f;
-			// Rune 0.14.1 exposes no name or arity on a function value, nor does
-			// 0.14.2: `runtime/function.rs` is byte-identical between them.
-			self.push("<function>");
-			return;
-		}
-		if let Ok(b) = value.borrow_ref::<rune::runtime::Bytes>() {
-			let bytes = b.as_slice().to_vec();
-			drop(b);
-			self.marked(Style::Literal, |r| r.bytes(&bytes));
-			return;
-		}
-		if let Ok(o) = value.borrow_ref::<Option<Value>>() {
-			match &*o {
-				Some(inner) => {
-					let inner = inner.clone();
-					drop(o);
-					self.wrapper("Some(", 4);
-					self.value(&inner, depth + 1);
-					self.push(")");
+		match node.shape(self.limits)? {
+			Shape::Text(text) => self.marked(Style::Literal, |r| r.string(text, text.len())),
+			Shape::LegacyText(text) => self.marked(Style::Literal, |r| r.string(&text, text.len())),
+			Shape::Bytes(bytes, len) => self.marked(Style::Literal, |r| r.bytes(&bytes, len)),
+			Shape::Token(text, Some(style)) => self.token(&text, style),
+			Shape::Token(text, None) => self.push(&text),
+			Shape::Wrapper(label, styled) => {
+				if styled {
+					self.wrapper(label, label.len() - 1);
+				} else {
+					self.push(label);
 				}
-				None => self.token("None", Style::Number),
+				self.node(node.child(0)?, depth + 1)?;
+				self.push(")");
 			}
-			return;
-		}
-		if let Ok(r) = value.borrow_ref::<Result<Value, Value>>() {
-			let (label, inner) = match &*r {
-				Ok(v) => ("Ok(", v.clone()),
-				Err(e) => ("Err(", e.clone()),
-			};
-			drop(r);
-			self.push(label);
-			self.value(&inner, depth + 1);
-			self.push(")");
-			return;
-		}
-		match value.as_type_value() {
-			Ok(TypeValue::Unit) => self.token("()", Style::Number),
-			Ok(TypeValue::Tuple(t)) => {
-				let address = &*t as *const OwnedTuple as usize;
-				let total = t.len();
-				if !self.enter(address, depth, &format!("(…({total} items))")) {
-					return;
-				}
-				let items: Vec<Value> = t.iter().take(self.limits.length).cloned().collect();
-				drop(t);
-				self.items("(", ")", &items, total, depth, true);
-				self.leave();
-			}
-			Ok(TypeValue::Object(o)) => {
-				let address = &*o as *const Object as usize;
-				let total = o.len();
-				if !self.enter(address, depth, &format!("{{…({total} fields)}}")) {
-					return;
-				}
-				// The preview is the first `length` entries in the map's own order,
-				// sorted among themselves for stable output. Choosing the globally
-				// first keys would mean examining the whole object. Keys are copied
-				// only up to the string limit. An object within the length limit
-				// therefore renders fully sorted; a larger one shows a subset in
-				// the map's order, which is not stable across processes.
-				// Each entry carries the key's original byte length, so truncation
-				// is known from metadata, never inferred from the copied prefix.
-				let limit = self.limits.string_bytes;
-				let mut entries: Vec<(String, usize, Value)> = o
-					.iter()
-					.take(self.limits.length)
-					.map(|(k, v)| (prefix(k.as_ref(), limit).to_owned(), k.len(), v.clone()))
-					.collect();
-				self.work.entries_examined += entries.len();
-				self.work.key_bytes_copied +=
-					entries.iter().map(|(k, _, _)| k.len()).sum::<usize>();
-				entries.sort_by(|a, b| a.0.cmp(&b.0));
-				drop(o);
-				self.object(&entries, total, depth, true);
-				self.leave();
-			}
-			Ok(TypeValue::EmptyStruct(s)) => self.push(&type_name(s.rtti().item().to_string())),
-			Ok(TypeValue::TupleStruct(s)) => {
-				let name = type_name(s.rtti().item().to_string());
-				let address = s.data().as_ptr() as usize;
-				let total = s.data().len();
-				self.push(&name);
-				if !self.enter(address, depth, &format!("(…({total} items))")) {
-					return;
-				}
-				let items: Vec<Value> = s.data().iter().take(self.limits.length).cloned().collect();
-				drop(s);
-				self.items("(", ")", &items, total, depth, false);
-				self.leave();
-			}
-			Ok(TypeValue::Struct(s)) => {
-				let name = type_name(s.rtti().item().to_string());
-				let address = s.data().as_ptr() as usize;
-				let total = s.data().len();
-				self.push(&name);
-				self.push(" ");
-				if !self.enter(address, depth, &format!("{{…({total} fields)}}")) {
-					return;
-				}
-				// A candidate is used only once the value has answered to
-				// every name in it and holds exactly that many fields, so the
-				// names describe this shape whichever unit built it. Where
-				// nothing fits, the names are unknown and say so: positions
-				// printed in their place read as field names and are not.
-				let fitting = self
-					.fields
-					.and_then(|known| known.fitting(&name, total, |field| s.get(field).is_some()))
-					.map(|fields| fields.to_vec());
-				match fitting {
-					Some(fields) => {
-						let entries: Vec<(String, usize, Value)> = fields
-							.iter()
-							.take(self.limits.length)
-							.filter_map(|f| {
-								s.get(f.as_str()).map(|v| (f.clone(), f.len(), v.clone()))
-							})
-							.collect();
-						drop(s);
-						self.object(&entries, total, depth, false);
+			Shape::Container {
+				identity,
+				total,
+				style,
+			} => {
+				let (open, close, tuple, object) = match &style {
+					Container::List { open, close, tuple } => (*open, *close, *tuple, false),
+					Container::Object => ("{", "}", false, true),
+					Container::TupleStruct(name) => {
+						self.push(name);
+						("(", ")", false, false)
 					}
-					None => {
-						let values: Vec<Value> =
-							s.data().iter().take(self.limits.length).cloned().collect();
-						drop(s);
-						self.items("{<names unknown> ", "}", &values, total, depth, false);
+					Container::Struct(name) => {
+						self.push(name);
+						self.push(" ");
+						("{", "}", false, true)
 					}
+				};
+				let cut = if object {
+					format!("{open}…({total} fields){close}")
+				} else {
+					format!("{open}…({total} items){close}")
+				};
+				if !self.enter(identity, depth, &cut) {
+					return Ok(());
 				}
+				let result = match style {
+					Container::Object => node
+						.entries(self.limits, &mut self.work)
+						.and_then(|entries| self.object(entries, total, depth, true)),
+					Container::Struct(name) => {
+						match node.named(&name, total, self.fields, self.limits)? {
+							Some(entries) => self.object(entries, total, depth, false),
+							None => {
+								node.items(total, self.limits, &mut self.work)
+									.and_then(|items| {
+										self.items(
+											"{<names unknown> ",
+											"}",
+											items,
+											total,
+											depth,
+											false,
+										)
+									})
+							}
+						}
+					}
+					_ => node
+						.items(total, self.limits, &mut self.work)
+						.and_then(|items| self.items(open, close, items, total, depth, tuple)),
+				};
 				self.leave();
+				result?;
 			}
-			Ok(TypeValue::NotTypedInline(_)) => self.inline(value),
-			Ok(TypeValue::NotTypedAnyObj(_)) => self.opaque(value),
-			Ok(_) => self.opaque(value),
-			Err(_) => self.opaque(value),
 		}
-	}
-	fn inline(&mut self, value: &Value) {
-		if let Ok(b) = rune::from_value::<bool>(value.clone()) {
-			self.token(if b { "true" } else { "false" }, Style::Number);
-		} else if let Ok(c) = rune::from_value::<char>(value.clone()) {
-			self.token(&format!("{c:?}"), Style::Literal);
-		} else if let Ok(i) = value.as_integer::<i64>() {
-			self.token(&i.to_string(), Style::Number);
-		} else if let Ok(u) = value.as_integer::<u64>() {
-			self.token(&u.to_string(), Style::Number);
-		} else if let Ok(f) = rune::from_value::<f64>(value.clone()) {
-			let mut s = f.to_string();
-			if !s.contains('.') && !s.contains('e') && f.is_finite() {
-				s.push_str(".0");
-			}
-			self.token(&s, Style::Number);
-		} else {
-			self.opaque(value);
-		}
-	}
-	fn opaque(&mut self, value: &Value) {
-		self.push(&format!("<{}>", value.type_info()));
+		Ok(())
 	}
 	/// A string, quoted and escaped, cut at the string limit. `original_len`
 	/// is the byte length of the whole string, which a caller knows without
@@ -507,7 +414,7 @@ impl Renderer<'_> {
 	///
 	/// Cut at the string budget like any other string, with the number of
 	/// bytes left out, so a prompt previews and a shell entry point does not.
-	fn bytes(&mut self, bytes: &[u8]) {
+	fn bytes(&mut self, bytes: &[u8], original_len: usize) {
 		let shown = bytes.len().min(self.limits.string_bytes);
 		let mut out = String::with_capacity(shown + 3);
 		out.push_str("b\"");
@@ -520,8 +427,8 @@ impl Renderer<'_> {
 			}
 		}
 		out.push('"');
-		if shown < bytes.len() {
-			out.push_str(&format!("…(+{} bytes)", bytes.len() - shown));
+		if shown < original_len {
+			out.push_str(&format!("…(+{} bytes)", original_len - shown));
 		}
 		self.push(&out);
 	}
@@ -531,57 +438,61 @@ impl Renderer<'_> {
 		&mut self,
 		open: &str,
 		close: &str,
-		items: &[Value],
+		items: Vec<Node<'_, '_>>,
 		total: usize,
 		depth: usize,
 		tuple: bool,
-	) {
+	) -> Result<(), String> {
 		self.push(open);
-		for (i, item) in items.iter().enumerate() {
-			if i > 0 {
+		let shown = items.len();
+		for (index, item) in items.into_iter().enumerate() {
+			if index > 0 {
 				self.push(", ");
 			}
-			self.value(item, depth + 1);
+			self.node(item, depth + 1)?;
 			if self.full() {
-				return;
+				return Ok(());
 			}
 		}
-		if total > items.len() {
-			self.push(&format!(", …(+{} more)", total - items.len()));
+		if total > shown {
+			self.push(&format!(", …(+{} more)", total - shown));
 		}
 		if tuple && total == 1 {
 			self.push(",");
 		}
 		self.push(close);
+		Ok(())
 	}
-	/// `entries` holds at most `length` entries of a container of `total`.
+	/// Already admitted, bounded fields; both adapters share ordering and tokens.
 	fn object(
 		&mut self,
-		entries: &[(String, usize, Value)],
+		entries: Vec<(String, usize, Node<'_, '_>)>,
 		total: usize,
 		depth: usize,
-		quote_keys: bool,
-	) {
+		quoted: bool,
+	) -> Result<(), String> {
 		self.push("{");
-		for (i, (key, key_len, item)) in entries.iter().enumerate() {
-			if i > 0 {
+		let shown = entries.len();
+		for (index, (key, key_len, item)) in entries.into_iter().enumerate() {
+			if index > 0 {
 				self.push(", ");
 			}
-			if quote_keys {
-				self.marked(Style::Bold, |r| r.string(key, *key_len));
+			if quoted {
+				self.marked(Style::Bold, |r| r.string(&key, key_len));
 			} else {
-				self.token(key, Style::Bold);
+				self.token(&key, Style::Bold);
 			}
 			self.push(": ");
-			self.value(item, depth + 1);
+			self.node(item, depth + 1)?;
 			if self.full() {
-				return;
+				return Ok(());
 			}
 		}
-		if total > entries.len() {
-			self.push(&format!(", …(+{} more)", total - entries.len()));
+		if total > shown {
+			self.push(&format!(", …(+{} more)", total - shown));
 		}
 		self.push("}");
+		Ok(())
 	}
 }
 /// Text made safe to print on a terminal: control characters are escaped,
@@ -1000,10 +911,14 @@ mod tests {
 	static PROTOCOL_RAN: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 	impl Loud {
 		#[rune::function(protocol = DEBUG_FMT)]
-		fn debug_fmt(&self, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {
+		fn debug_fmt(
+			&self,
+			f: &mut rune::runtime::Formatter,
+		) -> std::result::Result<(), rune::runtime::VmError> {
 			use rune::alloc::fmt::TryWrite;
 			PROTOCOL_RAN.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-			rune::vm_write!(f, "Loud!{}", self.n)
+			f.write_fmt(format_args!("Loud!{}", self.n))
+				.map_err(Into::into)
 		}
 	}
 

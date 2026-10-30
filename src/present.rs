@@ -454,16 +454,24 @@ mod installation_tests {
 	static PRESENTED: AtomicUsize = AtomicUsize::new(0);
 	impl Frame {
 		#[rune::function(protocol = DEBUG_FMT)]
-		fn debug_fmt(&self, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {
+		fn debug_fmt(
+			&self,
+			f: &mut rune::runtime::Formatter,
+		) -> std::result::Result<(), rune::runtime::VmError> {
 			use rune::alloc::fmt::TryWrite;
 			DEBUG_RAN.fetch_add(1, Ordering::SeqCst);
-			rune::vm_write!(f, "Frame?{}", self.rows)
+			f.write_fmt(format_args!("Frame?{}", self.rows))
+				.map_err(Into::into)
 		}
 		#[rune::function(protocol = DISPLAY_FMT)]
-		fn display_fmt(&self, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {
+		fn display_fmt(
+			&self,
+			f: &mut rune::runtime::Formatter,
+		) -> std::result::Result<(), rune::runtime::VmError> {
 			use rune::alloc::fmt::TryWrite;
 			DISPLAY_RAN.fetch_add(1, Ordering::SeqCst);
-			rune::vm_write!(f, "Frame:{}", self.rows)
+			f.write_fmt(format_args!("Frame:{}", self.rows))
+				.map_err(Into::into)
 		}
 	}
 	fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String> {

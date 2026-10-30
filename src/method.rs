@@ -37,11 +37,38 @@ pub fn method_candidates(source: &str) -> Vec<String> {
 /// Panics quoting a diagnostic and absent source candidates cannot acquire a name.
 pub fn named(error: &VmError, source: &str) -> Option<String> {
 	let missing = error.missing_instance_function()?;
-	let name = method_candidates(source).into_iter().find(|candidate| {
-		Hash::associated_function(missing.instance, candidate.as_str()) == missing.hash
-	})?;
-	let instance = missing.instance_name();
-	if missing.instance == <std::result::Result<rune::Value, rune::Value> as TypeHash>::HASH {
+	named_identity(
+		missing.instance,
+		missing.hash,
+		&missing.instance_name().to_string(),
+		source,
+	)
+}
+
+pub(crate) fn named_execution(
+	error: &rune::experimental_core::execute::Failure,
+	program: &rune::experimental_core::frontend::Program,
+) -> Option<String> {
+	let missing = error.missing_instance_function()?;
+	// Source identity comes from the typed fault, not a candidate entry file.
+	let location = error.error.location?;
+	let source = program
+		.sources()
+		.iter()
+		.find(|source| source.id == location.source)?;
+	named_identity(
+		missing.instance,
+		missing.hash,
+		&missing.instance_name(program).to_string(),
+		&source.text,
+	)
+}
+
+fn named_identity(instance_hash: Hash, hash: Hash, instance: &str, source: &str) -> Option<String> {
+	let name = method_candidates(source)
+		.into_iter()
+		.find(|candidate| Hash::associated_function(instance_hash, candidate.as_str()) == hash)?;
+	if instance_hash == <std::result::Result<rune::Value, rune::Value> as TypeHash>::HASH {
 		return Some(format!(
 			"no method `{name}` on `{instance}` (this value is a `Result`; did you mean to unwrap it with `?` first?)"
 		));

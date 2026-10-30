@@ -238,7 +238,7 @@ fn awaiting_in_a_loop_halts_for_budget_and_nothing_else() {
 	let ran = rnx(&["run", "--budget", "5000", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(1), "{}", ran.stderr);
 	assert!(
-		ran.stderr.starts_with("halted: 5000 instructions exceeded"),
+		ran.stderr.starts_with("halted: 5000 work units exceeded"),
 		"{}",
 		ran.stderr
 	);
@@ -278,8 +278,7 @@ fn a_run_in_a_loop_is_bounded_by_its_budget_as_it_always_was() {
 	let ran = rnx(&["run", "--budget", "100000", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(1), "{}", ran.stderr);
 	assert!(
-		ran.stderr
-			.starts_with("halted: 100000 instructions exceeded"),
+		ran.stderr.starts_with("halted: 100000 work units exceeded"),
 		"{}",
 		ran.stderr
 	);

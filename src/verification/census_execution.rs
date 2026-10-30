@@ -42,14 +42,7 @@ fn sources(text: &str) -> Sources {
 		.unwrap();
 	source
 }
-fn clock_check(clock: &str, value: Option<i64>, before: i64, after: i64, elapsed: u128) -> bool {
-	match (clock, value) {
-		("", _) => true,
-		("wall", Some(v)) => before <= v && v <= after.saturating_add(1),
-		("monotonic", Some(v)) => v >= 0 && v as u128 <= elapsed.saturating_add(1),
-		_ => false,
-	}
-}
+use super::clock::clock_check;
 
 pub(super) fn child(
 	input: &Path,

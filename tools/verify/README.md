@@ -63,12 +63,14 @@ Rust-written `COMPLETE.json`, after suite, source, binary and host-file checks.
 
 `--suite all` also runs the R1b embedding inventory and writes
 `R1B-INVENTORY.json`. It enumerates production Rust syntax, live host handlers,
-closed host argument/output policies, the 17 prospective entry policies and VM
+closed host argument/output policies, the 18 entry policies (including the explicit project-run boundary) and VM
 construction boundaries. It asserts the session mutation-before-failure witness,
 HTTP Bytes and async/runtime blockers, and the synchronous executor API.
-All product routes remain legacy in this record. The future switch is confined
-to one-shot paths with whole-program compile-time fallback; runtime failure is
-never retried. Sessions, Jupyter, servers and retained-Unit selfchecks stay blocked.
+Record 0197 routes one-shot paths through typed compile/prepare selection,
+with whole-program pre-effect fallback. Runtime failure is terminal. Eval,
+sessions, Jupyter, servers and retained-Unit selfchecks remain on legacy. The
+source-wiring inventory asserts the owned routing edges and consumes Rune
+types directly; Rune owns its exhaustive executor API invariant.
 
 Source weights are computed from the checked-in L1 and census inputs, demos and
 notebook cells. Compiler-resolved context references and ambiguous lexical method
@@ -87,5 +89,23 @@ RNX_VERIFY_RUNE_ROOT=/absolute/rune cargo test --locked --lib routing_inventory 
 
 The second command needs the Rune checkout used to build the test. Fresh-clone
 acceptance uses the bound cross-repository controller instead of that standalone
-convenience test. These are correctness checks; R1b adds no engine certificates
-or routing changes, and the routing product record carries M8.
+convenience test. R1b remains the live inventory and adds no engine certificates. E1 already
+closed M8; the routing record does not reopen it. Record 0197 additionally runs
+`cargo test --locked --test routing_cli` through the actual CLI for the full
+census, demos and L1 corpus, with native off and on. Its raw per-case streams
+and terminal RESULT.json live under target/routing-cli. The two approved clock
+rows are reported separately as nondeterministic-clock, never byte-identical.
+The approved L1 rows01903/01966/02213 have the named unit-clone difference:
+legacy prints an owned empty Tuple as `()`, execution preserves Unit and prints
+nothing. Exact streams/status plus a separate live typed Unit-root witness
+must qualify each row; row and observation counts are separate. The policy
+never applies to census or demos. Execution and compile-control class totals
+are reported separately so compile agreement is not execution coverage.
+`cargo test --locked --features project-sources --test routing_paths` covers
+module fallback and explicit source-map admission. The explicit fresh gate
+`cargo test --locked --features project-sources --test routing_projects -- --ignored`
+builds a real generated assembly and compares it with an executable override
+through `rnx project run`; changing engine flags must preserve lock/receipt
+identity. Each adapter graph runs its own `execution_routing` integration test
+against its actual binary, proving admitted pure code, pre-effect fallback for
+uncertified adapter calls and no retry after a terminal script effect.

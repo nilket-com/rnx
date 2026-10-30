@@ -92,6 +92,16 @@ before writes begin; each file replacement is atomic, while multiple replacement
 are not a transaction. A publication failure reports the completed count.
 Already-formatted files are not rewritten. Run `rnx fmt --help` for the command.
 
+One-shot file, project and adapter runs use the execution engine by default.
+Programs outside its supported subset select the legacy engine before execution.
+A runtime failure is terminal and is never retried. Eval, interactive sessions,
+Jupyter and servers continue to use the legacy engine.
+
+Use `rnx run --engine=legacy FILE` to force legacy execution. `--debug-engine`
+reports engine selection on stderr. Native code is built in and initially off;
+`--native=on` and `--native=off` select it for a run. These options go before FILE
+and are also forwarded by `rnx project run`.
+
 `rnx run <file.rn> [args]` executes a file's `main`. A compile or runtime
 error names the file, the line, the column, the source line, and marks the
 column, including for an error inside a called function; a call to a method
@@ -307,8 +317,8 @@ whoever ran it, and a caret is placed by the columns the escaped line actually
 occupies.
 
 `rnx run --budget N file.rn`, with the flag before the path, sets how many
-instructions the script may spend; without it the limit is two million, as it
-has always been. `N` runs from 1 to one less than the largest `usize`, that
+work units the script may spend; without it the limit is two million, as it
+has always been. Each engine uses its own work counter. `N` runs from 1 to one less than the largest `usize`, that
 last value being Rune's way of saying "no budget" and so refused. The count
 comes from the command line and nowhere else: no host function, environment
 variable or file directive sets it, and there is no way to remove the bound.
@@ -642,9 +652,9 @@ Warnings name the file and are escaped plain text, before palette initialization
 Config is a synchronous function body returning the object. Local helper functions
 and computed settings work, but no host modules, printing, external modules or
 async execution are provided. Reads accept regular files only (non-blocking open
-on Unix), capped at 64 KiB; evaluation has a 100,000-instruction budget. This
-bounds VM instructions, not native-call time, filesystem stalls or process-wide
-resource exhaustion. The evaluator is discarded after extracting settings.
+on Unix), capped at 64 KiB; evaluation has a 100,000-work-unit budget using the
+selected engine's counter. This does not bound native-call time, filesystem
+stalls or process-wide resource exhaustion. The evaluator is discarded after extracting settings.
 
 ## Evaluation worker (advanced)
 
@@ -701,7 +711,7 @@ never opened; the text counts against the same allowance, and `mod`
 declarations are refused because it has no directory), and
 `program.prepare_with(extensions, handler, arguments, budget)` passes any
 number of positional arguments. A spent budget is reported as `the budget of
-N instructions was exhausted`, as the CLI reports it. `Program` is shareable;
+N instructions was exhausted`. This server API retains legacy counting. `Program` is shareable;
 an `Invocation` and its values stay on their owner thread.
 
 Await `invocation.run()` once on the caller's runtime, then explicitly call
