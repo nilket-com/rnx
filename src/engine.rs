@@ -6,11 +6,21 @@ pub(crate) enum EngineChoice {
 	Legacy,
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 pub(crate) struct Options {
 	pub choice: EngineChoice,
 	pub native: bool,
 	pub debug: bool,
+}
+
+impl Default for Options {
+	fn default() -> Self {
+		Self {
+			choice: EngineChoice::Auto,
+			native: true,
+			debug: false,
+		}
+	}
 }
 
 impl Options {
@@ -18,7 +28,10 @@ impl Options {
 		if self.debug {
 			eprint!("rnx: engine={engine}");
 			if engine == "execution" {
-				eprint!(" native={}", if self.native { "on" } else { "off" });
+				eprint!(
+					" native-requested={}",
+					if self.native { "on" } else { "off" }
+				);
 			}
 			if let Some(reason) = refusal {
 				eprint!(" refusal={reason}");

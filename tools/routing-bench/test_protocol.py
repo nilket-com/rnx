@@ -13,14 +13,14 @@ class ProtocolTests(unittest.TestCase):
 	def test_fallback_cannot_be_reported_as_execution_in_either_native_mode(self):
 		for mode in ('execution-off', 'execution-on'):
 			for stderr in (b'rnx: engine=legacy refusal=unsupported\n', b'',
-						   b'rnx: engine=execution native=on\nrnx: engine=legacy\n'):
+						   b'rnx: engine=execution native-requested=on\nrnx: engine=legacy\n'):
 				with self.subTest(mode=mode, stderr=stderr):
 					with self.assertRaises(ValueError):
 						bench.validate_child(mode, subprocess.CompletedProcess([], 0, b'7\n', stderr), True, 'route')
 
 	def test_route_must_prove_the_requested_native_mode_and_no_extra_diagnostics(self):
 		for mode, native in [('execution-off', 'off'), ('execution-on', 'on')]:
-			good = f'rnx: engine=execution native={native}\n'.encode()
+			good = f'rnx: engine=execution native-requested={native}\n'.encode()
 			bench.validate_child(mode, subprocess.CompletedProcess([], 0, b'7\n', good), True, 'route')
 			for stderr in (good + b'warning\n', good.replace(native.encode(), b'unknown')):
 				with self.assertRaises(ValueError):
