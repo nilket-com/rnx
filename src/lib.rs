@@ -142,7 +142,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Git revision the manifest pins. Written here rather than read from the
 /// crate, which exposes no such constant, so a gate reads the manifest's `rev`
 /// and the lockfile's version and refuses to let them drift apart.
-const RUNE_VERSION: &str = "0.15.0 (git 145e754086816eb479b0a07eddac02d4ce39819f)";
+const RUNE_VERSION: &str = "0.15.0 (git 482109111e7c8ba932b58839b95d319d45e9cd26)";
 
 /// What rnx does, for someone who asked or who mistyped.
 const USAGE: &str = "\
