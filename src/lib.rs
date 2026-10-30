@@ -38,6 +38,7 @@ mod config;
 mod declared;
 #[cfg(all(windows, feature = "test-support"))]
 mod delivery_control;
+mod engine;
 mod env;
 mod execute;
 mod format;
@@ -141,7 +142,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Git revision the manifest pins. Written here rather than read from the
 /// crate, which exposes no such constant, so a gate reads the manifest's `rev`
 /// and the lockfile's version and refuses to let them drift apart.
-const RUNE_VERSION: &str = "0.15.0 (git 33df28715f8f6643e807c4a188cc6cea391687d0)";
+const RUNE_VERSION: &str = "0.15.0 (git 145e754086816eb479b0a07eddac02d4ce39819f)";
 
 /// What rnx does, for someone who asked or who mistyped.
 const USAGE: &str = "\
@@ -157,7 +158,7 @@ rnx — a Rune scripting environment
   rnx version               this build, and the Rune it is pinned to
   rnx help                  this
 
-Flags for `run`, before the file: --budget N, --debug-source.";
+Flags for `run`, before the file: --budget N (work units), --debug-source, --engine=legacy, --native=on|off, --debug-engine.";
 
 /// Run rnx's normal CLI with the supplied trusted native extensions.
 ///
@@ -333,18 +334,8 @@ fn serve(
 		rnx_test::present(&mut presenters)?;
 	}
 	if startup {
-		let mut session = session::Session::with_ceiling(context, repl::ceiling())?
-			.with_http(http.clone())
-			.with_lifecycle(lifecycle.clone());
 		crate::memory::record_baseline();
-		session.sample();
-		let result = session.eval("42").map_err(|e| e.presented())?;
-		let matched = result.as_integer::<i64>().ok() == Some(42);
-		drop(result);
-		session.close()?;
-		if !matched {
-			return Err("startup probe did not return 42".into());
-		}
+		engine::startup(&context, lifecycle)?;
 		return Ok(());
 	}
 	if let Some(transport) = worker_transport {
@@ -435,10 +426,33 @@ fn serve(
 		// like a flag reaches the script instead of changing rnx's behavior.
 		let mut rest = &args[1..];
 		let mut debug_source = false;
+		let mut engine = engine::Options::default();
 		#[cfg(feature = "project-sources")]
 		let mut source_map = None;
 		let mut budget = runner::BUDGET;
 		loop {
+			if let Some(option) = rest.first().and_then(|arg| arg.strip_prefix("--engine=")) {
+				engine.choice = match option {
+					"legacy" => engine::EngineChoice::Legacy,
+					_ => return Err("--engine takes only `legacy`".into()),
+				};
+				rest = &rest[1..];
+				continue;
+			}
+			if let Some(option) = rest.first().and_then(|arg| arg.strip_prefix("--native=")) {
+				engine.native = match option {
+					"on" => true,
+					"off" => false,
+					_ => return Err("--native takes `on` or `off`".into()),
+				};
+				rest = &rest[1..];
+				continue;
+			}
+			if rest.first().is_some_and(|arg| arg == "--debug-engine") {
+				engine.debug = true;
+				rest = &rest[1..];
+				continue;
+			}
 			#[cfg(feature = "project-sources")]
 			if rest.first().is_some_and(|a| a == "--source-map") {
 				if source_map.is_some() {
@@ -465,7 +479,7 @@ fn serve(
 				// Refused here, before the file is read or compiled, so a bad
 				// value cannot be mistaken for something the script did.
 				let value = rest.get(1).ok_or_else(|| {
-					format!("{} needs a count of instructions", runner::BUDGET_FLAG)
+					format!("{} needs a count of work units", runner::BUDGET_FLAG)
 				})?;
 				// A number too large for `usize` fails to parse, and
 				// `usize::MAX` is outside the range on purpose: it is Rune's
@@ -477,7 +491,7 @@ fn serve(
 					.filter(|n| (1..=runner::LARGEST_BUDGET).contains(n))
 					.ok_or_else(|| {
 						format!(
-							"{} takes a whole number of instructions from 1 to {}, not `{value}`",
+							"{} takes a whole number of work units from 1 to {}, not `{value}`",
 							runner::BUDGET_FLAG,
 							runner::LARGEST_BUDGET
 						)
@@ -507,11 +521,20 @@ fn serve(
 			arguments,
 			debug_source,
 			budget,
+			engine,
 			lifecycle,
 			loader,
 		);
 		#[cfg(not(feature = "project-sources"))]
-		let code = runner::run(&context, path, arguments, debug_source, budget, lifecycle);
+		let code = runner::run(
+			&context,
+			path,
+			arguments,
+			debug_source,
+			budget,
+			engine,
+			lifecycle,
+		);
 		terminal::exit(code);
 	}
 	// Anything that is not a command says so. Falling through to the

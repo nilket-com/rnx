@@ -219,10 +219,13 @@ pub fn summary(this: &Dense) -> String {
 	text.push(')');
 	text
 }
-fn display(this: &Dense, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {
+fn display(
+	this: &Dense,
+	f: &mut rune::runtime::Formatter,
+) -> std::result::Result<(), rune::runtime::VmError> {
 	use rune::alloc::fmt::TryWrite;
-	rune::vm_try!(f.try_write_str(&summary(this)));
-	rune::runtime::VmResult::Ok(())
+	f.try_write_str(&summary(this))?;
+	Ok(())
 }
 
 /// The prompt's presenter: the same bounded summary as `DISPLAY_FMT`.

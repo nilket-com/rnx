@@ -151,6 +151,12 @@ pub fn load() -> Settings {
 	}
 }
 pub(crate) fn evaluate(source: &str) -> Result<(Settings, Vec<String>), String> {
+	evaluate_selected(source, crate::engine::Options::default())
+}
+pub(crate) fn evaluate_selected(
+	source: &str,
+	options: crate::engine::Options,
+) -> Result<(Settings, Vec<String>), String> {
 	use rune::ast::Spanned;
 	// A fixed synchronous wrapper: helper items may be written inside it.
 	let wrapped = format!("pub fn main() {{\n{source}\n}}");
@@ -159,6 +165,13 @@ pub(crate) fn evaluate(source: &str) -> Result<(Settings, Vec<String>), String> 
 	sources
 		.insert(Source::memory(&wrapped).map_err(|e| e.to_string())?)
 		.map_err(|e| e.to_string())?;
+	if options.choice == crate::engine::EngineChoice::Auto {
+		if let Some(result) = execution::evaluate(&context, &wrapped, options) {
+			return result;
+		}
+	} else {
+		options.selected("legacy", None);
+	}
 	let mut loader = rune::compile::NoopSourceLoader::default();
 	let mut diagnostics = rune::Diagnostics::new();
 	let unit = rune::prepare(&mut sources)
@@ -194,55 +207,98 @@ pub(crate) fn evaluate(source: &str) -> Result<(Settings, Vec<String>), String> 
 	);
 	let value = rune::runtime::budget::with(BUDGET, || vm.call(["main"], ()))
 		.call()
-		.map_err(|e| format!("cannot evaluate config (budget {BUDGET} instructions): {e}"))?;
+		.map_err(|e| format!("cannot evaluate config (budget {BUDGET} work units): {e}"))?;
 	settings(&value)
 }
+mod execution;
+
+enum ConfigNode<'v, 's> {
+	Legacy(Value),
+	Execution(rune::experimental_core::heap::ValueView<'v, 's>),
+}
+impl<'v, 's> ConfigNode<'v, 's> {
+	fn string<T>(&self, parse: impl FnOnce(&str) -> Option<T>) -> Option<T> {
+		match self {
+			Self::Legacy(value) => value.borrow_string_ref().ok().and_then(|s| parse(&s)),
+			Self::Execution(node) => match node.kind().ok()? {
+				rune::experimental_core::heap::ViewKind::String(text) => parse(text),
+				_ => None,
+			},
+		}
+	}
+	fn boolean(&self) -> Option<bool> {
+		match self {
+			Self::Legacy(value) => value.as_bool().ok(),
+			Self::Execution(node) => match node.kind().ok()? {
+				rune::experimental_core::heap::ViewKind::Scalar(
+					rune::experimental_core::value::Scalar::Bool(value),
+				) => Some(value),
+				_ => None,
+			},
+		}
+	}
+	fn fields(&self) -> Result<Vec<(String, Self)>, ()> {
+		let mut fields = match self {
+			Self::Legacy(value) => value
+				.borrow_ref::<Object>()
+				.map_err(|_| ())?
+				.iter()
+				.map(|(key, value)| (key.to_string(), Self::Legacy(value.clone())))
+				.collect::<Vec<_>>(),
+			Self::Execution(node) => {
+				let rune::experimental_core::heap::ViewKind::Object { len } =
+					node.kind().map_err(|_| ())?
+				else {
+					return Err(());
+				};
+				let mut fields = Vec::with_capacity(len);
+				for index in 0..len {
+					fields.push((
+						node.field_name(index).map_err(|_| ())?.to_owned(),
+						Self::Execution(node.child(index).map_err(|_| ())?),
+					));
+				}
+				fields
+			}
+		};
+		fields.sort_by(|a, b| a.0.cmp(&b.0));
+		Ok(fields)
+	}
+}
 fn settings(value: &Value) -> Result<(Settings, Vec<String>), String> {
-	let object = value
-		.borrow_ref::<Object>()
+	settings_node(ConfigNode::Legacy(value.clone()))
+}
+fn settings_node(value: ConfigNode<'_, '_>) -> Result<(Settings, Vec<String>), String> {
+	let entries = value
+		.fields()
 		.map_err(|_| "config must return an object".to_owned())?;
 	let mut settings = Settings::default();
 	let mut warnings = Vec::new();
-	// Sort keys to make warnings deterministic, independent of object hashing.
-	let mut entries: Vec<_> = object.iter().collect();
-	entries.sort_by_key(|(key, _)| *key);
 	for (key, value) in entries {
 		match key.as_str() {
-			"color" => match value
-				.borrow_ref::<rune::alloc::String>()
-				.ok()
-				.and_then(|s| Mode::parse(s.as_str()))
-			{
+			"color" => match value.string(Mode::parse) {
 				Some(mode) => settings.mode = Some(mode),
 				None => warnings.push("color must be auto, always, or never".into()),
 			},
-			"splash" => match value.as_bool() {
-				Ok(v) => settings.splash = Some(v),
-				Err(_) => warnings.push("splash must be a boolean".into()),
+			"splash" => match value.boolean() {
+				Some(value) => settings.splash = Some(value),
+				None => warnings.push("splash must be a boolean".into()),
 			},
-			"palette" => match value.borrow_ref::<Object>() {
-				Ok(palette) => {
-					let mut entries: Vec<_> = palette.iter().collect();
-					entries.sort_by_key(|(key, _)| *key);
+			"palette" => match value.fields() {
+				Ok(entries) => {
 					for (role, value) in entries {
 						match ROLES.iter().position(|&r| r == role.as_str()) {
-							Some(index) => {
-								match value
-									.borrow_ref::<rune::alloc::String>()
-									.ok()
-									.and_then(|s| Colour::parse(s.as_str()))
-								{
-									Some(colour) => settings.palette[index] = Some(colour),
-									None => warnings.push(format!(
-										"palette.{role} must be #rrggbb or an ANSI colour name"
-									)),
-								}
-							}
+							Some(index) => match value.string(Colour::parse) {
+								Some(colour) => settings.palette[index] = Some(colour),
+								None => warnings.push(format!(
+									"palette.{role} must be #rrggbb or an ANSI colour name"
+								)),
+							},
 							None => warnings.push(format!("unknown setting palette.{role}")),
 						}
 					}
 				}
-				Err(_) => warnings.push("palette must be an object".into()),
+				Err(()) => warnings.push("palette must be an object".into()),
 			},
 			_ => warnings.push(format!("unknown setting {key}")),
 		}
@@ -252,6 +308,50 @@ fn settings(value: &Value) -> Result<(Settings, Vec<String>), String> {
 
 #[cfg(test)]
 mod tests {
+	#[test]
+	fn execution_and_legacy_share_schema_warnings_and_terminal_errors() {
+		use super::*;
+		for source in [
+			"#{color:\"always\",splash:false,palette:#{error:\"red\"}}",
+			"#{z:1,color:false,splash:1,palette:#{z:1,error:7,number:\"#12abef\"}}",
+			"#{palette:1}",
+			"42",
+			"()",
+			"panic!(\"failure\")",
+			"loop{}",
+			"let x=;",
+			"let x=[];x.push(x);format!(\"{:?}\",x)",
+		] {
+			for native in [false, true] {
+				let old = evaluate_selected(
+					source,
+					crate::engine::Options {
+						choice: crate::engine::EngineChoice::Legacy,
+						native,
+						debug: false,
+					},
+				);
+				let new = evaluate_selected(
+					source,
+					crate::engine::Options {
+						native,
+						..Default::default()
+					},
+				);
+				match (old, new) {
+					(Ok((old, warnings)), Ok((new, new_warnings))) => {
+						assert_eq!(
+							(old.mode, old.splash, old.palette, warnings),
+							(new.mode, new.splash, new.palette, new_warnings),
+							"{source}"
+						);
+					}
+					(Err(old), Err(new)) => assert_eq!(old, new, "{source}"),
+					_ => panic!("config engine outcome differs: {source}"),
+				}
+			}
+		}
+	}
 	#[test]
 	fn extension_in_a_serving_context_is_absent_from_settings() {
 		let mut serving = rune::Context::with_default_modules().unwrap();

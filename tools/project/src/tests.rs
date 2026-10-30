@@ -550,13 +550,13 @@ fn project_run_budget_is_checked_before_any_launch() {
 	for value in ["0", "-5", "lots", "1.5", &usize::MAX.to_string()] {
 		let error = cli(&["run", "--manifest", "missing.toml", "--budget", value]);
 		assert!(
-			error.starts_with("--budget takes a whole number of instructions from 1 to")
+			error.starts_with("--budget takes a whole number of work units from 1 to")
 				&& error.contains(&largest),
 			"`{value}`: {error}"
 		);
 	}
 	let error = cli(&["run", "--manifest", "missing.toml", "--budget"]);
-	assert_eq!(error, "--budget needs a count of instructions");
+	assert_eq!(error, "--budget needs a count of work units");
 	let error = cli(&[
 		"run",
 		"--budget",

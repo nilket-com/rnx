@@ -429,7 +429,7 @@ struct Entry {
 	route: Route,
 	file: &'static str,
 	owner: &'static str,
-	anchor: &'static str,
+	call: &'static str,
 	needs: &'static str,
 }
 fn entries() -> Vec<Entry> {
@@ -440,7 +440,7 @@ fn entries() -> Vec<Entry> {
 			route: Fallback,
 			file: "src/runner.rs",
 			owner: "run_loaded",
-			anchor: "Vm::new",
+			call: "CALL execution::run",
 			needs: "entry/root/result/error/budget/lifecycle adapters",
 		},
 		Entry {
@@ -448,31 +448,39 @@ fn entries() -> Vec<Entry> {
 			route: Fallback,
 			file: "src/runner.rs",
 			owner: "compile",
-			anchor: "with_source_loader",
+			call: "METHOD with_source_loader",
 			needs: "select legacy before effects while external loader is unsupported",
+		},
+		Entry {
+			name: "project-run",
+			route: Fallback,
+			file: "tools/project/src/workflow.rs",
+			owner: "launch",
+			call: "CALL assembly::command_checked",
+			needs: "launch options forwarded to the artifact without entering its cache identity",
 		},
 		Entry {
 			name: "generated-project-assembly",
 			route: Fallback,
 			file: "tools/project/src/generate.rs",
-			owner: "wrapper_style",
-			anchor: "main_with",
-			needs: "same file-run boundary, generated wrapper and source-map contract",
+			owner: "wrapper",
+			call: "CALL wrapper_style",
+			needs: "actual generated wrapper and artifact routes are exercised by dual-path CLI acceptance",
 		},
 		Entry {
 			name: "one-shot-eval",
-			route: Fallback,
+			route: Blocked,
 			file: "src/lib.rs",
 			owner: "serve",
-			anchor: "eval",
-			needs: "fresh session state and total result presentation",
+			call: "METHOD eval",
+			needs: "Ctrl-C cancellation requires a separately designed resumable boundary",
 		},
 		Entry {
 			name: "config",
 			route: Fallback,
 			file: "src/config.rs",
-			owner: "evaluate",
-			anchor: "Vm::new",
+			owner: "evaluate_selected",
+			call: "CALL execution::evaluate",
 			needs: "with_config(false), settings schema and budget/source-offset adapters",
 		},
 		Entry {
@@ -480,7 +488,7 @@ fn entries() -> Vec<Entry> {
 			route: Blocked,
 			file: "src/session.rs",
 			owner: "execute",
-			anchor: "Vm::new",
+			call: "CALL Vm::new",
 			needs: "cross-program functions, shared identity, partial mutation and resumable slices",
 		},
 		Entry {
@@ -488,7 +496,7 @@ fn entries() -> Vec<Entry> {
 			route: Blocked,
 			file: "src/worker.rs",
 			owner: "run",
-			anchor: "eval_with_armed",
+			call: "METHOD eval_with_armed",
 			needs: "persistent session, interrupt and transport presentation",
 		},
 		Entry {
@@ -496,7 +504,7 @@ fn entries() -> Vec<Entry> {
 			route: Blocked,
 			file: "src/repl.rs",
 			owner: "run",
-			anchor: "prepare",
+			call: "CALL crate::dep_transition::prepare",
 			needs: "session ownership across assembly transition",
 		},
 		Entry {
@@ -504,7 +512,7 @@ fn entries() -> Vec<Entry> {
 			route: Fallback,
 			file: "adapters/polars/src/main.rs",
 			owner: "main",
-			anchor: "main_with",
+			call: "CALL rnx::main_with",
 			needs: "uncertified/opaque adapter calls select legacy",
 		},
 		Entry {
@@ -512,7 +520,7 @@ fn entries() -> Vec<Entry> {
 			route: Fallback,
 			file: "adapters/candle/src/main.rs",
 			owner: "main",
-			anchor: "main_with",
+			call: "CALL rnx::main_with",
 			needs: "uncertified/opaque adapter calls select legacy",
 		},
 		Entry {
@@ -520,7 +528,7 @@ fn entries() -> Vec<Entry> {
 			route: Fallback,
 			file: "adapters/postgres/src/main.rs",
 			owner: "main",
-			anchor: "main_with",
+			call: "CALL rnx::main_with",
 			needs: "query futures select legacy",
 		},
 		Entry {
@@ -528,7 +536,7 @@ fn entries() -> Vec<Entry> {
 			route: Blocked,
 			file: "src/server.rs",
 			owner: "prepare_with",
-			anchor: "runtime",
+			call: "METHOD runtime",
 			needs: "Value/root boundary, polling and compile/runtime handler pairing",
 		},
 		Entry {
@@ -536,7 +544,7 @@ fn entries() -> Vec<Entry> {
 			route: Blocked,
 			file: "src/server.rs",
 			owner: "slot",
-			anchor: "runtime",
+			call: "METHOD runtime",
 			needs: "per-slot handlers, native state, lifecycle generation and async retirement",
 		},
 		Entry {
@@ -544,7 +552,7 @@ fn entries() -> Vec<Entry> {
 			route: Blocked,
 			file: "src/http_server/worker.rs",
 			owner: "invoke",
-			anchor: "rune",
+			call: "METHOD rune",
 			needs: "Bytes envelope, route metadata, polling/cancellation and slot lifetime",
 		},
 		Entry {
@@ -552,7 +560,7 @@ fn entries() -> Vec<Entry> {
 			route: Blocked,
 			file: "servers/http-postgres/src/main.rs",
 			owner: "worker",
-			anchor: "prepare",
+			call: "METHOD prepare",
 			needs: "Bytes envelope, leased callbacks and database future",
 		},
 		Entry {
@@ -560,7 +568,7 @@ fn entries() -> Vec<Entry> {
 			route: Blocked,
 			file: "src/lib.rs",
 			owner: "serve",
-			anchor: "checks",
+			call: "CALL session::checks",
 			needs: "retained legacy Unit/function identity",
 		},
 		Entry {
@@ -568,8 +576,8 @@ fn entries() -> Vec<Entry> {
 			route: New,
 			file: "src/lib.rs",
 			owner: "serve",
-			anchor: "42",
-			needs: "fixed admitted scalar witness; prospective routing, not already wired",
+			call: "CALL engine::startup",
+			needs: "typed compile/prepare/invoke scalar witness",
 		},
 	]
 }
@@ -578,50 +586,77 @@ fn policy_rows(root: &Path) -> Result<Json> {
 	let source = syntax::inventory(root)?;
 	let mut rows = Vec::new();
 	let mut counts = BTreeMap::new();
+	let mut missing = Vec::new();
 	for e in entries() {
 		assert!(!e.needs.is_empty());
-		assert!(
-			source.iter().any(|s| s.file == e.file
-				&& s.owner == e.owner
-				&& s.tokens
-					.split_whitespace()
-					.collect::<String>()
-					.contains(&e.anchor.split_whitespace().collect::<String>())),
-			"entry path anchor disappeared: {} {}::{} {}",
-			e.name,
-			e.file,
-			e.owner,
-			e.anchor
-		);
+		if !source
+			.iter()
+			.any(|site| site.file == e.file && site.owner == e.owner && site.tokens == e.call)
+		{
+			missing.push(format!("{} {}::{} {}", e.name, e.file, e.owner, e.call));
+		}
 		let verdict = match e.route {
 			Route::New => "route-to-new",
 			Route::Fallback => "route-with-fallback",
 			Route::Blocked => "blocked",
 		};
 		*counts.entry(verdict).or_insert(0usize) += 1;
-		rows.push(json!({"path":e.name,"verdict":verdict,"source_file":e.file,"source_owner":e.owner,"requires":e.needs,"current_route":"legacy; R1b changes no routing"}));
+		rows.push(json!({"path":e.name,"verdict":verdict,"source_file":e.file,"source_owner":e.owner,"requires":e.needs,"current_route":if matches!(e.route,Route::Blocked){"legacy"}else{"execution with pre-effect selection"}}));
 	}
-	for (file, owner, evidence) in [
-		("src/http_server/value.rs", "rune", "Bytes::from_slice"),
-		("src/server.rs", "execute", "execution.resume().await"),
-		("src/server.rs", "prepare_with", "context.runtime()"),
-		("src/server.rs", "slot", "context.runtime()"),
+	for (file, owner, call) in [
+		(
+			"src/runner.rs",
+			"run_loaded",
+			"CALL crate::engine::requires_loader",
+		),
+		(
+			"src/runner/execution.rs",
+			"attempt",
+			"CALL frontend::compile",
+		),
+		("src/runner/execution.rs", "invoke", "METHOD prepare"),
+		("src/runner/execution.rs", "invoke", "METHOD invoke"),
+		(
+			"src/config/execution.rs",
+			"evaluate",
+			"CALL frontend::compile",
+		),
+		("src/config/execution.rs", "evaluate", "METHOD prepare"),
+		("src/config/execution.rs", "evaluate", "METHOD invoke"),
+		("src/engine.rs", "startup", "METHOD prepare"),
+		("src/engine.rs", "startup", "METHOD invoke"),
+		(
+			"tools/project/src/workflow/git_sources.rs",
+			"git_launch",
+			"CALL assembly::command_checked",
+		),
+		(
+			"src/http_server/value.rs",
+			"rune",
+			"CALL rune::runtime::Bytes::from_slice",
+		),
+		("src/server.rs", "execute", "METHOD resume"),
+		("src/server.rs", "prepare_with", "METHOD runtime"),
+		("src/server.rs", "slot", "METHOD runtime"),
 	] {
-		assert!(
-			source.iter().any(|s| s.file == file
-				&& s.owner == owner
-				&& s.tokens
-					.split_whitespace()
-					.collect::<String>()
-					.contains(evidence)),
-			"blocked path evidence changed; review routing policy: {file}::{owner} {evidence}"
-		);
+		if !source
+			.iter()
+			.any(|site| site.file == file && site.owner == owner && site.tokens == call)
+		{
+			missing.push(format!("{file}::{owner} {call}"));
+		}
 	}
+
+	assert!(
+		missing.is_empty(),
+		"routing wiring mismatches: {missing:#?}"
+	);
+
 	// New interpreter construction sites must be assigned an entry policy;
 	// adding a file or alias cannot silently inherit a one-shot verdict.
 	let constructors = syntax::vm_constructors(root)?;
 	let allowed: BTreeSet<_> = [
-		("src/config.rs", "evaluate"),
+		("src/config.rs", "evaluate_selected"),
 		("src/lib.rs", "call"),
 		("src/runner.rs", "run_loaded"),
 		("src/server.rs", "http_function"),
@@ -647,7 +682,7 @@ fn policy_rows(root: &Path) -> Result<Json> {
 		);
 	}
 	Ok(
-		json!({"rows":rows,"counts":counts,"vm_boundaries":constructors,"observations":"prospective capability policy; all product routes stay legacy in R1b"}),
+		json!({"rows":rows,"counts":counts,"vm_boundaries":constructors,"observations":"live routing policy; API invariants belong to Rune, per-path runtime evidence belongs to CLI comparisons"}),
 	)
 }
 
@@ -729,7 +764,7 @@ fn session_blocker() -> Result<Json> {
 		json!({"inputs":inputs,"generated_sources":generated,"legacy":values,"execution":fresh,"verdict":"blocked: never retry after runtime effects"}),
 	)
 }
-fn synchronous_and_byte_boundaries(rune_root: &Path) -> Result<Json> {
+fn synchronous_and_byte_boundaries() -> Result<Json> {
 	// Exhaustive: a new Root representation requires an explicit inventory decision.
 	fn represented(t: Type) -> &'static str {
 		match t {
@@ -755,16 +790,20 @@ fn synchronous_and_byte_boundaries(rune_root: &Path) -> Result<Json> {
 		}
 	}
 	assert_eq!(represented(Type::Function), "same-program function");
-	let methods = syntax::executor_methods(rune_root)?;
-	let expected:BTreeSet<_>="new with_limits limits bookkeeping_bytes set_host_runtime request_cancel format_limits set_format_limits run invoke is_idle".split_whitespace().map(str::to_owned).collect();
-	assert_eq!(
-		methods, expected,
-		"new public executor API requires a routing review"
-	);
-	let source =
-		std::fs::read_to_string(rune_root.join("crates/rune/src/experimental_core/execute.rs"))?;
-	let ast = syn::parse_file(&source)?;
-	syntax::assert_exclusive_cancel_and_synchronous_invoke(&ast)?;
+	// Rune owns the exhaustive public-API invariant. rnx asserts the exact
+	// types it consumes, without parsing source from a different repository.
+	let _: fn(&mut Executor) = Executor::request_cancel;
+	type PrepareEntry = for<'a> fn(
+		&'a mut Executor,
+		&'a frontend::Program,
+		&'a mut Store,
+		u32,
+		&'a [&'a rune::experimental_core::value::Root],
+	) -> std::result::Result<
+		rune::experimental_core::execute::PreparedInvocation<'a>,
+		rune::experimental_core::execute::PrepareError,
+	>;
+	let _: PrepareEntry = Executor::prepare;
 	Ok(
 		json!({"Bytes":"no Root type; HTTP input envelope cannot be imported","executor_api":"synchronous invoke, exclusive cancellation, no resumable polling/slice API"}),
 	)
@@ -775,7 +814,7 @@ pub(crate) fn run(root: &Path, rune_root: &Path) -> Result<Json> {
 	syntax::self_check();
 	weights::self_check();
 	Ok(
-		json!({"host_shapes":host_inventory(root)?,"entry_paths":policy_rows(root)?,"session":session_blocker()?,"driver_and_bytes":synchronous_and_byte_boundaries(rune_root)?,"source_weights":weights::run(root,rune_root)?}),
+		json!({"host_shapes":host_inventory(root)?,"entry_paths":policy_rows(root)?,"session":session_blocker()?,"driver_and_bytes":synchronous_and_byte_boundaries()?,"source_weights":weights::run(root,rune_root)?}),
 	)
 }
 #[test]

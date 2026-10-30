@@ -17,6 +17,8 @@ use rune::runtime::{Unit, Value, VmError};
 use rune::sync::Arc;
 use rune::{Context, Diagnostics, Sources, Vm};
 
+mod execution;
+
 /// Instructions one script may spend unless the command line says otherwise.
 /// This is the limit `run` has always had; the session's is far larger
 /// because Ctrl-C can stop an input there and nothing can stop one here.
@@ -239,6 +241,7 @@ pub fn run(
 	arguments: Value,
 	debug_source: bool,
 	budget: usize,
+	engine: crate::engine::Options,
 	lifecycle: &crate::lifecycle::Lifecycle,
 ) -> i32 {
 	run_loaded(
@@ -247,6 +250,7 @@ pub fn run(
 		arguments,
 		debug_source,
 		budget,
+		engine,
 		lifecycle,
 		Loader::new(),
 	)
@@ -259,6 +263,7 @@ pub(crate) fn run_loaded(
 	arguments: Value,
 	debug_source: bool,
 	budget: usize,
+	engine: crate::engine::Options,
 	lifecycle: &crate::lifecycle::Lifecycle,
 	mut loader: Loader,
 ) -> i32 {
@@ -274,6 +279,24 @@ pub(crate) fn run_loaded(
 	if sources.insert(source).is_err() {
 		unplaced("error", "the source could not be held for compilation");
 		return 1;
+	}
+	if engine.choice == crate::engine::EngineChoice::Auto {
+		if crate::engine::requires_loader(&loader.texts[0].text) {
+			engine.selected("legacy", Some("SourceLoader"));
+		} else if let Some(code) = execution::run(
+			context,
+			&sources,
+			&arguments,
+			debug_source,
+			budget,
+			engine,
+			lifecycle,
+			&loader,
+		) {
+			return code;
+		}
+	} else {
+		engine.selected("legacy", None);
 	}
 	let compiled = compile(context, &mut sources, &mut loader);
 	if debug_source {
@@ -350,7 +373,7 @@ pub(crate) fn run_loaded(
 			unplaced(
 				"halted",
 				&format!(
-					"{budget} instructions exceeded; {} N raises it",
+					"{budget} work units exceeded; {} N raises it",
 					budget_advice()
 				),
 			);
@@ -384,7 +407,7 @@ pub(crate) fn run_loaded(
 				unplaced(
 					"halted",
 					&format!(
-						"the budget of {budget} instructions was exhausted at that point; {} N raises it",
+						"the budget of {budget} work units was exhausted at that point; {} N raises it",
 						budget_advice()
 					),
 				);

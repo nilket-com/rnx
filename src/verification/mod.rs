@@ -3,6 +3,7 @@
 mod binding;
 mod census;
 mod census_execution;
+mod clock;
 mod enrollment;
 
 use serde_json::{Value, json};

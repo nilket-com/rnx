@@ -195,17 +195,23 @@ impl Project {
 		let (checked, digest) = self.git_checked_artifact(&lock, &bytes, verify, true)?;
 
 		let mut command = match mode {
-			Launch::Run { script, budget } => {
+			Launch::Run {
+				script,
+				budget,
+				routing,
+			} => {
 				let maps = self.dot.join("maps");
 				fs::create_dir_all(&maps).map_err(err)?;
 				let map_bytes = lock.sources.encode()?;
 				let map = maps.join(format!("{}.json", hash(&map_bytes)));
 				crate::maps::ensure(&map, &map_bytes, || self.atomic(&map, &map_bytes))?;
+				let mut flags = super::run_flags(budget);
+				flags.extend(routing);
 				let mut command = assembly::command_checked(
 					&checked,
 					Some(&map),
 					Path::new(&lock.sources.entry),
-					&super::run_flags(budget),
+					&flags,
 					&script,
 				)?;
 				command.env_remove(transition::CARRIER);

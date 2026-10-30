@@ -55,7 +55,7 @@ fn the_default_is_two_million_and_exhausting_it_still_fails() {
 	assert_eq!(ran.stdout, "", "a halted script printed its result");
 	assert!(
 		ran.stderr
-			.starts_with("halted: 2000000 instructions exceeded"),
+			.starts_with("halted: 2000000 work units exceeded"),
 		"{}",
 		ran.stderr
 	);
@@ -82,7 +82,7 @@ fn a_chosen_budget_moves_the_ceiling_in_both_directions() {
 	let ran = run_with(SPENDS_A_LITTLE, &["--budget", "1000"], &[]);
 	assert_eq!(ran.code, 1, "a lowered budget was ignored");
 	assert!(
-		ran.stderr.starts_with("halted: 1000 instructions exceeded"),
+		ran.stderr.starts_with("halted: 1000 work units exceeded"),
 		"{}",
 		ran.stderr
 	);
@@ -217,7 +217,7 @@ fn the_halt_names_the_flag_of_the_path_that_ran() {
 	let ran = run_with(SPENDS_A_LITTLE, &["--budget", "1000"], &[]);
 	assert!(
 		ran.stderr
-			.starts_with("halted: 1000 instructions exceeded; --budget N raises it"),
+			.starts_with("halted: 1000 work units exceeded; --budget N raises it"),
 		"{}",
 		ran.stderr
 	);
@@ -230,9 +230,8 @@ fn the_halt_names_the_flag_of_the_path_that_ran() {
 	);
 	assert_eq!(ran.code, 1);
 	assert!(
-		ran.stderr.starts_with(
-			"halted: 1000 instructions exceeded; rnx project run --budget N raises it"
-		),
+		ran.stderr
+			.starts_with("halted: 1000 work units exceeded; rnx project run --budget N raises it"),
 		"{}",
 		ran.stderr
 	);
@@ -246,20 +245,39 @@ fn the_halt_names_the_flag_of_the_path_that_ran() {
 }
 
 #[test]
-fn exhausting_a_native_iterator_reports_once_without_repeating_output() {
-	let ran = run_with(
-		"pub fn main(_) { println!(\"start\"); (0..).iter().count() }",
-		&["--budget", "50000"],
-		&[],
-	);
-	assert_eq!(ran.code, 1, "{}", ran.stderr);
-	assert_eq!(ran.stdout, "start\n", "output was lost or repeated");
-	assert_eq!(
-		ran.stderr
-			.matches("halted: the budget of 50000 instructions was exhausted at that point")
-			.count(),
-		1,
-		"{}",
-		ran.stderr
-	);
+fn exhausting_an_iterator_reports_once_in_both_engines_and_native_modes() {
+	for native in ["--native=off", "--native=on"] {
+		for legacy in [false, true] {
+			let mut flags = vec!["--budget", "50000", native];
+			if legacy {
+				flags.push("--engine=legacy");
+			}
+			let ran = run_with(
+				"pub fn main(_) { println!(\"start\"); (0..).iter().count() }",
+				&flags,
+				&[],
+			);
+			assert_eq!(ran.code, 1, "{}", ran.stderr);
+			assert_eq!(ran.stdout, "start\n", "output was lost or repeated");
+			assert_eq!(ran.stderr.matches("halted:").count(), 1, "{}", ran.stderr);
+			if legacy {
+				// The legacy iterator reports its VM error at the call site,
+				// followed by the exhausted-budget annotation.
+				assert!(
+					ran.stderr.ends_with(
+						"halted: the budget of 50000 work units was exhausted at that point; --budget N raises it\n"
+					),
+					"{}",
+					ran.stderr
+				);
+			} else {
+				// Execution stops at its own typed work limit. Its stop is
+				// terminal and never reruns the already-observed effect.
+				assert_eq!(
+					ran.stderr,
+					"halted: 50000 work units exceeded; --budget N raises it\n"
+				);
+			}
+		}
+	}
 }

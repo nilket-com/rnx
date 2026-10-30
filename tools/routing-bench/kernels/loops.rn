@@ -1,0 +1,5 @@
+fn kernel(x) {
+	let total = x;
+	for i in 0..10000 { total = (total + i % 97) % 1000000007; }
+	total
+}

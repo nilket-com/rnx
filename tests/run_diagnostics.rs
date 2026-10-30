@@ -197,7 +197,7 @@ fn a_script_that_loops_for_ever_is_halted_by_the_budget() {
 	let elapsed = start.elapsed();
 	assert_eq!(ran.code, 1);
 	assert!(
-		ran.stderr.contains("halted") && ran.stderr.contains("instructions exceeded"),
+		ran.stderr.contains("halted") && ran.stderr.contains("work units exceeded"),
 		"{}",
 		ran.stderr
 	);

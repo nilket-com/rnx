@@ -3,7 +3,7 @@ use super::Result;
 use quote::{ToTokens, quote};
 use serde::Serialize;
 use std::{
-	collections::{BTreeMap, BTreeSet},
+	collections::BTreeSet,
 	path::{Path, PathBuf},
 };
 use syn::{
@@ -65,6 +65,8 @@ fn files(root: &Path) -> Result<Vec<PathBuf>> {
 		walk(&root.join(dir), &mut files)?;
 	}
 	files.push(root.join("tools/project/src/generate.rs"));
+	files.push(root.join("tools/project/src/workflow.rs"));
+	files.push(root.join("tools/project/src/workflow/git_sources.rs"));
 	let mut skip = Vec::new();
 	for p in &files {
 		let tree = syn::parse_file(&std::fs::read_to_string(p)?)?;
@@ -229,6 +231,10 @@ impl<'ast> Visit<'ast> for Scan {
 			return;
 		}
 		if let Expr::Path(p) = n.func.as_ref() {
+			self.site(format!(
+				"CALL {}",
+				p.path.to_token_stream().to_string().replace(' ', "")
+			));
 			let ids: Vec<_> = p
 				.path
 				.segments
@@ -249,6 +255,7 @@ impl<'ast> Visit<'ast> for Scan {
 			return;
 		}
 		let method = n.method.to_string();
+		self.site(format!("METHOD {method}"));
 		if [
 			"function",
 			"function_meta",
@@ -260,6 +267,10 @@ impl<'ast> Visit<'ast> for Scan {
 			"index_function",
 		]
 		.contains(&method.as_str())
+			// Module::function(name, handler) registers a host. Program::function
+			// and RuntimeContext::function take one lookup key. The other APIs
+			// retain their own signatures, including one-argument function_meta.
+			&& (method != "function" || n.args.len() == 2)
 		{
 			let name = n
 				.args
@@ -291,6 +302,31 @@ impl<'ast> Visit<'ast> for Scan {
 		visit::visit_expr_method_call(self, n);
 	}
 	fn visit_macro(&mut self, n: &'ast syn::Macro) {
+		if !n.path.is_ident("macro_rules") {
+			// select! and similar DSLs contain Rust call expressions that syn
+			// deliberately leaves opaque. Inspect token groups, never literal
+			// text, and require the dot/name/parenthesized-arguments call shape.
+			fn methods(scan: &mut Scan, stream: proc_macro2::TokenStream) {
+				let tokens: Vec<_> = stream.into_iter().collect();
+				for triple in tokens.windows(3) {
+					if let [
+						proc_macro2::TokenTree::Punct(dot),
+						proc_macro2::TokenTree::Ident(name),
+						proc_macro2::TokenTree::Group(args),
+					] = triple && dot.as_char() == '.'
+						&& args.delimiter() == proc_macro2::Delimiter::Parenthesis
+					{
+						scan.site(format!("METHOD {name}"));
+					}
+				}
+				for token in tokens {
+					if let proc_macro2::TokenTree::Group(group) = token {
+						methods(scan, group.stream());
+					}
+				}
+			}
+			methods(self, n.tokens.clone());
+		}
 		if n.path.is_ident("macro_rules") {
 			fn flatten(tokens: proc_macro2::TokenStream, out: &mut Vec<proc_macro2::TokenTree>) {
 				for token in tokens {
@@ -409,58 +445,22 @@ pub(super) fn function_shapes(root: &Path) -> Result<Vec<FunctionShape>> {
 		.filter(|s| s.file.starts_with("src/"))
 		.collect())
 }
-fn executor_functions(tree: &syn::File) -> impl Iterator<Item = &syn::ImplItemFn> {
-	tree.items
-		.iter()
-		.filter_map(|item| {
-			let Item::Impl(i) = item else {
-				return None;
-			};
-			(i.self_ty.to_token_stream().to_string() == "Executor").then_some(i)
-		})
-		.flat_map(|i| &i.items)
-		.filter_map(|m| match m {
-			syn::ImplItem::Fn(f) => Some(f),
-			_ => None,
-		})
-}
-pub(super) fn executor_methods(root: &Path) -> Result<BTreeSet<String>> {
-	let tree = syn::parse_file(&std::fs::read_to_string(
-		root.join("crates/rune/src/experimental_core/execute.rs"),
-	)?)?;
-	let mut names = BTreeSet::new();
-	for f in executor_functions(&tree) {
-		if matches!(f.vis, syn::Visibility::Public(_)) && !excluded(&f.attrs) {
-			assert!(
-				f.sig.asyncness.is_none(),
-				"new async Executor API needs a routing review"
-			);
-			names.insert(f.sig.ident.to_string());
-		}
-	}
-	Ok(names)
-}
-pub(super) fn assert_exclusive_cancel_and_synchronous_invoke(tree: &syn::File) -> Result<()> {
-	let mut seen = BTreeMap::new();
-	for f in executor_functions(tree) {
-		if !["invoke", "request_cancel"].contains(&f.sig.ident.to_string().as_str()) {
-			continue;
-		}
-		assert!(f.sig.asyncness.is_none());
-		let syn::FnArg::Receiver(r) = &f.sig.inputs[0] else {
-			panic!("missing receiver")
-		};
-		assert!(
-			r.reference.is_some() && r.mutability.is_some(),
-			"cancellation/invoke borrow contract changed"
-		);
-		seen.insert(f.sig.ident.to_string(), true);
-	}
-	assert!(seen.contains_key("invoke") && seen.contains_key("request_cancel"));
-	Ok(())
-}
 pub(super) fn self_check() {
-	let source = r#"use rune::Vm as Machine; fn real(){let _=Machine::new(x,y);m.host_function("active",f);} #[cfg(test)]fn hidden(){Vm::new(x,y);m.function("test",f);} // m.function("comment",f)
+	let source = r#"
+use rune::Vm as Machine;
+fn real(){
+	let _=Machine::new(x,y);
+	m.host_function("active",f);
+	m.function("plain",f);
+	m.function_meta(meta);
+	program.function(rune::Hash::type_hash(["main"]));
+	runtime.function(&hash);
+	tokio::select! { item=next()=>{program.prepare(args);} }
+	println!("program.prepare(fake)");
+	macro_rules! unused {()=>{program.prepare(fake)}}
+}
+#[cfg(test)]fn hidden(){Vm::new(x,y);m.function("test",f);}
+// m.function("comment",f)
 	"#;
 	let mut s = Scan::new("src/json.rs".into());
 	s.visit_file(&syn::parse_file(source).unwrap());
@@ -471,8 +471,20 @@ pub(super) fn self_check() {
 			.count(),
 		1
 	);
-	assert_eq!(s.registrations.len(), 1);
-	assert_eq!(s.registrations[0].path, "json::active");
+	assert_eq!(
+		s.sites
+			.iter()
+			.filter(|site| site.tokens == "METHOD prepare")
+			.count(),
+		1
+	);
+	assert_eq!(
+		s.registrations
+			.iter()
+			.map(|registration| registration.path.as_str())
+			.collect::<Vec<_>>(),
+		["json::active", "json::plain", "json::meta"]
+	);
 }
 
 #[test]

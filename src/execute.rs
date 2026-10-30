@@ -165,6 +165,11 @@ impl Drop for Runtime {
 }
 
 impl Runtime {
+	/// Run a synchronous admitted program with the same Tokio context as the
+	/// legacy file driver. This does not add cancellation or runtime retry.
+	pub(crate) fn run_sync<T>(&self, run: impl FnOnce() -> T) -> T {
+		self.inner().block_on(async { run() })
+	}
 	fn inner(&self) -> &tokio::runtime::Runtime {
 		self.0.as_ref().expect("runtime remains present until drop")
 	}

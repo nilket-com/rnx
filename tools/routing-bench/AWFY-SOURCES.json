@@ -1,0 +1,23 @@
+{
+	"schema": 1,
+	"kernels": [
+		{
+			"kernel": "awfy_sieve",
+			"upstream": "https://github.com/smarr/are-we-fast-yet",
+			"upstream_commit": "74306fec151070fd07157cefeacf19e7e0bcdc89",
+			"rune_path": "benches/awfy/sieve.rn",
+			"rune_sha256": "ce35b578b396e5b1d00fdbef9c2d6ac63cc023c4511f4a77d5fbb0c4b24924fc",
+			"result": 669,
+			"adaptation": "remove unused inner harness method; call benchmark and verify_result from kernel"
+		},
+		{
+			"kernel": "awfy_permute",
+			"upstream": "https://github.com/smarr/are-we-fast-yet",
+			"upstream_commit": "74306fec151070fd07157cefeacf19e7e0bcdc89",
+			"rune_path": "benches/awfy/permute.rn",
+			"rune_sha256": "cf7d52fe7da7145ee55227ff922db7b94422a59cfe674870612330e34c2e5106",
+			"result": 8660,
+			"adaptation": "remove unused inner harness method; call benchmark and verify_result from kernel"
+		}
+	]
+}
