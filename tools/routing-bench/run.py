@@ -23,7 +23,7 @@ import tomllib
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 MODES = ("legacy", "execution-off", "execution-on", "luajit")
-KERNELS = ("fib", "loops", "numeric_calls", "shared_rows", "awfy_sieve", "awfy_permute")
+KERNELS = ("fib", "loops", "numeric_calls", "shared_rows", "awfy_sieve", "awfy_permute", "vec_iter_i64", "vec_iter_bool")
 SEED = 19720261030
 GROUP = "{cpu_core/instructions/u,cpu_core/cpu-cycles/u}"
 
@@ -56,6 +56,7 @@ def generated(kernel, rounds, destination):
 	# All intermediate arithmetic is below 2**53, including checksum addition.
 	# numeric_calls' largest multiply/add is below 18 million; shared_rows'
 	# encoded row sum is below 20 million. AWFY returns 669 or 8660.
+	# The iterator kernels return at most 7,680,000 (integers) or 80,000 (Booleans).
 	for suffix in ("rn", "lua"):
 		prefix = (HERE / "kernels" / f"{kernel}.{suffix}").read_text()
 		if suffix == "rn":
