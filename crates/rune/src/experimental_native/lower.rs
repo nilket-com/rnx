@@ -490,6 +490,34 @@ pub(crate) fn build(region: &Region, isa: &OwnedTargetIsa) -> Result<ir::Functio
 			NodeOp::Jump { target } => {
 				b.ins().jump(block(target), &[]);
 			}
+			NodeOp::VectorNext {
+				out,
+				none,
+				retry,
+				ty,
+			} => {
+				let (snapshot, len) = collection.ok_or(NativeRefusal::Shape)?;
+				let Some((next, end)) = iter else {
+					return Err(NativeRefusal::Shape);
+				};
+				let index = b.use_var(next);
+				let done = b.ins().icmp(IntCC::Equal, index, end);
+				let some = b.create_block();
+				b.ins().brif(done, block(none), &[], some, &[]);
+				b.switch_to_block(some);
+				let valid = b.ins().icmp(IntCC::UnsignedLessThan, index, len);
+				let zero = b.ins().iconst(types::I64, 0);
+				let safe = b.ins().select_spectre_guard(valid, index, zero);
+				let access = b.create_block();
+				b.ins().brif(valid, access, &[], exits[retry as usize], &[]);
+				b.switch_to_block(access);
+				let offset = b.ins().ishl_imm_s(safe, 3);
+				let address = b.ins().iadd(snapshot, offset);
+				let value = b.ins().load(types::I64, mem, address, 0);
+				define(&mut b, out, value, ty)?;
+				let after = b.ins().iadd_imm_s(index, 1);
+				b.def_var(next, after);
+			}
 			NodeOp::IterNext { out, none } => {
 				let Some((next, end)) = iter else {
 					return Err(NativeRefusal::Shape);
@@ -666,7 +694,7 @@ fn r1_disqualifies(op: &NodeOp, out: u32) -> bool {
 	match *op {
 		NodeOp::Get { out: o, .. } => o == out,
 		NodeOp::Set { .. } => false,
-		NodeOp::IterNext { .. } => true,
+		NodeOp::IterNext { .. } | NodeOp::VectorNext { .. } => true,
 		NodeOp::Enter { slots, .. } => out >= VIRTUAL_BASE && out - VIRTUAL_BASE < slots,
 		NodeOp::Arg { param, .. } => VIRTUAL_BASE.checked_add(param) == Some(out),
 		NodeOp::Ret { out: o, .. } => o == out,
@@ -759,7 +787,7 @@ fn fuel_link(op: &NodeOp) -> bool {
 		NodeOp::Get { .. } | NodeOp::Set { .. } => true,
 		NodeOp::Enter { .. } => true,
 		NodeOp::Arg { .. } => true,
-		NodeOp::IterNext { .. } => false,
+		NodeOp::IterNext { .. } | NodeOp::VectorNext { .. } => false,
 		NodeOp::Ret { .. } => false,
 		#[cfg(test)]
 		NodeOp::ForceReplay { .. } => false,
@@ -779,6 +807,7 @@ fn fuel_link(op: &NodeOp) -> bool {
 fn fuel_disqualifies(op: &NodeOp, header: bool) -> bool {
 	match *op {
 		NodeOp::Get { .. } | NodeOp::Set { .. } => true,
+		NodeOp::VectorNext { .. } => true,
 		NodeOp::IterNext { .. } => !header,
 		#[cfg(test)]
 		NodeOp::ForceReplay { .. } => true,
@@ -806,7 +835,7 @@ fn node_refs(region: &Region, j: u32) -> usize {
 			NodeOp::Get { retry, .. } | NodeOp::Set { retry, .. } => to(Target::Exit(retry)),
 			NodeOp::Branch { yes, no, .. } => to(yes) + to(no),
 			NodeOp::Jump { target } => to(target),
-			NodeOp::IterNext { none, .. } => to(none),
+			NodeOp::IterNext { none, .. } | NodeOp::VectorNext { none, .. } => to(none),
 			#[cfg(test)]
 			NodeOp::ForceReplay { zero, positive } => to(zero) + to(positive),
 			NodeOp::Enter { .. } => 0,

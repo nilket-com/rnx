@@ -128,6 +128,19 @@ fn unbox(
 	room: Room,
 	storage: &mut [i64; MAX_REGION_CELLS],
 ) -> core::result::Result<(u64, Option<IterEntry>), Refused> {
+	unbox_mode::<false>(region, window, store, cancel_pending, fuel, room, storage)
+}
+
+#[inline(always)]
+fn unbox_mode<const VECTOR: bool>(
+	region: &Region,
+	window: &[Value],
+	store: &Store,
+	cancel_pending: bool,
+	fuel: usize,
+	room: Room,
+	storage: &mut [i64; MAX_REGION_CELLS],
+) -> core::result::Result<(u64, Option<IterEntry>), Refused> {
 	if cancel_pending {
 		return Err(Refused::Cancel);
 	}
@@ -165,7 +178,13 @@ fn unbox(
 			let Some(&value) = window.get(spec.slot as usize) else {
 				return Err(Refused::Window);
 			};
-			let Some((next, end)) = range_iterator(store, value) else {
+			let Some((next, end)) = (if VECTOR {
+				store
+					.vector_iterator_for_native(value)
+					.map(|s| (s.index as i64, s.len as i64))
+			} else {
+				range_iterator(store, value)
+			}) else {
 				return Err(Refused::Iter { slot: spec.slot });
 			};
 			buf[n] = next;
@@ -286,6 +305,23 @@ fn validate<'r>(
 	record: &ExitRecord,
 	returned: u32,
 ) -> core::result::Result<Plan<'r>, Refused> {
+	validate_mode::<false>(
+		region, window, store, entry_fuel, iter, buf, record, returned,
+	)
+}
+
+#[allow(clippy::too_many_arguments)]
+#[inline(always)]
+fn validate_mode<'r, const VECTOR: bool>(
+	region: &'r Region,
+	window: &[Value],
+	store: &Store,
+	entry_fuel: u64,
+	iter: Option<IterEntry>,
+	buf: &'r [i64],
+	record: &ExitRecord,
+	returned: u32,
+) -> core::result::Result<Plan<'r>, Refused> {
 	let n = region.slots.len();
 	let Some(exit) = region.exits.get(record.exit as usize) else {
 		return Err(Refused::InvalidExit);
@@ -368,8 +404,13 @@ fn validate<'r>(
 		(Some(spec), Some(entry)) => {
 			let next = buf[n];
 			let unchanged_handle = window.get(spec.slot as usize) == Some(&entry.value);
-			let unchanged_payload =
-				range_iterator(store, entry.value) == Some((entry.next, entry.end));
+			let unchanged_payload = (if VECTOR {
+				store
+					.vector_iterator_for_native(entry.value)
+					.map(|s| (s.index as i64, s.len as i64))
+			} else {
+				range_iterator(store, entry.value)
+			}) == Some((entry.next, entry.end));
 			let end_ok = buf[n + 1] == entry.end;
 			let reachable = range_next_reachable((entry.next, entry.end), next);
 			let done_ok = !exit.iter_done || next == entry.next.max(entry.end);
@@ -705,6 +746,9 @@ pub(crate) fn enter_collection(
 	let Some(c) = region.collection else {
 		return Ok(Err(Refused::Window));
 	};
+	if c.iteration {
+		return enter_vector(region, window, store, cancel_pending, fuel, room, run);
+	}
 	let mut storage = [0i64; MAX_REGION_CELLS];
 	let (entry_fuel, iter) = match unbox(
 		region,
@@ -743,6 +787,64 @@ pub(crate) fn enter_collection(
 	}
 	// The combined transaction already committed next. Remaining window writes release
 	// only scalars in the same open, idle Store and therefore cannot fail.
+	plan.iter = None;
+	apply(plan, window, store)
+}
+
+/// N3: private read-only item snapshot and a transactional cursor/scalar commit.
+#[inline(never)]
+#[allow(clippy::too_many_arguments)]
+fn enter_vector(
+	region: &Region,
+	window: &mut [Value],
+	store: &mut Store,
+	cancel_pending: bool,
+	fuel: usize,
+	room: Room,
+	run: impl FnOnce(&Region, &mut [i64], &mut ExitRecord, &mut [i64], usize) -> u32,
+) -> Result<core::result::Result<Exited, Refused>> {
+	let Some(c) = region.collection else {
+		return Ok(Err(Refused::Window));
+	};
+	let mut storage = [0i64; MAX_REGION_CELLS];
+	let (entry_fuel, iter) = match unbox_mode::<true>(
+		region,
+		window,
+		store,
+		cancel_pending,
+		fuel,
+		room,
+		&mut storage,
+	) {
+		Ok(entry) => entry,
+		Err(refused) => return Ok(Err(refused)),
+	};
+	let Some(&value) = window.get(c.slot as usize) else {
+		return Ok(Err(Refused::Window));
+	};
+	let budget = super::budget::Budget::new(c.scratch_bytes.min(store.native_snapshot_room()));
+	let Some((mut snapshot, expected)) = store.snapshot_iterator_for_native(value, c.ty, &budget)
+	else {
+		return Ok(Err(Refused::Iter { slot: c.slot }));
+	};
+	let buf = &mut storage[..region.cells()];
+	let mut record = ExitRecord::new(entry_fuel);
+	let returned = run(region, buf, &mut record, &mut snapshot, expected.len);
+	let mut plan = match validate_mode::<true>(
+		region, window, store, entry_fuel, iter, buf, &record, returned,
+	) {
+		Ok(plan) => plan,
+		Err(refused) => return Ok(Err(refused)),
+	};
+	let Some(progress) = plan.iter else {
+		return Ok(Err(Refused::InvalidExit));
+	};
+	if window.get(c.slot as usize) != Some(&value)
+		|| snapshot.len() != expected.len.max(1)
+		|| !store.commit_vector_iterator_for_native(expected, progress.new)
+	{
+		return Ok(Err(Refused::InvalidExit));
+	}
 	plan.iter = None;
 	apply(plan, window, store)
 }

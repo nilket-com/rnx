@@ -38,7 +38,7 @@ def _cold_analysis_iterator(row, invocations):
 	name, calls = row['function'], row['calls']
 	return (type(calls) is int and 0 < calls <= invocations + 2
 			and name.startswith('<core::ops::range::Range<usize> as core::iter::traits::iterator::Iterator>::try_fold::<')
-			and '&mut <rune::experimental_core::region::FunctionContext>::analyze_header::{closure#' in name)
+			and '<rune::experimental_core::region::FunctionContext>::analyze_header::{closure#' in name)
 
 
 def assess(tip, candidate, reference, *, invocations, iterations, controls, guard=None):

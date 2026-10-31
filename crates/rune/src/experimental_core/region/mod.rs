@@ -63,6 +63,9 @@ pub(crate) mod hook;
 pub(crate) mod n1_tests;
 #[cfg(test)]
 pub(crate) mod n2_tests;
+
+#[cfg(test)]
+pub(crate) mod n3_tests;
 #[cfg(test)]
 pub(crate) mod p2b_tests;
 #[cfg(test)]
@@ -328,6 +331,13 @@ pub(crate) enum NodeOp {
 		new: u32,
 		retry: u32,
 	},
+	/// N3: read a scalar item from the private snapshot, then advance the cursor.
+	VectorNext {
+		out: u32,
+		none: Target,
+		retry: u32,
+		ty: Scalar,
+	},
 	/// B1, the header only: `next >= end` goes to `none` (nothing written); otherwise `out`
 	/// := `next` (I64), `next += 1` (cannot overflow: `next < end`), then `next` (the node's
 	/// fall-through). `next` and `end` are the runner's `buf[n]` and `buf[n + 1]`.
@@ -414,6 +424,8 @@ pub(crate) struct Node {
 /// One fixed collection root and its inferred homogeneous element tag.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Collection {
+	/// N3: slot names a VectorIterator rather than a directly indexed Vec.
+	pub(crate) iteration: bool,
 	pub(crate) slot: u32,
 	pub(crate) ty: Scalar,
 	pub(crate) writes: bool,
@@ -791,6 +803,7 @@ pub(crate) struct FunctionContext<'f, 'b> {
 	budget: &'b Budget,
 	/// `(target, source)` of every successor arc, sorted by target.
 	edges: BVec<'b, (u32, u32)>,
+	reachable: BVec<'b, bool>,
 	/// The function-level inference, `instructions * slots` cells, if it ran.
 	types: Option<BVec<'b, FTy>>,
 	factor: usize,
@@ -824,6 +837,22 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 		}
 		edges.sort_unstable();
 
+		let mut reachable = BVec::new(budget);
+		reachable.resize(len, false)?;
+		let mut pending = BVec::with_capacity(budget, len)?;
+		if len != 0 {
+			reachable[0] = true;
+			pending.push(0usize)?;
+		}
+		while let Some(pc) = pending.pop() {
+			for target in successors(f, pc)?.into_iter().flatten() {
+				if !reachable[target] {
+					reachable[target] = true;
+					pending.push(target)?;
+				}
+			}
+		}
+		drop(pending);
 		let types = function_types_in(f, budget, factor)?;
 
 		Ok(Self {
@@ -832,6 +861,7 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 			function,
 			budget,
 			edges,
+			reachable,
 			types,
 			factor,
 			max_transfers: core::cell::Cell::new(0),
@@ -858,7 +888,9 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 	/// The bytes this context itself holds charged (arcs and inference; tests).
 	#[cfg(test)]
 	pub(crate) fn charged_for_test(&self) -> usize {
-		self.edges.charged() + self.types.as_ref().map_or(0, |t| t.charged())
+		self.edges.charged()
+			+ self.reachable.charged()
+			+ self.types.as_ref().map_or(0, |t| t.charged())
 	}
 
 	/// One candidate header. On success, the region and the bytes of its five vectors
@@ -869,22 +901,95 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 		&self,
 		header: u32,
 	) -> Result<Result<(Region, usize), RegionRefusal>, Stop> {
-		let transfers_used = core::cell::Cell::new(0usize);
-		let scalar = self.analyze_header(header, None, &transfers_used)?;
-		if !matches!(scalar, Err(RegionRefusal::Op { pc }) if matches!(self.f.operation(pc as usize)?, Op::Get { .. } | Op::Set { .. }))
+		let transfers = core::cell::Cell::new(0usize);
+		let mut result = self.analyze_header(header, None, &transfers, None)?;
+		if matches!(result, Err(RegionRefusal::Op { pc }) if matches!(self.f.operation(pc as usize)?, Op::Get { .. } | Op::Set { .. }))
 		{
-			return Ok(scalar);
+			result = self.analyze_header(header, Some(Scalar::I64), &transfers, None)?;
+			if matches!(
+				result,
+				Err(RegionRefusal::Type { .. }
+					| RegionRefusal::CopySource { .. }
+					| RegionRefusal::LiveIn { .. })
+			) {
+				result = self.analyze_header(header, Some(Scalar::Bool), &transfers, None)?;
+			}
 		}
-		let integer = self.analyze_header(header, Some(Scalar::I64), &transfers_used)?;
-		if matches!(
-			integer,
-			Err(RegionRefusal::Type { .. }
-				| RegionRefusal::CopySource { .. }
-				| RegionRefusal::LiveIn { .. })
-		) {
-			return self.analyze_header(header, Some(Scalar::Bool), &transfers_used);
+		if result.is_err() && matches!(self.f.operation(header as usize)?, Op::IterNext { .. }) {
+			for ty in [Scalar::I64, Scalar::Bool] {
+				let vector = self.analyze_header(header, None, &transfers, Some(ty))?;
+				if vector.is_ok() {
+					return Ok(vector);
+				}
+			}
 		}
-		Ok(integer)
+		Ok(result)
+	}
+
+	/// A separate guarded variant; only used after Range refusal for ambiguous headers.
+	pub(crate) fn analyze_vector(
+		&self,
+		header: u32,
+		ty: Scalar,
+	) -> Result<Result<(Region, usize), RegionRefusal>, Stop> {
+		self.analyze_header(header, None, &core::cell::Cell::new(0), Some(ty))
+	}
+
+	/// Canonical Range -> IterStart provenance, with a single live incoming edge.
+	/// Unknown provenance remains eligible for a cold vector alternative.
+	pub(crate) fn proven_range(&self, region: &Region) -> bool {
+		let Some(iter) = region.iter else {
+			return false;
+		};
+		let caller_end = region
+			.sites
+			.first()
+			.map_or(region.nodes.len(), |s| s.first as usize);
+		let mut incoming = self.preds(region.header).iter().filter(|&&(_, source)| {
+			self.reachable[source as usize]
+				&& !region.nodes[..caller_end].iter().any(|n| n.pc == source)
+		});
+		let Some(&(_, start)) = incoming.next() else {
+			return false;
+		};
+		if incoming.next().is_some() {
+			return false;
+		}
+		let previous = |pc| {
+			let mut preds = self
+				.preds(pc)
+				.iter()
+				.filter(|&&(_, source)| self.reachable[source as usize]);
+			let &(_, source) = preds.next()?;
+			(preds.next().is_none() && source < pc).then_some(source)
+		};
+		let mut pc = start;
+		let mut slot = iter.slot;
+		let mut range = false;
+		// A strictly decreasing, single-predecessor chain. Only known slot-preserving
+		// operations are crossed; copies rename the sought definition.
+		loop {
+			match self.f.operation(pc as usize) {
+				Ok(Op::IterStart { out, value }) if !range && out == slot => {
+					slot = value;
+					range = true;
+				}
+				Ok(Op::Range { out, .. }) if range && out == slot => return true,
+				Ok(Op::Copy { out, value }) => {
+					if out == slot {
+						slot = value;
+					}
+				}
+				Ok(Op::Literal { out, .. } | Op::List { out, .. }) if out != slot => {}
+				Ok(Op::Release { value }) if value != slot => {}
+				Ok(Op::Jump { .. }) => {}
+				_ => return false,
+			}
+			let Some(prev) = previous(pc) else {
+				return false;
+			};
+			pc = prev;
+		}
 	}
 
 	fn analyze_header(
@@ -892,6 +997,7 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 		header: u32,
 		element: Option<Scalar>,
 		transfers_used: &core::cell::Cell<usize>,
+		vector: Option<Scalar>,
 	) -> Result<Result<(Region, usize), RegionRefusal>, Stop> {
 		let f = self.f;
 		let budget = self.budget;
@@ -975,7 +1081,12 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 			if pc == header {
 				continue;
 			}
-			if pc == 0 || self.preds(pc).iter().any(|&(_, s)| !in_body[s as usize]) {
+			if pc == 0
+				|| self
+					.preds(pc)
+					.iter()
+					.any(|&(_, s)| self.reachable[s as usize] && !in_body[s as usize])
+			{
 				return Ok(Err(RegionRefusal::SideEntry { pc }));
 			}
 		}
@@ -984,7 +1095,20 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 		// Admission and touched slots (the interpreter footprint; the header IterNext's iterator
 		// operand is not a slot). B1: the header IterNext over a range, and inlined calls,
 		// whose summaries (and their typing buffers, freed per site) are built here.
-		let mut collection: Option<Collection> = None;
+		let mut collection: Option<Collection> = if let Some(ty) = vector {
+			let Op::IterNext { iterator, .. } = f.operation(h)? else {
+				return Ok(Err(RegionRefusal::Op { pc: header }));
+			};
+			Some(Collection {
+				iteration: true,
+				slot: iterator,
+				ty,
+				writes: false,
+				scratch_bytes: cache::MAX_TRANSIENT_ANALYSIS_BYTES,
+			})
+		} else {
+			None
+		};
 		if let Some(ty) = element {
 			for &pc in body.iter() {
 				if let Op::Get { value, .. } | Op::Set { value, .. } = f.operation(pc as usize)? {
@@ -994,6 +1118,7 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 					let writes = collection.is_some_and(|c| c.writes)
 						|| matches!(f.operation(pc as usize)?, Op::Set { .. });
 					collection = Some(Collection {
+						iteration: false,
 						slot: value,
 						ty,
 						writes,
@@ -1029,7 +1154,7 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 			let op = f.operation(pc as usize)?;
 			let mut header_iterator = None;
 			match op {
-				Op::Get { .. } | Op::Set { .. } if collection.is_some() => (),
+				Op::Get { .. } | Op::Set { .. } if collection.is_some_and(|c| !c.iteration) => (),
 				Op::IterNext { iterator, .. } => {
 					if pc == header && iter.is_none() {
 						iter = Some(IterSpec { slot: iterator });
@@ -1121,6 +1246,7 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 			Ok(match op {
 				Op::Call { .. } => Some(sites[site_of(pc)?].summary.ret),
 				Op::Get { .. } => collection.map(|c| c.ty),
+				Op::IterNext { .. } => vector,
 				_ => None,
 			})
 		};
@@ -1487,7 +1613,9 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 				};
 				replay_exits = Some((k, fuel_exit, fault_exit));
 			}
-			let collection_retry = if matches!(ops[i], Op::Get { .. } | Op::Set { .. }) {
+			let collection_retry = if matches!(ops[i], Op::Get { .. } | Op::Set { .. })
+				|| (vector.is_some() && matches!(ops[i], Op::IterNext { .. }))
+			{
 				match push_exit(Status::Retry, pc, pc, state, charged_pc, None, false)? {
 					Ok(id) => Some(id),
 					Err(refusal) => return Ok(Err(refusal)),
@@ -1599,9 +1727,18 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 					let some = target!(fall);
 					let none = target!(none as usize, state, true);
 					(
-						NodeOp::IterNext {
-							out: local(out)? as u32,
-							none,
+						if let Some(ty) = vector {
+							NodeOp::VectorNext {
+								out: local(out)? as u32,
+								none,
+								retry: collection_retry.ok_or_else(invalid)?,
+								ty,
+							}
+						} else {
+							NodeOp::IterNext {
+								out: local(out)? as u32,
+								none,
+							}
 						},
 						Some(some),
 					)
@@ -2274,7 +2411,7 @@ fn transfer_at(
 	ret: Option<Scalar>,
 ) -> Result<(), Error> {
 	let (out, ty) = match op {
-		Op::IterNext { out, .. } => (out, Scalar::I64),
+		Op::IterNext { out, .. } => (out, ret.unwrap_or(Scalar::I64)),
 		Op::Call { out, .. } | Op::Get { out, .. } => (out, ret.ok_or_else(invalid)?),
 		_ => return transfer(op, slots, state),
 	};
@@ -2346,7 +2483,9 @@ fn check_parts(nodes: &[Node], exits: &[Exit], sites: &[Site], n: usize) -> Resu
 		let locals: &[u32] = match node.op {
 			NodeOp::Get { out, index, .. } => &[out, index][..],
 			NodeOp::Set { index, new, .. } => &[index, new][..],
-			NodeOp::Literal { out, .. } | NodeOp::IterNext { out, .. } => &[out][..],
+			NodeOp::Literal { out, .. }
+			| NodeOp::IterNext { out, .. }
+			| NodeOp::VectorNext { out, .. } => &[out][..],
 			NodeOp::Copy { out, src, .. } => &[out, src][..],
 			NodeOp::Arith { out, lhs, rhs, .. } | NodeOp::Compare { out, lhs, rhs, .. } => {
 				&[out, lhs, rhs][..]

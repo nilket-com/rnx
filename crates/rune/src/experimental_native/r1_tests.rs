@@ -97,7 +97,7 @@ fn disqualifies(op: &NodeOp, out: u32) -> bool {
 	match *op {
 		NodeOp::Get { out: o, .. } => o == out,
 		NodeOp::Set { .. } => false,
-		NodeOp::IterNext { .. } => true,
+		NodeOp::IterNext { .. } | NodeOp::VectorNext { .. } => true,
 		NodeOp::Enter { slots, .. } => out >= VIRTUAL_BASE && out - VIRTUAL_BASE < slots,
 		NodeOp::Arg { param, .. } => VIRTUAL_BASE.checked_add(param) == Some(out),
 		NodeOp::Ret { out: o, .. } => o == out,

@@ -108,7 +108,7 @@ fn refs_to(region: &Region, j: u32) -> usize {
 			NodeOp::Get { .. } | NodeOp::Set { .. } => 0,
 			NodeOp::Branch { yes, no, .. } => hit(yes) + hit(no),
 			NodeOp::Jump { target } => hit(target),
-			NodeOp::IterNext { none, .. } => hit(none),
+			NodeOp::IterNext { none, .. } | NodeOp::VectorNext { none, .. } => hit(none),
 			NodeOp::ForceReplay { zero, positive } => hit(zero) + hit(positive),
 			NodeOp::Enter { .. } => 0,
 			NodeOp::Arg { .. } => 0,
@@ -127,6 +127,7 @@ fn refs_to(region: &Region, j: u32) -> usize {
 fn rules_out(op: &NodeOp, is_header: bool) -> bool {
 	match *op {
 		NodeOp::Get { .. } | NodeOp::Set { .. } => true,
+		NodeOp::VectorNext { .. } => true,
 		NodeOp::IterNext { .. } => !is_header,
 		NodeOp::ForceReplay { .. } => true,
 		NodeOp::Enter { .. } => false,

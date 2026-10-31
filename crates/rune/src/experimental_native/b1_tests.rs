@@ -1225,7 +1225,7 @@ fn alias_untouched_cases() -> Vec<B1Case> {
 			"heap_alias_caller_frame",
 			alias_in_caller_frame(),
 			inputs(),
-			1,
+			2,
 			"CDF",
 		),
 	]
@@ -1914,7 +1914,7 @@ fn child_alias_untouched() {
 	let code = alias_in_caller_frame();
 	hook::uninstall();
 	cache::clear_for_test();
-	assert_eq!(hook::install_native(&code, None).loaded, 1);
+	assert_eq!(hook::install_native(&code, None).loaded, 2);
 	let mut points = 0;
 	for (start, end) in [(0, 10), (0, 2), (5, 1)] {
 		hook::suspend();
@@ -1991,7 +1991,7 @@ fn child_iter_out_is_iterator() {
 	assert_eq!(covs[0].install.regions, 0);
 }
 
-const VECTOR_LOOP: &str = "pub fn main(n) { let s = 0; let k = 0; while k < n { for x in [1, 2, 3] { s += 1; } k += 1; } s }";
+const VECTOR_LOOP: &str = "pub fn main(n) { let s = 0; let k = 0; while k < n { for x in [1, true, 3] { s += 1; } k += 1; } s }";
 
 #[test]
 #[cfg_attr(
@@ -2006,12 +2006,13 @@ fn b1_vector_iterator_loop_goes_cold() {
 #[ignore = "B1 native worker: run by its parent test in a child process"]
 fn child_vector_cold() {
 	require_child();
-	let mut c = case("vector_iterator", VECTOR_LOOP, ints(&[&[3], &[0]]), 1, "");
+	let mut c = case("vector_iterator", VECTOR_LOOP, ints(&[&[3], &[0]]), 3, "");
 	c.entry = "I";
 	let covs = run_cases(&[c]);
 	assert_eq!(covs[0].native_all.native_entries, 0);
 
-	// Production: Cold after COLD_AFTER_REFUSALS consecutive Iter refusals, outcome equal.
+	// N3 admits homogeneous vectors; this mixed source still goes Cold after
+	// COLD_AFTER_REFUSALS consecutive Iter refusals, with the same outcome.
 	let program = compile_source(VECTOR_LOOP);
 	let code = &program.code;
 	let main = program.function(Hash::type_hash(["main"])).unwrap();

@@ -536,7 +536,7 @@ fn child_p2b_refused() {
 }
 
 /// The bench kernels after P2b, as in the P3a golden: while and numeric admitted, fib
-/// with no loop, shared_rows refused (side entry). B1 changed one row: calls, refused at its
+/// with no loop, shared_rows refused (varying heap row after N3 reachability). B1 changed one row: calls, refused at its
 /// IterNext header through P2b, is admitted (native IterNext, `add` inlined).
 #[test]
 #[cfg_attr(miri, ignore = "Miri: compiles Rune source")]
@@ -549,7 +549,7 @@ fn p2b_kernel_admission_unchanged() {
 		(
 			"v2/shared_rows",
 			super::p2_tests::V2_SHARED_ROWS,
-			vec!["f1h1:SideEntry { pc: 17 }"],
+			vec!["f1h1:CollectionSlot { pc: 1 }"],
 		),
 	] {
 		let program = compile_source(text);

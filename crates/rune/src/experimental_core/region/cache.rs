@@ -342,7 +342,13 @@ pub(crate) struct RegionCounters {
 
 /// One loaded region. The `Region` keeps only what entry and commit read (its nodes are
 /// dropped after compile).
+struct VectorVariants {
+	integer: Option<Ready>,
+	boolean: Option<Ready>,
+}
+
 pub(crate) struct Ready {
+	vector: Option<crate::alloc::Box<VectorVariants>>,
 	region: Region,
 	native: NativeRegion,
 	state: Cell<State>,
@@ -469,6 +475,15 @@ impl Ready {
 				Ok(None)
 			}
 			Err(refused @ (Refused::Store | Refused::Tag { .. } | Refused::Iter { .. })) => {
+				if matches!(refused, Refused::Iter { .. }) {
+					if let Some(exited) =
+						self.enter_vector_variant(window, store, cancel_pending, fuel, room)?
+					{
+						self.consecutive.set(0);
+						return Ok(Some(exited));
+					}
+				}
+
 				let counter = match refused {
 					Refused::Store => &self.refused_store,
 					Refused::Iter { .. } => &self.refused_iter,
@@ -516,6 +531,9 @@ impl Ready {
 		fuel: usize,
 		room: Room,
 	) -> Result<Option<(usize, usize)>> {
+		if self.state.get() != State::Live {
+			return Ok(None);
+		}
 		let outcome = commit::enter_collection(
 			&self.region,
 			window,
@@ -575,6 +593,37 @@ impl Ready {
 				Err(error)
 			}
 		}
+	}
+
+	/// This is reachable only after the old Range guard refused. Keeping its work
+	/// outlined also keeps vector snapshot preparation off the successful Range path.
+	#[cold]
+	#[inline(never)]
+	fn enter_vector_variant(
+		&self,
+		window: &mut [Value],
+		store: &mut Store,
+		cancel_pending: bool,
+		fuel: usize,
+		room: Room,
+	) -> Result<Option<(usize, usize)>> {
+		let Some(variants) = &self.vector else {
+			return Ok(None);
+		};
+		for ready in [&variants.integer, &variants.boolean].into_iter().flatten() {
+			let c = ready.region.collection.expect("vector descriptor");
+			if window
+				.get(c.slot as usize)
+				.is_some_and(|&v| store.vector_iterator_kind_for_native(v, c.ty))
+			{
+				if let Some(exited) =
+					ready.enter_collection(window, store, cancel_pending, fuel, room)?
+				{
+					return Ok(Some(exited));
+				}
+			}
+		}
+		Ok(None)
 	}
 
 	/// The native call. A `None` (contract mismatch: nothing ran) returns status 0, which
@@ -1038,12 +1087,12 @@ pub(crate) fn region_metadata(region: &Region) -> usize {
 }
 
 /// The analysis-work estimate of one function, charged before it is analyzed: one pass
-/// per candidate header plus the header search over the whole function, and the
+/// per guarded typing attempt (at most five per header), the header search, and the
 /// function-level inference cells when that inference runs. An estimate of the dominant
 /// terms, not a proven worst case of the fixpoints (those have the transfer cutoff).
 pub(crate) fn analysis_work(len: usize, headers: usize, slots: usize) -> u64 {
 	let len = len as u64;
-	let passes = 1 + headers.min(MAX_REGIONS_PER_FUNCTION) as u64;
+	let passes = 1 + 5 * headers.min(MAX_REGIONS_PER_FUNCTION) as u64;
 	let cells = len.saturating_mul(slots as u64);
 	let inference = if cells <= super::MAX_FUNCTION_INFERENCE_CELLS as u64 {
 		cells
@@ -1079,7 +1128,7 @@ impl Build<'_> {
 		if self.enabled != Enabled::Yes {
 			return false;
 		}
-		if self.ready.len() >= self.limits.program_regions {
+		if self.summary.loaded as usize >= self.limits.program_regions {
 			self.summary.region_cap = 1;
 			return true;
 		}
@@ -1096,17 +1145,100 @@ impl Build<'_> {
 	/// classes and exits are charged to metadata instead), on every other return after the
 	/// region (a local, so it drops before the `held` parameter).
 	fn load(&mut self, held: Held<'_>, region: Region) {
+		if self.ready.try_reserve_exact(1).is_err() {
+			self.summary.metadata += 1;
+			return;
+		}
+		if let Some(ready) = self.load_ready(held, region) {
+			self.ready.push(ready);
+		}
+	}
+
+	fn vector_variants(
+		&mut self,
+		context: &FunctionContext<'_, '_>,
+		header: u32,
+		budget: &Budget,
+		index: usize,
+	) {
+		let bytes = core::mem::size_of::<VectorVariants>();
+		if self.program_metadata.saturating_add(bytes) > self.limits.program_metadata_bytes {
+			self.summary.metadata += 1;
+			return;
+		}
+		let mut evicted = StdVec::new();
+		let reserved = CACHE.with(|cache| {
+			cache
+				.borrow_mut()
+				.reserve(self.limits, self.id, 0, bytes, &mut evicted)
+		});
+		drop(evicted);
+		if !reserved {
+			self.summary.thread_bound += 1;
+			return;
+		}
+		let Ok(mut variants) = crate::alloc::Box::try_new(VectorVariants {
+			integer: None,
+			boolean: None,
+		}) else {
+			unreserve(self.id, 0, bytes);
+			self.summary.metadata += 1;
+			return;
+		};
+		self.program_metadata += bytes;
+		self.summary.metadata_bytes += bytes as u64;
+		for ty in [super::Scalar::I64, super::Scalar::Bool] {
+			if self.capped() {
+				break;
+			}
+			let (mut region, charged) = match context.analyze_vector(header, ty) {
+				Ok(Ok(found)) => found,
+				Ok(Err(RegionRefusal::Steps)) => {
+					self.summary.steps += 1;
+					continue;
+				}
+				Ok(Err(_)) => continue,
+				Err(Stop::Budget) => {
+					self.summary.transient += 1;
+					break;
+				}
+				Err(Stop::Error(_)) => {
+					self.summary.analysis_errors += 1;
+					break;
+				}
+			};
+			if let Some(c) = &mut region.collection {
+				c.scratch_bytes = self.limits.transient_analysis_bytes;
+			}
+			self.summary.regions += 1;
+			let ready = self.load_ready(Held::adopt(budget, charged), region);
+			match ty {
+				super::Scalar::I64 => variants.integer = ready,
+				_ => variants.boolean = ready,
+			}
+		}
+		if variants.integer.is_some() || variants.boolean.is_some() {
+			self.ready[index].vector = Some(variants);
+		} else {
+			drop(variants);
+			unreserve(self.id, 0, bytes);
+			self.program_metadata -= bytes;
+			self.summary.metadata_bytes -= bytes as u64;
+		}
+	}
+
+	fn load_ready(&mut self, held: Held<'_>, region: Region) -> Option<Ready> {
 		let mut region = region;
 
 		match self.enabled {
 			Enabled::Yes => {}
 			Enabled::Environment => {
 				self.summary.environment += 1;
-				return;
+				return None;
 			}
 			Enabled::PageSize => {
 				self.summary.page_size += 1;
-				return;
+				return None;
 			}
 		}
 
@@ -1118,12 +1250,7 @@ impl Build<'_> {
 			.is_none_or(|m| m > self.limits.program_metadata_bytes)
 		{
 			summary.metadata += 1;
-			return;
-		}
-		// Exact: the table's capacity is the loaded count, which `region_metadata` charges.
-		if self.ready.try_reserve_exact(1).is_err() {
-			summary.metadata += 1;
-			return;
+			return None;
 		}
 
 		#[cfg(test)]
@@ -1147,7 +1274,7 @@ impl Build<'_> {
 		let compiled = match compiled {
 			Err(_) => {
 				summary.panicked += 1;
-				return;
+				return None;
 			}
 			Ok(Err(refusal)) => {
 				// Classified, then dropped with any text it carries.
@@ -1164,14 +1291,14 @@ impl Build<'_> {
 						summary.other += 1
 					}
 				}
-				return;
+				return None;
 			}
 			Ok(Ok(compiled)) => compiled,
 		};
 
 		if compiled.cells() != region.cells() {
 			summary.other += 1;
-			return;
+			return None;
 		}
 
 		let bytes = compiled.bytes().len();
@@ -1186,7 +1313,7 @@ impl Build<'_> {
 		drop(evicted);
 		if !reserved {
 			summary.thread_bound += 1;
-			return;
+			return None;
 		}
 
 		// The process-wide reservation, taken before the mapping exists and kept by its
@@ -1198,7 +1325,7 @@ impl Build<'_> {
 		) else {
 			summary.process_bound += 1;
 			unreserve(id, mapped, metadata);
-			return;
+			return None;
 		};
 
 		let started = Instant::now();
@@ -1216,7 +1343,7 @@ impl Build<'_> {
 				summary.load_refused += 1;
 				drop(reservation);
 				unreserve(id, mapped, metadata);
-				return;
+				return None;
 			}
 			Err(_) => {
 				// A panic inside cranelift-jit: its `JITModule` was dropped without
@@ -1225,7 +1352,7 @@ impl Build<'_> {
 				summary.load_panicked += 1;
 				core::mem::forget(reservation);
 				unreserve(id, mapped, metadata);
-				return;
+				return None;
 			}
 		};
 
@@ -1242,7 +1369,8 @@ impl Build<'_> {
 		summary.mapped_bytes += mapped as u64;
 		summary.metadata_bytes += (metadata - MODULE_RESERVE_BYTES) as u64;
 		summary.reserved_bytes += MODULE_RESERVE_BYTES as u64;
-		self.ready.push(Ready {
+		Some(Ready {
+			vector: None,
 			region,
 			native,
 			state: Cell::new(State::Live),
@@ -1258,7 +1386,7 @@ impl Build<'_> {
 			compile_ns,
 			load_ns,
 			reservation,
-		});
+		})
 	}
 }
 
@@ -1432,7 +1560,14 @@ fn build(code: &Code, enabled: Enabled, limits: &Limits) -> ProgramRegions {
 					.set(c.max_transfers.get().max(context.max_transfers()))
 			});
 
+			let vector = region.collection.is_none()
+				&& region.iter.is_some()
+				&& !context.proven_range(&region);
+			let index = b.ready.len();
 			b.load(held, region);
+			if vector && b.ready.len() > index {
+				b.vector_variants(&context, header, &budget, index);
+			}
 		}
 	}
 
@@ -1660,7 +1795,20 @@ pub(crate) fn regions_for_test(code: u32) -> Option<StdVec<RegionCounters>> {
 	CACHE.with(|cache| {
 		let cache = cache.borrow();
 		match &cache.entries[cache.position(code)?].resident {
-			Resident::Ready(regions) => Some(regions.ready.iter().map(Ready::counters).collect()),
+			Resident::Ready(regions) => Some(
+				regions
+					.ready
+					.iter()
+					.flat_map(|r| {
+						core::iter::once(r).chain(
+							r.vector
+								.iter()
+								.flat_map(|v| [&v.integer, &v.boolean].into_iter().flatten()),
+						)
+					})
+					.map(Ready::counters)
+					.collect(),
+			),
 			Resident::Empty(_) => Some(StdVec::new()),
 			Resident::Building | Resident::CheckedOut => None,
 		}

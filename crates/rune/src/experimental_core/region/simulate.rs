@@ -269,6 +269,36 @@ fn run(
 				Some(if get!(condition) != 0 { yes } else { no })
 			}
 			NodeOp::Jump { target } => Some(target),
+			NodeOp::VectorNext {
+				out,
+				none,
+				retry,
+				ty,
+			} => {
+				if cells != n + 2 {
+					return 0;
+				}
+				let (next, end) = (buf[n], buf[n + 1]);
+				if next == end {
+					Some(none)
+				} else if let Ok(index) = usize::try_from(next) {
+					if index < len {
+						let Some(&value) = snapshot.get(index) else {
+							return 0;
+						};
+						let Some(after) = next.checked_add(1) else {
+							return 0;
+						};
+						buf[n] = after;
+						write!(out, value, ty);
+						nd.next
+					} else {
+						Some(Target::Exit(retry))
+					}
+				} else {
+					Some(Target::Exit(retry))
+				}
+			}
 			NodeOp::IterNext { out, none } => {
 				if cells != n + 2 {
 					return 0;

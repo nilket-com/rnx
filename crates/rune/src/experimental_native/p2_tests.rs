@@ -1373,10 +1373,10 @@ fn limit_row(name: &str, s: &NativeSummary) {
 #[test]
 fn p2_analysis_work_estimate() {
 	assert_eq!(cache::analysis_work(10, 0, 4), 10 + 40);
-	assert_eq!(cache::analysis_work(10, 3, 4), 40 + 40);
+	assert_eq!(cache::analysis_work(10, 3, 4), 160 + 40);
 	assert_eq!(
 		cache::analysis_work(10, 1000, 4),
-		10 * 65 + 40,
+		10 * 321 + 40,
 		"headers capped at 64"
 	);
 	// Past the inference bound the function-level cells are not run, so not charged.

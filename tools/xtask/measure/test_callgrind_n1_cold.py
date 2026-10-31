@@ -10,6 +10,7 @@ COLD = ('<core::ops::range::Range<usize> as core::iter::traits::iterator::Iterat
 	'::try_fold::<(), core::iter::traits::iterator::Iterator::find::check<usize, '
 	'&mut <rune::experimental_core::region::FunctionContext>::analyze_header::{closure#8}'
 	'::{closure#0}, core::ops::control_flow::ControlFlow<usize>>')
+BY_VALUE = COLD.replace('find::check', 'any::check').replace('&mut ', '').replace('ControlFlow<usize>', 'ControlFlow<()>')
 HOT = '<rune::experimental_core::heap::Store>::range_next'
 BASE = 'rune::experimental_core::execute::Executor::invoke'
 
@@ -60,6 +61,32 @@ class ColdAnalysisIterator(unittest.TestCase):
 	def test_whole_limit_is_unchanged(self):
 		with self.assertRaises(ValueError):
 			assess(extra_whole=20000)
+
+
+class BothAnalysisSpellings(unittest.TestCase):
+	def test_positive_and_negative_call_counts_for_both_spellings(self):
+		for name in (COLD, BY_VALUE):
+			for calls in (1, 1002):
+				with self.subTest(name=name, calls=calls):
+					self.assertEqual(assess(name=name, calls=calls, delta=38)['net_Ir'], 38)
+			for calls in (None, 0, -1, 1003, 100000):
+				with self.subTest(name=name, calls=calls):
+					with self.assertRaisesRegex(ValueError, 'hot range cost grows'):
+						assess(name=name, calls=calls)
+
+	def test_other_owners_and_real_vm_iterators_remain_hot(self):
+		for name in (COLD, BY_VALUE):
+			for bad in (name.replace('FunctionContext', 'OtherContext'), name.replace('analyze_header', 'execute_loop'), HOT):
+				with self.subTest(name=bad):
+					with self.assertRaisesRegex(ValueError, 'hot range cost grows'):
+						assess(name=bad, calls=1, delta=1)
+
+	def test_ordinary_bounds_apply_to_both_spellings(self):
+		for name in (COLD, BY_VALUE):
+			for kwargs in (dict(delta=72001, base=100_000_000), dict(delta=1001), dict(extra_whole=20000)):
+				with self.subTest(name=name, kwargs=kwargs):
+					with self.assertRaises(ValueError):
+						assess(name=name, **kwargs)
 
 
 if __name__ == '__main__':

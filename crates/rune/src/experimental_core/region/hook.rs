@@ -168,12 +168,29 @@ fn analyzed(code: &Code) -> StdVec<Region> {
 	let mut regions = StdVec::new();
 	let transform = TRANSFORM.with(|t| t.get());
 	for id in 0..code.functions() as u32 {
+		let budget = super::budget::Budget::unlimited();
+		let context = super::FunctionContext::new(code, id, &budget, super::TRANSFER_FACTOR)
+			.expect("context");
 		for (_, region) in analyze(code, id).expect("analysis") {
 			if let Ok(mut region) = region {
+				let vector = region.collection.is_none()
+					&& region.iter.is_some()
+					&& !context.proven_range(&region);
+				let header = region.header;
 				if let Some(transform) = transform {
 					transform(&mut region);
 				}
 				regions.push(region);
+				if vector {
+					for ty in [super::Scalar::I64, super::Scalar::Bool] {
+						if let Ok(Ok((mut alternative, _))) = context.analyze_vector(header, ty) {
+							if let Some(transform) = transform {
+								transform(&mut alternative);
+							}
+							regions.push(alternative);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -283,7 +300,12 @@ pub(crate) fn install_native(code: &Code, dump: Option<&std::path::Path>) -> Nat
 		program_bytes += compiled.bytes().len();
 
 		if let Some(dir) = dump {
-			let name = std::format!("f{}_h{}", region.function, region.header);
+			let suffix = match region.collection.filter(|c| c.iteration).map(|c| c.ty) {
+				Some(super::Scalar::Bool) => "_vec_bool",
+				Some(_) => "_vec_i64",
+				None => "",
+			};
+			let name = std::format!("f{}_h{}{}", region.function, region.header, suffix);
 			let listing = compiled.listing();
 			std::fs::create_dir_all(dir).expect("dump dir");
 			std::fs::write(dir.join(std::format!("{name}.bin")), compiled.bytes()).expect("dump");
@@ -413,11 +435,33 @@ pub(crate) fn try_enter(
 			return None;
 		}
 
-		let index = installed
+		let mut index = installed
 			.regions
 			.iter()
 			.position(|r| r.function == function && r.header as usize == pc)?;
 
+		let mut vector_fallback = false;
+		let primary = &installed.regions[index];
+		if primary.collection.is_none()
+			&& primary.iter.is_some_and(|it| {
+				window
+					.get(it.slot as usize)
+					.is_some_and(|&value| store.range_iterator_for_native(value).is_none())
+			}) {
+			if let Some(alternative) = installed.regions.iter().position(|r| {
+				r.function == function
+					&& r.header as usize == pc
+					&& r.collection.is_some_and(|c| {
+						c.iteration
+							&& window.get(c.slot as usize).is_some_and(|&value| {
+								store.vector_iterator_kind_for_native(value, c.ty)
+							})
+					})
+			}) {
+				index = alternative;
+				vector_fallback = true;
+			}
+		}
 		let mut seen = None;
 		let mut traced = None;
 		let (outcome, native) = match installed.mode {
@@ -531,7 +575,10 @@ pub(crate) fn try_enter(
 					Refused::Cancel => stats.refused_cancel += 1,
 					Refused::Store => stats.refused_store += 1,
 					Refused::Tag { .. } => stats.refused_tag += 1,
-					Refused::Iter { .. } => stats.refused_iter += 1,
+					Refused::Iter { .. } => {
+						// Production records the failed Range entry and its failed vector alternative.
+						stats.refused_iter += 1 + usize::from(vector_fallback);
+					}
 					Refused::Room => stats.refused_room += 1,
 					Refused::Window | Refused::InvalidExit => {
 						let region = &installed.regions[index];

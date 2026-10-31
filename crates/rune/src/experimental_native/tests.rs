@@ -288,11 +288,15 @@ fn ir_audit_negative_cases() {
 #[test]
 #[cfg_attr(miri, ignore = "Miri: compiles Rune source and runs Cranelift")]
 fn n2_snapshot_audit_rejects_unchecked_addresses() {
-	use cranelift_codegen::ir::condcodes::IntCC;
 	let mut regions = regions(crate::experimental_core::region::n2_tests::INTEGER);
 	let region = regions.pop().unwrap();
-	let map = audit::AccessMap::of(&region);
-	for fault in 0..11 {
+	snapshot_audit_rejects_unchecked_addresses(&region);
+}
+
+fn snapshot_audit_rejects_unchecked_addresses(region: &crate::experimental_core::region::Region) {
+	use cranelift_codegen::ir::condcodes::IntCC;
+	let map = audit::AccessMap::of(region);
+	for fault in 0..12 {
 		let mut func = ir::Function::with_name_signature(
 			UserFuncName::user(0, 0),
 			lower::collection_signature(),
@@ -344,12 +348,18 @@ fn n2_snapshot_audit_rejects_unchecked_addresses() {
 			address,
 			if fault == 10 { 8 } else { 0 },
 		);
+		if fault == 11 && region.collection.is_some_and(|c| !c.writes) {
+			let value = b.ins().iconst(types::I64, 1);
+			b.ins().store(MemFlagsData::trusted(), value, params[2], 0);
+		}
 		let status = b.ins().iconst(types::I32, 0);
 		b.ins().return_(&[status]);
 		b.seal_all_blocks();
 		b.finalize(lower::isa().unwrap().frontend_config());
 		let result = audit::ir(&func, &map);
-		if matches!(fault, 0 | 8 | 9) {
+		if matches!(fault, 0 | 8 | 9)
+			|| (fault == 11 && region.collection.is_some_and(|c| c.writes))
+		{
 			assert_eq!(result, Ok(()));
 		} else {
 			assert!(
@@ -358,4 +368,15 @@ fn n2_snapshot_audit_rejects_unchecked_addresses() {
 			);
 		}
 	}
+}
+
+#[test]
+#[cfg_attr(miri, ignore = "Miri: compiles Rune source and runs Cranelift")]
+fn n3_snapshot_audit_rejects_unchecked_addresses_and_writes() {
+	let region = regions(crate::experimental_core::region::n3_tests::BOOLEAN)
+		.pop()
+		.unwrap();
+	assert!(!region.collection.unwrap().writes);
+	assert!(lower::compile(&region, 0).is_ok());
+	snapshot_audit_rejects_unchecked_addresses(&region);
 }
